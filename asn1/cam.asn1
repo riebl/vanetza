@@ -1,0 +1,43 @@
+-- Extracted from TS 102 637-2 V1.2.1
+-- ASN1START
+CAM-PDU-Descriptions {
+  itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102637) cam (2) version1 (1)
+}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+  ItsPduHeader, VehicleCommonParameters, ProfileParameters, StationID, TimeStamp, ReferencePosition
+FROM DENM-PDU-Descriptions { itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102637) denm (3) version2 (2) };
+
+-- The root data frame for cooperative awareness messages
+CamPdu ::= SEQUENCE {
+  header ItsPduHeader,
+  cam CoopAwareness
+}
+
+CoopAwareness ::= SEQUENCE {
+  stationID StationID,
+  -- Basic characterization of an ITS station.
+  stationCharacteristics SEQUENCE {
+    mobileItsStation BOOLEAN, -- will ITS station change position?
+    privateItsStation BOOLEAN, -- not public authority
+    physicalRelevantItsStation BOOLEAN, -- can another station crash into this station?
+    ...
+  },
+  referencePosition ReferencePosition,
+  camParameters CamParameters OPTIONAL,
+  ...
+}
+
+CamParameters ::= SEQUENCE {
+  vehicleCommonParameters VehicleCommonParameters,
+  profileDependent ProfileParameters OPTIONAL,
+  ...
+}
+
+END
+
+-- ASN1STOP
