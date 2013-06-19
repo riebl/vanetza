@@ -1,6 +1,8 @@
 #ifndef ANGLE_H_QWPLNJ3B
 #define ANGLE_H_QWPLNJ3B
 
+#include "units/quantity.h"
+#include "units/unit.h"
 #include <boost/math/constants/constants.hpp>
 
 namespace units {
@@ -28,33 +30,20 @@ struct conversion_helper<units::radian, units::degree, T>
 
 
 template<typename UNIT, typename T = double>
-class Angle
+class Angle : public Quantity<T>
 {
     public:
-    typedef T value_type;
-
-    explicit Angle(T numeric) : m_value(numeric) {}
+    explicit Angle(T numeric) : Quantity<T>(numeric) {}
 
     template<typename OTHER_UNIT, typename OTHER_TYPE>
     Angle(const Angle<OTHER_UNIT, OTHER_TYPE>& other) :
-        m_value(conversion_helper<OTHER_UNIT, UNIT, T>::convert(other.value()))
+        Quantity<T>(conversion_helper<OTHER_UNIT, UNIT, T>::convert(other.value()))
     {
     }
-
-    T value() const { return m_value; }
-
-    private:
-    T m_value;
 };
 
-typedef Angle<units::degree> AngleDegree;
-typedef Angle<units::radian> AngleRadian;
-
-template<typename UNIT>
-Angle<UNIT> operator%(typename Angle<UNIT>::value_type numeric, UNIT u)
-{
-    return Angle<UNIT>(numeric);
-}
+VANETZA_UNIT(Angle, units::degree, AngleDegree)
+VANETZA_UNIT(Angle, units::radian, AngleRadian)
 
 #endif /* ANGLE_H_QWPLNJ3B */
 

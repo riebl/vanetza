@@ -5,8 +5,9 @@ template<typename T>
 class Quantity
 {
     public:
-    explicit Quantity(const T& value) : m_value(value) {}
+    typedef T value_type;
 
+    explicit Quantity(const T& value) : m_value(value) {}
     T value() const { return m_value; }
 
     private:
