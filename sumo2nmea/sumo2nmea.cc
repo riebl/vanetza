@@ -1,6 +1,6 @@
-#include "nmea.h"
 #include "projector.h"
-#include "wgs84point.h"
+#include "gnss/nmea.h"
+#include "gnss/wgs84point.h"
 #include <iostream>
 #include <string>
 #include <boost/date_time/gregorian/gregorian.hpp>

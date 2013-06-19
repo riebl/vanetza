@@ -1,9 +1,9 @@
 #ifndef NMEA_H_EJIHQ65L
 #define NMEA_H_EJIHQ65L
 
-#include "angle.h"
-#include "velocity.h"
-#include "length.h"
+#include "units/angle.h"
+#include "units/velocity.h"
+#include "units/length.h"
 #include <cstdint>
 #include <string>
 #include <boost/date_time/gregorian/gregorian_types.hpp>
