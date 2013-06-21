@@ -1,11 +1,12 @@
 macro(vanetza_module NAME)
     set(_sources ${ARGN})
+    set(_inc_dir ${PROJECT_SOURCE_DIR}/..)
     add_library(vanetza_${NAME} SHARED ${_sources})
     set_target_properties(vanetza_${NAME} PROPERTIES
-        INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR})
+        INCLUDE_DIRECTORIES ${_inc_dir})
     add_library(vanetza_${NAME}_static STATIC ${_sources})
     set_target_properties(vanetza_${NAME}_static PROPERTIES
-        INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR})
+        INCLUDE_DIRECTORIES ${_inc_dir})
 endmacro()
 
 macro(vanetza_module_dependencies NAME)

@@ -1,7 +1,7 @@
 #ifndef WGS84POINT_H_GAHDJKCG
 #define WGS84POINT_H_GAHDJKCG
 
-#include "units/angle.h"
+#include "vanetza/units/angle.h"
 
 struct Wgs84Point
 {

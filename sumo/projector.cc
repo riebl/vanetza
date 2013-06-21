@@ -1,6 +1,6 @@
-#include "units/angle.h"
 #include "projector.h"
-#include "gnss/wgs84point.h"
+#include "vanetza/gnss/wgs84point.h"
+#include "vanetza/units/angle.h"
 #include <proj_api.h>
 
 Projector::Projector(const char* projStr) :

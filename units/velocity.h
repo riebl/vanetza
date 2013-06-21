@@ -1,7 +1,7 @@
 #ifndef VELOCITY_H_0BLFAIDT
 #define VELOCITY_H_0BLFAIDT
 
-#include "quantity.h"
+#include "vanetza/units/quantity.h"
 
 namespace units
 {

@@ -1,8 +1,8 @@
 #ifndef ANGLE_H_QWPLNJ3B
 #define ANGLE_H_QWPLNJ3B
 
-#include "units/quantity.h"
-#include "units/unit.h"
+#include "vanetza/units/quantity.h"
+#include "vanetza/units/unit.h"
 #include <boost/math/constants/constants.hpp>
 
 namespace units {
