@@ -1,11 +1,6 @@
 #ifndef PROJECTOR_H_HM85FIRS
 #define PROJECTOR_H_HM85FIRS
 
-struct Point {
-    double x;
-    double y;
-};
-
 struct Wgs84Point;
 
 class Projector
@@ -16,7 +11,7 @@ public:
     ~Projector();
     Projector(const Projector&) = delete;
     Projector& operator=(const Projector&) = delete;
-    Wgs84Point project(const Point&);
+    Wgs84Point project(double x, double y);
     void offset(double x, double y);
 
 private:

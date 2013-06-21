@@ -20,11 +20,11 @@ void Projector::offset(double x, double y)
     mOffsetY = y;
 }
 
-Wgs84Point Projector::project(const Point& point)
+Wgs84Point Projector::project(double x, double y)
 {
     projUV p;
-    p.u = point.x - mOffsetX;
-    p.v = point.y - mOffsetY;
+    p.u = x - mOffsetX;
+    p.v = y - mOffsetY;
     p = pj_inv(p, mProjection);
-    return Wgs84Point { p.u % units::rad, p.v % units::rad };
+    return Wgs84Point { p.v % units::rad, p.u % units::rad };
 }
