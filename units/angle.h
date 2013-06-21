@@ -16,9 +16,6 @@ static const radian rad;
 } // namespace units
 
 
-template<typename FROM, typename TO, typename T>
-struct conversion_helper;
-
 template<typename T>
 struct conversion_helper<units::radian, units::degree, T>
 {

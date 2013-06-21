@@ -5,6 +5,9 @@
     typedef _tmpl<_unit> _alias; \
     template<> struct unit_trait<_unit> { typedef _alias quantity_type; };
 
+template<typename FROM, typename TO, typename T>
+struct conversion_helper;
+
 template<typename UNIT>
 struct unit_trait;
 
