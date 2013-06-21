@@ -3,7 +3,6 @@
 #include "vanetza/gnss/wgs84point.h"
 #include <iostream>
 #include <string>
-#include <boost/date_time/gregorian/gregorian.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -37,10 +36,9 @@ int main(int argc, const char** argv)
     std::string nmeaMessage;
 
     while (true) {
-        boost::gregorian::date date(boost::gregorian::day_clock::universal_day());
         boost::posix_time::ptime time(boost::posix_time::microsec_clock::universal_time());
 
-        nmeaMessage = nmea::gprmc(time, point, VelocityKnot(10.3), AngleDegree(48.1), date);
+        nmeaMessage = nmea::gprmc(time, point, VelocityKnot(10.3), AngleDegree(48.1));
         std::cout << nmeaMessage << "\r\n";
         nmeaMessage = nmea::gpgga(time, point, nmea::Quality::GPS, LengthMeter(0.0));
         std::cout << nmeaMessage << "\r\n";

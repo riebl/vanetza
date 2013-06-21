@@ -6,7 +6,6 @@
 #include "vanetza/units/length.h"
 #include <cstdint>
 #include <string>
-#include <boost/date_time/gregorian/gregorian_types.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 struct Wgs84Point;
@@ -14,7 +13,6 @@ struct Wgs84Point;
 namespace nmea
 {
     typedef boost::posix_time::ptime time;
-    typedef boost::gregorian::date date;
 
     enum class Quality {
         UNAVAILABLE = 0,
@@ -42,7 +40,7 @@ namespace nmea
         INVALID = 'N'
     };
 
-    std::string gprmc(const time&, const Wgs84Point&, VelocityKnot ground, AngleDegree heading, const date&);
+    std::string gprmc(const time&, const Wgs84Point&, VelocityKnot ground, AngleDegree heading);
     std::string gpgga(const time&, const Wgs84Point&, Quality, LengthMeter hdop);
     uint8_t checksum(std::string::const_iterator, std::string::const_iterator);
 

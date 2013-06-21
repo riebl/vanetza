@@ -75,7 +75,7 @@ std::string finish(std::stringstream& smsg)
     return msg;
 }
 
-std::string gprmc(const time& ptime, const Wgs84Point& wgs84, VelocityKnot groundSpeed, AngleDegree heading, const date& date)
+std::string gprmc(const time& ptime, const Wgs84Point& wgs84, VelocityKnot groundSpeed, AngleDegree heading)
 {
     /**
      * Magnetic declination for central europe is about 1 degree east (2010), see this map for reference:
@@ -97,7 +97,7 @@ std::string gprmc(const time& ptime, const Wgs84Point& wgs84, VelocityKnot groun
     smsg << latitude(wgs84) << "," << longitude(wgs84) << ",";
     smsg << std::setprecision(1) << groundSpeed.value() << ","; // GG.G
     smsg << std::setprecision(1) << std::fmod(heading.value(), 360.0) << ","; // RR.R
-    smsg << date << ","; // DDMMYY
+    smsg << ptime.date() << ","; // DDMMYY
     smsg << std::setprecision(1) << magneticAngle << "," << magneticDirection << ","; // M.M, E/W
     smsg << static_cast<char>(FAAMode::AUTONOMOUS);
 
