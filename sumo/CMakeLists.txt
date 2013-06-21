@@ -1,11 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
-
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
 find_package(PROJ4 REQUIRED)
 include_directories(${PROJ4_INCLUDE_DIRS})
 
-add_executable(sumo2nmea sumo2nmea.cc projector.cc)
-target_link_libraries(sumo2nmea ${PROJ4_LIBRARIES} ${Boost_LIBRARIES})
-target_link_vanetza(sumo2nmea gnss)
+vanetza_module(sumo projector.cc)
+vanetza_module_dependencies(sumo ${PROJ4_LIBRARIES})
+
+include_directories(${PROJECT_SOURCE_DIR}/..)
+add_executable(sumo2nmea sumo2nmea.cc)
+target_link_vanetza(sumo2nmea gnss sumo)
