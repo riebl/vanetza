@@ -20,6 +20,11 @@ macro(vanetza_intermodule_dependencies NAME)
     endforeach()
 endmacro()
 
+macro(vanetza_module_property NAME)
+    set_property(TARGET vanetza_${NAME} vanetza_${NAME}_static
+        APPEND PROPERTY ${PROPERTY} ${ARGN})
+endmacro()
+
 macro(target_link_vanetza TARGET)
     set(_modules ${ARGN})
     foreach(_module ${_modules})
