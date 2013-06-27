@@ -12,7 +12,9 @@ namespace units
 class Length : public Quantity<double>
 {
     public:
-    using Quantity<double>::Quantity;
+    // TODO: Requires gcc 4.8
+    // using Quantity<double>::Quantity;
+    explicit Length(double value) : Quantity<double>(value) {}
 };
 
 typedef Length LengthMeter;

@@ -30,7 +30,9 @@ template<typename UNIT>
 class Velocity : public Quantity<double>
 {
     public:
-    using Quantity<double>::Quantity;
+    // TODO: requires gcc 4.8
+    // using Quantity<double>::Quantity;
+    explicit Velocity(double value) : Quantity<double>(value) {}
 
     // TODO: implement generic conversion
     template<typename OTHER_UNIT>
