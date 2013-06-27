@@ -1,0 +1,5 @@
+find_package(Cohda REQUIRED)
+set(CXX_SOURCES cohda_raw_socket.cpp mk2_descriptor.cpp)
+vanetza_module(cohda ${CXX_SOURCES})
+vanetza_module_property(cohda INCLUDE_DIRECTORIES ${COHDA_INCLUDE_DIRS})
+vanetza_intermodule_dependencies(cohda net)
