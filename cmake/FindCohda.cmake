@@ -1,4 +1,11 @@
-set(COHDA_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/../cohda/mk2/ieee1609" CACHE FILEPATH "Cohda MK2 include dir")
-set(COHDA_KERNEL_INCLUDE_DIR ${COHDA_INCLUDE_DIR}/kernel/include)
-set(COHDA_LIB1609_INCLUDE_DIR ${COHDA_INCLUDE_DIR}/app/lib1609/include)
+find_path(COHDA_MK2_ROOT
+    NAMES ieee1609/app/lib1609/include/lib1609.h
+    HINTS ${PROJECT_SOURCE_DIR}/../cohda/mk2
+    DOC "Cohda MK2 SDK")
+
+set(COHDA_KERNEL_INCLUDE_DIR ${COHDA_MK2_ROOT}/ieee1609/kernel/include)
+set(COHDA_LIB1609_INCLUDE_DIR ${COHDA_MK2_ROOT}/ieee1609/app/lib1609/include)
 set(COHDA_INCLUDE_DIRS ${COHDA_KERNEL_INCLUDE_DIR} ${COHDA_LIB1609_INCLUDE_DIR})
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(COHDA DEFAULT_MSG COHDA_MK2_ROOT)
