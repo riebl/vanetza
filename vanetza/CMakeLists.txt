@@ -1,4 +1,5 @@
-include_directories(${PROJECT_SOURCE_DIR})
+find_package(Boost REQUIRED)
+include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
 add_subdirectory(asn1)
 add_subdirectory(cohda)
 add_subdirectory(common)

@@ -1,8 +1,6 @@
 find_package(PROJ4)
 if(PROJ4_FOUND)
     include_directories(${PROJ4_INCLUDE_DIRS})
-find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
 
     vanetza_module(sumo projector.cc)
     vanetza_module_dependencies(sumo ${PROJ4_LIBRARIES})
