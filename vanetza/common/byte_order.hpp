@@ -8,46 +8,27 @@
 namespace detail {
 
 template<class T, int SIZE = sizeof(T)>
-struct to_network_converter;
+struct byte_order_converter;
 
 template<class T>
-struct to_network_converter<T, 2>
+struct byte_order_converter<T, 2>
 {
-    T operator()(T value) { return htobe16(value); }
+    static T host_to_network(T value) { return htobe16(value); }
+    static T network_to_host(T value) { return be16toh(value); }
 };
 
 template<class T>
-struct to_network_converter<T, 4>
+struct byte_order_converter<T, 4>
 {
-    T operator()(T value) { return htobe32(value); }
+    static T host_to_network(T value) { return htobe32(value); }
+    static T network_to_host(T value) { return be32toh(value); }
 };
 
 template<class T>
-struct to_network_converter<T, 8>
+struct byte_order_converter<T, 8>
 {
-    T operator()(T value) { return htobe64(value); }
-};
-
-
-template<class T, int SIZE = sizeof(T)>
-struct to_host_converter;
-
-template<class T>
-struct to_host_converter<T, 2>
-{
-    T operator()(T value) { return be16toh(value); }
-};
-
-template<class T>
-struct to_host_converter<T, 4>
-{
-    T operator()(T value) { return be32toh(value); }
-};
-
-template<class T>
-struct to_host_converter<T, 8>
-{
-    T operator()(T value) { return be64toh(value); }
+    static T host_to_network(T value) { return htobe64(value); }
+    static T network_to_host(T value) { return be64toh(value); }
 };
 
 } // namespace detail
@@ -56,15 +37,13 @@ struct to_host_converter<T, 8>
 template<class T>
 T hton(T host_value)
 {
-    detail::to_network_converter<T> converter;
-    return converter(host_value);
+    return detail::byte_order_converter<T>::host_to_network(host_value);
 }
 
 template<class T>
 T ntoh(T network_value)
 {
-    detail::to_host_converter<T> converter;
-    return converter(network_value);
+    return detail::byte_order_converter<T>::network_to_host(network_value);
 }
 
 
