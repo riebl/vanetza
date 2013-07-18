@@ -6,5 +6,7 @@ if(NOT ASN1_SOURCES)
 endif()
 
 include_directories(${ASN1_GEN_DIR})
-add_library(asn1 ${ASN1_SOURCES})
+set(CXX_SOURCES asn1c_wrapper.cpp)
+
+vanetza_module(asn1 ${CXX_SOURCES} ${ASN1_SOURCES})
 
