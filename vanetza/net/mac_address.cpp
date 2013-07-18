@@ -9,34 +9,33 @@
 #include <net/ethernet.h>
 #include <netpacket/packet.h>
 
-extern const std::size_t MacAddress::scNumOctets;
-
 MacAddress::MacAddress()
 {
-    std::fill_n(mOctets, scNumOctets, 0x00);
+    std::fill_n(octets.begin(), octets.size(), 0x00);
 }
 
 MacAddress::MacAddress(std::initializer_list<uint8_t> args)
 {
-    assert(args.size() == scNumOctets);
-    std::copy_n(args.begin(), std::min(args.size(), scNumOctets), mOctets);
+    assert(args.size() == octets.size());
+    std::copy_n(args.begin(), std::min(args.size(), octets.size()), octets.begin());
+}
 }
 
 bool parseMacAddress(const std::string& str, MacAddress& addr)
 {
     using namespace boost;
-    static const unsigned scNumSeparators = MacAddress::scNumOctets - 1;
-    static const unsigned scRequiredLength = MacAddress::scNumOctets* 2 + scNumSeparators;
+    static const unsigned scNumSeparators = addr.octets.size() - 1;
+    static const unsigned scRequiredLength = addr.octets.size() * 2 + scNumSeparators;
     bool parsed = false;
 
     if (str.size() == scRequiredLength) {
         std::vector<std::string> octets;
         algorithm::split(octets, str, algorithm::is_any_of(":"));
-        if (octets.size() == MacAddress::scNumOctets) {
-            uint8_t* pCurrentOctet = addr.mOctets;
+        if (octets.size() == addr.octets.size()) {
+            auto outputOctet = addr.octets.begin();
             for (const std::string& octet : octets) {
-                *pCurrentOctet = strtol(octet.c_str(), nullptr, 16);
-                ++pCurrentOctet;
+                *outputOctet = strtol(octet.c_str(), nullptr, 16);
+                ++outputOctet;
             }
             parsed = true;
         }
@@ -47,16 +46,16 @@ bool parseMacAddress(const std::string& str, MacAddress& addr)
 
 void assignAddr(sockaddr_ll& sock, const MacAddress& mac)
 {
-    assert(ETHER_ADDR_LEN == MacAddress::scNumOctets);
-    std::copy_n(mac.mOctets, MacAddress::scNumOctets, sock.sll_addr);
+    assert(ETHER_ADDR_LEN == mac.octets.size());
+    std::copy_n(mac.octets.begin(), mac.octets.size(), sock.sll_addr);
 }
 
 std::ostream& operator<<(std::ostream& os, const MacAddress& addr)
 {
     os << std::hex;
-    os << unsigned(addr.mOctets[0]);
-    for (unsigned i = 1; i < addr.scNumOctets; ++i) {
-        os << ":" << unsigned(addr.mOctets[i]);
+    os << unsigned(addr.octets[0]);
+    for (unsigned i = 1; i < addr.octets.size(); ++i) {
+        os << ":" << unsigned(addr.octets[i]);
     }
     os << std::dec;
     return os;

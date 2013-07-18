@@ -1,6 +1,7 @@
 #ifndef MAC_ADDRESS_HPP_FDINBLBS
 #define MAC_ADDRESS_HPP_FDINBLBS
 
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -15,8 +16,7 @@ public:
     MacAddress();
     MacAddress(std::initializer_list<uint8_t> args);
 
-    static const std::size_t scNumOctets = 6;
-    uint8_t mOctets[scNumOctets];
+    std::array<uint8_t, 6> octets;
 };
 
 bool parseMacAddress(const std::string&, MacAddress&);
