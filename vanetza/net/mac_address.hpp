@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
+#include <functional>
 #include <ostream>
 #include <string>
 
@@ -61,6 +62,24 @@ MacAddress create_mac_address(T value)
 }
 
 } // namespace vanetza
+
+// specialization
+namespace std {
+
+template<>
+struct hash<vanetza::MacAddress>
+{
+    size_t operator()(const vanetza::MacAddress& addr) const
+    {
+        size_t tmp = 0;
+        for (auto octet : addr.octets) {
+            tmp ^= hash<decltype(octet)>()(octet);
+        }
+        return tmp;
+    }
+};
+
+} // namespace std
 
 #endif /* MAC_ADDRESS_HPP_FDINBLBS */
 

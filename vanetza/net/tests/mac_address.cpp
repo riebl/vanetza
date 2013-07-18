@@ -67,3 +67,16 @@ TEST(MacAddress, create) {
     EXPECT_EQ(d, MacAddress({0x21, 0x56, 0x00, 0x00, 0x00, 0x00}));
 }
 
+TEST(MacAddress, hash) {
+    std::hash<MacAddress> hash_fn;
+
+    MacAddress a, b;
+    EXPECT_EQ(hash_fn(a), hash_fn(b));
+
+    MacAddress c = { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00 };
+    EXPECT_NE(hash_fn(a), hash_fn(c));
+
+    MacAddress d = { 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
+    EXPECT_NE(hash_fn(a), hash_fn(d));
+}
+
