@@ -19,6 +19,10 @@ MacAddress::MacAddress(std::initializer_list<uint8_t> args)
     assert(args.size() == octets.size());
     std::copy_n(args.begin(), std::min(args.size(), octets.size()), octets.begin());
 }
+
+bool operator==(const MacAddress& lhs, const MacAddress& rhs)
+{
+    return (lhs.octets == rhs.octets);
 }
 
 bool parseMacAddress(const std::string& str, MacAddress& addr)
