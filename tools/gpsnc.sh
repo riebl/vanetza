@@ -20,4 +20,5 @@ NC_REMOTE_PID=$!
 nc -l ${GPSD_LOCAL_PORT} < $FIFO &
 NC_LOCAL_PID=$!
 
+sleep 1 # wait for nc ports becoming available
 gpsd -n -N -D4 tcp://localhost:${GPSD_LOCAL_PORT}
