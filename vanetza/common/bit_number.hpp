@@ -1,13 +1,14 @@
 #ifndef BIT_NUMBER_HPP_H3ODBQR7
 #define BIT_NUMBER_HPP_H3ODBQR7
 
+#include <boost/operators.hpp>
 #include <cstddef>
 #include <type_traits>
 
 namespace vanetza {
 
 template<typename T, std::size_t WIDTH>
-class BitNumber
+class BitNumber : public boost::totally_ordered<BitNumber<T, WIDTH>>
 {
     static_assert(std::is_integral<T>::value == true,
             "only integral types are supported");
@@ -23,6 +24,9 @@ public:
     BitNumber(T value) : mValue(value & mask) {}
     BitNumber& operator=(T value) { mValue = value & mask; return *this; }
     T raw() const { return mValue; }
+
+    bool operator<(BitNumber other) const { return mValue < other.mValue; }
+    bool operator==(BitNumber other) const { return mValue == other.mValue; }
 
 private:
     T mValue;

@@ -22,3 +22,27 @@ TEST(BitNumber, mask) {
     EXPECT_EQ(b.raw(), 1);
 }
 
+TEST(BitNumber, equality) {
+    BitNumber<int8_t, 3> a;
+    BitNumber<int8_t, 3> b(0);
+    EXPECT_EQ(a, b);
+
+    a = 3;
+    EXPECT_NE(a, b);
+}
+
+TEST(BitNumber, less) {
+    BitNumber<uint16_t, 4> a(3);
+    BitNumber<uint16_t, 4> b(4);
+    EXPECT_LT(a, b);
+    EXPECT_LE(a, b);
+    EXPECT_GT(b, a);
+
+    a = 4;
+    EXPECT_LE(a, b);
+    EXPECT_GE(a, b);
+
+    b = 17; // 17 is masked to 1
+    EXPECT_LE(b, a);
+}
+
