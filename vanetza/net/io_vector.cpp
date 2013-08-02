@@ -14,6 +14,7 @@ IoVector& IoVector::operator=(const Packet& packet)
         iovec elem = { const_cast<uint8_t*>(&buffer[0]), buffer.size() };
         mVector.emplace_back(elem);
     }
+    return *this;
 }
 
 void assignIoVec(msghdr& hdr, IoVector& io)
