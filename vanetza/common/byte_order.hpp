@@ -11,6 +11,13 @@ template<class T, int SIZE = sizeof(T)>
 struct byte_order_converter;
 
 template<class T>
+struct byte_order_converter<T, 1>
+{
+    static T host_to_network(T value) { return value; }
+    static T network_to_host(T value) { return value; }
+};
+
+template<class T>
 struct byte_order_converter<T, 2>
 {
     static T host_to_network(T value) { return htobe16(value); }
