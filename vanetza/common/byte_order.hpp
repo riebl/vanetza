@@ -196,10 +196,15 @@ using detail::host_cast;
 using detail::network_cast;
 using detail::getHostByteOrder;
 
+typedef detail::EndianType<uint8_t, ByteOrder::BigEndian> uint8be_t;
 typedef detail::EndianType<uint16_t, ByteOrder::BigEndian> uint16be_t;
 typedef detail::EndianType<uint32_t, ByteOrder::BigEndian> uint32be_t;
 typedef detail::EndianType<uint64_t, ByteOrder::BigEndian> uint64be_t;
 
+typedef detail::EndianType<int8_t, ByteOrder::BigEndian> int8be_t;
+typedef detail::EndianType<int16_t, ByteOrder::BigEndian> int16be_t;
+typedef detail::EndianType<int32_t, ByteOrder::BigEndian> int32be_t;
+typedef detail::EndianType<int64_t, ByteOrder::BigEndian> int64be_t;
 
 #endif /* BYTE_ORDER_HPP_LPUJ094I */
 
