@@ -181,6 +181,11 @@ public:
     {
         return !(*this == other);
     }
+
+    T net() const
+    {
+        return network_type(*this).get();
+    }
 };
 
 } // namespace detail
@@ -194,6 +199,7 @@ using detail::getHostByteOrder;
 typedef detail::EndianType<uint16_t, ByteOrder::BigEndian> uint16be_t;
 typedef detail::EndianType<uint32_t, ByteOrder::BigEndian> uint32be_t;
 typedef detail::EndianType<uint64_t, ByteOrder::BigEndian> uint64be_t;
+
 
 #endif /* BYTE_ORDER_HPP_LPUJ094I */
 
