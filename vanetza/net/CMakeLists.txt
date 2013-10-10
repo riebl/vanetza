@@ -1,5 +1,6 @@
 set(CXX_SOURCES
     access_category.cpp
+    cohesive_packet.cpp
     ethernet_header.cpp
     io_vector.cpp
     mac_address.cpp
