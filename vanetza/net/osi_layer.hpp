@@ -17,6 +17,9 @@ enum class OsiLayer : uint8_t
     Application = 7
 };
 
+constexpr OsiLayer min_osi_layer() { return OsiLayer::Physical; }
+constexpr OsiLayer max_osi_layer() { return OsiLayer::Application; }
+
 constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
 {
     return static_cast<uint8_t>(lhs) < static_cast<uint8_t>(rhs);
