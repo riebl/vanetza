@@ -19,6 +19,7 @@ set(CXX_SOURCES
     lifetime.cpp
     location_table.cpp
     packet_buffer.cpp
+    pdu_conversion.cpp
     position_vector.cpp
     shb_header.cpp
     timestamp.cpp
