@@ -27,6 +27,7 @@ public:
     std::array<uint8_t, length_bytes> octets;
 };
 
+extern const MacAddress cBroadcastMacAddress;
 bool operator==(const MacAddress& lhs, const MacAddress& rhs);
 std::ostream& operator<<(std::ostream& os, const MacAddress&);
 
