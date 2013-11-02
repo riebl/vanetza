@@ -34,10 +34,17 @@ public:
     Timestamp(const boost::posix_time::ptime&);
     value_type raw() const { return m_timestamp.value(); }
     time_type quantity() const { return m_timestamp; }
+    Timestamp& operator+=(duration_type);
+    Timestamp& operator-=(duration_type);
 
 private:
     time_type m_timestamp; // since 01-01-2004 00:00:00.0
 };
+
+// timestamp calculus
+Timestamp operator+(Timestamp lhs, Timestamp::duration_type rhs);
+Timestamp operator-(Timestamp lhs, Timestamp::duration_type rhs);
+Timestamp::duration_type operator-(Timestamp lhs, Timestamp rhs);
 
 // timestamp comparison according to ETSI GeoNet
 bool is_greater(Timestamp lhs, Timestamp rhs);

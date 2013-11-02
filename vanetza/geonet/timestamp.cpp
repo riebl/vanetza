@@ -22,6 +22,35 @@ Timestamp::Timestamp(const boost::posix_time::ptime& time)
     m_timestamp = since_start_ms * absolute_unit_type();
 }
 
+Timestamp& Timestamp::operator+=(duration_type rhs)
+{
+    m_timestamp += rhs;
+    return *this;
+}
+
+Timestamp& Timestamp::operator-=(duration_type rhs)
+{
+    m_timestamp -= rhs;
+    return *this;
+}
+
+Timestamp operator+(Timestamp lhs, Timestamp::duration_type rhs)
+{
+    lhs += rhs;
+    return lhs;
+}
+
+Timestamp operator-(Timestamp lhs, Timestamp::duration_type rhs)
+{
+    lhs -= rhs;
+    return lhs;
+}
+
+Timestamp::duration_type operator-(Timestamp lhs, Timestamp rhs)
+{
+    return lhs.quantity() - rhs.quantity();
+}
+
 bool is_greater(Timestamp lhs, Timestamp rhs)
 {
     const auto max = std::numeric_limits<Timestamp::value_type>::max();
