@@ -35,6 +35,16 @@ struct DataRequest
     TrafficClass traffic_class;
 };
 
+/**
+ * Check if packet shall be repeated according to request
+ * \param request DataRequest of packet
+ * \return true if repetition is requested
+ */
+inline bool is_repetition_requested(const DataRequest& request)
+{
+    return (request.repetition_interval && request.max_repetition_time);
+}
+
 struct DataRequestWithAddress : public DataRequest
 {
     using DataRequest::DataRequest;
