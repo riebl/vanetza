@@ -20,7 +20,7 @@ public:
     SequenceNumber() : m_number(0) {}
     explicit SequenceNumber(uint16_t number) : m_number(number) {}
     explicit operator uint16_t() const { return m_number; }
-    bool operator<(SequenceNumber other) const { return m_number < other.m_number; }
+    bool operator<(SequenceNumber other) const;
     bool operator==(SequenceNumber other) const { return m_number == other.m_number; }
     void operator+=(SequenceNumber other) { m_number += other.m_number; }
     void operator-=(SequenceNumber other) { m_number -= other.m_number; }

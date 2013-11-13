@@ -11,6 +11,16 @@ TEST(SequenceNumber, ctor) {
     EXPECT_EQ(b, SequenceNumber(348));
 }
 
+TEST(SequenceNumber, less) {
+    SequenceNumber a(384);
+    SequenceNumber b(348);
+    EXPECT_LT(b, a);
+    EXPECT_GT(a, b);
+    SequenceNumber c(33151);
+    EXPECT_LT(a, c);
+    EXPECT_GT(b, c);
+}
+
 TEST(SequenceNumber, equality) {
     SequenceNumber a(2348);
     SequenceNumber b(a);
