@@ -3,6 +3,7 @@ set(CXX_SOURCES
     packet.cpp
     sequence_number.cpp
     lifetime.cpp
+    position_vector.cpp
     timestamp.cpp
     traffic_class.cpp
 )

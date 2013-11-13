@@ -37,6 +37,11 @@ class ShortPositionVector
 public:
     static const std::size_t length_bytes = 20;
 
+    ShortPositionVector() = default;
+    ShortPositionVector(const ShortPositionVector&) = default;
+    ShortPositionVector& operator=(const ShortPositionVector&) = default;
+    explicit ShortPositionVector(const LongPositionVector&);
+
     Address gn_addr;
     Timestamp timestamp;
     geo_angle_i32t latitude;
