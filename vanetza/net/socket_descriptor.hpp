@@ -18,7 +18,7 @@ public:
     SocketDescriptor(SocketDescriptor&& tmp);
     SocketDescriptor& operator=(SocketDescriptor&& tmp);
 
-    operator const fd_t() const { return mSockFd; }
+    operator fd_t() const { return mSockFd; }
     bool invalid() const { return mSockFd == scInvalidFd; }
 
     static const fd_t scInvalidFd = -1;
