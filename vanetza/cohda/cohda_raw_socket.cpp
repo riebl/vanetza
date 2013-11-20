@@ -15,14 +15,14 @@
 CohdaRawSocket::CohdaRawSocket(const std::string& ifcName, uint16be_t proto) :
     mEthProto(proto)
 {
-    mSockFd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    mSockFd = socket(AF_PACKET, SOCK_RAW, mEthProto.net());
     if (mSockFd.invalid()) {
         throw ErrnoException(errno);
     }
 
     sockaddr_ll sockAddr;
     sockAddr.sll_family = AF_PACKET;
-    sockAddr.sll_protocol = htons(ETH_P_ALL);
+    sockAddr.sll_protocol = mEthProto.net();
     sockAddr.sll_ifindex = if_nametoindex(ifcName.c_str());
 
     if (0 == sockAddr.sll_ifindex) {
