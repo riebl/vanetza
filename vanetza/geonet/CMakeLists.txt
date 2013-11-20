@@ -6,6 +6,7 @@ set(CXX_SOURCES
     areas.cpp
     basic_header.cpp
     beacon_header.cpp
+    cbf_packet_buffer.cpp
     common_header.cpp
     data_confirm.cpp
     data_indication.cpp
