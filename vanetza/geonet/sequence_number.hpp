@@ -1,6 +1,7 @@
 #ifndef SEQUENCE_NUMBER_HPP_HEO4A3XC
 #define SEQUENCE_NUMBER_HPP_HEO4A3XC
 
+#include <vanetza/geonet/serialization.hpp>
 #include <boost/operators.hpp>
 #include <cstdint>
 #include <limits>
@@ -29,6 +30,9 @@ public:
 private:
     uint16_t m_number;
 };
+
+void serialize(const SequenceNumber&, OutputArchive&);
+void deserialize(SequenceNumber&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

@@ -18,6 +18,18 @@ SequenceNumber SequenceNumber::operator++(int)
     return tmp;
 }
 
+void serialize(const SequenceNumber& sn, OutputArchive& ar)
+{
+    serialize(host_cast(static_cast<uint16_t>(sn)), ar);
+}
+
+void deserialize(SequenceNumber& sn, InputArchive& ar)
+{
+    uint16_t tmp = 0;
+    deserialize(tmp, ar);
+    sn = SequenceNumber(ntoh(tmp));
+}
+
 } // namespace geonet
 } // namespace vanetza
 
