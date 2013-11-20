@@ -24,6 +24,7 @@ public:
     bool operator==(SequenceNumber other) const { return m_number == other.m_number; }
     void operator+=(SequenceNumber other) { m_number += other.m_number; }
     void operator-=(SequenceNumber other) { m_number -= other.m_number; }
+    SequenceNumber operator++(int);
 
 private:
     uint16_t m_number;

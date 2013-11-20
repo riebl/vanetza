@@ -49,3 +49,10 @@ TEST(SequenceNumber, subtration) {
     EXPECT_EQ(b, SequenceNumber(568));
 }
 
+TEST(SequenceNumber, increment) {
+    SequenceNumber a(348);
+    SequenceNumber b = a++;
+    EXPECT_EQ(static_cast<uint16_t>(b), 348);
+    EXPECT_EQ(static_cast<uint16_t>(a), 349);
+}
+
