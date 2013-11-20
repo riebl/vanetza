@@ -14,6 +14,8 @@ namespace vanetza
 namespace geonet
 {
 
+struct GeodeticPosition;
+
 class LongPositionVector
 {
 public:
@@ -30,6 +32,8 @@ public:
     bool position_accuracy_indicator;
     speed_u15t speed;
     heading_u16t heading;
+
+    GeodeticPosition position() const;
 };
 
 class ShortPositionVector
