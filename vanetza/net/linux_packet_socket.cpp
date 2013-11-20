@@ -44,13 +44,14 @@ int LinuxPacketSocket::get_option(int level, int name, void* value, socklen_t* l
 
 ssize_t LinuxPacketSocket::send_to(const MacAddress& address, const Packet& packet)
 {
-    msghdr hdr = { };
-    sockaddr_ll addr = { };
+    sockaddr_ll addr;
     addr.sll_family = AF_PACKET;
     addr.sll_protocol = mProtocol.get();
     addr.sll_ifindex = mInterfaceIndex;
     // const_cast is safe here because we use it only for sendmsg
     assignAddr(addr, const_cast<MacAddress&>(address));
+
+    msghdr hdr;
     hdr.msg_name = &addr;
     hdr.msg_namelen = sizeof(sockaddr_ll);
     IoVector data { packet };
