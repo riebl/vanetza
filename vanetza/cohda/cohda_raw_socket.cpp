@@ -20,7 +20,7 @@ CohdaRawSocket::CohdaRawSocket(const std::string& ifcName, uint16be_t proto) :
         throw ErrnoException(errno);
     }
 
-    sockaddr_ll sockAddr = {};
+    sockaddr_ll sockAddr;
     sockAddr.sll_family = AF_PACKET;
     sockAddr.sll_protocol = htons(ETH_P_ALL);
     sockAddr.sll_ifindex = if_nametoindex(ifcName.c_str());
@@ -35,7 +35,7 @@ CohdaRawSocket::CohdaRawSocket(const std::string& ifcName, uint16be_t proto) :
 
 ssize_t CohdaRawSocket::send(const Packet& packet)
 {
-    msghdr hdr = {};
+    msghdr hdr;
     IoVector data { packet };
     assignIoVec(hdr, data);
 
