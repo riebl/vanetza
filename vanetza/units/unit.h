@@ -12,7 +12,7 @@ template<typename UNIT>
 struct unit_trait;
 
 template<typename T, typename UNIT>
-typename unit_trait<UNIT>::quantity_type operator%(T numeric, UNIT u)
+typename unit_trait<UNIT>::quantity_type operator%(T numeric, UNIT)
 {
     return typename unit_trait<UNIT>::quantity_type(numeric);
 }
