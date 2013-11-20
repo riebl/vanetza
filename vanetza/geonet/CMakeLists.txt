@@ -19,6 +19,7 @@ set(CXX_SOURCES
     sequence_number.cpp
     lifetime.cpp
     location_table.cpp
+    next_hop.cpp
     packet_buffer.cpp
     pdu_conversion.cpp
     position_vector.cpp
