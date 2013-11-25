@@ -87,6 +87,13 @@ void serialize(const TrafficClass& tc, OutputArchive& ar)
     serialize(host_cast(tc.raw()), ar);
 }
 
+void deserialize(TrafficClass& tc, InputArchive& ar)
+{
+    decltype(tc.raw()) tmp;
+    deserialize(tmp, ar);
+    tc = TrafficClass(tmp);
+}
+
 } // namespace geonet
 } // namespace vanetza
 

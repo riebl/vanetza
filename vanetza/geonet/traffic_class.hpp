@@ -37,6 +37,7 @@ private:
 dcc::Profile map_tc_onto_profile(const TrafficClass&);
 
 void serialize(const TrafficClass&, OutputArchive&);
+void deserialize(TrafficClass&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
