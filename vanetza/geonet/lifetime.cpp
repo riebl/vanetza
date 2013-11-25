@@ -85,6 +85,13 @@ void serialize(const Lifetime& lifetime, OutputArchive& ar)
     serialize(host_cast(lifetime.raw()), ar);
 }
 
+void deserialize(Lifetime& lifetime, InputArchive& ar)
+{
+    uint8_t raw;
+    deserialize(raw, ar);
+    lifetime.raw(raw);
+}
+
 } // namespace geonet
 } // namespace vanetza
 

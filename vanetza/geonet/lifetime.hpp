@@ -52,6 +52,7 @@ private:
 };
 
 void serialize(const Lifetime&, OutputArchive&);
+void deserialize(Lifetime&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
