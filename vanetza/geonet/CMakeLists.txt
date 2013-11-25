@@ -1,3 +1,4 @@
+find_package(Boost COMPONENTS serialization REQUIRED)
 find_package(GeographicLib REQUIRED)
 
 set(CXX_SOURCES
@@ -24,9 +25,11 @@ vanetza_module(geonet ${CXX_SOURCES})
 vanetza_intermodule_dependencies(geonet dcc net)
 
 vanetza_module_property(geonet INCLUDE_DIRECTORIES
+    ${Boost_INCLUDE_DIRS}
     ${GEOGRAPHICLIB_INCLUDE_DIRS}
 )
 vanetza_module_dependencies(geonet
+    ${Boost_SERIALIZATION_LIBRARY}
     ${GEOGRAPHICLIB_LIBRARIES}
 )
 
