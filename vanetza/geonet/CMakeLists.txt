@@ -25,6 +25,7 @@ set(CXX_SOURCES
     pdu_conversion.cpp
     position_vector.cpp
     repeater.cpp
+    router.cpp
     shb_header.cpp
     timestamp.cpp
     traffic_class.cpp
