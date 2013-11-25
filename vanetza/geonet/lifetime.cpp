@@ -1,4 +1,6 @@
 #include "lifetime.hpp"
+#include "serialization.hpp"
+#include <vanetza/common/byte_order.hpp>
 #include <boost/units/cmath.hpp>
 #include <stdexcept>
 
@@ -76,6 +78,11 @@ units::Duration Lifetime::decode() const
     };
 
     return multiplier * unit;
+}
+
+void serialize(const Lifetime& lifetime, OutputArchive& ar)
+{
+    serialize(host_cast(lifetime.raw()), ar);
 }
 
 } // namespace geonet

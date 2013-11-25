@@ -2,6 +2,7 @@
 #define LIFETIME_HPP_XYTSNW3J
 
 #include <vanetza/common/bit_number.hpp>
+#include <vanetza/geonet/serialization.hpp>
 #include <vanetza/units/time.hpp>
 #include <boost/operators.hpp>
 #include <cstdint>
@@ -49,6 +50,8 @@ public:
 private:
     uint8_t m_lifetime;
 };
+
+void serialize(const Lifetime&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
