@@ -18,6 +18,7 @@ set(CXX_SOURCES
     location_table.cpp
     packet_buffer.cpp
     position_vector.cpp
+    shb_header.cpp
     timestamp.cpp
     traffic_class.cpp
 )
