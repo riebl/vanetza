@@ -3,6 +3,7 @@
 
 #include <vanetza/common/bit_number.hpp>
 #include <vanetza/geonet/address.hpp>
+#include <vanetza/geonet/serialization.hpp>
 #include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/geonet/units.hpp>
 #include <boost/units/quantity.hpp>
@@ -38,6 +39,8 @@ public:
 
 bool operator==(const LongPositionVector& lhs, const LongPositionVector& rhs);
 bool operator!=(const LongPositionVector& lhs, const LongPositionVector& rhs);
+
+void serialize(const LongPositionVector&, OutputArchive&);
 
 class ShortPositionVector
 {

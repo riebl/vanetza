@@ -1,5 +1,6 @@
 #include "areas.hpp"
 #include "position_vector.hpp"
+#include "serialization.hpp"
 
 namespace vanetza
 {
@@ -47,6 +48,18 @@ bool operator==(const ShortPositionVector& lhs, const ShortPositionVector& rhs)
 bool operator!=(const ShortPositionVector& lhs, const ShortPositionVector& rhs)
 {
     return !(lhs == rhs);
+}
+
+void serialize(const LongPositionVector& lpv, OutputArchive& ar)
+{
+    serialize(lpv.gn_addr, ar);
+    serialize(lpv.timestamp, ar);
+    serialize(lpv.latitude, ar);
+    serialize(lpv.longitude, ar);
+    uint16_t paiAndSpeed = lpv.speed.value().raw();
+    paiAndSpeed |= lpv.position_accuracy_indicator ?  0x8000 : 0x0000;
+    serialize(host_cast(paiAndSpeed), ar);
+    serialize(lpv.heading, ar);
 }
 
 } // namespace geonet
