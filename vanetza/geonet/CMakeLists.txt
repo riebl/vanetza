@@ -1,5 +1,6 @@
 set(CXX_SOURCES
     address.cpp
+    mib.cpp
     packet.cpp
     sequence_number.cpp
     lifetime.cpp
