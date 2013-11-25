@@ -41,6 +41,8 @@ private:
 
 void serialize(const Address&, OutputArchive&);
 void serialize(const MacAddress&, OutputArchive&);
+void deserialize(Address&, InputArchive&);
+void deserialize(MacAddress&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

@@ -57,6 +57,22 @@ void serialize(const MacAddress& addr, OutputArchive& ar)
     }
 }
 
+void deserialize(Address& addr, InputArchive& ar)
+{
+    uint16_t tmp;
+    deserialize(tmp, ar);
+    addr.is_manually_configured((tmp & manually_configured_mask) != 0);
+    addr.country_code(tmp & country_code_mask);
+    addr.station_type(static_cast<StationType>(tmp & station_type_mask >> station_type_shift));
+}
+
+void deserialize(MacAddress& addr, InputArchive& ar)
+{
+    for (uint8_t& octet : addr.octets) {
+        ar >> octet;
+    }
+}
+
 } // namespace geonet
 } // namespace vanetza
 
