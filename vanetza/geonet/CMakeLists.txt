@@ -1,6 +1,7 @@
 set(CXX_SOURCES
     address.cpp
     packet.cpp
+    traffic_class.cpp
 )
 
 vanetza_module(geonet ${CXX_SOURCES})
