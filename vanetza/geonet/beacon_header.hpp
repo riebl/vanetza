@@ -2,6 +2,7 @@
 #define BEACON_HEADER_HPP_1NRWPHXO
 
 #include <vanetza/geonet/position_vector.hpp>
+#include <vanetza/geonet/serialization.hpp>
 
 namespace vanetza
 {
@@ -16,6 +17,7 @@ public:
     LongPositionVector source_position;
 };
 
+void serialize(const BeaconHeader&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
