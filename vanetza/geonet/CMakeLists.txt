@@ -1,3 +1,5 @@
+find_package(GeographicLib REQUIRED)
+
 set(CXX_SOURCES
     address.cpp
     mib.cpp
@@ -11,6 +13,13 @@ set(CXX_SOURCES
 
 vanetza_module(geonet ${CXX_SOURCES})
 vanetza_intermodule_dependencies(geonet dcc net)
+
+vanetza_module_property(geonet INCLUDE_DIRECTORIES
+    ${GEOGRAPHICLIB_INCLUDE_DIRS}
+)
+vanetza_module_dependencies(geonet
+    ${GEOGRAPHICLIB_LIBRARIES}
+)
 
 option(VANETZA_GEONET_USE_PACKET_VARIANT "Use packet variant for GeoNet UpPackets" OFF)
 if(VANETZA_GEONET_USE_PACKET_VARIANT)
