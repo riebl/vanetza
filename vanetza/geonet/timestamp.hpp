@@ -70,6 +70,7 @@ bool operator==(Timestamp lhs, Timestamp rhs);
 
 // serialization
 void serialize(const Timestamp&, OutputArchive&);
+void deserialize(Timestamp&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

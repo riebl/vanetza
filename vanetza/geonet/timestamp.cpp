@@ -91,6 +91,13 @@ void serialize(const Timestamp& ts, OutputArchive& ar)
      serialize(host_cast(ts.raw()), ar);
 }
 
+void deserialize(Timestamp& ts, InputArchive& ar)
+{
+    Timestamp::value_type tmp;
+    deserialize(tmp, ar);
+    ts = Timestamp { Timestamp::time_type::from_value(tmp) };
+}
+
 } // namespace geonet
 } // namespace vanetza
 
