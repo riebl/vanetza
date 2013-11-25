@@ -3,6 +3,7 @@ find_package(Boost COMPONENTS date_time REQUIRED)
 
 set(VANETZA_MODULE_TEST geonet)
 add_gtest(Address address.cpp)
+add_gtest(Areas areas.cpp)
 add_gtest(Lifetime lifetime.cpp)
 add_gtest(SequenceNumber sequence_number.cpp)
 add_gtest(Timestamp timestamp.cpp)
