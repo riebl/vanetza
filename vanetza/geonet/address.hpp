@@ -3,6 +3,7 @@
 
 #include <vanetza/common/bit_number.hpp>
 #include <vanetza/net/mac_address.hpp>
+#include <vanetza/geonet/serialization.hpp>
 #include <vanetza/geonet/station_type.hpp>
 #include <functional>
 #include <type_traits>
@@ -37,6 +38,9 @@ private:
     BitNumber<unsigned, 10> m_country_code; // 10 bit
     MacAddress m_mid; // 48 bit
 };
+
+void serialize(const Address&, OutputArchive&);
+void serialize(const MacAddress&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
