@@ -22,6 +22,7 @@ public:
     void channel_offload(bool flag);
     BitNumber<unsigned, 6> tc_id() const;
     void tc_id(BitNumber<unsigned, 6> id);
+    uint8_t raw() const { return m_tc; }
 
 private:
     static const uint8_t scf_mask = 0x80;
