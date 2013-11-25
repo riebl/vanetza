@@ -5,6 +5,7 @@
 #include <vanetza/geonet/header_type.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/position_vector.hpp>
+#include <vanetza/geonet/serialization.hpp>
 #include <vanetza/geonet/traffic_class.hpp>
 #include <cstdint>
 
@@ -42,6 +43,8 @@ public:
     uint8_t maximum_hop_limit;
     uint8_t reserved2;
 };
+
+void serialize(const CommonHeader&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

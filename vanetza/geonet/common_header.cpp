@@ -1,5 +1,6 @@
 #include "common_header.hpp"
 #include "data_request.hpp"
+#include "serialization.hpp"
 #include <stdexcept>
 
 namespace vanetza
@@ -57,6 +58,20 @@ CommonHeader::CommonHeader(const ShbDataRequest& request, const MIB& mib) :
 {
     header_type = HeaderType::TSB_SINGLE_HOP;
     maximum_hop_limit = 1;
+}
+
+void serialize(const CommonHeader& hdr, OutputArchive& ar)
+{
+    uint8_t nextHeaderAndReserved = static_cast<uint8_t>(hdr.next_header);
+    nextHeaderAndReserved <<= 4;
+    nextHeaderAndReserved |= hdr.reserved1.raw();
+    serialize(host_cast(nextHeaderAndReserved), ar);
+    serialize(host_cast(static_cast<std::underlying_type<HeaderType>::type>(hdr.header_type)), ar);
+    serialize(hdr.traffic_class, ar);
+    serialize(host_cast(hdr.flags), ar);
+    serialize(host_cast(hdr.payload), ar);
+    serialize(host_cast(hdr.maximum_hop_limit), ar);
+    serialize(host_cast(hdr.reserved2), ar);
 }
 
 } // namespace geonet
