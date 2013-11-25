@@ -4,6 +4,7 @@
 #include <vanetza/common/bit_number.hpp>
 #include <vanetza/geonet/lifetime.hpp>
 #include <vanetza/geonet/mib.hpp>
+#include <vanetza/geonet/serialization.hpp>
 
 namespace vanetza
 {
@@ -33,6 +34,8 @@ struct BasicHeader
     Lifetime lifetime;
     uint8_t hop_limit;
 };
+
+void serialize(const BasicHeader&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
