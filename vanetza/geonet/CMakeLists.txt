@@ -1,6 +1,7 @@
 set(CXX_SOURCES
     address.cpp
     packet.cpp
+    timestamp.cpp
     traffic_class.cpp
 )
 
