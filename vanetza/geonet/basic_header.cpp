@@ -54,6 +54,17 @@ void serialize(const BasicHeader& hdr, OutputArchive& ar)
     serialize(host_cast(hdr.hop_limit), ar);
 }
 
+void deserialize(BasicHeader& hdr, InputArchive& ar)
+{
+    uint8_t versionAndNextHeader;
+    deserialize(versionAndNextHeader, ar);
+    hdr.version = versionAndNextHeader >> 4;
+    hdr.next_header = static_cast<NextHeaderBasic>(versionAndNextHeader & 0x0f);
+    deserialize(hdr.reserved, ar);
+    deserialize(hdr.lifetime, ar);
+    deserialize(hdr.hop_limit, ar);
+}
+
 } // namespace geonet
 } // namespace vanetza
 

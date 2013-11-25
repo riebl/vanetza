@@ -36,6 +36,7 @@ struct BasicHeader
 };
 
 void serialize(const BasicHeader&, OutputArchive&);
+void deserialize(BasicHeader&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
