@@ -1,4 +1,5 @@
 #include "timestamp.hpp"
+#include "vanetza/common/byte_order.hpp"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <cassert>
 #include <limits>
@@ -83,6 +84,11 @@ bool operator<(Timestamp lhs, Timestamp rhs)
 bool operator==(Timestamp lhs, Timestamp rhs)
 {
     return lhs.raw() == rhs.raw();
+}
+
+void serialize(const Timestamp& ts, OutputArchive& ar)
+{
+     serialize(host_cast(ts.raw()), ar);
 }
 
 } // namespace geonet

@@ -1,6 +1,7 @@
 #ifndef TIMESTAMP_HPP_SFETMZJI
 #define TIMESTAMP_HPP_SFETMZJI
 
+#include <vanetza/geonet/serialization.hpp>
 #include <cstdint>
 #include <boost/operators.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -66,6 +67,9 @@ bool is_greater(Timestamp lhs, Timestamp rhs);
 // operators required for boost::totally_ordered
 bool operator<(Timestamp lhs, Timestamp rhs);
 bool operator==(Timestamp lhs, Timestamp rhs);
+
+// serialization
+void serialize(const Timestamp&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
