@@ -74,6 +74,22 @@ void serialize(const CommonHeader& hdr, OutputArchive& ar)
     serialize(host_cast(hdr.reserved2), ar);
 }
 
+void deserialize(CommonHeader& hdr, InputArchive& ar)
+{
+    uint8_t nextHeaderAndReserved;
+    deserialize(nextHeaderAndReserved, ar);
+    hdr.next_header = static_cast<NextHeaderCommon>(nextHeaderAndReserved >> 4);
+    hdr.reserved1 = nextHeaderAndReserved & 0x0f;
+    typename std::underlying_type<HeaderType>::type headerType;
+    deserialize(headerType, ar);
+    hdr.header_type = static_cast<HeaderType>(headerType);
+    deserialize(hdr.traffic_class, ar);
+    deserialize(hdr.flags, ar);
+    deserialize(hdr.payload, ar);
+    deserialize(hdr.maximum_hop_limit, ar);
+    deserialize(hdr.reserved2, ar);
+}
+
 } // namespace geonet
 } // namespace vanetza
 

@@ -45,6 +45,7 @@ public:
 };
 
 void serialize(const CommonHeader&, OutputArchive&);
+void deserialize(CommonHeader&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
