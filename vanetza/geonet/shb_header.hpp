@@ -18,6 +18,7 @@ struct ShbHeader
 };
 
 void serialize(const ShbHeader&, OutputArchive&);
+void deserialize(ShbHeader&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

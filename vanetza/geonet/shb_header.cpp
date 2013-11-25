@@ -12,6 +12,12 @@ void serialize(const ShbHeader& hdr, OutputArchive& ar)
     serialize(host_cast(hdr.reserved), ar);
 }
 
+void deserialize(ShbHeader& hdr, InputArchive& ar)
+{
+    deserialize(hdr.source_position, ar);
+    deserialize(hdr.reserved, ar);
+}
+
 } // namespace geonet
 } // namespace vanetza
 
