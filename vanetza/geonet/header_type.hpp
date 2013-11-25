@@ -8,6 +8,9 @@ namespace vanetza
 namespace geonet
 {
 
+// forward declaration
+struct Area;
+
 namespace nibble
 {
     namespace high
@@ -50,6 +53,9 @@ enum class HeaderType : uint8_t
 
 inline uint8_t high_nibble(HeaderType ht) { return static_cast<uint8_t>(ht) & 0xf0; }
 inline uint8_t low_nibble(HeaderType ht) { return static_cast<uint8_t>(ht) & 0x0f; }
+
+HeaderType gbc_header_type(const Area&);
+HeaderType gac_header_type(const Area&);
 
 } // namespace geonet
 } // namespace vanetza

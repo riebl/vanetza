@@ -6,6 +6,7 @@ set(CXX_SOURCES
     data_confirm.cpp
     data_indication.cpp
     data_request.cpp
+    header_type.cpp
     mib.cpp
     packet.cpp
     sequence_number.cpp
