@@ -3,6 +3,7 @@
 
 #include <vanetza/common/bit_number.hpp>
 #include <vanetza/dcc/profile.hpp>
+#include <vanetza/geonet/serialization.hpp>
 #include <cstdint>
 
 namespace vanetza
@@ -34,6 +35,8 @@ private:
 };
 
 dcc::Profile map_tc_onto_profile(const TrafficClass&);
+
+void serialize(const TrafficClass&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

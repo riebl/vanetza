@@ -1,4 +1,5 @@
 #include "traffic_class.hpp"
+#include "serialization.hpp"
 
 namespace vanetza
 {
@@ -79,6 +80,11 @@ dcc::Profile map_tc_onto_profile(const TrafficClass& tc)
     }
 
     return profile;
+}
+
+void serialize(const TrafficClass& tc, OutputArchive& ar)
+{
+    serialize(host_cast(tc.raw()), ar);
 }
 
 } // namespace geonet
