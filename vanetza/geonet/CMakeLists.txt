@@ -13,6 +13,7 @@ set(CXX_SOURCES
     packet.cpp
     sequence_number.cpp
     lifetime.cpp
+    location_table.cpp
     packet_buffer.cpp
     position_vector.cpp
     timestamp.cpp
