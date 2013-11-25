@@ -62,5 +62,18 @@ void serialize(const LongPositionVector& lpv, OutputArchive& ar)
     serialize(lpv.heading, ar);
 }
 
+void deserialize(LongPositionVector& lpv, InputArchive& ar)
+{
+    deserialize(lpv.gn_addr, ar);
+    deserialize(lpv.timestamp, ar);
+    deserialize(lpv.latitude, ar);
+    deserialize(lpv.longitude, ar);
+    uint16_t paiAndSpeed = 0;
+    deserialize(paiAndSpeed, ar);
+    lpv.position_accuracy_indicator = ((paiAndSpeed & 0x8000) != 0);
+    lpv.speed = LongPositionVector::speed_u15t::from_value(paiAndSpeed);
+    deserialize(lpv.heading, ar);
+}
+
 } // namespace geonet
 } // namespace vanetza

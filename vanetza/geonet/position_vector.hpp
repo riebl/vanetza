@@ -41,6 +41,7 @@ bool operator==(const LongPositionVector& lhs, const LongPositionVector& rhs);
 bool operator!=(const LongPositionVector& lhs, const LongPositionVector& rhs);
 
 void serialize(const LongPositionVector&, OutputArchive&);
+void deserialize(LongPositionVector&, InputArchive&);
 
 class ShortPositionVector
 {
