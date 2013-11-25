@@ -4,6 +4,7 @@ set(CXX_SOURCES
     address.cpp
     areas.cpp
     basic_header.cpp
+    common_header.cpp
     data_confirm.cpp
     data_indication.cpp
     data_request.cpp
