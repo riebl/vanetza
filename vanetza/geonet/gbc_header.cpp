@@ -33,5 +33,10 @@ void serialize(const GeoBroadcastHeader& header, OutputArchive& ar)
     detail::serialize(header, ar);
 }
 
+void deserialize(GeoBroadcastHeader& header, InputArchive& ar)
+{
+    detail::deserialize(header, ar);
+}
+
 } // namespace geonet
 } // namespace vanetza

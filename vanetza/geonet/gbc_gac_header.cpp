@@ -107,6 +107,19 @@ void serialize(const GbcGacHeader& header, OutputArchive& ar)
     geonet::serialize(host_cast(header.reserved2), ar);
 }
 
+void deserialize(GbcGacHeader& header, InputArchive& ar)
+{
+    geonet::deserialize(header.sequence_number, ar);
+    geonet::deserialize(header.reserved1, ar);
+    geonet::deserialize(header.source_position, ar);
+    geonet::deserialize(header.geo_area_pos_latitude, ar);
+    geonet::deserialize(header.geo_area_pos_longitude, ar);
+    geonet::deserialize(header.distance_a, ar);
+    geonet::deserialize(header.distance_b, ar);
+    geonet::deserialize(header.angle, ar);
+    geonet::deserialize(header.reserved2, ar);
+}
+
 } // namespace detail
 } // namespace geonet
 } // namepsace vanetza

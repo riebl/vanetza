@@ -18,6 +18,7 @@ public:
 };
 
 void serialize(const GeoBroadcastHeader&, OutputArchive&);
+void deserialize(GeoBroadcastHeader&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

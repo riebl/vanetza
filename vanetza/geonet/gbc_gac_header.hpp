@@ -42,6 +42,7 @@ protected:
 };
 
 void serialize(const GbcGacHeader&, OutputArchive&);
+void deserialize(GbcGacHeader&, InputArchive&);
 
 } // namespace detail
 } // namespace geonet
