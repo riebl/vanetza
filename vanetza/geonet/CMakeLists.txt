@@ -11,6 +11,7 @@ set(CXX_SOURCES
     data_indication.cpp
     data_request.cpp
     gbc_gac_header.cpp
+    gbc_header.cpp
     header_type.cpp
     mib.cpp
     packet.cpp
