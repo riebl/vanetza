@@ -9,6 +9,12 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
 
+option(ENABLE_TESTS "Build unit tests" OFF)
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(gtest)
+endif()
+
 add_subdirectory(vanetza)
 vanetza_export_modules()
 
