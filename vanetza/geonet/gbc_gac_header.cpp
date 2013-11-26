@@ -94,6 +94,19 @@ GeodeticPosition GbcGacHeader::position() const
         );
 }
 
+void serialize(const GbcGacHeader& header, OutputArchive& ar)
+{
+    geonet::serialize(header.sequence_number, ar);
+    geonet::serialize(host_cast(header.reserved1), ar);
+    geonet::serialize(header.source_position, ar);
+    geonet::serialize(header.geo_area_pos_latitude, ar);
+    geonet::serialize(header.geo_area_pos_longitude, ar);
+    geonet::serialize(header.distance_a, ar);
+    geonet::serialize(header.distance_b, ar);
+    geonet::serialize(header.angle, ar);
+    geonet::serialize(host_cast(header.reserved2), ar);
+}
+
 } // namespace detail
 } // namespace geonet
 } // namepsace vanetza

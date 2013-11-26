@@ -3,6 +3,7 @@
 
 #include <vanetza/geonet/gbc_gac_header.hpp>
 #include <vanetza/geonet/header_type.hpp>
+#include <vanetza/geonet/serialization.hpp>
 
 namespace vanetza
 {
@@ -15,6 +16,8 @@ public:
     using detail::GbcGacHeader::destination;
     Area destination(HeaderType) const;
 };
+
+void serialize(const GeoBroadcastHeader&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

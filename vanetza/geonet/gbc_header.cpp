@@ -28,6 +28,10 @@ Area GeoBroadcastHeader::destination(HeaderType ht) const
     return detail::GbcGacHeader::destination(shape);
 }
 
+void serialize(const GeoBroadcastHeader& header, OutputArchive& ar)
+{
+    detail::serialize(header, ar);
+}
+
 } // namespace geonet
 } // namespace vanetza
-

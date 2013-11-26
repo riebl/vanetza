@@ -4,6 +4,7 @@
 #include <vanetza/geonet/areas.hpp>
 #include <vanetza/geonet/position_vector.hpp>
 #include <vanetza/geonet/sequence_number.hpp>
+#include <vanetza/geonet/serialization.hpp>
 #include <vanetza/geonet/units.hpp>
 #include <cstddef>
 
@@ -39,6 +40,8 @@ struct GbcGacHeader
 protected:
     Area destination(const decltype(Area::shape)&) const;
 };
+
+void serialize(const GbcGacHeader&, OutputArchive&);
 
 } // namespace detail
 } // namespace geonet
