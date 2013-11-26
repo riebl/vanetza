@@ -10,6 +10,7 @@ set(CXX_SOURCES
     data_confirm.cpp
     data_indication.cpp
     data_request.cpp
+    gbc_gac_header.cpp
     header_type.cpp
     mib.cpp
     packet.cpp
