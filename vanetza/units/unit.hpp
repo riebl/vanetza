@@ -1,5 +1,5 @@
-#ifndef UNIT_H_XY3QBUPL
-#define UNIT_H_XY3QBUPL
+#ifndef UNIT_HPP_XY3QBUPL
+#define UNIT_HPP_XY3QBUPL
 
 namespace vanetza
 {
@@ -22,5 +22,5 @@ typename unit_trait<UNIT>::quantity_type operator%(T numeric, UNIT)
 
 } // namespace vanetza
 
-#endif /* UNIT_H_XY3QBUPL */
+#endif /* UNIT_HPP_XY3QBUPL */
 

@@ -1,7 +1,7 @@
-#ifndef LENGTH_H_56IO9TDB
-#define LENGTH_H_56IO9TDB
+#ifndef LENGTH_HPP_56IO9TDB
+#define LENGTH_HPP_56IO9TDB
 
-#include <vanetza/units/quantity.h>
+#include <vanetza/units/quantity.hpp>
 
 namespace vanetza
 {
@@ -24,5 +24,5 @@ typedef Length LengthMeter;
 
 } // namespace vanetza
 
-#endif /* LENGTH_H_56IO9TDB */
+#endif /* LENGTH_HPP_56IO9TDB */
 

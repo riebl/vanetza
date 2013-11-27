@@ -6,12 +6,11 @@ set(CXX_SOURCES
     mac_address.cpp
     packet.cpp
     socket_descriptor.cpp
-    telnet_client.cc
 )
 
 find_package(Boost COMPONENTS system)
 if(Boost_SYSTEM_FOUND)
-    list(APPEND CXX_SOURCES telnet_client.cc)
+    list(APPEND CXX_SOURCES telnet_client.cpp)
 endif()
 
 vanetza_module(net ${CXX_SOURCES})

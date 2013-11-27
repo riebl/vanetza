@@ -1,5 +1,5 @@
-#ifndef PROJECTOR_H_HM85FIRS
-#define PROJECTOR_H_HM85FIRS
+#ifndef PROJECTOR_HPP_HM85FIRS
+#define PROJECTOR_HPP_HM85FIRS
 
 namespace vanetza
 {
@@ -25,5 +25,5 @@ private:
 
 } // namespace vanetza
 
-#endif /* PROJECTOR_H_HM85FIRS */
+#endif /* PROJECTOR_HPP_HM85FIRS */
 

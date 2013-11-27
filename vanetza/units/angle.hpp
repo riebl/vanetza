@@ -1,8 +1,8 @@
-#ifndef ANGLE_H_QWPLNJ3B
-#define ANGLE_H_QWPLNJ3B
+#ifndef ANGLE_HPP_QWPLNJ3B
+#define ANGLE_HPP_QWPLNJ3B
 
-#include <vanetza/units/quantity.h>
-#include <vanetza/units/unit.h>
+#include <vanetza/units/quantity.hpp>
+#include <vanetza/units/unit.hpp>
 #include <boost/math/constants/constants.hpp>
 
 namespace vanetza
@@ -47,5 +47,5 @@ VANETZA_UNIT(Angle, units::radian, AngleRadian)
 
 } // namespace vanetza
 
-#endif /* ANGLE_H_QWPLNJ3B */
+#endif /* ANGLE_HPP_QWPLNJ3B */
 

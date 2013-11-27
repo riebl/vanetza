@@ -1,7 +1,7 @@
-#ifndef WGS84POINT_H_GAHDJKCG
-#define WGS84POINT_H_GAHDJKCG
+#ifndef WGS84POINT_HPP_GAHDJKCG
+#define WGS84POINT_HPP_GAHDJKCG
 
-#include <vanetza/units/angle.h>
+#include <vanetza/units/angle.hpp>
 
 namespace vanetza
 {
@@ -16,5 +16,5 @@ struct Wgs84Point
 
 } // namespace vanetza 
 
-#endif /* WGS84POINT_H_GAHDJKCG */
+#endif /* WGS84POINT_HPP_GAHDJKCG */
 

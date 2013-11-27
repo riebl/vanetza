@@ -1,5 +1,5 @@
-#ifndef TELNETCLIENT_H_LMSSEL3Y
-#define TELNETCLIENT_H_LMSSEL3Y
+#ifndef TELNETCLIENT_HPP_LMSSEL3Y
+#define TELNETCLIENT_HPP_LMSSEL3Y
 
 #include <string>
 #include <boost/asio/io_service.hpp>
@@ -23,5 +23,5 @@ TelnetClient connectTelnet(boost::asio::io_service&, const char* host, unsigned 
 
 } // namespace vanetza
 
-#endif /* TELNETCLIENT_H_LMSSEL3Y */
+#endif /* TELNETCLIENT_HPP_LMSSEL3Y */
 

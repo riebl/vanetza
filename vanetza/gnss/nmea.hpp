@@ -1,9 +1,9 @@
-#ifndef NMEA_H_EJIHQ65L
-#define NMEA_H_EJIHQ65L
+#ifndef NMEA_HPP_EJIHQ65L
+#define NMEA_HPP_EJIHQ65L
 
-#include <vanetza/units/angle.h>
-#include <vanetza/units/velocity.h>
-#include <vanetza/units/length.h>
+#include <vanetza/units/angle.hpp>
+#include <vanetza/units/velocity.hpp>
+#include <vanetza/units/length.hpp>
 #include <cstdint>
 #include <string>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -50,5 +50,5 @@ namespace nmea
 } // namespace nmea
 } // namespace vanetza
 
-#endif /* NMEA_H_EJIHQ65L */
+#endif /* NMEA_HPP_EJIHQ65L */
 

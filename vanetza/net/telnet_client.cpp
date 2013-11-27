@@ -1,4 +1,4 @@
-#include "telnet_client.h"
+#include "telnet_client.hpp"
 #include <cassert>
 #include <string>
 #include <boost/array.hpp>

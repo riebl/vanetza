@@ -1,5 +1,5 @@
-#include "nmea.h"
-#include "wgs84point.h"
+#include "nmea.hpp"
+#include "wgs84point.hpp"
 #include <cassert>
 #include <cmath>
 #include <iomanip>

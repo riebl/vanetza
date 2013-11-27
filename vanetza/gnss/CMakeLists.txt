@@ -1,2 +1,2 @@
-vanetza_module(gnss nmea.cc)
+vanetza_module(gnss nmea.cpp)
 

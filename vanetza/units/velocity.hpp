@@ -1,8 +1,8 @@
-#ifndef VELOCITY_H_0BLFAIDT
-#define VELOCITY_H_0BLFAIDT
+#ifndef VELOCITY_HPP_0BLFAIDT
+#define VELOCITY_HPP_0BLFAIDT
 
-#include <vanetza/units/quantity.h>
-#include <vanetza/units/unit.h>
+#include <vanetza/units/quantity.hpp>
+#include <vanetza/units/unit.hpp>
 
 namespace vanetza
 {
@@ -50,5 +50,5 @@ typedef Velocity<units::meter_per_second> VelocityMps;
 
 } // namespace vanetza
 
-#endif /* VELOCITY_H_0BLFAIDT */
+#endif /* VELOCITY_HPP_0BLFAIDT */
 
