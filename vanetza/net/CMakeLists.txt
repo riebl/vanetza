@@ -5,6 +5,7 @@ set(CXX_SOURCES
     linux_packet_socket.cpp
     mac_address.cpp
     packet.cpp
+    sockaddr.cpp
     socket_descriptor.cpp
 )
 

@@ -9,8 +9,6 @@
 
 namespace vanetza
 {
-#include <net/ethernet.h>
-#include <netpacket/packet.h>
 
 MacAddress::MacAddress()
 {
@@ -49,12 +47,6 @@ bool parseMacAddress(const std::string& str, MacAddress& addr)
     }
 
     return parsed;
-}
-
-void assignAddr(sockaddr_ll& sock, const MacAddress& mac)
-{
-    assert(ETHER_ADDR_LEN == mac.octets.size());
-    std::copy_n(mac.octets.begin(), mac.octets.size(), sock.sll_addr);
 }
 
 std::ostream& operator<<(std::ostream& os, const MacAddress& addr)

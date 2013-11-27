@@ -26,7 +26,6 @@ public:
 bool operator==(const MacAddress& lhs, const MacAddress& rhs);
 
 bool parseMacAddress(const std::string&, MacAddress&);
-void assignAddr(sockaddr_ll&, const MacAddress&);
 std::ostream& operator<<(std::ostream& os, const MacAddress&);
 
 /**

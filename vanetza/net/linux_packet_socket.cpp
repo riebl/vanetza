@@ -2,6 +2,7 @@
 #include "linux_packet_socket.hpp"
 #include "mac_address.hpp"
 #include "packet.hpp"
+#include "sockaddr.hpp"
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/errno_exception.hpp>
@@ -51,8 +52,7 @@ ssize_t LinuxPacketSocket::send_to(const MacAddress& address, const Packet& pack
     addr.sll_family = AF_PACKET;
     addr.sll_protocol = mProtocol.get();
     addr.sll_ifindex = mInterfaceIndex;
-    // const_cast is safe here because we use it only for sendmsg
-    assignAddr(addr, const_cast<MacAddress&>(address));
+    assign(addr, address);
 
     msghdr hdr;
     hdr.msg_name = &addr;
