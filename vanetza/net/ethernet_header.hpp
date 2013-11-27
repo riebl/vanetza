@@ -1,8 +1,8 @@
 #ifndef ETHERNET_HEADER_HPP_
 #define ETHERNET_HEADER_HPP_
 
-#include "vanetza/common/byte_buffer.hpp"
-#include "vanetza/common/byte_order.hpp"
+#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/byte_order.hpp>
 #include <cstddef>
 
 namespace vanetza

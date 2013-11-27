@@ -1,9 +1,9 @@
 #ifndef UNITS_H_4VRJDSCB
 #define UNITS_H_4VRJDSCB
 
-#include "units/angle.h"
-#include "units/length.h"
-#include "units/velocity.h"
+#include <vanetza/units/angle.h>
+#include <vanetza/units/length.h>
+#include <vanetza/units/velocity.h>
 
 #endif /* UNITS_H_4VRJDSCB */
 

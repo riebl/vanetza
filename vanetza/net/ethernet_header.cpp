@@ -1,6 +1,6 @@
 #include "ethernet_header.hpp"
 #include "mac_address.hpp"
-#include "vanetza/common/byte_buffer.hpp"
+#include <vanetza/common/byte_buffer.hpp>
 #include <algorithm>
 #include <cassert>
 #include <net/ethernet.h>

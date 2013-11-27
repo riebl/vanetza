@@ -1,8 +1,8 @@
 #ifndef VELOCITY_H_0BLFAIDT
 #define VELOCITY_H_0BLFAIDT
 
-#include "vanetza/units/quantity.h"
-#include "vanetza/units/unit.h"
+#include <vanetza/units/quantity.h>
+#include <vanetza/units/unit.h>
 
 namespace vanetza
 {

@@ -1,7 +1,7 @@
 #ifndef SOCKET_TRAITS_HPP_
 #define SOCKET_TRAITS_HPP_
 
-#include "osi_layer.hpp"
+#include <vanetza/net/osi_layer.hpp>
 #include <type_traits>
 
 namespace vanetza

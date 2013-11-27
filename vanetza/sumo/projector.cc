@@ -1,6 +1,6 @@
 #include "projector.h"
-#include "vanetza/gnss/wgs84point.h"
-#include "vanetza/units/angle.h"
+#include <vanetza/gnss/wgs84point.h>
+#include <vanetza/units/angle.h>
 
 namespace vanetza
 {

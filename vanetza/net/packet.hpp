@@ -1,8 +1,8 @@
 #ifndef PACKET_HPP_QYLSJSX5
 #define PACKET_HPP_QYLSJSX5
 
-#include "vanetza/common/byte_buffer.hpp"
-#include "vanetza/net/osi_layer.hpp"
+#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/net/osi_layer.hpp>
 #include <cstddef>
 #include <map>
 

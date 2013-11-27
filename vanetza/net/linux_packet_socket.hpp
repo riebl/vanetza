@@ -1,10 +1,10 @@
 #ifndef LINUX_PACKET_SOCKET_HPP_1L2DW3ML
 #define LINUX_PACKET_SOCKET_HPP_1L2DW3ML
 
-#include "vanetza/common/byte_order.hpp"
-#include "vanetza/net/osi_layer.hpp"
-#include "vanetza/net/socket_descriptor.hpp"
-#include "vanetza/net/socket_traits.hpp"
+#include <vanetza/common/byte_order.hpp>
+#include <vanetza/net/osi_layer.hpp>
+#include <vanetza/net/socket_descriptor.hpp>
+#include <vanetza/net/socket_traits.hpp>
 #include <cstdint>
 #include <string>
 #include <netpacket/packet.h>

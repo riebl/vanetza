@@ -1,7 +1,7 @@
 #ifndef LENGTH_H_56IO9TDB
 #define LENGTH_H_56IO9TDB
 
-#include "vanetza/units/quantity.h"
+#include <vanetza/units/quantity.h>
 
 namespace vanetza
 {

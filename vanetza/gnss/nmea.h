@@ -1,9 +1,9 @@
 #ifndef NMEA_H_EJIHQ65L
 #define NMEA_H_EJIHQ65L
 
-#include "vanetza/units/angle.h"
-#include "vanetza/units/velocity.h"
-#include "vanetza/units/length.h"
+#include <vanetza/units/angle.h>
+#include <vanetza/units/velocity.h>
+#include <vanetza/units/length.h>
 #include <cstdint>
 #include <string>
 #include <boost/date_time/posix_time/posix_time_types.hpp>

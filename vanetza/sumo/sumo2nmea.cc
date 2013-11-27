@@ -1,6 +1,6 @@
 #include "projector.h"
-#include "vanetza/gnss/nmea.h"
-#include "vanetza/gnss/wgs84point.h"
+#include <vanetza/gnss/nmea.h>
+#include <vanetza/gnss/wgs84point.h>
 #include <iostream>
 #include <string>
 #include <boost/date_time/posix_time/posix_time.hpp>
