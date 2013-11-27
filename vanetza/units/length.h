@@ -3,6 +3,9 @@
 
 #include "vanetza/units/quantity.h"
 
+namespace vanetza
+{
+
 namespace units
 {
     struct meter {};
@@ -18,6 +21,8 @@ class Length : public Quantity<double>
 };
 
 typedef Length LengthMeter;
+
+} // namespace vanetza
 
 #endif /* LENGTH_H_56IO9TDB */
 

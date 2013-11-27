@@ -3,6 +3,9 @@
 
 #include <cstdint>
 
+namespace vanetza
+{
+
 enum class OsiLayer : uint8_t
 {
     Physical = 1,
@@ -28,5 +31,7 @@ constexpr bool operator!=(OsiLayer lhs, OsiLayer rhs) { return !(lhs == rhs); }
 constexpr bool operator>=(OsiLayer lhs, OsiLayer rhs) { return !(lhs < rhs); }
 constexpr bool operator<=(OsiLayer lhs, OsiLayer rhs) { return (lhs < rhs || lhs == rhs); }
 constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
+
+} // namespace vanetza
 
 #endif /* OSI_LAYER_HPP_C4VTEZJP */

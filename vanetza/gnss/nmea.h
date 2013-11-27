@@ -8,6 +8,9 @@
 #include <string>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
+namespace vanetza
+{
+
 struct Wgs84Point;
 
 namespace nmea
@@ -45,6 +48,7 @@ namespace nmea
     uint8_t checksum(std::string::const_iterator, std::string::const_iterator);
 
 } // namespace nmea
+} // namespace vanetza
 
 #endif /* NMEA_H_EJIHQ65L */
 

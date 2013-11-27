@@ -4,6 +4,9 @@
 #include "vanetza/units/quantity.h"
 #include "vanetza/units/unit.h"
 
+namespace vanetza
+{
+
 namespace units
 {
     struct knots {};
@@ -44,6 +47,8 @@ class Velocity : public Quantity<double>
 
 typedef Velocity<units::knots> VelocityKnot;
 typedef Velocity<units::meter_per_second> VelocityMps;
+
+} // namespace vanetza
 
 #endif /* VELOCITY_H_0BLFAIDT */
 

@@ -1,6 +1,9 @@
 #include "socket_descriptor.hpp"
 #include <utility>
 
+namespace vanetza
+{
+
 SocketDescriptor::SocketDescriptor(SocketDescriptor&& tmp) :
     mSockFd(scInvalidFd)
 {
@@ -14,3 +17,5 @@ SocketDescriptor& SocketDescriptor::operator=(SocketDescriptor&& tmp)
     swap(tmp.mSockFd, mSockFd);
     return *this;
 }
+
+} // namespace vanetza

@@ -1,6 +1,9 @@
 #ifndef PROJECTOR_H_HM85FIRS
 #define PROJECTOR_H_HM85FIRS
 
+namespace vanetza
+{
+
 struct Wgs84Point;
 
 class Projector
@@ -19,6 +22,8 @@ private:
     double mOffsetX;
     double mOffsetY;
 };
+
+} // namespace vanetza
 
 #endif /* PROJECTOR_H_HM85FIRS */
 

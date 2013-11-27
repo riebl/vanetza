@@ -12,6 +12,9 @@
 #include <sys/select.h>
 #include <sys/socket.h>
 
+namespace vanetza
+{
+
 CohdaRawSocket::CohdaRawSocket(const std::string& ifcName, uint16be_t proto) :
     mEthProto(proto)
 {
@@ -93,3 +96,5 @@ bool CohdaRawSocket::wait_read(const timeval& timeout)
         return true;
     }
 }
+
+} // namespace vanetza

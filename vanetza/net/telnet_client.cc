@@ -10,6 +10,9 @@
 namespace asio = boost::asio;
 using namespace boost::asio::ip;
 
+namespace vanetza
+{
+
 TelnetClient::TelnetClient(tcp::socket&& socket) :
     m_socket(std::move(socket)), m_lineend("\r\n")
 {
@@ -36,3 +39,5 @@ TelnetClient connectTelnet(asio::io_service& io, const char* host, unsigned port
 
     return TelnetClient(std::move(socket));
 }
+
+} // namespace vanetza

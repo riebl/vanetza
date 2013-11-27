@@ -1,5 +1,8 @@
 #include "packet.hpp"
 
+namespace vanetza
+{
+
 Packet::Packet()
 {
 }
@@ -36,3 +39,5 @@ void Packet::clear()
         it.second.clear();
     }
 }
+
+} // namespace vanetza

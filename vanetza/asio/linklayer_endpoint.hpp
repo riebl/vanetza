@@ -5,8 +5,10 @@
 #include <boost/asio/detail/socket_types.hpp>
 #include <netpacket/packet.h>
 
-namespace vanetza {
-namespace asio {
+namespace vanetza
+{
+namespace asio
+{
 
 template<typename Protocol>
 class linklayer_endpoint

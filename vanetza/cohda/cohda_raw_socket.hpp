@@ -7,8 +7,12 @@
 #include "vanetza/net/socket_traits.hpp"
 #include <string>
 
-class Packet;
 struct timeval;
+
+namespace vanetza
+{
+
+class Packet;
 
 class CohdaRawSocket
 {
@@ -35,5 +39,7 @@ struct socket_layer_pdu<CohdaRawSocket, OsiLayer::Link>
 {
     typedef pdu_tags::ethernet_tag tag;
 };
+
+} // namespace vanetza
 
 #endif /* COHDA_RAW_SOCKET_HPP_JARM8ALF */

@@ -3,6 +3,9 @@
 
 #include <unistd.h>
 
+namespace vanetza
+{
+
 class SocketDescriptor
 {
 public:
@@ -26,5 +29,7 @@ public:
 private:
     int mSockFd;
 };
+
+} // namespace vanetza
 
 #endif // SOCKET_DESCRIPTOR_HPP_

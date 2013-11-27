@@ -11,6 +11,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+namespace vanetza
+{
+
 LinuxPacketSocket::LinuxPacketSocket(const std::string& ifcName, uint16be_t protocol) :
     mInterfaceIndex(if_nametoindex(ifcName.c_str())), mProtocol(protocol)
 {
@@ -93,3 +96,5 @@ bool LinuxPacketSocket::wait_read(const timeval& timeout)
         return true;
     }
 }
+
+} // namespace vanetza

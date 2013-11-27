@@ -5,6 +5,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
+namespace vanetza
+{
+
 class Packet;
 
 class IoVector
@@ -20,5 +23,7 @@ private:
 };
 
 void assignIoVec(msghdr&, IoVector&);
+
+} // namespace vanetza
 
 #endif /* IO_VECTOR_HPP_A3ANMI8B */

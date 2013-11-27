@@ -5,6 +5,9 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
+namespace vanetza
+{
+
 class TelnetClient
 {
     public:
@@ -17,6 +20,8 @@ class TelnetClient
 };
 
 TelnetClient connectTelnet(boost::asio::io_service&, const char* host, unsigned port);
+
+} // namespace vanetza
 
 #endif /* TELNETCLIENT_H_LMSSEL3Y */
 

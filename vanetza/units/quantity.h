@@ -1,6 +1,9 @@
 #ifndef QUANTITY_H_UV67B0JT
 #define QUANTITY_H_UV67B0JT
 
+namespace vanetza
+{
+
 template<typename T>
 class Quantity
 {
@@ -13,6 +16,8 @@ class Quantity
     private:
     T m_value;
 };
+
+} // namespace vanetza
 
 #endif /* QUANTITY_H_UV67B0JT */
 

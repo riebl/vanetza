@@ -3,6 +3,9 @@
 
 #include <time.h>
 
+namespace vanetza
+{
+
 class Timestamp
 {
 public:
@@ -23,6 +26,8 @@ private:
 void setMonotonic(Timestamp&);
 double calcIntervalSeconds(const Timestamp& start, const Timestamp& stop);
 double calcIntervalMilliseconds(const Timestamp& start, const Timestamp& stop);
+
+} // namespace vanetza
 
 #endif /* TIMESTAMP_HPP_5WAFSYEU */
 

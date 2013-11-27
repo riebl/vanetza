@@ -5,6 +5,9 @@
 #include <cassert>
 #include <net/ethernet.h>
 
+namespace vanetza
+{
+
 ByteBuffer createEthernetHeader(const MacAddress& dest, const MacAddress& src, uint16be_t proto)
 {
     ByteBuffer buffer(sizeof(ethhdr));
@@ -22,3 +25,5 @@ std::size_t getEthernetHeaderLength()
 {
     return ETHER_HDR_LEN;
 }
+
+} // namespace vanetza

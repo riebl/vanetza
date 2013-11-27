@@ -1,6 +1,9 @@
 #include "projector.h"
 #include "vanetza/gnss/wgs84point.h"
 #include "vanetza/units/angle.h"
+
+namespace vanetza
+{
 #include <proj_api.h>
 
 Projector::Projector(const char* projStr) :
@@ -28,3 +31,5 @@ Wgs84Point Projector::project(double x, double y)
     p = pj_inv(p, mProjection);
     return Wgs84Point { p.v % units::rad, p.u % units::rad };
 }
+
+} // namespace vanetza

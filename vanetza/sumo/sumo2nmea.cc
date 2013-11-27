@@ -29,6 +29,7 @@ int main(int argc, const char** argv)
             return 1;
     }
 
+    using namespace vanetza;
     Projector projector { projString };
     projector.offset(netOffsetX, netOffsetY);
 

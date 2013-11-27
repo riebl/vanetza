@@ -3,6 +3,9 @@
 
 #include "vanetza/units/angle.h"
 
+namespace vanetza
+{
+
 struct Wgs84Point
 {
     typedef AngleDegree angle_type;
@@ -10,6 +13,8 @@ struct Wgs84Point
     angle_type lat;
     angle_type lon;
 };
+
+} // namespace vanetza 
 
 #endif /* WGS84POINT_H_GAHDJKCG */
 

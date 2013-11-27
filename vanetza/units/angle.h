@@ -5,7 +5,10 @@
 #include "vanetza/units/unit.h"
 #include <boost/math/constants/constants.hpp>
 
-namespace units {
+namespace vanetza
+{
+namespace units
+{
 
 struct degree {};
 struct radian {};
@@ -41,6 +44,8 @@ class Angle : public Quantity<T>
 
 VANETZA_UNIT(Angle, units::degree, AngleDegree)
 VANETZA_UNIT(Angle, units::radian, AngleRadian)
+
+} // namespace vanetza
 
 #endif /* ANGLE_H_QWPLNJ3B */
 

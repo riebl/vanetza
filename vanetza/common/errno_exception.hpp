@@ -4,6 +4,9 @@
 #include <cstring>
 #include <stdexcept>
 
+namespace vanetza
+{
+
 class ErrnoException : public std::runtime_error
 {
 public:
@@ -14,6 +17,8 @@ public:
 private:
     int mErrno;
 };
+
+} // namespace vanetza
 
 #endif /* ERRNO_EXCEPTION_HPP_ULYZ87TW */
 

@@ -6,6 +6,9 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+
+namespace vanetza
+{
 #include <net/ethernet.h>
 #include <netpacket/packet.h>
 
@@ -64,3 +67,5 @@ std::ostream& operator<<(std::ostream& os, const MacAddress& addr)
     os << std::dec;
     return os;
 }
+
+} // namespace vanetza

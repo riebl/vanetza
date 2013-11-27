@@ -4,6 +4,9 @@
 #include "osi_layer.hpp"
 #include <type_traits>
 
+namespace vanetza
+{
+
 template<typename SOCKET>
 struct socket_layers
 {
@@ -13,7 +16,8 @@ struct socket_layers
     static_assert(min <= max, "Corrupt layer ordering");
 };
 
-namespace pdu_tags {
+namespace pdu_tags
+{
 
 struct pdu_tag {};
 struct empty_pdu_tag : public pdu_tag {};
@@ -37,5 +41,7 @@ bool constexpr pdu_match(const SOCKET&)
 {
     return std::is_same<TAG, typename socket_layer_pdu<SOCKET, LAYER>::tag>::value;
 }
+
+} // namespace vanetza
 
 #endif // SOCKET_TRAITS_HPP_

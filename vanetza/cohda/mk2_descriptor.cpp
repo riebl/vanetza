@@ -2,6 +2,9 @@
 #include <algorithm>
 #include <cassert>
 
+namespace vanetza
+{
+
 ByteBuffer createMk2TxDescriptor(const tMK2TxDescriptor& tx)
 {
 	ByteBuffer buffer(sizeof(tMK2TxDescriptor));
@@ -10,3 +13,5 @@ ByteBuffer createMk2TxDescriptor(const tMK2TxDescriptor& tx)
 	std::copy(&tx_bytes[0], &tx_bytes[sizeof(tMK2TxDescriptor)], &buffer[0]);
 	return buffer;
 }
+
+} // namespace vanetza

@@ -5,7 +5,10 @@
 #include <type_traits>
 #include <endian.h>
 
-namespace detail {
+namespace vanetza
+{
+namespace detail
+{
 
 template<class T, int SIZE = sizeof(T)>
 struct byte_order_converter;
@@ -60,7 +63,8 @@ enum class ByteOrder {
 };
 
 
-namespace detail {
+namespace detail
+{
 
 #if BYTE_ORDER == LITTLE_ENDIAN
     static const ByteOrder host_byte_order = ByteOrder::LittleEndian;
@@ -205,6 +209,8 @@ typedef detail::EndianType<int8_t, ByteOrder::BigEndian> int8be_t;
 typedef detail::EndianType<int16_t, ByteOrder::BigEndian> int16be_t;
 typedef detail::EndianType<int32_t, ByteOrder::BigEndian> int32be_t;
 typedef detail::EndianType<int64_t, ByteOrder::BigEndian> int64be_t;
+
+} // namespace vanetza
 
 #endif /* BYTE_ORDER_HPP_LPUJ094I */
 

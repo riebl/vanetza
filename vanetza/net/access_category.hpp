@@ -3,6 +3,9 @@
 
 #include <iosfwd>
 
+namespace vanetza
+{
+
 enum class AccessCategory {
     BK = 0,
     BE = 1,
@@ -11,6 +14,8 @@ enum class AccessCategory {
 };
 
 std::ostream& operator<<(std::ostream&, AccessCategory);
+
+} // namespace vanetza
 
 #endif /* ACCESS_CATEGORY_HPP_QAWSOPED */
 

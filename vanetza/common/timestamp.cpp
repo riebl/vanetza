@@ -1,5 +1,8 @@
 #include "timestamp.hpp"
 
+namespace vanetza
+{
+
 Timestamp::Timestamp()
 {
     mInternal.tv_sec = 0;
@@ -51,3 +54,5 @@ double calcIntervalMilliseconds(const Timestamp& start, const Timestamp& end)
     milliseconds += (pEnd->tv_nsec - pStart->tv_nsec) / (1000.0 * 1000.0);
     return milliseconds;
 }
+
+} // namespace vanetza

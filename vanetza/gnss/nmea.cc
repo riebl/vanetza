@@ -8,6 +8,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/format.hpp>
 
+namespace vanetza
+{
 namespace nmea
 {
 
@@ -37,7 +39,8 @@ void printLongitude(std::ostream& os, const Wgs84Point& point)
     os << "," << (point.lon.value() >= 0.0 ? "E" : "W");
 }
 
-namespace detail {
+namespace detail
+{
 
 struct latitude {
     const Wgs84Point& p;
@@ -139,3 +142,4 @@ uint8_t checksum(std::string::const_iterator begin, std::string::const_iterator 
 }
 
 } // namespace nmea
+} // namespace vanetza

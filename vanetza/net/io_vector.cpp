@@ -1,6 +1,9 @@
 #include "io_vector.hpp"
 #include "packet.hpp"
 
+namespace vanetza
+{
+
 IoVector::IoVector(const Packet& packet)
 {
     *this = packet;
@@ -22,3 +25,5 @@ void assignIoVec(msghdr& hdr, IoVector& io)
     hdr.msg_iov = io.base();
     hdr.msg_iovlen = io.length();
 }
+
+} // namespace vanetza

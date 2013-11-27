@@ -11,6 +11,9 @@
 
 struct sockaddr_ll;
 
+namespace vanetza
+{
+
 class MacAddress : public boost::equality_comparable<MacAddress>
 {
 public:
@@ -41,5 +44,7 @@ MacAddress createMacAddress(T value)
     }
     return mac;
 }
+
+} // namespace vanetza
 
 #endif /* MAC_ADDRESS_HPP_FDINBLBS */

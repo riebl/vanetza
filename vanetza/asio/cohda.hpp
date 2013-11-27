@@ -6,8 +6,10 @@
 #include <linux/if_ether.h>
 #include <net/if.h>
 
-namespace vanetza {
-namespace asio {
+namespace vanetza
+{
+namespace asio
+{
 
 class cohda
 {

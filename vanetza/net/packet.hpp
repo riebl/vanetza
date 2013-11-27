@@ -6,6 +6,9 @@
 #include <cstddef>
 #include <map>
 
+namespace vanetza
+{
+
 class Packet
 {
 public:
@@ -25,5 +28,7 @@ public:
 private:
     map_t mBuffers;
 };
+
+} // namespace vanetza
 
 #endif /* PACKET_HPP_QYLSJSX5 */

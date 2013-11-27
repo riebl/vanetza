@@ -10,9 +10,13 @@
 #include <netpacket/packet.h>
 #include <sys/socket.h>
 
+struct timeval;
+
+namespace vanetza
+{
+
 class MacAddress;
 class Packet;
-struct timeval;
 
 class LinuxPacketSocket
 {
@@ -32,6 +36,8 @@ private:
     int mInterfaceIndex;
     uint16be_t mProtocol;
 };
+
+} // namespace vanetza
 
 #endif /* LINUX_PACKET_SOCKET_HPP_1L2DW3ML */
 
