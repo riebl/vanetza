@@ -19,3 +19,4 @@ SocketDescriptor& SocketDescriptor::operator=(SocketDescriptor&& tmp)
 }
 
 } // namespace vanetza
+

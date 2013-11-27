@@ -98,3 +98,4 @@ bool CohdaRawSocket::wait_read(const timeval& timeout)
 }
 
 } // namespace vanetza
+

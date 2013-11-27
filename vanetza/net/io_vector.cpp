@@ -27,3 +27,4 @@ void assignIoVec(msghdr& hdr, IoVector& io)
 }
 
 } // namespace vanetza
+

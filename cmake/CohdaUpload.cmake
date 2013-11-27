@@ -19,3 +19,4 @@ macro(cohda_upload_file TARGET FILE DESTINATION)
     add_custom_target(${TARGET} DEPENDS ${FILE})
     _cohda_upload(${TARGET} ${FILE} ${DESTINATION})
 endmacro()
+

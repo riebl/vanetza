@@ -41,3 +41,4 @@ TelnetClient connectTelnet(asio::io_service& io, const char* host, unsigned port
 }
 
 } // namespace vanetza
+

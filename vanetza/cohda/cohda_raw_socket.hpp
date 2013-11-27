@@ -43,3 +43,4 @@ struct socket_layer_pdu<CohdaRawSocket, OsiLayer::Link>
 } // namespace vanetza
 
 #endif /* COHDA_RAW_SOCKET_HPP_JARM8ALF */
+

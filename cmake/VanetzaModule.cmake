@@ -43,3 +43,4 @@ macro(vanetza_export_modules)
     endforeach()
     export(TARGETS ${_targets} NAMESPACE Vanetza:: FILE vanetza-targets.cmake)
 endmacro()
+

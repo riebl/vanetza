@@ -9,3 +9,4 @@ set(COHDA_INCLUDE_DIRS ${COHDA_KERNEL_INCLUDE_DIR} ${COHDA_LIB1609_INCLUDE_DIR})
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(COHDA DEFAULT_MSG COHDA_MK2_ROOT)
+

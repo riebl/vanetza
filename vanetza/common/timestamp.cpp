@@ -56,3 +56,4 @@ double calcIntervalMilliseconds(const Timestamp& start, const Timestamp& end)
 }
 
 } // namespace vanetza
+

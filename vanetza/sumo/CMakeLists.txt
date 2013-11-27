@@ -10,3 +10,4 @@ if(PROJ4_FOUND)
 else()
     message(STATUS "Skip SUMO module, PROJ.4 dependency is missing")
 endif(PROJ4_FOUND)
+

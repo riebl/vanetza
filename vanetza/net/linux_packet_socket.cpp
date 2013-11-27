@@ -98,3 +98,4 @@ bool LinuxPacketSocket::wait_read(const timeval& timeout)
 }
 
 } // namespace vanetza
+

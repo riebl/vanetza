@@ -12,3 +12,4 @@ ByteBuffer createMk2TxDescriptor(const tMK2TxDescriptor&);
 } // namespace vanetza
 
 #endif // MK2_DESCRIPTOR_HPP_
+

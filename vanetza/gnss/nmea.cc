@@ -143,3 +143,4 @@ uint8_t checksum(std::string::const_iterator begin, std::string::const_iterator 
 
 } // namespace nmea
 } // namespace vanetza
+

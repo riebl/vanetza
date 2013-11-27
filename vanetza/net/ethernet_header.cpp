@@ -27,3 +27,4 @@ std::size_t getEthernetHeaderLength()
 }
 
 } // namespace vanetza
+

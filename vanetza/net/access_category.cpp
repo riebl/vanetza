@@ -27,3 +27,4 @@ std::ostream& operator<<(std::ostream& os, AccessCategory ac)
 }
 
 } // namespace vanetza
+

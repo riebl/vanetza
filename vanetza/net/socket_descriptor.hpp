@@ -33,3 +33,4 @@ private:
 } // namespace vanetza
 
 #endif // SOCKET_DESCRIPTOR_HPP_
+

@@ -15,3 +15,4 @@ ByteBuffer createMk2TxDescriptor(const tMK2TxDescriptor& tx)
 }
 
 } // namespace vanetza
+

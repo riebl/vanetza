@@ -16,3 +16,4 @@ std::size_t getEthernetHeaderLength();
 } // namespace vanetza
 
 #endif // ETHERNET_HEADER_HPP_
+

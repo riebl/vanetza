@@ -48,3 +48,4 @@ MacAddress createMacAddress(T value)
 } // namespace vanetza
 
 #endif /* MAC_ADDRESS_HPP_FDINBLBS */
+

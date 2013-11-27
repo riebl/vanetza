@@ -27,3 +27,4 @@ void assignIoVec(msghdr&, IoVector&);
 } // namespace vanetza
 
 #endif /* IO_VECTOR_HPP_A3ANMI8B */
+

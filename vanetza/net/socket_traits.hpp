@@ -45,3 +45,4 @@ bool constexpr pdu_match(const SOCKET&)
 } // namespace vanetza
 
 #endif // SOCKET_TRAITS_HPP_
+

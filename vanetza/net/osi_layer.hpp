@@ -35,3 +35,4 @@ constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
 } // namespace vanetza
 
 #endif /* OSI_LAYER_HPP_C4VTEZJP */
+

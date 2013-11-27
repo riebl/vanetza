@@ -41,3 +41,4 @@ void Packet::clear()
 }
 
 } // namespace vanetza
+

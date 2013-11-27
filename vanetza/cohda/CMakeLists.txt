@@ -7,3 +7,4 @@ if(COHDA_FOUND)
 else()
     message(STATUS "Skip Cohda module, Cohda SDK not found")
 endif(COHDA_FOUND)
+
