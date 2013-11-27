@@ -1,9 +1,11 @@
 #include "mac_address.hpp"
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/algorithm/string/split.hpp>
+#include <boost/io/ios_state.hpp>
 #include <algorithm>
 #include <cassert>
 #include <cstdlib>
+#include <iomanip>
 #include <string>
 #include <vector>
 
@@ -51,12 +53,12 @@ bool parseMacAddress(const std::string& str, MacAddress& addr)
 
 std::ostream& operator<<(std::ostream& os, const MacAddress& addr)
 {
-    os << std::hex;
-    os << unsigned(addr.octets[0]);
+    boost::io::ios_all_saver ifs(os);
+    os << std::hex << std::setfill('0');
+    os << std::setw(2) << unsigned(addr.octets[0]);
     for (unsigned i = 1; i < addr.octets.size(); ++i) {
-        os << ":" << unsigned(addr.octets[i]);
+        os << ":" << std::setw(2) << unsigned(addr.octets[i]);
     }
-    os << std::dec;
     return os;
 }
 
