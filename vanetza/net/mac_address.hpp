@@ -48,12 +48,12 @@ boost::optional<MacAddress> parse_mac_address(const std::string& str);
  * \return New MAC address
  */
 template<typename T>
-MacAddress createMacAddress(T value)
+MacAddress create_mac_address(T value)
 {
     MacAddress mac;
-    const std::size_t octets = mac.octets.size();
-    for (std::size_t i = octets - std::min(octets, sizeof(T)); i < octets; ++i) {
-        mac.octets[i] = (value >> (8 * i)) & 0xff;
+    const std::size_t octets = std::min(mac.octets.size(), sizeof(T));
+    for (std::size_t i = 0; i < octets; ++i) {
+        mac.octets[i] = value >> (8 * (octets - i - 1)) & 0xff;
     }
     return mac;
 }
