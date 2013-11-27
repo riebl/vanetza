@@ -8,21 +8,25 @@
 namespace vanetza
 {
 
+// forward declaration
 class Packet;
 
+/**
+ * IoVector eaeses population of struct msghdr.
+ * struct msghdr is required for sendmsg() calls.
+ */
 class IoVector
 {
 public:
-    IoVector(const Packet& packet);
-    IoVector& operator=(const Packet&);
-    std::size_t length() const { return mVector.size(); }
-    iovec* base() { return &mVector[0]; }
+    void append(const void* base, std::size_t length);
+    void append(const Packet&);
+    void clear();
+    std::size_t length() const;
+    const iovec* base() const;
 
 private:
-    std::vector<iovec> mVector;
+    std::vector<iovec> m_vector;
 };
-
-void assignIoVec(msghdr&, IoVector&);
 
 } // namespace vanetza
 

@@ -57,8 +57,11 @@ ssize_t LinuxPacketSocket::send_to(const MacAddress& address, const Packet& pack
     msghdr hdr;
     hdr.msg_name = &addr;
     hdr.msg_namelen = sizeof(sockaddr_ll);
-    IoVector data { packet };
-    assignIoVec(hdr, data);
+
+    IoVector iov;
+    iov.append(packet);
+    hdr.msg_iov = const_cast<iovec*>(iov.base());
+    hdr.msg_iovlen = iov.length();
 
     const msghdr* pMsgHdr = &hdr;
     return ::sendmsg(mSockFd, pMsgHdr, 0);

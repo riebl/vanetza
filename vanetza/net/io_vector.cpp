@@ -4,26 +4,35 @@
 namespace vanetza
 {
 
-IoVector::IoVector(const Packet& packet)
+void IoVector::clear()
 {
-    *this = packet;
+    m_vector.clear();
 }
 
-IoVector& IoVector::operator=(const Packet& packet)
+void IoVector::append(const void* base, std::size_t length)
 {
-    mVector.clear();
-    for (auto it = packet.begin(); it != packet.end(); ++it) {
-        const ByteBuffer& buffer = it->second;
-        iovec elem = { const_cast<uint8_t*>(&buffer[0]), buffer.size() };
-        mVector.emplace_back(elem);
+    iovec node;
+    node.iov_base = const_cast<void*>(base);
+    node.iov_len = length;
+    m_vector.push_back(node);
+}
+
+void IoVector::append(const Packet& packet)
+{
+    for (auto& kv : packet) {
+        const ByteBuffer& buffer = kv.second;
+        append(buffer.data(), buffer.size());
     }
-    return *this;
 }
 
-void assignIoVec(msghdr& hdr, IoVector& io)
+std::size_t IoVector::length() const
 {
-    hdr.msg_iov = io.base();
-    hdr.msg_iovlen = io.length();
+    return m_vector.size();
+}
+
+const iovec* IoVector::base() const
+{
+    return m_vector.empty() ? nullptr : &m_vector[0];
 }
 
 } // namespace vanetza

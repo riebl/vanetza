@@ -39,10 +39,13 @@ CohdaRawSocket::CohdaRawSocket(const std::string& ifcName, uint16be_t proto) :
 ssize_t CohdaRawSocket::send(const Packet& packet)
 {
     msghdr hdr;
-    IoVector data { packet };
-    assignIoVec(hdr, data);
+    IoVector iov;
+    iov.append(packet);
+    hdr.msg_iov = const_cast<iovec*>(iov.base());
+    hdr.msg_iovlen = iov.length();
 
-    return sendmsg(mSockFd, &hdr, 0);
+    const msghdr* hdr_ptr = &hdr;
+    return sendmsg(mSockFd, hdr_ptr, 0);
 }
 
 ssize_t CohdaRawSocket::recv(Packet& packet)
