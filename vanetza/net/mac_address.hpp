@@ -2,6 +2,7 @@
 #define MAC_ADDRESS_HPP_FDINBLBS
 
 #include <boost/operators.hpp>
+#include <boost/optional.hpp>
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -24,9 +25,22 @@ public:
 };
 
 bool operator==(const MacAddress& lhs, const MacAddress& rhs);
-
-bool parseMacAddress(const std::string&, MacAddress&);
 std::ostream& operator<<(std::ostream& os, const MacAddress&);
+
+/**
+ * Try to parse MAC address from string
+ * \param str source string with "XX:XX:XX:XX:XX:XX" format
+ * \param addr pass parsed address by reference
+ * \return true if successfully parsed
+ */
+bool parse_mac_address(const std::string& str, MacAddress& addr);
+
+/**
+ * Try to parse MAC address from string
+ * \param str source string with "XX:XX:XX:XX:XX:XX" format
+ * \return parsed address if successful
+ */
+boost::optional<MacAddress> parse_mac_address(const std::string& str);
 
 /**
  * Derive a MAC address from an arbitrary integral value.

@@ -4,7 +4,7 @@
 #include <boost/io/ios_state.hpp>
 #include <algorithm>
 #include <cassert>
-#include <cstdlib>
+#include <cctype>
 #include <iomanip>
 #include <string>
 #include <vector>
@@ -28,27 +28,36 @@ bool operator==(const MacAddress& lhs, const MacAddress& rhs)
     return (lhs.octets == rhs.octets);
 }
 
-bool parseMacAddress(const std::string& str, MacAddress& addr)
+bool parse_mac_address(const std::string& str, MacAddress& addr)
 {
-    using namespace boost;
-    static const unsigned scNumSeparators = addr.octets.size() - 1;
-    static const unsigned scRequiredLength = addr.octets.size() * 2 + scNumSeparators;
     bool parsed = false;
+    std::vector<std::string> octets;
+    boost::algorithm::split(octets, str, boost::algorithm::is_any_of(":"));
 
-    if (str.size() == scRequiredLength) {
-        std::vector<std::string> octets;
-        algorithm::split(octets, str, algorithm::is_any_of(":"));
-        if (octets.size() == addr.octets.size()) {
-            auto outputOctet = addr.octets.begin();
-            for (const std::string& octet : octets) {
-                *outputOctet = strtol(octet.c_str(), nullptr, 16);
-                ++outputOctet;
-            }
-            parsed = true;
-        }
+    // lambda returning true if string consists of two hex digits
+    auto octet_checker = [](const std::string& str) {
+        return str.size() == 2 && std::isxdigit(str[0]) && std::isxdigit(str[1]);
+    };
+
+    if (octets.size() == addr.octets.size() && std::all_of(octets.begin(), octets.end(), octet_checker)) {
+        std::transform(octets.begin(), octets.end(), addr.octets.begin(),
+                [](const std::string& octet) {
+                    return std::strtol(octet.c_str(), nullptr, 16);
+                });
+        parsed = true;
     }
 
     return parsed;
+}
+
+boost::optional<MacAddress> parse_mac_address(const std::string& str)
+{
+    boost::optional<MacAddress> addr_result;
+    MacAddress addr_tmp;
+    if (parse_mac_address(str, addr_tmp)) {
+        addr_result.reset(addr_tmp);
+    }
+    return addr_result;
 }
 
 std::ostream& operator<<(std::ostream& os, const MacAddress& addr)
