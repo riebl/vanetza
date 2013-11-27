@@ -8,7 +8,6 @@ include(VanetzaModule)
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
-include_directories(${PROJECT_SOURCE_DIR}/..)
 
 add_subdirectory(vanetza)
 vanetza_export_modules()
