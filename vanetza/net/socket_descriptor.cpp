@@ -1,21 +1,31 @@
 #include "socket_descriptor.hpp"
-#include <utility>
+#include <unistd.h>
 
 namespace vanetza
 {
 
-SocketDescriptor::SocketDescriptor(SocketDescriptor&& tmp) :
-    mSockFd(scInvalidFd)
+static const SocketDescriptor::fd_t sc_invalid_fd = -1;
+
+SocketDescriptor::SocketDescriptor() :
+    m_socket_fd(sc_invalid_fd)
 {
-    using namespace std;
-    swap(tmp.mSockFd, mSockFd);
 }
 
-SocketDescriptor& SocketDescriptor::operator=(SocketDescriptor&& tmp)
+SocketDescriptor::SocketDescriptor(fd_t fd) :
+    m_socket_fd(fd)
 {
-    using namespace std;
-    swap(tmp.mSockFd, mSockFd);
-    return *this;
+}
+
+SocketDescriptor::~SocketDescriptor()
+{
+    if (valid()) {
+        close(m_socket_fd);
+    }
+}
+
+bool SocketDescriptor::valid() const
+{
+    return m_socket_fd != sc_invalid_fd;
 }
 
 } // namespace vanetza

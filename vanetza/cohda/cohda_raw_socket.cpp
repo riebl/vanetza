@@ -19,7 +19,7 @@ CohdaRawSocket::CohdaRawSocket(const std::string& ifcName, uint16be_t proto) :
     mEthProto(proto)
 {
     mSockFd = socket(AF_PACKET, SOCK_RAW, mEthProto.net());
-    if (mSockFd.invalid()) {
+    if (!mSockFd.valid()) {
         throw ErrnoException(errno);
     }
 

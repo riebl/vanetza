@@ -19,7 +19,7 @@ LinuxPacketSocket::LinuxPacketSocket(const std::string& ifcName, uint16be_t prot
     mInterfaceIndex(if_nametoindex(ifcName.c_str())), mProtocol(protocol)
 {
     mSockFd = socket(AF_PACKET, SOCK_DGRAM, mProtocol.get());
-    if (mSockFd.invalid()) {
+    if (!mSockFd.valid()) {
         throw ErrnoException(errno);
     }
 

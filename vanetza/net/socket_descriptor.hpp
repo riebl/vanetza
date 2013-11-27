@@ -1,33 +1,33 @@
 #ifndef SOCKET_DESCRIPTOR_HPP_
 #define SOCKET_DESCRIPTOR_HPP_
 
-#include <unistd.h>
-
 namespace vanetza
 {
 
+/**
+ * SocketDescriptor closes raw socket descriptor during destruction.
+ * This is only done if stored descriptor is valid.
+ */
 class SocketDescriptor
 {
 public:
     typedef int fd_t;
 
-    SocketDescriptor() : mSockFd(scInvalidFd) {}
-    SocketDescriptor(fd_t fd) : mSockFd(fd) {}
-    ~SocketDescriptor() { if (!invalid()) close(mSockFd); }
+    SocketDescriptor();
+    SocketDescriptor(fd_t fd);
+    ~SocketDescriptor();
     // Don't allow copy operations (exclusive socket ownership)
     SocketDescriptor(const SocketDescriptor&) = delete;
     SocketDescriptor& operator=(const SocketDescriptor&) = delete;
     // Moving is okay, i.e. passing ownership
-    SocketDescriptor(SocketDescriptor&& tmp);
-    SocketDescriptor& operator=(SocketDescriptor&& tmp);
+    SocketDescriptor(SocketDescriptor&& tmp) = default;
+    SocketDescriptor& operator=(SocketDescriptor&& tmp) = default;
 
-    operator fd_t() const { return mSockFd; }
-    bool invalid() const { return mSockFd == scInvalidFd; }
-
-    static const fd_t scInvalidFd = -1;
+    operator fd_t() const { return m_socket_fd; }
+    bool valid() const;
 
 private:
-    int mSockFd;
+    fd_t m_socket_fd;
 };
 
 } // namespace vanetza
