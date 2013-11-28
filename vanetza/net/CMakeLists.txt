@@ -21,3 +21,5 @@ if(Boost_SYSTEM_FOUND)
     vanetza_module_dependencies(net ${Boost_SYSTEM_LIBRARY} pthread)
 endif()
 
+add_subdirectory(tests)
+
