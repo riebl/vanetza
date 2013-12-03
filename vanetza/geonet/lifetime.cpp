@@ -22,6 +22,18 @@ void Lifetime::set(Base base, BitNumber<uint8_t, 6> multiplier)
     m_lifetime = multiplier.raw() << 2 | (static_cast<uint8_t>(base) & base_mask);
 }
 
+bool Lifetime::operator<(const Lifetime& other) const
+{
+    return this->decode() < other.decode();
+}
+
+bool Lifetime::operator==(const Lifetime& other) const
+{
+    const double diff = this->decode() - other.decode();
+    const double min_value = 0.050; // 50 ms is lowest non-zero value
+    return std::abs(diff) < min_value;
+}
+
 void Lifetime::encode(double seconds)
 {
     if (seconds >= 630.0) {

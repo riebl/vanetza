@@ -2,6 +2,7 @@
 #define LIFETIME_HPP_XYTSNW3J
 
 #include <vanetza/common/bit_number.hpp>
+#include <boost/operators.hpp>
 #include <cstdint>
 
 namespace vanetza
@@ -9,7 +10,7 @@ namespace vanetza
 namespace geonet
 {
 
-class Lifetime
+class Lifetime : public boost::totally_ordered<Lifetime>
 {
 public:
     static const uint8_t multiplier_mask = 0xFC;
@@ -27,6 +28,9 @@ public:
     void set(Base base, BitNumber<uint8_t, 6> multiplier);
     uint8_t raw() const { return m_lifetime; }
     void raw(uint8_t raw) { m_lifetime = raw; }
+
+    bool operator<(const Lifetime&) const;
+    bool operator==(const Lifetime&) const;
 
     /**
      * Decodes stored lifetime to a double value

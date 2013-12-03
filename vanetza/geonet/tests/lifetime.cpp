@@ -16,6 +16,25 @@ TEST(Lifetime, set) {
     EXPECT_EQ(a.raw(), 0x79);
 }
 
+TEST(Lifetime, less) {
+    Lifetime a(Lifetime::Base::_10_S, 6);
+    Lifetime b(Lifetime::Base::_10_S, 5);
+    Lifetime c(Lifetime::Base::_1_S, 55);
+    EXPECT_LT(b, a);
+    EXPECT_LT(b, c);
+    EXPECT_LT(c, a);
+}
+
+TEST(Lifetime, equality) {
+    Lifetime a(Lifetime::Base::_1_S, 30);
+    Lifetime b(Lifetime::Base::_10_S, 3);
+    Lifetime c(Lifetime::Base::_1_S, 29);
+    Lifetime d(Lifetime::Base::_10_S, 3);
+    EXPECT_EQ(a, b);
+    EXPECT_NE(a, c);
+    EXPECT_EQ(b, d);
+}
+
 TEST(Lifetime, decode) {
     Lifetime a;
     a.set(Lifetime::Base::_10_S, 43);
