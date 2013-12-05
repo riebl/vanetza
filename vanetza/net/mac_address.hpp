@@ -18,10 +18,12 @@ namespace vanetza
 class MacAddress : public boost::equality_comparable<MacAddress>
 {
 public:
+    static const std::size_t length_bytes = 6;
+
     MacAddress();
     MacAddress(std::initializer_list<uint8_t> args);
 
-    std::array<uint8_t, 6> octets;
+    std::array<uint8_t, length_bytes> octets;
 };
 
 bool operator==(const MacAddress& lhs, const MacAddress& rhs);
