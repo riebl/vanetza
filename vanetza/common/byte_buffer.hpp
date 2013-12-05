@@ -35,6 +35,19 @@ const MASK* buffer_cast(const ByteBuffer& buffer)
     return buffer_cast<MASK>(const_cast<ByteBuffer&>(buffer));
 }
 
+/**
+ * Create byte buffer with copy of POD object
+ * \param obj POD object
+ * \return ByteBuffer object with copy
+ */
+template<class T>
+ByteBuffer buffer_copy(const T& object)
+{
+    static_assert(std::is_pod<T>::value, "T has to be POD data type");
+    auto ptr = reinterpret_cast<const uint8_t*>(&object);
+    return ByteBuffer(ptr, ptr + sizeof(T));
+}
+
 } // namespace vanetza
 
 #endif /* BYTE_BUFFER_HPP_7NOEQO4F */
