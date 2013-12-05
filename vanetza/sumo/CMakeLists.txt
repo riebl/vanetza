@@ -4,9 +4,10 @@ if(PROJ4_FOUND)
 
     vanetza_module(sumo projector.cpp)
     vanetza_module_dependencies(sumo ${PROJ4_LIBRARIES})
+    vanetza_intermodule_dependencies(sumo gnss)
 
     add_executable(sumo2nmea sumo2nmea.cpp)
-    target_link_vanetza(sumo2nmea gnss sumo)
+    target_link_vanetza(sumo2nmea sumo)
 else()
     message(STATUS "Skip SUMO module, PROJ.4 dependency is missing")
 endif(PROJ4_FOUND)

@@ -1,5 +1,6 @@
 find_package(Boost REQUIRED)
-include_directories(${PROJECT_SOURCE_DIR} ${Boost_INCLUDE_DIRS})
+set(VANETZA_MODULE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+
 add_subdirectory(asn1)
 add_subdirectory(common)
 add_subdirectory(gnss)
