@@ -3,15 +3,28 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/byte_order.hpp>
+#include <vanetza/net/mac_address.hpp>
 #include <cstddef>
 
 namespace vanetza
 {
 
-class MacAddress;
+/**
+ * Create a byte buffer containing an ethernet header
+ * \param dest Destination MAC address
+ * \param src Source MAC address
+ * \param proto EtherType number
+ */
+ByteBuffer create_ethernet_header(const MacAddress& dest, const MacAddress& src, uint16be_t proto);
 
-ByteBuffer createEthernetHeader(const MacAddress& dest, const MacAddress& src, uint16be_t proto);
-std::size_t getEthernetHeaderLength();
+/**
+ * Get length of ethernet header in bytes
+ * \param header length in bytes
+ */
+constexpr std::size_t ethernet_header_length()
+{
+    return 2 * sizeof(MacAddress::octets) + sizeof(uint16_t);
+}
 
 } // namespace vanetza
 
