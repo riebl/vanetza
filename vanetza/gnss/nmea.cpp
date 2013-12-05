@@ -131,7 +131,7 @@ std::string gpgga(const time& ptime, const Wgs84Point& wgs84, Quality quality, L
     smsg << ptime << ","; // HHMMSS.ss
     smsg << latitude(wgs84) << "," << longitude(wgs84) << ",";
     smsg << static_cast<std::underlying_type<Quality>::type>(quality) << ","; // Q
-    smsg << satellites << ","; // NN
+    smsg << std::setw(2) << std::setfill('0') << satellites << ","; // NN
     smsg << std::setprecision(1) << hdop.value() << ","; // D.D
     smsg << std::setprecision(1) << height << ",M,"; // H.H, h
     smsg << std::setprecision(1) << separation << ",M,"; // G.G, g
