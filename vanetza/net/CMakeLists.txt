@@ -6,18 +6,7 @@ set(CXX_SOURCES
     packet.cpp
     sockaddr.cpp
 )
-
-find_package(Boost COMPONENTS system)
-if(Boost_SYSTEM_FOUND)
-    list(APPEND CXX_SOURCES telnet_client.cpp)
-endif()
-
 vanetza_module(net ${CXX_SOURCES})
-
-if(Boost_SYSTEM_FOUND)
-    vanetza_module_property(net INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-    vanetza_module_dependencies(net ${Boost_SYSTEM_LIBRARY} pthread)
-endif()
 
 add_subdirectory(tests)
 
