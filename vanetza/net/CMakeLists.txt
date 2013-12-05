@@ -2,11 +2,9 @@ set(CXX_SOURCES
     access_category.cpp
     ethernet_header.cpp
     io_vector.cpp
-    linux_packet_socket.cpp
     mac_address.cpp
     packet.cpp
     sockaddr.cpp
-    socket_descriptor.cpp
 )
 
 find_package(Boost COMPONENTS system)
