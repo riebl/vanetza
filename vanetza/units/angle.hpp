@@ -1,50 +1,28 @@
 #ifndef ANGLE_HPP_QWPLNJ3B
 #define ANGLE_HPP_QWPLNJ3B
 
-#include <vanetza/units/quantity.hpp>
-#include <vanetza/units/unit.hpp>
-#include <boost/math/constants/constants.hpp>
+#include <boost/units/absolute.hpp>
+#include <boost/units/quantity.hpp>
+#include <boost/units/systems/angle/degrees.hpp>
+#include <boost/units/systems/si/plane_angle.hpp>
 
 namespace vanetza
 {
 namespace units
 {
 
-struct degree {};
-struct radian {};
+namespace si = boost::units::si;
+using boost::units::degree::degree;
+using boost::units::degree::degrees;
+using boost::units::absolute;
 
-static const degree deg;
-static const radian rad;
+typedef boost::units::quantity<boost::units::si::plane_angle> Angle;
+typedef boost::units::quantity<boost::units::degree::plane_angle> GeoAngle;
+typedef boost::units::quantity<boost::units::absolute<boost::units::degree::plane_angle>> TrueNorth;
+
+BOOST_UNITS_STATIC_CONSTANT(true_north_degrees, TrueNorth::unit_type);
 
 } // namespace units
-
-
-template<typename T>
-struct conversion_helper<units::radian, units::degree, T>
-{
-    static T convert(const T& rad)
-    {
-        return rad / boost::math::constants::pi<T>() * 180.0;
-    }
-};
-
-
-template<typename UNIT, typename T = double>
-class Angle : public Quantity<T>
-{
-    public:
-    explicit Angle(T numeric) : Quantity<T>(numeric) {}
-
-    template<typename OTHER_UNIT, typename OTHER_TYPE>
-    Angle(const Angle<OTHER_UNIT, OTHER_TYPE>& other) :
-        Quantity<T>(conversion_helper<OTHER_UNIT, UNIT, T>::convert(other.value()))
-    {
-    }
-};
-
-VANETZA_UNIT(Angle, units::degree, AngleDegree)
-VANETZA_UNIT(Angle, units::radian, AngleRadian)
-
 } // namespace vanetza
 
 #endif /* ANGLE_HPP_QWPLNJ3B */

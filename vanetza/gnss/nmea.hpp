@@ -43,8 +43,8 @@ namespace nmea
         INVALID = 'N'
     };
 
-    std::string gprmc(const time&, const Wgs84Point&, VelocityKnot ground, AngleDegree heading);
-    std::string gpgga(const time&, const Wgs84Point&, Quality, LengthMeter hdop);
+    std::string gprmc(const time&, const Wgs84Point&, units::NauticalVelocity ground, units::TrueNorth heading);
+    std::string gpgga(const time&, const Wgs84Point&, Quality, units::Length hdop);
     uint8_t checksum(std::string::const_iterator, std::string::const_iterator);
 
 } // namespace nmea

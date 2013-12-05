@@ -1,53 +1,27 @@
 #ifndef VELOCITY_HPP_0BLFAIDT
 #define VELOCITY_HPP_0BLFAIDT
 
-#include <vanetza/units/quantity.hpp>
-#include <vanetza/units/unit.hpp>
+#include <boost/units/quantity.hpp>
+#include <boost/units/base_units/metric/knot.hpp>
+#include <boost/units/systems/si/velocity.hpp>
 
 namespace vanetza
 {
-
 namespace units
 {
-    struct knots {};
-    struct meter_per_second {};
-    static const knots kn;
-    static const meter_per_second mps;
+
+namespace metric
+{
+
+BOOST_UNITS_STATIC_CONSTANT(knot, boost::units::metric::knot_base_unit::unit_type);
+BOOST_UNITS_STATIC_CONSTANT(knots, boost::units::metric::knot_base_unit::unit_type);
+
+} // namespace metric
+
+typedef boost::units::quantity<boost::units::si::velocity> Velocity;
+typedef boost::units::quantity<boost::units::metric::knot_base_unit::unit_type> NauticalVelocity;
+
 } // namespace units
-
-namespace constants
-{
-    static const unsigned cNauticalMileInMeters = 1852;
-} // namespace constants
-
-template<typename T>
-struct conversion_helper<units::meter_per_second, units::knots, T>
-{
-    static T convert(const T& mps)
-    {
-        return (mps * 3600) / constants::cNauticalMileInMeters;
-    }
-};
-
-template<typename UNIT>
-class Velocity : public Quantity<double>
-{
-    public:
-    // TODO: requires gcc 4.8
-    // using Quantity<double>::Quantity;
-    explicit Velocity(double value) : Quantity<double>(value) {}
-
-    // TODO: implement generic conversion
-    template<typename OTHER_UNIT>
-    Velocity(const Velocity<OTHER_UNIT>& other) :
-        Quantity<double>(conversion_helper<OTHER_UNIT, UNIT, double>::convert(other.value()))
-    {
-    }
-};
-
-typedef Velocity<units::knots> VelocityKnot;
-typedef Velocity<units::meter_per_second> VelocityMps;
-
 } // namespace vanetza
 
 #endif /* VELOCITY_HPP_0BLFAIDT */

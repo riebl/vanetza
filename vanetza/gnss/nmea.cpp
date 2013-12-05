@@ -13,6 +13,8 @@ namespace vanetza
 namespace nmea
 {
 
+using namespace vanetza::units;
+
 /**
  * Print latitude data in BBBB.BBBB, b format.
  * BBBB.BBBB are degrees and minutes (ddmm.mm)
@@ -78,7 +80,8 @@ std::string finish(std::stringstream& smsg)
     return msg;
 }
 
-std::string gprmc(const time& ptime, const Wgs84Point& wgs84, VelocityKnot groundSpeed, AngleDegree heading)
+std::string gprmc(const time& ptime, const Wgs84Point& wgs84,
+        NauticalVelocity groundSpeed, TrueNorth heading)
 {
     /**
      * Magnetic declination for central europe is about 1 degree east (2010), see this map for reference:
@@ -107,7 +110,7 @@ std::string gprmc(const time& ptime, const Wgs84Point& wgs84, VelocityKnot groun
     return finish(smsg);
 }
 
-std::string gpgga(const time& ptime, const Wgs84Point& wgs84, Quality quality, LengthMeter hdop)
+std::string gpgga(const time& ptime, const Wgs84Point& wgs84, Quality quality, Length hdop)
 {
     const unsigned numSatellites = 6; // Arbitrary number of used GPS satellites
     const double height = 0.0; // SUMO map is flat

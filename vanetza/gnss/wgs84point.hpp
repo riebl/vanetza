@@ -8,7 +8,7 @@ namespace vanetza
 
 struct Wgs84Point
 {
-    typedef AngleDegree angle_type;
+    typedef units::GeoAngle angle_type;
     Wgs84Point(angle_type latitude, angle_type longitude) : lat(latitude), lon(longitude) {}
     angle_type lat;
     angle_type lon;
