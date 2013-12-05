@@ -10,8 +10,8 @@ namespace vanetza
 template<typename SOCKET>
 struct socket_layers
 {
-    static const OsiLayer min = SOCKET::scMinLayer;
-    static const OsiLayer max = SOCKET::scMaxLayer;
+    static const OsiLayer min = SOCKET::min_layer;
+    static const OsiLayer max = SOCKET::max_layer;
 
     static_assert(min <= max, "Corrupt layer ordering");
 };
