@@ -12,7 +12,7 @@ endif()
 option(ENABLE_TESTS "Build unit tests" OFF)
 if(ENABLE_TESTS)
     enable_testing()
-    add_subdirectory(gtest)
+    include(gtest/GTestFramework.cmake)
 endif()
 
 add_subdirectory(vanetza)

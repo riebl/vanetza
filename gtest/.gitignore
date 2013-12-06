@@ -1,2 +1,2 @@
 *.zip
-gtest-src/
+gtest-*/
