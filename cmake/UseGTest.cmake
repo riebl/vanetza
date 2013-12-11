@@ -7,7 +7,7 @@ macro(add_gtest NAME)
     set_target_properties(GTest_${NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tests
         INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR})
-    target_link_libraries(GTest_${NAME} ${GTest_MAIN_LIBRARY} ${GTest_LIBRARY})
+    target_link_libraries(GTest_${NAME} ${GTest_MAIN_LIBRARY})
     if(VANETZA_MODULE_TEST)
         target_link_vanetza(GTest_${NAME} ${VANETZA_MODULE_TEST})
     endif()
