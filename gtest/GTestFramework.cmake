@@ -33,16 +33,24 @@ else()
     set(GTest_DEFINITIONS "GTEST_HAS_PTHREAD=0")
 endif()
 
+# GTest library for tests with own main function
 add_library(${GTest_LIBRARY} ${GTest_LIBRARY_SOURCES})
+target_include_directories(${GTest_LIBRARY}
+    PRIVATE ${GTest_ARCHIVE_DIR})
+target_include_directories(${GTest_LIBRARY} SYSTEM
+    PUBLIC ${GTest_INCLUDE_DIR})
+target_compile_definitions(${GTest_LIBRARY}
+    PUBLIC ${GTest_DEFINITIONS})
+
+# GTest library providing main function for tests
 add_library(${GTest_MAIN_LIBRARY} ${GTest_MAIN_LIBRARY_SOURCES})
-set_target_properties(${GTest_LIBRARY} ${GTest_MAIN_LIBRARY} PROPERTIES
-    INCLUDE_DIRECTORIES "${GTest_INCLUDE_DIR};${GTest_ARCHIVE_DIR}"
-    INTERFACE_INCLUDE_DIRECTORIES ${GTest_INCLUDE_DIR}
-    COMPILE_DEFINITIONS ${GTest_DEFINITIONS}
-)
+target_include_directories(${GTest_MAIN_LIBRARY} SYSTEM
+    PRIVATE ${GTest_INCLUDE_DIR})
+target_compile_definitions(${GTest_MAIN_LIBRARY}
+    PRIVATE ${GTest_DEFINITIONS})
+target_link_libraries(${GTest_MAIN_LIBRARY} LINK_INTERFACE_LIBRARIES ${GTest_LIBRARY})
 
 if(PTHREAD_LIBRARY)
-    target_link_libraries(${GTest_LIBRARY} ${PTHREAD_LIBRARY})
-    target_link_libraries(${GTest_MAIN_LIBRARY} ${PHTREAD_LIBRARY})
+    target_link_libraries(${GTest_LIBRARY} LINK_PUBLIC ${PTHREAD_LIBRARY})
 endif()
 
