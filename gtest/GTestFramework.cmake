@@ -26,15 +26,23 @@ add_custom_command(
     VERBATIM
 )
 
+find_library(PTHREAD_LIBRARY NAMES pthread)
+if(PTHREAD_LIBRARY)
+    set(GTest_DEFINITIONS "GTEST_HAS_PTHREAD=1")
+else()
+    set(GTest_DEFINITIONS "GTEST_HAS_PTHREAD=0")
+endif()
+
 add_library(${GTest_LIBRARY} ${GTest_LIBRARY_SOURCES})
 add_library(${GTest_MAIN_LIBRARY} ${GTest_MAIN_LIBRARY_SOURCES})
 set_target_properties(${GTest_LIBRARY} ${GTest_MAIN_LIBRARY} PROPERTIES
     INCLUDE_DIRECTORIES "${GTest_INCLUDE_DIR};${GTest_ARCHIVE_DIR}"
     INTERFACE_INCLUDE_DIRECTORIES ${GTest_INCLUDE_DIR}
+    COMPILE_DEFINITIONS ${GTest_DEFINITIONS}
 )
 
-find_library(PTHREAD_LIBRARY NAMES pthread)
 if(PTHREAD_LIBRARY)
     target_link_libraries(${GTest_LIBRARY} ${PTHREAD_LIBRARY})
+    target_link_libraries(${GTest_MAIN_LIBRARY} ${PHTREAD_LIBRARY})
 endif()
 
