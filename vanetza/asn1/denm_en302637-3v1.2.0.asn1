@@ -7,8 +7,8 @@ DEFINITIONS AUTOMATIC TAGS ::=
 BEGIN
 
 IMPORTS 
-   ItsPduHeader, CauseCode, Percentage, StationID, Movement, InformationQuality, ReferencePosition, DangerousGoodsExtended, Direction, LaneNumber, LightBarSirenInUse, PathHistory, RoadClass, HeightLonCarr, PosLonCarr, PosPillar, PosCentMass, PositioningSolutionType, RequestResponseIndication, StationType, SpeedLimit, StationarySince, TimestampIts, WheelBaseVehicle, TurningRadius, PosFrontAx, PositionOfOccupants, Temperature, VehicleMass, VehicleIdentification, EnergyStorageType FROM ITS-Container {
- itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) en (302637) cc (0) version (1) 
+   ItsPduHeader, CauseCode, Percentage, StationID, Speed, InformationQuality, ReferencePosition, DangerousGoodsExtended, Heading, LaneNumber, LightBarSirenInUse, PathHistory, RoadType, HeightLonCarr, PosLonCarr, PosPillar, PosCentMass, PositioningSolutionType, RequestResponseIndication, StationType, SpeedLimit, StationarySince, TimestampIts, WheelBaseVehicle, TurningRadius, PosFrontAx, PositionOfOccupants, Temperature, VehicleMass, VehicleIdentification, EnergyStorageType, ClosedLanes, HardShoulderStatus, DrivingLaneStatus FROM ITS-Container {
+ itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) ccd (2) version (1)
 };
 
 
@@ -46,10 +46,10 @@ SituationContainer ::= SEQUENCE {
 }
 
 LocationContainer ::= SEQUENCE {
-	eventSpeed Movement OPTIONAL,
-	eventPositionHeading Direction OPTIONAL,
+	eventSpeed Speed OPTIONAL,
+	eventPositionHeading Heading OPTIONAL,
 	traces Traces,
-	roadClass RoadClass OPTIONAL
+	roadClass RoadType OPTIONAL
 }
 
 ImpactReductionContainer ::= SEQUENCE {
@@ -77,16 +77,6 @@ PositionOfPillars ::= SEQUENCE (SIZE(1..3, ...)) OF PosPillar
   incidentIndication CauseCode OPTIONAL,
   recommendedPath ItineraryPath OPTIONAL	--Traces without timestamps
  }
-
-ClosedLanes ::= SEQUENCE {
- hardShoulderStatus HardShoulderStatus OPTIONAL,
- drivingLaneStatus DrivingLaneStatus,
- ... 
-}
-
-HardShoulderStatus ::= ENUMERATED { availableForStopping(0), closed(1), availableForDriving(2) }
-
-DrivingLaneStatus ::= BIT STRING { outermostLaneClosed(0), secondLaneFromOutsideClosed(1) } (SIZE (1..14))
 
 RestrictedTypes ::= SEQUENCE OF StationType
 
