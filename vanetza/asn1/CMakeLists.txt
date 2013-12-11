@@ -10,3 +10,5 @@ set(CXX_SOURCES asn1c_wrapper.cpp)
 
 vanetza_module(asn1 ${CXX_SOURCES} ${ASN1_SOURCES})
 
+add_subdirectory(tests)
+
