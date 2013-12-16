@@ -20,5 +20,21 @@ ShortPositionVector::ShortPositionVector(const LongPositionVector& lpv) :
 {
 }
 
+bool operator==(const LongPositionVector& lhs, const LongPositionVector& rhs)
+{
+    return lhs.gn_addr == rhs.gn_addr
+        && lhs.timestamp == rhs.timestamp
+        && lhs.latitude == rhs.latitude
+        && lhs.longitude == rhs.longitude
+        && lhs.speed == rhs.speed
+        && lhs.heading == rhs.heading
+        && lhs.position_accuracy_indicator == rhs.position_accuracy_indicator;
+}
+
+bool operator!=(const LongPositionVector& lhs, const LongPositionVector& rhs)
+{
+    return !(lhs == rhs);
+}
+
 } // namespace geonet
 } // namespace vanetza

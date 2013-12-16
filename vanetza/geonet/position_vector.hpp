@@ -36,6 +36,9 @@ public:
     GeodeticPosition position() const;
 };
 
+bool operator==(const LongPositionVector& lhs, const LongPositionVector& rhs);
+bool operator!=(const LongPositionVector& lhs, const LongPositionVector& rhs);
+
 class ShortPositionVector
 {
 public:
