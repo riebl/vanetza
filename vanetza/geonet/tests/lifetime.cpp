@@ -2,6 +2,7 @@
 #include <vanetza/geonet/lifetime.hpp>
 
 using namespace vanetza::geonet;
+using vanetza::units::si::seconds;
 
 TEST(Lifetime, ctor) {
     Lifetime a;
@@ -38,19 +39,19 @@ TEST(Lifetime, equality) {
 TEST(Lifetime, decode) {
     Lifetime a;
     a.set(Lifetime::Base::_10_S, 43);
-    EXPECT_DOUBLE_EQ(a.decode(), 430.0);
+    EXPECT_DOUBLE_EQ(a.decode() / seconds, 430.0);
 
     Lifetime b;
     b.set(Lifetime::Base::_50_MS, 3);
-    EXPECT_DOUBLE_EQ(b.decode(), 0.150);
+    EXPECT_DOUBLE_EQ(b.decode() / seconds, 0.150);
 
     Lifetime c;
     c.set(Lifetime::Base::_1_S, 15);
-    EXPECT_DOUBLE_EQ(c.decode(), 15.0);
+    EXPECT_DOUBLE_EQ(c.decode() / seconds, 15.0);
 
     Lifetime d;
     d.set(Lifetime::Base::_100_S, 63);
-    EXPECT_DOUBLE_EQ(d.decode(), 6300.0);
+    EXPECT_DOUBLE_EQ(d.decode() / seconds, 6300.0);
 }
 
 TEST(Lifetime, encode) {
@@ -75,8 +76,8 @@ TEST(Lifetime, encode) {
     Lifetime a;
     const double rel_error = 0.0000001; // fine enough, lifetime is not better than 50 ms
     for (auto pair : pairs) {
-        a.encode(pair.first);
-        EXPECT_NEAR(a.decode(), pair.first, pair.second + rel_error);
+        a.encode(pair.first * seconds);
+        EXPECT_NEAR(a.decode() / seconds, pair.first, pair.second + rel_error);
     }
 }
 

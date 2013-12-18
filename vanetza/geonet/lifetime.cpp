@@ -1,5 +1,5 @@
 #include "lifetime.hpp"
-#include <cmath>
+#include <boost/units/cmath.hpp>
 #include <stdexcept>
 
 namespace vanetza
@@ -29,13 +29,15 @@ bool Lifetime::operator<(const Lifetime& other) const
 
 bool Lifetime::operator==(const Lifetime& other) const
 {
-    const double diff = this->decode() - other.decode();
-    const double min_value = 0.050; // 50 ms is lowest non-zero value
-    return std::abs(diff) < min_value;
+    const units::Duration diff = this->decode() - other.decode();
+    // 50 ms is the smallest non-zero value Lifetime can represent
+    const auto min_value = 0.050 * units::si::seconds;
+    return abs(diff) < min_value;
 }
 
-void Lifetime::encode(double seconds)
+void Lifetime::encode(units::Duration duration)
 {
+    double seconds = duration / boost::units::si::seconds;
     if (seconds >= 630.0) {
         set(Base::_100_S, std::lround(seconds / 100.0));
     } else if (seconds >= 63.0) {
@@ -47,31 +49,33 @@ void Lifetime::encode(double seconds)
     }
 }
 
-double Lifetime::decode() const
+units::Duration Lifetime::decode() const
 {
+    using vanetza::units::si::seconds;
     Base base = static_cast<Base>(m_lifetime & base_mask);
-    double lifetime = (m_lifetime & multiplier_mask) >> 2;
+    const double multiplier = (m_lifetime & multiplier_mask) >> 2;
+    units::Duration unit;
 
     switch (base) {
         case Base::_50_MS:
-            lifetime *= 0.050;
+            unit = 0.050 * seconds;
             break;
         case Base::_1_S:
+            unit = 1.0 * seconds;
             // already done
             break;
         case Base::_10_S:
-            lifetime *= 10.0;
+            unit = 10.0 * seconds;
             break;
         case Base::_100_S:
-            lifetime *= 100.0;
+            unit = 100.0 * seconds;
             break;
         default:
-            lifetime = -1.0;
             throw std::runtime_error("Decoding of Lifetime::Base failed");
             break;
     };
 
-    return lifetime;
+    return multiplier * unit;
 }
 
 } // namespace geonet

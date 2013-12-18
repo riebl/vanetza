@@ -2,6 +2,7 @@
 #define LIFETIME_HPP_XYTSNW3J
 
 #include <vanetza/common/bit_number.hpp>
+#include <vanetza/units/time.hpp>
 #include <boost/operators.hpp>
 #include <cstdint>
 
@@ -33,17 +34,17 @@ public:
     bool operator==(const Lifetime&) const;
 
     /**
-     * Decodes stored lifetime to a double value
-     * \return lifetime in seconds
+     * Decodes stored lifetime
+     * \return lifetime as duration quantity
      */
-    double decode() const;
+    units::Duration decode() const;
 
     /**
-     * Encode seconds in lifetime object
+     * Encode duration in lifetime object
      * \note Precision loss might occur
-     * \param seconds Number of seconds
+     * \param duration Lifetime duration
      */
-    void encode(double seconds);
+    void encode(units::Duration);
 
 private:
     uint8_t m_lifetime;
