@@ -9,6 +9,7 @@
 #include <vanetza/geonet/traffic_class.hpp>
 #include <vanetza/units/time.hpp>
 #include <boost/optional.hpp>
+#include <boost/variant.hpp>
 
 namespace vanetza
 {
@@ -91,6 +92,15 @@ struct TsbDataRequest : public DataRequest
 {
     using DataRequest::DataRequest;
 };
+
+using DataRequestVariant =
+        boost::variant<
+            GucDataRequest,
+            GbcDataRequest,
+            GacDataRequest,
+            ShbDataRequest,
+            TsbDataRequest
+        >;
 
 } // namespace geonet
 } // namespace vanetza
