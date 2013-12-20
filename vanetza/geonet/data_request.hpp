@@ -7,6 +7,7 @@
 #include <vanetza/geonet/lifetime.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/traffic_class.hpp>
+#include <vanetza/units/time.hpp>
 #include <boost/optional.hpp>
 
 namespace vanetza
@@ -25,25 +26,34 @@ struct DataRequest
         traffic_class(mib.itsGnDefaultTrafficClass)
     {}
 
+    struct Repetition
+    {
+        units::Duration interval;
+        units::Duration maximum;
+    };
+
     UpperProtocol upper_protocol;
     CommunicationProfile communication_profile;
     bool security_profile;
     Lifetime maximum_lifetime;
-    boost::optional<unsigned> repetition_interval;
-    boost::optional<unsigned> max_repetition_time;
+    boost::optional<Repetition> repetition;
     unsigned max_hop_limit;
     TrafficClass traffic_class;
 };
 
 /**
- * Check if packet shall be repeated according to request
- * \param request DataRequest of packet
- * \return true if repetition is requested
+ * Decrement maximum repetition by one interval
+ * \param repetition Repetition data structure
  */
-inline bool is_repetition_requested(const DataRequest& request)
-{
-    return (request.repetition_interval && request.max_repetition_time);
-}
+void decrement_by_one(DataRequest::Repetition& repetition);
+
+/**
+ * Request has to be repeated at least once more
+ * \param request considered data request
+ * \return true if there is at least one repetition left
+ */
+bool has_further_repetition(const DataRequest&);
+bool has_further_repetition(const DataRequest::Repetition&);
 
 struct DataRequestWithAddress : public DataRequest
 {

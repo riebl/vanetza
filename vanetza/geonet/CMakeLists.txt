@@ -3,6 +3,7 @@ find_package(GeographicLib REQUIRED)
 set(CXX_SOURCES
     address.cpp
     areas.cpp
+    data_request.cpp
     mib.cpp
     packet.cpp
     sequence_number.cpp
