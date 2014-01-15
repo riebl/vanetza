@@ -2,6 +2,7 @@
 #define BYTE_ORDER_HPP_LPUJ094I
 
 #include <cstdint>
+#include <functional>
 #include <type_traits>
 #include <endian.h>
 
@@ -211,6 +212,20 @@ typedef detail::EndianType<int32_t, ByteOrder::BigEndian> int32be_t;
 typedef detail::EndianType<int64_t, ByteOrder::BigEndian> int64be_t;
 
 } // namespace vanetza
+
+namespace std
+{
+
+template<typename T, vanetza::ByteOrder ORDER>
+struct hash<vanetza::EndianType<T, ORDER>>
+{
+    size_t operator()(const vanetza::EndianType<T, ORDER>& t) const
+    {
+        return hash<T>()(t.get());
+    }
+};
+
+} // namespace std
 
 #endif /* BYTE_ORDER_HPP_LPUJ094I */
 
