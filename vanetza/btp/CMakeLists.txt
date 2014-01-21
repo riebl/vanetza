@@ -1,4 +1,5 @@
 set(CXX_SOURCES
+    data_indication.cpp
     header.cpp
 )
 
