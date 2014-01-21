@@ -55,6 +55,9 @@ public:
     geo_angle_i32t longitude;
 };
 
+bool operator==(const ShortPositionVector& lhs, const ShortPositionVector& rhs);
+bool operator!=(const ShortPositionVector& lhs, const ShortPositionVector& rhs);
+
 } // namespace geonet
 } // namespace vanetza
 

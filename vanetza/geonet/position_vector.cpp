@@ -36,5 +36,18 @@ bool operator!=(const LongPositionVector& lhs, const LongPositionVector& rhs)
     return !(lhs == rhs);
 }
 
+bool operator==(const ShortPositionVector& lhs, const ShortPositionVector& rhs)
+{
+    return lhs.gn_addr == rhs.gn_addr
+        && lhs.timestamp == rhs.timestamp
+        && lhs.latitude == rhs.latitude
+        && lhs.longitude == rhs.longitude;
+}
+
+bool operator!=(const ShortPositionVector& lhs, const ShortPositionVector& rhs)
+{
+    return !(lhs == rhs);
+}
+
 } // namespace geonet
 } // namespace vanetza
