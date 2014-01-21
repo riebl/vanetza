@@ -1,12 +1,10 @@
 #ifndef DATA_INDICATION_HPP_DOJK9Q8T
 #define DATA_INDICATION_HPP_DOJK9Q8T
 
-#include <vanetza/geonet/address.hpp>
-#include <vanetza/geonet/areas.hpp>
+#include <vanetza/geonet/destination_variant.hpp>
 #include <vanetza/geonet/interface.hpp>
 #include <vanetza/geonet/position_vector.hpp>
 #include <boost/optional.hpp>
-#include <boost/variant.hpp>
 
 namespace vanetza
 {
@@ -24,7 +22,7 @@ struct DataIndication
 
     UpperProtocol upper_protocol;
     TransportType transport_type;
-    boost::variant<Address, Area, std::nullptr_t> destination;
+    DestinationVariant destination;
     ShortPositionVector source_position;
     // TODO: security report, certificate id and permissions are missing
     TrafficClass traffic_class;
