@@ -1,6 +1,6 @@
 macro(_cohda_upload TARGET FILE DESTINATION)
     set(VANETZA_COHDA_UPLOAD_HOST "192.168.0.101" CACHE STRING "Upload to this Cohda box")
-    set(upload_target "upload_${TARGET}")
+    set(upload_target "cohda_upload_${TARGET}")
     add_custom_target(${upload_target})
     foreach(host ${VANETZA_COHDA_UPLOAD_HOST})
         add_custom_target(${upload_target}_${host}
