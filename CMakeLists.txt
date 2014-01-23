@@ -18,5 +18,6 @@ endif()
 
 add_subdirectory(vanetza)
 add_subdirectory(tools/cohda_proxy)
+add_subdirectory(tools/proxy_fake_feed)
 vanetza_export_modules()
 
