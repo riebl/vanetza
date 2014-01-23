@@ -1,8 +1,8 @@
 macro(_cohda_upload TARGET FILE DESTINATION)
-    set(BANKLEUR_COHDA_UPLOAD_HOST "192.168.0.101" CACHE STRING "Upload to this Cohda box")
+    set(VANETZA_COHDA_UPLOAD_HOST "192.168.0.101" CACHE STRING "Upload to this Cohda box")
     set(upload_target "upload_${TARGET}")
     add_custom_target(${upload_target})
-    foreach(host ${BANKLEUR_COHDA_UPLOAD_HOST})
+    foreach(host ${VANETZA_COHDA_UPLOAD_HOST})
         add_custom_target(${upload_target}_${host}
             COMMAND curl -T ${FILE} -u root: ftp://${host}/${DESTINATION})
         add_dependencies(${upload_target} ${upload_target}_${host})
