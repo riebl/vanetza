@@ -4,6 +4,7 @@ set(CXX_SOURCES
     io_vector.cpp
     mac_address.cpp
     packet.cpp
+    proxy_header.cpp
     sockaddr.cpp
 )
 vanetza_module(net ${CXX_SOURCES})
