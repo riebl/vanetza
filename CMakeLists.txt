@@ -17,5 +17,6 @@ if(ENABLE_TESTS)
 endif()
 
 add_subdirectory(vanetza)
+add_subdirectory(tools/cohda_proxy)
 vanetza_export_modules()
 
