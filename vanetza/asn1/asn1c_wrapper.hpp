@@ -47,7 +47,8 @@ public:
     {
         using namespace vanetza::asn1;
         free(m_type, m_struct);
-        m_struct = copy(other.m_struct);
+        void* dup = copy(other.m_type, other.m_struct);
+        m_struct = static_cast<asn1c_type*>(dup);
         m_type = other.m_type;
         return *this;
     }
