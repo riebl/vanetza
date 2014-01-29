@@ -1,5 +1,6 @@
 set(CXX_SOURCES
     access_category.cpp
+    chunk_packet.cpp
     cohesive_packet.cpp
     ethernet_header.cpp
     io_vector.cpp
@@ -9,6 +10,7 @@ set(CXX_SOURCES
     sockaddr.cpp
 )
 vanetza_module(net ${CXX_SOURCES})
+vanetza_intermodule_dependencies(net common)
 
 add_subdirectory(tests)
 
