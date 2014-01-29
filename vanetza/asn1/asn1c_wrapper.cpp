@@ -37,7 +37,9 @@ void* allocate(std::size_t length)
 
 void free(asn_TYPE_descriptor_t& td, void* t)
 {
-    ASN_STRUCT_FREE(td, t);
+    if (t != nullptr) {
+        ASN_STRUCT_FREE(td, t);
+    }
 }
 
 void* copy(asn_TYPE_descriptor_t& td, const void* original)

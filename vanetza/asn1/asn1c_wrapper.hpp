@@ -5,6 +5,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <cstddef>
 #include <string>
+#include <utility>
 
 namespace vanetza
 {
@@ -51,6 +52,18 @@ public:
         m_struct = static_cast<asn1c_type*>(dup);
         m_type = other.m_type;
         return *this;
+    }
+
+    // move semantics
+    asn1c_wrapper(asn1c_wrapper&& other) :
+        m_struct(nullptr), m_type(other.m_type)
+    {
+        std::swap(m_struct, other.m_struct);
+    }
+
+    asn1c_wrapper& operator=(asn1c_wrapper&& other)
+    {
+        std::swap(m_struct, other.m_struct);
     }
 
     // dereferencing
