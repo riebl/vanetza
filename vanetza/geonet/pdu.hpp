@@ -25,6 +25,11 @@ public:
     virtual ~Pdu() {}
 };
 
+inline void serialize(const Pdu& pdu, OutputArchive& ar)
+{
+    pdu.serialize(ar);
+}
+
 } // namespace geonet
 } // namespace vanetza
 
