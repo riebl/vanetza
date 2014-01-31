@@ -39,6 +39,20 @@ constexpr std::size_t num_osi_layers(OsiLayer from, OsiLayer to)
         0;
 }
 
+template<OsiLayer FROM, OsiLayer TO>
+std::array<OsiLayer, num_osi_layers(FROM, TO)> osi_layer_range()
+{
+    static_assert(FROM <= TO, "FROM layer is above TO layer");
+    typedef typename std::underlying_type<OsiLayer>::type num_type;
+
+    num_type num = static_cast<num_type>(FROM);
+    std::array<OsiLayer, num_osi_layers(FROM, TO)> layers;
+    for (auto& layer : layers) {
+        layer = static_cast<OsiLayer>(num++);
+    }
+    return layers;
+}
+
 constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
 {
     return static_cast<uint8_t>(lhs) < static_cast<uint8_t>(rhs);
