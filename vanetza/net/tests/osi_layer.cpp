@@ -44,3 +44,9 @@ TEST(OsiLayer, list) {
     }
 }
 
+TEST(OsiLayer, num) {
+    EXPECT_EQ(7, num_osi_layers(min_osi_layer(), max_osi_layer()));
+    EXPECT_EQ(1, num_osi_layers(OsiLayer::Link, OsiLayer::Link));
+    EXPECT_EQ(2, num_osi_layers(OsiLayer::Link, OsiLayer::Network));
+    EXPECT_EQ(0, num_osi_layers(OsiLayer::Network, OsiLayer::Link));
+}
