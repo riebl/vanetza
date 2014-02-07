@@ -6,6 +6,14 @@ namespace vanetza
 namespace geonet
 {
 
+BasicHeader::BasicHeader() :
+    version(0),
+    next_header(NextHeaderBasic::ANY),
+    reserved(0),
+    hop_limit(0)
+{
+}
+
 BasicHeader::BasicHeader(const MIB& mib) :
     version(mib.itsGnProtocolVersion),
     next_header(NextHeaderBasic::ANY),
