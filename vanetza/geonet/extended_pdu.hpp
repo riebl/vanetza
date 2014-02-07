@@ -22,6 +22,7 @@ template<class HEADER>
 class ExtendedPdu : public Pdu
 {
 public:
+    ExtendedPdu() {}
     ExtendedPdu(const MIB& mib) : m_basic(mib), m_common(mib) {}
     ExtendedPdu(const DataRequest& request, const MIB& mib) :
         m_basic(request, mib), m_common(request, mib) {}
