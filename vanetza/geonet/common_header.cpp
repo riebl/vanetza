@@ -7,6 +7,17 @@ namespace vanetza
 namespace geonet
 {
 
+CommonHeader::CommonHeader() :
+    next_header(NextHeaderCommon::ANY),
+    reserved1(0),
+    header_type(HeaderType::ANY),
+    flags(0),
+    payload(0),
+    maximum_hop_limit(0),
+    reserved2(0)
+{
+}
+
 CommonHeader::CommonHeader(const MIB& mib) :
     next_header(NextHeaderCommon::ANY),
     reserved1(0),

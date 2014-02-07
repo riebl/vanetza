@@ -26,6 +26,7 @@ enum class NextHeaderCommon
 struct CommonHeader
 {
 public:
+    CommonHeader();
     CommonHeader(const MIB&);
     CommonHeader(const DataRequest&, const MIB&);
     CommonHeader(const ShbDataRequest&, const MIB&);
