@@ -77,6 +77,9 @@ public:
     ByteBufferConvertible(T&& t) :
         m_wrapper(new convertible::byte_buffer_impl<T&&>(std::forward<T>(t))) {}
 
+    ByteBufferConvertible(const ByteBufferConvertible&);
+    ByteBufferConvertible& operator=(const ByteBufferConvertible&);
+
     ByteBufferConvertible(ByteBufferConvertible&& other) = default;
     ByteBufferConvertible& operator=(ByteBufferConvertible&& other) = default;
 

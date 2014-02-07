@@ -17,8 +17,15 @@ std::unique_ptr<byte_buffer> byte_buffer::duplicate() const
 
 } // namespace convertible
 
-
+ByteBufferConvertible::ByteBufferConvertible(const ByteBufferConvertible& other) :
+    m_wrapper(other.m_wrapper->duplicate())
 {
+}
+
+ByteBufferConvertible& ByteBufferConvertible::operator=(const ByteBufferConvertible& other)
+{
+    m_wrapper = other.m_wrapper->duplicate();
+    return *this;
 }
 
 } // namespace vanetza
