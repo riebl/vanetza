@@ -86,6 +86,8 @@ public:
     void convert(ByteBuffer& destination) const { m_wrapper->convert(destination); }
     std::size_t size() const { return m_wrapper->size(); }
 
+    const convertible::byte_buffer* ptr() const { return m_wrapper.get(); }
+
 private:
     std::unique_ptr<convertible::byte_buffer> m_wrapper;
 };
