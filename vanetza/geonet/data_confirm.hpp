@@ -25,7 +25,7 @@ struct DataConfirm
         REJECTED_UNSPECIFIED
     };
 
-    DataConfirm() : result_code(ResultCode::REJECTED_UNSPECIFIED) {}
+    DataConfirm() : result_code(ResultCode::ACCEPTED) {}
     DataConfirm(ResultCode code) : result_code(code) {}
     bool accepted() const { return result_code == ResultCode::ACCEPTED; }
     bool rejected() const { return !accepted(); }

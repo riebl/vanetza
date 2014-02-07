@@ -11,9 +11,9 @@ using vanetza::units::si::meter;
 
 TEST(DataConfirm, ctor) {
     DataConfirm a;
-    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
-    DataConfirm b(DataConfirm::ResultCode::ACCEPTED);
-    EXPECT_EQ(b.result_code, DataConfirm::ResultCode::ACCEPTED);
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::ACCEPTED);
+    DataConfirm b(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    EXPECT_EQ(b.result_code, DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
 }
 
 TEST(DataConfirm, accepted_rejected) {
@@ -78,10 +78,12 @@ TEST(DataConfirm, validate_payload) {
 
 TEST(DataConfirm, xor_op) {
     DataConfirm a;
-    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::ACCEPTED);
     a ^= DataConfirm::ResultCode::REJECTED_MAX_LIFETIME;
     EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_MAX_LIFETIME);
     a ^= DataConfirm::ResultCode::ACCEPTED;
     EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_MAX_LIFETIME);
+    a ^= DataConfirm::ResultCode::REJECTED_UNSPECIFIED;
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
 }
 
