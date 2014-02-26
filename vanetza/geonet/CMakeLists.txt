@@ -1,3 +1,10 @@
+set(CXX_SOURCES
+    packet.cpp
+)
+
+vanetza_module(geonet ${CXX_SOURCES})
+vanetza_intermodule_dependencies(geonet net)
+
 option(VANETZA_GEONET_USE_PACKET_VARIANT "Use packet variant for GeoNet UpPackets" OFF)
 if(VANETZA_GEONET_USE_PACKET_VARIANT)
     set(_compile_definition "VANETZA_GEONET_USE_PACKET_VARIANT")

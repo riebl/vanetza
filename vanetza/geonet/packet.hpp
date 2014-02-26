@@ -24,6 +24,33 @@ typedef typename detail::PacketVariant UpPacket;
 typedef CohesivePacket UpPacket;
 #endif
 
+inline std::size_t
+size(const CohesivePacket& packet, OsiLayer from, OsiLayer to)
+{
+    return packet.size(from, to);
+}
+
+inline std::size_t
+size(const CohesivePacket& packet, OsiLayer layer)
+{
+    return packet.size(layer);
+}
+
+inline std::size_t
+size(const ChunkPacket& packet, OsiLayer from, OsiLayer to)
+{
+    return packet.size(from, to);
+}
+
+inline std::size_t
+size(const ChunkPacket& packet, OsiLayer layer)
+{
+    return packet[layer].size();
+}
+
+std::size_t size(const detail::PacketVariant&, OsiLayer from, OsiLayer to);
+std::size_t size(const detail::PacketVariant&, OsiLayer);
+
 } // namespace geonet
 } // namespace vanetza
 
