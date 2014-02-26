@@ -1,0 +1,6 @@
+option(VANETZA_GEONET_USE_PACKET_VARIANT "Use packet variant for GeoNet UpPackets" OFF)
+if(VANETZA_GEONET_USE_PACKET_VARIANT)
+    set(_compile_definition "VANETZA_GEONET_USE_PACKET_VARIANT")
+    vanetza_module_property(geonet COMPILE_DEFINITIONS ${_compile_definition})
+    vanetza_module_property(geonet INTERFACE_COMPILE_DEFINITIONS ${_compile_definition})
+endif()
