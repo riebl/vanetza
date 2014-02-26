@@ -50,6 +50,7 @@ size(const ChunkPacket& packet, OsiLayer layer)
 
 std::size_t size(const detail::PacketVariant&, OsiLayer from, OsiLayer to);
 std::size_t size(const detail::PacketVariant&, OsiLayer);
+std::unique_ptr<ChunkPacket> duplicate(const detail::PacketVariant&);
 
 } // namespace geonet
 } // namespace vanetza
