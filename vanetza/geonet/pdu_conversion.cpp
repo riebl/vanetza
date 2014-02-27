@@ -21,6 +21,16 @@ std::size_t byte_buffer_impl<PduPtr>::size() const
     return m_pdu->length();
 }
 
+std::unique_ptr<byte_buffer> byte_buffer_impl<PduPtr>::duplicate() const
+{
+    assert(m_pdu);
+    PduPtr duplicate { m_pdu->clone() };
+    std::unique_ptr<byte_buffer> result {
+        new byte_buffer_impl<PduPtr>(std::move(duplicate))
+    };
+    return result;
+}
+
 } // namespace convertible
 } // namespace vanetza
 

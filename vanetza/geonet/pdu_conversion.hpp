@@ -19,6 +19,7 @@ struct byte_buffer_impl<std::unique_ptr<vanetza::geonet::Pdu>> : public byte_buf
 
     void convert(ByteBuffer& dest) const override;
     std::size_t size() const override;
+    std::unique_ptr<byte_buffer> duplicate() const override;
 
     const std::unique_ptr<vanetza::geonet::Pdu> m_pdu;
 };
