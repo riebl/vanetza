@@ -1,4 +1,5 @@
 set(CXX_SOURCES
+    burst_budget.cpp
     channel_load.cpp
     channel_load_smoothing.cpp
     state_machine.cpp
