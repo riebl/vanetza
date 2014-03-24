@@ -89,10 +89,11 @@ TEST(LocationTable, is_duplicate_packet_timestamp) {
     Address a;
     a.mid({1, 1, 1, 1, 1, 1});
     EXPECT_FALSE(lt.is_duplicate_packet(a, Timestamp(3 * abs_ms)));
-    EXPECT_TRUE(lt.is_duplicate_packet(a, Timestamp(3 * abs_ms)));
+    EXPECT_FALSE(lt.is_duplicate_packet(a, Timestamp(3 * abs_ms)));
     EXPECT_TRUE(lt.is_duplicate_packet(a, Timestamp(2 * abs_ms)));
-    EXPECT_TRUE(lt.is_duplicate_packet(a, Timestamp(3 * abs_ms)));
+    EXPECT_FALSE(lt.is_duplicate_packet(a, Timestamp(3 * abs_ms)));
     EXPECT_FALSE(lt.is_duplicate_packet(a, Timestamp(4 * abs_ms)));
+    EXPECT_TRUE(lt.is_duplicate_packet(a, Timestamp(3 * abs_ms)));
 
     Address b;
     b.mid({2, 2, 2, 2, 2, 2});

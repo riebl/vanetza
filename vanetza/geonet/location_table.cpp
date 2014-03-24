@@ -85,7 +85,7 @@ bool LocationTable::is_duplicate_packet(const Address& source, Timestamp time)
     entry_type& entry = m_table.get_entry(source);
     bool is_duplicate = false;
 
-    if (!entry.received_timestamp || entry.received_timestamp < time) {
+    if (!entry.received_timestamp || entry.received_timestamp <= time) {
         entry.received_timestamp = time;
     } else {
         is_duplicate = true;
