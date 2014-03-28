@@ -51,6 +51,16 @@ Timestamp::duration_type operator-(Timestamp lhs, Timestamp rhs)
     return lhs.quantity() - rhs.quantity();
 }
 
+bool Timestamp::before(const Timestamp& other) const
+{
+    return *this < other;
+}
+
+bool Timestamp::after(const Timestamp& other) const
+{
+    return *this > other;
+}
+
 bool is_greater(Timestamp lhs, Timestamp rhs)
 {
     const auto max = std::numeric_limits<Timestamp::value_type>::max();

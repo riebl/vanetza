@@ -37,6 +37,20 @@ public:
     Timestamp& operator+=(duration_type);
     Timestamp& operator-=(duration_type);
 
+    /**
+     * Timestamp is before other one
+     * \param other time stamp
+     * \return true if other timestamp is later
+     */
+    bool before(const Timestamp& other) const;
+
+    /**
+     * Timestamp is after other one
+     * \param other time stamp
+     * \return true is other timestamp is before
+     */
+    bool after(const Timestamp& other) const;
+
 private:
     time_type m_timestamp; // since 01-01-2004 00:00:00.0
 };
