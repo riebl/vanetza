@@ -1,5 +1,7 @@
-# There are no source files (yet)
-# vanetza_module(common ${CXX_SOURCES})
+set(CXX_SOURCES
+    byte_buffer_convertible.cpp
+)
+vanetza_module(common ${CXX_SOURCES})
 
 add_subdirectory(tests)
 

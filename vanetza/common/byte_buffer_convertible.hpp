@@ -14,6 +14,7 @@ struct byte_buffer
 {
     virtual void convert(ByteBuffer&) const = 0;
     virtual std::size_t size() const = 0;
+    virtual std::unique_ptr<byte_buffer> duplicate() const;
     virtual ~byte_buffer() {}
 };
 
