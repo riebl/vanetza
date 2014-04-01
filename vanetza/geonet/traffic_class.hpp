@@ -2,10 +2,12 @@
 #define TRAFFIC_CLASS_HPP_I2WYKREX
 
 #include <vanetza/common/bit_number.hpp>
+#include <vanetza/dcc/profile.hpp>
 #include <cstdint>
 
 namespace vanetza
 {
+
 namespace geonet
 {
 
@@ -30,6 +32,8 @@ private:
     static const uint8_t tc_id_mask = 0x3f;
     uint8_t m_tc;
 };
+
+dcc::Profile map_tc_onto_profile(const TrafficClass&);
 
 } // namespace geonet
 } // namespace vanetza

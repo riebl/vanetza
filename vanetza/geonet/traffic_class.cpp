@@ -59,6 +59,28 @@ void TrafficClass::tc_id(BitNumber<unsigned, 6> id)
     m_tc |= id.raw() & tc_id_mask;
 }
 
+dcc::Profile map_tc_onto_profile(const TrafficClass& tc)
+{
+    dcc::Profile profile = dcc::Profile::DP3;
+
+    switch (tc.tc_id().raw()) {
+        case 0:
+            profile = dcc::Profile::DP0;
+            break;
+        case 1:
+            profile = dcc::Profile::DP1;
+            break;
+        case 2:
+            profile = dcc::Profile::DP2;
+            break;
+        default:
+            profile = dcc::Profile::DP3;
+            break;
+    }
+
+    return profile;
+}
+
 } // namespace geonet
 } // namespace vanetza
 

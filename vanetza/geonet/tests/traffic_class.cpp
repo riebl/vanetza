@@ -54,3 +54,22 @@ TEST(TrafficClass, tc_id) {
     EXPECT_EQ(a.tc_id(), 0);
 }
 
+TEST(TrafficClass, map_tc_onto_profile) {
+    using vanetza::dcc::Profile;
+    TrafficClass tc;
+
+    tc.tc_id(0);
+    EXPECT_EQ(Profile::DP0, map_tc_onto_profile(tc));
+
+    tc.tc_id(1);
+    EXPECT_EQ(Profile::DP1, map_tc_onto_profile(tc));
+
+    tc.tc_id(2);
+    EXPECT_EQ(Profile::DP2, map_tc_onto_profile(tc));
+
+    tc.tc_id(3);
+    EXPECT_EQ(Profile::DP3, map_tc_onto_profile(tc));
+
+    tc.tc_id(4);
+    EXPECT_EQ(Profile::DP3, map_tc_onto_profile(tc));
+}
