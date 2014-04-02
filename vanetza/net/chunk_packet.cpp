@@ -25,12 +25,12 @@ ChunkPacket& ChunkPacket::operator=(const ChunkPacket& other)
     return *this;
 }
 
-ByteBufferConvertible& ChunkPacket::operator[](OsiLayer layer)
+ByteBufferConvertible& ChunkPacket::layer(OsiLayer layer)
 {
     return m_layers[layer];
 }
 
-const ByteBufferConvertible& ChunkPacket::operator[](OsiLayer layer) const
+const ByteBufferConvertible& ChunkPacket::layer(OsiLayer layer) const
 {
     auto found = m_layers.find(layer);
     if (found != m_layers.end()) {

@@ -30,8 +30,18 @@ public:
      * \param layer Access this layer's data
      * \return ByteBufferConvertible, might be empty
      */
-    ByteBufferConvertible& operator[](OsiLayer);
-    const ByteBufferConvertible& operator[](OsiLayer) const;
+    ByteBufferConvertible& layer(OsiLayer);
+    const ByteBufferConvertible& layer(OsiLayer) const;
+
+    inline ByteBufferConvertible& operator[](OsiLayer ol)
+    {
+        return layer(ol);
+    }
+
+    inline const ByteBufferConvertible& operator[](OsiLayer ol) const
+    {
+        return layer(ol);
+    }
 
     /**
      * Get size of whole payload
