@@ -21,6 +21,7 @@ set(CXX_SOURCES
     location_table.cpp
     next_hop.cpp
     packet_buffer.cpp
+    parsed_pdu.cpp
     pdu_conversion.cpp
     position_vector.cpp
     repeater.cpp
