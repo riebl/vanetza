@@ -118,6 +118,11 @@ void Router::set_time(Timestamp init)
     m_next_beacon = init; // send BEACON at start-up
 }
 
+void Router::set_address(const Address& addr)
+{
+    m_local_position_vector.gn_addr = addr;
+}
+
 DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload)
 {
     DataConfirm result;

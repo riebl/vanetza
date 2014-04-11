@@ -81,6 +81,7 @@ public:
     void update(const LongPositionVector&);
     void set_transport_handler(UpperProtocol, TransportInterface&);
     void set_time(Timestamp init);
+    void set_address(const Address&);
 
     std::unique_ptr<ShbPdu> create_shb_pdu(const ShbDataRequest&);
     std::unique_ptr<BeaconPdu> create_beacon_pdu();
