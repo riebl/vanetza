@@ -73,6 +73,11 @@ public:
     DataConfirm request(const TsbDataRequest&, DownPacketPtr);
     void indicate(UpPacketPtr, const MacAddress& sender);
     void update(Timestamp now);
+    /**
+     * Update router's local position vector
+     * \note GN Address of given LongPositionVector is ignored!
+     * \param lpv Set positional data according to this argument
+     */
     void update(const LongPositionVector&);
     void set_transport_handler(UpperProtocol, TransportInterface&);
     void set_time(Timestamp init);

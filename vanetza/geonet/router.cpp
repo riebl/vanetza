@@ -100,7 +100,10 @@ void Router::update(Timestamp now)
 void Router::update(const LongPositionVector& lpv)
 {
     // TODO: check itsGnMinUdpateFrequencyLPV
+    // Update LPV except for GN address
+    Address gn_addr = m_local_position_vector.gn_addr;
     m_local_position_vector = lpv;
+    m_local_position_vector.gn_addr = gn_addr;
     m_last_update_lpv = m_time_now;
 }
 
