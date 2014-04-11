@@ -10,6 +10,7 @@
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/profile.hpp>
 #include <vanetza/net/mac_address.hpp>
+#include <vanetza/units/frequency.hpp>
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
 #include <stdexcept>
@@ -99,7 +100,15 @@ void Router::update(Timestamp now)
 
 void Router::update(const LongPositionVector& lpv)
 {
-    // TODO: check itsGnMinUdpateFrequencyLPV
+    // Check if LPV update frequency is fulfilled
+    assert(m_time_now.after(m_last_update_lpv));
+    units::Duration time_since_last_update { m_time_now - m_last_update_lpv };
+    assert(time_since_last_update.value() != 0.0);
+    units::Frequency current_update_frequency =  1.0 / time_since_last_update;
+    if (m_mib.itsGnMinimumUpdateFrequencyLPV > current_update_frequency) {
+        throw std::runtime_error("LPV is not updated frequently enough");
+    }
+
     // Update LPV except for GN address
     Address gn_addr = m_local_position_vector.gn_addr;
     m_local_position_vector = lpv;
@@ -115,6 +124,7 @@ void Router::set_transport_handler(UpperProtocol proto, TransportInterface& ifc)
 void Router::set_time(Timestamp init)
 {
     m_time_now = init;
+    m_last_update_lpv = init;
     m_next_beacon = init; // send BEACON at start-up
 }
 
