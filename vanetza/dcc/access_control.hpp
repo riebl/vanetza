@@ -3,6 +3,7 @@
 
 #include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/data_request.hpp>
+#include <vanetza/dcc/interface.hpp>
 #include <vanetza/dcc/profile.hpp>
 #include <vanetza/net/access_category.hpp>
 #include <vanetza/net/chunk_packet.hpp>
@@ -22,11 +23,11 @@ namespace dcc
 struct DataRequest;
 class Scheduler;
 
-class AccessControl
+class AccessControl : public RequestInterface
 {
 public:
     AccessControl(Scheduler&, access::Interface&);
-    void request(const DataRequest&, std::unique_ptr<ChunkPacket>);
+    void request(const DataRequest&, std::unique_ptr<ChunkPacket>) override;
 
 private:
     Scheduler& m_scheduler;
