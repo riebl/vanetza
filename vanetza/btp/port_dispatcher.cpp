@@ -54,6 +54,7 @@ void PortDispatcher::indicate(
         const geonet::DataIndication& gn_ind,
         std::unique_ptr<UpPacket> packet)
 {
+    assert(packet);
     btp::IndicationInterface* handler = nullptr;
     btp::DataIndication btp_ind;
 
