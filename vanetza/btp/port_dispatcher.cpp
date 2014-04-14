@@ -17,6 +17,32 @@ HeaderB parse_btp_b(CohesivePacket& packet)
     return hdr;
 }
 
+HeaderB parse_btp_b(ChunkPacket& packet)
+{
+    HeaderB hdr;
+    ByteBuffer tmp;
+    packet[OsiLayer::Transport].convert(tmp);
+    geonet::deserialize_from_buffer(hdr, tmp);
+    return hdr;
+}
+
+HeaderB parse_btp_b(geonet::detail::PacketVariant& packet)
+{
+    struct parse_btp_visitor : public boost::static_visitor<HeaderB>
+    {
+        HeaderB operator()(CohesivePacket& packet) {
+            return parse_btp_b(packet);
+        }
+
+        HeaderB operator()(ChunkPacket& packet) {
+            return parse_btp_b(packet);
+        }
+    };
+
+    parse_btp_visitor visitor;
+    return boost::apply_visitor(visitor, packet);
+}
+
 void PortDispatcher::set_non_interactive_handler(
         port_type port,
         IndicationInterface* handler)
