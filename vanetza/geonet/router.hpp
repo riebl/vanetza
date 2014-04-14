@@ -32,8 +32,8 @@ namespace vanetza
 class MacAddress;
 namespace dcc
 {
-    class AccessControl;
     class DataRequest;
+    class RequestInterface;
 } // namespace dcc
 
 namespace geonet
@@ -63,7 +63,7 @@ public:
     typedef std::unique_ptr<DownPacket> DownPacketPtr;
     typedef std::unique_ptr<UpPacket> UpPacketPtr;
 
-    Router(const MIB&, dcc::AccessControl&);
+    Router(const MIB&, dcc::RequestInterface&);
     ~Router();
     DataConfirm request(const ShbDataRequest&, DownPacketPtr);
     DataConfirm request(const GbcDataRequest&, DownPacketPtr);
@@ -111,7 +111,7 @@ private:
     units::Duration timeout_cbf_gbc(units::Length distance) const;
 
     const MIB& m_mib;
-    dcc::AccessControl& m_access_control;
+    dcc::RequestInterface& m_request_interface;
     transport_map_t m_transport_ifcs;
     LocationTable m_location_table;
     PacketBuffer m_bc_forward_buffer;

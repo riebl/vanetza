@@ -65,9 +65,9 @@ public:
 
 const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 
-Router::Router(const MIB& mib, dcc::AccessControl& control) :
+Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
     m_mib(mib),
-    m_access_control(control),
+    m_request_interface(ifc),
     m_location_table(mib),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
@@ -327,7 +327,7 @@ void Router::pass_down(const dcc::DataRequest& request, PduPtr pdu, DownPacketPt
     // TODO: we could do a PDU consistency check here
 
     (*payload)[OsiLayer::Network] = ByteBufferConvertible(std::move(pdu));
-    m_access_control.request(request, std::move(payload));
+    m_request_interface.request(request, std::move(payload));
 }
 
 void Router::pass_down(const MacAddress& addr, PduPtr pdu, DownPacketPtr payload)
