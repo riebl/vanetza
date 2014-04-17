@@ -549,6 +549,7 @@ void Router::process_extended(const ExtendedPduRefs<ShbHeader>& pdu, UpPacketPtr
 void Router::process_extended(const ExtendedPduRefs<GeoBroadcastHeader>& pdu,
         UpPacketPtr packet, const MacAddress& sender)
 {
+    assert(packet);
     const GeoBroadcastHeader& gbc = pdu.extended();
     const Address& source_addr = gbc.source_position.gn_addr;
 
