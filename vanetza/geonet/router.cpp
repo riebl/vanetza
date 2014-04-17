@@ -239,6 +239,7 @@ DataConfirm Router::request(const TsbDataRequest&, DownPacketPtr)
 
 void Router::indicate(UpPacketPtr packet, const MacAddress& sender)
 {
+    assert(packet);
     auto pdu = parse(*packet);
     if (!pdu) {
         // parsing of packet failed
