@@ -104,6 +104,24 @@ CbfPacketBuffer::packet_list CbfPacketBuffer::packets_to_send(Timestamp now)
     return packets;
 }
 
+unsigned CbfPacketBuffer::counter(const MacAddress& mac, SequenceNumber sn) const
+{
+    auto found = find(mac, sn);
+    if (found) {
+        return found.get()->counter;
+    } else {
+        return 0;
+    }
+}
+
+void CbfPacketBuffer::increment(const MacAddress& mac, SequenceNumber sn)
+{
+    auto found = find(mac, sn);
+    if (found) {
+        found.get()->counter++;
+    }
+}
+
 CbfPacketBuffer::Node::Node(packet_type&& p, units::Duration timeout, Timestamp now) :
 boost::optional<std::list<CbfPacketBuffer::Node>::iterator>
 CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn)
@@ -121,9 +139,26 @@ CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn)
     return result;
 }
 
+boost::optional<std::list<CbfPacketBuffer::Node>::const_iterator>
+CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn) const
+{
+    boost::optional<std::list<Node>::const_iterator> result;
+    auto found = std::find_if(m_nodes.begin(), m_nodes.end(),
+            [&](const Node& node) {
+                assert(node.packet.pdu);
+                const GeoBroadcastHeader& gbc = node.packet.pdu->extended();
+                return (gbc.source_position.gn_addr.mid() == mac && gbc.sequence_number == sn);
+            });
+    if (found != m_nodes.end()) {
+        result = found;
+    }
+    return result;
+}
+
     packet(std::move(p)),
     buffered_since(now),
-    timer_expiry(now + Timestamp::duration_type(timeout))
+    timer_expiry(now + Timestamp::duration_type(timeout)),
+    counter(1)
 {
 }
 

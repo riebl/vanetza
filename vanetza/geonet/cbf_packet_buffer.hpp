@@ -85,6 +85,21 @@ public:
      */
     packet_list packets_to_send(Timestamp now);
 
+    /**
+     * Get counter of stored packet
+     * \param mac MAC address of packet
+     * \param sn sequence number of packet
+     * \return 0 if packet is not buffered, counter value otherwise (starting with 1)
+     */
+    unsigned counter(const MacAddress& mac, SequenceNumber sn) const;
+
+    /**
+     * Increment counter of stored packet by one
+     * \param mac MAC address of packet
+     * \param sn sequence number of packet
+     */
+    void increment(const MacAddress& mac, SequenceNumber sn);
+
 private:
     struct Node
     {
@@ -93,6 +108,7 @@ private:
         packet_type packet;
         const Timestamp buffered_since;
         const Timestamp timer_expiry;
+        unsigned counter;
     };
 
     std::list<Node> m_nodes;
@@ -100,6 +116,7 @@ private:
     std::size_t m_stored;
 
     boost::optional<std::list<Node>::iterator> find(const MacAddress& mac, SequenceNumber sn);
+    boost::optional<std::list<Node>::const_iterator> find(const MacAddress& mac, SequenceNumber sn) const;
 };
 
 } // namespace geonet
