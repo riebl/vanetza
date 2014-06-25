@@ -466,23 +466,20 @@ NextHop Router::next_hop_gbc_advanced(
     const HeaderType ht = pdu->common().header_type;
     const Area destination_area = gbc.destination(ht);
     static const std::size_t max_counter = 3; // TODO: Where is this constant's definition in GN standard?
+    auto cbf_meta = m_cbf_buffer.find(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
 
     if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
-        unsigned counter = m_cbf_buffer.counter(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
-        if (counter > 0) {
-            if (counter > max_counter) {
+        if (cbf_meta) {
+            if (cbf_meta->counter() > max_counter) {
                 m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
                 nh.state(NextHop::State::DISCARDED);
             } else {
-                if (!outside_sectorial_contention_area(
-                        m_cbf_buffer.sender(gbc.source_position.gn_addr.mid(), gbc.sequence_number),
-                        sender)) {
+                if (!outside_sectorial_contention_area(cbf_meta->sender(), sender)) {
                     m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
                     nh.state(NextHop::State::DISCARDED);
                 } else {
-                    m_cbf_buffer.reschedule(gbc.source_position.gn_addr.mid(), gbc.sequence_number,
-                            timeout_cbf_gbc(sender), m_time_now);
-                    m_cbf_buffer.increment(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+                    cbf_meta->set_timeout(timeout_cbf_gbc(sender), m_time_now);
+                    cbf_meta->increment();
                     nh.state(NextHop::State::BUFFERED);
                 }
             }

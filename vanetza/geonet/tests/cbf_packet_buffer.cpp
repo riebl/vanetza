@@ -11,22 +11,22 @@ static const MacAddress dummy_sender { 0, 3, 0, 3, 0, 3 };
 class CbfPacketBufferTest : public ::testing::Test
 {
 protected:
-    CbfPacket create_packet();
-    CbfPacket create_packet(std::size_t length);
+    CbfPacketData create_packet();
+    CbfPacketData create_packet(std::size_t length);
 
     const MIB mib;
     Timestamp now;
 };
 
-CbfPacket CbfPacketBufferTest::create_packet()
+CbfPacketData CbfPacketBufferTest::create_packet()
 {
-    CbfPacket::PduPtr pdu { new CbfPacket::PduPtr::element_type(mib) };
-    CbfPacket::PayloadPtr payload { new CbfPacket::PayloadPtr::element_type() };
+    CbfPacketData::PduPtr pdu { new CbfPacketData::PduPtr::element_type(mib) };
+    CbfPacketData::PayloadPtr payload { new CbfPacketData::PayloadPtr::element_type() };
 
-    return CbfPacket(std::move(pdu), std::move(payload));
+    return CbfPacketData(std::move(pdu), std::move(payload));
 }
 
-CbfPacket CbfPacketBufferTest::create_packet(std::size_t size)
+CbfPacketData CbfPacketBufferTest::create_packet(std::size_t size)
 {
     auto packet = create_packet();
     assert(packet.pdu);
@@ -40,7 +40,7 @@ CbfPacket CbfPacketBufferTest::create_packet(std::size_t size)
 
 TEST_F(CbfPacketBufferTest, packet_length)
 {
-    CbfPacket packet = create_packet();
+    CbfPacketData packet = create_packet();
     EXPECT_EQ(packet.pdu->length(), length(packet));
 
     packet.payload->operator[](OsiLayer::Application) = ByteBuffer(30);
@@ -51,6 +51,31 @@ TEST_F(CbfPacketBufferTest, packet_length)
 
     packet.payload.reset();
     EXPECT_EQ(0, length(packet));
+}
+
+TEST_F(CbfPacketBufferTest, find)
+{
+    CbfPacketBuffer buffer(8192);
+    auto found1 = buffer.find({1, 2, 3, 4, 5, 6}, SequenceNumber(3));
+    EXPECT_FALSE(!!found1);
+
+    auto packet1 = create_packet();
+    packet1.pdu->extended().source_position.gn_addr.mid({1, 2, 3, 4, 5, 6});
+    packet1.pdu->extended().sequence_number = SequenceNumber(3);
+    buffer.push(std::move(packet1), {3, 4, 5, 1, 1, 1}, 0.5 * seconds, now);
+
+    auto found2 = buffer.find({1, 2, 3, 4, 5, 6}, SequenceNumber(4));
+    EXPECT_FALSE(!!found2);
+    auto found3 = buffer.find({1, 2, 3, 4, 5, 6}, SequenceNumber(3));
+    ASSERT_TRUE(!!found3);
+
+    EXPECT_EQ(1, found3->counter());
+    EXPECT_EQ((MacAddress {3, 4, 5, 1, 1, 1}), found3->sender());
+    found3->increment();
+
+    auto found4 = buffer.find({1, 2, 3, 4, 5, 6}, SequenceNumber(3));
+    ASSERT_TRUE(!!found4);
+    EXPECT_EQ(2, found4->counter());
 }
 
 TEST_F(CbfPacketBufferTest, next_timer_expiry)

@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <list>
 #include <memory>
+#include <tuple>
 
 
 namespace vanetza
@@ -20,18 +21,64 @@ class MacAddress;
 namespace geonet
 {
 
-struct CbfPacket
+struct CbfPacketData
 {
     using PduPtr = std::unique_ptr<GbcPdu>;
     using PayloadPtr = std::unique_ptr<DownPacket>;
 
-    CbfPacket(PduPtr pdu_) :
-        pdu(std::move(pdu_)) {}
-    CbfPacket(PduPtr pdu_, PayloadPtr payload_) :
+    CbfPacketData(PduPtr pdu_, PayloadPtr payload_) :
         pdu(std::move(pdu_)), payload(std::move(payload_)) {}
 
     PduPtr pdu;
     PayloadPtr payload;
+};
+
+class CbfPacketMetaData
+{
+public:
+    CbfPacketMetaData(const MacAddress& sender, Timestamp now);
+
+    /**
+     * Set timeout of buffered packet
+     * \param timeout duration until timer reaches zero
+     * \param now current timestamp
+     */
+    void set_timeout(units::Duration timeout, Timestamp now);
+
+    /**
+     * Get timer expiry
+     * \return Timestamp when timer expires
+     */
+    Timestamp timer_expiry() const { return m_timer_expiry; }
+
+    /**
+     * Get timestamp since packet is buffered
+     * \return Timestamp since buffering
+     */
+    Timestamp buffered_since() const { return m_buffered_since; }
+
+    /**
+     * Get counter value, initially 1
+     * \return counter value
+     */
+    unsigned counter() const { return m_counter; }
+
+    /**
+     * Increment counter value by one
+     */
+    void increment() { ++m_counter; }
+
+    /**
+     * Get sender address of buffered packet
+     * \return MAC address of sender
+     */
+    const MacAddress& sender() const { return m_sender; }
+
+private:
+    const MacAddress m_sender;
+    unsigned m_counter;
+    const Timestamp m_buffered_since;
+    Timestamp m_timer_expiry;
 };
 
 /**
@@ -39,13 +86,13 @@ struct CbfPacket
  * \param packet CBF packet
  * \return size of CBF packet on wire
  */
-std::size_t length(const CbfPacket&);
+std::size_t length(const CbfPacketData&);
 
 class CbfPacketBuffer
 {
 public:
-    typedef CbfPacket packet_type;
-    typedef std::list<CbfPacket> packet_list;
+    typedef CbfPacketData packet_type;
+    typedef std::list<packet_type> packet_list;
 
     /**
      * Create CBF packet buffer with bounded capacity
@@ -87,55 +134,20 @@ public:
     packet_list packets_to_send(Timestamp now);
 
     /**
-     * Get counter of stored packet
-     * \param mac MAC address of packet
-     * \param sn sequence number of packet
-     * \return 0 if packet is not buffered, counter value otherwise (starting with 1)
+     * Find packet metadata matching MAC address and sequence number
+     * \param mac MAC address
+     * \param sn sequence number
+     * \return meta data if found, empty otherwise
      */
-    unsigned counter(const MacAddress& mac, SequenceNumber sn) const;
-
-    /**
-     * Increment counter of stored packet by one
-     * \param mac MAC address of packet
-     * \param sn sequence number of packet
-     */
-    void increment(const MacAddress& mac, SequenceNumber sn);
-
-    /**
-     * Reschedule timeout of stored packet
-     * \param mac MAC address of packet
-     * \param sn sequence number of packet
-     * \param timeout Restart timer with this value
-     * \param now Timestamp of current time
-     */
-    void reschedule(const MacAddress& mac, SequenceNumber sn, units::Duration timeout, Timestamp now);
-
-    /**
-     * Get sender of stored packet
-     * \param mac MAC address of packet
-     * \param sn sequence number of packet
-     * \return MAC address of sender or broadcast address if no matching packet is buffered
-     */
-    const MacAddress& sender(const MacAddress& mac, SequenceNumber sn) const;
+    boost::optional<CbfPacketMetaData&> find(const MacAddress& mac, SequenceNumber sn);
+    boost::optional<const CbfPacketMetaData&> find(const MacAddress& mac, SequenceNumber sn) const;
 
 private:
-    struct Node
-    {
-        Node(packet_type&&, const MacAddress& sender, units::Duration timeout, Timestamp now);
-
-        packet_type packet;
-        const MacAddress sender;
-        const Timestamp buffered_since;
-        Timestamp timer_expiry;
-        unsigned counter;
-    };
-
-    std::list<Node> m_nodes;
+    typedef std::tuple<CbfPacketData, CbfPacketMetaData> node_type;
+    std::list<node_type> m_nodes;
     const std::size_t m_capacity;
     std::size_t m_stored;
 
-    boost::optional<std::list<Node>::iterator> find(const MacAddress& mac, SequenceNumber sn);
-    boost::optional<std::list<Node>::const_iterator> find(const MacAddress& mac, SequenceNumber sn) const;
 };
 
 } // namespace geonet
