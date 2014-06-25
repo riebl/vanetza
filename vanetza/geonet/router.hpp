@@ -109,6 +109,7 @@ private:
     NextHop next_hop_greedy_forwarding(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
     NextHop first_hop_contention_based_forwarding(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
     units::Duration timeout_cbf_gbc(units::Length distance) const;
+    units::Duration timeout_cbf_gbc(const MacAddress& sender) const;
 
     const MIB& m_mib;
     dcc::RequestInterface& m_request_interface;
