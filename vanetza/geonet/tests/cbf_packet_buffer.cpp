@@ -6,6 +6,8 @@ using namespace vanetza;
 using namespace vanetza::geonet;
 using units::si::seconds;
 
+static const MacAddress dummy_sender { 0, 3, 0, 3, 0, 3 };
+
 class CbfPacketBufferTest : public ::testing::Test
 {
 protected:
@@ -56,12 +58,12 @@ TEST_F(CbfPacketBufferTest, next_timer_expiry)
     CbfPacketBuffer buffer(8192);
     EXPECT_FALSE(!!buffer.next_timer_expiry());
 
-    buffer.push(create_packet(), 3.0 * seconds, now);
+    buffer.push(create_packet(), dummy_sender, 3.0 * seconds, now);
     ASSERT_TRUE(!!buffer.next_timer_expiry());
     EXPECT_EQ(now + Timestamp::duration_type(3.0 * seconds), buffer.next_timer_expiry().get());
 
     now += Timestamp::duration_type(1.0 * seconds);
-    buffer.push(create_packet(), 1.0 * seconds, now);
+    buffer.push(create_packet(), dummy_sender, 1.0 * seconds, now);
     ASSERT_TRUE(!!buffer.next_timer_expiry());
     EXPECT_EQ(now + Timestamp::duration_type(1.0 * seconds), buffer.next_timer_expiry().get());
 }
@@ -75,7 +77,7 @@ TEST_F(CbfPacketBufferTest, try_drop_sequence_number)
     auto packet = create_packet();
     packet.pdu->extended().source_position.gn_addr.mid(mac);
     packet.pdu->extended().sequence_number = SequenceNumber(8);
-    buffer.push(std::move(packet), 0.4 * seconds, now);
+    buffer.push(std::move(packet), dummy_sender, 0.4 * seconds, now);
     EXPECT_FALSE(buffer.try_drop(mac, SequenceNumber(7)));
     EXPECT_FALSE(buffer.try_drop(mac, SequenceNumber(9)));
     EXPECT_TRUE(buffer.try_drop(mac, SequenceNumber(8)));
@@ -91,7 +93,7 @@ TEST_F(CbfPacketBufferTest, try_drop_mac)
     auto packet = create_packet();
     packet.pdu->extended().source_position.gn_addr.mid(mac1);
     packet.pdu->extended().sequence_number = SequenceNumber(8);
-    buffer.push(std::move(packet), 0.4 * seconds, now);
+    buffer.push(std::move(packet), dummy_sender, 0.4 * seconds, now);
     EXPECT_FALSE(buffer.try_drop(mac2, SequenceNumber(8)));
     EXPECT_TRUE(buffer.try_drop(mac1, SequenceNumber(8)));
 }
@@ -104,12 +106,12 @@ TEST_F(CbfPacketBufferTest, try_drop_multiple_packets)
     auto packet1 = create_packet();
     packet1.pdu->extended().source_position.gn_addr.mid(mac);
     packet1.pdu->extended().sequence_number = SequenceNumber(8);
-    buffer.push(std::move(packet1), 0.4 * seconds, now);
+    buffer.push(std::move(packet1), dummy_sender, 0.4 * seconds, now);
 
     auto packet2 = create_packet();
     packet2.pdu->extended().source_position.gn_addr.mid(mac);
     packet2.pdu->extended().sequence_number = SequenceNumber(10);
-    buffer.push(std::move(packet2), 0.4 * seconds, now);
+    buffer.push(std::move(packet2), dummy_sender, 0.4 * seconds, now);
 
     EXPECT_FALSE(buffer.try_drop(mac, SequenceNumber(9)));
     EXPECT_TRUE(buffer.try_drop(mac, SequenceNumber(10)));
@@ -120,13 +122,13 @@ TEST_F(CbfPacketBufferTest, capacity)
 {
     CbfPacketBuffer buffer(256);
 
-    buffer.push(create_packet(128), 0.5 * seconds, now);
-    buffer.push(create_packet(128), 0.5 * seconds, now);
+    buffer.push(create_packet(128), dummy_sender, 0.5 * seconds, now);
+    buffer.push(create_packet(128), dummy_sender, 0.5 * seconds, now);
     now += Timestamp::duration_type(0.55 * seconds);
     EXPECT_EQ(2, buffer.packets_to_send(now).size());
 
-    buffer.push(create_packet(157), 0.5 * seconds, now);
-    buffer.push(create_packet(100), 0.5 * seconds, now);
+    buffer.push(create_packet(157), dummy_sender, 0.5 * seconds, now);
+    buffer.push(create_packet(100), dummy_sender, 0.5 * seconds, now);
     now += Timestamp::duration_type(1.0 * seconds);
     auto packets = buffer.packets_to_send(now);
     ASSERT_EQ(1, packets.size());
@@ -140,11 +142,11 @@ TEST_F(CbfPacketBufferTest, packets_to_send)
     EXPECT_EQ(0, packets.size());
 
     now += Timestamp::duration_type(1.0 * seconds);
-    buffer.push(create_packet(), 3.0 * seconds, now);
+    buffer.push(create_packet(), dummy_sender, 3.0 * seconds, now);
     packets = buffer.packets_to_send(now);
     EXPECT_EQ(0, packets.size());
 
-    buffer.push(create_packet(), 5.0 * seconds, now);
+    buffer.push(create_packet(), dummy_sender, 5.0 * seconds, now);
     now += Timestamp::duration_type(3.0 * seconds);
     packets = buffer.packets_to_send(now);
     EXPECT_EQ(1, packets.size());
@@ -153,8 +155,8 @@ TEST_F(CbfPacketBufferTest, packets_to_send)
     packets = buffer.packets_to_send(now);
     EXPECT_EQ(1, packets.size());
 
-    buffer.push(create_packet(), 1.0 * seconds, now);
-    buffer.push(create_packet(), 1.5 * seconds, now);
+    buffer.push(create_packet(), dummy_sender, 1.0 * seconds, now);
+    buffer.push(create_packet(), dummy_sender, 1.5 * seconds, now);
     now += Timestamp::duration_type(2.0 * seconds);
     packets = buffer.packets_to_send(now);
     ASSERT_EQ(2, packets.size());

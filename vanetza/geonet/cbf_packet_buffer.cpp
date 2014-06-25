@@ -39,7 +39,8 @@ bool CbfPacketBuffer::try_drop(const MacAddress& mac, SequenceNumber sn)
     return packet_dropped;
 }
 
-void CbfPacketBuffer::push(CbfPacket&& packet, units::Duration timeout, Timestamp now)
+void CbfPacketBuffer::push(CbfPacket&& packet, const MacAddress& sender,
+        units::Duration timeout, Timestamp now)
 {
     assert(packet.pdu);
     assert(timeout > 0.0 * units::si::seconds);
@@ -55,7 +56,7 @@ void CbfPacketBuffer::push(CbfPacket&& packet, units::Duration timeout, Timestam
     if (packet_size <= m_capacity) {
         assert(m_capacity - m_stored >= packet_size);
         m_stored += packet_size;
-        m_nodes.emplace_back(std::move(packet), timeout, now);
+        m_nodes.emplace_back(std::move(packet), sender, timeout, now);
         assert(m_nodes.back().packet.pdu);
     }
 }
@@ -122,7 +123,16 @@ void CbfPacketBuffer::increment(const MacAddress& mac, SequenceNumber sn)
     }
 }
 
-CbfPacketBuffer::Node::Node(packet_type&& p, units::Duration timeout, Timestamp now) :
+const MacAddress& CbfPacketBuffer::sender(const MacAddress& mac, SequenceNumber sn) const
+{
+    auto found = find(mac, sn);
+    if (found) {
+        return found.get()->sender;
+    } else {
+        return cBroadcastMacAddress;
+    }
+}
+
 boost::optional<std::list<CbfPacketBuffer::Node>::iterator>
 CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn)
 {
@@ -155,7 +165,9 @@ CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn) const
     return result;
 }
 
+CbfPacketBuffer::Node::Node(packet_type&& p, const MacAddress& sender, units::Duration timeout, Timestamp now) :
     packet(std::move(p)),
+    sender(sender),
     buffered_since(now),
     timer_expiry(now + Timestamp::duration_type(timeout)),
     counter(1)

@@ -422,7 +422,7 @@ NextHop Router::next_hop_contention_based_forwarding(
         const Area destination_area = gbc.destination(ht);
         if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
             CbfPacketBuffer::packet_type packet(std::move(pdu), std::move(payload));
-            m_cbf_buffer.push(std::move(packet), timeout_cbf_gbc(sender), m_time_now);
+            m_cbf_buffer.push(std::move(packet), sender, timeout_cbf_gbc(sender), m_time_now);
             nh.state(NextHop::State::BUFFERED);
         } else {
             auto pv_se = m_location_table.get_position(sender);

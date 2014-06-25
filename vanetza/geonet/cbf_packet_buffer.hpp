@@ -67,10 +67,11 @@ public:
     /**
      * Enqueue a packet and start an associated timer expiring after timeout
      * \param packet Buffer this packet
+     * \param sender MAC address of sender (source or forwarder)
      * \param timeout CBF timer expiration for this packet
      * \param now Timestamp of current time
      */
-    void push(packet_type&& packet, units::Duration timeout, Timestamp now);
+    void push(packet_type&& packet, const MacAddress& sender, units::Duration timeout, Timestamp now);
 
     /**
      * Get timestamp at which next timer is going to expire.
@@ -100,12 +101,21 @@ public:
      */
     void increment(const MacAddress& mac, SequenceNumber sn);
 
+    /**
+     * Get sender of stored packet
+     * \param mac MAC address of packet
+     * \param sn sequence number of packet
+     * \return MAC address of sender or broadcast address if no matching packet is buffered
+     */
+    const MacAddress& sender(const MacAddress& mac, SequenceNumber sn) const;
+
 private:
     struct Node
     {
-        Node(packet_type&&, units::Duration timeout, Timestamp now);
+        Node(packet_type&&, const MacAddress& sender, units::Duration timeout, Timestamp now);
 
         packet_type packet;
+        const MacAddress sender;
         const Timestamp buffered_since;
         const Timestamp timer_expiry;
         unsigned counter;
