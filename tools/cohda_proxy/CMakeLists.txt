@@ -7,7 +7,3 @@ link_libraries(${Boost_SYSTEM_LIBRARY})
 
 add_executable(cohda_proxy proxy.cpp proxy_handler.cpp)
 target_link_libraries(cohda_proxy net)
-
-include(CohdaUpload)
-cohda_upload_target(cohda_proxy /tmp/)
-
