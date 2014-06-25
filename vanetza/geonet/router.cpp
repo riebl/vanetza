@@ -13,6 +13,7 @@
 #include <vanetza/units/frequency.hpp>
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
+#include <boost/units/cmath.hpp>
 #include <stdexcept>
 
 namespace vanetza
@@ -204,7 +205,8 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
                         std::move(pdu), std::move(payload));
                 break;
             case BroadcastForwarding::ADVANCED:
-                throw std::runtime_error("advanced BC forwarding not implemented");
+                first_hop = first_hop_gbc_advanced(request.traffic_class.store_carry_forward(),
+                        std::move(pdu), std::move(payload));
                 break;
             default:
                 throw std::runtime_error("unhandled BC forwarding algorithm");
@@ -443,6 +445,80 @@ NextHop Router::next_hop_contention_based_forwarding(
     return nh;
 }
 
+NextHop Router::first_hop_gbc_advanced(bool scf, std::unique_ptr<GbcPdu> pdu, DownPacketPtr payload)
+{
+    const Area& destination = pdu->extended().destination(pdu->common().header_type);
+    if (inside_or_at_border(destination, m_local_position_vector.position())) {
+        units::Duration timeout = m_mib.itsGnGeoBroadcastCbfMaxTime;
+        CbfPacketBuffer::packet_type packet(std::unique_ptr<GbcPdu> { pdu->clone() }, duplicate(*payload));
+        m_cbf_buffer.push(std::move(packet), m_local_position_vector.gn_addr.mid(), timeout, m_time_now);
+    }
+
+    return next_hop_greedy_forwarding(scf, std::move(pdu), std::move(payload));
+}
+
+NextHop Router::next_hop_gbc_advanced(
+        bool scf, const MacAddress& sender, const MacAddress& destination,
+        std::unique_ptr<GbcPdu> pdu, DownPacketPtr payload)
+{
+    NextHop nh;
+    const GeoBroadcastHeader& gbc = pdu->extended();
+    const HeaderType ht = pdu->common().header_type;
+    const Area destination_area = gbc.destination(ht);
+    static const std::size_t max_counter = 3; // TODO: Where is this constant's definition in GN standard?
+
+    if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
+        unsigned counter = m_cbf_buffer.counter(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+        if (counter > 0) {
+            if (counter > max_counter) {
+                m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+                nh.state(NextHop::State::DISCARDED);
+            } else {
+                if (!outside_sectorial_contention_area(
+                        m_cbf_buffer.sender(gbc.source_position.gn_addr.mid(), gbc.sequence_number),
+                        sender)) {
+                    m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+                    nh.state(NextHop::State::DISCARDED);
+                } else {
+                    m_cbf_buffer.reschedule(gbc.source_position.gn_addr.mid(), gbc.sequence_number,
+                            timeout_cbf_gbc(sender), m_time_now);
+                    m_cbf_buffer.increment(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+                    nh.state(NextHop::State::BUFFERED);
+                }
+            }
+        } else {
+            units::Duration timeout = 0.0 * units::si::seconds;
+            if (destination == m_local_position_vector.gn_addr.mid()) {
+                timeout = m_mib.itsGnGeoUnicastCbfMaxTime;
+                nh = next_hop_greedy_forwarding(scf,
+                        std::unique_ptr<GbcPdu> { pdu->clone() }, duplicate(*payload));
+            } else {
+                timeout = timeout_cbf_gbc(sender);
+                nh.state(NextHop::State::BUFFERED);
+            }
+
+            CbfPacketBuffer::packet_type packet(std::move(pdu), std::move(payload));
+            m_cbf_buffer.push(std::move(packet), sender, timeout, m_time_now);
+            nh.state(NextHop::State::BUFFERED);
+        }
+    } else {
+        auto pv_se = m_location_table.get_position(sender);
+        if (pv_se && pv_se.get().position_accuracy_indicator) {
+            if (!inside_or_at_border(destination_area, pv_se.get().position())) {
+                nh = next_hop_greedy_forwarding(scf, std::move(pdu), std::move(payload));
+            } else {
+                nh.state(NextHop::State::DISCARDED);
+            }
+        } else {
+            nh.mac(cBroadcastMacAddress);
+            nh.data(std::move(pdu), std::move(payload));
+            nh.state(NextHop::State::VALID);
+        }
+    }
+
+    return nh;
+}
+
 NextHop Router::next_hop_greedy_forwarding(
         bool scf,
         std::unique_ptr<GbcPdu> pdu, DownPacketPtr payload)
@@ -520,6 +596,29 @@ units::Duration Router::timeout_cbf_gbc(const MacAddress& sender) const
         timeout = m_mib.itsGnGeoBroadcastCbfMaxTime;
     }
     return timeout;
+}
+
+bool Router::outside_sectorial_contention_area(const MacAddress& sender, const MacAddress& forwarder) const
+{
+    auto position_sender = m_location_table.get_position(sender);
+    auto position_forwarder = m_location_table.get_position(forwarder);
+
+    // Assumption: if any position is missing, then sectorial area becomes infinite small
+    // As a result of this assumption, everything lays outside then
+    if (position_sender && position_forwarder) {
+        auto dist_r = distance(position_sender->position(), m_local_position_vector.position());
+        auto dist_f = distance(position_forwarder->position(), position_sender->position());
+        const auto dist_max = m_mib.itsGnDefaultMaxCommunicationRange;
+
+        auto dist_rf = distance(position_forwarder->position(), m_local_position_vector.position());
+        auto cos_fsr = dist_rf * dist_rf - dist_r * dist_r - dist_f * dist_f + 2.0 * dist_r * dist_f;
+        auto angle_fsr = boost::units::acos(cos_fsr / (units::si::meters * units::si::meters));
+        const auto angle_th = m_mib.itsGnBroadcastCBFDefSectorAngle;
+
+        return !(dist_r < dist_f && dist_f < dist_max && angle_fsr < angle_th);
+    } else {
+        return true;
+    }
 }
 
 void Router::process_extended(const ExtendedPduRefs<ShbHeader>& pdu, UpPacketPtr packet)
@@ -612,7 +711,7 @@ void Router::process_extended(const ExtendedPduRefs<GeoBroadcastHeader>& pdu,
             next_hop = next_hop_contention_based_forwarding(scf, sender, std::move(pdu_dup), std::move(payload));
             break;
         case BroadcastForwarding::ADVANCED:
-            throw std::runtime_error("advanced broadcast forwarding unimplemented");
+            next_hop = next_hop_gbc_advanced(scf, sender, destination, std::move(pdu_dup), std::move(payload));
             break;
         default:
             throw std::runtime_error("unhandeld broadcast forwarding algorithm");

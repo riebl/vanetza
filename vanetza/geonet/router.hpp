@@ -104,12 +104,16 @@ private:
     void pass_down(const dcc::DataRequest&, PduPtr, DownPacketPtr);
     void pass_up(DataIndication&, UpPacketPtr);
     void detect_duplicate_address(const Address&);
+    NextHop next_hop_gbc_advanced(bool scf, const MacAddress& sender, const MacAddress& destination,
+            std::unique_ptr<GbcPdu>, DownPacketPtr);
+    NextHop first_hop_gbc_advanced(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
     NextHop next_hop_contention_based_forwarding(bool scf, const MacAddress& sender,
             std::unique_ptr<GbcPdu>, DownPacketPtr);
     NextHop next_hop_greedy_forwarding(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
     NextHop first_hop_contention_based_forwarding(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
     units::Duration timeout_cbf_gbc(units::Length distance) const;
     units::Duration timeout_cbf_gbc(const MacAddress& sender) const;
+    bool outside_sectorial_contention_area(const MacAddress& sender, const MacAddress& forwarder) const;
 
     const MIB& m_mib;
     dcc::RequestInterface& m_request_interface;
