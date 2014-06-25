@@ -71,7 +71,7 @@ public:
     DataConfirm request(const GucDataRequest&, DownPacketPtr);
     DataConfirm request(const GacDataRequest&, DownPacketPtr);
     DataConfirm request(const TsbDataRequest&, DownPacketPtr);
-    void indicate(UpPacketPtr, const MacAddress& sender);
+    void indicate(UpPacketPtr, const MacAddress& sender, const MacAddress& destination);
     void update(Timestamp now);
     /**
      * Update router's local position vector
@@ -94,7 +94,7 @@ private:
     void reset_beacon_timer();
     void process_extended(const ExtendedPduRefs<ShbHeader>&, UpPacketPtr);
     void process_extended(const ExtendedPduRefs<GeoBroadcastHeader>&, UpPacketPtr,
-            const MacAddress& sender);
+            const MacAddress& sender, const MacAddress& destination);
     void flush_forwarding_buffer(PacketBuffer&);
     void flush_broadcast_forwarding_buffer();
     void flush_unicast_forwarding_buffer();

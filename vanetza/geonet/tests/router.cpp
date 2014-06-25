@@ -82,7 +82,7 @@ TEST(Router, shb_round_trip)
         );
 
     const auto indications_before = ind_ifc.m_indications;
-    router.indicate(std::move(packet_up), cBroadcastMacAddress);
+    router.indicate(std::move(packet_up), {1, 2, 3, 4, 5, 6}, cBroadcastMacAddress);
     EXPECT_EQ(indications_before + 1, ind_ifc.m_indications);
 
     ASSERT_NE(nullptr, ind_ifc.m_last_packet.get());

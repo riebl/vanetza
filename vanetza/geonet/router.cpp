@@ -237,7 +237,7 @@ DataConfirm Router::request(const TsbDataRequest&, DownPacketPtr)
     return DataConfirm(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
 }
 
-void Router::indicate(UpPacketPtr packet, const MacAddress& sender)
+void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
 {
     assert(packet);
     auto pdu = parse(*packet);
@@ -268,11 +268,13 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender)
         extended_header_visitor(Router* router,
                 std::unique_ptr<UpPacket> packet,
                 ParsedPdu& pdu,
-                const MacAddress& sender) :
+                const MacAddress& sender,
+                const MacAddress& destination) :
             m_router(router),
             m_packet(std::move(packet)),
             m_pdu(pdu),
-            m_sender(sender) {}
+            m_sender(sender),
+            m_destination(destination) {}
 
         void operator()(ShbHeader& shb)
         {
@@ -283,7 +285,7 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender)
         void operator()(GeoBroadcastHeader& gbc)
         {
             ExtendedPduRefs<GeoBroadcastHeader> pdu(m_pdu.basic, m_pdu.common, gbc);
-            m_router->process_extended(pdu, std::move(m_packet), m_sender);
+            m_router->process_extended(pdu, std::move(m_packet), m_sender, m_destination);
         }
 
         void operator()(BeaconHeader&)
@@ -295,9 +297,10 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender)
         std::unique_ptr<UpPacket> m_packet;
         ParsedPdu& m_pdu;
         const MacAddress& m_sender;
+        const MacAddress& m_destination;
     };
 
-    extended_header_visitor visitor(this, std::move(packet), *pdu, sender);
+    extended_header_visitor visitor(this, std::move(packet), *pdu, sender, destination);
     boost::apply_visitor(visitor, pdu->extended);
 }
 
@@ -550,7 +553,7 @@ void Router::process_extended(const ExtendedPduRefs<ShbHeader>& pdu, UpPacketPtr
 }
 
 void Router::process_extended(const ExtendedPduRefs<GeoBroadcastHeader>& pdu,
-        UpPacketPtr packet, const MacAddress& sender)
+        UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
 {
     assert(packet);
     const GeoBroadcastHeader& gbc = pdu.extended();
