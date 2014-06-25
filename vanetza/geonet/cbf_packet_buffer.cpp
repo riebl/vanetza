@@ -29,16 +29,10 @@ bool CbfPacketBuffer::try_drop(const MacAddress& mac, SequenceNumber sn)
 {
     bool packet_dropped = false;
 
-    auto found = std::find_if(m_nodes.begin(), m_nodes.end(),
-            [&](const Node& node) {
-                assert(node.packet.pdu);
-                const GeoBroadcastHeader& gbc = node.packet.pdu->extended();
-                return (gbc.source_position.gn_addr.mid() == mac && gbc.sequence_number == sn);
-            });
-
-    if (found != m_nodes.end()) {
-        m_stored -= length(found->packet);
-        m_nodes.erase(found);
+    auto found = find(mac, sn);
+    if (found) {
+        m_stored -= length(found.get()->packet);
+        m_nodes.erase(found.get());
         packet_dropped = true;
     }
 
@@ -111,6 +105,22 @@ CbfPacketBuffer::packet_list CbfPacketBuffer::packets_to_send(Timestamp now)
 }
 
 CbfPacketBuffer::Node::Node(packet_type&& p, units::Duration timeout, Timestamp now) :
+boost::optional<std::list<CbfPacketBuffer::Node>::iterator>
+CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn)
+{
+    boost::optional<std::list<Node>::iterator> result;
+    auto found = std::find_if(m_nodes.begin(), m_nodes.end(),
+            [&](const Node& node) {
+                assert(node.packet.pdu);
+                const GeoBroadcastHeader& gbc = node.packet.pdu->extended();
+                return (gbc.source_position.gn_addr.mid() == mac && gbc.sequence_number == sn);
+            });
+    if (found != m_nodes.end()) {
+        result = found;
+    }
+    return result;
+}
+
     packet(std::move(p)),
     buffered_since(now),
     timer_expiry(now + Timestamp::duration_type(timeout))

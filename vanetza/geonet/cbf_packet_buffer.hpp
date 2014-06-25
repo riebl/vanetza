@@ -98,6 +98,8 @@ private:
     std::list<Node> m_nodes;
     const std::size_t m_capacity;
     std::size_t m_stored;
+
+    boost::optional<std::list<Node>::iterator> find(const MacAddress& mac, SequenceNumber sn);
 };
 
 } // namespace geonet
