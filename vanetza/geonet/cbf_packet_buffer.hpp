@@ -102,6 +102,15 @@ public:
     void increment(const MacAddress& mac, SequenceNumber sn);
 
     /**
+     * Reschedule timeout of stored packet
+     * \param mac MAC address of packet
+     * \param sn sequence number of packet
+     * \param timeout Restart timer with this value
+     * \param now Timestamp of current time
+     */
+    void reschedule(const MacAddress& mac, SequenceNumber sn, units::Duration timeout, Timestamp now);
+
+    /**
      * Get sender of stored packet
      * \param mac MAC address of packet
      * \param sn sequence number of packet
@@ -117,7 +126,7 @@ private:
         packet_type packet;
         const MacAddress sender;
         const Timestamp buffered_since;
-        const Timestamp timer_expiry;
+        Timestamp timer_expiry;
         unsigned counter;
     };
 

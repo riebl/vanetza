@@ -123,6 +123,15 @@ void CbfPacketBuffer::increment(const MacAddress& mac, SequenceNumber sn)
     }
 }
 
+void CbfPacketBuffer::reschedule(const MacAddress& mac, SequenceNumber sn,
+        units::Duration timeout, Timestamp now)
+{
+    auto found = find(mac, sn);
+    if (found) {
+        found.get()->timer_expiry = now + Timestamp::duration_type(timeout);
+    }
+}
+
 const MacAddress& CbfPacketBuffer::sender(const MacAddress& mac, SequenceNumber sn) const
 {
     auto found = find(mac, sn);
