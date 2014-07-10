@@ -11,8 +11,6 @@
 #include <ostream>
 #include <string>
 
-struct sockaddr_ll;
-
 namespace vanetza
 {
 
