@@ -3,7 +3,7 @@
 
 struct sockaddr_ll;
 
-namespace vanetza 
+namespace vanetza
 {
 
 class MacAddress;
