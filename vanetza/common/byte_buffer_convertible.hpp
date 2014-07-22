@@ -22,7 +22,7 @@ template<class T>
 struct byte_buffer_impl;
 
 template<>
-struct byte_buffer_impl<ByteBuffer&&> : public byte_buffer
+struct byte_buffer_impl<ByteBuffer> : public byte_buffer
 {
     byte_buffer_impl(ByteBuffer&& buffer) : m_buffer(std::move(buffer)) {}
     void convert(ByteBuffer& buf) const override { buf = m_buffer; }
@@ -70,12 +70,8 @@ public:
         m_wrapper(std::move(ptr)) {}
 
     template<class T>
-    ByteBufferConvertible(std::unique_ptr<T> t) :
-        m_wrapper(new convertible::byte_buffer_impl<std::unique_ptr<T>>(std::move(t))) {}
-
-    template<class T>
     ByteBufferConvertible(T&& t) :
-        m_wrapper(new convertible::byte_buffer_impl<T&&>(std::forward<T>(t))) {}
+        m_wrapper(new convertible::byte_buffer_impl<T>(std::forward<T>(t))) {}
 
     ByteBufferConvertible(const ByteBufferConvertible&);
     ByteBufferConvertible& operator=(const ByteBufferConvertible&);

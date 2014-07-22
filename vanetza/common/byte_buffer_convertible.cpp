@@ -10,7 +10,7 @@ std::unique_ptr<byte_buffer> byte_buffer::duplicate() const
     ByteBuffer duplicate;
     this->convert(duplicate);
     std::unique_ptr<byte_buffer> result {
-        new byte_buffer_impl<ByteBuffer&&>(std::move(duplicate))
+        new byte_buffer_impl<ByteBuffer>(std::move(duplicate))
     };
     return result;
 }

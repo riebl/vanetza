@@ -22,10 +22,10 @@ namespace convertible
 {
 
 template<>
-struct byte_buffer_impl<vanetza::asn1::Cam&&> :
-public byte_buffer_impl<asn1::asn1c_wrapper<CAM_t>&&>
+struct byte_buffer_impl<vanetza::asn1::Cam> :
+public byte_buffer_impl<asn1::asn1c_wrapper<CAM_t>>
 {
-    using byte_buffer_impl<asn1::asn1c_wrapper<CAM_t>&&>::byte_buffer_impl;
+    using byte_buffer_impl<asn1::asn1c_wrapper<CAM_t>>::byte_buffer_impl;
 };
 
 } // namespace convertible

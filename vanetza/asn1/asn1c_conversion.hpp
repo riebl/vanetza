@@ -10,7 +10,7 @@ namespace convertible
 {
 
 template<class T>
-struct byte_buffer_impl<asn1::asn1c_wrapper<T>&&> : public byte_buffer
+struct byte_buffer_impl<asn1::asn1c_wrapper<T>> : public byte_buffer
 {
     byte_buffer_impl(asn1::asn1c_wrapper<T>&& t) :
         m_wrapper(std::move(t)) {}
