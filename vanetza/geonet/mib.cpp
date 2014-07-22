@@ -14,8 +14,6 @@ using boost::units::si::milli;
 const auto milliseconds = milli * seconds;
 
 ManagementInformationBase::ManagementInformationBase() :
-    // TODO: generate address randomly
-    itsGnLocalGnAddr(MacAddress { 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}),
     itsGnLocalAddrConfMethod(AddrConfMethod::MANAGED),
     itsGnProtocolVersion(0), // TS 102 636-4-1 (V1.1.1) = 0
     itsGnStationType(StationType::PASSENGER_CAR),
