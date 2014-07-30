@@ -32,7 +32,7 @@ namespace vanetza
 class MacAddress;
 namespace dcc
 {
-    class DataRequest;
+    struct DataRequest;
     class RequestInterface;
 } // namespace dcc
 
