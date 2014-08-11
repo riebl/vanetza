@@ -23,9 +23,9 @@ namespace convertible
 
 template<>
 struct byte_buffer_impl<vanetza::asn1::Cam> :
-public byte_buffer_impl<asn1::asn1c_wrapper<CAM_t>>
+public asn1::byte_buffer_impl<vanetza::asn1::Cam>
 {
-    using byte_buffer_impl<asn1::asn1c_wrapper<CAM_t>>::byte_buffer_impl;
+    using asn1::byte_buffer_impl<vanetza::asn1::Cam>::byte_buffer_impl;
 };
 
 } // namespace convertible
