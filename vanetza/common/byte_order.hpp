@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <iosfwd>
 #include <type_traits>
 #include <endian.h>
 
@@ -192,6 +193,20 @@ public:
         return network_type(*this).get();
     }
 };
+
+
+/**
+ * Print to ostream in network byte order
+ * \param os output stream
+ * \param t endian type object
+ * \return os
+ */
+template<typename T, ByteOrder ORDER>
+std::ostream& operator<<(std::ostream& os, const EndianType<T, ORDER>& t)
+{
+    os << t.net();
+    return os;
+}
 
 } // namespace detail
 
