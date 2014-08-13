@@ -54,15 +54,15 @@ TEST_F(CbfPacketBufferTest, packet_length)
 TEST_F(CbfPacketBufferTest, next_timer_expiry)
 {
     CbfPacketBuffer buffer(8192);
-    EXPECT_FALSE(buffer.next_timer_expiry());
+    EXPECT_FALSE(!!buffer.next_timer_expiry());
 
     buffer.push(create_packet(), 3.0 * seconds, now);
-    ASSERT_TRUE(buffer.next_timer_expiry());
+    ASSERT_TRUE(!!buffer.next_timer_expiry());
     EXPECT_EQ(now + Timestamp::duration_type(3.0 * seconds), buffer.next_timer_expiry().get());
 
     now += Timestamp::duration_type(1.0 * seconds);
     buffer.push(create_packet(), 1.0 * seconds, now);
-    ASSERT_TRUE(buffer.next_timer_expiry());
+    ASSERT_TRUE(!!buffer.next_timer_expiry());
     EXPECT_EQ(now + Timestamp::duration_type(1.0 * seconds), buffer.next_timer_expiry().get());
 }
 

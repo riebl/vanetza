@@ -8,10 +8,10 @@ using vanetza::units::si::seconds;
 TEST(DataRequest, repetition) {
     MIB mib;
     DataRequest r(mib);
-    EXPECT_FALSE(r.repetition);
+    EXPECT_FALSE(!!r.repetition);
 
     r.repetition = DataRequest::Repetition();
-    EXPECT_TRUE(r.repetition);
+    EXPECT_TRUE(!!r.repetition);
 }
 
 TEST(DataRequest, has_further_repetition) {

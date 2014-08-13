@@ -34,7 +34,7 @@ TEST(LocationTable, position_vector) {
     lt.update(pv);
 
     auto retrieved_pv = lt.get_position(a);
-    ASSERT_TRUE(retrieved_pv);
+    ASSERT_TRUE(!!retrieved_pv);
     EXPECT_EQ(pv, retrieved_pv.get());
 
     Address b = a;

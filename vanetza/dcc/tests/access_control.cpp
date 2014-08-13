@@ -71,14 +71,14 @@ TEST_F(AccessControlTest, dropping)
 
     for (unsigned i = 0; i < 20; ++i) {
         ifc.last_request.reset();
-        ASSERT_FALSE(ifc.last_request);
+        ASSERT_FALSE(!!ifc.last_request);
         ctrl.request(request, nullptr);
-        EXPECT_TRUE(ifc.last_request);
+        EXPECT_TRUE(!!ifc.last_request);
     }
 
     ifc.last_request.reset();
     ctrl.request(request, nullptr);
-    EXPECT_FALSE(ifc.last_request);
+    EXPECT_FALSE(!!ifc.last_request);
 }
 
 TEST_F(AccessControlTest, scheduler_notification)

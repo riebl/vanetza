@@ -28,7 +28,7 @@ TEST(BtpDataIndication, construct_from_header_b) {
             boost::get<geonet::Address>(btp_ind.destination));
     EXPECT_EQ(gn_ind.source_position, btp_ind.source_position);
     EXPECT_EQ(gn_ind.traffic_class.raw(), btp_ind.traffic_class.raw());
-    ASSERT_TRUE(btp_ind.remaining_packet_lifetime);
+    ASSERT_TRUE(!!btp_ind.remaining_packet_lifetime);
     EXPECT_EQ(gn_ind.remaining_packet_lifetime->raw(),
             btp_ind.remaining_packet_lifetime->raw());
 }

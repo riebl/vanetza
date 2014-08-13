@@ -43,14 +43,14 @@ TEST(MacAddress, ostream) {
 TEST(MacAddress, parse) {
     MacAddress result;
 
-    ASSERT_TRUE(parse_mac_address("01:02:03:04:05:06", result));
+    ASSERT_TRUE(!!parse_mac_address("01:02:03:04:05:06", result));
     EXPECT_EQ(MacAddress({1, 2, 3, 4, 5, 6}), result);
-    EXPECT_TRUE(parse_mac_address("01:02:03:04:05:06"));
+    EXPECT_TRUE(!!parse_mac_address("01:02:03:04:05:06"));
 
-    EXPECT_FALSE(parse_mac_address(":::::0102040506", result));
-    EXPECT_FALSE(parse_mac_address("foobarfoobarfoob", result));
-    EXPECT_FALSE(parse_mac_address("01:02:03:04:05", result));
-    EXPECT_FALSE(parse_mac_address("01:02:03:04:05:06:07", result));
+    EXPECT_FALSE(!!parse_mac_address(":::::0102040506", result));
+    EXPECT_FALSE(!!parse_mac_address("foobarfoobarfoob", result));
+    EXPECT_FALSE(!!parse_mac_address("01:02:03:04:05", result));
+    EXPECT_FALSE(!!parse_mac_address("01:02:03:04:05:06:07", result));
 }
 
 TEST(MacAddress, create) {
