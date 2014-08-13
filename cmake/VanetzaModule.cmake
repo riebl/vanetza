@@ -5,10 +5,8 @@ macro(vanetza_module NAME)
     add_library(${NAME}_static STATIC ${_sources})
     set_property(TARGET ${NAME} PROPERTY OUTPUT_NAME vanetza_${NAME})
     set_property(TARGET ${NAME}_static PROPERTY OUTPUT_NAME vanetza_${NAME})
-    set_property(TARGET ${NAME} ${NAME}_static PROPERTY
-        INTERFACE_INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR})
-    set_property(TARGET ${NAME} ${NAME}_static APPEND PROPERTY
-        INCLUDE_DIRECTORIES ${VANETZA_MODULE_INCLUDE_DIRECTORIES} ${PROJECT_SOURCE_DIR})
+    target_include_directories(${NAME} PUBLIC ${VANETZA_MODULE_INCLUDE_DIRECTORIES})
+    target_include_directories(${NAME}_static PUBLIC ${VANETZA_MODULE_INCLUDE_DIRECTORIES})
 endmacro()
 
 macro(vanetza_module_dependencies NAME)

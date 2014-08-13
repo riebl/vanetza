@@ -1,5 +1,5 @@
 find_package(Boost 1.50 REQUIRED)
-set(VANETZA_MODULE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
+set(VANETZA_MODULE_INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR})
 
 add_subdirectory(asn1)
 add_subdirectory(btp)
