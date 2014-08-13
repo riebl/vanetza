@@ -2,6 +2,7 @@
 #include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/header.hpp>
 #include <vanetza/geonet/data_indication.hpp>
+#include <boost/optional/optional_io.hpp>
 
 using namespace vanetza;
 
