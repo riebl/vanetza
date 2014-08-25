@@ -97,6 +97,7 @@ StateMachine::StateMachine() :
 
 void StateMachine::update(const ChannelLoad& cl)
 {
+    m_current_cl = cl;
     m_cl_smoothing.update(cl);
     m_channel_loads.push_front(m_cl_smoothing.channel_load());
 
@@ -119,6 +120,24 @@ void StateMachine::update(const ChannelLoad& cl)
             m_state = &m_active;
             m_active.update(min_channel_load(), max_channel_load());
         }
+    }
+}
+
+boost::optional<double> StateMachine::getChannelLoad() const
+{
+    if (m_current_cl) {
+        return m_current_cl.fraction();
+    } else {
+        return boost::optional<double>();
+    }
+}
+
+boost::optional<double> StateMachine::getSmoothedChannelLoad() const
+{
+    if (!m_channel_loads.empty()) {
+        return m_channel_loads.front();
+    } else {
+        return boost::optional<double>();
     }
 }
 

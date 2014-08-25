@@ -4,6 +4,7 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/channel_load_smoothing.hpp>
 #include <boost/circular_buffer.hpp>
+#include <boost/optional.hpp>
 
 namespace vanetza
 {
@@ -82,10 +83,23 @@ public:
      */
     const State& state() const;
 
+    /**
+     * Get current channel load (non-smoothed)
+     * \return non-smoothed channel load if measurement exists
+     */
+    boost::optional<double> getChannelLoad() const;
+
+    /**
+     * Get current channel load (smoothed)
+     * \return smoothed channel load if measurement exists
+     */
+    boost::optional<double> getSmoothedChannelLoad() const;
+
 private:
     double max_channel_load() const;
     double min_channel_load() const;
 
+    boost::optional<ChannelLoad> m_current_cl;
     Relaxed m_relaxed;
     Active m_active;
     Restrictive m_restrictive;
