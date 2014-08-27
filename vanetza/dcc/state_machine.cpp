@@ -126,7 +126,7 @@ void StateMachine::update(const ChannelLoad& cl)
 boost::optional<double> StateMachine::getChannelLoad() const
 {
     if (m_current_cl) {
-        return m_current_cl.fraction();
+        return m_current_cl->fraction();
     } else {
         return boost::optional<double>();
     }
