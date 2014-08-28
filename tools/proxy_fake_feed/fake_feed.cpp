@@ -49,11 +49,11 @@ int main(int argc, char** argv)
     set_payload(proxy, packet.size());
 
     while (true) {
-        array<asio::const_buffer, 3> buffers = {
+        array<asio::const_buffer, 3> buffers {{
             asio::buffer(&proxy, sizeof(proxy)),
             asio::buffer(packet[OsiLayer::Link]),
             asio::buffer(packet[OsiLayer::Network])
-        };
+        }};
         socket.send_to(buffers, endpoint);
 
         sleep(1);
