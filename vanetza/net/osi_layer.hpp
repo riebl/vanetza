@@ -21,7 +21,7 @@ enum class OsiLayer : uint8_t
 constexpr OsiLayer min_osi_layer() { return OsiLayer::Physical; }
 constexpr OsiLayer max_osi_layer() { return OsiLayer::Application; }
 
-constexpr std::array<OsiLayer, 7> osi_layers {
+constexpr std::array<OsiLayer, 7> osi_layers {{
             OsiLayer::Physical,
             OsiLayer::Link,
             OsiLayer::Network,
@@ -29,7 +29,7 @@ constexpr std::array<OsiLayer, 7> osi_layers {
             OsiLayer::Session,
             OsiLayer::Presentation,
             OsiLayer::Application
-};
+}};
 
 constexpr std::size_t num_osi_layers(OsiLayer from, OsiLayer to)
 {
