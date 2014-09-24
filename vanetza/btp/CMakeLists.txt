@@ -1,5 +1,6 @@
 set(CXX_SOURCES
     data_indication.cpp
+    data_request.cpp
     header.cpp
     port_dispatcher.cpp
 )

@@ -25,6 +25,8 @@ struct DataRequestGeoNetParams
 
 struct DataRequestB
 {
+    DataRequestB();
+
     decltype(HeaderB::destination_port) destination_port;
     decltype(HeaderB::destination_port_info) destination_port_info;
     DataRequestGeoNetParams gn;
