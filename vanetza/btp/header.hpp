@@ -16,6 +16,7 @@ typedef uint16be_t port_type;
 struct HeaderA
 {
     static const std::size_t length_bytes = 4;
+
     port_type destination_port;
     port_type source_port;
 };
