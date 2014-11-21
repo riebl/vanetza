@@ -1,4 +1,4 @@
-find_package(Boost COMPONENTS serialization REQUIRED)
+find_package(Boost COMPONENTS date_time serialization REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
 
 set(CXX_SOURCES
@@ -38,6 +38,7 @@ vanetza_module_property(geonet INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
 )
 vanetza_module_dependencies(geonet
+    ${Boost_DATE_TIME_LIBRARY}
     ${Boost_SERIALIZATION_LIBRARY}
     GeographicLib
 )
