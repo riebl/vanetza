@@ -68,7 +68,7 @@ CartesianPosition local_cartesian(
 {
     namespace si = units::si;
     using namespace GeographicLib;
-    const Geocentric& earth = Geocentric::WGS84;
+    const Geocentric& earth = Geocentric::WGS84();
     LocalCartesian proj {
             origin.latitude / units::degree,
             origin.longitude / units::degree,
@@ -125,7 +125,7 @@ units::Area area_size(const Area& area)
 units::Length distance(const GeodeticPosition& lhs, const GeodeticPosition& rhs)
 {
     using namespace GeographicLib;
-    const Geodesic& geod = Geodesic::WGS84;
+    const Geodesic& geod = Geodesic::WGS84();
     double distance_m = 0.0;
     geod.Inverse(lhs.latitude / units::degree, lhs.longitude / units::degree,
             rhs.latitude / units::degree, rhs.longitude / units::degree,

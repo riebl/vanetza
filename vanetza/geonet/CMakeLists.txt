@@ -1,5 +1,5 @@
 find_package(Boost COMPONENTS serialization REQUIRED)
-find_package(GeographicLib REQUIRED)
+find_package(GeographicLib 1.37 REQUIRED)
 
 set(CXX_SOURCES
     address.cpp
@@ -36,11 +36,10 @@ vanetza_intermodule_dependencies(geonet dcc net)
 
 vanetza_module_property(geonet INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
-    ${GEOGRAPHICLIB_INCLUDE_DIRS}
 )
 vanetza_module_dependencies(geonet
     ${Boost_SERIALIZATION_LIBRARY}
-    ${GEOGRAPHICLIB_LIBRARIES}
+    GeographicLib
 )
 
 option(VANETZA_GEONET_USE_PACKET_VARIANT "Use packet variant for GeoNet UpPackets" OFF)
