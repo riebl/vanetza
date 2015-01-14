@@ -20,8 +20,6 @@ public:
     void notify(Profile);
 
 private:
-    const StateMachine& m_fsm;
-    const clock::time_point& m_clock;
     BurstBudget m_burst_budget;
     RegularBudget m_regular_budget;
 };

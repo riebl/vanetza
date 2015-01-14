@@ -7,7 +7,7 @@ namespace dcc
 {
 
 Scheduler::Scheduler(const StateMachine& fsm, const clock::time_point& clock) :
-    m_fsm(fsm), m_clock(clock), m_burst_budget(clock), m_regular_budget(fsm, clock)
+    m_burst_budget(clock), m_regular_budget(fsm, clock)
 {
 }
 
