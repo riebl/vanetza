@@ -46,9 +46,9 @@ void Active::update(double min_cl, double max_cl)
 {
     assert(min_cl <= max_cl);
 
-    static const std::array<double, sc_substates> channel_loads = {
+    static const std::array<double, sc_substates> channel_loads {{
         0.27, 0.35, 0.43, 0.51, 0.59
-    };
+    }};
 
     auto state_up_it = std::upper_bound(channel_loads.begin(), channel_loads.end(), min_cl);
     auto state_up = std::distance(channel_loads.begin(), state_up_it);
@@ -63,13 +63,13 @@ void Active::update(double min_cl, double max_cl)
 
 clock::duration Active::transmission_interval() const
 {
-    static const std::array<clock::duration, sc_substates> tx_intervals = {
+    static const std::array<clock::duration, sc_substates> tx_intervals {{
         std::chrono::milliseconds(100),
         std::chrono::milliseconds(180),
         std::chrono::milliseconds(260),
         std::chrono::milliseconds(340),
         std::chrono::milliseconds(420),
-    };
+    }};
 
     const std::size_t index = std::min(tx_intervals.size() - 1, m_substate);
     return tx_intervals[index];
@@ -77,13 +77,13 @@ clock::duration Active::transmission_interval() const
 
 const char* Active::name() const
 {
-    static const std::array<const char*, sc_substates> names = {
+    static const std::array<const char*, sc_substates> names {{
         "Active 1",
         "Active 2",
         "Active 3",
         "Active 4",
         "Active 5"
-    };
+    }};
 
     assert(m_substate < sc_substates);
     return names[m_substate];
