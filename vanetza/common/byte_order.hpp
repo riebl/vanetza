@@ -192,6 +192,11 @@ public:
     {
         return network_type(*this).get();
     }
+
+    T host() const
+    {
+        return host_type(*this).get();
+    }
 };
 
 
