@@ -74,8 +74,6 @@ Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
     m_cbf_buffer(mib.itsGnCbfPacketBufferSize * 1024)
 {
-    std::random_device rd;
-    m_random_gen.seed(rd());
 }
 
 Router::~Router()
@@ -132,6 +130,11 @@ void Router::set_time(Timestamp init)
 void Router::set_address(const Address& addr)
 {
     m_local_position_vector.gn_addr = addr;
+}
+
+void Router::set_random_seed(std::uint_fast32_t seed)
+{
+    m_random_gen.seed(seed);
 }
 
 DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload)

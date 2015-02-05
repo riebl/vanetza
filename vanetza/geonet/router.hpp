@@ -21,6 +21,7 @@
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
 #include <boost/variant.hpp>
+#include <cstdint>
 #include <memory>
 #include <random>
 #include <map>
@@ -82,6 +83,13 @@ public:
     void set_transport_handler(UpperProtocol, TransportInterface&);
     void set_time(Timestamp init);
     void set_address(const Address&);
+
+    /**
+     * Set seed for internal random number generator (RNG)
+     * RNG is used e.g. for random BEACON jitter
+     * \param seed reset RNG's state to this seed
+     */
+    void set_random_seed(std::uint_fast32_t seed);
 
     std::unique_ptr<ShbPdu> create_shb_pdu(const ShbDataRequest&);
     std::unique_ptr<BeaconPdu> create_beacon_pdu();
