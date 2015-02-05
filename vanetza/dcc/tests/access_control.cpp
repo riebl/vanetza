@@ -68,17 +68,23 @@ TEST_F(AccessControlTest, dropping)
 {
     DataRequest request;
     request.dcc_profile = Profile::DP0;
+    bool dropped = false;
+    ctrl.hook_dropped = [&dropped](const DataRequest& req, std::unique_ptr<ChunkPacket> p) {
+        dropped = true;
+    };
 
     for (unsigned i = 0; i < 20; ++i) {
         ifc.last_request.reset();
         ASSERT_FALSE(!!ifc.last_request);
         ctrl.request(request, nullptr);
         EXPECT_TRUE(!!ifc.last_request);
+        EXPECT_FALSE(dropped);
     }
 
     ifc.last_request.reset();
     ctrl.request(request, nullptr);
     EXPECT_FALSE(!!ifc.last_request);
+    EXPECT_TRUE(dropped);
 }
 
 TEST_F(AccessControlTest, scheduler_notification)

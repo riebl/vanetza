@@ -2,6 +2,7 @@
 #define ACCESS_CONTROL_HPP_OXJ73CEM
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/hook.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/dcc/profile.hpp>
@@ -28,6 +29,8 @@ class AccessControl : public RequestInterface
 public:
     AccessControl(Scheduler&, access::Interface&);
     void request(const DataRequest&, std::unique_ptr<ChunkPacket>) override;
+
+    Hook<const DataRequest&, std::unique_ptr<ChunkPacket>> hook_dropped;
 
 private:
     Scheduler& m_scheduler;

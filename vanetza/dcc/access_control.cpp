@@ -29,6 +29,7 @@ void AccessControl::request(const DataRequest& dcc_req, std::unique_ptr<ChunkPac
         m_access.request(mac_req, std::move(packet));
     } else {
         // drop packet
+        hook_dropped(dcc_req, std::move(packet));
     }
 }
 
