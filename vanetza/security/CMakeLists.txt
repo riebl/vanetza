@@ -3,6 +3,7 @@ find_package(Boost COMPONENTS serialization REQUIRED)
 set(CXX_SOURCES
     ecc_point.cpp
     public_key.cpp
+    length_coding.cpp
 )
 
 vanetza_module(security ${CXX_SOURCES})
