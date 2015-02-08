@@ -4,6 +4,7 @@ set(CXX_SOURCES
     ecc_point.cpp
     public_key.cpp
     length_coding.cpp
+    int_x.cpp
 )
 
 vanetza_module(security ${CXX_SOURCES})
