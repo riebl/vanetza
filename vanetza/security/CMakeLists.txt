@@ -6,6 +6,7 @@ set(CXX_SOURCES
     length_coding.cpp
     int_x.cpp
     subject_attribute.cpp
+    region.cpp
 )
 
 vanetza_module(security ${CXX_SOURCES})

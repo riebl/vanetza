@@ -106,3 +106,44 @@ void testSubjectAttribute_Priority_Ssp_List(const SubjectAttribute& sub, const S
         buf_it++;
     }
 }
+
+void testGeograpicRegion_CircularRegion(const GeograpicRegion& reg, const GeograpicRegion& deReg) {
+    EXPECT_EQ(get_type(reg), get_type(deReg));
+    EXPECT_EQ(boost::get<CircularRegion>(reg).center.latitude,
+             boost::get<CircularRegion>(deReg).center.latitude);
+    EXPECT_EQ(boost::get<CircularRegion>(reg).center.longtitude,
+             boost::get<CircularRegion>(deReg).center.longtitude);
+}
+
+void testGeograpicRegion_IdentifiedRegion(const GeograpicRegion& reg, const GeograpicRegion& deReg) {
+    EXPECT_EQ(get_type(reg), get_type(deReg));
+    EXPECT_EQ(boost::get<IdentifiedRegion>(reg).region_dictionary,
+            boost::get<IdentifiedRegion>(deReg).region_dictionary);
+    EXPECT_EQ(boost::get<IdentifiedRegion>(reg).local_region.get(),
+            boost::get<IdentifiedRegion>(deReg).local_region.get());
+    EXPECT_EQ(boost::get<IdentifiedRegion>(reg).region_identifier,
+            boost::get<IdentifiedRegion>(deReg).region_identifier);
+}
+
+void testGeograpicRegion_PolygonalRegion(const GeograpicRegion& reg, const GeograpicRegion& deReg) {
+    EXPECT_EQ(get_type(reg), get_type(deReg));
+    int c = 0;
+    for (auto& region : boost::get<PolygonalRegion>(deReg)) {
+        EXPECT_EQ(region.latitude, static_cast<geonet::geo_angle_i32t>((25 + c) * boost::units::degree::plane_angle()));
+        EXPECT_EQ(region.longtitude, static_cast<geonet::geo_angle_i32t>((26 + c) * boost::units::degree::plane_angle()));
+        c++;
+    }
+}
+
+void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion& reg, const GeograpicRegion& deReg) {
+    RegionType detype = get_type(deReg);
+    int c = 0;
+    EXPECT_EQ(get_type(reg), get_type(deReg));
+    for (auto& rectangular : boost::get<std::list<RectangularRegion>>(deReg)) {
+        EXPECT_EQ(rectangular.nortwest.latitude, static_cast<geonet::geo_angle_i32t>((1000000 + c) * boost::units::degree::plane_angle()));
+        EXPECT_EQ(rectangular.nortwest.longtitude, static_cast<geonet::geo_angle_i32t>((1010000 + c) * boost::units::degree::plane_angle()));
+        EXPECT_EQ(rectangular.southeast.latitude, static_cast<geonet::geo_angle_i32t>((1020000 + c) * boost::units::degree::plane_angle()));
+        EXPECT_EQ(rectangular.southeast.longtitude, static_cast<geonet::geo_angle_i32t>((1030000 + c) * boost::units::degree::plane_angle()));
+        c++;
+    }
+}

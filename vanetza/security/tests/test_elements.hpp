@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <vanetza/security/region.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 
 using namespace vanetza::security;
@@ -21,5 +22,10 @@ void testSubjectAttribute_Its_Aid_List(const SubjectAttribute&, const SubjectAtt
 void testSubjectAttribute_Its_Aid_Ssp_List(const SubjectAttribute&, const SubjectAttribute&);
 void testSubjectAttribute_Priority_Its_Aid_List(const SubjectAttribute&, const SubjectAttribute&);
 void testSubjectAttribute_Priority_Ssp_List(const SubjectAttribute&, const SubjectAttribute&);
+
+void testGeograpicRegion_CircularRegion(const GeograpicRegion&, const GeograpicRegion&);
+void testGeograpicRegion_IdentifiedRegion(const GeograpicRegion&, const GeograpicRegion&);
+void testGeograpicRegion_PolygonalRegion(const GeograpicRegion&, const GeograpicRegion&);
+void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion&, const GeograpicRegion&);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

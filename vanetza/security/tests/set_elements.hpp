@@ -5,6 +5,7 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/subject_attribute.hpp>
+#include <vanetza/security/region.hpp>
 
 using namespace vanetza::security;
 using namespace vanetza;
@@ -21,5 +22,10 @@ std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List();
 std::list<IntX> setSubjectAttribute_Its_Aid_List();
 std::list<ItsAidPriority> setSubjectAttribute_Priority_Its_Aid_List();
 std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List();
+
+GeograpicRegion setGeograpicRegion_CircularRegion();
+GeograpicRegion setGeograpicRegion_IdentifiedRegion();
+GeograpicRegion setGeograpicRegion_PolygonalRegion();
+GeograpicRegion setGeograpicRegion_RectangularRegion_list();
 
 #endif /* SETELEMENTS_HPP_ */

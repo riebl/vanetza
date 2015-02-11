@@ -126,3 +126,54 @@ std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List() {
     ssp_list.push_back(itsAid);
     return ssp_list;
 }
+
+GeograpicRegion setGeograpicRegion_CircularRegion() {
+    GeograpicRegion reg;
+    RegionType type = RegionType::Circle;
+    CircularRegion circle;
+    circle.center.latitude = static_cast<geonet::geo_angle_i32t>(12564 * boost::units::degree::plane_angle());
+    circle.center.longtitude = static_cast<geonet::geo_angle_i32t>(654321 * boost::units::degree::plane_angle());
+    reg = circle;
+    return reg;
+}
+
+GeograpicRegion setGeograpicRegion_IdentifiedRegion() {
+    GeograpicRegion reg;
+    RegionType type = RegionType::ID;
+    IdentifiedRegion id;
+    id.region_dictionary = RegionDictionary::Iso_3166_1;
+    id.region_identifier = 12345;
+    id.local_region.set(546);
+    reg = id;
+    return reg;
+}
+
+GeograpicRegion setGeograpicRegion_PolygonalRegion() {
+    GeograpicRegion reg;
+    RegionType type = RegionType::Polygon;
+    PolygonalRegion poly;
+    for (int c = 0; c < 3; c++) {
+        TwoDLocation loc;
+        loc.latitude = static_cast<geonet::geo_angle_i32t>((25 + c) * boost::units::degree::plane_angle());
+        loc.longtitude = static_cast<geonet::geo_angle_i32t>((26 + c) * boost::units::degree::plane_angle());
+        poly.push_back(loc);
+    }
+    reg = poly;
+    return reg;
+}
+
+GeograpicRegion setGeograpicRegion_RectangularRegion_list() {
+    GeograpicRegion reg;
+    RegionType type = RegionType::Rectangle;
+    std::list<RectangularRegion> list;
+    for (int c = 0; c < 5; c++) {
+        RectangularRegion rectangular;
+        rectangular.nortwest.latitude = static_cast<geonet::geo_angle_i32t>((1000000 + c) * boost::units::degree::plane_angle());
+        rectangular.nortwest.longtitude = static_cast<geonet::geo_angle_i32t>((1010000 + c) * boost::units::degree::plane_angle());
+        rectangular.southeast.latitude = static_cast<geonet::geo_angle_i32t>((1020000 + c) * boost::units::degree::plane_angle());
+        rectangular.southeast.longtitude = static_cast<geonet::geo_angle_i32t>((1030000 + c) * boost::units::degree::plane_angle());
+        list.push_back(rectangular);
+    }
+    reg = list;
+    return reg;
+}
