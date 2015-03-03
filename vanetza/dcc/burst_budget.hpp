@@ -19,6 +19,7 @@ class BurstBudget
 {
 public:
     BurstBudget(const clock::time_point&);
+    ~BurstBudget();
 
     /**
      * Get current delay to remain in budget

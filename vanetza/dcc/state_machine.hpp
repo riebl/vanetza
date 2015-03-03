@@ -58,6 +58,7 @@ class StateMachine
 {
 public:
     StateMachine();
+    ~StateMachine();
 
     /**
      * Notify state machine about current channel load.

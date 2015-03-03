@@ -10,6 +10,10 @@ BurstBudget::BurstBudget(const clock::time_point& clock) :
 {
 }
 
+BurstBudget::~BurstBudget()
+{
+}
+
 clock::duration BurstBudget::delay()
 {
     clock::duration delay = clock::duration::max();

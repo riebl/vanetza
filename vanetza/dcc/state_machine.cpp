@@ -95,6 +95,10 @@ StateMachine::StateMachine() :
 {
 }
 
+StateMachine::~StateMachine()
+{
+}
+
 void StateMachine::update(const ChannelLoad& cl)
 {
     m_current_cl = cl;
