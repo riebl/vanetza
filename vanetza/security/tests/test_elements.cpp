@@ -172,3 +172,9 @@ void testValidityRestriction_Region(const ValidityRestriction& res, const Validi
     testGeograpicRegion_CircularRegion(boost::get<GeograpicRegion>(res), boost::get<GeograpicRegion>(deserializedRes));
 }
 
+
+void testSignature_Ecdsa_Signature(const Signature& sig, const Signature& deserializedSig) {
+    EXPECT_EQ(get_type(sig), get_type(deserializedSig));
+    testEccPoint_X_Coordinate_Only(boost::get<EcdsaSignature>(sig).R, boost::get<EcdsaSignature>(deserializedSig).R);
+    EXPECT_EQ(boost::get<EcdsaSignature>(sig).s, boost::get<EcdsaSignature>(deserializedSig).s);
+}

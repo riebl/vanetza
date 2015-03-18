@@ -5,6 +5,7 @@ set(CXX_SOURCES
     public_key.cpp
     length_coding.cpp
     int_x.cpp
+    signature.cpp
     subject_attribute.cpp
     region.cpp
     validity_restriction.cpp

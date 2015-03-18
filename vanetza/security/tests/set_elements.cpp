@@ -204,3 +204,17 @@ ValidityRestriction setValidityRestriction_Region() {
     ValidityRestriction restriction = setGeograpicRegion_CircularRegion();
     return restriction;
 }
+
+Signature setSignature_Ecdsa_Signature() {
+    Signature sig;
+    EcdsaSignature signature;
+    signature.R = setEccPoint_X_Coordinate_Only();
+    ByteBuffer buf;
+    for(int c = 0; c < 32; c++) {
+        uint8_t byte = c+1;
+        buf.push_back(byte);
+    }
+    signature.s = buf;
+    sig = signature;
+    return sig;
+}

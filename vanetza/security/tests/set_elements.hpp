@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <vanetza/security/signature.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/validity_restriction.hpp>
@@ -33,5 +34,7 @@ ValidityRestriction setValidityRestriction_Time_End();
 ValidityRestriction setValidityRestriction_Time_Start_And_End();
 ValidityRestriction setValidityRestriction_Time_Start_And_Duration();
 ValidityRestriction setValidityRestriction_Region();
+
+Signature setSignature_Ecdsa_Signature();
 
 #endif /* SETELEMENTS_HPP_ */

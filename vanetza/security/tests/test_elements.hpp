@@ -5,6 +5,7 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/region.hpp>
+#include <vanetza/security/signature.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/validity_restriction.hpp>
 
@@ -33,5 +34,7 @@ void testValidityRestriction_Time_End(const ValidityRestriction&, const Validity
 void testValidityRestriction_Time_Start_And_End(const ValidityRestriction&, const ValidityRestriction&);
 void testValidityRestriction_Time_Start_And_Duration(const ValidityRestriction&, const ValidityRestriction&);
 void testValidityRestriction_Region(const ValidityRestriction&, const ValidityRestriction&);
+
+void testSignature_Ecdsa_Signature(const Signature&, const Signature&);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */
