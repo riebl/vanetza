@@ -6,6 +6,7 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/encryption_parameter.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/signer_info.hpp>
@@ -49,5 +50,8 @@ void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction
 void testSignerInfo_Certificate(const Certificate&, const Certificate& );
 
 void testEncryptionParemeter_nonce(const EncryptionParameter&, const EncryptionParameter&);
+
+void testRecipientInfo(const RecipientInfo&, const RecipientInfo&);
+void testRecipientInfoList(const std::list<RecipientInfo>&, const std::list<RecipientInfo>&);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

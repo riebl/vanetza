@@ -223,3 +223,17 @@ void testEncryptionParemeter_nonce(const EncryptionParameter& param, const Encry
     Nonce b = boost::get<Nonce>(deParam);
     EXPECT_EQ(a, b);
 }
+
+void testRecipientInfo(const RecipientInfo& info, const RecipientInfo& deInfo) {
+    EXPECT_EQ(info.cert_id, deInfo.cert_id);
+    EXPECT_EQ(boost::get<EciesNistP256EncryptedKey>(info.enc_key).c, boost::get<EciesNistP256EncryptedKey>(deInfo.enc_key).c);
+    EXPECT_EQ(boost::get<EciesNistP256EncryptedKey>(info.enc_key).t, boost::get<EciesNistP256EncryptedKey>(deInfo.enc_key).t);
+    testEccPoint_Compressed_Lsb_Y_0(boost::get<EciesNistP256EncryptedKey>(info.enc_key).v, boost::get<EciesNistP256EncryptedKey>(deInfo.enc_key).v);
+}
+
+void testRecipientInfoList(const std::list<RecipientInfo>& list, const std::list<RecipientInfo>& deList) {
+    auto it = list.begin();
+    auto deIt = deList.begin();
+    testRecipientInfo(*it++, *deIt++);
+    testRecipientInfo(*it, *deIt);
+}

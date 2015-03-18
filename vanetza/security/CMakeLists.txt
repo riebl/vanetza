@@ -12,6 +12,7 @@ set(CXX_SOURCES
     signer_info.cpp
     subject_attribute.cpp
     subject_info.cpp
+    recipient_info.cpp
     region.cpp
     validity_restriction.cpp
 )

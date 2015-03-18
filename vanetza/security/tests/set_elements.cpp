@@ -294,3 +294,25 @@ Nonce setEncryptionParemeter_nonce() {
     }
     return nonce;
 }
+
+RecipientInfo setRecipientInfo() {
+    RecipientInfo info;
+    for(int c = 0; c < 8; c++) {
+        info.cert_id[c] = 10 + c;
+    }
+    for(int c = 0; c < 16; c++) {
+        boost::get<EciesNistP256EncryptedKey>(info.enc_key).c.push_back(c);
+    }
+    for(int c = 0; c < 20; c++) {
+        boost::get<EciesNistP256EncryptedKey>(info.enc_key).t.push_back(c);
+    }
+    boost::get<EciesNistP256EncryptedKey>(info.enc_key).v = setEccPoint_Compressed_Lsb_Y_0();
+    return info;
+}
+
+std::list<RecipientInfo> setRecipientInfoList() {
+    std::list<RecipientInfo> list;
+    list.push_back(setRecipientInfo());
+    list.push_back(setRecipientInfo());
+    return list;
+}

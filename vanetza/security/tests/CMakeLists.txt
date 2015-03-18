@@ -14,3 +14,4 @@ add_gtest(ValidityRestriction validity_restriction.cpp ${SECURITY_ELEMENTS_SOURC
 add_gtest(Signature signature.cpp ${SECURITY_ELEMENTS_SOURCES})
 add_gtest(SignerInfo signer_info.cpp ${SECURITY_ELEMENTS_SOURCES})
 add_gtest(EncryptionParameter encryption_parameter.cpp ${SECURITY_ELEMENTS_SOURCES})
+add_gtest(RecipientInfo recipient_info.cpp ${SECURITY_ELEMENTS_SOURCES})

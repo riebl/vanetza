@@ -6,6 +6,7 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/encryption_parameter.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/subject_attribute.hpp>
@@ -51,5 +52,8 @@ std::list<ValidityRestriction> setCertificate_ValidityRestriction();
 std::list<Certificate> setSignerInfo_CertificateList();
 
 Nonce setEncryptionParemeter_nonce();
+
+RecipientInfo setRecipientInfo();
+std::list<RecipientInfo> setRecipientInfoList();
 
 #endif /* SETELEMENTS_HPP_ */
