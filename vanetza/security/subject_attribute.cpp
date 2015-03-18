@@ -36,15 +36,18 @@ SubjectAttributeType get_type(const SubjectAttribute& sub) {
 }
 
 void serialize(OutputArchive& ar, const std::list<IntX>& list) {
+    serialize_length(ar, get_size(list));
     for (auto& x : list) {
         serialize(ar, x);
     }
 }
 
 void serialize(OutputArchive& ar, const std::list<ItsAidSsp>& list) {
+    serialize_length(ar, get_size(list));
     for (auto& itsAidSsp : list) {
         serialize(ar, itsAidSsp.its_aid);
         size_t size = itsAidSsp.service_specific_permissions.size();
+        size += get_length_coding_size(size);
         serialize_length(ar, size);
         for (auto& byte : itsAidSsp.service_specific_permissions) {
             ar << byte;
@@ -53,6 +56,7 @@ void serialize(OutputArchive& ar, const std::list<ItsAidSsp>& list) {
 }
 
 void serialize(OutputArchive& ar, const std::list<ItsAidPriority>& list) {
+    serialize_length(ar, get_size(list));
     for (auto& itsAidPriority : list) {
         serialize(ar, itsAidPriority.its_aid);
         geonet::serialize(host_cast(itsAidPriority.max_priority), ar);
@@ -60,10 +64,13 @@ void serialize(OutputArchive& ar, const std::list<ItsAidPriority>& list) {
 }
 
 void serialize(OutputArchive& ar, const std::list<ItsAidPrioritySsp>& list) {
+    serialize_length(ar, get_size(list));
     for (auto& itsAidPrioritySsp : list) {
         serialize(ar, itsAidPrioritySsp.its_aid);
         geonet::serialize(host_cast(itsAidPrioritySsp.max_priority), ar);
-        serialize_length(ar, itsAidPrioritySsp.service_specific_permissions.size());
+        size_t size = itsAidPrioritySsp.service_specific_permissions.size();
+        size += get_length_coding_size(size);
+        serialize_length(ar, size);
         for (auto& byte : itsAidPrioritySsp.service_specific_permissions) {
             ar << byte;
         }
@@ -94,6 +101,7 @@ size_t deserialize(InputArchive& ar, std::list<ItsAidSsp>& list) {
         size_t buf_size = deserialize_length(ar);
         size -= buf_size;
         uint8_t uint;
+        buf_size -= get_length_coding_size(buf_size);
         for (; buf_size > 0; buf_size--) {
             ar >> uint;
             ssp.service_specific_permissions.push_back(uint);
@@ -130,6 +138,7 @@ size_t deserialize(InputArchive& ar, std::list<ItsAidPrioritySsp>& list) {
         size_t buf_size = deserialize_length(ar);
         size -= buf_size;
         uint8_t uint;
+        buf_size -= get_length_coding_size(buf_size);
         for (; buf_size > 0; buf_size--) {
             ar >> uint;
             aid.service_specific_permissions.push_back(uint);
@@ -156,6 +165,7 @@ size_t get_size(const std::list<ItsAidSsp>& list) {
     for (auto& itsAidSsp : list) {
         size += get_size(itsAidSsp.its_aid);
         size += itsAidSsp.service_specific_permissions.size();
+        size += get_length_coding_size(itsAidSsp.service_specific_permissions.size());
     }
     return size;
 }
@@ -175,6 +185,7 @@ size_t get_size(const std::list<ItsAidPrioritySsp>& list) {
         size += get_size(itsAidPrioritySssp.its_aid);
         size += sizeof(uint8_t);
         size += itsAidPrioritySssp.service_specific_permissions.size();
+        size += get_length_coding_size(itsAidPrioritySssp.service_specific_permissions.size());
     }
     return size;
 }
@@ -184,40 +195,49 @@ size_t get_size(const SubjectAttribute& sub) {
     SubjectAttributeType type = get_type(sub);
     switch (type) {
     case SubjectAttributeType::Assurance_Level:
-        size = get_size(boost::get<SubjectAssurance>(sub));
+        size += get_size(boost::get<SubjectAssurance>(sub));
         break;
     case SubjectAttributeType::Encryption_Key:
-        size = get_size(boost::get<EncryptionKey>(sub).key);
+        size += get_size(boost::get<EncryptionKey>(sub).key);
         break;
     case SubjectAttributeType::Its_Aid_List:
-        size = get_size(boost::get<std::list<IntX>>(sub));
+        size += get_size(boost::get<std::list<IntX>>(sub));
+        size += get_length_coding_size(size);
         break;
     case SubjectAttributeType::Its_Aid_Ssp_List:
-        size = get_size(boost::get<std::list<ItsAidSsp> >(sub));
+        size += get_size(boost::get<std::list<ItsAidSsp>>(sub));
+        size += get_length_coding_size(size);
         break;
     case SubjectAttributeType::Priority_Its_Aid_List:
-        size = get_size(boost::get<std::list<ItsAidPriority> >(sub));
+        size += get_size(boost::get<std::list<ItsAidPriority>>(sub));
+        size += get_length_coding_size(size);
         break;
     case SubjectAttributeType::Reconstruction_Value:
-        size = get_size(boost::get<EccPoint>(sub));
+        size += get_size(boost::get<EccPoint>(sub));
         break;
     case SubjectAttributeType::Verification_Key:
-        size = get_size(boost::get<VerificationKey>(sub).key);
-
+        size += get_size(boost::get<VerificationKey>(sub).key);
         break;
     case SubjectAttributeType::Priority_Ssp_List:
-        size = get_size(boost::get<std::list<ItsAidPrioritySsp>>(sub));
+        size += get_size(boost::get<std::list<ItsAidPrioritySsp>>(sub));
+        size += get_length_coding_size(size);
         break;
     }
     return size;
 }
 
-void serialize(OutputArchive& ar, const std::list<SubjectAttribute>& list) {
+size_t get_size(const std::list<SubjectAttribute>& list) {
     size_t size = 0;
     for (auto& subjectAttribute : list) {
         size += get_size(subjectAttribute);
+        size += sizeof(SubjectAttributeType);
     }
-    serialize_length(ar, int(size));
+    return size;
+}
+
+void serialize(OutputArchive& ar, const std::list<SubjectAttribute>& list) {
+    size_t size = get_size(list);
+    serialize_length(ar, size);
 
     for (auto& subjectAttribute : list) {
         struct subject_attribute_visitor: public boost::static_visitor<> {
@@ -234,20 +254,16 @@ void serialize(OutputArchive& ar, const std::list<SubjectAttribute>& list) {
                 m_archive << assurance;
             }
             void operator()(std::list<IntX> list) {
-                serialize_length(m_archive, get_size(list));
                 serialize(m_archive, list);
             }
             void operator()(EccPoint ecc) {}
             void operator()(std::list<ItsAidSsp> list) {
-                serialize_length(m_archive, get_size(list));
                 serialize(m_archive, list);
             }
             void operator()(std::list<ItsAidPriority> list) {
-                serialize_length(m_archive, get_size(list));
                 serialize(m_archive, list);
             }
             void operator()(std::list<ItsAidPrioritySsp> list) {
-                serialize_length(m_archive, get_size(list));
                 serialize(m_archive, list);
             }
             OutputArchive& m_archive;
@@ -264,9 +280,9 @@ size_t deserialize(InputArchive& ar, std::list<SubjectAttribute>& list) {
     SubjectAttributeType type;
     size_t size = deserialize_length(ar);
     size_t ret_size = size;
-
     while (size > 0) {
         ar >> type;
+        size -= sizeof(type);
         switch (type) {
         case SubjectAttributeType::Assurance_Level: {
             SubjectAssurance assurance;
@@ -292,21 +308,27 @@ size_t deserialize(InputArchive& ar, std::list<SubjectAttribute>& list) {
         }
         case SubjectAttributeType::Its_Aid_List: {
             std::list<IntX> intx_list;
-            size -= deserialize(ar, intx_list);
+            size_t buff = deserialize(ar, intx_list);
+            size -= buff;
+            size -= get_length_coding_size(buff);
             SubjectAttribute sub = intx_list;
             list.push_back(sub);
             break;
         }
         case SubjectAttributeType::Its_Aid_Ssp_List: {
             std::list<ItsAidSsp> itsAidSsp_list;
-            size -= deserialize(ar, itsAidSsp_list);
+            size_t buff = deserialize(ar, itsAidSsp_list);
+            size -= buff;
+            size -= get_length_coding_size(buff);
             SubjectAttribute sub = itsAidSsp_list;
             list.push_back(sub);
             break;
         }
         case SubjectAttributeType::Priority_Its_Aid_List: {
             std::list<ItsAidPriority> itsAidPriority_list;
-            size -= deserialize(ar, itsAidPriority_list);
+            size_t buff = deserialize(ar, itsAidPriority_list);
+            size -= buff;
+            size -= get_length_coding_size(buff);
             SubjectAttribute sub = itsAidPriority_list;
             list.push_back(sub);
             break;
@@ -315,7 +337,9 @@ size_t deserialize(InputArchive& ar, std::list<SubjectAttribute>& list) {
             break;
         case SubjectAttributeType::Priority_Ssp_List: {
             std::list<ItsAidPrioritySsp> itsAidPrioritySsp_list;
-            size -= deserialize(ar, itsAidPrioritySsp_list);
+            size_t buff = deserialize(ar, itsAidPrioritySsp_list);
+            size -= buff;
+            size -= get_length_coding_size(buff);
             SubjectAttribute sub = itsAidPrioritySsp_list;
             list.push_back(sub);
             break;

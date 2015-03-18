@@ -29,6 +29,7 @@ size_t get_size(const Signature& sig) {
     {
         void operator()(const EcdsaSignature& sig) {
             m_size = get_size(sig);
+            m_size += sizeof(PublicKeyAlgorithm);
         }
         size_t m_size;
     };
@@ -74,17 +75,18 @@ size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorit
 size_t deserialize(InputArchive& ar, Signature& sig) {
     PublicKeyAlgorithm algo;
     size_t size = 0;
-    EcdsaSignature signature;
     ar >> algo;
     size += sizeof(algo);
     switch (algo) {
-        case PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256:
+        case PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256: {
+            EcdsaSignature signature;
             size += deserialize(ar, signature, algo);
+            sig = signature;
             break;
+        }
         default:
             throw deserialization_error("Unknown PublicKeyAlgorithm");
     }
-    sig = signature;
     return size;
 }
 

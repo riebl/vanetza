@@ -14,7 +14,8 @@ size_t get_size(const SubjectInfo& sub) {
 
 void serialize(OutputArchive& ar, const SubjectInfo& sub) {
     ar << sub.subject_type;
-    uint8_t size = sub.subject_name.size();
+    size_t size = sub.subject_name.size();
+    size += sizeof(sub.subject_type);
     serialize_length(ar, size);
     for (auto& byte : sub.subject_name) {
         ar << byte;
@@ -24,12 +25,14 @@ void serialize(OutputArchive& ar, const SubjectInfo& sub) {
 size_t deserialize(InputArchive& ar, SubjectInfo& sub) {
     ar >> sub.subject_type;
     size_t size = deserialize_length(ar);
+    size_t ret_size = size;
+    size -= sizeof(sub.subject_type);
     for (int c = 0; c < size; c++) {
         uint8_t tmp;
         ar >> tmp;
         sub.subject_name.push_back(tmp);
     }
-    return size;
+    return ret_size;
 }
 
 } // ns security

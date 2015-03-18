@@ -94,14 +94,17 @@ size_t get_size(const GeograpicRegion& reg) {
         break;
     case RegionType::Rectangle:
         size = get_size(boost::get<std::list<RectangularRegion>>(reg));
+        size += get_length_coding_size(size);
         break;
     case RegionType::Polygon:
         size = get_size(boost::get<PolygonalRegion>(reg));
+        size += get_length_coding_size(size);
         break;
     case RegionType::ID:
         size = get_size(boost::get<IdentifiedRegion>(reg));
         break;
     }
+    size += sizeof(RegionType);
     return size;
 }
 
@@ -237,12 +240,14 @@ size_t deserialize(InputArchive& ar, GeograpicRegion& reg) {
     case RegionType::Rectangle: {
         std::list<RectangularRegion> list;
         size = deserialize(ar, list);
+        size += get_length_coding_size(size);
         reg = list;
         break;
     }
     case RegionType::Polygon: {
         PolygonalRegion polygon;
         size = deserialize(ar, polygon);
+        size += get_length_coding_size(size);
         reg = polygon;
         break;
     }
@@ -256,7 +261,7 @@ size_t deserialize(InputArchive& ar, GeograpicRegion& reg) {
         throw deserialization_error("Unknown RegionType");
     }
     }
-    return size;
+    return (size + sizeof(RegionType));
 }
 
 } // namespace security

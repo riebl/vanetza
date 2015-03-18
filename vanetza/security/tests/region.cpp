@@ -13,7 +13,8 @@ GeograpicRegion serialize(GeograpicRegion reg) {
     serialize(oa, reg);
     GeograpicRegion dereg;
     InputArchive ia(stream);
-    deserialize(ia, dereg);
+    size_t size = deserialize(ia, dereg);
+    EXPECT_EQ(get_size(dereg), size);
     return dereg;
 }
 

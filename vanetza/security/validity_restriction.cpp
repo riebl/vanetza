@@ -98,6 +98,7 @@ size_t deserialize(InputArchive& ar, std::list<ValidityRestriction>& restriction
     while (size > 0) {
         ValidityRestriction restriction;
         ar >> type;
+        size -= sizeof(ValidityRestrictionType);
         switch (type) {
             case ValidityRestrictionType::Time_End: {
                 EndValidity end;
@@ -143,11 +144,17 @@ size_t deserialize(InputArchive& ar, std::list<ValidityRestriction>& restriction
     return retSize;
 }
 
-void serialize(OutputArchive& ar, const std::list<ValidityRestriction>& restrictionList) {
+size_t get_size(const std::list<ValidityRestriction>& restrictionList) {
     size_t size = 0;
     for (auto& restriction : restrictionList) {
         size += get_size(restriction);
+        size += sizeof(ValidityRestrictionType);
     }
+    return size;
+}
+
+void serialize(OutputArchive& ar, const std::list<ValidityRestriction>& restrictionList) {
+    size_t size = get_size(restrictionList);
     serialize_length(ar, size);
 
     for (auto& restriction : restrictionList) {

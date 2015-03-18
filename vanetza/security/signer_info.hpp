@@ -26,6 +26,7 @@ SignerInfoType get_type(const SignerInfo&);
  */
 size_t get_size(const CertificateDigestWithOtherAlgorithm&);
 size_t get_size(const SignerInfo&);
+size_t get_size(const std::list<SignerInfo>&);
 
 /**
  * Serializes an object into a binary archive

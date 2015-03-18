@@ -9,16 +9,13 @@ namespace security
 
 size_t get_size(const Certificate& cert) {
     size_t size = sizeof(cert.version);
-    for (auto& info : cert.signer_info) {
-        size += get_size(info);
-    }
+    size += get_size(cert.signer_info);
+    size += get_length_coding_size(size - sizeof(cert.version));
     size += get_size(cert.subject_info);
-    for (auto& attribute : cert.subject_attributes) {
-        size += get_size(attribute);
-    }
-    for (auto& restriction : cert.validity_restriction) {
-        size += get_size(restriction);
-    }
+    size += get_size(cert.subject_attributes);
+    size += get_length_coding_size(get_size(cert.subject_attributes));
+    size += get_size(cert.validity_restriction);
+    size += get_length_coding_size(get_size(cert.validity_restriction));
     size += get_size(cert.signature);
     return size;
 }
@@ -63,9 +60,12 @@ size_t deserialize(InputArchive& ar, Certificate& cert) {
     geonet::deserialize(cert.version, ar);
     size_t size = sizeof(cert.version);
     size += deserialize(ar, cert.signer_info);
+    size += get_length_coding_size(get_size(cert.signer_info));
     size += deserialize(ar, cert.subject_info);
     size += deserialize(ar, cert.subject_attributes);
+    size += get_length_coding_size(get_size(cert.subject_attributes));
     size += deserialize(ar, cert.validity_restriction);
+    size += get_length_coding_size(get_size(cert.validity_restriction));
     size += deserialize(ar, cert.signature);
     return size;
 }

@@ -14,6 +14,10 @@ std::size_t count_leading_ones(uint8_t v) {
     return count;
 }
 
+std::size_t get_length_coding_size(size_t size) {
+    return (count_leading_ones(*encode_length(size).begin()) + 1);
+}
+
 ByteBuffer encode_length(std::size_t length) {
     std::list<uint8_t> length_info;
 

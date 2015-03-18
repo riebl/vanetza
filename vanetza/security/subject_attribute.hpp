@@ -66,6 +66,7 @@ size_t get_size(const SubjectAssurance&);
 size_t get_size(const std::list<ItsAidSsp>&);
 size_t get_size(const std::list<ItsAidPriority>&);
 size_t get_size(const std::list<ItsAidPrioritySsp>&);
+size_t get_size(const std::list<SubjectAttribute>&);
 
 /**
  * Deserializes an object from a binary archive

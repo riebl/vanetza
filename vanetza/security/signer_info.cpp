@@ -46,6 +46,7 @@ size_t get_size(const SignerInfo& info) {
         }
         void operator()(const std::list<Certificate>& list) {
             m_size = get_size(list);
+            m_size += get_length_coding_size(m_size);
         }
         void operator()(const CertificateDigestWithOtherAlgorithm& cert) {
             m_size = get_size(cert);
@@ -55,14 +56,20 @@ size_t get_size(const SignerInfo& info) {
 
     SignerInfo_visitor visit;
     boost::apply_visitor(visit, info);
-    return visit.m_size;
+    return visit.m_size + sizeof(SignerInfoType);
 }
 
-void serialize(OutputArchive& ar, const std::list<SignerInfo>& list) {
+size_t get_size(const std::list<SignerInfo>& list) {
     size_t size = 0;
     for (auto& info : list) {
         size += get_size(info);
     }
+    return size;
+}
+;
+
+void serialize(OutputArchive& ar, const std::list<SignerInfo>& list) {
+    size_t size = get_size(list);
     serialize_length(ar, size);
     for (auto& info : list) {
         serialize(ar, info);
@@ -139,6 +146,7 @@ size_t deserialize(InputArchive& ar, SignerInfo& info) {
         case SignerInfoType::Certificate_Chain: {
             std::list<Certificate> list;
             size += deserialize(ar, list);
+            size += get_length_coding_size(size);
             info = list;
             break;
         }
@@ -148,21 +156,21 @@ size_t deserialize(InputArchive& ar, SignerInfo& info) {
                 ar >> cert[c];
             }
             info = cert;
-            size = sizeof(cert);
+            size += sizeof(cert);
             break;
         }
         case SignerInfoType::Certificate_Digest_With_Other_Algorithm: {
             CertificateDigestWithOtherAlgorithm cert;
-            size = deserialize(ar, cert);
+            size += deserialize(ar, cert);
             info = cert;
             break;
         }
         case SignerInfoType::Self:
             break;
-
         default:
             throw deserialization_error("Unknown SignerInfoType");
     }
+    size += sizeof(SignerInfoType);
     return size;
 }
 

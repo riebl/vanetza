@@ -47,6 +47,13 @@ std::size_t count_leading_ones(uint8_t);
 void serialize_length(OutputArchive&, size_t);
 
 /**
+ * Count number of leading one bits
+ * \param size
+ * \return number of bytes needed to store length
+ */
+std::size_t get_length_coding_size(size_t);
+
+/**
  * Deserialize length from a given archive
  * \param archive, shall start with length encoding
  * \return length

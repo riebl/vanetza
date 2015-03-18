@@ -83,6 +83,7 @@ size_t get_size(const std::list<ValidityRestriction>&);
 size_t get_size(const Time32&);
 size_t get_size(const Time64&);
 size_t get_size(const Duration&);
+size_t get_size(const std::list<ValidityRestriction>&);
 
 /**
  * Deserializes a ValidityRestriction list from a binary archive
