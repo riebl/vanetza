@@ -6,6 +6,7 @@
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/subject_attribute.hpp>
+#include <vanetza/security/subject_info.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/validity_restriction.hpp>
 
@@ -36,5 +37,7 @@ ValidityRestriction setValidityRestriction_Time_Start_And_Duration();
 ValidityRestriction setValidityRestriction_Region();
 
 Signature setSignature_Ecdsa_Signature();
+
+SubjectInfo setSubjectInfo();
 
 #endif /* SETELEMENTS_HPP_ */

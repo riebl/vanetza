@@ -7,6 +7,7 @@ set(CXX_SOURCES
     int_x.cpp
     signature.cpp
     subject_attribute.cpp
+    subject_info.cpp
     region.cpp
     validity_restriction.cpp
 )

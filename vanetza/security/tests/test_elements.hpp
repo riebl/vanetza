@@ -7,6 +7,7 @@
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/subject_attribute.hpp>
+#include <vanetza/security/subject_info.hpp>
 #include <vanetza/security/validity_restriction.hpp>
 
 using namespace vanetza::security;
@@ -36,5 +37,7 @@ void testValidityRestriction_Time_Start_And_Duration(const ValidityRestriction&,
 void testValidityRestriction_Region(const ValidityRestriction&, const ValidityRestriction&);
 
 void testSignature_Ecdsa_Signature(const Signature&, const Signature&);
+
+void testSubjectInfo(const SubjectInfo&, const SubjectInfo&);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

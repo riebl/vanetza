@@ -218,3 +218,12 @@ Signature setSignature_Ecdsa_Signature() {
     sig = signature;
     return sig;
 }
+
+SubjectInfo setSubjectInfo() {
+    SubjectInfo sub;
+    sub.subject_type = SubjectType::Enrollment_Credential;
+    for(int c = 0; c < 24; c++) {
+        sub.subject_name.push_back(25+c);
+    }
+    return sub;
+}

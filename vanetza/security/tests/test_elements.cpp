@@ -178,3 +178,10 @@ void testSignature_Ecdsa_Signature(const Signature& sig, const Signature& deseri
     testEccPoint_X_Coordinate_Only(boost::get<EcdsaSignature>(sig).R, boost::get<EcdsaSignature>(deserializedSig).R);
     EXPECT_EQ(boost::get<EcdsaSignature>(sig).s, boost::get<EcdsaSignature>(deserializedSig).s);
 }
+
+void testSubjectInfo(const SubjectInfo& sub, const SubjectInfo& desub) {
+    EXPECT_EQ(sub.subject_name.size(), get_size(sub)-1);
+    EXPECT_EQ(sub.subject_name.size(), desub.subject_name.size());
+    EXPECT_EQ(sub.subject_type, desub.subject_type);
+    EXPECT_EQ(sub.subject_name, desub.subject_name);
+}
