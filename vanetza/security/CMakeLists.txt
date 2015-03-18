@@ -1,6 +1,7 @@
 find_package(Boost COMPONENTS serialization REQUIRED)
 
 set(CXX_SOURCES
+    basic_elements.cpp
     ecc_point.cpp
     public_key.cpp
     length_coding.cpp
