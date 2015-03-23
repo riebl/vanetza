@@ -227,3 +227,62 @@ SubjectInfo setSubjectInfo() {
     }
     return sub;
 }
+
+
+HashedId8 setSignerInfo_HashedId() {
+    HashedId8 id;
+    for(int c = 0; c < 8; c++) {
+        id[c] = c + 1;
+    }
+    return id;
+}
+
+CertificateDigestWithOtherAlgorithm setSignerInfo_CertDigest() {
+    CertificateDigestWithOtherAlgorithm cert;
+    cert.algorithm = PublicKeyAlgorithm::Ecies_Nistp256;
+    for(int c = 0; c < 8; c++) {
+        cert.digest[c] = c + 2;
+    }
+    return cert;
+}
+
+std::list<SignerInfo> setCertificate_SignerInfo() {
+    std::list<SignerInfo> list;
+    list.push_back(setSignerInfo_HashedId());
+    list.push_back(setSignerInfo_CertDigest());
+    return list;
+}
+
+std::list<SubjectAttribute> setCertificate_SubjectAttributeList() {
+    std::list<SubjectAttribute> list;
+    list.push_back(setSubjectAttribute_Encryption_Key());
+    list.push_back(setSubjectAttribute_Its_Aid_List());
+    return list;
+}
+
+std::list<ValidityRestriction> setCertificate_ValidityRestriction() {
+    std::list<ValidityRestriction> list;
+    list.push_back(setValidityRestriction_Region());
+    list.push_back(setValidityRestriction_Time_Start_And_End());
+    list.push_back(setValidityRestriction_Time_Start_And_Duration());
+    return list;
+}
+
+std::list<Certificate> setSignerInfo_CertificateList() {
+    std::list<Certificate> list;
+    Certificate cert;
+    cert.version = 0x5;
+    cert.signer_info = setCertificate_SignerInfo();
+    cert.subject_info = setSubjectInfo();
+    cert.subject_attributes = setCertificate_SubjectAttributeList();
+    cert.validity_restriction = setCertificate_ValidityRestriction();
+    cert.signature = setSignature_Ecdsa_Signature();
+    list.push_back(cert);
+    cert.signer_info = setCertificate_SignerInfo();
+    cert.subject_info = setSubjectInfo();
+    cert.subject_attributes = setCertificate_SubjectAttributeList();
+    cert.validity_restriction = setCertificate_ValidityRestriction();
+    cert.signature = setSignature_Ecdsa_Signature();
+    list.push_back(cert);
+    return list;
+}

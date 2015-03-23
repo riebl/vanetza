@@ -2,9 +2,11 @@
 #define SETELEMENTS_HPP_CISPFKMVCOSDJ
 
 #include <gtest/gtest.h>
+#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
+#include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 #include <vanetza/security/region.hpp>
@@ -39,5 +41,13 @@ ValidityRestriction setValidityRestriction_Region();
 Signature setSignature_Ecdsa_Signature();
 
 SubjectInfo setSubjectInfo();
+
+
+HashedId8 setSignerInfo_HashedId();
+CertificateDigestWithOtherAlgorithm setSignerInfo_CertDigest();
+std::list<SignerInfo> setCertificate_SignerInfo();
+std::list<SubjectAttribute> setCertificate_SubjectAttributeList();
+std::list<ValidityRestriction> setCertificate_ValidityRestriction();
+std::list<Certificate> setSignerInfo_CertificateList();
 
 #endif /* SETELEMENTS_HPP_ */

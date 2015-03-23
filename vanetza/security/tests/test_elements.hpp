@@ -2,10 +2,12 @@
 #define TEST_ELEMENTS_HPP_KISBVCLSDSICN
 
 #include <gtest/gtest.h>
+#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/signature.hpp>
+#include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 #include <vanetza/security/validity_restriction.hpp>
@@ -39,5 +41,10 @@ void testValidityRestriction_Region(const ValidityRestriction&, const ValidityRe
 void testSignature_Ecdsa_Signature(const Signature&, const Signature&);
 
 void testSubjectInfo(const SubjectInfo&, const SubjectInfo&);
+
+void testCertificate_SignerInfo(const std::list<SignerInfo>&, const std::list<SignerInfo>&);
+void testCertificate_SubjectAttributeList(const std::list<SubjectAttribute>&, const std::list<SubjectAttribute>&);
+void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction>&, const std::list<ValidityRestriction>&);
+void testSignerInfo_Certificate(const Certificate&, const Certificate& );
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

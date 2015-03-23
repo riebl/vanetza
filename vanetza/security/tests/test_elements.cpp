@@ -172,7 +172,6 @@ void testValidityRestriction_Region(const ValidityRestriction& res, const Validi
     testGeograpicRegion_CircularRegion(boost::get<GeograpicRegion>(res), boost::get<GeograpicRegion>(deserializedRes));
 }
 
-
 void testSignature_Ecdsa_Signature(const Signature& sig, const Signature& deserializedSig) {
     EXPECT_EQ(get_type(sig), get_type(deserializedSig));
     testEccPoint_X_Coordinate_Only(boost::get<EcdsaSignature>(sig).R, boost::get<EcdsaSignature>(deserializedSig).R);
@@ -184,4 +183,36 @@ void testSubjectInfo(const SubjectInfo& sub, const SubjectInfo& desub) {
     EXPECT_EQ(sub.subject_name.size(), desub.subject_name.size());
     EXPECT_EQ(sub.subject_type, desub.subject_type);
     EXPECT_EQ(sub.subject_name, desub.subject_name);
+}
+
+void testCertificate_SignerInfo(const std::list<SignerInfo>& list, const std::list<SignerInfo>& deList) {
+    auto it = list.begin();
+    auto deIt = deList.begin();
+    EXPECT_EQ(boost::get<HashedId8>(*it++), boost::get<HashedId8>(*deIt++));
+    EXPECT_EQ(boost::get<CertificateDigestWithOtherAlgorithm>(*it).algorithm, boost::get<CertificateDigestWithOtherAlgorithm>(*deIt).algorithm);
+    EXPECT_EQ(boost::get<CertificateDigestWithOtherAlgorithm>(*it).digest, boost::get<CertificateDigestWithOtherAlgorithm>(*deIt).digest);
+}
+
+void testCertificate_SubjectAttributeList(const std::list<SubjectAttribute>& list, const std::list<SubjectAttribute>& deList) {
+    auto it = list.begin();
+    auto deIt = deList.begin();
+    testSubjectAttribute_Encryption_Key(*it++, *deIt++);
+    testSubjectAttribute_Its_Aid_List(*it, *deIt);
+}
+
+void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction>& list, const std::list<ValidityRestriction>& deList) {
+    auto it = list.begin();
+    auto deIt = deList.begin();
+    testValidityRestriction_Region(*it++, *deIt++);
+    testValidityRestriction_Time_Start_And_End(*it++, *deIt++);
+    testValidityRestriction_Time_Start_And_Duration(*it++, *deIt++);
+}
+
+void testSignerInfo_Certificate(const Certificate& cert, const Certificate& deCert ) {
+    EXPECT_EQ(cert.version, deCert.version);
+    testCertificate_SignerInfo(cert.signer_info, deCert.signer_info);
+    testSubjectInfo(cert.subject_info, deCert.subject_info);
+    testCertificate_SubjectAttributeList(cert.subject_attributes, deCert.subject_attributes);
+    testCertificate_ValidityRestrictionList(cert.validity_restriction, deCert.validity_restriction);
+    testSignature_Ecdsa_Signature(cert.signature, deCert.signature);
 }
