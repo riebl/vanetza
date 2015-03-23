@@ -6,6 +6,7 @@
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/region.hpp>
+#include <vanetza/security/validity_restriction.hpp>
 
 using namespace vanetza::security;
 using namespace vanetza;
@@ -27,5 +28,10 @@ GeograpicRegion setGeograpicRegion_CircularRegion();
 GeograpicRegion setGeograpicRegion_IdentifiedRegion();
 GeograpicRegion setGeograpicRegion_PolygonalRegion();
 GeograpicRegion setGeograpicRegion_RectangularRegion_list();
+
+ValidityRestriction setValidityRestriction_Time_End();
+ValidityRestriction setValidityRestriction_Time_Start_And_End();
+ValidityRestriction setValidityRestriction_Time_Start_And_Duration();
+ValidityRestriction setValidityRestriction_Region();
 
 #endif /* SETELEMENTS_HPP_ */

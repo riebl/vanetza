@@ -6,6 +6,7 @@
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/subject_attribute.hpp>
+#include <vanetza/security/validity_restriction.hpp>
 
 using namespace vanetza::security;
 using namespace vanetza;
@@ -27,5 +28,10 @@ void testGeograpicRegion_CircularRegion(const GeograpicRegion&, const GeograpicR
 void testGeograpicRegion_IdentifiedRegion(const GeograpicRegion&, const GeograpicRegion&);
 void testGeograpicRegion_PolygonalRegion(const GeograpicRegion&, const GeograpicRegion&);
 void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion&, const GeograpicRegion&);
+
+void testValidityRestriction_Time_End(const ValidityRestriction&, const ValidityRestriction&);
+void testValidityRestriction_Time_Start_And_End(const ValidityRestriction&, const ValidityRestriction&);
+void testValidityRestriction_Time_Start_And_Duration(const ValidityRestriction&, const ValidityRestriction&);
+void testValidityRestriction_Region(const ValidityRestriction&, const ValidityRestriction&);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

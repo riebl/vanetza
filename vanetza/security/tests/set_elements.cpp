@@ -177,3 +177,30 @@ GeograpicRegion setGeograpicRegion_RectangularRegion_list() {
     reg = list;
     return reg;
 }
+
+ValidityRestriction setValidityRestriction_Time_End() {
+    EndValidity end = 0x548736;
+    ValidityRestriction restriction = end;
+    return restriction;
+}
+
+ValidityRestriction setValidityRestriction_Time_Start_And_End() {
+    StartAndEndValidity start;
+    start.end_validity = 0x54;
+    start.start_validity = 0x5712;
+    ValidityRestriction restriction = start;
+    return restriction;
+}
+
+ValidityRestriction setValidityRestriction_Time_Start_And_Duration() {
+    StartAndDurationValidity duration;
+    duration.duration = Duration(uint16_t(0x8007));
+    duration.start_validity = 0x5712;
+    ValidityRestriction restriction = duration;
+    return restriction;
+}
+
+ValidityRestriction setValidityRestriction_Region() {
+    ValidityRestriction restriction = setGeograpicRegion_CircularRegion();
+    return restriction;
+}

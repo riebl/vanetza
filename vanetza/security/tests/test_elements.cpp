@@ -147,3 +147,28 @@ void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion& reg, cons
         c++;
     }
 }
+
+void testValidityRestriction_Time_End(const ValidityRestriction& res, const ValidityRestriction& deserializedRes) {
+    EXPECT_EQ(get_type(res), get_type(deserializedRes));
+    EXPECT_EQ(boost::get<EndValidity>(res), boost::get<EndValidity>(deserializedRes));
+}
+
+void testValidityRestriction_Time_Start_And_End(const ValidityRestriction& res, const ValidityRestriction& deserializedRes) {
+    EXPECT_EQ(get_type(res), get_type(deserializedRes));
+    EXPECT_EQ(boost::get<StartAndEndValidity>(res).end_validity, boost::get<StartAndEndValidity>(deserializedRes).end_validity);
+    EXPECT_EQ(boost::get<StartAndEndValidity>(res).start_validity, boost::get<StartAndEndValidity>(deserializedRes).start_validity);
+}
+
+void testValidityRestriction_Time_Start_And_Duration(const ValidityRestriction& res, const ValidityRestriction& deserializedRes) {
+    EXPECT_EQ(get_type(res), get_type(deserializedRes));
+    EXPECT_EQ(boost::get<StartAndDurationValidity>(res).start_validity, boost::get<StartAndDurationValidity>(deserializedRes).start_validity);
+    Duration a = boost::get<StartAndDurationValidity>(res).duration;
+    Duration b = boost::get<StartAndDurationValidity>(deserializedRes).duration;
+    EXPECT_EQ(a.raw(), b.raw());
+}
+
+void testValidityRestriction_Region(const ValidityRestriction& res, const ValidityRestriction& deserializedRes) {
+    EXPECT_EQ(get_type(res), get_type(deserializedRes));
+    testGeograpicRegion_CircularRegion(boost::get<GeograpicRegion>(res), boost::get<GeograpicRegion>(deserializedRes));
+}
+
