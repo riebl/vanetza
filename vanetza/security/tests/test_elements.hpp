@@ -5,6 +5,7 @@
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/encryption_parameter.hpp>
+#include <vanetza/security/header_field.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/region.hpp>
@@ -53,5 +54,7 @@ void testEncryptionParemeter_nonce(const EncryptionParameter&, const EncryptionP
 
 void testRecipientInfo(const RecipientInfo&, const RecipientInfo&);
 void testRecipientInfoList(const std::list<RecipientInfo>&, const std::list<RecipientInfo>&);
+
+void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<HeaderField>& deList);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

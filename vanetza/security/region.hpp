@@ -66,6 +66,7 @@ RegionType get_type(const GeograpicRegion&);
  * \return size_t containing the number of octets needed to serialize the object
  */
 size_t get_size(const TwoDLocation&);
+size_t get_size(const ThreeDLocation&);
 size_t get_size(const CircularRegion&);
 size_t get_size(const RectangularRegion&);
 size_t get_size(const std::list<CircularRegion>&);
@@ -79,6 +80,7 @@ size_t get_size(const GeograpicRegion&);
  * \param object to serialize
  */
 void serialize(OutputArchive&, const TwoDLocation&);
+void serialize(OutputArchive&, const ThreeDLocation&);
 void serialize(OutputArchive&, const CircularRegion&);
 void serialize(OutputArchive&, const RectangularRegion&);
 void serialize(OutputArchive&, const std::list<RectangularRegion>&);
@@ -93,6 +95,7 @@ void serialize(OutputArchive&, const GeograpicRegion&);
  * \return size of the deserialized object
  */
 size_t deserialize(InputArchive&, TwoDLocation&);
+size_t deserialize(InputArchive&, ThreeDLocation&);
 size_t deserialize(InputArchive&, CircularRegion&);
 size_t deserialize(InputArchive&, std::list<RectangularRegion>&);
 size_t deserialize(InputArchive&, PolygonalRegion&);

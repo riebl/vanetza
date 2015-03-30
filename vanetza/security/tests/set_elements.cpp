@@ -316,3 +316,94 @@ std::list<RecipientInfo> setRecipientInfoList() {
     list.push_back(setRecipientInfo());
     return list;
 }
+
+std::list<HashedId3> setHeaderField_hashedList() {
+    std::list<HashedId3> list;
+    for(int c = 0; c < 3; c++) {
+        HashedId3 id;
+        id[0] = c + 0;
+        id[1] = c + 1;
+        id[2] = c + 2;
+        list.push_back(id);
+    }
+    return list;
+}
+
+ThreeDLocation setHeaderField_threeDLoc() {
+    ThreeDLocation loc;
+    loc.latitude = static_cast<geonet::geo_angle_i32t>(1 * boost::units::degree::plane_angle());
+    loc.longtitude = static_cast<geonet::geo_angle_i32t>(2 * boost::units::degree::plane_angle());
+    loc.elevation[0] = 1;
+    loc.elevation[1] = 2;
+    return loc;
+}
+
+std::list<RecipientInfo> setHeaderField_RecipientInfoList() {
+    std::list<RecipientInfo> list;
+    RecipientInfo info;
+    for(auto& byte : info.cert_id) {
+        byte = 1;
+    }
+    EciesNistP256EncryptedKey key;
+    for(int c = 0; c < 16; c++) {
+        key.c.push_back(c);
+    }
+    for(int c = 0; c < 20; c++) {
+        key.c.push_back(c);
+    }
+    key.v = setEccPoint_Compressed_Lsb_Y_0();
+    info.enc_key = key;
+    list.push_back(info);
+
+    RecipientInfo info2;
+    EciesNistP256EncryptedKey key2;
+    for(auto& byte : info2.cert_id) {
+        byte = 2;
+    }
+    for(int c = 0; c < 16; c++) {
+        key2.c.push_back(c + 1);
+    }
+    for(int c = 0; c < 20; c++) {
+        key2.c.push_back(c + 1);
+    }
+    key2.v = setEccPoint_uncompressed();
+    info2.enc_key = key2;
+    list.push_back(info2);
+    return list;
+}
+
+std::list<HeaderField> setHeaderField_list() {
+    std::list<HeaderField> list;
+    HeaderFieldType type;
+
+    SignerInfo info = setSignerInfo_CertificateList();
+    list.push_back(info);
+
+    Time64 time = 983;
+    list.push_back(time);
+
+    Time64WithStandardDeviation time64;
+    time64.log_std_dev = 1;
+    time64.time64 = 2000;
+    list.push_back(time64);
+
+    Time32 time32 = 434;
+    list.push_back(time32);
+
+    list.push_back(setHeaderField_threeDLoc());
+    list.push_back(setHeaderField_hashedList());
+
+    uint16_t uint = 43;
+    list.push_back(uint);
+
+    EncryptionParameter param;
+    Nonce nonce;
+    for(auto& elem : nonce) {
+        elem = 22;
+    }
+    param = nonce;
+    list.push_back(param);
+
+    list.push_back(setHeaderField_RecipientInfoList());
+    return list;
+}

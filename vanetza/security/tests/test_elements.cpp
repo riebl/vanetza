@@ -237,3 +237,19 @@ void testRecipientInfoList(const std::list<RecipientInfo>& list, const std::list
     testRecipientInfo(*it++, *deIt++);
     testRecipientInfo(*it, *deIt);
 }
+
+void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<HeaderField>& deList) {
+    auto it = list.begin();
+    auto deIt = deList.begin();
+    testSignerInfo_Certificate(*boost::get<std::list<Certificate>>(boost::get<SignerInfo>(*it++)).begin(),*boost::get<std::list<Certificate>>(boost::get<SignerInfo>(*deIt++)).begin());
+    EXPECT_EQ(boost::get<Time64>(*it++), boost::get<Time64>(*deIt++));
+    EXPECT_EQ(boost::get<Time64WithStandardDeviation>(*it++).time64, boost::get<Time64WithStandardDeviation>(*deIt++).time64);
+    EXPECT_EQ(boost::get<Time32>(*it++), boost::get<Time32>(*deIt++));
+    EXPECT_EQ(static_cast<geonet::geo_angle_i32t>(2 * boost::units::degree::plane_angle()), boost::get<ThreeDLocation>(*deIt).longtitude);
+    EXPECT_EQ(static_cast<geonet::geo_angle_i32t>(1 * boost::units::degree::plane_angle()), boost::get<ThreeDLocation>(*deIt).latitude);
+    EXPECT_EQ(boost::get<ThreeDLocation>(*it++).elevation, boost::get<ThreeDLocation>(*deIt++).elevation);
+    EXPECT_EQ(*boost::get<std::list<HashedId3>>(*it++).begin(), *boost::get<std::list<HashedId3>>(*deIt++).begin());
+    EXPECT_EQ(boost::get<uint16_t>(*it++), boost::get<uint16_t>(*deIt++));
+    EXPECT_EQ(boost::get<Nonce>(boost::get<EncryptionParameter>(*it++)), boost::get<Nonce>(boost::get<EncryptionParameter>(*deIt++)));
+    EXPECT_EQ(boost::get<std::list<RecipientInfo>>(*it).begin()->cert_id, boost::get<std::list<RecipientInfo>>(*deIt).begin()->cert_id);
+}

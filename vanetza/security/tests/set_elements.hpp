@@ -5,6 +5,7 @@
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/encryption_parameter.hpp>
+#include <vanetza/security/header_field.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/signature.hpp>
@@ -55,5 +56,11 @@ Nonce setEncryptionParemeter_nonce();
 
 RecipientInfo setRecipientInfo();
 std::list<RecipientInfo> setRecipientInfoList();
+
+
+std::list<HashedId3> setHeaderField_hashedList();
+ThreeDLocation setHeaderField_threeDLoc();
+std::list<RecipientInfo> setHeaderField_RecipientInfoList();
+std::list<HeaderField> setHeaderField_list();
 
 #endif /* SETELEMENTS_HPP_ */
