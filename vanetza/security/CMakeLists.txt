@@ -15,6 +15,7 @@ set(CXX_SOURCES
     subject_info.cpp
     recipient_info.cpp
     region.cpp
+    trailer_field.cpp
     validity_restriction.cpp
 )
 
