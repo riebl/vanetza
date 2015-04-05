@@ -10,6 +10,7 @@ set(CXX_SOURCES
     public_key.cpp
     length_coding.cpp
     int_x.cpp
+    secured_message.cpp
     signature.cpp
     signer_info.cpp
     subject_attribute.cpp
