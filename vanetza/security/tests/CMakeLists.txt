@@ -17,3 +17,4 @@ add_gtest(EncryptionParameter encryption_parameter.cpp ${SECURITY_ELEMENTS_SOURC
 add_gtest(RecipientInfo recipient_info.cpp ${SECURITY_ELEMENTS_SOURCES})
 add_gtest(HeaderField header_field.cpp ${SECURITY_ELEMENTS_SOURCES})
 add_gtest(TrailerField trailer_field.cpp ${SECURITY_ELEMENTS_SOURCES})
+add_gtest(Payload payload.cpp ${SECURITY_ELEMENTS_SOURCES})

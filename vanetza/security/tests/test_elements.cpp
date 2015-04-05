@@ -253,3 +253,12 @@ void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<Hea
     EXPECT_EQ(boost::get<Nonce>(boost::get<EncryptionParameter>(*it++)), boost::get<Nonce>(boost::get<EncryptionParameter>(*deIt++)));
     EXPECT_EQ(boost::get<std::list<RecipientInfo>>(*it).begin()->cert_id, boost::get<std::list<RecipientInfo>>(*deIt).begin()->cert_id);
 }
+
+void testPayload_list(const std::list<Payload>& list, const std::list<Payload>& deList) {
+    auto it = list.begin();
+    auto deIt = deList.begin();
+
+    EXPECT_EQ(boost::get<Unsecured>(*it++), boost::get<Unsecured>(*deIt++));
+    EXPECT_EQ(boost::get<Signed>(*it++), boost::get<Signed>(*deIt++));
+    EXPECT_EQ(boost::get<SignedAndEncrypted>(*it), boost::get<SignedAndEncrypted>(*deIt));
+}

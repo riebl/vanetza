@@ -6,6 +6,7 @@ set(CXX_SOURCES
     ecc_point.cpp
     encryption_parameter.cpp
     header_field.cpp
+    payload.cpp
     public_key.cpp
     length_coding.cpp
     int_x.cpp

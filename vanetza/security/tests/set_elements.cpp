@@ -407,3 +407,24 @@ std::list<HeaderField> setHeaderField_list() {
     list.push_back(setHeaderField_RecipientInfoList());
     return list;
 }
+
+std::list<Payload> setPayload_List() {
+    std::list<Payload> list;
+    Unsecured u;
+    for (int c = 0; c < 12; c++) {
+        u.push_back(c);
+    }
+    list.push_back(u);
+    Signed s;
+    for (int c = 0; c < 12; c++) {
+        s.push_back(10+c);
+    }
+    list.push_back(s);
+    SignedAndEncrypted e;
+    for (int c = 0; c < 12; c++) {
+        e.push_back(100+c);
+    }
+    list.push_back(e);
+
+    return list;
+}
