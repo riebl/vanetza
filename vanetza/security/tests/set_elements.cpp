@@ -286,3 +286,11 @@ std::list<Certificate> setSignerInfo_CertificateList() {
     list.push_back(cert);
     return list;
 }
+
+Nonce setEncryptionParemeter_nonce() {
+    Nonce nonce;
+    for(int c = 0; c < nonce.size(); c++) {
+        nonce[c] = c+64;
+    }
+    return nonce;
+}

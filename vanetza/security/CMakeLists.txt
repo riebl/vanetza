@@ -4,6 +4,7 @@ set(CXX_SOURCES
     basic_elements.cpp
     certificate.cpp
     ecc_point.cpp
+    encryption_parameter.cpp
     public_key.cpp
     length_coding.cpp
     int_x.cpp

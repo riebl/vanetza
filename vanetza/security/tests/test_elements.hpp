@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/encryption_parameter.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/signature.hpp>
@@ -46,5 +47,7 @@ void testCertificate_SignerInfo(const std::list<SignerInfo>&, const std::list<Si
 void testCertificate_SubjectAttributeList(const std::list<SubjectAttribute>&, const std::list<SubjectAttribute>&);
 void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction>&, const std::list<ValidityRestriction>&);
 void testSignerInfo_Certificate(const Certificate&, const Certificate& );
+
+void testEncryptionParemeter_nonce(const EncryptionParameter&, const EncryptionParameter&);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */
