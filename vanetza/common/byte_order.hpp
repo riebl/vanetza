@@ -123,6 +123,8 @@ class EndianTypeStorage
     static_assert(std::is_pod<T>::value == true, "EndianType is only availabe for POD types");
 
 public:
+    typedef T value_type;
+
     EndianTypeStorage() = default;
     explicit EndianTypeStorage(T value) : mValue(value) {}
 
