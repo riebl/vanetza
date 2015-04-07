@@ -43,6 +43,34 @@ HeaderB parse_btp_b(geonet::PacketVariant& packet)
     return boost::apply_visitor(visitor, packet);
 }
 
+boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, geonet::detail::PacketVariant& packet)
+{
+    boost::optional<DataIndication> indication;
+
+    switch (gn_ind.upper_protocol) {
+        case geonet::UpperProtocol::BTP_A:
+            // TODO: parse BTP-A packets
+            break;
+        case geonet::UpperProtocol::BTP_B: {
+            HeaderB hdr = parse_btp_b(packet);
+            indication = DataIndication(gn_ind, hdr);
+            }
+            break;
+        default:
+            // drop non-BTP packet
+            break;
+    }
+
+    return indication;
+}
+
+void PortDispatcher::add_promiscuous_hook(PromiscuousHook* hook)
+{
+    if (hook != nullptr) {
+        m_promiscuous_hooks.push_back(hook);
+    }
+}
+
 void PortDispatcher::set_non_interactive_handler(
         port_type port,
         IndicationInterface* handler)
@@ -55,26 +83,25 @@ void PortDispatcher::indicate(
         std::unique_ptr<UpPacket> packet)
 {
     assert(packet);
-    btp::IndicationInterface* handler = nullptr;
-    btp::DataIndication btp_ind;
+    boost::optional<DataIndication> btp_ind = parse_btp_header(gn_ind, *packet);
+    IndicationInterface* handler = nullptr;
 
-    switch (gn_ind.upper_protocol) {
-        case geonet::UpperProtocol::BTP_A:
-            // TODO: handle BTP_A
-            break;
-        case geonet::UpperProtocol::BTP_B: {
-            HeaderB hdr = parse_btp_b(*packet);
-            btp_ind = DataIndication(gn_ind, hdr);
-            handler = m_non_interactive_handlers[hdr.destination_port];
-            }
-            break;
-        default:
-            // not a BTP packet, drop it
-            break;
-    }
+    if (btp_ind) {
+        if (!btp_ind->source_port) {
+            handler = m_non_interactive_handlers[btp_ind->destination_port];
+        }
 
-    if (nullptr != handler) {
-        handler->indicate(btp_ind, std::move(packet));
+        for (PromiscuousHook* hook : m_promiscuous_hooks) {
+            hook->tap_packet(*btp_ind, *packet);
+        }
+
+        if (nullptr == handler) {
+            hook_undispatched(gn_ind, &btp_ind.get());
+        } else {
+            handler->indicate(*btp_ind, std::move(packet));
+        }
+    } else {
+        hook_undispatched(gn_ind, nullptr);
     }
 }
 
