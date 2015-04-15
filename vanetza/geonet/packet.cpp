@@ -5,7 +5,7 @@ namespace vanetza
 namespace geonet
 {
 
-std::size_t size(const detail::PacketVariant& packet, OsiLayer layer)
+std::size_t size(const PacketVariant& packet, OsiLayer layer)
 {
     struct size_visitor : public boost::static_visitor<std::size_t>
     {
@@ -28,7 +28,7 @@ std::size_t size(const detail::PacketVariant& packet, OsiLayer layer)
     return boost::apply_visitor(visitor, packet);
 }
 
-std::size_t size(const detail::PacketVariant& packet, OsiLayer from, OsiLayer to)
+std::size_t size(const PacketVariant& packet, OsiLayer from, OsiLayer to)
 {
     struct size_visitor : public boost::static_visitor<std::size_t>
     {
@@ -52,7 +52,7 @@ std::size_t size(const detail::PacketVariant& packet, OsiLayer from, OsiLayer to
     return boost::apply_visitor(visitor, packet);
 }
 
-std::unique_ptr<ChunkPacket> duplicate(const detail::PacketVariant& packet)
+std::unique_ptr<ChunkPacket> duplicate(const PacketVariant& packet)
 {
     struct duplication_visitor : public boost::static_visitor<>
     {

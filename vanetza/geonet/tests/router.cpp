@@ -71,11 +71,7 @@ TEST(Router, shb_round_trip)
         std::copy(tmp.begin(), tmp.end(), std::back_inserter(net_payload));
     }
     ASSERT_EQ(req_ifc.m_last_packet->size(OsiLayer::Network, OsiLayer::Application), net_payload.size());
-#ifdef VANETZA_GEONET_USE_PACKET_VARIANT
     std::unique_ptr<UpPacket> packet_up { new UpPacket(CohesivePacket(net_payload, OsiLayer::Network)) };
-#else
-    std::unique_ptr<UpPacket> packet_up { new CohesivePacket(net_payload, OsiLayer::Network) };
-#endif
     ASSERT_EQ(
             size(*req_ifc.m_last_packet, min_osi_layer(), max_osi_layer()),
             size(*packet_up, OsiLayer::Network)
@@ -86,11 +82,7 @@ TEST(Router, shb_round_trip)
     EXPECT_EQ(indications_before + 1, ind_ifc.m_indications);
 
     ASSERT_NE(nullptr, ind_ifc.m_last_packet.get());
-#ifdef VANETZA_GEONET_USE_PACKET_VARIANT
     CohesivePacket* received_payload_ptr = boost::get<CohesivePacket>(ind_ifc.m_last_packet.get());
-#else
-    CohesivePacket* received_payload_ptr = ind_ifc.m_last_packet.get();
-#endif
     ASSERT_NE(nullptr, received_payload_ptr);
     auto received_payload_range = (*received_payload_ptr)[OsiLayer::Transport];
     const ByteBuffer received_payload = ByteBuffer {

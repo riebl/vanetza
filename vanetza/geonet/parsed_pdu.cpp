@@ -12,7 +12,7 @@ namespace vanetza
 namespace geonet
 {
 
-std::unique_ptr<ParsedPdu> parse(detail::PacketVariant& packet)
+std::unique_ptr<ParsedPdu> parse(PacketVariant& packet)
 {
     struct parse_packet_visitor : public boost::static_visitor<>
     {

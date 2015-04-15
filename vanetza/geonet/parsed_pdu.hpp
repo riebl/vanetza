@@ -23,7 +23,7 @@ struct ParsedPdu
     boost::variant<BeaconHeader, GeoBroadcastHeader, ShbHeader> extended;
 };
 
-std::unique_ptr<ParsedPdu> parse(detail::PacketVariant&);
+std::unique_ptr<ParsedPdu> parse(PacketVariant&);
 std::unique_ptr<ParsedPdu> parse(ChunkPacket&);
 std::unique_ptr<ParsedPdu> parse(CohesivePacket&);
 

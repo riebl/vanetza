@@ -26,7 +26,7 @@ HeaderB parse_btp_b(ChunkPacket& packet)
     return hdr;
 }
 
-HeaderB parse_btp_b(geonet::detail::PacketVariant& packet)
+HeaderB parse_btp_b(geonet::PacketVariant& packet)
 {
     struct parse_btp_visitor : public boost::static_visitor<HeaderB>
     {

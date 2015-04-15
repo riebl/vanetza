@@ -9,20 +9,10 @@ namespace vanetza
 {
 namespace geonet
 {
-namespace detail
-{
 
 typedef boost::variant<ChunkPacket, CohesivePacket> PacketVariant;
-
-} // namespace detail
-
 typedef ChunkPacket DownPacket;
-
-#ifdef VANETZA_GEONET_USE_PACKET_VARIANT
-typedef typename detail::PacketVariant UpPacket;
-#else
-typedef CohesivePacket UpPacket;
-#endif
+typedef PacketVariant UpPacket;
 
 inline std::size_t
 size(const CohesivePacket& packet, OsiLayer from, OsiLayer to)
@@ -48,9 +38,9 @@ size(const ChunkPacket& packet, OsiLayer layer)
     return packet[layer].size();
 }
 
-std::size_t size(const detail::PacketVariant&, OsiLayer from, OsiLayer to);
-std::size_t size(const detail::PacketVariant&, OsiLayer);
-std::unique_ptr<ChunkPacket> duplicate(const detail::PacketVariant&);
+std::size_t size(const PacketVariant&, OsiLayer from, OsiLayer to);
+std::size_t size(const PacketVariant&, OsiLayer);
+std::unique_ptr<ChunkPacket> duplicate(const PacketVariant&);
 
 } // namespace geonet
 } // namespace vanetza
