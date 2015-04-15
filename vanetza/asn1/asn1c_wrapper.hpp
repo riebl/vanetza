@@ -70,6 +70,8 @@ public:
     // dereferencing
     asn1c_type& operator*() { return *m_struct; }
     asn1c_type* operator->() { return m_struct; }
+    const asn1c_type& operator*() const { return *m_struct; }
+    const asn1c_type* operator->() const { return m_struct; }
 
     /**
      * Check ASN.1 constraints
