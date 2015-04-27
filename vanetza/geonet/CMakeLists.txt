@@ -37,7 +37,7 @@ vanetza_intermodule_dependencies(geonet dcc net)
 vanetza_module_property(geonet INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
 )
-vanetza_module_dependencies(geonet
+vanetza_module_dependencies(geonet LINKING
     ${Boost_DATE_TIME_LIBRARY}
     ${Boost_SERIALIZATION_LIBRARY}
     GeographicLib
