@@ -78,5 +78,39 @@ std::unique_ptr<ChunkPacket> duplicate(const PacketVariant& packet)
     return std::move(visitor.m_duplicate);
 }
 
+byte_view_range create_byte_view(const PacketVariant& packet, OsiLayer layer)
+{
+    struct payload_visitor : public boost::static_visitor<byte_view_range>
+    {
+        payload_visitor(OsiLayer layer) : m_layer(layer) {}
+
+        byte_view_range operator()(const CohesivePacket& packet)
+        {
+            return create_byte_view(packet, m_layer);
+        }
+
+        byte_view_range operator()(const ChunkPacket& packet)
+        {
+            return create_byte_view(packet, m_layer);
+        }
+
+        OsiLayer m_layer;
+    };
+
+    payload_visitor visitor(layer);
+    return boost::apply_visitor(visitor, packet);
+}
+
+byte_view_range create_byte_view(const ChunkPacket& packet, OsiLayer layer)
+{
+    return create_byte_view(packet[layer]);
+}
+
+byte_view_range create_byte_view(const CohesivePacket& packet, OsiLayer layer)
+{
+    CohesivePacket::buffer_const_range range = packet[layer];
+    return byte_view_range { range.begin(), range.end() };
+}
+
 } // namespace geonet
 } // namespace vanetza

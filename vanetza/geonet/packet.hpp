@@ -1,6 +1,7 @@
 #ifndef PACKET_HPP_LILZ0UWN
 #define PACKET_HPP_LILZ0UWN
 
+#include <vanetza/common/byte_view.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 #include <vanetza/net/cohesive_packet.hpp>
 #include <boost/variant.hpp>
@@ -41,6 +42,16 @@ size(const ChunkPacket& packet, OsiLayer layer)
 std::size_t size(const PacketVariant&, OsiLayer from, OsiLayer to);
 std::size_t size(const PacketVariant&, OsiLayer);
 std::unique_ptr<ChunkPacket> duplicate(const PacketVariant&);
+
+/**
+ * Create a view of a packet's bytes assigned to a certain layer
+ * \param packet
+ * \param layer
+ * \return a byte view, possibly empty
+ */
+byte_view_range create_byte_view(const PacketVariant&, OsiLayer);
+byte_view_range create_byte_view(const ChunkPacket&, OsiLayer);
+byte_view_range create_byte_view(const CohesivePacket&, OsiLayer);
 
 } // namespace geonet
 } // namespace vanetza
