@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 
 namespace vanetza
 {
@@ -83,7 +84,7 @@ public:
 
     template<class T>
     ByteBufferConvertible(T&& t) :
-        m_wrapper(new convertible::byte_buffer_impl<T>(std::forward<T>(t))) {}
+        m_wrapper(new convertible::byte_buffer_impl<typename std::remove_const<T>::type>(std::forward<T>(t))) {}
 
     ByteBufferConvertible(const ByteBufferConvertible&);
     ByteBufferConvertible& operator=(const ByteBufferConvertible&);
