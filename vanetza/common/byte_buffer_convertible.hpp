@@ -4,6 +4,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <cstddef>
 #include <memory>
+#include <string>
 
 namespace vanetza
 {
@@ -40,6 +41,17 @@ struct byte_buffer_impl<std::unique_ptr<ByteBuffer>> : public byte_buffer
     std::size_t size() const override { return m_buffer->size(); }
 
     std::unique_ptr<ByteBuffer> m_buffer;
+};
+
+template<>
+struct byte_buffer_impl<std::string> : public byte_buffer
+{
+    byte_buffer_impl(const std::string& str);
+    byte_buffer_impl(std::string&& str);
+    void convert(ByteBuffer& buffer) const override;
+    std::size_t size() const override;
+
+    std::string m_buffer;
 };
 
 template<>

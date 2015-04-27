@@ -1,4 +1,5 @@
 #include "byte_buffer_convertible.hpp"
+#include <algorithm>
 
 namespace vanetza
 {
@@ -13,6 +14,20 @@ std::unique_ptr<byte_buffer> byte_buffer::duplicate() const
         new byte_buffer_impl<ByteBuffer>(std::move(duplicate))
     };
     return result;
+}
+
+byte_buffer_impl<std::string>::byte_buffer_impl(const std::string& str) : m_buffer(str) {}
+byte_buffer_impl<std::string>::byte_buffer_impl(std::string&& str) : m_buffer(std::move(str)) {}
+
+void byte_buffer_impl<std::string>::convert(ByteBuffer& buffer) const
+{
+    buffer.clear();
+    std::copy(m_buffer.begin(), m_buffer.end(), std::back_inserter(buffer));
+}
+
+std::size_t byte_buffer_impl<std::string>::size() const
+{
+    return m_buffer.size();
 }
 
 } // namespace convertible
