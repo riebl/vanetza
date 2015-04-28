@@ -101,6 +101,13 @@ ByteBuffer encode(asn_TYPE_descriptor_t& td, const void* t)
     return buffer;
 }
 
+bool decode(asn_TYPE_descriptor_t& td, void** t, const ByteBuffer& buffer)
+{
+    asn_codec_ctx_t ctx {};
+    asn_dec_rval_t ec = uper_decode_complete(&ctx, &td, t, buffer.data(), buffer.size());
+    return ec.code == RC_OK;
+}
+
 } // namespace asn1
 } // namespace vanetza
 

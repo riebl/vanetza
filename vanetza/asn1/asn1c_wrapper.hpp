@@ -20,6 +20,7 @@ bool validate(asn_TYPE_descriptor_t&, const void*);
 bool validate(asn_TYPE_descriptor_t&, const void*, std::string&);
 std::size_t size(asn_TYPE_descriptor_t&, const void*);
 ByteBuffer encode(asn_TYPE_descriptor_t&, const void*);
+bool decode(asn_TYPE_descriptor_t&, void**, const ByteBuffer&);
 
 template<class T>
 T* allocate()
@@ -100,6 +101,16 @@ public:
     ByteBuffer encode() const
     {
         return vanetza::asn1::encode(m_type, m_struct);
+    }
+
+    /**
+     * Try to decode ASN.1 struct from byte buffer
+     * \param buffer input data
+     * \return true if decoding has been successful
+     */
+    bool decode(const ByteBuffer& buffer)
+    {
+        return vanetza::asn1::decode(m_type, (void**)&m_struct, buffer);
     }
 
     /**

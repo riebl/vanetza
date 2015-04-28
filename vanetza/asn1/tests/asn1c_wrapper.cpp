@@ -52,3 +52,18 @@ TEST(asn1c_wrapper, encode) {
     EXPECT_EQ(vanetza::ByteBuffer({ 0x6f, 0x00 }), buf);
 }
 
+TEST(asn1c_wrapper, decode_valid) {
+    test_wrapper wrapper(asn_DEF_Test);
+    const vanetza::ByteBuffer buffer { 0x6f, 0x00 };
+    bool result = wrapper.decode(buffer);
+    ASSERT_TRUE(result);
+    EXPECT_EQ(0xde, wrapper->field);
+}
+
+TEST(asn1c_wrapper, decode_invalid) {
+    test_wrapper wrapper(asn_DEF_Test);
+    const vanetza::ByteBuffer buffer { 0x12 };
+    bool result = wrapper.decode(buffer);
+    // should have failed because of short buffer
+    ASSERT_FALSE(result);
+}
