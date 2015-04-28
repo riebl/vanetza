@@ -94,8 +94,7 @@ std::size_t size(asn_TYPE_descriptor_t& td, const void* t)
 ByteBuffer encode(asn_TYPE_descriptor_t& td, const void* t)
 {
     ByteBuffer buffer;
-    asn_enc_rval_t ec;
-    ec = uper_encode(&td, const_cast<void*>(t), write_buffer, &buffer);
+    asn_enc_rval_t ec = uper_encode(&td, const_cast<void*>(t), write_buffer, &buffer);
     if (ec.encoded == -1) {
         throw std::runtime_error("Unaligned PER encoding failed");
     }
