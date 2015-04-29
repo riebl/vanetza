@@ -43,7 +43,7 @@ HeaderB parse_btp_b(geonet::PacketVariant& packet)
     return boost::apply_visitor(visitor, packet);
 }
 
-boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, geonet::detail::PacketVariant& packet)
+boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, geonet::PacketVariant& packet)
 {
     boost::optional<DataIndication> indication;
 
