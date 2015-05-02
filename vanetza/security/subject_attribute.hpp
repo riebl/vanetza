@@ -3,6 +3,7 @@
 
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <list>
 
 namespace vanetza {
 namespace security {
