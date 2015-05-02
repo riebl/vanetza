@@ -4,6 +4,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/length_coding.hpp>
 #include <vanetza/security/serialization.hpp>
+#include <list>
 
 namespace vanetza {
 namespace security {
