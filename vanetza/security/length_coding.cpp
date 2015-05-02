@@ -14,8 +14,14 @@ std::size_t count_leading_ones(uint8_t v) {
     return count;
 }
 
-std::size_t get_length_coding_size(size_t size) {
-    return (count_leading_ones(*encode_length(size).begin()) + 1);
+std::size_t get_length_coding_size(std::size_t length) {
+    std::size_t size = 1;
+    while ((length & ~0x7f) != 0) {
+        // prefix enlongates by one additional leading "1" per shift
+        length >>= 7; // shift by 7
+        ++size;
+    }
+    return size;
 }
 
 ByteBuffer encode_length(std::size_t length) {

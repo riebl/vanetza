@@ -120,3 +120,21 @@ TEST(LengthEncoding, serialize_length) {
     serialize_length(0x200000);
     serialize_length(128);
 }
+
+TEST(LengthEncoding, get_length_coding_size) {
+    const auto expected = [](std::size_t length) {
+        return count_leading_ones(*encode_length(length).begin()) + 1;
+    };
+
+    for (std::size_t i = 0x3f; i < 0x1001; ++i) {
+        EXPECT_EQ(std::make_tuple(i, expected(i)), std::make_tuple(i, get_length_coding_size(i)));
+    }
+
+    for (std::size_t i = 0x3fff; i < 0x10001; ++i) {
+        EXPECT_EQ(std::make_tuple(i, expected(i)), std::make_tuple(i, get_length_coding_size(i)));
+    }
+
+    for (std::size_t i = 0x7fffff; i < 0x1000001; ++i) {
+        EXPECT_EQ(std::make_tuple(i, expected(i)), std::make_tuple(i, get_length_coding_size(i)));
+    }
+}
