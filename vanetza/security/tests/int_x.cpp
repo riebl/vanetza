@@ -16,7 +16,10 @@ TEST(IntX, set_and_get) {
 
     a.set(static_cast<uint32_t>(0x12345678));
     EXPECT_EQ(0x12345678, a.get<uint32_t>());
+#ifndef NDEBUG
+    // assertion is only triggered for debug builds
     EXPECT_DEATH(a.get<uint16_t>(), "");
+#endif
 }
 
 TEST(IntX, size) {
