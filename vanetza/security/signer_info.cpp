@@ -128,6 +128,7 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
     SignerInfoType type;
     size_t size = 0;
     deserialize(ar, type);
+    size += sizeof(SignerInfoType);
     switch (type) {
         case SignerInfoType::Certificate: {
             Certificate cert;
@@ -161,8 +162,8 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
             break;
         default:
             throw deserialization_error("Unknown SignerInfoType");
+            break;
     }
-    size += sizeof(SignerInfoType);
     return size;
 }
 

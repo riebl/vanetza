@@ -52,7 +52,7 @@ std::size_t count_leading_ones(uint8_t);
 void serialize_length(OutputArchive&, size_t);
 
 /**
- * calculates bytes, needed to store a given size
+ * Determines the number of bytes, needed to store a given size
  * \param size
  * \return number of bytes needed to store length
  */

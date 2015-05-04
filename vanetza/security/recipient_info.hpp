@@ -13,7 +13,7 @@ struct EciesNistP256EncryptedKey
 {
     EccPoint v;
     ByteBuffer c;
-    ByteBuffer t;
+    std::array<uint8_t, 20> t;
 };
 
 typedef boost::variant<EciesNistP256EncryptedKey> Key;
@@ -24,7 +24,6 @@ struct RecipientInfo
     Key enc_key;
 };
 
-
 /**
  * Determines PublicKeyAlgorithm to a RecipientInfo
  * \param RecipientInfo
@@ -32,14 +31,12 @@ struct RecipientInfo
  */
 PublicKeyAlgorithm get_type(const RecipientInfo&);
 
-
 /**
  * Calculates size of a RecipientInfo
  * \param RecipientInfo
  * \return size_t containing the number of octets needed to serialize the RecipientInfo
  */
 size_t get_size(const RecipientInfo&);
-
 
 /**
  * Serializes a RecipientInfo into a binary archive

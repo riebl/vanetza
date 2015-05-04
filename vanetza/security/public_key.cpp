@@ -63,6 +63,20 @@ std::size_t field_size(PublicKeyAlgorithm algo)
     return size;
 }
 
+std::size_t field_size(SymmetricAlgorithm algo)
+{
+    size_t size = 0;
+    switch (algo) {
+        case SymmetricAlgorithm::Aes128_Ccm:
+            size = 16;
+            break;
+        default:
+            throw deserialization_error("Unknown SymmetricAlgorithm");
+            break;
+    }
+    return size;
+}
+
 size_t deserialize(InputArchive& ar, PublicKey& key)
 {
     PublicKeyAlgorithm type;
@@ -83,6 +97,7 @@ size_t deserialize(InputArchive& ar, PublicKey& key)
         }
         default:
             throw deserialization_error("Unknown PublicKeyAlgortihm");
+            break;
     }
     return get_size(key);
 }

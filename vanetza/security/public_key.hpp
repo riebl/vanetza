@@ -65,11 +65,12 @@ size_t deserialize(InputArchive&, PublicKey&);
 void serialize(OutputArchive&, const PublicKey&);
 
 /**
- * Defines length of uint8_t vectors of an EccPoint
- * \param used PublicKeyAlgorithm
+ * Defines length of uint8_t vectors
+ * \param used algorithm
  * \return size_t depending on the used algorithm
  */
 std::size_t field_size(PublicKeyAlgorithm);
+std::size_t field_size(SymmetricAlgorithm);
 
 } // namespace security
 } // namespace vanetza

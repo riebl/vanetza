@@ -85,38 +85,31 @@ size_t deserialize(InputArchive& ar, std::list<RecipientInfo>& list,
 
 size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorithm& symAlgo)
 {
-    size_t fieldSize;
-    switch (symAlgo) {
-        case SymmetricAlgorithm::Aes128_Ccm:
-            fieldSize = 16;
-            break;
-        default:
-            throw deserialization_error("Unknown SymmetricAlgorithm");
-    }
-    for (int c = 0; c < 8; c++) {
+    size_t fieldSize = field_size(symAlgo);
+    for (int c = 0; c < info.cert_id.size(); c++) {
         ar >> info.cert_id[c];
     }
     PublicKeyAlgorithm algo;
     deserialize(ar, algo);
+    EciesNistP256EncryptedKey &ecies = boost::get<EciesNistP256EncryptedKey>(info.enc_key);
     switch (algo) {
         case PublicKeyAlgorithm::Ecies_Nistp256:
             for (int c = 0; c < fieldSize; c++) {
                 uint8_t tmp;
                 ar >> tmp;
-                boost::get<EciesNistP256EncryptedKey>(info.enc_key).c.push_back(tmp);
+                ecies.c.push_back(tmp);
             }
-            for (int c = 0; c < 20; c++) {
+            for (int c = 0; c < ecies.t.size(); c++) {
                 uint8_t tmp;
                 ar >> tmp;
-                boost::get<EciesNistP256EncryptedKey>(info.enc_key).t.push_back(tmp);
+                ecies.t[c] = tmp;
             }
-            deserialize(ar, boost::get<EciesNistP256EncryptedKey>(info.enc_key).v,
-                PublicKeyAlgorithm::Ecies_Nistp256);
+            deserialize(ar, ecies.v, PublicKeyAlgorithm::Ecies_Nistp256);
             break;
         default:
             throw deserialization_error("Unknown PublicKeyAlgoritm");
+            break;
     }
-
     return get_size(info);
 }
 

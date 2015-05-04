@@ -291,43 +291,44 @@ size_t deserialize(InputArchive& ar, IdentifiedRegion& reg)
 
 size_t deserialize(InputArchive& ar, GeograpicRegion& reg)
 {
-    size_t size = 0;
     RegionType type;
     deserialize(ar, type);
+    size_t size = sizeof(RegionType);
     switch (type) {
         case RegionType::None:
             break;
         case RegionType::Circle: {
             CircularRegion circle;
-            size = deserialize(ar, circle);
+            size += deserialize(ar, circle);
             reg = circle;
             break;
         }
         case RegionType::Rectangle: {
             std::list<RectangularRegion> list;
-            size = deserialize(ar, list);
+            size += deserialize(ar, list);
             size += length_coding_size(size);
             reg = list;
             break;
         }
         case RegionType::Polygon: {
             PolygonalRegion polygon;
-            size = deserialize(ar, polygon);
+            size += deserialize(ar, polygon);
             size += length_coding_size(size);
             reg = polygon;
             break;
         }
         case RegionType::ID: {
             IdentifiedRegion id;
-            size = deserialize(ar, id);
+            size += deserialize(ar, id);
             reg = id;
             break;
         }
         default: {
             throw deserialization_error("Unknown RegionType");
+            break;
         }
     }
-    return (size + sizeof(RegionType));
+    return (size);
 }
 
 } // namespace security
