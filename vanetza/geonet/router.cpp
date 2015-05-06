@@ -100,12 +100,13 @@ void Router::update(Timestamp now)
 void Router::update(const LongPositionVector& lpv)
 {
     // Check if LPV update frequency is fulfilled
-    assert(m_time_now.after(m_last_update_lpv));
+    assert(!m_time_now.before(m_last_update_lpv));
     units::Duration time_since_last_update { m_time_now - m_last_update_lpv };
-    assert(time_since_last_update.value() != 0.0);
-    units::Frequency current_update_frequency =  1.0 / time_since_last_update;
-    if (m_mib.itsGnMinimumUpdateFrequencyLPV > current_update_frequency) {
-        throw std::runtime_error("LPV is not updated frequently enough");
+    if (time_since_last_update.value() > 0.0) {
+        units::Frequency current_update_frequency =  1.0 / time_since_last_update;
+        if (m_mib.itsGnMinimumUpdateFrequencyLPV > current_update_frequency) {
+            throw std::runtime_error("LPV is not updated frequently enough");
+        }
     }
 
     // Update LPV except for GN address
