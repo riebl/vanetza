@@ -9,18 +9,18 @@ void serialize(OutputArchive& ar, const SecuredMessage& message)
 {
     ar << message.protocol_version;
     serialize(ar, message.security_profile);
-    serialize(ar, message.headerFields);
+    serialize(ar, message.header_fields);
     serialize(ar, message.payload);
-    serialize(ar, message.trailerFields);
+    serialize(ar, message.trailer_fields);
 }
 
 void deserialize(InputArchive& ar, SecuredMessage& message)
 {
     ar >> message.protocol_version;
     deserialize(ar, message.security_profile);
-    deserialize(ar, message.headerFields);
+    deserialize(ar, message.header_fields);
     deserialize(ar, message.payload);
-    deserialize(ar, message.trailerFields);
+    deserialize(ar, message.trailer_fields);
 }
 
 } // namespace security

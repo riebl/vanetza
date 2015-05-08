@@ -12,12 +12,12 @@ TEST(SecuredMessage, Serialization)
 
     m.protocol_version = 1;
     m.security_profile = Profile::CAM;
-    m.headerFields = setHeaderField_list();
+    m.header_fields = setHeaderField_list();
     m.payload = setPayload_List();
     std::list<TrailerField> list;
     list.push_back(setSignature_Ecdsa_Signature());
     list.push_back(setSignature_Ecdsa_Signature());
-    m.trailerFields = list;
+    m.trailer_fields = list;
 
     std::stringstream stream;
     OutputArchive oa(stream);
@@ -29,10 +29,8 @@ TEST(SecuredMessage, Serialization)
 
     EXPECT_EQ(m.protocol_version, deMessage.protocol_version);
     EXPECT_EQ(m.security_profile, deMessage.security_profile);
-    testHeaderFieldList(m.headerFields, deMessage.headerFields);
+    testHeaderFieldList(m.header_fields, deMessage.header_fields);
     testPayload_list(m.payload, deMessage.payload);
-    //   testSignature_Ecdsa_Signature(m.trailerFields.begin(), deMessage.trailerFields.begin());
-
 }
 
 TEST(WebValidator, Serialize_SecuredMessage1)

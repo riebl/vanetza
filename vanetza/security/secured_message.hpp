@@ -25,8 +25,8 @@ struct SecuredMessage
 {
     uint8_t protocol_version;
     Profile security_profile;
-    std::list<HeaderField> headerFields;
-    std::list<TrailerField> trailerFields;
+    std::list<HeaderField> header_fields;
+    std::list<TrailerField> trailer_fields;
     std::list<Payload> payload;
 };
 
