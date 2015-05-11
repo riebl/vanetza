@@ -49,7 +49,6 @@ struct GbcDataRequest;
 struct DataConfirm;
 struct DataIndication;
 
-
 /**
  * Router is the central entity for GeoNet communication
  *
@@ -83,6 +82,7 @@ public:
     void set_transport_handler(UpperProtocol, TransportInterface&);
     void set_time(Timestamp init);
     void set_address(const Address&);
+    const CbfPacketBuffer& get_cbf_buffer() const { return m_cbf_buffer; }
 
     /**
      * Set seed for internal random number generator (RNG)
