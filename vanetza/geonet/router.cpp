@@ -297,9 +297,10 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
             m_router->process_extended(pdu, std::move(m_packet), m_sender, m_destination);
         }
 
-        void operator()(BeaconHeader&)
+        void operator()(BeaconHeader& beacon)
         {
-            // TODO: implement handling of received BEACON
+            ExtendedPduRefs<BeaconHeader> pdu(m_pdu.basic, m_pdu.common, beacon);
+            m_router->process_extended(pdu, std::move(m_packet));
         }
 
         Router* m_router;
@@ -653,6 +654,30 @@ void Router::process_extended(const ExtendedPduRefs<ShbHeader>& pdu, UpPacketPtr
     ind.source_position = static_cast<ShortPositionVector>(shb.source_position);
     ind.transport_type = TransportType::SHB;
     pass_up(ind, std::move(packet));
+}
+
+void Router::process_extended(const ExtendedPduRefs<BeaconHeader>& pdu, UpPacketPtr packet)
+{
+    const BeaconHeader& beacon = pdu.extended();
+    const Address& source_addr = beacon.source_position.gn_addr;
+    const Timestamp& source_time = beacon.source_position.timestamp;
+
+    // execute duplicate packet detection (see A.3)
+    if (m_location_table.is_duplicate_packet(source_addr, source_time)) {
+        // discard packet
+        return;
+    }
+
+    // execute duplicate address detection (see 9.2.1.5)
+    detect_duplicate_address(source_addr);
+
+    // update location table with SO.PV (see C.2)
+    m_location_table.update(beacon.source_position);
+    // update SO.PDR in location table (see B.2)
+    const std::size_t packet_size = size(*packet, OsiLayer::Network, OsiLayer::Application);
+    m_location_table.update_pdr(source_addr, packet_size, m_time_now);
+    // set SO LocTE to neighbour
+    m_location_table.is_neighbour(source_addr, true);
 }
 
 void Router::process_extended(const ExtendedPduRefs<GeoBroadcastHeader>& pdu,

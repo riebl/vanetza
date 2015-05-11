@@ -100,6 +100,7 @@ private:
 
     void on_beacon_timer_expired();
     void reset_beacon_timer();
+    void process_extended(const ExtendedPduRefs<BeaconHeader>&, UpPacketPtr);
     void process_extended(const ExtendedPduRefs<ShbHeader>&, UpPacketPtr);
     void process_extended(const ExtendedPduRefs<GeoBroadcastHeader>&, UpPacketPtr,
             const MacAddress& sender, const MacAddress& destination);
