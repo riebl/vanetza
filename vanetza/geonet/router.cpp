@@ -219,6 +219,9 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
 
         if (first_hop.valid()) {
             execute_media_procedures(request.communication_profile);
+            std::unique_ptr<Pdu> pdu;
+            std::unique_ptr<DownPacket> payload;
+            std::tie(pdu, payload) = first_hop.data();
             pass_down(first_hop.mac(), std::move(pdu), std::move(payload));
         } else {
             result ^= DataConfirm::ResultCode::REJECTED_UNSPECIFIED;
