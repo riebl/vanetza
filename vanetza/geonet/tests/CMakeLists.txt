@@ -15,4 +15,4 @@ add_gtest(Router router.cpp)
 add_gtest(SequenceNumber sequence_number.cpp)
 add_gtest(Timestamp timestamp.cpp)
 add_gtest(TrafficClass traffic_class.cpp)
-
+add_gtest(Routing network_topology.cpp routing.cpp)
