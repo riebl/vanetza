@@ -58,13 +58,28 @@ protected:
 
 
 TEST_F(BtpPortDispatcherTest, empty) {
-    undispatched_counter = port_min - 1;
-    for (port_native p = port_min; p < port_max; ++p) {
+    std::size_t indication_counter = 0;
+    const auto port_range = port_max - port_min;
+
+    // create list of port numbers to test
+    std::list<port_native> ports;
+    ports.push_back(port_min - 1);
+    ports.push_back(port_min);
+    ports.push_back(port_min + 1);
+    ports.push_back(port_min + 0.2 * port_range);
+    ports.push_back(port_min + 0.3 * port_range);
+    ports.push_back(port_min + 0.5 * port_range);
+    ports.push_back(port_min + 0.9 * port_range);
+    ports.push_back(port_max - 1);
+    ports.push_back(port_max);
+    ports.push_back(port_max + 1);
+
+    for (port_native p : ports) {
         dispatcher.indicate(
                 create_gn_indication(UpperProtocol::BTP_B),
                 create_btp_packet(host_cast(p))
         );
-        EXPECT_EQ(undispatched_counter, p);
+        EXPECT_EQ(undispatched_counter, ++indication_counter);
     }
 }
 
