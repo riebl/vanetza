@@ -5,46 +5,51 @@ namespace vanetza
 namespace security
 {
 
-PublicKeyAlgorithm get_type(const Signature& sig) {
-    struct Signature_visitor: public boost::static_visitor<>
+PublicKeyAlgorithm get_type(const Signature& sig)
+{
+    struct Signature_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
-        void operator()(const EcdsaSignature& sig) {
-            m_algo = PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+        PublicKeyAlgorithm operator()(const EcdsaSignature& sig)
+        {
+            return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
         }
-        PublicKeyAlgorithm m_algo;
     };
     Signature_visitor visit;
-    boost::apply_visitor(visit, sig);
-    return visit.m_algo;
+    return boost::apply_visitor(visit, sig);
 }
 
-size_t get_size(const EcdsaSignature& sig) {
+size_t get_size(const EcdsaSignature& sig)
+{
     size_t size = sig.s.size();
     size += get_size(sig.R);
     return size;
 }
 
-size_t get_size(const Signature& sig) {
-    struct Signature_visitor: public boost::static_visitor<>
+size_t get_size(const Signature& sig)
+{
+    size_t size = sizeof(PublicKeyAlgorithm);
+    struct Signature_visitor : public boost::static_visitor<size_t>
     {
-        void operator()(const EcdsaSignature& sig) {
-            m_size = get_size(sig);
-            m_size += sizeof(PublicKeyAlgorithm);
+        size_t operator()(const EcdsaSignature& sig)
+        {
+            return get_size(sig);
         }
-        size_t m_size;
     };
     Signature_visitor visit;
-    boost::apply_visitor(visit, sig);
-    return visit.m_size;
+    size += boost::apply_visitor(visit, sig);
+    return size;
 }
 
-void serialize(OutputArchive& ar, const Signature& sig) {
-    struct Signature_visitor: public boost::static_visitor<>
+void serialize(OutputArchive& ar, const Signature& sig)
+{
+    struct Signature_visitor : public boost::static_visitor<>
     {
         Signature_visitor(OutputArchive& ar) :
-                m_archive(ar) {
+            m_archive(ar)
+        {
         }
-        void operator()(const EcdsaSignature& sig) {
+        void operator()(const EcdsaSignature& sig)
+        {
             serialize(m_archive, sig.R);
             for (auto& byte : sig.s) {
                 m_archive << byte;
@@ -53,12 +58,13 @@ void serialize(OutputArchive& ar, const Signature& sig) {
         OutputArchive& m_archive;
     };
     PublicKeyAlgorithm algo = get_type(sig);
-    ar << algo;
+    serialize(ar, algo);
     Signature_visitor visit(ar);
     boost::apply_visitor(visit, sig);
 }
 
-size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorithm& algo) {
+size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorithm& algo)
+{
     EccPoint point;
     ByteBuffer buf;
     deserialize(ar, point, algo);
@@ -72,10 +78,11 @@ size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorit
     return get_size(sig);
 }
 
-size_t deserialize(InputArchive& ar, Signature& sig) {
+size_t deserialize(InputArchive& ar, Signature& sig)
+{
     PublicKeyAlgorithm algo;
     size_t size = 0;
-    ar >> algo;
+    deserialize(ar, algo);
     size += sizeof(algo);
     switch (algo) {
         case PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256: {

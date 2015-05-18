@@ -7,8 +7,9 @@ using namespace vanetza::security;
 using namespace vanetza;
 using namespace std;
 
-GeograpicRegion serialize(GeograpicRegion reg) {
-    std:stringstream stream;
+GeograpicRegion serialize(GeograpicRegion reg)
+{
+    std::stringstream stream;
     OutputArchive oa(stream);
     serialize(oa, reg);
     GeograpicRegion dereg;
@@ -18,26 +19,30 @@ GeograpicRegion serialize(GeograpicRegion reg) {
     return dereg;
 }
 
-TEST(Region, Serialize_CircularRegion) {
+TEST(Region, Serialize_CircularRegion)
+{
     GeograpicRegion reg = setGeograpicRegion_CircularRegion();
     GeograpicRegion deReg = serialize(reg);
     testGeograpicRegion_CircularRegion(reg, deReg);
 }
 
-TEST(Region, Serialize_IdentifiedRegion) {
+TEST(Region, Serialize_IdentifiedRegion)
+{
     GeograpicRegion reg = setGeograpicRegion_IdentifiedRegion();
     GeograpicRegion dereg = serialize(reg);
     testGeograpicRegion_IdentifiedRegion(reg, dereg);
 }
 
-TEST(Region, Serialize_PolygonalRegion) {
+TEST(Region, Serialize_PolygonalRegion)
+{
     GeograpicRegion reg = setGeograpicRegion_PolygonalRegion();
     GeograpicRegion dereg = serialize(reg);
     testGeograpicRegion_PolygonalRegion(reg, dereg);
 
 }
 
-TEST(Region, Serialize_RectangularRegion_list) {
+TEST(Region, Serialize_RectangularRegion_list)
+{
     GeograpicRegion reg = setGeograpicRegion_RectangularRegion_list();
     GeograpicRegion dereg = serialize(reg);
     testGeograpicRegion_RectangularRegion_list(reg, dereg);

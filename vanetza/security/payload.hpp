@@ -21,27 +21,54 @@ enum class PayloadType : uint8_t
     Signed_And_Encrypted = 4
 };
 
-struct Unsecured: ByteBuffer {};
-struct Signed: ByteBuffer {};
-struct Encrypted: ByteBuffer {};
-struct SignedExternal: ByteBuffer {};
-struct SignedAndEncrypted: ByteBuffer {};
+struct Unsecured : ByteBuffer
+{
+};
+struct Signed : ByteBuffer
+{
+};
+struct Encrypted : ByteBuffer
+{
+};
+struct SignedExternal : ByteBuffer
+{
+};
+struct SignedAndEncrypted : ByteBuffer
+{
+};
 
 typedef boost::variant<Unsecured, Signed, Encrypted, SignedExternal, SignedAndEncrypted> Payload;
 
-
+/**
+ * Determines PayloadType to a given Payload
+ * \param Payload
+ * \return PayloadType
+ */
 PayloadType get_type(const Payload&);
 
+/**
+ * Calculates size of Payload
+ * \param Payload
+ * \return size_t containing the number of octets needed to serialize the Payload
+ */
 size_t get_size(const Payload&);
-size_t get_size(const std::list<Payload>&);
 
+/**
+ * Serializes an object into a binary archive
+ * \param object to serialize
+ * \param achive to serialize in,
+ */
 void serialize(OutputArchive& ar, const ByteBuffer&);
 void serialize(OutputArchive& ar, const Payload&);
-void serialize(OutputArchive& ar, const std::list<Payload>);
 
+/**
+ * Deserializes an object from a binary archive
+ * \param archive with a serialized object at the beginning
+ * \param object to deserialize
+ * \return size of the deserialized object
+ */
 size_t deserialize(InputArchive& ar, ByteBuffer&);
 size_t deserialize(InputArchive& ar, Payload&);
-size_t deserialize(InputArchive& ar, std::list<Payload>&);
 
 } // namespace security
 } // namespace vanetza

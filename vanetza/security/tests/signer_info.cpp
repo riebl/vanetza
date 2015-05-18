@@ -7,7 +7,8 @@
 using namespace vanetza;
 using namespace security;
 
-SignerInfo serialize(const SignerInfo& info) {
+SignerInfo serialize(const SignerInfo& info)
+{
     std::stringstream stream;
     OutputArchive oa(stream);
     serialize(oa, info);
@@ -18,7 +19,8 @@ SignerInfo serialize(const SignerInfo& info) {
     return deserializedInfo;
 }
 
-TEST(SignerInfo, Serialzation) {
+TEST(SignerInfo, Serialzation)
+{
     SignerInfo info;
     info = setSignerInfo_CertificateList();
     SignerInfo deInfo = serialize(info);
@@ -29,3 +31,18 @@ TEST(SignerInfo, Serialzation) {
     testSignerInfo_Certificate(*it, *deIt);
 }
 
+TEST(WebValidator, Size)
+{
+    char str[] = "A8ED6DF65B0E6D6A";
+    int n;
+    SignerInfo info;
+    HashedId8 id;
+    for (int i = 0; i < 8; i++) {
+        sscanf(str + 2 * i, "%2X", &n);
+        id[i] = (char) n;
+    }
+    info = id;
+
+    EXPECT_EQ(9, get_size(info));
+
+}

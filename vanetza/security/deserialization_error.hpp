@@ -3,12 +3,17 @@
 
 #include <stdexcept>
 
-namespace vanetza {
-namespace security {
+namespace vanetza
+{
+namespace security
+{
 
-struct deserialization_error : public std::runtime_error {
+struct deserialization_error : public std::runtime_error
+{
 public:
-    deserialization_error(const std::string msg) : std::runtime_error(msg) {};
+    deserialization_error(const std::string msg) : std::runtime_error(msg)
+    {
+    }
 };
 
 } // namespace security

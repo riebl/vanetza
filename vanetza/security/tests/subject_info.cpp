@@ -5,7 +5,8 @@
 
 using namespace vanetza::security;
 
-SubjectInfo serialize(SubjectInfo sub) {
+SubjectInfo serialize(SubjectInfo sub)
+{
     std::stringstream stream;
     OutputArchive oa(stream);
     serialize(oa, sub);
@@ -15,8 +16,17 @@ SubjectInfo serialize(SubjectInfo sub) {
     return desub;
 }
 
-TEST(SubjectInfo, Serialization) {
+TEST(SubjectInfo, Serialization)
+{
     SubjectInfo sub = setSubjectInfo();
     SubjectInfo desub = serialize(sub);
     testSubjectInfo(sub, desub);
+}
+
+TEST(WebValidator, Size)
+{
+    SubjectInfo info;
+    info.subject_type = SubjectType::Authorization_Ticket;
+
+    EXPECT_EQ(2, get_size(info));
 }

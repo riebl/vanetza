@@ -30,7 +30,12 @@ struct SecuredMessage
     std::list<Payload> payload;
 };
 
-void serialize(OutputArchive& ar,const SecuredMessage& message);
+/**
+ * Serializes a SecuredMessage into a binary archive
+ * \param SecuredMessage to serialize
+ * \param achive to serialize in
+ */
+void serialize(OutputArchive& ar, const SecuredMessage& message);
 
 /**
  * Deserializes a SecuredMessage from a binary archive

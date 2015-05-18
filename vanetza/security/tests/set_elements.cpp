@@ -1,6 +1,7 @@
 #include <vanetza/security/tests/set_elements.hpp>
 
-EccPoint setEccPoint_uncompressed() {
+EccPoint setEccPoint_uncompressed()
+{
     EccPoint point;
     Uncompressed uncompressed;
     for (int c = 0; c < 32; c++) {
@@ -11,7 +12,8 @@ EccPoint setEccPoint_uncompressed() {
     return point;
 }
 
-EccPoint setEccPoint_Compressed_Lsb_Y_0() {
+EccPoint setEccPoint_Compressed_Lsb_Y_0()
+{
     EccPoint point;
     EccPointType type = EccPointType::Compressed_Lsb_Y_0;
     Compressed_Lsb_Y_0 coord;
@@ -22,7 +24,8 @@ EccPoint setEccPoint_Compressed_Lsb_Y_0() {
     return point;
 }
 
-EccPoint setEccPoint_X_Coordinate_Only() {
+EccPoint setEccPoint_X_Coordinate_Only()
+{
     EccPoint point;
     EccPointType type = EccPointType::X_Coordinate_Only;
     X_Coordinate_Only coord;
@@ -33,7 +36,8 @@ EccPoint setEccPoint_X_Coordinate_Only() {
     return point;
 }
 
-PublicKey setPublicKey_Ecies_Nistp256() {
+PublicKey setPublicKey_Ecies_Nistp256()
+{
     EccPoint point = setEccPoint_uncompressed();
     PublicKey key;
     ecies_nistp256 ecies;
@@ -43,7 +47,8 @@ PublicKey setPublicKey_Ecies_Nistp256() {
     return key;
 }
 
-PublicKey setPublicKey_Ecdsa_Nistp256_With_Sha256() {
+PublicKey setPublicKey_Ecdsa_Nistp256_With_Sha256()
+{
     EccPoint point = setEccPoint_X_Coordinate_Only();
     PublicKey key;
     ecdsa_nistp256_with_sha256 ecdsa;
@@ -52,7 +57,8 @@ PublicKey setPublicKey_Ecdsa_Nistp256_With_Sha256() {
     return key;
 }
 
-std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List() {
+std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List()
+{
     std::list<ItsAidSsp> itsAidSsp_list;
     for (int c = 0; c < 10; c++) {
         ItsAidSsp itsAidSsp;
@@ -67,7 +73,8 @@ std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List() {
     return itsAidSsp_list;
 }
 
-EncryptionKey setSubjectAttribute_Encryption_Key() {
+EncryptionKey setSubjectAttribute_Encryption_Key()
+{
     EccPoint point = setEccPoint_uncompressed();
     EncryptionKey key;
     ecies_nistp256 ecsie;
@@ -77,7 +84,8 @@ EncryptionKey setSubjectAttribute_Encryption_Key() {
     return key;
 }
 
-std::list<IntX> setSubjectAttribute_Its_Aid_List() {
+std::list<IntX> setSubjectAttribute_Its_Aid_List()
+{
     std::list<IntX> intx_list;
     for (int c = 0; c < 5; c++) {
         IntX intx;
@@ -87,7 +95,8 @@ std::list<IntX> setSubjectAttribute_Its_Aid_List() {
     return intx_list;
 }
 
-std::list<ItsAidPriority> setSubjectAttribute_Priority_Its_Aid_List() {
+std::list<ItsAidPriority> setSubjectAttribute_Priority_Its_Aid_List()
+{
     std::list<ItsAidPriority> itsAidPriority_list;
     for (int c = 0; c < 22; c++) {
         ItsAidPriority itsAidPriority;
@@ -100,7 +109,8 @@ std::list<ItsAidPriority> setSubjectAttribute_Priority_Its_Aid_List() {
     return itsAidPriority_list;
 }
 
-std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List() {
+std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List()
+{
     std::list<ItsAidPrioritySsp> ssp_list;
     ItsAidPrioritySsp itsAid;
     IntX intx;
@@ -127,17 +137,21 @@ std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List() {
     return ssp_list;
 }
 
-GeograpicRegion setGeograpicRegion_CircularRegion() {
+GeograpicRegion setGeograpicRegion_CircularRegion()
+{
     GeograpicRegion reg;
     RegionType type = RegionType::Circle;
     CircularRegion circle;
-    circle.center.latitude = static_cast<geonet::geo_angle_i32t>(12564 * boost::units::degree::plane_angle());
-    circle.center.longtitude = static_cast<geonet::geo_angle_i32t>(654321 * boost::units::degree::plane_angle());
+    circle.center.latitude = static_cast<geonet::geo_angle_i32t>(12564
+        * boost::units::degree::plane_angle());
+    circle.center.longtitude = static_cast<geonet::geo_angle_i32t>(654321
+        * boost::units::degree::plane_angle());
     reg = circle;
     return reg;
 }
 
-GeograpicRegion setGeograpicRegion_IdentifiedRegion() {
+GeograpicRegion setGeograpicRegion_IdentifiedRegion()
+{
     GeograpicRegion reg;
     RegionType type = RegionType::ID;
     IdentifiedRegion id;
@@ -148,43 +162,53 @@ GeograpicRegion setGeograpicRegion_IdentifiedRegion() {
     return reg;
 }
 
-GeograpicRegion setGeograpicRegion_PolygonalRegion() {
+GeograpicRegion setGeograpicRegion_PolygonalRegion()
+{
     GeograpicRegion reg;
     RegionType type = RegionType::Polygon;
     PolygonalRegion poly;
     for (int c = 0; c < 3; c++) {
         TwoDLocation loc;
-        loc.latitude = static_cast<geonet::geo_angle_i32t>((25 + c) * boost::units::degree::plane_angle());
-        loc.longtitude = static_cast<geonet::geo_angle_i32t>((26 + c) * boost::units::degree::plane_angle());
+        loc.latitude = static_cast<geonet::geo_angle_i32t>((25 + c)
+            * boost::units::degree::plane_angle());
+        loc.longtitude = static_cast<geonet::geo_angle_i32t>((26 + c)
+            * boost::units::degree::plane_angle());
         poly.push_back(loc);
     }
     reg = poly;
     return reg;
 }
 
-GeograpicRegion setGeograpicRegion_RectangularRegion_list() {
+GeograpicRegion setGeograpicRegion_RectangularRegion_list()
+{
     GeograpicRegion reg;
     RegionType type = RegionType::Rectangle;
     std::list<RectangularRegion> list;
     for (int c = 0; c < 5; c++) {
         RectangularRegion rectangular;
-        rectangular.nortwest.latitude = static_cast<geonet::geo_angle_i32t>((1000000 + c) * boost::units::degree::plane_angle());
-        rectangular.nortwest.longtitude = static_cast<geonet::geo_angle_i32t>((1010000 + c) * boost::units::degree::plane_angle());
-        rectangular.southeast.latitude = static_cast<geonet::geo_angle_i32t>((1020000 + c) * boost::units::degree::plane_angle());
-        rectangular.southeast.longtitude = static_cast<geonet::geo_angle_i32t>((1030000 + c) * boost::units::degree::plane_angle());
+        rectangular.nortwest.latitude = static_cast<geonet::geo_angle_i32t>((1000000 + c)
+            * boost::units::degree::plane_angle());
+        rectangular.nortwest.longtitude = static_cast<geonet::geo_angle_i32t>((1010000 + c)
+            * boost::units::degree::plane_angle());
+        rectangular.southeast.latitude = static_cast<geonet::geo_angle_i32t>((1020000 + c)
+            * boost::units::degree::plane_angle());
+        rectangular.southeast.longtitude = static_cast<geonet::geo_angle_i32t>((1030000 + c)
+            * boost::units::degree::plane_angle());
         list.push_back(rectangular);
     }
     reg = list;
     return reg;
 }
 
-ValidityRestriction setValidityRestriction_Time_End() {
+ValidityRestriction setValidityRestriction_Time_End()
+{
     EndValidity end = 0x548736;
     ValidityRestriction restriction = end;
     return restriction;
 }
 
-ValidityRestriction setValidityRestriction_Time_Start_And_End() {
+ValidityRestriction setValidityRestriction_Time_Start_And_End()
+{
     StartAndEndValidity start;
     start.end_validity = 0x54;
     start.start_validity = 0x5712;
@@ -192,7 +216,8 @@ ValidityRestriction setValidityRestriction_Time_Start_And_End() {
     return restriction;
 }
 
-ValidityRestriction setValidityRestriction_Time_Start_And_Duration() {
+ValidityRestriction setValidityRestriction_Time_Start_And_Duration()
+{
     StartAndDurationValidity duration;
     duration.duration = Duration(uint16_t(0x8007));
     duration.start_validity = 0x5712;
@@ -200,18 +225,20 @@ ValidityRestriction setValidityRestriction_Time_Start_And_Duration() {
     return restriction;
 }
 
-ValidityRestriction setValidityRestriction_Region() {
+ValidityRestriction setValidityRestriction_Region()
+{
     ValidityRestriction restriction = setGeograpicRegion_CircularRegion();
     return restriction;
 }
 
-Signature setSignature_Ecdsa_Signature() {
+Signature setSignature_Ecdsa_Signature()
+{
     Signature sig;
     EcdsaSignature signature;
     signature.R = setEccPoint_X_Coordinate_Only();
     ByteBuffer buf;
-    for(int c = 0; c < 32; c++) {
-        uint8_t byte = c+1;
+    for (int c = 0; c < 32; c++) {
+        uint8_t byte = c + 1;
         buf.push_back(byte);
     }
     signature.s = buf;
@@ -219,48 +246,53 @@ Signature setSignature_Ecdsa_Signature() {
     return sig;
 }
 
-SubjectInfo setSubjectInfo() {
+SubjectInfo setSubjectInfo()
+{
     SubjectInfo sub;
     sub.subject_type = SubjectType::Enrollment_Credential;
-    for(int c = 0; c < 24; c++) {
-        sub.subject_name.push_back(25+c);
+    for (int c = 0; c < 24; c++) {
+        sub.subject_name.push_back(25 + c);
     }
     return sub;
 }
 
-
-HashedId8 setSignerInfo_HashedId() {
+HashedId8 setSignerInfo_HashedId()
+{
     HashedId8 id;
-    for(int c = 0; c < 8; c++) {
+    for (int c = 0; c < 8; c++) {
         id[c] = c + 1;
     }
     return id;
 }
 
-CertificateDigestWithOtherAlgorithm setSignerInfo_CertDigest() {
+CertificateDigestWithOtherAlgorithm setSignerInfo_CertDigest()
+{
     CertificateDigestWithOtherAlgorithm cert;
     cert.algorithm = PublicKeyAlgorithm::Ecies_Nistp256;
-    for(int c = 0; c < 8; c++) {
+    for (int c = 0; c < 8; c++) {
         cert.digest[c] = c + 2;
     }
     return cert;
 }
 
-std::list<SignerInfo> setCertificate_SignerInfo() {
+std::list<SignerInfo> setCertificate_SignerInfo()
+{
     std::list<SignerInfo> list;
     list.push_back(setSignerInfo_HashedId());
     list.push_back(setSignerInfo_CertDigest());
     return list;
 }
 
-std::list<SubjectAttribute> setCertificate_SubjectAttributeList() {
+std::list<SubjectAttribute> setCertificate_SubjectAttributeList()
+{
     std::list<SubjectAttribute> list;
     list.push_back(setSubjectAttribute_Encryption_Key());
     list.push_back(setSubjectAttribute_Its_Aid_List());
     return list;
 }
 
-std::list<ValidityRestriction> setCertificate_ValidityRestriction() {
+std::list<ValidityRestriction> setCertificate_ValidityRestriction()
+{
     std::list<ValidityRestriction> list;
     list.push_back(setValidityRestriction_Region());
     list.push_back(setValidityRestriction_Time_Start_And_End());
@@ -268,7 +300,8 @@ std::list<ValidityRestriction> setCertificate_ValidityRestriction() {
     return list;
 }
 
-std::list<Certificate> setSignerInfo_CertificateList() {
+std::list<Certificate> setSignerInfo_CertificateList()
+{
     std::list<Certificate> list;
     Certificate cert;
     cert.version = 0x5;
@@ -287,39 +320,44 @@ std::list<Certificate> setSignerInfo_CertificateList() {
     return list;
 }
 
-Nonce setEncryptionParemeter_nonce() {
+Nonce setEncryptionParemeter_nonce()
+{
     Nonce nonce;
-    for(int c = 0; c < nonce.size(); c++) {
-        nonce[c] = c+64;
+
+    for (int c = 0; c < 12; c++) {
+        nonce[c] = c + 64;
     }
     return nonce;
 }
 
-RecipientInfo setRecipientInfo() {
+RecipientInfo setRecipientInfo()
+{
     RecipientInfo info;
-    for(int c = 0; c < 8; c++) {
+    for (int c = 0; c < 8; c++) {
         info.cert_id[c] = 10 + c;
     }
-    for(int c = 0; c < 16; c++) {
+    for (int c = 0; c < 16; c++) {
         boost::get<EciesNistP256EncryptedKey>(info.enc_key).c.push_back(c);
     }
-    for(int c = 0; c < 20; c++) {
+    for (int c = 0; c < 20; c++) {
         boost::get<EciesNistP256EncryptedKey>(info.enc_key).t.push_back(c);
     }
     boost::get<EciesNistP256EncryptedKey>(info.enc_key).v = setEccPoint_Compressed_Lsb_Y_0();
     return info;
 }
 
-std::list<RecipientInfo> setRecipientInfoList() {
+std::list<RecipientInfo> setRecipientInfoList()
+{
     std::list<RecipientInfo> list;
     list.push_back(setRecipientInfo());
     list.push_back(setRecipientInfo());
     return list;
 }
 
-std::list<HashedId3> setHeaderField_hashedList() {
+std::list<HashedId3> setHeaderField_hashedList()
+{
     std::list<HashedId3> list;
-    for(int c = 0; c < 3; c++) {
+    for (int c = 0; c < 3; c++) {
         HashedId3 id;
         id[0] = c + 0;
         id[1] = c + 1;
@@ -329,7 +367,8 @@ std::list<HashedId3> setHeaderField_hashedList() {
     return list;
 }
 
-ThreeDLocation setHeaderField_threeDLoc() {
+ThreeDLocation setHeaderField_threeDLoc()
+{
     ThreeDLocation loc;
     loc.latitude = static_cast<geonet::geo_angle_i32t>(1 * boost::units::degree::plane_angle());
     loc.longtitude = static_cast<geonet::geo_angle_i32t>(2 * boost::units::degree::plane_angle());
@@ -338,17 +377,18 @@ ThreeDLocation setHeaderField_threeDLoc() {
     return loc;
 }
 
-std::list<RecipientInfo> setHeaderField_RecipientInfoList() {
+std::list<RecipientInfo> setHeaderField_RecipientInfoList()
+{
     std::list<RecipientInfo> list;
     RecipientInfo info;
-    for(auto& byte : info.cert_id) {
+    for (auto& byte : info.cert_id) {
         byte = 1;
     }
     EciesNistP256EncryptedKey key;
-    for(int c = 0; c < 16; c++) {
+    for (int c = 0; c < 16; c++) {
         key.c.push_back(c);
     }
-    for(int c = 0; c < 20; c++) {
+    for (int c = 0; c < 20; c++) {
         key.c.push_back(c);
     }
     key.v = setEccPoint_Compressed_Lsb_Y_0();
@@ -357,13 +397,13 @@ std::list<RecipientInfo> setHeaderField_RecipientInfoList() {
 
     RecipientInfo info2;
     EciesNistP256EncryptedKey key2;
-    for(auto& byte : info2.cert_id) {
+    for (auto& byte : info2.cert_id) {
         byte = 2;
     }
-    for(int c = 0; c < 16; c++) {
+    for (int c = 0; c < 16; c++) {
         key2.c.push_back(c + 1);
     }
-    for(int c = 0; c < 20; c++) {
+    for (int c = 0; c < 20; c++) {
         key2.c.push_back(c + 1);
     }
     key2.v = setEccPoint_uncompressed();
@@ -372,7 +412,8 @@ std::list<RecipientInfo> setHeaderField_RecipientInfoList() {
     return list;
 }
 
-std::list<HeaderField> setHeaderField_list() {
+std::list<HeaderField> setHeaderField_list()
+{
     std::list<HeaderField> list;
     HeaderFieldType type;
 
@@ -398,7 +439,7 @@ std::list<HeaderField> setHeaderField_list() {
 
     EncryptionParameter param;
     Nonce nonce;
-    for(auto& elem : nonce) {
+    for (auto& elem : nonce) {
         elem = 22;
     }
     param = nonce;
@@ -408,7 +449,8 @@ std::list<HeaderField> setHeaderField_list() {
     return list;
 }
 
-std::list<Payload> setPayload_List() {
+std::list<Payload> setPayload_List()
+{
     std::list<Payload> list;
     Unsecured u;
     for (int c = 0; c < 12; c++) {
@@ -417,12 +459,12 @@ std::list<Payload> setPayload_List() {
     list.push_back(u);
     Signed s;
     for (int c = 0; c < 12; c++) {
-        s.push_back(10+c);
+        s.push_back(10 + c);
     }
     list.push_back(s);
     SignedAndEncrypted e;
     for (int c = 0; c < 12; c++) {
-        e.push_back(100+c);
+        e.push_back(100 + c);
     }
     list.push_back(e);
 

@@ -9,7 +9,8 @@ using namespace vanetza::security;
 using namespace vanetza;
 using namespace std;
 
-EccPoint serialize_roundtrip(EccPoint point) {
+EccPoint serialize_roundtrip(EccPoint point)
+{
     EccPoint outPoint;
     std::stringstream stream;
     OutputArchive oa(stream);
@@ -19,31 +20,35 @@ EccPoint serialize_roundtrip(EccPoint point) {
     return outPoint;
 }
 
-TEST(EccPoint, Field_Size) {
+TEST(EccPoint, Field_Size)
+{
     EXPECT_EQ(32, field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
     EXPECT_EQ(32, field_size(PublicKeyAlgorithm::Ecies_Nistp256));
 }
 
-TEST(EccPoint_serialize, uncompressed) {
+TEST(EccPoint_serialize, uncompressed)
+{
     EccPoint point = setEccPoint_uncompressed();
     EccPoint outPoint = serialize_roundtrip(point);
     testEccPoint_uncompressed(point, outPoint);
 }
 
-TEST(EccPoint_serialize, Compressed_Lsb_Y_0) {
+TEST(EccPoint_serialize, Compressed_Lsb_Y_0)
+{
     EccPoint point = setEccPoint_Compressed_Lsb_Y_0();
     EccPoint outPoint = serialize_roundtrip(point);
     testEccPoint_Compressed_Lsb_Y_0(point, outPoint);
-
 }
 
-TEST(EccPoint_serialize, X_Coordinate_Only) {
+TEST(EccPoint_serialize, X_Coordinate_Only)
+{
     EccPoint point = setEccPoint_X_Coordinate_Only();
     EccPoint outPoint = serialize_roundtrip(point);
     testEccPoint_X_Coordinate_Only(point, outPoint);
 }
 
-TEST(EccPoint_serialize, X_Coordinate_too_Long) {
+TEST(EccPoint_serialize, X_Coordinate_too_Long)
+{
     EccPoint point, outPoint, testPoint;
     EccPointType type = EccPointType::X_Coordinate_Only;
     X_Coordinate_Only coord, testCoord;
@@ -62,6 +67,6 @@ TEST(EccPoint_serialize, X_Coordinate_too_Long) {
 
     EXPECT_EQ(type, detype);
     EXPECT_EQ(boost::get<X_Coordinate_Only>(testPoint).x,
-            boost::get<X_Coordinate_Only>(outPoint).x);
+        boost::get<X_Coordinate_Only>(outPoint).x);
 }
 

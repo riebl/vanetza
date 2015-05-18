@@ -5,24 +5,30 @@
 #include <vanetza/security/deserialization_error.hpp>
 #include <boost/variant.hpp>
 
-namespace vanetza {
-namespace security {
+namespace vanetza
+{
+namespace security
+{
 typedef boost::variant<X_Coordinate_Only, Compressed_Lsb_Y_0, Compressed_Lsb_Y_1, Uncompressed> EccPoint;
 
-enum class SymmetricAlgorithm : uint8_t {
+enum class SymmetricAlgorithm : uint8_t
+{
     Aes128_Ccm = 0
 };
 
-enum class PublicKeyAlgorithm : uint8_t {
+enum class PublicKeyAlgorithm : uint8_t
+{
     Ecdsa_Nistp256_With_Sha256 = 0,
     Ecies_Nistp256 = 1
 };
 
-struct ecdsa_nistp256_with_sha256 {
+struct ecdsa_nistp256_with_sha256
+{
     EccPoint public_key;
 };
 
-struct ecies_nistp256 {
+struct ecies_nistp256
+{
     SymmetricAlgorithm supported_symm_alg;
     EccPoint public_key;
 };
@@ -30,7 +36,7 @@ struct ecies_nistp256 {
 typedef boost::variant<ecdsa_nistp256_with_sha256, ecies_nistp256> PublicKey;
 
 /**
- * Assignes PublcKeyAlgorithm to a given PublicKey
+ * Determines PublcKeyAlgorithm to a given PublicKey
  * \param PublicKey
  * \retunr PublicKeyAlgorithm
  */

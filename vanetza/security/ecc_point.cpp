@@ -1,89 +1,95 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 
-namespace vanetza {
-namespace security {
+namespace vanetza
+{
+namespace security
+{
 
-size_t get_size(const EccPoint& point) {
-    size_t size = 0;
-    EccPointType type = get_type(point);
-    switch (type) {
-    case EccPointType::X_Coordinate_Only: {
-        X_Coordinate_Only coord;
-        coord = boost::get<X_Coordinate_Only>(point);
-        size += coord.x.size();
-        size += sizeof(type);
-        break;
-    }
-    case EccPointType::Compressed_Lsb_Y_0: {
-        Compressed_Lsb_Y_0 coord;
-        coord = boost::get<Compressed_Lsb_Y_0>(point);
-        size += coord.x.size();
-        size += sizeof(type);
-        break;
-    }
-    case EccPointType::Compressed_Lsb_Y_1: {
-        Compressed_Lsb_Y_1 coord;
-        coord = boost::get<Compressed_Lsb_Y_1>(point);
-        size += coord.x.size();
-        size += sizeof(type);
-        break;
-    }
-    case EccPointType::Uncompressed: {
-        Uncompressed coord;
-        coord = boost::get<Uncompressed>(point);
-        size += coord.x.size();
-        size += coord.y.size();
-        size += sizeof(type);
-        break;
-    }
-    }
-    return size;
-}
-
-EccPointType get_type(const EccPoint& point) {
-    struct ecc_point_visitor: public boost::static_visitor<> {
-        void operator()(X_Coordinate_Only coord) {
-            type = EccPointType::X_Coordinate_Only;
+size_t get_size(const EccPoint& point)
+{
+    size_t size = sizeof(EccPointType);
+    struct ecc_point_visitor : public boost::static_visitor<size_t>
+    {
+        size_t operator()(X_Coordinate_Only coord)
+        {
+            return coord.x.size();
         }
-        void operator()(Compressed_Lsb_Y_0 coord) {
-            type = EccPointType::Compressed_Lsb_Y_0;
+        size_t operator()(Compressed_Lsb_Y_0 coord)
+        {
+            return coord.x.size();
         }
-        void operator()(Compressed_Lsb_Y_1 coord) {
-            type = EccPointType::Compressed_Lsb_Y_1;
+        size_t operator()(Compressed_Lsb_Y_1 coord)
+        {
+            return coord.x.size();
         }
-        void operator()(Uncompressed coord) {
-            type = EccPointType::Uncompressed;
+        size_t operator()(Uncompressed coord)
+        {
+            return coord.x.size() + coord.y.size();
         }
-        EccPointType type;
     };
 
     ecc_point_visitor visit;
     boost::apply_visitor(visit, point);
-    return visit.type;
+
+    size +=  boost::apply_visitor(visit, point);
+    return size;
 }
 
-void serialize(OutputArchive& ar, const EccPoint& point) {
-    struct ecc_point_visitor: public boost::static_visitor<> {
+EccPointType get_type(const EccPoint& point)
+{
+    struct ecc_point_visitor : public boost::static_visitor<EccPointType>
+    {
+        EccPointType operator()(X_Coordinate_Only coord)
+        {
+            return EccPointType::X_Coordinate_Only;
+        }
+        EccPointType operator()(Compressed_Lsb_Y_0 coord)
+        {
+            return EccPointType::Compressed_Lsb_Y_0;
+        }
+        EccPointType operator()(Compressed_Lsb_Y_1 coord)
+        {
+            return EccPointType::Compressed_Lsb_Y_1;
+        }
+        EccPointType operator()(Uncompressed coord)
+        {
+            return EccPointType::Uncompressed;
+        }
+    };
+
+    ecc_point_visitor visit;
+    return boost::apply_visitor(visit, point);
+}
+
+void serialize(OutputArchive& ar, const EccPoint& point)
+{
+    struct ecc_point_visitor : public boost::static_visitor<>
+    {
         ecc_point_visitor(OutputArchive& ar) :
-                m_archive(ar){
+            m_archive(ar)
+        {
         }
-        void operator()(X_Coordinate_Only coord) {
+        void operator()(X_Coordinate_Only coord)
+        {
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
         }
-        void operator()(Compressed_Lsb_Y_0 coord) {
+        void operator()(Compressed_Lsb_Y_0 coord)
+        {
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
         }
-        void operator()(Compressed_Lsb_Y_1 coord) {
+        void operator()(Compressed_Lsb_Y_1 coord)
+        {
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
         }
-        void operator()(Uncompressed coord) {
+        void operator()(Uncompressed coord)
+        {
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
@@ -95,59 +101,60 @@ void serialize(OutputArchive& ar, const EccPoint& point) {
     };
 
     EccPointType type = get_type(point);
-    ar << type;
+    serialize(ar, type);
     ecc_point_visitor visit(ar);
     boost::apply_visitor(visit, point);
 }
 
-void deserialize(InputArchive& ar, EccPoint& point, PublicKeyAlgorithm algo) {
+void deserialize(InputArchive& ar, EccPoint& point, PublicKeyAlgorithm algo)
+{
     size_t size = field_size(algo);
     uint8_t elem;
     EccPointType type;
-    ar >> type;
+    deserialize(ar, type);
     switch (type) {
-    case EccPointType::X_Coordinate_Only: {
-        X_Coordinate_Only coord;
-        for (size_t c = 0; c < size; c++) {
-            ar >> elem;
-            coord.x.push_back(elem);
+        case EccPointType::X_Coordinate_Only: {
+            X_Coordinate_Only coord;
+            for (size_t c = 0; c < size; c++) {
+                ar >> elem;
+                coord.x.push_back(elem);
+            }
+            point = coord;
+            break;
         }
-        point = coord;
-        break;
-    }
-    case EccPointType::Compressed_Lsb_Y_0: {
-        Compressed_Lsb_Y_0 coord;
-        for (size_t c = 0; c < size; c++) {
-            ar >> elem;
-            coord.x.push_back(elem);
+        case EccPointType::Compressed_Lsb_Y_0: {
+            Compressed_Lsb_Y_0 coord;
+            for (size_t c = 0; c < size; c++) {
+                ar >> elem;
+                coord.x.push_back(elem);
+            }
+            point = coord;
+            break;
         }
-        point = coord;
-        break;
-    }
-    case EccPointType::Compressed_Lsb_Y_1: {
-        Compressed_Lsb_Y_1 coord;
-        for (size_t c = 0; c < size; c++) {
-            ar >> elem;
-            coord.x.push_back(elem);
+        case EccPointType::Compressed_Lsb_Y_1: {
+            Compressed_Lsb_Y_1 coord;
+            for (size_t c = 0; c < size; c++) {
+                ar >> elem;
+                coord.x.push_back(elem);
+            }
+            point = coord;
+            break;
         }
-        point = coord;
-        break;
-    }
-    case EccPointType::Uncompressed: {
-        Uncompressed coord;
-        for (size_t c = 0; c < size; c++) {
-            ar >> elem;
-            coord.x.push_back(elem);
+        case EccPointType::Uncompressed: {
+            Uncompressed coord;
+            for (size_t c = 0; c < size; c++) {
+                ar >> elem;
+                coord.x.push_back(elem);
+            }
+            for (size_t c = 0; c < size; c++) {
+                ar >> elem;
+                coord.y.push_back(elem);
+            }
+            point = coord;
+            break;
         }
-        for (size_t c = 0; c < size; c++) {
-            ar >> elem;
-            coord.y.push_back(elem);
-        }
-        point = coord;
-        break;
-    }
-    default:
-        throw deserialization_error("Unknown EccPointType");
+        default:
+            throw deserialization_error("Unknown EccPointType");
     }
 }
 

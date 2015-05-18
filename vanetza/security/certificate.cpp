@@ -7,36 +7,23 @@ namespace vanetza
 namespace security
 {
 
-size_t get_size(const Certificate& cert) {
+size_t get_size(const Certificate& cert)
+{
     size_t size = sizeof(cert.version);
     size += get_size(cert.signer_info);
-    size += get_length_coding_size(size - sizeof(cert.version));
+    size += length_coding_size(get_size(cert.signer_info));
     size += get_size(cert.subject_info);
     size += get_size(cert.subject_attributes);
-    size += get_length_coding_size(get_size(cert.subject_attributes));
+    size += length_coding_size(get_size(cert.subject_attributes));
     size += get_size(cert.validity_restriction);
-    size += get_length_coding_size(get_size(cert.validity_restriction));
+    size += length_coding_size(get_size(cert.validity_restriction));
     size += get_size(cert.signature);
     return size;
 }
 
-size_t get_size(const std::list<Certificate>& list) {
-    size_t size = 0;
-    for (auto& cert : list) {
-        size += get_size(cert);
-    }
-    return size;
-}
 
-void serialize(OutputArchive& ar, const std::list<Certificate>& list) {
-    size_t size = get_size(list);
-    serialize_length(ar, size);
-    for (auto& cert : list) {
-        serialize(ar, cert);
-    }
-}
-
-void serialize(OutputArchive& ar, const Certificate& cert) {
+void serialize(OutputArchive& ar, const Certificate& cert)
+{
     geonet::serialize(host_cast(cert.version), ar);
     serialize(ar, cert.signer_info);
     serialize(ar, cert.subject_info);
@@ -45,27 +32,17 @@ void serialize(OutputArchive& ar, const Certificate& cert) {
     serialize(ar, cert.signature);
 }
 
-size_t deserialize(InputArchive& ar, std::list<Certificate>& list) {
-    size_t size = deserialize_length(ar);
-    size_t ret_size = size;
-    while (size > 0) {
-        Certificate cert;
-        size -= deserialize(ar, cert);
-        list.push_back(cert);
-    }
-    return ret_size;
-}
-
-size_t deserialize(InputArchive& ar, Certificate& cert) {
+size_t deserialize(InputArchive& ar, Certificate& cert)
+{
     geonet::deserialize(cert.version, ar);
     size_t size = sizeof(cert.version);
     size += deserialize(ar, cert.signer_info);
-    size += get_length_coding_size(get_size(cert.signer_info));
+    size += length_coding_size(get_size(cert.signer_info));
     size += deserialize(ar, cert.subject_info);
     size += deserialize(ar, cert.subject_attributes);
-    size += get_length_coding_size(get_size(cert.subject_attributes));
+    size += length_coding_size(get_size(cert.subject_attributes));
     size += deserialize(ar, cert.validity_restriction);
-    size += get_length_coding_size(get_size(cert.validity_restriction));
+    size += length_coding_size(get_size(cert.validity_restriction));
     size += deserialize(ar, cert.signature);
     return size;
 }

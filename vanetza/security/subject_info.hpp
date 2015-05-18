@@ -27,8 +27,27 @@ struct SubjectInfo
     ByteBuffer subject_name;
 };
 
+
+/**
+ * Serializes a SubjectInfo into a binary archive
+ * \param SubjectInfo to serialize
+ * \param achive to serialize in
+ */
 void serialize(OutputArchive&, const SubjectInfo&);
+
+/**
+ * Deserializes a SubjectInfo from a binary archive
+ * \param archive with a serialized SubjectInfo at the beginning
+ * \param SubjectInfo to deserialize
+ * \return size of the deserialized SubjectInfo
+ */
 size_t deserialize(InputArchive&, SubjectInfo&);
+
+/**
+ * Calculates size of a SubjectInfo
+ * \param SubjectInfo
+ * \return size_t containing the number of octets needed to serialize the SubjectInfo
+ */
 size_t get_size(const SubjectInfo&);
 
 } // namespace security

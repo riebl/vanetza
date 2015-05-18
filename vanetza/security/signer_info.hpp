@@ -13,7 +13,7 @@ namespace security
 {
 
 /**
- * Assignes SignerInfoType to a SignerInfo field
+ * Determines SignerInfoType to a SignerInfo field
  * \param SignerInfo
  * \return SignerInfoType
  */
@@ -26,7 +26,6 @@ SignerInfoType get_type(const SignerInfo&);
  */
 size_t get_size(const CertificateDigestWithOtherAlgorithm&);
 size_t get_size(const SignerInfo&);
-size_t get_size(const std::list<SignerInfo>&);
 
 /**
  * Serializes an object into a binary archive
@@ -35,7 +34,6 @@ size_t get_size(const std::list<SignerInfo>&);
  */
 void serialize(OutputArchive&, const CertificateDigestWithOtherAlgorithm&);
 void serialize(OutputArchive&, const SignerInfo&);
-void serialize(OutputArchive&, const std::list<SignerInfo>&);
 
 /**
  * Deserializes an object from a binary archive
@@ -44,7 +42,6 @@ void serialize(OutputArchive&, const std::list<SignerInfo>&);
  * \return size of the deserialized object
  */
 size_t deserialize(InputArchive&, CertificateDigestWithOtherAlgorithm&);
-size_t deserialize(InputArchive&, std::list<SignerInfo>&);
 size_t deserialize(InputArchive&, SignerInfo&);
 
 } // namespace security

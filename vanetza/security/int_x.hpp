@@ -6,10 +6,13 @@
 #include <vanetza/security/serialization.hpp>
 #include <list>
 
-namespace vanetza {
-namespace security {
+namespace vanetza
+{
+namespace security
+{
 
-class IntX {
+class IntX
+{
 public:
     using integer_type = std::uintmax_t;
     using octets_type = std::list<uint8_t>;
@@ -18,12 +21,14 @@ public:
     integer_type get() const;
 
     template<typename T>
-    T get() const {
+    T get() const
+    {
         assert(sizeof(T) >= size());
         return get();
     }
 
-    std::size_t size() const {
+    std::size_t size() const
+    {
         return m_octets.size();
     }
 

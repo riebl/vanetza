@@ -29,14 +29,12 @@ struct Certificate
  * \return size_t containing the number of octets needed to serialize the object
  */
 size_t get_size(const Certificate&);
-size_t get_size(const std::list<Certificate>&);
 
 /**
  * Serializes an object into a binary archive
  * \param achive to serialize in
  * \param object to serialize
  */
-void serialize(OutputArchive&, const std::list<Certificate>&);
 void serialize(OutputArchive&, const Certificate&);
 
 /**
@@ -45,7 +43,6 @@ void serialize(OutputArchive&, const Certificate&);
  * \param object to deserialize
  * \return size of the deserialized object
  */
-size_t deserialize(InputArchive&, std::list<Certificate>&);
 size_t deserialize(InputArchive&, Certificate&);
 
 } // namespace security

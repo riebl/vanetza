@@ -6,27 +6,32 @@ namespace vanetza
 namespace security
 {
 
-SymmetricAlgorithm get_type(const EncryptionParameter& param) {
-    struct Encryption_visitor : public boost::static_visitor<>
+
+SymmetricAlgorithm get_type(const EncryptionParameter& param)
+{
+    struct Encryption_visitor : public boost::static_visitor<SymmetricAlgorithm>
     {
-        void operator()(const Nonce& nonce) {
-            m_algo = SymmetricAlgorithm::Aes128_Ccm;
+        SymmetricAlgorithm operator()(const Nonce& nonce)
+        {
+            return SymmetricAlgorithm::Aes128_Ccm;
         }
-        SymmetricAlgorithm m_algo;
     };
 
     Encryption_visitor visit;
-    boost::apply_visitor(visit, param);
-    return visit.m_algo;
+    return boost::apply_visitor(visit, param);
 }
 
-void serialize(OutputArchive& ar, const EncryptionParameter& param) {
+
+void serialize(OutputArchive& ar, const EncryptionParameter& param)
+{
     struct Encryption_visitor : public boost::static_visitor<>
     {
         Encryption_visitor(OutputArchive& ar) :
-                m_archive(ar) {
+            m_archive(ar)
+        {
         }
-        void operator()(const Nonce& nonce) {
+        void operator()(const Nonce& nonce)
+        {
             for (auto& byte : nonce) {
                 m_archive << byte;
             }
@@ -35,28 +40,32 @@ void serialize(OutputArchive& ar, const EncryptionParameter& param) {
     };
 
     SymmetricAlgorithm algo = get_type(param);
-    ar << algo;
+    serialize(ar, algo);
     Encryption_visitor visit(ar);
     boost::apply_visitor(visit, param);
 }
 
-size_t get_size(const EncryptionParameter& param) {
-    struct Encryption_visitor : public boost::static_visitor<>
+
+size_t get_size(const EncryptionParameter& param)
+{
+    size_t size = sizeof(SymmetricAlgorithm);
+    struct Encryption_visitor : public boost::static_visitor<size_t>
     {
-        void operator()(const Nonce& nonce) {
-            m_size = nonce.size();
+        size_t operator()(const Nonce& nonce)
+        {
+            return nonce.size();
         }
-        size_t m_size;
     };
 
     Encryption_visitor visit;
-    boost::apply_visitor(visit, param);
-    return visit.m_size;
+    size += boost::apply_visitor(visit, param);
+    return size;
 }
 
-size_t deserialize(InputArchive& ar, EncryptionParameter& param, SymmetricAlgorithm& sym) {
+size_t deserialize(InputArchive& ar, EncryptionParameter& param, SymmetricAlgorithm& sym)
+{
     SymmetricAlgorithm algo;
-    ar >> algo;
+    deserialize(ar, algo);
     switch (algo) {
         case SymmetricAlgorithm::Aes128_Ccm: {
             Nonce nonce;

@@ -58,7 +58,6 @@ Nonce setEncryptionParemeter_nonce();
 RecipientInfo setRecipientInfo();
 std::list<RecipientInfo> setRecipientInfoList();
 
-
 std::list<HashedId3> setHeaderField_hashedList();
 ThreeDLocation setHeaderField_threeDLoc();
 std::list<RecipientInfo> setHeaderField_RecipientInfoList();

@@ -7,7 +7,8 @@ using namespace vanetza::security;
 using namespace vanetza;
 using namespace std;
 
-TEST(subjectAttribute, serialize) {
+TEST(subjectAttribute, serialize)
+{
     std::list<SubjectAttribute> list;
     SubjectAttribute sub;
 
@@ -47,11 +48,26 @@ TEST(subjectAttribute, serialize) {
 
     testSubjectAttribute_Encryption_Key(*it++, *deIt++);
     EXPECT_EQ(get_type(*deIt), SubjectAttributeType::Assurance_Level);
-    EXPECT_EQ(boost::get<SubjectAssurance>(*deIt++),
-            boost::get<SubjectAssurance>(*it++));
+    EXPECT_EQ(boost::get<SubjectAssurance>(*deIt++), boost::get<SubjectAssurance>(*it++));
     testSubjectAttribute_Its_Aid_List(*it++, *deIt++);
     testSubjectAttribute_Its_Aid_Ssp_List(*it++, *deIt++);
     testSubjectAttribute_Priority_Its_Aid_List(*it++, *deIt++);
     testSubjectAttribute_Priority_Ssp_List(*it++, *deIt++);
 
+}
+
+TEST(WebValidator, ItsAidSsp_Size)
+{
+    std::list<ItsAidSsp> list;
+    ItsAidSsp its;
+    its.its_aid.set(16512);
+    its.service_specific_permissions.push_back(0x01);
+    list.push_back(its);
+
+    ItsAidSsp its2;
+    its2.its_aid.set(16513);
+    its2.service_specific_permissions.push_back(0x01);
+    list.push_back(its2);
+
+    EXPECT_EQ(10, get_size(list));
 }

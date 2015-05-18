@@ -6,112 +6,115 @@ namespace vanetza
 namespace security
 {
 
-SignerInfoType get_type(const SignerInfo& info) {
-    struct SignerInfo_visitor: public boost::static_visitor<>
+SignerInfoType get_type(const SignerInfo& info)
+{
+    struct SignerInfo_visitor : public boost::static_visitor<SignerInfoType>
     {
-        void operator()(const HashedId8& id) {
-            m_type = SignerInfoType::Certificate_Digest_With_EDCSAP256;
+        SignerInfoType operator()(const HashedId8& id)
+        {
+            return SignerInfoType::Certificate_Digest_With_EDCSAP256;
         }
-        void operator()(const Certificate& cert) {
-            m_type = SignerInfoType::Certificate;
+        SignerInfoType operator()(const Certificate& cert)
+        {
+            return SignerInfoType::Certificate;
         }
-        void operator()(const std::list<Certificate>& list) {
-            m_type = SignerInfoType::Certificate_Chain;
+        SignerInfoType operator()(const std::list<Certificate>& list)
+        {
+            return SignerInfoType::Certificate_Chain;
         }
-        void operator()(const CertificateDigestWithOtherAlgorithm& cert) {
-            m_type = SignerInfoType::Certificate_Digest_With_Other_Algorithm;
+        SignerInfoType operator()(const CertificateDigestWithOtherAlgorithm& cert)
+        {
+            return SignerInfoType::Certificate_Digest_With_Other_Algorithm;
         }
-        SignerInfoType m_type;
     };
 
     SignerInfo_visitor visit;
-    boost::apply_visitor(visit, info);
-    return visit.m_type;
+    return boost::apply_visitor(visit, info);
 }
 
-size_t get_size(const CertificateDigestWithOtherAlgorithm& cert) {
+size_t get_size(const CertificateDigestWithOtherAlgorithm& cert)
+{
     size_t size = cert.digest.size();
     size += sizeof(cert.algorithm);
     return size;
 }
 
-size_t get_size(const SignerInfo& info) {
-    struct SignerInfo_visitor: public boost::static_visitor<>
+size_t get_size(const SignerInfo& info)
+{
+    size_t size = sizeof(SignerInfoType);
+    struct SignerInfo_visitor : public boost::static_visitor<size_t>
     {
-        void operator()(const HashedId8& id) {
-            m_size = id.size();
+        size_t operator()(const HashedId8& id)
+        {
+            return id.size();
         }
-        void operator()(const Certificate& cert) {
-            m_size = get_size(cert);
+        size_t operator()(const Certificate& cert)
+        {
+            return get_size(cert);
         }
-        void operator()(const std::list<Certificate>& list) {
-            m_size = get_size(list);
-            m_size += get_length_coding_size(m_size);
+        size_t operator()(const std::list<Certificate>& list)
+        {
+            size_t size = get_size(list);
+            size += length_coding_size(size);
+            return size;
         }
-        void operator()(const CertificateDigestWithOtherAlgorithm& cert) {
-            m_size = get_size(cert);
+        size_t operator()(const CertificateDigestWithOtherAlgorithm& cert)
+        {
+            return get_size(cert);
         }
-        size_t m_size;
     };
 
     SignerInfo_visitor visit;
-    boost::apply_visitor(visit, info);
-    return visit.m_size + sizeof(SignerInfoType);
-}
-
-size_t get_size(const std::list<SignerInfo>& list) {
-    size_t size = 0;
-    for (auto& info : list) {
-        size += get_size(info);
-    }
+    size += boost::apply_visitor(visit, info);
     return size;
 }
-;
 
-void serialize(OutputArchive& ar, const std::list<SignerInfo>& list) {
-    size_t size = get_size(list);
-    serialize_length(ar, size);
-    for (auto& info : list) {
-        serialize(ar, info);
-    }
-}
-
-void serialize(OutputArchive& ar, const CertificateDigestWithOtherAlgorithm& cert) {
-    ar << cert.algorithm;
+void serialize(OutputArchive& ar, const CertificateDigestWithOtherAlgorithm& cert)
+{
+    serialize(ar, cert.algorithm);
     for (auto& byte : cert.digest) {
         ar << byte;
     }
 }
 
-void serialize(OutputArchive& ar, const SignerInfo& info) {
-    struct SignerInfo_visitor: public boost::static_visitor<>
+void serialize(OutputArchive& ar, const SignerInfo& info)
+{
+    struct SignerInfo_visitor : public boost::static_visitor<>
     {
-        SignerInfo_visitor(OutputArchive& ar) : m_archive(ar) {}
+        SignerInfo_visitor(OutputArchive& ar) :
+            m_archive(ar)
+        {
+        }
 
-        void operator()(const HashedId8& id) {
+        void operator()(const HashedId8& id)
+        {
             for (auto& byte : id) {
                 m_archive << byte;
             }
         }
-        void operator()(const Certificate& cert) {
+        void operator()(const Certificate& cert)
+        {
             serialize(m_archive, cert);
         }
-        void operator()(const std::list<Certificate>& list) {
+        void operator()(const std::list<Certificate>& list)
+        {
             serialize(m_archive, list);
         }
-        void operator()(const CertificateDigestWithOtherAlgorithm& cert) {
+        void operator()(const CertificateDigestWithOtherAlgorithm& cert)
+        {
             serialize(m_archive, cert);
         }
         OutputArchive& m_archive;
     };
     SignerInfoType type = get_type(info);
-    ar << type;
+    serialize(ar, type);
     SignerInfo_visitor visit(ar);
     boost::apply_visitor(visit, info);
 }
 
-size_t deserialize(InputArchive& ar, CertificateDigestWithOtherAlgorithm& cert) {
-    ar >> cert.algorithm;
+size_t deserialize(InputArchive& ar, CertificateDigestWithOtherAlgorithm& cert)
+{
+    deserialize(ar, cert.algorithm);
     for (size_t c = 0; c < 8; c++) {
         ar >> cert.digest[c];
     }
@@ -120,22 +123,11 @@ size_t deserialize(InputArchive& ar, CertificateDigestWithOtherAlgorithm& cert) 
     return size;
 }
 
-size_t deserialize(InputArchive& ar, std::list<SignerInfo>& list) {
-    size_t size = 0;
-    size = deserialize_length(ar);
-    size_t retSize = size;
-    while (size > 0) {
-        SignerInfo info;
-        size -= deserialize(ar, info);
-        list.push_back(info);
-    }
-    return retSize;
-}
-
-size_t deserialize(InputArchive& ar, SignerInfo& info) {
+size_t deserialize(InputArchive& ar, SignerInfo& info)
+{
     SignerInfoType type;
     size_t size = 0;
-    ar >> type;
+    deserialize(ar, type);
     switch (type) {
         case SignerInfoType::Certificate: {
             Certificate cert;
@@ -146,7 +138,7 @@ size_t deserialize(InputArchive& ar, SignerInfo& info) {
         case SignerInfoType::Certificate_Chain: {
             std::list<Certificate> list;
             size += deserialize(ar, list);
-            size += get_length_coding_size(size);
+            size += length_coding_size(size);
             info = list;
             break;
         }

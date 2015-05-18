@@ -5,7 +5,8 @@
 
 using namespace vanetza::security;
 
-EncryptionParameter serialize(const EncryptionParameter& param) {
+EncryptionParameter serialize(const EncryptionParameter& param)
+{
     std::stringstream stream;
     OutputArchive oa(stream);
     serialize(oa, param);
@@ -17,7 +18,8 @@ EncryptionParameter serialize(const EncryptionParameter& param) {
     return deParam;
 }
 
-TEST(EncryptionParameter, serialize) {
+TEST(EncryptionParameter, serialize)
+{
     EncryptionParameter param = setEncryptionParemeter_nonce();
     EncryptionParameter deParam = serialize(param);
     EXPECT_EQ(get_size(param), get_size(deParam));

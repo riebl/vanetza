@@ -17,35 +17,32 @@ enum class TrailerFieldType : uint8_t
 typedef boost::variant<Signature> TrailerField;
 
 /**
- * Assignes TrailerFieldType to a given TrailerField
+ * Determines TrailerFieldType to a given TrailerField
  * \param TrailerField
  * \return TrailerFieldType
  */
 TrailerFieldType get_type(const TrailerField&);
 
 /**
- * Calculates size of an object
- * \param Object
- * \return size_t containing the number of octets needed to serialize the object
+ * Calculates size of a TrailerField
+ * \param TrailerField
+ * \return size_t containing the number of octets needed to serialize the TrailerField
  */
 size_t get_size(const TrailerField&);
-size_t get_size(const std::list<TrailerField>&);
 
 /**
- * Serializes an object into a binary archive
- * \param object to serialize
- * \param achive to serialize in,
+ * Serializes a TrailerField into a binary archive
+ * \param TrailerField to serialize
+ * \param achive to serialize in
  */
-void serialize(OutputArchive&, const std::list<TrailerField>&);
 void serialize(OutputArchive&, const TrailerField&);
 
 /**
- * Deserializes an object from a binary archive
- * \param archive with a serialized object at the beginning
- * \param object to deserialize
- * \return size of the deserialized object
+ * Deserializes a TrailerField from a binary archive
+ * \param archive with a serialized TrailerField at the beginning
+ * \param TrailerField to deserialize
+ * \return size of the deserialized TrailerField
  */
-size_t deserialize(InputArchive&, std::list<TrailerField>&);
 size_t deserialize(InputArchive&, TrailerField&);
 
 } // namespace security

@@ -5,7 +5,8 @@
 
 using namespace vanetza::security;
 
-std::list<Payload> serialize(std::list<Payload> p) {
+std::list<Payload> serialize(std::list<Payload> p)
+{
     std::stringstream stream;
     OutputArchive oa(stream);
     serialize(oa, p);
@@ -15,7 +16,8 @@ std::list<Payload> serialize(std::list<Payload> p) {
     return deP;
 }
 
-TEST(Payload, Serialize) {
+TEST(Payload, Serialize)
+{
     Payload p;
     Unsecured u;
     for (int c = 0; c < 12; c++) {
@@ -33,9 +35,28 @@ TEST(Payload, Serialize) {
     EXPECT_EQ(boost::get<Unsecured>(p), boost::get<Unsecured>(deP));
 }
 
-TEST(PayloadList, Serialize) {
+TEST(PayloadList, Serialize)
+{
     std::list<Payload> list = setPayload_List();
     std::list<Payload> deList = serialize(list);
 
     testPayload_list(list, deList);
+}
+
+TEST(WebValidator, Size)
+{
+    std::list<Payload> list;
+    Payload p;
+    Signed s;
+
+    char str[] = "0123456789ABCDEF";
+    int n;
+    for (int i = 0; i < 8; i++) {
+        sscanf(str + 2 * i, "%2X", &n);
+        s.push_back((char) n);
+    }
+    p = s;
+    list.push_back(p);
+
+    EXPECT_EQ(10, get_size(list));
 }

@@ -38,8 +38,10 @@ void testGeograpicRegion_PolygonalRegion(const GeograpicRegion&, const Geograpic
 void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion&, const GeograpicRegion&);
 
 void testValidityRestriction_Time_End(const ValidityRestriction&, const ValidityRestriction&);
-void testValidityRestriction_Time_Start_And_End(const ValidityRestriction&, const ValidityRestriction&);
-void testValidityRestriction_Time_Start_And_Duration(const ValidityRestriction&, const ValidityRestriction&);
+void testValidityRestriction_Time_Start_And_End(const ValidityRestriction&,
+    const ValidityRestriction&);
+void testValidityRestriction_Time_Start_And_Duration(const ValidityRestriction&,
+    const ValidityRestriction&);
 void testValidityRestriction_Region(const ValidityRestriction&, const ValidityRestriction&);
 
 void testSignature_Ecdsa_Signature(const Signature&, const Signature&);
@@ -47,9 +49,11 @@ void testSignature_Ecdsa_Signature(const Signature&, const Signature&);
 void testSubjectInfo(const SubjectInfo&, const SubjectInfo&);
 
 void testCertificate_SignerInfo(const std::list<SignerInfo>&, const std::list<SignerInfo>&);
-void testCertificate_SubjectAttributeList(const std::list<SubjectAttribute>&, const std::list<SubjectAttribute>&);
-void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction>&, const std::list<ValidityRestriction>&);
-void testSignerInfo_Certificate(const Certificate&, const Certificate& );
+void testCertificate_SubjectAttributeList(const std::list<SubjectAttribute>&,
+    const std::list<SubjectAttribute>&);
+void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction>&,
+    const std::list<ValidityRestriction>&);
+void testSignerInfo_Certificate(const Certificate&, const Certificate&);
 
 void testEncryptionParemeter_nonce(const EncryptionParameter&, const EncryptionParameter&);
 

@@ -5,7 +5,8 @@
 using vanetza::ByteBuffer;
 using vanetza::security::IntX;
 
-TEST(IntX, set_and_get) {
+TEST(IntX, set_and_get)
+{
     IntX a;
     EXPECT_EQ(0, a.get<int>());
     EXPECT_EQ(0, a.get<uint16_t>());
@@ -22,7 +23,8 @@ TEST(IntX, set_and_get) {
 #endif
 }
 
-TEST(IntX, size) {
+TEST(IntX, size)
+{
     IntX a;
     EXPECT_EQ(0, a.size());
 
@@ -39,7 +41,8 @@ TEST(IntX, size) {
     EXPECT_EQ(0, a.size());
 }
 
-TEST(IntX, encode) {
+TEST(IntX, encode)
+{
     IntX a;
     EXPECT_EQ((ByteBuffer { 0x00 }), a.encode());
 
@@ -56,7 +59,8 @@ TEST(IntX, encode) {
     EXPECT_EQ((ByteBuffer { 0xe0, 0x32, 0x00, 0x34 }), a.encode());
 }
 
-TEST(IntX, decode) {
+TEST(IntX, decode)
+{
     ByteBuffer buf { 0xe0, 0x32, 0x00, 0x34 };
     auto decoded = IntX::decode(buf);
     ASSERT_TRUE(!!decoded);

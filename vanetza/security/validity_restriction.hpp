@@ -42,7 +42,8 @@ private:
 
 size_t get_size(const Duration&);
 
-enum class ValidityRestrictionType : uint8_t {
+enum class ValidityRestrictionType : uint8_t
+{
     Time_End = 0,                   //end_validity
     Time_Start_And_End = 1,         //start_and_end_valididty
     Time_Start_And_Duration = 2,    //start_and_duration_validity
@@ -66,7 +67,7 @@ using EndValidity = Time32;
 typedef boost::variant<EndValidity, StartAndEndValidity, StartAndDurationValidity, GeograpicRegion> ValidityRestriction;
 
 /**
- * Assignes ValidityRestrictionType to a given ValidityRestriction
+ * Determines ValidityRestrictionType to a given ValidityRestriction
  * \param ValidityRestriction
  */
 ValidityRestrictionType get_type(const ValidityRestriction&);
@@ -79,11 +80,9 @@ ValidityRestrictionType get_type(const ValidityRestriction&);
 size_t get_size(const StartAndEndValidity&);
 size_t get_size(const StartAndDurationValidity&);
 size_t get_size(const ValidityRestriction&);
-size_t get_size(const std::list<ValidityRestriction>&);
 size_t get_size(const Time32&);
 size_t get_size(const Time64&);
 size_t get_size(const Duration&);
-size_t get_size(const std::list<ValidityRestriction>&);
 
 /**
  * Deserializes a ValidityRestriction list from a binary archive
@@ -91,14 +90,14 @@ size_t get_size(const std::list<ValidityRestriction>&);
  * \param ValidityRestriction list to deserialize
  * \return size of the ValidityRestriction list
  */
-size_t deserialize(InputArchive&, std::list<ValidityRestriction>&);
+size_t deserialize(InputArchive&, ValidityRestriction&);
 
 /**
  * Serializes a ValidityRestriction list into a binary archive
  * \param ValidityRestriction list to serialize
  * \param achive to serialize in
  */
-void serialize(OutputArchive&, const std::list<ValidityRestriction>&);
+void serialize(OutputArchive&, const ValidityRestriction&);
 
 } // namespace security
 } // namespace vanetza

@@ -7,30 +7,37 @@
 #include <array>
 #include <cstdint>
 
-namespace vanetza {
-namespace security {
+namespace vanetza
+{
+namespace security
+{
 
 enum class PublicKeyAlgorithm: uint8_t;
-enum class EccPointType : uint8_t {
+enum class EccPointType : uint8_t
+{
     X_Coordinate_Only = 0,
     Compressed_Lsb_Y_0 = 2,
     Compressed_Lsb_Y_1 = 3,
     Uncompressed = 4
 };
 
-struct X_Coordinate_Only {
+struct X_Coordinate_Only
+{
     ByteBuffer x;
 };
 
-struct Compressed_Lsb_Y_0 {
+struct Compressed_Lsb_Y_0
+{
     ByteBuffer x;
 };
 
-struct Compressed_Lsb_Y_1 {
+struct Compressed_Lsb_Y_1
+{
     ByteBuffer x;
 };
 
-struct Uncompressed {
+struct Uncompressed
+{
     ByteBuffer x;
     ByteBuffer y;
 };
@@ -38,7 +45,7 @@ struct Uncompressed {
 typedef boost::variant<X_Coordinate_Only, Compressed_Lsb_Y_0, Compressed_Lsb_Y_1, Uncompressed> EccPoint;
 
 /**
- * Assignes EccPointType to a given EccPoint
+ * Determines EccPointType to a given EccPoint
  * \param EccPoint
  * \Return EccPointType
  */

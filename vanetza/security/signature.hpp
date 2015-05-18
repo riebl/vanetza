@@ -20,7 +20,7 @@ struct EcdsaSignature
 typedef boost::variant<EcdsaSignature> Signature;
 
 /**
- * Assignes PublcKeyAlgorithm to a given Signature
+ * Determines PublcKeyAlgorithm to a given Signature
  * \param Signature
  * \return PublicKeyAlgorithm
  */

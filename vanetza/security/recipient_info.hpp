@@ -24,14 +24,36 @@ struct RecipientInfo
     Key enc_key;
 };
 
+
+/**
+ * Determines PublicKeyAlgorithm to a RecipientInfo
+ * \param RecipientInfo
+ * \return PublicKeyAlgoritm
+ */
 PublicKeyAlgorithm get_type(const RecipientInfo&);
 
-size_t get_size(const RecipientInfo&);
-size_t get_size(const std::list<RecipientInfo>&);
 
-void serialize(OutputArchive&, const std::list<RecipientInfo>&);
+/**
+ * Calculates size of a RecipientInfo
+ * \param RecipientInfo
+ * \return size_t containing the number of octets needed to serialize the RecipientInfo
+ */
+size_t get_size(const RecipientInfo&);
+
+
+/**
+ * Serializes a RecipientInfo into a binary archive
+ * \param RecipientInfo to serialize
+ * \param achive to serialize in
+ */
 void serialize(OutputArchive&, const RecipientInfo&);
 
+/**
+ * Deserializes a RecipientInfo / RecipientInfo list from a binary archive
+ * \param archive with a serialized RecipientInfo / RecipientInfo list at the beginning
+ * \param a RecipientInfo / RecipientInfo list to deserialize
+ * \return size of the deserialized a RecipientInfo / RecipientInfo list
+ */
 size_t deserialize(InputArchive&, RecipientInfo&, const SymmetricAlgorithm&);
 size_t deserialize(InputArchive&, std::list<RecipientInfo>&, const SymmetricAlgorithm&);
 

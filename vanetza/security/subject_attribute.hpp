@@ -5,22 +5,27 @@
 #include <vanetza/security/public_key.hpp>
 #include <list>
 
-namespace vanetza {
-namespace security {
+namespace vanetza
+{
+namespace security
+{
 
 using SubjectAssurance = uint8_t;
 
-struct ItsAidSsp {
+struct ItsAidSsp
+{
     IntX its_aid;
     ByteBuffer service_specific_permissions;
 };
 
-struct ItsAidPriority {
+struct ItsAidPriority
+{
     IntX its_aid;
     uint8_t max_priority;
 };
 
-struct ItsAidPrioritySsp {
+struct ItsAidPrioritySsp
+{
     IntX its_aid;
     uint8_t max_priority;
     ByteBuffer service_specific_permissions;
@@ -37,20 +42,21 @@ enum class SubjectAttributeType : uint8_t {
     Priority_Ssp_List = 35      //std::list<ItsAidPrioritySsp>
 };
 
-struct VerificationKey {
+struct VerificationKey
+{
     PublicKey key;
 };
-struct EncryptionKey{
+struct EncryptionKey
+{
     PublicKey key;
 };
 
-typedef boost::variant<VerificationKey, EncryptionKey, SubjectAssurance, EccPoint, std::list<ItsAidSsp>,
-        std::list<ItsAidPriority>, std::list<ItsAidPrioritySsp>,
-        std::list<IntX>> SubjectAttribute;
-        //TODO: EccPoint not used at the moment
+typedef boost::variant<VerificationKey, EncryptionKey, SubjectAssurance, EccPoint,
+    std::list<ItsAidSsp>, std::list<ItsAidPriority>, std::list<ItsAidPrioritySsp>, std::list<IntX>> SubjectAttribute;
+//TODO: EccPoint not used at the moment
 
 /**
- * Assignes SubjectAttributeType to a given SubjectAttribute
+ * Determines SubjectAttributeType to a given SubjectAttribute
  * \param SubjectAttribute
  */
 
@@ -67,7 +73,6 @@ size_t get_size(const SubjectAssurance&);
 size_t get_size(const std::list<ItsAidSsp>&);
 size_t get_size(const std::list<ItsAidPriority>&);
 size_t get_size(const std::list<ItsAidPrioritySsp>&);
-size_t get_size(const std::list<SubjectAttribute>&);
 
 /**
  * Deserializes an object from a binary archive
@@ -75,7 +80,7 @@ size_t get_size(const std::list<SubjectAttribute>&);
  * \param object to deserialize
  * \return size of the deserialized object
  */
-size_t deserialize(InputArchive&, std::list<SubjectAttribute>&);
+size_t deserialize(InputArchive&, SubjectAttribute&);
 size_t deserialize(InputArchive&, std::list<IntX>&);
 size_t deserialize(InputArchive&, std::list<ItsAidSsp>&);
 size_t deserialize(InputArchive&, std::list<ItsAidPriority>&);
@@ -86,7 +91,7 @@ size_t deserialize(InputArchive&, std::list<ItsAidPrioritySsp>&);
  * \param object to serialize
  * \param achive to serialize in,
  */
-void serialize(OutputArchive&, const std::list<SubjectAttribute>&);
+void serialize(OutputArchive&, const SubjectAttribute&);
 void serialize(OutputArchive&, const std::list<IntX>&);
 void serialize(OutputArchive&, const std::list<ItsAidSsp>&);
 void serialize(OutputArchive&, const std::list<ItsAidPriority>&);

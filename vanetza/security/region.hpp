@@ -6,43 +6,53 @@
 #include <vanetza/security/deserialization_error.hpp>
 #include <boost/variant.hpp>
 
-namespace vanetza {
-namespace security {
+namespace vanetza
+{
+namespace security
+{
 
-struct TwoDLocation {
+struct TwoDLocation
+{
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longtitude;
 };
 
-struct ThreeDLocation {
+struct ThreeDLocation
+{
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longtitude;
-    std::array<uint8_t,2> elevation;
+    std::array<uint8_t, 2> elevation;
 };
 
-struct CircularRegion {
+struct CircularRegion
+{
     TwoDLocation center;
     geonet::distance_u16t radius;
 };
 
-struct RectangularRegion {
+struct RectangularRegion
+{
     TwoDLocation nortwest;
     TwoDLocation southeast;
 };
 
 using PolygonalRegion = std::list<TwoDLocation>;
 
-enum class RegionDictionary : uint8_t {
-        Iso_3166_1 = 0, Un_Stats = 1,
+enum class RegionDictionary : uint8_t
+{
+    Iso_3166_1 = 0,
+    Un_Stats = 1,
 };
 
-struct IdentifiedRegion {
+struct IdentifiedRegion
+{
     RegionDictionary region_dictionary;
     int16_t region_identifier;
     IntX local_region;
 };
 
-enum class RegionType : uint8_t {
+enum class RegionType : uint8_t
+{
     None = 0,       // nothing
     Circle = 1,     // CircularRegion
     Rectangle = 2,  // std::list<RectangularRegion>
@@ -50,11 +60,11 @@ enum class RegionType : uint8_t {
     ID = 4,         // IdentifiedRegion
 };
 
-typedef boost::variant<CircularRegion, std::list<RectangularRegion>,
-        PolygonalRegion, IdentifiedRegion> GeograpicRegion;
+typedef boost::variant<CircularRegion, std::list<RectangularRegion>, PolygonalRegion,
+    IdentifiedRegion> GeograpicRegion;
 
 /**
- * Assignes RegionTyp to a GeograpicRegion
+ * Determines RegionTyp to a GeograpicRegion
  * \param GeograpicRegion
  * \return RegionType
  */

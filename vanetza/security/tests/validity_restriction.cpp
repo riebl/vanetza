@@ -8,7 +8,8 @@ using namespace vanetza;
 using namespace security;
 using namespace std;
 
-TEST(Duration, Duration) {
+TEST(Duration, Duration)
+{
     uint16_t a = 0x8007;    // 1000000000000007
     uint16_t b = 7;
 
@@ -19,7 +20,8 @@ TEST(Duration, Duration) {
     EXPECT_EQ(dur2.raw(), a);
 }
 
-TEST(ValidityRestriction, Serialization) {
+TEST(ValidityRestriction, Serialization)
+{
     std::list<ValidityRestriction> list;
     list.push_back(setValidityRestriction_Time_End());
     list.push_back(setValidityRestriction_Time_Start_And_End());
@@ -41,4 +43,29 @@ TEST(ValidityRestriction, Serialization) {
     testValidityRestriction_Time_Start_And_End(*it2++, *it1++);
     testValidityRestriction_Time_Start_And_Duration(*it2++, *it1++);
     testValidityRestriction_Region(*it2++, *it1++);
+}
+
+TEST(WebValidator, Size)
+{
+    std::list<ValidityRestriction> list;
+    ValidityRestriction res;
+    StartAndEndValidity start;
+    start.start_validity = 12345;
+    start.end_validity = 4786283;
+    res = start;
+
+    list.push_back(res);
+
+    GeograpicRegion reg;
+    IdentifiedRegion id;
+    id.region_dictionary = RegionDictionary::Un_Stats;
+    id.region_identifier = 150;
+    id.local_region.set(0);
+
+    reg = id;
+    res = reg;
+    list.push_back(res);
+
+    EXPECT_EQ(15, get_size(list));
+
 }

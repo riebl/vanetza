@@ -16,7 +16,7 @@ using Nonce = std::array<uint8_t, 12>;
 typedef boost::variant<Nonce> EncryptionParameter;
 
 /**
- * Assignes SymmetricAlgorithm to a given PublicKey
+ * Determines SymmetricAlgorithm to a given PublicKey
  * \param EncryptionParameter
  * \return SymmetricAlgorithm
  */
