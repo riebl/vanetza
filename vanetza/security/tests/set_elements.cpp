@@ -453,19 +453,22 @@ std::list<HeaderField> setHeaderField_list()
 std::list<Payload> setPayload_List()
 {
     std::list<Payload> list;
-    Unsecured u;
+    Payload u;
+    u.type = PayloadType::Unsecured;
     for (int c = 0; c < 12; c++) {
-        u.push_back(c);
+        u.buffer.push_back(c);
     }
     list.push_back(u);
-    Signed s;
+    Payload s;
+    s.type = PayloadType::Signed;
     for (int c = 0; c < 12; c++) {
-        s.push_back(10 + c);
+        s.buffer.push_back(10 + c);
     }
     list.push_back(s);
-    SignedAndEncrypted e;
+    Payload e;
+    e.type = PayloadType::Signed_And_Encrypted;
     for (int c = 0; c < 12; c++) {
-        e.push_back(100 + c);
+        e.buffer.push_back(100 + c);
     }
     list.push_back(e);
 

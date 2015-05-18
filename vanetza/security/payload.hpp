@@ -21,23 +21,11 @@ enum class PayloadType : uint8_t
     Signed_And_Encrypted = 4
 };
 
-struct Unsecured : ByteBuffer
+struct Payload
 {
+    PayloadType type;
+    ByteBuffer buffer;
 };
-struct Signed : ByteBuffer
-{
-};
-struct Encrypted : ByteBuffer
-{
-};
-struct SignedExternal : ByteBuffer
-{
-};
-struct SignedAndEncrypted : ByteBuffer
-{
-};
-
-typedef boost::variant<Unsecured, Signed, Encrypted, SignedExternal, SignedAndEncrypted> Payload;
 
 /**
  * Determines PayloadType to a given Payload

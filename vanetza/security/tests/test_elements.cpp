@@ -318,7 +318,7 @@ void testPayload_list(const std::list<Payload>& list, const std::list<Payload>& 
     auto it = list.begin();
     auto deIt = deList.begin();
 
-    EXPECT_EQ(boost::get<Unsecured>(*it++), boost::get<Unsecured>(*deIt++));
-    EXPECT_EQ(boost::get<Signed>(*it++), boost::get<Signed>(*deIt++));
-    EXPECT_EQ(boost::get<SignedAndEncrypted>(*it), boost::get<SignedAndEncrypted>(*deIt));
+    EXPECT_EQ((*it++).buffer, (*deIt++).buffer);
+    EXPECT_EQ((*it++).buffer, (*deIt++).buffer);
+    EXPECT_EQ((*it).buffer, (*deIt).buffer);
 }
