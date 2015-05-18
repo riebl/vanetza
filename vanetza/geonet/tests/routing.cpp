@@ -64,6 +64,20 @@ protected:
     NetworkTopology net;
 };
 
+/**
+ * Check location table entries after initialisation
+ * Expectation: Entries should reflect defined network reachability
+ */
+TEST_F(Routing, beacon_location_table) {
+    auto& sender_table = net.get_router(cars[0])->get_location_table();
+    EXPECT_FALSE(sender_table.has_entry(cars[0]));
+    EXPECT_TRUE(sender_table.has_entry(cars[1]));
+    EXPECT_TRUE(sender_table.has_entry(cars[2]));
+    EXPECT_TRUE(sender_table.has_entry(cars[3]));
+    EXPECT_FALSE(sender_table.has_entry(cars[4]));
+    EXPECT_TRUE(sender_table.has_entry(cars[5]));
+}
+
 /*
  * Preconditions:
  * - GeoAdhocRouter inside target area (INOUT1 >= 0)
