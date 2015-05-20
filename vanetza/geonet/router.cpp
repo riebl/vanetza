@@ -478,7 +478,7 @@ NextHop Router::next_hop_gbc_advanced(
 
     if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
         if (cbf_meta) {
-            if (cbf_meta->counter() > max_counter) {
+            if (cbf_meta->counter() >= max_counter) {
                 m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
                 nh.state(NextHop::State::DISCARDED);
             } else {
