@@ -32,7 +32,7 @@ bool has_further_repetition(const DataRequest::Repetition& repetition)
 {
     const auto zero = 0.0 * units::si::seconds;
     return repetition.maximum > zero && repetition.interval > zero &&
-        repetition.maximum > repetition.interval;
+        repetition.maximum >= repetition.interval;
 }
 
 } // namespace geonet
