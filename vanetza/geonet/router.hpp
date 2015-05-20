@@ -83,6 +83,7 @@ public:
     void set_time(Timestamp init);
     void set_address(const Address&);
     const CbfPacketBuffer& get_cbf_buffer() const { return m_cbf_buffer; }
+    bool outside_sectorial_contention_area(const MacAddress& sender, const MacAddress& forwarder) const;
 
     /**
      * Set seed for internal random number generator (RNG)
@@ -122,7 +123,6 @@ private:
     NextHop first_hop_contention_based_forwarding(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
     units::Duration timeout_cbf_gbc(units::Length distance) const;
     units::Duration timeout_cbf_gbc(const MacAddress& sender) const;
-    bool outside_sectorial_contention_area(const MacAddress& sender, const MacAddress& forwarder) const;
 
     const MIB& m_mib;
     dcc::RequestInterface& m_request_interface;
