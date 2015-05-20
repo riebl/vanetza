@@ -605,6 +605,7 @@ units::Duration Router::timeout_cbf_gbc(const MacAddress& sender) const
 
 bool Router::outside_sectorial_contention_area(const MacAddress& sender, const MacAddress& forwarder) const
 {
+    using units::si::meter;
     auto position_sender = m_location_table.get_position(sender);
     auto position_forwarder = m_location_table.get_position(forwarder);
 
@@ -616,8 +617,12 @@ bool Router::outside_sectorial_contention_area(const MacAddress& sender, const M
         const auto dist_max = m_mib.itsGnDefaultMaxCommunicationRange;
 
         auto dist_rf = distance(position_forwarder->position(), m_local_position_vector.position());
-        auto cos_fsr = dist_rf * dist_rf - dist_r * dist_r - dist_f * dist_f + 2.0 * dist_r * dist_f;
-        auto angle_fsr = boost::units::acos(cos_fsr / (units::si::meters * units::si::meters));
+        auto angle_fsr = 0.0 * units::si::radians;
+        if (dist_r > 0.0 * meter && dist_f > 0.0 * meter) {
+            auto cos_fsr = (dist_rf * dist_rf - dist_r * dist_r - dist_f * dist_f) /
+                (-2.0 * dist_r * dist_f);
+            angle_fsr = boost::units::acos(cos_fsr);
+        }
         const auto angle_th = m_mib.itsGnBroadcastCBFDefSectorAngle;
 
         return !(dist_r < dist_f && dist_f < dist_max && angle_fsr < angle_th);
