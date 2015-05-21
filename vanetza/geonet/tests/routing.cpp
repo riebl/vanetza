@@ -265,12 +265,21 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_not_reliable) {
     sender->update(lpv);
 
     GbcDataRequest gbc_request(test.mib);
-    gbc_request.destination = circle_dest_area(1.0, 2.0, 2.0);
+    gbc_request.destination = circle_dest_area(1.0, 18.0, 6.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     test.get_interface(addy_sender)->m_last_packet.reset();
     EXPECT_FALSE(!!test.get_interface(addy_sender)->m_last_packet);
     auto confirm = sender->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_TRUE(!!test.get_interface(addy_sender)->m_last_packet);
-    // EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->m_last_request.destination);
+
+    ASSERT_EQ(0, test.counter_indications);
+    ASSERT_EQ(1, test.get_counter_requests(addy_sender));
+    test.dispatch();
+    ASSERT_EQ(1, test.counter_indications);
+
+    EXPECT_EQ(1, test.get_counter_requests(addy_sender));
+    EXPECT_EQ(1, test.get_counter_requests(addy_car3));
+    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_car3)->m_last_request.destination);
 }
