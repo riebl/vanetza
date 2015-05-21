@@ -34,12 +34,28 @@ void NetworkTopology::RequestInterface::request(const dcc::DataRequest& req, std
     m_network.save_request(m_last_request, std::move(packet));
 }
 
+NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
+    request_interface(network, mac_address),
+    router(network.get_mib(), request_interface)
+{
+}
+
+boost::optional<NetworkTopology::RouterContext&> NetworkTopology::get_host(const MacAddress& addr)
+{
+    boost::optional<RouterContext&> context;
+    auto found = hosts.find(addr);
+    if (found != hosts.end())
+        context = *found->second;
+
+    return context;
+}
+
 boost::optional<Router&> NetworkTopology::get_router(const MacAddress& addr)
 {
     boost::optional<Router&> router;
-    auto router_it = router_mapping.find(addr);
-    if(router_it != router_mapping.end())
-        router = router_it->second;
+    auto context = get_host(addr);
+    if (context)
+        router = context->router;
 
     return router;
 }
@@ -47,9 +63,9 @@ boost::optional<Router&> NetworkTopology::get_router(const MacAddress& addr)
 boost::optional<NetworkTopology::RequestInterface&> NetworkTopology::get_interface(const MacAddress& addr)
 {
     boost::optional<NetworkTopology::RequestInterface&> interface;
-    auto interface_it = interface_mapping.find(addr);
-    if(interface_it != interface_mapping.end())
-        interface = interface_it->second;
+    auto context = get_host(addr);
+    if (context)
+        interface = context->request_interface;
 
     return interface;
 }
@@ -61,19 +77,12 @@ unsigned& NetworkTopology::get_counter_requests(const MacAddress& addr)
 
 void NetworkTopology::add_router(const MacAddress& addr)
 {
-    // create RequestInterface and save in map interface_mapping
-    auto interface_insertion = interface_mapping.emplace(std::piecewise_construct,
-        std::forward_as_tuple(addr),
-        std::forward_as_tuple(*this, addr));
-    NetworkTopology::RequestInterface& req_ifc = interface_insertion.first->second;
+    std::unique_ptr<RouterContext> context { new RouterContext(*this) };
+    context->mac_address = addr;
+    context->router.set_address(Address(context->mac_address));
+    context->router.set_time(now);
 
-    // create Router, save in map router_mapping, set address of router
-    auto router_insertion = router_mapping.emplace(std::piecewise_construct,
-        std::forward_as_tuple(addr),
-        std::forward_as_tuple(mib, req_ifc));
-    Router& router = router_insertion.first->second;
-    router.set_time(now);
-    router.set_address(Address(addr));
+    hosts.emplace(addr, std::move(context));
 }
 
 void NetworkTopology::add_reachability(const MacAddress& addr, std::list<MacAddress> reachables)
@@ -149,14 +158,12 @@ void NetworkTopology::advance_time(Timestamp::duration_type t)
         now += step;
         t -= step;
         // update timestamp for every router
-        for(auto& mac_addy: router_mapping) {
-            auto x = get_router(mac_addy.first);
-            if(x) {
-                x->update(now);
-                LongPositionVector lpv = x->get_local_position_vector();
-                lpv.timestamp = now;
-                x->update(lpv);
-            }
+        for (auto& host : hosts) {
+            Router& router = host.second->router;
+            router.update(now);
+            LongPositionVector lpv = router.get_local_position_vector();
+            lpv.timestamp = now;
+            router.update(lpv);
         }
        dispatch();
     } while (t.value() > 0);

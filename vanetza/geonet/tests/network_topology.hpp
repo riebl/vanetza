@@ -33,18 +33,28 @@ public:
         dcc::DataRequest m_last_request;
         std::unique_ptr<ChunkPacket> m_last_packet;
         NetworkTopology& m_network;
-        MacAddress m_address;
+        const MacAddress& m_address;
+    };
+
+    class RouterContext
+    {
+    public:
+        RouterContext(NetworkTopology&);
+
+        MacAddress mac_address;
+        RequestInterface request_interface;
+        Router router;
     };
 
     std::unordered_map<MacAddress, unsigned> counter_requests;
-    std::unordered_map<MacAddress, RequestInterface> interface_mapping;
-    std::unordered_map<MacAddress, Router> router_mapping;
+    std::unordered_map<MacAddress, std::unique_ptr<RouterContext>> hosts;
     std::unordered_map<MacAddress, std::list<MacAddress> > reachability;
     std::list<std::tuple<dcc::DataRequest, std::unique_ptr<ChunkPacket>>> requests;
     Timestamp now;
     ManagementInformationBase mib;
     unsigned counter_indications;
 
+    boost::optional<RouterContext&> get_host(const MacAddress&);
     boost::optional<Router&> get_router(const MacAddress&);
     boost::optional<RequestInterface&> get_interface(const MacAddress&);
     unsigned& get_counter_requests(const MacAddress&);
