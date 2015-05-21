@@ -93,7 +93,10 @@ void NetworkTopology::save_request(const dcc::DataRequest& req, std::unique_ptr<
 
 void NetworkTopology::dispatch()
 {
-    for(auto& tuple: requests) {
+    // process a stable sequence of saved requests
+    decltype(requests) current_requests;
+    std::swap(current_requests, requests);
+    for (auto& tuple: current_requests) {
         // extract request and packet from tuple
         auto req = std::get<0>(tuple);
         get_interface(req.source)->m_last_packet.reset(new ChunkPacket(*std::get<1>(tuple)));
