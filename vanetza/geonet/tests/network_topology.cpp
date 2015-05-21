@@ -21,16 +21,17 @@ using namespace vanetza::geonet;
 using namespace vanetza::dcc;
 using namespace vanetza::units::si;
 
-NetworkTopology::RequestInterface::RequestInterface(NetworkTopology& network) :
-    m_network(network)
+NetworkTopology::RequestInterface::RequestInterface(NetworkTopology& network, const MacAddress& mac) :
+    m_network(network), m_address(mac)
 {
 }
 
 void NetworkTopology::RequestInterface::request(const dcc::DataRequest& req, std::unique_ptr<ChunkPacket> packet)
 {
     m_last_request = req;
-    m_last_packet = decltype(m_last_packet)(new ChunkPacket(*packet));
-    m_network.save_request(req, std::move(packet));
+    m_last_packet.reset(new ChunkPacket(*packet));
+    m_last_request.source = m_address;
+    m_network.save_request(m_last_request, std::move(packet));
 }
 
 boost::optional<Router&> NetworkTopology::get_router(const MacAddress& addr)
@@ -68,7 +69,7 @@ void NetworkTopology::add_router(const MacAddress& addr)
     // create RequestInterface and save in map interface_mapping
     auto interface_insertion = interface_mapping.emplace(std::piecewise_construct,
         std::forward_as_tuple(addr),
-        std::forward_as_tuple(*this));
+        std::forward_as_tuple(*this, addr));
     NetworkTopology::RequestInterface& req_ifc = interface_insertion.first->second;
 
     // create Router, save in map router_mapping, set address of router

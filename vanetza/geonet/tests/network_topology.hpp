@@ -26,13 +26,14 @@ public:
     class RequestInterface : public dcc::RequestInterface
     {
     public:
-        RequestInterface(NetworkTopology&);
+        RequestInterface(NetworkTopology&, const MacAddress&);
 
         void request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>) override;
 
         dcc::DataRequest m_last_request;
         std::unique_ptr<ChunkPacket> m_last_packet;
         NetworkTopology& m_network;
+        MacAddress m_address;
     };
 
     std::unordered_map<MacAddress, unsigned> counter_requests;
