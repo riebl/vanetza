@@ -54,14 +54,9 @@ boost::optional<NetworkTopology::RequestInterface&> NetworkTopology::get_interfa
     return interface;
 }
 
-boost::optional<unsigned> NetworkTopology::get_counter_requests(const MacAddress& addr)
+unsigned& NetworkTopology::get_counter_requests(const MacAddress& addr)
 {
-    boost::optional<unsigned> requests;
-    auto counter_it = counter_requests.find(addr);
-    if(counter_it != counter_requests.end())
-        requests = counter_it->second;
-
-    return requests;
+    return counter_requests[addr];
 }
 
 void NetworkTopology::add_router(const MacAddress& addr)
@@ -91,6 +86,9 @@ void NetworkTopology::save_request(const dcc::DataRequest& req, std::unique_ptr<
 {
     // save request with packet in list requests
     requests.emplace_back(req, std::move(packet));
+
+    // increment request counter
+    get_counter_requests(req.source)++;
 }
 
 void NetworkTopology::dispatch()
@@ -99,10 +97,6 @@ void NetworkTopology::dispatch()
         // extract request and packet from tuple
         auto req = std::get<0>(tuple);
         get_interface(req.source)->m_last_packet.reset(new ChunkPacket(*std::get<1>(tuple)));
-
-        // increment request counter
-        auto counter = get_counter_requests(req.source);
-        if(counter) (*counter)++;
 
         // broadcast packet to all reachable routers
         if(req.destination == cBroadcastMacAddress) {
