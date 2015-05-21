@@ -56,6 +56,7 @@ public:
     void send(const MacAddress&, const MacAddress&);
     void set_position(const MacAddress&, CartesianPosition);
     void advance_time(Timestamp::duration_type);
+    void reset_counters();
 };
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition&);

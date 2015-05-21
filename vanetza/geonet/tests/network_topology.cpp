@@ -162,6 +162,12 @@ void NetworkTopology::advance_time(Timestamp::duration_type t)
     } while (t.value() > 0);
 }
 
+void NetworkTopology::reset_counters()
+{
+    counter_indications = 0;
+    counter_requests.clear();
+}
+
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)
 {
     const GeographicLib::Geocentric& earth = GeographicLib::Geocentric::WGS84();

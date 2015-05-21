@@ -50,9 +50,7 @@ protected:
 
         // advance time 5 seconds
         test.advance_time(5000 * Timestamp::millisecond);
-
-        // reset counter for indication
-        test.counter_indications = 0;
+        test.reset_counters();
     }
 
     MacAddress addy_car1;
