@@ -382,7 +382,7 @@ void Router::on_beacon_timer_expired()
     execute_media_procedures(m_mib.itsGnIfType);
 
     // BEACONs originate in GeoNet layer, therefore no upper layer payload
-    DownPacketPtr payload { new DownPacket };
+    DownPacketPtr payload { new DownPacket() };
     pass_down(cBroadcastMacAddress, std::move(pdu), std::move(payload));
 
     reset_beacon_timer();
