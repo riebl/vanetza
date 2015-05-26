@@ -15,10 +15,15 @@ Repeater::Repetition::Repetition(const DataRequestVariant& request,
 void Repeater::trigger(Timestamp now)
 {
     while (!m_repetitions.empty() && m_repetitions.top().m_next <= now) {
-        const Repetition& repetition = m_repetitions.top();
-        auto payload = const_cast<std::unique_ptr<DownPacket>&&>(repetition.m_payload);
+        // This cast is safe because element is removed afterwards anyway
+        Repetition& repetition = const_cast<Repetition&>(m_repetitions.top());
         if (m_repeat_fn) {
-            m_repeat_fn(repetition.m_request, std::move(payload));
+            DataRequest& request = access_request(repetition.m_request);
+            if (request.repetition) {
+                Timestamp::duration_type delayed = now - repetition.m_next;
+                request.repetition->maximum -= units::Duration(delayed);
+            }
+            m_repeat_fn(repetition.m_request, std::move(repetition.m_payload));
         }
         m_repetitions.pop();
     }
