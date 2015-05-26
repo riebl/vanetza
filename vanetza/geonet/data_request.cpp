@@ -35,6 +35,21 @@ bool has_further_repetition(const DataRequest::Repetition& repetition)
         repetition.maximum >= repetition.interval;
 }
 
+struct access_request_visitor : public boost::static_visitor<DataRequest&>
+{
+    template<typename REQUEST>
+    DataRequest& operator()(REQUEST& request)
+    {
+        return request;
+    }
+};
+
+DataRequest& access_request(DataRequestVariant& variant)
+{
+    access_request_visitor visitor;
+    return boost::apply_visitor(visitor, variant);
+}
+
 } // namespace geonet
 } // namespace vanetza
 
