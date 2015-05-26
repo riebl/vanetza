@@ -6,6 +6,7 @@
 #include <vanetza/geonet/timestamp.hpp>
 #include <boost/heap/priority_queue.hpp>
 #include <boost/optional.hpp>
+#include <functional>
 #include <memory>
 
 namespace vanetza
@@ -13,11 +14,11 @@ namespace vanetza
 namespace geonet
 {
 
-class Router;
-
 class Repeater
 {
 public:
+    using Callback = std::function<void(const DataRequestVariant&, std::unique_ptr<DownPacket>)>;
+
     template<class REQUEST>
     void add(const REQUEST& request, const DownPacket& payload, Timestamp now)
     {
@@ -32,7 +33,8 @@ public:
         }
     }
 
-    void trigger(Router&, Timestamp now);
+    void set_callback(const Callback&);
+    void trigger(Timestamp now);
 
     /**
      * Get time stamp when next repetition should be triggered
@@ -59,6 +61,7 @@ private:
             Repetition,
             boost::heap::compare<compare_repetition>
         > m_repetitions;
+    Callback m_repeat_fn;
 };
 
 } // namespace geonet

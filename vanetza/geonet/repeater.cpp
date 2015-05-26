@@ -1,28 +1,10 @@
 #include "repeater.hpp"
-#include "router.hpp"
-#include "data_confirm.hpp"
-#include <boost/variant/static_visitor.hpp>
+#include "data_request.hpp"
 
 namespace vanetza
 {
 namespace geonet
 {
-
-struct repetition_dispatcher : public boost::static_visitor<void>
-{
-    repetition_dispatcher(Router& router, std::unique_ptr<DownPacket> payload)
-        : m_router(router), m_payload(std::move(payload))
-    {}
-
-    template<class REQUEST>
-    void operator()(const REQUEST& request)
-    {
-        m_router.request(request, std::move(m_payload));
-    }
-
-    Router& m_router;
-    std::unique_ptr<DownPacket> m_payload;
-};
 
 Repeater::Repetition::Repetition(const DataRequestVariant& request,
         const DownPacket& payload, Timestamp next) :
@@ -30,13 +12,14 @@ Repeater::Repetition::Repetition(const DataRequestVariant& request,
 {
 }
 
-void Repeater::trigger(Router& router, Timestamp now)
+void Repeater::trigger(Timestamp now)
 {
     while (!m_repetitions.empty() && m_repetitions.top().m_next <= now) {
         const Repetition& repetition = m_repetitions.top();
         auto payload = const_cast<std::unique_ptr<DownPacket>&&>(repetition.m_payload);
-        repetition_dispatcher dispatcher(router, std::move(payload));
-        boost::apply_visitor(dispatcher, repetition.m_request);
+        if (m_repeat_fn) {
+            m_repeat_fn(repetition.m_request, std::move(payload));
+        }
         m_repetitions.pop();
     }
 }
@@ -48,6 +31,11 @@ boost::optional<Timestamp> Repeater::next_trigger() const
         next = m_repetitions.top().m_next;
     }
     return next;
+}
+
+void Repeater::set_callback(const Callback& cb)
+{
+    m_repeat_fn = cb;
 }
 
 bool Repeater::compare_repetition::operator()(

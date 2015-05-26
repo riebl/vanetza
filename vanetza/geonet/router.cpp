@@ -5,6 +5,7 @@
 #include "next_hop.hpp"
 #include "parsed_pdu.hpp"
 #include "pdu_conversion.hpp"
+#include "repetition_dispatcher.hpp"
 #include "transport_interface.hpp"
 #include <vanetza/dcc/access_control.hpp>
 #include <vanetza/dcc/data_request.hpp>
@@ -14,6 +15,7 @@
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
 #include <boost/units/cmath.hpp>
+#include <functional>
 #include <stdexcept>
 
 namespace vanetza
@@ -74,6 +76,8 @@ Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
     m_cbf_buffer(mib.itsGnCbfPacketBufferSize * 1024)
 {
+    using namespace std::placeholders;
+    m_repeater.set_callback(std::bind(&Router::dispatch_repetition, this, _1, _2));
 }
 
 Router::~Router()
@@ -104,7 +108,7 @@ void Router::update(Timestamp now)
     if (m_next_beacon <= m_time_now) {
         on_beacon_timer_expired();
     }
-    m_repeater.trigger(*this, m_time_now);
+    m_repeater.trigger(m_time_now);
     m_location_table.expire(m_time_now);
 
     for (auto& packet : m_cbf_buffer.packets_to_send(m_time_now)) {
@@ -414,6 +418,12 @@ void Router::reset_beacon_timer()
         m_mib.itsGnBeaconServiceRetransmitTimer +
         duration_t::from_value(random_jitter) };
     m_next_beacon = m_time_now + next_beacon_in;
+}
+
+void Router::dispatch_repetition(const DataRequestVariant& request, std::unique_ptr<DownPacket> payload)
+{
+    RepetitionDispatcher dispatcher(*this, std::move(payload));
+    boost::apply_visitor(dispatcher, request);
 }
 
 NextHop Router::first_hop_contention_based_forwarding(
