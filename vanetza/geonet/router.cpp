@@ -83,7 +83,7 @@ Router::~Router()
 void Router::update(Timestamp now)
 {
     // require monotonic clock
-    assert(now > m_time_now);
+    assert(now >= m_time_now);
     m_time_now = now;
 
     if (m_next_beacon <= m_time_now) {
