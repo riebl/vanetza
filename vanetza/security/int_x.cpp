@@ -52,7 +52,7 @@ boost::optional<IntX> IntX::decode(const ByteBuffer& buffer)
 
 size_t get_size(IntX intx)
 {
-    return (length_coding_size(intx.size())+ intx.size());
+    return (length_coding_size(intx.size()) + intx.size());
 }
 
 void serialize(OutputArchive& ar, const IntX& intx)
