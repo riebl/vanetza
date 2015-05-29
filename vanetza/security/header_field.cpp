@@ -185,6 +185,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
         HeaderField field;
         HeaderFieldType type;
         deserialize(ar, type);
+        size -= sizeof(HeaderFieldType);
         switch (type) {
             case HeaderFieldType::Generation_Time: {
                 Time64 time;
@@ -268,9 +269,8 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             default:
                 throw deserialization_error("Unknown HeaderFieldType");
+                break;
         }
-        size -= sizeof(HeaderFieldType);
-
     }
     return ret_size;
 }
