@@ -36,11 +36,12 @@ vanetza_intermodule_dependencies(geonet dcc net)
 
 vanetza_module_property(geonet INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
+    ${GeographicLib_INCLUDE_DIR}
 )
 vanetza_module_dependencies(geonet LINKING
     ${Boost_DATE_TIME_LIBRARY}
     ${Boost_SERIALIZATION_LIBRARY}
-    GeographicLib
+    ${GeographicLib_LIBRARY}
 )
 
 add_subdirectory(tests)
