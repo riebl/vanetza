@@ -6,7 +6,7 @@ macro(vanetza_module NAME)
     set_property(TARGET ${NAME}_static PROPERTY OUTPUT_NAME vanetza_${NAME})
     target_include_directories(${NAME} PUBLIC ${VANETZA_MODULE_INCLUDE_DIRECTORIES})
     target_include_directories(${NAME}_static PUBLIC ${VANETZA_MODULE_INCLUDE_DIRECTORIES})
-    install(TARGETS ${NAME} ${NAME}_static EXPORT vanetza DESTINATION lib)
+    install(TARGETS ${NAME} ${NAME}_static EXPORT ${PROJECT_NAME} DESTINATION lib)
 endmacro()
 
 macro(vanetza_module_dependencies NAME TYPE)
@@ -46,6 +46,10 @@ macro(target_link_vanetza TARGET)
 endmacro()
 
 macro(vanetza_export_modules)
-    export(EXPORT vanetza NAMESPACE Vanetza:: FILE vanetza-targets.cmake)
+    string(TOLOWER ${PROJECT_NAME} _project_name_lower)
+    export(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE ${_project_name_lower}-targets.cmake)
+    file(WRITE ${PROJECT_BINARY_DIR}/vanetza-config.cmake
+        "include(\"${PROJECT_BINARY_DIR}/${_project_name_lower}-targets.cmake\")")
+    export(PACKAGE ${PROJECT_NAME})
 endmacro()
 
