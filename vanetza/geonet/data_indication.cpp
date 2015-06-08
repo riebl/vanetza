@@ -8,11 +8,14 @@ namespace vanetza
 namespace geonet
 {
 
-DataIndication::DataIndication()
+DataIndication::DataIndication() :
+    upper_protocol(UpperProtocol::BTP_B),
+    transport_type(TransportType::SHB)
 {
 }
 
 DataIndication::DataIndication(const BasicHeader& basic, const CommonHeader& common) :
+    transport_type(TransportType::SHB),
     traffic_class(common.traffic_class),
     remaining_packet_lifetime(basic.lifetime),
     remaining_hop_limit(basic.hop_limit)
