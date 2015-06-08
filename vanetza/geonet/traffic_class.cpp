@@ -10,7 +10,7 @@ TrafficClass::TrafficClass() : m_tc(0)
 {
 }
 
-TrafficClass::TrafficClass(bool scf, bool ch_offload, BitNumber<unsigned, 6> tc)
+TrafficClass::TrafficClass(bool scf, bool ch_offload, BitNumber<unsigned, 6> tc) : m_tc(0)
 {
     store_carry_forward(scf);
     channel_offload(ch_offload);
