@@ -104,10 +104,9 @@ boost::optional<Timestamp> CbfPacketBuffer::next_timer_expiry() const
 CbfPacketBuffer::packet_list CbfPacketBuffer::packets_to_send(Timestamp now)
 {
     packet_list packets;
-    std::list<decltype(m_nodes)::iterator> deletions;
 
     // move all packets with expired timeout
-    for (auto it = m_nodes.begin(), end = m_nodes.end(); it != end; ++it) {
+    for (auto it = m_nodes.begin(); it != m_nodes.end();) {
         packet_type& packet = std::get<0>(*it);
         CbfPacketMetaData& meta = std::get<1>(*it);
         assert(packet.pdu);
@@ -119,13 +118,11 @@ CbfPacketBuffer::packet_list CbfPacketBuffer::packets_to_send(Timestamp now)
                 packet.pdu->basic().lifetime.encode(lifetime - queuetime);
                 packets.push_back(std::move(packet));
             }
-            deletions.push_back(it);
-        }
-    }
 
-    // delete nodes of moved and dropped packets
-    for (auto it : deletions) {
-        m_nodes.erase(it);
+            it = m_nodes.erase(it);
+        } else {
+            ++it;
+        }
     }
 
     return packets;
