@@ -6,6 +6,7 @@
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/transport_interface.hpp>
+#include <boost/optional.hpp>
 
 using namespace vanetza;
 using namespace vanetza::geonet;
@@ -40,7 +41,7 @@ public:
     }
 
     unsigned m_indications;
-    DataIndication m_last_indication;
+    boost::optional<DataIndication> m_last_indication;
     std::unique_ptr<UpPacket> m_last_packet;
 };
 
