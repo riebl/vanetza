@@ -1,6 +1,7 @@
 #include <vanetza/common/byte_view.hpp>
 #include <vanetza/common/byte_buffer_convertible.hpp>
 #include <cassert>
+#include <limits>
 
 namespace vanetza
 {
@@ -25,7 +26,7 @@ ByteBuffer::const_pointer byte_view_range::data() const
 
 ByteBuffer::value_type byte_view_range::operator[](size_type pos) const
 {
-    assert(pos >= 0);
+    assert(!std::numeric_limits<size_type>::is_signed || pos >= 0);
     assert(pos < size());
     return data()[pos];
 }
