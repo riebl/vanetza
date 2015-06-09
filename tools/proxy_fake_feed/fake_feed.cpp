@@ -7,6 +7,7 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <boost/lexical_cast.hpp>
+#include <exception>
 #include <iostream>
 
 using namespace boost;
@@ -17,8 +18,23 @@ using namespace vanetza;
  * to a proxy implementation listening on an UDP socket.
  */
 
+[[noreturn]] void terminate_handler() noexcept
+{
+    if (auto ce = std::current_exception()) {
+        try {
+            std::rethrow_exception(ce);
+        } catch (const std::exception& e) {
+            std::cerr << "Program exit because of " << e.what() << std::endl;
+        } catch (...) {
+            std::cerr << "Program exit because unknown error" << std::endl;
+        }
+    }
+    std::exit(1);
+}
+
 int main(int argc, char** argv)
 {
+    std::set_terminate(&terminate_handler);
     asio::ip::address_v4 dst_addr;
     unsigned short dst_port = 8041; // Boost.Asio expects port in host byte order
 
