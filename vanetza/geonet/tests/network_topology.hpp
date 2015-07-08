@@ -57,7 +57,7 @@ public:
     boost::optional<RouterContext&> get_host(const MacAddress&);
     boost::optional<Router&> get_router(const MacAddress&);
     boost::optional<RequestInterface&> get_interface(const MacAddress&);
-    unsigned& get_counter_requests(const MacAddress&);
+    const unsigned& get_counter_requests(const MacAddress&);
     const ManagementInformationBase& get_mib() const { return mib; }
     void add_router(const MacAddress&);
     void add_reachability(const MacAddress&, std::list<MacAddress>);

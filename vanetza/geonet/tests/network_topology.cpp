@@ -70,7 +70,7 @@ boost::optional<NetworkTopology::RequestInterface&> NetworkTopology::get_interfa
     return interface;
 }
 
-unsigned& NetworkTopology::get_counter_requests(const MacAddress& addr)
+const unsigned& NetworkTopology::get_counter_requests(const MacAddress& addr)
 {
     return counter_requests[addr];
 }
@@ -97,7 +97,7 @@ void NetworkTopology::save_request(const dcc::DataRequest& req, std::unique_ptr<
     requests.emplace_back(req, std::move(packet));
 
     // increment request counter
-    get_counter_requests(req.source)++;
+    counter_requests[req.source]++;
 }
 
 void NetworkTopology::dispatch()
