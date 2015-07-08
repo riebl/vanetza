@@ -70,7 +70,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsDest) {
  * Packet not yet in CBF packet buffer (P in B false)
  * LL address of GeoAdhoc Router is LL destination address (Dest_LL_ADDR=L_LL_ADDR true)
  * --> greedy forwarding */
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 2.0, 0.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
@@ -94,7 +94,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsNotDest) {
  * Packet not yet in CBF packet buffer (P in B false)
  * LL address of GeoAdhoc Router is not LL destination address (Dest_LL_ADDR=L_LL_ADDR false)
  * --> contention based forwarding */
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(10.0, 0.0, 0.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     test.get_interface(addy_sender)->m_last_packet.reset();
@@ -115,7 +115,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_maxCounter) {
  * --> remove packet from buffer, stop timer, discard packet, return -1 */
     const int maxCounter = 3;
 
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 2.0, 0.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
@@ -145,7 +145,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_inSectori
  * --> remove packet from buffer, stop timer, discard packet, return -1 */
     EXPECT_FALSE(test.get_router(addy_car5)->outside_sectorial_contention_area(addy_sender, addy_car2));
 
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 2.0, -1.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
@@ -174,7 +174,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_outsideSe
     test.advance_time(5000 * Timestamp::millisecond);
     EXPECT_TRUE(test.get_router(addy_car5)->outside_sectorial_contention_area(addy_sender, addy_car2));
 
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 20.0, -1.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
@@ -199,7 +199,7 @@ TEST_F(Routing, advanced_forwarding_out_destarea_sender_out_destarea) {
  * sender position is realiable (PV_SE_exists, PAI_SE true)
  * sender outside target area (INOUT3<0)
  * --> greedy forwarding */
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 2.0, 2.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
@@ -238,14 +238,14 @@ TEST_F(Routing, advanced_forwarding_out_destarea_sender_in_destarea) {
  * sender position is realiable (PV_SE_exists, PAI_SE true)
  * sender inside target area (INOUT3<0)
  * --> discard packet, return -1 */
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 0.0, 0.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
     test.dispatch();
 
-    EXPECT_TRUE(test.counter_indications != 0);
+    EXPECT_TRUE(test.get_counter_indications() != 0);
     auto found = test.get_router(addy_car1)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
     EXPECT_FALSE(!!found);
     found = test.get_router(addy_car2)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
@@ -266,7 +266,7 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_not_reliable) {
     test.advance_time(1000 * Timestamp::millisecond);
     test.reset_counters();
 
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 18.0, 6.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     test.get_interface(addy_sender)->m_last_packet.reset();
@@ -276,10 +276,10 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_not_reliable) {
     EXPECT_TRUE(!!test.get_interface(addy_sender)->m_last_packet);
     EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->m_last_request.destination);
 
-    ASSERT_EQ(0, test.counter_indications);
+    ASSERT_EQ(0, test.get_counter_indications());
     ASSERT_EQ(1, test.get_counter_requests(addy_sender));
     test.dispatch();
-    ASSERT_EQ(1, test.counter_indications);
+    ASSERT_EQ(1, test.get_counter_indications());
 
     EXPECT_EQ(1, test.get_counter_requests(addy_sender));
     EXPECT_EQ(1, test.get_counter_requests(addy_car3));
@@ -294,7 +294,7 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_reliable) {
     test.advance_time(1000 * Timestamp::millisecond);
     test.reset_counters();
 
-    GbcDataRequest gbc_request(test.mib);
+    GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 18.0, 6.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     test.get_interface(addy_sender)->m_last_packet.reset();
@@ -304,10 +304,10 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_reliable) {
     EXPECT_TRUE(!!test.get_interface(addy_sender)->m_last_packet);
     EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->m_last_request.destination);
 
-    ASSERT_EQ(0, test.counter_indications);
+    ASSERT_EQ(0, test.get_counter_indications());
     ASSERT_EQ(1, test.get_counter_requests(addy_sender));
     test.dispatch();
-    ASSERT_EQ(1, test.counter_indications);
+    ASSERT_EQ(1, test.get_counter_indications());
 
     EXPECT_EQ(1, test.get_counter_requests(addy_sender));
     EXPECT_EQ(1, test.get_counter_requests(addy_car3));
