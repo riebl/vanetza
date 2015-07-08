@@ -75,17 +75,17 @@ TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsDest) {
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0, 6.0, 0.0);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->m_last_packet)));
+    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0, 6.0, 6.0);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->m_last_packet)));
+    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
 }
 
 TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsNotDest) {
@@ -97,14 +97,14 @@ TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsNotDest) {
     GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(10.0, 0.0, 0.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    test.get_interface(addy_sender)->m_last_packet.reset();
-    EXPECT_FALSE(!!test.get_interface(addy_sender)->m_last_packet);
+    test.get_interface(addy_sender)->last_packet.reset();
+    EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
 
     test.advance_time(100 * Timestamp::millisecond);
-    EXPECT_TRUE(!!test.get_interface(addy_sender)->m_last_packet);
-    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_TRUE(!!test.get_interface(addy_sender)->last_packet);
+    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->last_request.destination);
 }
 
 TEST_F(Routing, advanced_forwarding_in_destarea_buffered_maxCounter) {
@@ -120,7 +120,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_maxCounter) {
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
     test.dispatch();
     auto found = test.get_router(addy_car1)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
     EXPECT_TRUE(!!found);
@@ -150,14 +150,14 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_inSectori
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car5, test.get_interface(addy_car2)->m_last_request.destination);
+    EXPECT_EQ(addy_car5, test.get_interface(addy_car2)->last_request.destination);
     test.dispatch();
     auto found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
     EXPECT_TRUE(!!found);
     EXPECT_EQ(1, found->counter());
 
-    test.get_interface(addy_sender)->m_last_packet = decltype(test.get_interface(addy_sender)->m_last_packet)
-        (new ChunkPacket(*test.get_interface(addy_car2)->m_last_packet));
+    test.get_interface(addy_sender)->last_packet = decltype(test.get_interface(addy_sender)->last_packet)
+        (new ChunkPacket(*test.get_interface(addy_car2)->last_packet));
     test.send(addy_sender, addy_car5);
     found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
     EXPECT_FALSE(!!found);
@@ -179,14 +179,14 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_outsideSe
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car5, test.get_interface(addy_car2)->m_last_request.destination);
+    EXPECT_EQ(addy_car5, test.get_interface(addy_car2)->last_request.destination);
     test.dispatch();
     auto found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
     EXPECT_TRUE(!!found);
     EXPECT_EQ(1, found->counter());
 
-    test.get_interface(addy_sender)->m_last_packet = decltype(test.get_interface(addy_sender)->m_last_packet)
-        (new ChunkPacket(*test.get_interface(addy_car2)->m_last_packet));
+    test.get_interface(addy_sender)->last_packet = decltype(test.get_interface(addy_sender)->last_packet)
+        (new ChunkPacket(*test.get_interface(addy_car2)->last_packet));
     test.send(addy_sender, addy_car5);
     found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
     EXPECT_TRUE(!!found);
@@ -204,32 +204,32 @@ TEST_F(Routing, advanced_forwarding_out_destarea_sender_out_destarea) {
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0, 6.0, -2.0);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->m_last_packet)));
+    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0, 6.0, 8.0);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->m_last_packet)));
+    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0, -2.0, 0.0);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->m_last_packet)));
+    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0, 2.0, 2.0);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->m_last_packet)));
+    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0, 20.0, 0.0);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->m_last_packet)));
+    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
 }
 
 TEST_F(Routing, advanced_forwarding_out_destarea_sender_in_destarea) {
@@ -269,12 +269,12 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_not_reliable) {
     GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 18.0, 6.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    test.get_interface(addy_sender)->m_last_packet.reset();
-    EXPECT_FALSE(!!test.get_interface(addy_sender)->m_last_packet);
+    test.get_interface(addy_sender)->last_packet.reset();
+    EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
     auto confirm = sender->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_TRUE(!!test.get_interface(addy_sender)->m_last_packet);
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_TRUE(!!test.get_interface(addy_sender)->last_packet);
+    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
 
     ASSERT_EQ(0, test.get_counter_indications());
     ASSERT_EQ(1, test.get_counter_requests(addy_sender));
@@ -283,7 +283,7 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_not_reliable) {
 
     EXPECT_EQ(1, test.get_counter_requests(addy_sender));
     EXPECT_EQ(1, test.get_counter_requests(addy_car3));
-    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_car3)->m_last_request.destination);
+    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_car3)->last_request.destination);
 }
 
 TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_reliable) {
@@ -297,12 +297,12 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_reliable) {
     GbcDataRequest gbc_request(test.get_mib());
     gbc_request.destination = circle_dest_area(1.0, 18.0, 6.0);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    test.get_interface(addy_sender)->m_last_packet.reset();
-    EXPECT_FALSE(!!test.get_interface(addy_sender)->m_last_packet);
+    test.get_interface(addy_sender)->last_packet.reset();
+    EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
     auto confirm = sender->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_TRUE(!!test.get_interface(addy_sender)->m_last_packet);
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->m_last_request.destination);
+    EXPECT_TRUE(!!test.get_interface(addy_sender)->last_packet);
+    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
 
     ASSERT_EQ(0, test.get_counter_indications());
     ASSERT_EQ(1, test.get_counter_requests(addy_sender));
@@ -311,5 +311,5 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_reliable) {
 
     EXPECT_EQ(1, test.get_counter_requests(addy_sender));
     EXPECT_EQ(1, test.get_counter_requests(addy_car3));
-    EXPECT_EQ(addy_car4, test.get_interface(addy_car3)->m_last_request.destination);
+    EXPECT_EQ(addy_car4, test.get_interface(addy_car3)->last_request.destination);
 }

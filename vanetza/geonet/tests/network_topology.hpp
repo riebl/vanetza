@@ -27,13 +27,14 @@ public:
     {
     public:
         RequestInterface(NetworkTopology&, const MacAddress&);
-
         void request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>) override;
 
-        dcc::DataRequest m_last_request;
-        std::unique_ptr<ChunkPacket> m_last_packet;
-        NetworkTopology& m_network;
-        const MacAddress& m_address;
+        dcc::DataRequest last_request;
+        std::unique_ptr<ChunkPacket> last_packet;
+
+    private:
+        NetworkTopology& network;
+        const MacAddress& address;
     };
 
     class RouterContext

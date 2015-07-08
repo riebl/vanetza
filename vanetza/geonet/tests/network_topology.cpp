@@ -22,16 +22,16 @@ using namespace vanetza::dcc;
 using namespace vanetza::units::si;
 
 NetworkTopology::RequestInterface::RequestInterface(NetworkTopology& network, const MacAddress& mac) :
-    m_network(network), m_address(mac)
+    network(network), address(mac)
 {
 }
 
 void NetworkTopology::RequestInterface::request(const dcc::DataRequest& req, std::unique_ptr<ChunkPacket> packet)
 {
-    m_last_request = req;
-    m_last_packet.reset(new ChunkPacket(*packet));
-    m_last_request.source = m_address;
-    m_network.save_request(m_last_request, std::move(packet));
+    last_request = req;
+    last_packet.reset(new ChunkPacket(*packet));
+    last_request.source = address;
+    network.save_request(last_request, std::move(packet));
 }
 
 NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
@@ -108,7 +108,7 @@ void NetworkTopology::dispatch()
     for (auto& tuple: current_requests) {
         // extract request and packet from tuple
         auto req = std::get<0>(tuple);
-        get_interface(req.source)->m_last_packet.reset(new ChunkPacket(*std::get<1>(tuple)));
+        get_interface(req.source)->last_packet.reset(new ChunkPacket(*std::get<1>(tuple)));
 
         // broadcast packet to all reachable routers
         if(req.destination == cBroadcastMacAddress) {
@@ -131,7 +131,7 @@ void NetworkTopology::dispatch()
 void NetworkTopology::send(const MacAddress& sender, const MacAddress& destination)
 {
     counter_indications++;
-    std::unique_ptr<UpPacket> packet_up { new UpPacket(*get_interface(sender)->m_last_packet) };
+    std::unique_ptr<UpPacket> packet_up { new UpPacket(*get_interface(sender)->last_packet) };
     auto router = get_router(destination);
     if (router) router->indicate(std::move(packet_up), sender, destination);
 }
