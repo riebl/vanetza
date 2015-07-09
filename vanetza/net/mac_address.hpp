@@ -16,7 +16,7 @@ struct sockaddr_ll;
 namespace vanetza
 {
 
-class MacAddress : public boost::equality_comparable<MacAddress>
+class MacAddress : public boost::totally_ordered<MacAddress>
 {
 public:
     static const std::size_t length_bytes = 6;
@@ -29,6 +29,7 @@ public:
 
 extern const MacAddress cBroadcastMacAddress;
 bool operator==(const MacAddress& lhs, const MacAddress& rhs);
+bool operator<(const MacAddress& lhs, const MacAddress& rhs);
 std::ostream& operator<<(std::ostream& os, const MacAddress&);
 
 /**

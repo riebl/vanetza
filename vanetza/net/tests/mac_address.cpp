@@ -33,6 +33,20 @@ TEST(MacAddress, equality) {
     EXPECT_EQ(c, d);
 }
 
+TEST(MacAddress, less) {
+    MacAddress a = { 1, 2, 3, 4, 5, 6};
+    MacAddress b = { 1, 2, 4, 4, 5, 6};
+    MacAddress c = { 250, 0, 0, 0, 0, 0};
+    MacAddress d = { 0, 2, 3, 4, 5, 6};
+    MacAddress e = { 1, 2, 3, 4, 5, 5};
+    EXPECT_LT(a, b);
+    EXPECT_LT(a, b);
+    EXPECT_LT(d, e);
+    EXPECT_LT(e, a);
+    EXPECT_LT(c, d);
+    EXPECT_GT(b, a);
+}
+
 TEST(MacAddress, ostream) {
     MacAddress mac = { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06 };
     std::stringstream sout;
