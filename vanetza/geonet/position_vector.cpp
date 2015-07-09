@@ -7,6 +7,10 @@ namespace vanetza
 namespace geonet
 {
 
+LongPositionVector::LongPositionVector() : position_accuracy_indicator(false)
+{
+}
+
 GeodeticPosition LongPositionVector::position() const
 {
     return GeodeticPosition {

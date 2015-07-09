@@ -34,6 +34,7 @@ public:
     speed_u15t speed;
     heading_u16t heading;
 
+    LongPositionVector();
     GeodeticPosition position() const;
 };
 
