@@ -83,6 +83,7 @@ public:
     void set_time(Timestamp init);
     void set_address(const Address&);
     const CbfPacketBuffer& get_cbf_buffer() const { return m_cbf_buffer; }
+    const LongPositionVector& get_local_position_vector() const { return m_local_position_vector; }
     bool outside_sectorial_contention_area(const MacAddress& sender, const MacAddress& forwarder) const;
 
     /**
