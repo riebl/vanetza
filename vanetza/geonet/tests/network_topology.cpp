@@ -113,19 +113,15 @@ void NetworkTopology::dispatch()
         auto req = std::get<0>(tuple);
         get_interface(req.source)->last_packet.reset(new ChunkPacket(*std::get<1>(tuple)));
 
+        auto neighbours = reachability[req.source];
         // broadcast packet to all reachable routers
-        if(req.destination == cBroadcastMacAddress) {
-            // extract list with reachable MacAddresses
-            auto recipients = reachability[req.source];
-            // iterate through list of reachable MacAddresses
-            for(auto& mac_addy: recipients) {
-                // find mapped router and indicate
+        if (req.destination == cBroadcastMacAddress) {
+            for (auto& mac_addy: neighbours) {
                 send(req.source, mac_addy);
             }
         }
-        // send packet only to router according to req.destination
-        else {
-            // find mapped router and indicate
+        // send packet only to specific destination router
+        else if (neighbours.find(req.destination) != neighbours.end()) {
             send(req.source, req.destination);
         }
     }
