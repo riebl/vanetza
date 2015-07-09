@@ -31,12 +31,12 @@ protected:
         test.add_router(addy_car5);
 
         // add reachability for all routers
-        test.add_reachability(addy_sender, std::list<MacAddress> {addy_car1, addy_car2, addy_car3, addy_car5});
-        test.add_reachability(addy_car1, std::list<MacAddress> {addy_sender, addy_car2});
-        test.add_reachability(addy_car2, std::list<MacAddress> {addy_sender, addy_car1, addy_car3, addy_car5});
-        test.add_reachability(addy_car3, std::list<MacAddress> {addy_sender, addy_car2, addy_car4});
-        test.add_reachability(addy_car4, std::list<MacAddress> {addy_car3});
-        test.add_reachability(addy_car5, std::list<MacAddress> {addy_car2, addy_sender});
+        test.add_reachability(addy_sender, {addy_car1, addy_car2, addy_car3, addy_car5});
+        test.add_reachability(addy_car1, {addy_sender, addy_car2});
+        test.add_reachability(addy_car2, {addy_sender, addy_car1, addy_car3, addy_car5});
+        test.add_reachability(addy_car3, {addy_sender, addy_car2, addy_car4});
+        test.add_reachability(addy_car4, {addy_car3});
+        test.add_reachability(addy_car5, {addy_car2, addy_sender});
 
         // positioning of cars
         test.set_position(addy_sender, CartesianPosition(0.0 * meter, 0.0 * meter));

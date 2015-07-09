@@ -85,10 +85,13 @@ void NetworkTopology::add_router(const MacAddress& addr)
     hosts.emplace(addr, std::move(context));
 }
 
-void NetworkTopology::add_reachability(const MacAddress& addr, std::list<MacAddress> reachables)
+void NetworkTopology::add_reachability(const MacAddress& addr, std::initializer_list<MacAddress> new_reachables)
 {
-    // save reachable routers (MacAddresses) in map reachability
-    reachability.emplace(addr, reachables);
+    // save reachable routers in reachability map
+    std::set<MacAddress>& reachables = reachability[addr];
+    for (const MacAddress& new_reachable : new_reachables) {
+        reachables.insert(new_reachable);
+    }
 }
 
 void NetworkTopology::save_request(const dcc::DataRequest& req, std::unique_ptr<ChunkPacket> packet)

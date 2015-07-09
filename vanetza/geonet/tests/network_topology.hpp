@@ -7,7 +7,9 @@
 #include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/net/mac_address.hpp>
 #include <boost/optional.hpp>
+#include <initializer_list>
 #include <list>
+#include <set>
 #include <unordered_map>
 
 namespace vanetza
@@ -49,7 +51,7 @@ public:
     const unsigned& get_counter_indications() const { return counter_indications; }
     const ManagementInformationBase& get_mib() const { return mib; }
     void add_router(const MacAddress&);
-    void add_reachability(const MacAddress&, std::list<MacAddress>);
+    void add_reachability(const MacAddress&, std::initializer_list<MacAddress>);
     void save_request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>);
     void dispatch();
     void send(const MacAddress&, const MacAddress&);
@@ -60,7 +62,7 @@ public:
 private:
     std::unordered_map<MacAddress, unsigned> counter_requests;
     std::unordered_map<MacAddress, std::unique_ptr<RouterContext>> hosts;
-    std::unordered_map<MacAddress, std::list<MacAddress> > reachability;
+    std::unordered_map<MacAddress, std::set<MacAddress>> reachability;
     std::list<std::tuple<dcc::DataRequest, std::unique_ptr<ChunkPacket>>> requests;
     Timestamp now;
     ManagementInformationBase mib;
