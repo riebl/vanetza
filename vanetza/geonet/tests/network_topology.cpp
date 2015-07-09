@@ -16,10 +16,10 @@
 #include <list>
 #include <unordered_map>
 
-using namespace vanetza;
-using namespace vanetza::geonet;
-using namespace vanetza::dcc;
-using namespace vanetza::units::si;
+namespace vanetza
+{
+namespace geonet
+{
 
 NetworkTopology::RequestInterface::RequestInterface(NetworkTopology& network, const MacAddress& mac) :
     network(network), address(mac)
@@ -177,6 +177,9 @@ void NetworkTopology::reset_counters()
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)
 {
+    using namespace vanetza::units;
+    using namespace vanetza::units::si;
+
     const GeographicLib::Geocentric& earth = GeographicLib::Geocentric::WGS84();
     double lat = 0.0, lon = 0.0, unused_h = 0.0;
     GeographicLib::LocalCartesian proj(lat, lon, unused_h, earth);
@@ -185,18 +188,24 @@ GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)
     double unused_z = 0.0;
     proj.Reverse(x, y, unused_z, lat, lon, unused_h);
 
-    return GeodeticPosition(lat * vanetza::units::degree, lon * vanetza::units::degree);
+    return GeodeticPosition(lat * degree, lon * degree);
 }
 
 Area circle_dest_area(double radius, double midpoint_x, double midpoint_y)
 {
+    using namespace vanetza::units;
+    using namespace vanetza::units::si;
+
     // create a round dest-area with delivered radius and midpoint
     Area dest_area;
     Circle c;
     c.r = radius * meter;
     dest_area.shape = c;
-    dest_area.angle = vanetza::units::Angle(0.0 * vanetza::units::degree);
+    dest_area.angle = Angle(0.0 * degree);
     dest_area.position = convert_cartesian_geodetic(CartesianPosition(midpoint_x * meter, midpoint_y * meter));
 
     return dest_area;
 }
+
+} // namespace geonet
+} // namespace vanetza

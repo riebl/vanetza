@@ -15,10 +15,10 @@
 #include <list>
 #include <unordered_map>
 
-using namespace vanetza;
-using namespace vanetza::geonet;
-using namespace vanetza::dcc;
-using namespace vanetza::units::si;
+namespace vanetza
+{
+namespace geonet
+{
 
 class NetworkTopology
 {
@@ -74,3 +74,6 @@ private:
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition&);
 Area circle_dest_area(double radius, double midpoint_x, double midpoint_y);
+
+} // namespace geonet
+} // namespace vanetza
