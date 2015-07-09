@@ -8,7 +8,12 @@
 
 using namespace vanetza;
 using namespace vanetza::geonet;
-using namespace vanetza::units::si;
+
+// user literal for convenient length definition
+vanetza::units::Length operator"" _m(long double length)
+{
+    return vanetza::units::Length(length * vanetza::units::si::meters);
+}
 
 class Routing: public ::testing::Test {
 protected:
@@ -39,12 +44,12 @@ protected:
         test.add_reachability(addy_car5, {addy_car2, addy_sender});
 
         // positioning of cars
-        test.set_position(addy_sender, CartesianPosition(0.0 * meter, 0.0 * meter));
-        test.set_position(addy_car1, CartesianPosition(2.0 * meter, 0.0 * meter));
-        test.set_position(addy_car2, CartesianPosition(6.0 * meter, 0.0 * meter));
-        test.set_position(addy_car3, CartesianPosition(6.0 * meter, 6.0 * meter));
-        test.set_position(addy_car4, CartesianPosition(20.0 * meter, 6.0 * meter));
-        test.set_position(addy_car5, CartesianPosition(2.0 * meter, -1.0 * meter));
+        test.set_position(addy_sender, CartesianPosition(0.0_m, 0.0_m));
+        test.set_position(addy_car1, CartesianPosition(2.0_m, 0.0_m));
+        test.set_position(addy_car2, CartesianPosition(6.0_m, 0.0_m));
+        test.set_position(addy_car3, CartesianPosition(6.0_m, 6.0_m));
+        test.set_position(addy_car4, CartesianPosition(20.0_m, 6.0_m));
+        test.set_position(addy_car5, CartesianPosition(2.0_m, -1.0_m));
 
         // create Packet
         packet_down = std::unique_ptr<DownPacket>{ new DownPacket() };
@@ -73,18 +78,18 @@ TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsDest) {
  * LL address of GeoAdhoc Router is LL destination address (Dest_LL_ADDR=L_LL_ADDR true)
  * --> greedy forwarding */
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 2.0, 0.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
 
-    gbc_request.destination = circle_dest_area(1.0, 6.0, 0.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, 0.0_m);
     confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
 
-    gbc_request.destination = circle_dest_area(1.0, 6.0, 6.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, 6.0_m);
     confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
@@ -97,7 +102,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsNotDest) {
  * LL address of GeoAdhoc Router is not LL destination address (Dest_LL_ADDR=L_LL_ADDR false)
  * --> contention based forwarding */
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(10.0, 0.0, 0.0);
+    gbc_request.destination = circle_dest_area(10.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     test.get_interface(addy_sender)->last_packet.reset();
     EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
@@ -118,7 +123,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_maxCounter) {
     const int maxCounter = 3;
 
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 2.0, 0.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
@@ -148,7 +153,7 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_inSectori
     EXPECT_FALSE(test.get_router(addy_car5)->outside_sectorial_contention_area(addy_sender, addy_car2));
 
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 2.0, -1.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, -1.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
@@ -172,12 +177,12 @@ TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_outsideSe
  * Counter >= max.Counter is false
  * GeoAdhocRouter is outside sectorial area (INOUT2>=0 true)
  * --> packet is buffered (counter++, start timer (TO_CBF_GBC), return 0) */
-    test.set_position(addy_car5, CartesianPosition(20.0 * meter, -1.0 * meter));
+    test.set_position(addy_car5, CartesianPosition(20.0_m, -1.0_m));
     test.advance_time(5000 * Timestamp::millisecond);
     EXPECT_TRUE(test.get_router(addy_car5)->outside_sectorial_contention_area(addy_sender, addy_car2));
 
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 20.0, -1.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 20.0_m, -1.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
@@ -202,33 +207,33 @@ TEST_F(Routing, advanced_forwarding_out_destarea_sender_out_destarea) {
  * sender outside target area (INOUT3<0)
  * --> greedy forwarding */
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 2.0, 2.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 2.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
 
-    gbc_request.destination = circle_dest_area(1.0, 6.0, -2.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, -2.0_m);
     confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
 
-    gbc_request.destination = circle_dest_area(1.0, 6.0, 8.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, 8.0_m);
     confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
 
-    gbc_request.destination = circle_dest_area(1.0, -2.0, 0.0);
+    gbc_request.destination = circle_dest_area(1.0_m, -2.0_m, 0.0_m);
     confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->last_request.destination);
 
-    gbc_request.destination = circle_dest_area(1.0, 2.0, 2.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 2.0_m);
     confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
 
-    gbc_request.destination = circle_dest_area(1.0, 20.0, 0.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 20.0_m, 0.0_m);
     confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
@@ -241,7 +246,7 @@ TEST_F(Routing, advanced_forwarding_out_destarea_sender_in_destarea) {
  * sender inside target area (INOUT3<0)
  * --> discard packet, return -1 */
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 0.0, 0.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
     ASSERT_TRUE(confirm.accepted());
@@ -269,7 +274,7 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_not_reliable) {
     test.reset_counters();
 
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 18.0, 6.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 18.0_m, 6.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     test.get_interface(addy_sender)->last_packet.reset();
     EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
@@ -297,7 +302,7 @@ TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_reliable) {
     test.reset_counters();
 
     GbcDataRequest gbc_request(test.get_mib());
-    gbc_request.destination = circle_dest_area(1.0, 18.0, 6.0);
+    gbc_request.destination = circle_dest_area(1.0_m, 18.0_m, 6.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     test.get_interface(addy_sender)->last_packet.reset();
     EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);

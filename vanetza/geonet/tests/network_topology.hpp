@@ -6,6 +6,7 @@
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/net/mac_address.hpp>
+#include <vanetza/units/length.hpp>
 #include <boost/optional.hpp>
 #include <initializer_list>
 #include <list>
@@ -70,7 +71,7 @@ private:
 };
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition&);
-Area circle_dest_area(double radius, double midpoint_x, double midpoint_y);
+Area circle_dest_area(units::Length radius, units::Length midpoint_x, units::Length midpoint_y);
 
 } // namespace geonet
 } // namespace vanetza

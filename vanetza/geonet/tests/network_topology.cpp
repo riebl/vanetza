@@ -190,18 +190,16 @@ GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)
     return GeodeticPosition(lat * degree, lon * degree);
 }
 
-Area circle_dest_area(double radius, double midpoint_x, double midpoint_y)
+Area circle_dest_area(units::Length radius, units::Length midpoint_x, units::Length midpoint_y)
 {
     using namespace vanetza::units;
     using namespace vanetza::units::si;
 
-    // create a round dest-area with delivered radius and midpoint
     Area dest_area;
     Circle c;
-    c.r = radius * meter;
+    c.r = radius;
     dest_area.shape = c;
-    dest_area.angle = Angle(0.0 * degree);
-    dest_area.position = convert_cartesian_geodetic(CartesianPosition(midpoint_x * meter, midpoint_y * meter));
+    dest_area.position = convert_cartesian_geodetic(CartesianPosition(midpoint_x, midpoint_y));
 
     return dest_area;
 }
