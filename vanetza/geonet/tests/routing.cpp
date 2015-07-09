@@ -1,3 +1,5 @@
+#include <vanetza/geonet/data_confirm.hpp>
+#include <vanetza/geonet/data_request.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/tests/network_topology.hpp>
 #include <vanetza/net/mac_address.hpp>

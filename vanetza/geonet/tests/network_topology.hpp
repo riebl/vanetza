@@ -1,17 +1,12 @@
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/geonet/areas.hpp>
-#include <vanetza/geonet/data_confirm.hpp>
-#include <vanetza/geonet/data_indication.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/net/mac_address.hpp>
 #include <boost/optional.hpp>
-#include <GeographicLib/Geocentric.hpp>
-#include <GeographicLib/Geodesic.hpp>
-#include <GeographicLib/LocalCartesian.hpp>
 #include <list>
 #include <unordered_map>
 
