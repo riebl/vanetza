@@ -15,308 +15,330 @@ vanetza::units::Length operator"" _m(long double length)
     return vanetza::units::Length(length * vanetza::units::si::meters);
 }
 
-class Routing: public ::testing::Test {
+class Routing : public ::testing::Test
+{
 protected:
-    Routing() {}
-
-    virtual void SetUp() {
-        addy_car1 = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
-        addy_car2 = {0x02, 0x02, 0x03, 0x04, 0x05, 0x06};
-        addy_car3 = {0x03, 0x02, 0x03, 0x04, 0x05, 0x06};
-        addy_car4 = {0x04, 0x02, 0x03, 0x04, 0x05, 0x06};
-        addy_car5 = {0x05, 0x02, 0x03, 0x04, 0x05, 0x06};
-        addy_sender = {0x00, 0x02, 0x03, 0x04, 0x05, 0x06};
+    virtual void SetUp() override
+    {
+        cars[0] = {0x00, 0x02, 0x03, 0x04, 0x05, 0x06};
+        cars[1] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
+        cars[2] = {0x02, 0x02, 0x03, 0x04, 0x05, 0x06};
+        cars[3] = {0x03, 0x02, 0x03, 0x04, 0x05, 0x06};
+        cars[4] = {0x04, 0x02, 0x03, 0x04, 0x05, 0x06};
+        cars[5] = {0x05, 0x02, 0x03, 0x04, 0x05, 0x06};
 
         // add all routers
-        test.add_router(addy_sender);
-        test.add_router(addy_car1);
-        test.add_router(addy_car2);
-        test.add_router(addy_car3);
-        test.add_router(addy_car4);
-        test.add_router(addy_car5);
+        for (auto& car : cars) {
+            net.add_router(car.second);
+        }
 
         // add reachability for all routers
-        test.add_reachability(addy_sender, {addy_car1, addy_car2, addy_car3, addy_car5});
-        test.add_reachability(addy_car1, {addy_sender, addy_car2});
-        test.add_reachability(addy_car2, {addy_sender, addy_car1, addy_car3, addy_car5});
-        test.add_reachability(addy_car3, {addy_sender, addy_car2, addy_car4});
-        test.add_reachability(addy_car4, {addy_car3});
-        test.add_reachability(addy_car5, {addy_car2, addy_sender});
+        net.add_reachability(cars[0], {cars[1], cars[2], cars[3], cars[5]});
+        net.add_reachability(cars[1], {cars[0], cars[2]});
+        net.add_reachability(cars[2], {cars[0], cars[1], cars[3], cars[5]});
+        net.add_reachability(cars[3], {cars[0], cars[2], cars[4]});
+        net.add_reachability(cars[4], {cars[3]});
+        net.add_reachability(cars[5], {cars[2], cars[0]});
 
         // positioning of cars
-        test.set_position(addy_sender, CartesianPosition(0.0_m, 0.0_m));
-        test.set_position(addy_car1, CartesianPosition(2.0_m, 0.0_m));
-        test.set_position(addy_car2, CartesianPosition(6.0_m, 0.0_m));
-        test.set_position(addy_car3, CartesianPosition(6.0_m, 6.0_m));
-        test.set_position(addy_car4, CartesianPosition(20.0_m, 6.0_m));
-        test.set_position(addy_car5, CartesianPosition(2.0_m, -1.0_m));
-
-        // create Packet
-        packet_down = std::unique_ptr<DownPacket>{ new DownPacket() };
-        packet_down->layer(OsiLayer::Transport) = ByteBuffer(send_payload);
+        net.set_position(cars[0], CartesianPosition(0.0_m, 0.0_m));
+        net.set_position(cars[1], CartesianPosition(2.0_m, 0.0_m));
+        net.set_position(cars[2], CartesianPosition(6.0_m, 0.0_m));
+        net.set_position(cars[3], CartesianPosition(6.0_m, 6.0_m));
+        net.set_position(cars[4], CartesianPosition(20.0_m, 6.0_m));
+        net.set_position(cars[5], CartesianPosition(2.0_m, -1.0_m));
 
         // advance time 5 seconds
-        test.advance_time(5000 * Timestamp::millisecond);
-        test.reset_counters();
+        net.advance_time(5000 * Timestamp::millisecond);
+        net.reset_counters();
     }
 
-    MacAddress addy_car1;
-    MacAddress addy_car2;
-    MacAddress addy_car3;
-    MacAddress addy_car4;
-    MacAddress addy_car5;
-    MacAddress addy_sender;
-    std::unique_ptr<DownPacket> packet_down;
-    const ByteBuffer send_payload { 47, 11, 1, 4, 42, 85 };
-    NetworkTopology test;
+    std::unique_ptr<DownPacket> create_packet(ByteBuffer&& payload = {47, 11, 1, 4, 42, 85})
+    {
+        std::unique_ptr<DownPacket> packet { new DownPacket() };
+        packet->layer(OsiLayer::Transport) = ByteBuffer(std::move(payload));
+        return packet;
+    }
+
+    std::unordered_map<int, MacAddress> cars;
+    NetworkTopology net;
 };
 
-TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsDest) {
-/* Test-Scenario
- * GeoAdhocRouter inside target area (INOUT1>=0 true)
- * Packet not yet in CBF packet buffer (P in B false)
- * LL address of GeoAdhoc Router is LL destination address (Dest_LL_ADDR=L_LL_ADDR true)
- * --> greedy forwarding */
-    GbcDataRequest gbc_request(test.get_mib());
+/*
+ * Preconditions:
+ * - GeoAdhocRouter inside target area (INOUT1 >= 0)
+ * - Packet not yet in CBF packet buffer (P not in B)
+ * - LL address of GeoAdhoc Router is LL destination address (Dest_LL_ADDR == L_LL_ADDR)
+ * Expectation: greedy forwarding
+ */
+TEST_F(Routing, advanced_forwarding__in_destarea__unbuffered__receiver_is_destination)
+{
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
+    auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[1], net.get_interface(cars[0])->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, 0.0_m);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
+    confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[2], net.get_interface(cars[0])->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, 6.0_m);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
+    confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[3], net.get_interface(cars[0])->last_request.destination);
 }
 
-TEST_F(Routing, advanced_forwarding_in_destarea_unbuffered_lladdrIsNotDest) {
-/* Test-Scenario
- * GeoAdhocRouter inside target area (INOUT1>=0 true)
- * Packet not yet in CBF packet buffer (P in B false)
- * LL address of GeoAdhoc Router is not LL destination address (Dest_LL_ADDR=L_LL_ADDR false)
- * --> contention based forwarding */
-    GbcDataRequest gbc_request(test.get_mib());
+/*
+ * Preconditions:
+ * - GeoAdhocRouter inside target area (INOUT1 >= 0)
+ * - Packet not yet in CBF packet buffer (P not in B)
+ * - LL address of GeoAdhoc Router is not LL destination address (Dest_LL_ADDR != L_LL_ADDR)
+ * Expectation: contention based forwarding
+ */
+TEST_F(Routing, advanced_forwarding__in_destarea__unbuffered__receiver_is_not_destination)
+{
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(10.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    test.get_interface(addy_sender)->last_packet.reset();
-    EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
-    auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
+    net.get_interface(cars[0])->last_packet.reset();
+    EXPECT_FALSE(!!net.get_interface(cars[0])->last_packet);
+    auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
 
-    test.advance_time(100 * Timestamp::millisecond);
-    EXPECT_TRUE(!!test.get_interface(addy_sender)->last_packet);
-    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->last_request.destination);
+    net.advance_time(100 * Timestamp::millisecond);
+    EXPECT_TRUE(!!net.get_interface(cars[0])->last_packet);
+    EXPECT_EQ(cBroadcastMacAddress, net.get_interface(cars[0])->last_request.destination);
 }
 
-TEST_F(Routing, advanced_forwarding_in_destarea_buffered_maxCounter) {
-/* Test-Scenario
- * GeoAdhocRouter inside target area (INOUT1>=0 true)
- * Packet in CBF packet buffer (P in B true)
- * Counter >= max.Counter is true
- * --> remove packet from buffer, stop timer, discard packet, return -1 */
+/*
+ * Preconditions:
+ * - GeoAdhocRouter inside target area (INOUT1 >= 0)
+ * - Packet in CBF packet buffer (P in B)
+ * - Counter >= Max_Counter
+ * Expectation: remove packet from buffer, stop timer, discard packet
+ */
+TEST_F(Routing, advanced_forwarding__in_destarea__buffered__max_counter_exceeded)
+{
     const int maxCounter = 3;
 
-    GbcDataRequest gbc_request(test.get_mib());
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
+    auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
-    test.dispatch();
-    auto found = test.get_router(addy_car1)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
+    EXPECT_EQ(cars[1], net.get_interface(cars[0])->last_request.destination);
+    net.dispatch();
+    auto found = net.get_router(cars[1])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
     EXPECT_TRUE(!!found);
     EXPECT_EQ(1, found->counter());
 
     for (int i = 0; i < maxCounter - 1; i++) {
-        test.send(addy_sender, addy_car1);
-        EXPECT_EQ(i+2, found->counter());
+        net.send(cars[0], cars[1]);
+        EXPECT_EQ(i + 2, found->counter());
     }
 
-    test.send(addy_sender, addy_car1);
-    found = test.get_router(addy_car1)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
+    net.send(cars[0], cars[1]);
+    found = net.get_router(cars[1])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
     EXPECT_FALSE(!!found);
 }
 
-TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_inSectorial) {
-/* Test-Scenario
- * GeoAdhocRouter inside target area (INOUT1>=0 true)
- * Packet in CBF packet buffer (P in B true)
- * Counter >= max.Counter is false
- * GeoAdhocRouter is inside sectorial area (INOUT2>=0 true)
- * --> remove packet from buffer, stop timer, discard packet, return -1 */
-    EXPECT_FALSE(test.get_router(addy_car5)->outside_sectorial_contention_area(addy_sender, addy_car2));
+/*
+ * Preconditions:
+ * - GeoAdhocRouter inside target area (INOUT1 >= 0)
+ * - Packet in CBF packet buffer (P in B)
+ * - Counter < Max_Counter
+ * - GeoAdhocRouter is inside sectorial area (INOUT2 >= 0)
+ * Expectation: remove packet from buffer, stop timer, discard packet
+ */
+TEST_F(Routing, advanced_forwarding__in_destarea__buffered__max_counter_below__in_sectorial)
+{
+    EXPECT_FALSE(net.get_router(cars[5])->outside_sectorial_contention_area(cars[0], cars[2]));
 
-    GbcDataRequest gbc_request(test.get_mib());
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, -1.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
+    auto confirm = net.get_router(cars[2])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car5, test.get_interface(addy_car2)->last_request.destination);
-    test.dispatch();
-    auto found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
+    EXPECT_EQ(cars[5], net.get_interface(cars[2])->last_request.destination);
+    net.dispatch();
+    auto found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
     EXPECT_TRUE(!!found);
     EXPECT_EQ(1, found->counter());
 
-    test.get_interface(addy_sender)->last_packet = decltype(test.get_interface(addy_sender)->last_packet)
-        (new ChunkPacket(*test.get_interface(addy_car2)->last_packet));
-    test.send(addy_sender, addy_car5);
-    found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
+    net.get_interface(cars[0])->last_packet.reset(new ChunkPacket(*net.get_interface(cars[2])->last_packet));
+    net.send(cars[0], cars[5]);
+    found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
     EXPECT_FALSE(!!found);
 }
 
-TEST_F(Routing, advanced_forwarding_in_destarea_buffered_notMaxCounter_outsideSectorial) {
-/* Test-Scenario
- * GeoAdhocRouter inside target area (INOUT1>=0 true)
- * Packet in CBF packet buffer (P in B true)
- * Counter >= max.Counter is false
- * GeoAdhocRouter is outside sectorial area (INOUT2>=0 true)
- * --> packet is buffered (counter++, start timer (TO_CBF_GBC), return 0) */
-    test.set_position(addy_car5, CartesianPosition(20.0_m, -1.0_m));
-    test.advance_time(5000 * Timestamp::millisecond);
-    EXPECT_TRUE(test.get_router(addy_car5)->outside_sectorial_contention_area(addy_sender, addy_car2));
+/*
+ * Preconditions:
+ * - GeoAdhocRouter inside target area (INOUT1 >= 0)
+ * - Packet in CBF packet buffer (P in B)
+ * - Counter < Max_Counter
+ * - GeoAdhocRouter is outside sectorial area (INOUT2 >= 0)
+ * Expectation: packet is buffered (counter++, start timer with timeout TO_CBF_GBC)
+ */
+TEST_F(Routing, advanced_forwarding__in_destarea__buffered__max_counter_below__out_sectorial)
+{
+    net.set_position(cars[5], CartesianPosition(20.0_m, -1.0_m));
+    net.advance_time(5000 * Timestamp::millisecond);
+    EXPECT_TRUE(net.get_router(cars[5])->outside_sectorial_contention_area(cars[0], cars[2]));
 
-    GbcDataRequest gbc_request(test.get_mib());
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 20.0_m, -1.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    auto confirm = test.get_router(addy_car2)->request(gbc_request, std::move(packet_down));
+    auto confirm = net.get_router(cars[2])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car5, test.get_interface(addy_car2)->last_request.destination);
-    test.dispatch();
-    auto found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
+    EXPECT_EQ(cars[5], net.get_interface(cars[2])->last_request.destination);
+    net.dispatch();
+    auto found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
     EXPECT_TRUE(!!found);
     EXPECT_EQ(1, found->counter());
 
-    test.get_interface(addy_sender)->last_packet = decltype(test.get_interface(addy_sender)->last_packet)
-        (new ChunkPacket(*test.get_interface(addy_car2)->last_packet));
-    test.send(addy_sender, addy_car5);
-    found = test.get_router(addy_car5)->get_cbf_buffer().find(addy_car2, SequenceNumber(0));
+    net.get_interface(cars[0])->last_packet.reset(new ChunkPacket(*net.get_interface(cars[2])->last_packet));
+    net.send(cars[0], cars[5]);
+    found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
     EXPECT_TRUE(!!found);
     EXPECT_EQ(2, found->counter());
 }
 
-TEST_F(Routing, advanced_forwarding_out_destarea_sender_out_destarea) {
-/* Test-Scenario
- * GeoAdhocRouter outside target area (INOUT1>=0 false)
- * sender position is realiable (PV_SE_exists, PAI_SE true)
- * sender outside target area (INOUT3<0)
- * --> greedy forwarding */
-    GbcDataRequest gbc_request(test.get_mib());
+/*
+ * Preconditions:
+ * - GeoAdhocRouter outside target area (INOUT1 < 0)
+ * - sender position is reliable (PV_SE exists, PAI_SE is true)
+ * - sender outside target area (INOUT3 < 0)
+ * Expectation: greedy forwarding
+ */
+TEST_F(Routing, advanced_forwarding__out_destarea__sender_out_destarea)
+{
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 2.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
+    auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[1], net.get_interface(cars[0])->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, -2.0_m);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
+    confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[2], net.get_interface(cars[0])->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0_m, 6.0_m, 8.0_m);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
+    confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[3], net.get_interface(cars[0])->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0_m, -2.0_m, 0.0_m);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
+    confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cBroadcastMacAddress, net.get_interface(cars[0])->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 2.0_m);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
+    confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car1, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[1], net.get_interface(cars[0])->last_request.destination);
 
     gbc_request.destination = circle_dest_area(1.0_m, 20.0_m, 0.0_m);
-    confirm = test.get_router(addy_sender)->request(gbc_request,std::move(duplicate(*(test.get_interface(addy_sender))->last_packet)));
+    confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_EQ(addy_car2, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_EQ(cars[2], net.get_interface(cars[0])->last_request.destination);
 }
 
-TEST_F(Routing, advanced_forwarding_out_destarea_sender_in_destarea) {
-/* Test-Scenario
- * GeoAdhocRouter outside target area (INOUT1>=0 false)
- * sender position is realiable (PV_SE_exists, PAI_SE true)
- * sender inside target area (INOUT3<0)
- * --> discard packet, return -1 */
-    GbcDataRequest gbc_request(test.get_mib());
+/*
+ * Preconditions:
+ * - GeoAdhocRouter outside target area (INOUT1 < 0)
+ * - sender position is reliable (PV_SE exists, PAI_SE is true)
+ * - sender inside target area (INOUT3 < 0)
+ * Expectation: discard packet
+ */
+TEST_F(Routing, advanced_forwarding__out_destarea__sender_in_destarea)
+{
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    auto confirm = test.get_router(addy_sender)->request(gbc_request, std::move(packet_down));
+    auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    test.dispatch();
+    net.dispatch();
 
-    EXPECT_TRUE(test.get_counter_indications() != 0);
-    auto found = test.get_router(addy_car1)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
+    EXPECT_TRUE(net.get_counter_indications() != 0);
+    auto found = net.get_router(cars[1])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
     EXPECT_FALSE(!!found);
-    found = test.get_router(addy_car2)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
+    found = net.get_router(cars[2])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
     EXPECT_FALSE(!!found);
-    found = test.get_router(addy_car3)->get_cbf_buffer().find(addy_sender, SequenceNumber(0));
+    found = net.get_router(cars[3])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
     EXPECT_FALSE(!!found);
 }
 
-TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_not_reliable) {
-/* Test-Scenario
- * GeoAdhocRouter outside target area (INOUT1>=0 false)
- * sender position is not realiable (PV_SE_exists, PAI_SE false)
- * --> next hop = broadcast */
-    auto sender = test.get_router(addy_sender);
+/*
+ * Preconditions:
+ * - GeoAdhocRouter outside target area (INOUT1 >= 0)
+ * - sender position is not reliable (PV_SE exists, PAI_SE is false)
+ * Expectation: next hop is broadcast
+ */
+TEST_F(Routing, advanced_forwarding__out_destarea__senderpos_unreliable)
+{
+    auto sender = net.get_router(cars[0]);
     LongPositionVector lpv = sender->get_local_position_vector();
     lpv.position_accuracy_indicator = false;
     sender->update(lpv);
-    test.advance_time(1000 * Timestamp::millisecond);
-    test.reset_counters();
+    net.advance_time(1000 * Timestamp::millisecond);
+    net.reset_counters();
 
-    GbcDataRequest gbc_request(test.get_mib());
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 18.0_m, 6.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    test.get_interface(addy_sender)->last_packet.reset();
-    EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
-    auto confirm = sender->request(gbc_request, std::move(packet_down));
+    net.get_interface(cars[0])->last_packet.reset();
+    EXPECT_FALSE(!!net.get_interface(cars[0])->last_packet);
+    auto confirm = sender->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_TRUE(!!test.get_interface(addy_sender)->last_packet);
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_TRUE(!!net.get_interface(cars[0])->last_packet);
+    EXPECT_EQ(cars[3], net.get_interface(cars[0])->last_request.destination);
 
-    ASSERT_EQ(0, test.get_counter_indications());
-    ASSERT_EQ(1, test.get_counter_requests(addy_sender));
-    test.dispatch();
-    ASSERT_EQ(1, test.get_counter_indications());
+    ASSERT_EQ(0, net.get_counter_indications());
+    ASSERT_EQ(1, net.get_counter_requests(cars[0]));
+    net.dispatch();
+    ASSERT_EQ(1, net.get_counter_indications());
 
-    EXPECT_EQ(1, test.get_counter_requests(addy_sender));
-    EXPECT_EQ(1, test.get_counter_requests(addy_car3));
-    EXPECT_EQ(cBroadcastMacAddress, test.get_interface(addy_car3)->last_request.destination);
+    EXPECT_EQ(1, net.get_counter_requests(cars[0]));
+    EXPECT_EQ(1, net.get_counter_requests(cars[3]));
+    EXPECT_EQ(cBroadcastMacAddress, net.get_interface(cars[3])->last_request.destination);
 }
 
-TEST_F(Routing, advanced_forwarding_out_destarea_senderpos_reliable) {
-    auto sender = test.get_router(addy_sender);
+/*
+ * Preconditions:
+ * - GeoAdhocRouter outside target area (INOUT1 >= 0)
+ * - sender position is reliable (PV_SE exists, PAI_SE is true)
+ * Expectation: next hop is unicast
+ */
+TEST_F(Routing, advanced_forwarding__out_destarea__senderpos_reliable)
+{
+    auto sender = net.get_router(cars[0]);
     LongPositionVector lpv = sender->get_local_position_vector();
     lpv.position_accuracy_indicator = true;
     sender->update(lpv);
-    test.advance_time(1000 * Timestamp::millisecond);
-    test.reset_counters();
+    net.advance_time(1000 * Timestamp::millisecond);
+    net.reset_counters();
 
-    GbcDataRequest gbc_request(test.get_mib());
+    GbcDataRequest gbc_request(net.get_mib());
     gbc_request.destination = circle_dest_area(1.0_m, 18.0_m, 6.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
-    test.get_interface(addy_sender)->last_packet.reset();
-    EXPECT_FALSE(!!test.get_interface(addy_sender)->last_packet);
-    auto confirm = sender->request(gbc_request, std::move(packet_down));
+    net.get_interface(cars[0])->last_packet.reset();
+    EXPECT_FALSE(!!net.get_interface(cars[0])->last_packet);
+    auto confirm = sender->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
-    EXPECT_TRUE(!!test.get_interface(addy_sender)->last_packet);
-    EXPECT_EQ(addy_car3, test.get_interface(addy_sender)->last_request.destination);
+    EXPECT_TRUE(!!net.get_interface(cars[0])->last_packet);
+    EXPECT_EQ(cars[3], net.get_interface(cars[0])->last_request.destination);
 
-    ASSERT_EQ(0, test.get_counter_indications());
-    ASSERT_EQ(1, test.get_counter_requests(addy_sender));
-    test.dispatch();
-    ASSERT_EQ(1, test.get_counter_indications());
+    ASSERT_EQ(0, net.get_counter_indications());
+    ASSERT_EQ(1, net.get_counter_requests(cars[0]));
+    net.dispatch();
+    ASSERT_EQ(1, net.get_counter_indications());
 
-    EXPECT_EQ(1, test.get_counter_requests(addy_sender));
-    EXPECT_EQ(1, test.get_counter_requests(addy_car3));
-    EXPECT_EQ(addy_car4, test.get_interface(addy_car3)->last_request.destination);
+    EXPECT_EQ(1, net.get_counter_requests(cars[0]));
+    EXPECT_EQ(1, net.get_counter_requests(cars[3]));
+    EXPECT_EQ(cars[4], net.get_interface(cars[3])->last_request.destination);
 }
