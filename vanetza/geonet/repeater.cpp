@@ -41,6 +41,15 @@ void Repeater::trigger(Router& router, Timestamp now)
     }
 }
 
+boost::optional<Timestamp> Repeater::next_trigger() const
+{
+    boost::optional<Timestamp> next;
+    if (!m_repetitions.empty()) {
+        next = m_repetitions.top().m_next;
+    }
+    return next;
+}
+
 bool Repeater::compare_repetition::operator()(
         const Repetition& lhs,
         const Repetition& rhs

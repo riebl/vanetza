@@ -5,6 +5,7 @@
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/timestamp.hpp>
 #include <boost/heap/priority_queue.hpp>
+#include <boost/optional.hpp>
 #include <memory>
 
 namespace vanetza
@@ -32,6 +33,12 @@ public:
     }
 
     void trigger(Router&, Timestamp now);
+
+    /**
+     * Get time stamp when next repetition should be triggered
+     * \return time stamp of next repetition (if any)
+     */
+    boost::optional<Timestamp> next_trigger() const;
 
 private:
     struct Repetition
