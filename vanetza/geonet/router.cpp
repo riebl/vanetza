@@ -80,6 +80,21 @@ Router::~Router()
 {
 }
 
+Timestamp Router::next_update() const
+{
+    const Timestamp::duration_type upper_bound { 1.0 / m_mib.itsGnMinimumUpdateFrequencyLPV };
+    Timestamp next = m_time_now + upper_bound;
+    const auto cbf_timer = m_cbf_buffer.next_timer_expiry();
+    if (cbf_timer && *cbf_timer < next) {
+        next = *cbf_timer;
+    }
+    const auto repeater_timer = m_repeater.next_trigger();
+    if (repeater_timer && *repeater_timer < next) {
+        next = *repeater_timer;
+    }
+    return next;
+}
+
 void Router::update(Timestamp now)
 {
     // require monotonic clock

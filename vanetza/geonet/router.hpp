@@ -72,6 +72,13 @@ public:
     DataConfirm request(const GacDataRequest&, DownPacketPtr);
     DataConfirm request(const TsbDataRequest&, DownPacketPtr);
     void indicate(UpPacketPtr, const MacAddress& sender, const MacAddress& destination);
+
+    /**
+     * Get time stamp of next required update call
+     * \note time stamp has an upper bound derived from MIB's itsGnMinimumUpdateFrequencyLPV
+     * \return time stamp of next update
+     */
+    Timestamp next_update() const;
     void update(Timestamp now);
     /**
      * Update router's local position vector
