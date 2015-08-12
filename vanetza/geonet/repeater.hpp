@@ -22,13 +22,8 @@ public:
     template<class REQUEST>
     void add(const REQUEST& request, const DownPacket& payload, Timestamp now)
     {
-        if (request.repetition && has_further_repetition(request.repetition.get())) {
-            REQUEST request_duplicate = request;
-            decrement_by_one(request_duplicate.repetition.get());
-            if (!has_further_repetition(request_duplicate)) {
-                request_duplicate.repetition.reset();
-            }
-            m_repetitions.emplace(request_duplicate, payload,
+        if (request.repetition && has_further_repetition(*request.repetition)) {
+            m_repetitions.emplace(request, payload,
                     now + Timestamp::duration_type(request.repetition->interval));
         }
     }

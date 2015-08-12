@@ -1,5 +1,6 @@
 #include "repeater.hpp"
 #include "data_request.hpp"
+#include <cassert>
 
 namespace vanetza
 {
@@ -19,9 +20,16 @@ void Repeater::trigger(Timestamp now)
         Repetition& repetition = const_cast<Repetition&>(m_repetitions.top());
         if (m_repeat_fn) {
             DataRequest& request = access_request(repetition.m_request);
-            if (request.repetition) {
-                Timestamp::duration_type delayed = now - repetition.m_next;
-                request.repetition->maximum -= units::Duration(delayed);
+            assert(request.repetition);
+
+            // reduce remaining interval by one step and occurred triggering delay
+            decrement_by_one(*request.repetition);
+            Timestamp::duration_type delayed = now - repetition.m_next;
+            request.repetition->maximum -= units::Duration(delayed);
+
+            // reset repetition data if this is the last repetition
+            if (!has_further_repetition(request)) {
+                request.repetition.reset();
             }
             m_repeat_fn(repetition.m_request, std::move(repetition.m_payload));
         }
