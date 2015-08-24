@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/security/length_coding.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
 
 using vanetza::ByteBuffer;
 using namespace vanetza::security;
@@ -143,16 +145,10 @@ TEST(LengthEncoding, length_coding_size)
 
 TEST(WebValidator, length)
 {
-    ByteBuffer buf;
-    buf.push_back(0x81);
-    buf.push_back(0x03);
-    std::stringstream stream;
-    OutputArchive oa2(stream);
-    for (auto elem : buf) {
-        oa2 << elem;
-    }
-
-    InputArchive ia(stream);
-    size_t deSize = deserialize_length(ia);
-    EXPECT_EQ(259, deSize);
+    ByteBuffer buf {{ 0x81, 0x03 }};
+    vanetza::byte_buffer_source source(buf);
+    boost::iostreams::stream_buffer<vanetza::byte_buffer_source> stream(source);
+    InputArchive ia(stream, boost::archive::no_header);
+    size_t length = deserialize_length(ia);
+    EXPECT_EQ(259, length);
 }
