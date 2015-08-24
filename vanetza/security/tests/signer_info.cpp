@@ -33,16 +33,9 @@ TEST(SignerInfo, Serialzation)
 
 TEST(WebValidator, Size)
 {
-    char str[] = "A8ED6DF65B0E6D6A";
-    int n;
     SignerInfo info;
-    HashedId8 id;
-    for (int i = 0; i < 8; i++) {
-        sscanf(str + 2 * i, "%2X", &n);
-        id[i] = (char) n;
-    }
+    HashedId8 id {{ 0xA8, 0xED, 0x6D, 0xF6, 0x5B, 0x0E, 0x6D, 0x6A }};
     info = id;
 
     EXPECT_EQ(9, get_size(info));
-
 }

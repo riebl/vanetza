@@ -37,13 +37,7 @@ TEST(WebValidator_SecuredMessage3, Size)
     Certificate cert1;
     cert1.version = uint8_t(1);
     //-------------------- signer info
-    char str[] = "A8ED6DF65B0E6D6A";
-    int n;
-    HashedId8 id1;
-    for (int i = 0; i < 8; i++) {
-        sscanf(str + 2 * i, "%2X", &n);
-        id1[i] = (char) n;
-    }
+    HashedId8 id1 {{ 0xA8, 0xED, 0x6D, 0xF6, 0x5B, 0x0E, 0x6D, 0x6A }};
     info1 = id1;
     infoList1.push_back(info1);
     cert1.signer_info = infoList1;
