@@ -119,7 +119,7 @@ size_t deserialize_length(InputArchive& ar)
     geonet::deserialize(elem, ar);
     buf.push_back(elem);
     size_t leading = count_leading_ones(elem);
-    for (int c = 0; c < leading; c++) {
+    for (size_t c = 0; c < leading; ++c) {
         geonet::deserialize(elem, ar);
         buf.push_back(elem);
     }

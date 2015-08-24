@@ -328,13 +328,13 @@ RecipientInfo setRecipientInfo()
 {
     RecipientInfo info;
     EciesNistP256EncryptedKey &ecies = boost::get<EciesNistP256EncryptedKey>(info.enc_key);
-    for (int c = 0; c < info.cert_id.size(); c++) {
+    for (size_t c = 0; c < info.cert_id.size(); ++c) {
         info.cert_id[c] = 10 + c;
     }
-    for (int c = 0; c < field_size(SymmetricAlgorithm::Aes128_Ccm); c++) {
+    for (size_t c = 0; c < field_size(SymmetricAlgorithm::Aes128_Ccm); ++c) {
         ecies.c.push_back(c);
     }
-    for (int c = 0; c < ecies.t.size(); c++) {
+    for (size_t c = 0; c < ecies.t.size(); ++c) {
         ecies.t[c] = c;
     }
     ecies.v = setEccPoint_Compressed_Lsb_Y_0();
@@ -380,10 +380,10 @@ std::list<RecipientInfo> setHeaderField_RecipientInfoList()
         byte = 1;
     }
     EciesNistP256EncryptedKey key;
-    for (int c = 0; c < field_size(SymmetricAlgorithm::Aes128_Ccm); c++) {
+    for (size_t c = 0; c < field_size(SymmetricAlgorithm::Aes128_Ccm); ++c) {
         key.c.push_back(c);
     }
-    for (int c = 0; c < key.t.size(); c++) {
+    for (size_t c = 0; c < key.t.size(); ++c) {
         key.t[c] = c;
     }
     key.v = setEccPoint_Compressed_Lsb_Y_0();
@@ -395,10 +395,10 @@ std::list<RecipientInfo> setHeaderField_RecipientInfoList()
     for (auto& byte : info2.cert_id) {
         byte = 2;
     }
-    for (int c = 0; c < field_size(SymmetricAlgorithm::Aes128_Ccm); c++) {
+    for (size_t c = 0; c < field_size(SymmetricAlgorithm::Aes128_Ccm); ++c) {
         key2.c.push_back(c + 1);
     }
-    for (int c = 0; c < key2.t.size(); c++) {
+    for (size_t c = 0; c < key2.t.size(); ++c) {
         key2.t[c] = c + 1;
     }
     key2.v = setEccPoint_uncompressed();

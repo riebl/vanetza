@@ -8,9 +8,9 @@ using namespace security;
 
 void stream_from_string(std::stringstream& stream, const char *string)
 {
-    int n;
+    unsigned n;
     OutputArchive oa(stream);
-    for (int i = 0; i < strlen(string) / 2; i++) {
+    for (size_t i = 0; i < strlen(string) / 2; i++) {
         sscanf(string + 2 * i, "%2X", &n);
         uint8_t tmp = (char) n;
         oa << tmp;
@@ -19,8 +19,8 @@ void stream_from_string(std::stringstream& stream, const char *string)
 
 void byteBuffer_from_string(ByteBuffer& buf, const char *string)
 {
-    int n;
-    for (int i = 0; i < strlen(string) / 2; i++) {
+    unsigned n;
+    for (size_t i = 0; i < strlen(string) / 2; i++) {
         sscanf(string + 2 * i, "%2X", &n);
         uint8_t tmp = (char) n;
         buf.push_back(tmp);

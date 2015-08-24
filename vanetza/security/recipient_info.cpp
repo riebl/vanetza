@@ -86,7 +86,7 @@ size_t deserialize(InputArchive& ar, std::list<RecipientInfo>& list,
 size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorithm& symAlgo)
 {
     size_t fieldSize = field_size(symAlgo);
-    for (int c = 0; c < info.cert_id.size(); c++) {
+    for (size_t c = 0; c < info.cert_id.size(); ++c) {
         ar >> info.cert_id[c];
     }
     PublicKeyAlgorithm algo;
@@ -94,12 +94,12 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
     EciesNistP256EncryptedKey &ecies = boost::get<EciesNistP256EncryptedKey>(info.enc_key);
     switch (algo) {
         case PublicKeyAlgorithm::Ecies_Nistp256:
-            for (int c = 0; c < fieldSize; c++) {
+            for (size_t c = 0; c < fieldSize; ++c) {
                 uint8_t tmp;
                 ar >> tmp;
                 ecies.c.push_back(tmp);
             }
-            for (int c = 0; c < ecies.t.size(); c++) {
+            for (size_t c = 0; c < ecies.t.size(); ++c) {
                 uint8_t tmp;
                 ar >> tmp;
                 ecies.t[c] = tmp;
