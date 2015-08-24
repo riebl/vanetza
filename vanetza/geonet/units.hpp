@@ -1,6 +1,7 @@
 #ifndef UNITS_HPP_O254IL9W
 #define UNITS_HPP_O254IL9W
 
+#include <boost/units/make_scaled_unit.hpp>
 #include <boost/units/quantity.hpp>
 #include <boost/units/systems/angle/degrees.hpp>
 #include <boost/units/systems/si/length.hpp>
