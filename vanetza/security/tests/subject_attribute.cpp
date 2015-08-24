@@ -43,7 +43,6 @@ TEST(subjectAttribute, serialize)
 //---------------------------------TEST------------------------------------------------
 
     auto it = list.begin();
-    int c = 0;
     auto deIt = delist.begin();
 
     testSubjectAttribute_Encryption_Key(*it++, *deIt++);

@@ -152,7 +152,6 @@ void testGeograpicRegion_PolygonalRegion(const GeograpicRegion& reg, const Geogr
 void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion& reg,
     const GeograpicRegion& deReg)
 {
-    RegionType detype = get_type(deReg);
     int c = 0;
     EXPECT_EQ(get_type(reg), get_type(deReg));
     for (auto& rectangular : boost::get<std::list<RectangularRegion>>(deReg)) {

@@ -15,7 +15,6 @@ EccPoint setEccPoint_uncompressed()
 EccPoint setEccPoint_Compressed_Lsb_Y_0()
 {
     EccPoint point;
-    EccPointType type = EccPointType::Compressed_Lsb_Y_0;
     Compressed_Lsb_Y_0 coord;
     for (int c = 0; c < 32; c++) {
         coord.x.push_back(c);
@@ -27,7 +26,6 @@ EccPoint setEccPoint_Compressed_Lsb_Y_0()
 EccPoint setEccPoint_X_Coordinate_Only()
 {
     EccPoint point;
-    EccPointType type = EccPointType::X_Coordinate_Only;
     X_Coordinate_Only coord;
     for (int c = 0; c < 32; c++) {
         coord.x.push_back(c);
@@ -140,7 +138,6 @@ std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List()
 GeograpicRegion setGeograpicRegion_CircularRegion()
 {
     GeograpicRegion reg;
-    RegionType type = RegionType::Circle;
     CircularRegion circle;
     circle.center.latitude = static_cast<geonet::geo_angle_i32t>(12564
         * boost::units::degree::plane_angle());
@@ -153,7 +150,6 @@ GeograpicRegion setGeograpicRegion_CircularRegion()
 GeograpicRegion setGeograpicRegion_IdentifiedRegion()
 {
     GeograpicRegion reg;
-    RegionType type = RegionType::ID;
     IdentifiedRegion id;
     id.region_dictionary = RegionDictionary::Iso_3166_1;
     id.region_identifier = 12345;
@@ -165,7 +161,6 @@ GeograpicRegion setGeograpicRegion_IdentifiedRegion()
 GeograpicRegion setGeograpicRegion_PolygonalRegion()
 {
     GeograpicRegion reg;
-    RegionType type = RegionType::Polygon;
     PolygonalRegion poly;
     for (int c = 0; c < 3; c++) {
         TwoDLocation loc;
@@ -182,7 +177,6 @@ GeograpicRegion setGeograpicRegion_PolygonalRegion()
 GeograpicRegion setGeograpicRegion_RectangularRegion_list()
 {
     GeograpicRegion reg;
-    RegionType type = RegionType::Rectangle;
     std::list<RectangularRegion> list;
     for (int c = 0; c < 5; c++) {
         RectangularRegion rectangular;
@@ -416,7 +410,6 @@ std::list<RecipientInfo> setHeaderField_RecipientInfoList()
 std::list<HeaderField> setHeaderField_list()
 {
     std::list<HeaderField> list;
-    HeaderFieldType type;
 
     SignerInfo info = setSignerInfo_CertificateList();
     list.push_back(info);
