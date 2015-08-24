@@ -5,6 +5,7 @@
 #include <vanetza/security/length_coding.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
+#include <list>
 #include <type_traits>
 
 namespace vanetza
