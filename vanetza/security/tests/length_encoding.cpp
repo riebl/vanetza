@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/security/length_coding.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
@@ -111,22 +112,28 @@ TEST(LengthEncoding, decode_length_range_good)
     EXPECT_TRUE(std::all_of(result.begin(), result.end(), [](uint8_t x) {return x == 0x11;}));
 }
 
-void serialize_length(size_t size)
-{
-    std::stringstream stream;
-    OutputArchive oa2(stream);
-    serialize_length(oa2, size);
-
-    InputArchive ia(stream);
-    size_t deSize = deserialize_length(ia);
-
-    EXPECT_EQ(size, deSize);
-}
-
 TEST(LengthEncoding, serialize_length)
 {
-    serialize_length(0x200000);
-    serialize_length(128);
+    ByteBuffer buf;
+    auto serialize_length_into_buffer = [&buf](std::size_t length) {
+        vanetza::byte_buffer_sink sink(buf);
+        boost::iostreams::stream_buffer<vanetza::byte_buffer_sink> stream(sink);
+        OutputArchive oa(stream, boost::archive::no_header);
+        serialize_length(oa, length);
+    };
+
+    serialize_length_into_buffer(0x200000);
+    ASSERT_EQ(4, buf.size());
+    EXPECT_EQ(0xE0, buf[0]);
+    EXPECT_EQ(0x20, buf[1]);
+    EXPECT_EQ(0x00, buf[2]);
+    EXPECT_EQ(0x00, buf[3]);
+    buf.clear();
+
+    serialize_length_into_buffer(128);
+    ASSERT_EQ(2, buf.size());
+    EXPECT_EQ(0x80, buf[0]);
+    EXPECT_EQ(0x80, buf[1]);
 }
 
 TEST(LengthEncoding, length_coding_size)
