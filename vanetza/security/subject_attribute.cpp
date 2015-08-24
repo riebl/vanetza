@@ -27,6 +27,7 @@ SubjectAttributeType get_type(const SubjectAttribute& sub)
         }
         SubjectAttributeType operator()(EccPoint ecc)
         {
+            return SubjectAttributeType::Reconstruction_Value;
         }
         SubjectAttributeType operator()(std::list<ItsAidSsp> list)
         {
