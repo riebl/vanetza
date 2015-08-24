@@ -2,7 +2,6 @@
 #define PAYLOAD_HPP_R8IXQBSL
 
 #include <cstdint>
-#include <boost/strong_typedef.hpp>
 #include <boost/variant.hpp>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/serialization.hpp>
