@@ -127,23 +127,18 @@ TEST(LengthEncoding, serialize_length)
     serialize_length(128);
 }
 
-TEST(LengthEncoding, get_length_coding_size)
+TEST(LengthEncoding, length_coding_size)
 {
-    const auto expected = [](std::size_t length) {
-        return count_leading_ones(*encode_length(length).begin()) + 1;
-    };
-
-    for (std::size_t i = 0x3f; i < 0x1001; ++i) {
-        EXPECT_EQ(std::make_tuple(i, expected(i)), std::make_tuple(i, length_coding_size(i)));
-    }
-
-    for (std::size_t i = 0x3fff; i < 0x10001; ++i) {
-        EXPECT_EQ(std::make_tuple(i, expected(i)), std::make_tuple(i, length_coding_size(i)));
-    }
-
-    for (std::size_t i = 0x7fffff; i < 0x1000001; ++i) {
-        EXPECT_EQ(std::make_tuple(i, expected(i)), std::make_tuple(i, length_coding_size(i)));
-    }
+    EXPECT_EQ(1, length_coding_size(0x3f));
+    EXPECT_EQ(1, length_coding_size(0x20));
+    EXPECT_EQ(1, length_coding_size(0x7f));
+    EXPECT_EQ(1, length_coding_size(0x40));
+    EXPECT_EQ(2, length_coding_size(0x3fff));
+    EXPECT_EQ(2, length_coding_size(0x2000));
+    EXPECT_EQ(3, length_coding_size(0x7fff));
+    EXPECT_EQ(3, length_coding_size(0x4000));
+    EXPECT_EQ(3, length_coding_size(0x1fffff));
+    EXPECT_EQ(4, length_coding_size(0x3fffff));
 }
 
 TEST(WebValidator, length)
