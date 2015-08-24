@@ -154,4 +154,5 @@ TEST(WebValidator, length)
 
     InputArchive ia(stream);
     size_t deSize = deserialize_length(ia);
+    EXPECT_EQ(259, deSize);
 }
