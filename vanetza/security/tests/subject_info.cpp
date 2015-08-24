@@ -23,7 +23,7 @@ TEST(SubjectInfo, Serialization)
     testSubjectInfo(sub, desub);
 }
 
-TEST(WebValidator, Size)
+TEST(SubjectInfo, WebValidator_Size)
 {
     SubjectInfo info;
     info.subject_type = SubjectType::Authorization_Ticket;

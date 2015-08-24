@@ -6,6 +6,8 @@
 using namespace vanetza;
 using namespace security;
 
+// WebValidator refers to https://werkzeug.dcaiti.tu-berlin.de/etsi/ts103097/
+
 void stream_from_string(std::stringstream&, const char*);
 
 void byteBuffer_from_string(ByteBuffer&, const char*);

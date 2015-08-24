@@ -33,7 +33,7 @@ TEST(Payload, Serialize)
     EXPECT_EQ(p.buffer, deP.buffer);
 }
 
-TEST(PayloadList, Serialize)
+TEST(Payload, Serialize_List)
 {
     std::list<Payload> list = setPayload_List();
     std::list<Payload> deList = serialize(list);
@@ -41,7 +41,7 @@ TEST(PayloadList, Serialize)
     testPayload_list(list, deList);
 }
 
-TEST(WebValidator, Size)
+TEST(Payload, WebValidator_Size)
 {
     std::list<Payload> list;
     Payload p;

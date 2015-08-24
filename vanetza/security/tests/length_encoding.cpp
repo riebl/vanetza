@@ -150,7 +150,7 @@ TEST(LengthEncoding, length_coding_size)
     EXPECT_EQ(4, length_coding_size(0x3fffff));
 }
 
-TEST(WebValidator, length)
+TEST(LengthEncoding, WebValidator_length)
 {
     ByteBuffer buf {{ 0x81, 0x03 }};
     vanetza::byte_buffer_source source(buf);

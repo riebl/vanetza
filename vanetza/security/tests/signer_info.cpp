@@ -31,7 +31,7 @@ TEST(SignerInfo, Serialzation)
     testSignerInfo_Certificate(*it, *deIt);
 }
 
-TEST(WebValidator, Size)
+TEST(SignerInfo, WebValidator_Size)
 {
     SignerInfo info;
     HashedId8 id {{ 0xA8, 0xED, 0x6D, 0xF6, 0x5B, 0x0E, 0x6D, 0x6A }};

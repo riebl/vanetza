@@ -29,7 +29,7 @@ TEST(TrailerField, Serialization)
     testSignature_Ecdsa_Signature(boost::get<Signature>(*it), boost::get<Signature>(*deIt));
 }
 
-TEST(WebValidator, Size)
+TEST(TrailerField, WebValidator_Size)
 {
     TrailerField field;
     Signature sig;

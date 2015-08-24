@@ -7,7 +7,7 @@ using namespace vanetza::security;
 using namespace vanetza;
 using namespace std;
 
-TEST(subjectAttribute, serialize)
+TEST(SubjectAttribute, serialize)
 {
     std::list<SubjectAttribute> list;
     SubjectAttribute sub;
@@ -55,7 +55,7 @@ TEST(subjectAttribute, serialize)
 
 }
 
-TEST(WebValidator, ItsAidSsp_Size)
+TEST(SubjectAttribute, WebValidator_ItsAidSsp_Size)
 {
     std::list<ItsAidSsp> list;
     ItsAidSsp its;

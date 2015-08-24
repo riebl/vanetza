@@ -28,7 +28,7 @@ TEST(HeaderField, Serialize)
     testHeaderFieldList(list, deList);
 }
 
-TEST(WebValidator_SecuredMessage3, Size)
+TEST(HeaderField, WebValidator_SecuredMessage3_Size)
 {
     std::list<HeaderField> list;
     HeaderField field1;

@@ -45,7 +45,7 @@ TEST(ValidityRestriction, Serialization)
     testValidityRestriction_Region(*it2++, *it1++);
 }
 
-TEST(WebValidator, Size)
+TEST(ValidityRestriction, WebValidator_Size)
 {
     std::list<ValidityRestriction> list;
     ValidityRestriction res;
@@ -67,5 +67,4 @@ TEST(WebValidator, Size)
     list.push_back(res);
 
     EXPECT_EQ(15, get_size(list));
-
 }

@@ -19,7 +19,7 @@ TEST(Signature, serialize)
     testSignature_Ecdsa_Signature(sig, deserializedSig);
 }
 
-TEST(WebValidator, Size)
+TEST(Signature, WebValidator_Size)
 {
     Signature sig;
     EcdsaSignature eSig;
