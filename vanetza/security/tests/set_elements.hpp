@@ -32,10 +32,10 @@ std::list<IntX> setSubjectAttribute_Its_Aid_List();
 std::list<ItsAidPriority> setSubjectAttribute_Priority_Its_Aid_List();
 std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List();
 
-GeograpicRegion setGeograpicRegion_CircularRegion();
-GeograpicRegion setGeograpicRegion_IdentifiedRegion();
-GeograpicRegion setGeograpicRegion_PolygonalRegion();
-GeograpicRegion setGeograpicRegion_RectangularRegion_list();
+GeographicRegion setGeographicRegion_CircularRegion();
+GeographicRegion setGeographicRegion_IdentifiedRegion();
+GeographicRegion setGeographicRegion_PolygonalRegion();
+GeographicRegion setGeographicRegion_RectangularRegion_list();
 
 ValidityRestriction setValidityRestriction_Time_End();
 ValidityRestriction setValidityRestriction_Time_Start_And_End();

@@ -40,7 +40,7 @@ ValidityRestrictionType get_type(const ValidityRestriction& restriction)
         {
             return ValidityRestrictionType::Time_Start_And_Duration;
         }
-        ValidityRestrictionType operator()(const GeograpicRegion& region)
+        ValidityRestrictionType operator()(const GeographicRegion& region)
         {
             return ValidityRestrictionType::Region;
         }
@@ -96,7 +96,7 @@ size_t get_size(const ValidityRestriction& restriction)
         {
             return get_size(validity);
         }
-        size_t operator()(const GeograpicRegion& region)
+        size_t operator()(const GeographicRegion& region)
         {
             return get_size(region);
         }
@@ -140,7 +140,7 @@ size_t deserialize(InputArchive& ar, ValidityRestriction& restriction)
             break;
         }
         case ValidityRestrictionType::Region: {
-            GeograpicRegion region;
+            GeographicRegion region;
             size += deserialize(ar, region);
             restriction = region;
             break;
@@ -173,7 +173,7 @@ void serialize(OutputArchive& ar, const ValidityRestriction& restriction)
             geonet::serialize(host_cast(validity.start_validity), m_archive);
             geonet::serialize(host_cast(validity.duration.raw()), m_archive);
         }
-        void operator()(const GeograpicRegion& region)
+        void operator()(const GeographicRegion& region)
         {
             serialize(m_archive, region);
         }

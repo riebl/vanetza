@@ -32,10 +32,10 @@ void testSubjectAttribute_Its_Aid_Ssp_List(const SubjectAttribute&, const Subjec
 void testSubjectAttribute_Priority_Its_Aid_List(const SubjectAttribute&, const SubjectAttribute&);
 void testSubjectAttribute_Priority_Ssp_List(const SubjectAttribute&, const SubjectAttribute&);
 
-void testGeograpicRegion_CircularRegion(const GeograpicRegion&, const GeograpicRegion&);
-void testGeograpicRegion_IdentifiedRegion(const GeograpicRegion&, const GeograpicRegion&);
-void testGeograpicRegion_PolygonalRegion(const GeograpicRegion&, const GeograpicRegion&);
-void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion&, const GeograpicRegion&);
+void testGeographicRegion_CircularRegion(const GeographicRegion&, const GeographicRegion&);
+void testGeographicRegion_IdentifiedRegion(const GeographicRegion&, const GeographicRegion&);
+void testGeographicRegion_PolygonalRegion(const GeographicRegion&, const GeographicRegion&);
+void testGeographicRegion_RectangularRegion_list(const GeographicRegion&, const GeographicRegion&);
 
 void testValidityRestriction_Time_End(const ValidityRestriction&, const ValidityRestriction&);
 void testValidityRestriction_Time_Start_And_End(const ValidityRestriction&,

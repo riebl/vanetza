@@ -47,7 +47,7 @@ enum class ValidityRestrictionType : uint8_t
     Time_End = 0,                   //end_validity
     Time_Start_And_End = 1,         //start_and_end_valididty
     Time_Start_And_Duration = 2,    //start_and_duration_validity
-    Region = 3                      //GeograpicRegion
+    Region = 3                      //GeographicRegion
 };
 
 struct StartAndEndValidity
@@ -64,7 +64,7 @@ struct StartAndDurationValidity
 
 using EndValidity = Time32;
 
-typedef boost::variant<EndValidity, StartAndEndValidity, StartAndDurationValidity, GeograpicRegion> ValidityRestriction;
+typedef boost::variant<EndValidity, StartAndEndValidity, StartAndDurationValidity, GeographicRegion> ValidityRestriction;
 
 /**
  * Determines ValidityRestrictionType to a given ValidityRestriction

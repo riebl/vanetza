@@ -135,9 +135,9 @@ std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List()
     return ssp_list;
 }
 
-GeograpicRegion setGeograpicRegion_CircularRegion()
+GeographicRegion setGeographicRegion_CircularRegion()
 {
-    GeograpicRegion reg;
+    GeographicRegion reg;
     CircularRegion circle;
     circle.center.latitude = static_cast<geonet::geo_angle_i32t>(12564
         * boost::units::degree::plane_angle());
@@ -147,9 +147,9 @@ GeograpicRegion setGeograpicRegion_CircularRegion()
     return reg;
 }
 
-GeograpicRegion setGeograpicRegion_IdentifiedRegion()
+GeographicRegion setGeographicRegion_IdentifiedRegion()
 {
-    GeograpicRegion reg;
+    GeographicRegion reg;
     IdentifiedRegion id;
     id.region_dictionary = RegionDictionary::Iso_3166_1;
     id.region_identifier = 12345;
@@ -158,9 +158,9 @@ GeograpicRegion setGeograpicRegion_IdentifiedRegion()
     return reg;
 }
 
-GeograpicRegion setGeograpicRegion_PolygonalRegion()
+GeographicRegion setGeographicRegion_PolygonalRegion()
 {
-    GeograpicRegion reg;
+    GeographicRegion reg;
     PolygonalRegion poly;
     for (int c = 0; c < 3; c++) {
         TwoDLocation loc;
@@ -174,15 +174,15 @@ GeograpicRegion setGeograpicRegion_PolygonalRegion()
     return reg;
 }
 
-GeograpicRegion setGeograpicRegion_RectangularRegion_list()
+GeographicRegion setGeographicRegion_RectangularRegion_list()
 {
-    GeograpicRegion reg;
+    GeographicRegion reg;
     std::list<RectangularRegion> list;
     for (int c = 0; c < 5; c++) {
         RectangularRegion rectangular;
-        rectangular.nortwest.latitude = static_cast<geonet::geo_angle_i32t>((1000000 + c)
+        rectangular.northwest.latitude = static_cast<geonet::geo_angle_i32t>((1000000 + c)
             * boost::units::degree::plane_angle());
-        rectangular.nortwest.longtitude = static_cast<geonet::geo_angle_i32t>((1010000 + c)
+        rectangular.northwest.longtitude = static_cast<geonet::geo_angle_i32t>((1010000 + c)
             * boost::units::degree::plane_angle());
         rectangular.southeast.latitude = static_cast<geonet::geo_angle_i32t>((1020000 + c)
             * boost::units::degree::plane_angle());
@@ -221,7 +221,7 @@ ValidityRestriction setValidityRestriction_Time_Start_And_Duration()
 
 ValidityRestriction setValidityRestriction_Region()
 {
-    ValidityRestriction restriction = setGeograpicRegion_CircularRegion();
+    ValidityRestriction restriction = setGeographicRegion_CircularRegion();
     return restriction;
 }
 

@@ -116,7 +116,7 @@ void testSubjectAttribute_Priority_Ssp_List(const SubjectAttribute& sub,
     }
 }
 
-void testGeograpicRegion_CircularRegion(const GeograpicRegion& reg, const GeograpicRegion& deReg)
+void testGeographicRegion_CircularRegion(const GeographicRegion& reg, const GeographicRegion& deReg)
 {
     EXPECT_EQ(get_type(reg), get_type(deReg));
     EXPECT_EQ(boost::get<CircularRegion>(reg).center.latitude,
@@ -125,7 +125,7 @@ void testGeograpicRegion_CircularRegion(const GeograpicRegion& reg, const Geogra
         boost::get<CircularRegion>(deReg).center.longtitude);
 }
 
-void testGeograpicRegion_IdentifiedRegion(const GeograpicRegion& reg, const GeograpicRegion& deReg)
+void testGeographicRegion_IdentifiedRegion(const GeographicRegion& reg, const GeographicRegion& deReg)
 {
     EXPECT_EQ(get_type(reg), get_type(deReg));
     EXPECT_EQ(boost::get<IdentifiedRegion>(reg).region_dictionary,
@@ -136,7 +136,7 @@ void testGeograpicRegion_IdentifiedRegion(const GeograpicRegion& reg, const Geog
         boost::get<IdentifiedRegion>(deReg).region_identifier);
 }
 
-void testGeograpicRegion_PolygonalRegion(const GeograpicRegion& reg, const GeograpicRegion& deReg)
+void testGeographicRegion_PolygonalRegion(const GeographicRegion& reg, const GeographicRegion& deReg)
 {
     EXPECT_EQ(get_type(reg), get_type(deReg));
     int c = 0;
@@ -149,15 +149,15 @@ void testGeograpicRegion_PolygonalRegion(const GeograpicRegion& reg, const Geogr
     }
 }
 
-void testGeograpicRegion_RectangularRegion_list(const GeograpicRegion& reg,
-    const GeograpicRegion& deReg)
+void testGeographicRegion_RectangularRegion_list(const GeographicRegion& reg,
+    const GeographicRegion& deReg)
 {
     int c = 0;
     EXPECT_EQ(get_type(reg), get_type(deReg));
     for (auto& rectangular : boost::get<std::list<RectangularRegion>>(deReg)) {
-        EXPECT_EQ(rectangular.nortwest.latitude,
+        EXPECT_EQ(rectangular.northwest.latitude,
             static_cast<geonet::geo_angle_i32t>((1000000 + c) * boost::units::degree::plane_angle()));
-        EXPECT_EQ(rectangular.nortwest.longtitude,
+        EXPECT_EQ(rectangular.northwest.longtitude,
             static_cast<geonet::geo_angle_i32t>((1010000 + c) * boost::units::degree::plane_angle()));
         EXPECT_EQ(rectangular.southeast.latitude,
             static_cast<geonet::geo_angle_i32t>((1020000 + c) * boost::units::degree::plane_angle()));
@@ -199,8 +199,8 @@ void testValidityRestriction_Region(const ValidityRestriction& res,
     const ValidityRestriction& deserializedRes)
 {
     EXPECT_EQ(get_type(res), get_type(deserializedRes));
-    testGeograpicRegion_CircularRegion(boost::get<GeograpicRegion>(res),
-        boost::get<GeograpicRegion>(deserializedRes));
+    testGeographicRegion_CircularRegion(boost::get<GeographicRegion>(res),
+        boost::get<GeographicRegion>(deserializedRes));
 }
 
 void testSignature_Ecdsa_Signature(const Signature& sig, const Signature& deserializedSig)

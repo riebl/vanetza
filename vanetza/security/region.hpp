@@ -32,7 +32,7 @@ struct CircularRegion
 
 struct RectangularRegion
 {
-    TwoDLocation nortwest;
+    TwoDLocation northwest;
     TwoDLocation southeast;
 };
 
@@ -61,14 +61,14 @@ enum class RegionType : uint8_t
 };
 
 typedef boost::variant<CircularRegion, std::list<RectangularRegion>, PolygonalRegion,
-    IdentifiedRegion> GeograpicRegion;
+    IdentifiedRegion> GeographicRegion;
 
 /**
- * Determines RegionTyp to a GeograpicRegion
- * \param GeograpicRegion
+ * Determines RegionTyp of a GeographicRegion
+ * \param GeographicRegion
  * \return RegionType
  */
-RegionType get_type(const GeograpicRegion&);
+RegionType get_type(const GeographicRegion&);
 
 /**
  * Calculates size of an object
@@ -82,7 +82,7 @@ size_t get_size(const RectangularRegion&);
 size_t get_size(const std::list<CircularRegion>&);
 size_t get_size(const std::list<RectangularRegion>&);
 size_t get_size(const PolygonalRegion&);
-size_t get_size(const GeograpicRegion&);
+size_t get_size(const GeographicRegion&);
 
 /**
  * Serializes an object into a binary archive
@@ -96,7 +96,7 @@ void serialize(OutputArchive&, const RectangularRegion&);
 void serialize(OutputArchive&, const std::list<RectangularRegion>&);
 void serialize(OutputArchive&, const PolygonalRegion&);
 void serialize(OutputArchive&, const IdentifiedRegion&);
-void serialize(OutputArchive&, const GeograpicRegion&);
+void serialize(OutputArchive&, const GeographicRegion&);
 
 /**
  * Deserializes an object from a binary archive
@@ -110,7 +110,7 @@ size_t deserialize(InputArchive&, CircularRegion&);
 size_t deserialize(InputArchive&, std::list<RectangularRegion>&);
 size_t deserialize(InputArchive&, PolygonalRegion&);
 size_t deserialize(InputArchive&, IdentifiedRegion&);
-size_t deserialize(InputArchive&, GeograpicRegion&);
+size_t deserialize(InputArchive&, GeographicRegion&);
 
 } //namespace security
 } //namspace vanetza

@@ -7,7 +7,7 @@ namespace vanetza
 namespace security
 {
 
-RegionType get_type(const GeograpicRegion& reg)
+RegionType get_type(const GeographicRegion& reg)
 {
     struct geograpical_region_visitor : public boost::static_visitor<RegionType>
     {
@@ -61,7 +61,7 @@ size_t get_size(const CircularRegion& reg)
 size_t get_size(const RectangularRegion& reg)
 {
     size_t size = 0;
-    size += get_size(reg.nortwest);
+    size += get_size(reg.northwest);
     size += get_size(reg.southeast);
     return size;
 }
@@ -80,7 +80,7 @@ size_t get_size(const std::list<RectangularRegion>& list)
 {
     size_t size = 0;
     for (auto& rectangularRegion : list) {
-        size += get_size(rectangularRegion.nortwest);
+        size += get_size(rectangularRegion.northwest);
         size += get_size(rectangularRegion.southeast);
     }
     return size;
@@ -105,7 +105,7 @@ size_t get_size(const IdentifiedRegion& reg)
     return size;
 }
 
-size_t get_size(const GeograpicRegion& reg)
+size_t get_size(const GeographicRegion& reg)
 {
     size_t size = sizeof(RegionType);
 
@@ -160,7 +160,7 @@ void serialize(OutputArchive& ar, const CircularRegion& reg)
 
 void serialize(OutputArchive& ar, const RectangularRegion& reg)
 {
-    serialize(ar, reg.nortwest);
+    serialize(ar, reg.northwest);
     serialize(ar, reg.southeast);
 }
 
@@ -192,7 +192,7 @@ void serialize(OutputArchive& ar, const IdentifiedRegion& reg)
     serialize(ar, reg.local_region);
 }
 
-void serialize(OutputArchive& ar, const GeograpicRegion& reg)
+void serialize(OutputArchive& ar, const GeographicRegion& reg)
 {
     struct geograpical_region_visitor : public boost::static_visitor<>
     {
@@ -257,7 +257,7 @@ size_t deserialize(InputArchive& ar, std::list<RectangularRegion>& list)
     ret_size = size;
     while (size > 0) {
         RectangularRegion reg;
-        size -= deserialize(ar, reg.nortwest);
+        size -= deserialize(ar, reg.northwest);
         size -= deserialize(ar, reg.southeast);
         list.push_back(reg);
     }
@@ -289,7 +289,7 @@ size_t deserialize(InputArchive& ar, IdentifiedRegion& reg)
     return size;
 }
 
-size_t deserialize(InputArchive& ar, GeograpicRegion& reg)
+size_t deserialize(InputArchive& ar, GeographicRegion& reg)
 {
     RegionType type;
     deserialize(ar, type);

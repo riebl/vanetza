@@ -95,7 +95,7 @@ std::list<ValidityRestriction> setWebValidator_SecuredMessage3_Restriction()
 
     list.push_back(res);
 
-    GeograpicRegion reg;
+    GeographicRegion reg;
     IdentifiedRegion id;
     id.region_dictionary = RegionDictionary::Un_Stats;
     id.region_identifier = 150;

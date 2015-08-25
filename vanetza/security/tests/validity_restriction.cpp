@@ -56,7 +56,7 @@ TEST(ValidityRestriction, WebValidator_Size)
 
     list.push_back(res);
 
-    GeograpicRegion reg;
+    GeographicRegion reg;
     IdentifiedRegion id;
     id.region_dictionary = RegionDictionary::Un_Stats;
     id.region_identifier = 150;
