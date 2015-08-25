@@ -32,7 +32,7 @@ size_t get_size(const EccPoint& point)
     ecc_point_visitor visit;
     boost::apply_visitor(visit, point);
 
-    size +=  boost::apply_visitor(visit, point);
+    size += boost::apply_visitor(visit, point);
     return size;
 }
 
