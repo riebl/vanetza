@@ -5,23 +5,19 @@ namespace vanetza
 namespace security
 {
 
-Duration::Duration() :
-    m_unit(Units::Seconds), m_uint16(0)
+Duration::Duration() : m_raw(0)
 {
 }
 
 Duration::Duration(BitNumber<uint16_t, 13> value, Units unit) :
-    m_unit(unit), m_value(value)
+    m_raw(static_cast<decltype(m_raw)>(unit))
 {
-    uint16_t tmp = uint16_t(m_unit) << 13;
-    m_uint16 = m_value.raw() | tmp;
+    m_raw <<= 13;
+    m_raw |= value.raw();
 }
 
-Duration::Duration(uint16_t uint16) :
-    m_uint16(uint16)
+Duration::Duration(uint16_t raw) : m_raw(raw)
 {
-    m_value = BitNumber<uint16_t, 13>(uint16);
-    m_unit = Units(uint16 >> 13);
 }
 
 ValidityRestrictionType get_type(const ValidityRestriction& restriction)

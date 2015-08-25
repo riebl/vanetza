@@ -27,17 +27,15 @@ public:
 
     Duration();
     Duration(BitNumber<uint16_t, 13> value, Units unit);
-    Duration(uint16_t uint16);
+    Duration(uint16_t raw);
 
     uint16_t raw() const
     {
-        return m_uint16;
+        return m_raw;
     }
 
 private:
-    Units m_unit;
-    BitNumber<uint16_t, 13> m_value;
-    uint16_t m_uint16;
+    uint16_t m_raw;
 };
 
 size_t get_size(const Duration&);
