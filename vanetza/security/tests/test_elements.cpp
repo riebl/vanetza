@@ -1,3 +1,4 @@
+#include <vanetza/security/tests/check_region.hpp>
 #include <vanetza/security/tests/test_elements.hpp>
 
 void testEccPoint_uncompressed(const EccPoint& point, const EccPoint& outPoint)
@@ -116,57 +117,6 @@ void testSubjectAttribute_Priority_Ssp_List(const SubjectAttribute& sub,
     }
 }
 
-void testGeographicRegion_CircularRegion(const GeographicRegion& reg, const GeographicRegion& deReg)
-{
-    EXPECT_EQ(get_type(reg), get_type(deReg));
-    EXPECT_EQ(boost::get<CircularRegion>(reg).center.latitude,
-        boost::get<CircularRegion>(deReg).center.latitude);
-    EXPECT_EQ(boost::get<CircularRegion>(reg).center.longtitude,
-        boost::get<CircularRegion>(deReg).center.longtitude);
-}
-
-void testGeographicRegion_IdentifiedRegion(const GeographicRegion& reg, const GeographicRegion& deReg)
-{
-    EXPECT_EQ(get_type(reg), get_type(deReg));
-    EXPECT_EQ(boost::get<IdentifiedRegion>(reg).region_dictionary,
-        boost::get<IdentifiedRegion>(deReg).region_dictionary);
-    EXPECT_EQ(boost::get<IdentifiedRegion>(reg).local_region.get(),
-        boost::get<IdentifiedRegion>(deReg).local_region.get());
-    EXPECT_EQ(boost::get<IdentifiedRegion>(reg).region_identifier,
-        boost::get<IdentifiedRegion>(deReg).region_identifier);
-}
-
-void testGeographicRegion_PolygonalRegion(const GeographicRegion& reg, const GeographicRegion& deReg)
-{
-    EXPECT_EQ(get_type(reg), get_type(deReg));
-    int c = 0;
-    for (auto& region : boost::get<PolygonalRegion>(deReg)) {
-        EXPECT_EQ(region.latitude,
-            static_cast<geonet::geo_angle_i32t>((25 + c) * boost::units::degree::plane_angle()));
-        EXPECT_EQ(region.longtitude,
-            static_cast<geonet::geo_angle_i32t>((26 + c) * boost::units::degree::plane_angle()));
-        c++;
-    }
-}
-
-void testGeographicRegion_RectangularRegion_list(const GeographicRegion& reg,
-    const GeographicRegion& deReg)
-{
-    int c = 0;
-    EXPECT_EQ(get_type(reg), get_type(deReg));
-    for (auto& rectangular : boost::get<std::list<RectangularRegion>>(deReg)) {
-        EXPECT_EQ(rectangular.northwest.latitude,
-            static_cast<geonet::geo_angle_i32t>((1000000 + c) * boost::units::degree::plane_angle()));
-        EXPECT_EQ(rectangular.northwest.longtitude,
-            static_cast<geonet::geo_angle_i32t>((1010000 + c) * boost::units::degree::plane_angle()));
-        EXPECT_EQ(rectangular.southeast.latitude,
-            static_cast<geonet::geo_angle_i32t>((1020000 + c) * boost::units::degree::plane_angle()));
-        EXPECT_EQ(rectangular.southeast.longtitude,
-            static_cast<geonet::geo_angle_i32t>((1030000 + c) * boost::units::degree::plane_angle()));
-        c++;
-    }
-}
-
 void testValidityRestriction_Time_End(const ValidityRestriction& res,
     const ValidityRestriction& deserializedRes)
 {
@@ -199,8 +149,7 @@ void testValidityRestriction_Region(const ValidityRestriction& res,
     const ValidityRestriction& deserializedRes)
 {
     EXPECT_EQ(get_type(res), get_type(deserializedRes));
-    testGeographicRegion_CircularRegion(boost::get<GeographicRegion>(res),
-        boost::get<GeographicRegion>(deserializedRes));
+    check(boost::get<GeographicRegion>(res), boost::get<GeographicRegion>(deserializedRes));
 }
 
 void testSignature_Ecdsa_Signature(const Signature& sig, const Signature& deserializedSig)
@@ -301,7 +250,7 @@ void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<Hea
         boost::get<Time64WithStandardDeviation>(*deIt++).time64);
     EXPECT_EQ(boost::get<Time32>(*it++), boost::get<Time32>(*deIt++));
     EXPECT_EQ(static_cast<geonet::geo_angle_i32t>(2 * boost::units::degree::plane_angle()),
-        boost::get<ThreeDLocation>(*deIt).longtitude);
+        boost::get<ThreeDLocation>(*deIt).longitude);
     EXPECT_EQ(static_cast<geonet::geo_angle_i32t>(1 * boost::units::degree::plane_angle()),
         boost::get<ThreeDLocation>(*deIt).latitude);
     EXPECT_EQ(boost::get<ThreeDLocation>(*it++).elevation,

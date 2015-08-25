@@ -37,7 +37,7 @@ size_t get_size(const TwoDLocation& loc)
 {
     size_t size = 0;
     size += sizeof(loc.latitude);
-    size += sizeof(loc.longtitude);
+    size += sizeof(loc.longitude);
     return size;
 }
 
@@ -45,7 +45,7 @@ size_t get_size(const ThreeDLocation& loc)
 {
     size_t size = 0;
     size += sizeof(loc.latitude);
-    size += sizeof(loc.longtitude);
+    size += sizeof(loc.longitude);
     size += loc.elevation.size();
     return size;
 }
@@ -91,7 +91,7 @@ size_t get_size(const PolygonalRegion& reg)
     size_t size = 0;
     for (auto& twoDLocation : reg) {
         size += sizeof(twoDLocation.latitude);
-        size += sizeof(twoDLocation.longtitude);
+        size += sizeof(twoDLocation.longitude);
     }
     return size;
 }
@@ -141,13 +141,13 @@ size_t get_size(const GeographicRegion& reg)
 void serialize(OutputArchive& ar, const TwoDLocation& loc)
 {
     geonet::serialize(loc.latitude, ar);
-    geonet::serialize(loc.longtitude, ar);
+    geonet::serialize(loc.longitude, ar);
 }
 
 void serialize(OutputArchive& ar, const ThreeDLocation& loc)
 {
     geonet::serialize(loc.latitude, ar);
-    geonet::serialize(loc.longtitude, ar);
+    geonet::serialize(loc.longitude, ar);
     ar << loc.elevation[0];
     ar << loc.elevation[1];
 }
@@ -228,14 +228,14 @@ void serialize(OutputArchive& ar, const GeographicRegion& reg)
 size_t deserialize(InputArchive& ar, TwoDLocation& loc)
 {
     geonet::deserialize(loc.latitude, ar);
-    geonet::deserialize(loc.longtitude, ar);
+    geonet::deserialize(loc.longitude, ar);
     return get_size(loc);
 }
 
 size_t deserialize(InputArchive& ar, ThreeDLocation& loc)
 {
     geonet::deserialize(loc.latitude, ar);
-    geonet::deserialize(loc.longtitude, ar);
+    geonet::deserialize(loc.longitude, ar);
     ar >> loc.elevation[0];
     ar >> loc.elevation[1];
     return get_size(loc);

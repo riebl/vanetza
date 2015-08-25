@@ -14,13 +14,13 @@ namespace security
 struct TwoDLocation
 {
     geonet::geo_angle_i32t latitude;
-    geonet::geo_angle_i32t longtitude;
+    geonet::geo_angle_i32t longitude;
 };
 
 struct ThreeDLocation
 {
     geonet::geo_angle_i32t latitude;
-    geonet::geo_angle_i32t longtitude;
+    geonet::geo_angle_i32t longitude;
     std::array<uint8_t, 2> elevation;
 };
 

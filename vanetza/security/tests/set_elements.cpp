@@ -135,65 +135,6 @@ std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List()
     return ssp_list;
 }
 
-GeographicRegion setGeographicRegion_CircularRegion()
-{
-    GeographicRegion reg;
-    CircularRegion circle;
-    circle.center.latitude = static_cast<geonet::geo_angle_i32t>(12564
-        * boost::units::degree::plane_angle());
-    circle.center.longtitude = static_cast<geonet::geo_angle_i32t>(654321
-        * boost::units::degree::plane_angle());
-    reg = circle;
-    return reg;
-}
-
-GeographicRegion setGeographicRegion_IdentifiedRegion()
-{
-    GeographicRegion reg;
-    IdentifiedRegion id;
-    id.region_dictionary = RegionDictionary::Iso_3166_1;
-    id.region_identifier = 12345;
-    id.local_region.set(546);
-    reg = id;
-    return reg;
-}
-
-GeographicRegion setGeographicRegion_PolygonalRegion()
-{
-    GeographicRegion reg;
-    PolygonalRegion poly;
-    for (int c = 0; c < 3; c++) {
-        TwoDLocation loc;
-        loc.latitude = static_cast<geonet::geo_angle_i32t>((25 + c)
-            * boost::units::degree::plane_angle());
-        loc.longtitude = static_cast<geonet::geo_angle_i32t>((26 + c)
-            * boost::units::degree::plane_angle());
-        poly.push_back(loc);
-    }
-    reg = poly;
-    return reg;
-}
-
-GeographicRegion setGeographicRegion_RectangularRegion_list()
-{
-    GeographicRegion reg;
-    std::list<RectangularRegion> list;
-    for (int c = 0; c < 5; c++) {
-        RectangularRegion rectangular;
-        rectangular.northwest.latitude = static_cast<geonet::geo_angle_i32t>((1000000 + c)
-            * boost::units::degree::plane_angle());
-        rectangular.northwest.longtitude = static_cast<geonet::geo_angle_i32t>((1010000 + c)
-            * boost::units::degree::plane_angle());
-        rectangular.southeast.latitude = static_cast<geonet::geo_angle_i32t>((1020000 + c)
-            * boost::units::degree::plane_angle());
-        rectangular.southeast.longtitude = static_cast<geonet::geo_angle_i32t>((1030000 + c)
-            * boost::units::degree::plane_angle());
-        list.push_back(rectangular);
-    }
-    reg = list;
-    return reg;
-}
-
 ValidityRestriction setValidityRestriction_Time_End()
 {
     EndValidity end = 0x548736;
@@ -221,8 +162,7 @@ ValidityRestriction setValidityRestriction_Time_Start_And_Duration()
 
 ValidityRestriction setValidityRestriction_Region()
 {
-    ValidityRestriction restriction = setGeographicRegion_CircularRegion();
-    return restriction;
+    return GeographicRegion { CircularRegion {} };
 }
 
 Signature setSignature_Ecdsa_Signature()
@@ -366,7 +306,7 @@ ThreeDLocation setHeaderField_threeDLoc()
 {
     ThreeDLocation loc;
     loc.latitude = static_cast<geonet::geo_angle_i32t>(1 * boost::units::degree::plane_angle());
-    loc.longtitude = static_cast<geonet::geo_angle_i32t>(2 * boost::units::degree::plane_angle());
+    loc.longitude = static_cast<geonet::geo_angle_i32t>(2 * boost::units::degree::plane_angle());
     loc.elevation[0] = 1;
     loc.elevation[1] = 2;
     return loc;
