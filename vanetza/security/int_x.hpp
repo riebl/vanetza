@@ -4,6 +4,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/length_coding.hpp>
 #include <vanetza/security/serialization.hpp>
+#include <boost/operators.hpp>
 #include <list>
 
 namespace vanetza
@@ -11,7 +12,7 @@ namespace vanetza
 namespace security
 {
 
-class IntX
+class IntX : public boost::equality_comparable<IntX>
 {
 public:
     using integer_type = std::uintmax_t;
@@ -31,6 +32,8 @@ public:
     {
         return m_octets.size();
     }
+
+    bool operator==(const IntX&) const;
 
     ByteBuffer encode() const;
     static boost::optional<IntX> decode(const ByteBuffer&);

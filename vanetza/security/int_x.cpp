@@ -28,6 +28,11 @@ IntX::integer_type IntX::get() const
     return result;
 }
 
+bool IntX::operator==(const IntX& other) const
+{
+    return this->m_octets == other.m_octets;
+}
+
 ByteBuffer IntX::encode() const
 {
     ByteBuffer result;
