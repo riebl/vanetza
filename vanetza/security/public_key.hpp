@@ -9,7 +9,6 @@ namespace vanetza
 {
 namespace security
 {
-typedef boost::variant<X_Coordinate_Only, Compressed_Lsb_Y_0, Compressed_Lsb_Y_1, Uncompressed> EccPoint;
 
 enum class SymmetricAlgorithm : uint8_t
 {
