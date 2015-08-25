@@ -1,6 +1,7 @@
 include(UseGTest)
 
 prepare_gtest(security set_elements.cpp test_elements.cpp)
+target_link_libraries(security_test INTERFACE common)
 
 add_gtest(EccPoint ecc_point.cpp)
 add_gtest(PublicKey public_key.cpp)
