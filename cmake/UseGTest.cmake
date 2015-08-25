@@ -1,15 +1,35 @@
+# Prepare GTest environment and create MODULE_test interface library
+## MODULE module under test
+## SRCS... optional list of sources to link with each subsequent gtest
+macro(prepare_gtest MODULE)
+  if(ENABLE_TESTS)
+    add_library(${MODULE}_test INTERFACE)
+    target_link_libraries(${MODULE}_test INTERFACE ${MODULE})
+    set(VANETZA_GTEST_LINK_LIBRARIES ${MODULE}_test)
+    if("${ARGC}" GREATER "1")
+      add_library(${MODULE}_test_objs OBJECT ${ARGN})
+      target_include_directories(${MODULE}_test_objs PUBLIC ${PROJECT_SOURCE_DIR} ${GTest_INCLUDE_DIR})
+      set(VANETZA_GTEST_OBJECTS $<TARGET_OBJECTS:${MODULE}_test_objs>)
+    else()
+      set(VANETZA_GTEST_OBJECTS "")
+    endif()
+  endif(ENABLE_TESTS)
+endmacro()
+
 # Add a test case using Google Testing Framework
 ## NAME name of the test case
 ## SRCS... variable number of source files
 macro(add_gtest NAME)
   if(ENABLE_TESTS)
-    add_executable(GTest_${NAME} ${ARGN})
+    add_executable(GTest_${NAME} ${ARGN} ${VANETZA_GTEST_OBJECTS})
     set_target_properties(GTest_${NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tests)
-    target_include_directories(GTest_${NAME} PRIVATE ${PROJECT_SOURCE_DIR})
     target_link_libraries(GTest_${NAME} ${GTest_MAIN_LIBRARY})
     if(VANETZA_MODULE_TEST)
         target_link_vanetza(GTest_${NAME} ${VANETZA_MODULE_TEST})
+    endif()
+    if(VANETZA_GTEST_LINK_LIBRARIES)
+        target_link_libraries(GTest_${NAME} ${VANETZA_GTEST_LINK_LIBRARIES})
     endif()
     add_test(NAME ${NAME}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
