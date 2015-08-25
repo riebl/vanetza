@@ -38,13 +38,6 @@ macro(vanetza_module_property NAME)
     set_property(TARGET ${NAME} ${NAME}_static APPEND PROPERTY ${PROPERTY} ${ARGN})
 endmacro()
 
-macro(target_link_vanetza TARGET)
-    set(_modules ${ARGN})
-    foreach(_module ${_modules})
-        target_link_libraries(${TARGET} ${_module}_static)
-    endforeach()
-endmacro()
-
 macro(vanetza_export_modules)
     string(TOLOWER ${PROJECT_NAME} _project_name_lower)
     export(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE ${_project_name_lower}-targets.cmake)

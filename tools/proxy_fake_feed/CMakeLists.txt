@@ -3,5 +3,5 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_SYSTEM_LIBRARY})
 
 add_executable(proxy_fake_feed fake_feed.cpp)
-target_link_vanetza(proxy_fake_feed net)
+target_link_libraries(proxy_fake_feed net)
 
