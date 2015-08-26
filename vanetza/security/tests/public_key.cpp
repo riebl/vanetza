@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/ecc_point.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/check_public_key.hpp>
 
 using namespace vanetza::security;
 using namespace vanetza;
@@ -20,16 +20,33 @@ PublicKey serialize(PublicKey key)
     return deKey;
 }
 
-TEST(publicKey_serialize, Ecies_Nistp256)
+TEST(PublicKey, Field_Size)
 {
-    PublicKey key = setPublicKey_Ecies_Nistp256();
-    PublicKey deKey = serialize(key);
-    testPublicKey_Ecies_Nistp256(key, deKey);
+    EXPECT_EQ(32, field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
+    EXPECT_EQ(32, field_size(PublicKeyAlgorithm::Ecies_Nistp256));
 }
 
-TEST(publicKey_serialize, Ecdsa_Nistp256_With_Sha256)
+TEST(PublicKey, Ecies_Nistp256)
 {
-    PublicKey key = setPublicKey_Ecdsa_Nistp256_With_Sha256();
+    ecies_nistp256 ecies;
+    ecies.public_key = Uncompressed { random_byte_sequence(32, 1), random_byte_sequence(32, 2) };
+    ecies.supported_symm_alg = SymmetricAlgorithm::Aes128_Ccm;
+    PublicKey key = ecies;
+
     PublicKey deKey = serialize(key);
-    testPublicKey_Ecdsa_Nistp256_With_Sha256(key, deKey);
+    check(key, deKey);
+    EXPECT_EQ(PublicKeyAlgorithm::Ecies_Nistp256, get_type(deKey));
+    EXPECT_EQ(67, get_size(deKey));
+}
+
+TEST(PublicKey, Ecdsa_Nistp256_With_Sha256)
+{
+    ecdsa_nistp256_with_sha256 ecdsa;
+    ecdsa.public_key = X_Coordinate_Only { random_byte_sequence(32, 1) };
+    PublicKey key = ecdsa;
+
+    PublicKey deKey = serialize(key);
+    check(key, deKey);
+    EXPECT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(deKey));
+    EXPECT_EQ(34, get_size(deKey));
 }
