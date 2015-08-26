@@ -3,30 +3,13 @@
 
 #include <gtest/gtest.h>
 #include <vanetza/security/region.hpp>
+#include <vanetza/security/tests/check_visitor.hpp>
 #include <boost/format.hpp>
-#include <boost/variant/static_visitor.hpp>
-#include <typeinfo>
 
 namespace vanetza
 {
 namespace security
 {
-
-template<class VARIANT>
-struct check_visitor : public boost::static_visitor<>
-{
-    template<typename R, typename S>
-    void operator()(const R&, const S&) const
-    {
-        FAIL() << typeid(R).name() << " differs from " << typeid(S).name();
-    }
-
-    template<typename R>
-    void operator()(const R& lhs, const R& rhs) const
-    {
-        check(lhs, rhs);
-    }
-};
 
 inline void check(const TwoDLocation& expected, const TwoDLocation& actual)
 {
