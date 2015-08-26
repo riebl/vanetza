@@ -1,15 +1,17 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/check_ecc_point.hpp>
 
 using vanetza::ByteBuffer;
 using namespace vanetza::security;
 using namespace vanetza;
 using namespace std;
 
-EccPoint serialize_roundtrip(EccPoint point)
+static const std::size_t length = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+
+EccPoint serialize_roundtrip(const EccPoint& point)
 {
     EccPoint outPoint;
     std::stringstream stream;
@@ -20,53 +22,37 @@ EccPoint serialize_roundtrip(EccPoint point)
     return outPoint;
 }
 
-TEST(EccPoint, Field_Size)
+TEST(EccPoint, uncompressed)
 {
-    EXPECT_EQ(32, field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
-    EXPECT_EQ(32, field_size(PublicKeyAlgorithm::Ecies_Nistp256));
-}
-
-TEST(EccPoint_serialize, uncompressed)
-{
-    EccPoint point = setEccPoint_uncompressed();
+    EccPoint point = Uncompressed { random_byte_sequence(length, 1), random_byte_sequence(length, 2) };
     EccPoint outPoint = serialize_roundtrip(point);
-    testEccPoint_uncompressed(point, outPoint);
+    check(point, outPoint);
+    EXPECT_EQ(EccPointType::Uncompressed, get_type(outPoint));
 }
 
-TEST(EccPoint_serialize, Compressed_Lsb_Y_0)
+TEST(EccPoint, Compressed_Lsb_Y_0)
 {
-    EccPoint point = setEccPoint_Compressed_Lsb_Y_0();
+    EccPoint point = Compressed_Lsb_Y_0 { random_byte_sequence(length, 3) };
     EccPoint outPoint = serialize_roundtrip(point);
-    testEccPoint_Compressed_Lsb_Y_0(point, outPoint);
+    check(point, outPoint);
+    EXPECT_EQ(EccPointType::Compressed_Lsb_Y_0, get_type(outPoint));
 }
 
-TEST(EccPoint_serialize, X_Coordinate_Only)
+TEST(EccPoint, X_Coordinate_Only)
 {
-    EccPoint point = setEccPoint_X_Coordinate_Only();
+    EccPoint point = X_Coordinate_Only { random_byte_sequence(length, 4) };
     EccPoint outPoint = serialize_roundtrip(point);
-    testEccPoint_X_Coordinate_Only(point, outPoint);
+    check(point, outPoint);
+    EXPECT_EQ(EccPointType::X_Coordinate_Only, get_type(outPoint));
 }
 
-TEST(EccPoint_serialize, X_Coordinate_too_Long)
+TEST(EccPoint, X_Coordinate_too_Long)
 {
-    EccPoint point, outPoint, testPoint;
-    EccPointType type = EccPointType::X_Coordinate_Only;
-    X_Coordinate_Only coord, testCoord;
-    for (int c = 0; c < 40; c++) {
-        coord.x.push_back(c);
-    }
-    for (int c = 0; c < 32; c++) {
-        testCoord.x.push_back(c);
-    }
-    point = coord;
-    testPoint = testCoord;
+    EccPoint point = X_Coordinate_Only { random_byte_sequence(length + 8, 5) };
+    EccPoint testPoint = X_Coordinate_Only { random_byte_sequence(length, 5) };
 
-    outPoint = serialize_roundtrip(point);
-
-    EccPointType detype = get_type(outPoint);
-
-    EXPECT_EQ(type, detype);
-    EXPECT_EQ(boost::get<X_Coordinate_Only>(testPoint).x,
-        boost::get<X_Coordinate_Only>(outPoint).x);
+    EccPoint outPoint = serialize_roundtrip(point);
+    check(testPoint, outPoint);
+    EXPECT_EQ(EccPointType::X_Coordinate_Only, get_type(outPoint));
 }
 
