@@ -1,42 +1,11 @@
+#include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/security/tests/set_elements.hpp>
 
-EccPoint setEccPoint_uncompressed()
-{
-    EccPoint point;
-    Uncompressed uncompressed;
-    for (int c = 0; c < 32; c++) {
-        uncompressed.x.push_back(c);
-        uncompressed.y.push_back(32 - c);
-    }
-    point = uncompressed;
-    return point;
-}
-
-EccPoint setEccPoint_Compressed_Lsb_Y_0()
-{
-    EccPoint point;
-    Compressed_Lsb_Y_0 coord;
-    for (int c = 0; c < 32; c++) {
-        coord.x.push_back(c);
-    }
-    point = coord;
-    return point;
-}
-
-EccPoint setEccPoint_X_Coordinate_Only()
-{
-    EccPoint point;
-    X_Coordinate_Only coord;
-    for (int c = 0; c < 32; c++) {
-        coord.x.push_back(c);
-    }
-    point = coord;
-    return point;
-}
+static const std::size_t ecc_field_size = field_size(PublicKeyAlgorithm::Ecies_Nistp256);
 
 PublicKey setPublicKey_Ecies_Nistp256()
 {
-    EccPoint point = setEccPoint_uncompressed();
+    EccPoint point = Uncompressed { random_byte_sequence(ecc_field_size, 1), random_byte_sequence(ecc_field_size, 2) };
     PublicKey key;
     ecies_nistp256 ecies;
     ecies.public_key = point;
@@ -47,7 +16,7 @@ PublicKey setPublicKey_Ecies_Nistp256()
 
 PublicKey setPublicKey_Ecdsa_Nistp256_With_Sha256()
 {
-    EccPoint point = setEccPoint_X_Coordinate_Only();
+    EccPoint point = X_Coordinate_Only { random_byte_sequence(ecc_field_size, 1) };
     PublicKey key;
     ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = point;
@@ -73,7 +42,7 @@ std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List()
 
 EncryptionKey setSubjectAttribute_Encryption_Key()
 {
-    EccPoint point = setEccPoint_uncompressed();
+    EccPoint point = Uncompressed { random_byte_sequence(ecc_field_size, 1), random_byte_sequence(ecc_field_size, 2) };
     EncryptionKey key;
     ecies_nistp256 ecsie;
     ecsie.public_key = point;
@@ -169,7 +138,7 @@ Signature setSignature_Ecdsa_Signature()
 {
     Signature sig;
     EcdsaSignature signature;
-    signature.R = setEccPoint_X_Coordinate_Only();
+    signature.R = X_Coordinate_Only { random_byte_sequence(ecc_field_size, 42) };
     ByteBuffer buf;
     for (int c = 0; c < 32; c++) {
         uint8_t byte = c + 1;
@@ -277,7 +246,7 @@ RecipientInfo setRecipientInfo()
     for (size_t c = 0; c < ecies.t.size(); ++c) {
         ecies.t[c] = c;
     }
-    ecies.v = setEccPoint_Compressed_Lsb_Y_0();
+    ecies.v = Compressed_Lsb_Y_0 { random_byte_sequence(ecc_field_size, 1337) };
     return info;
 }
 
@@ -326,7 +295,7 @@ std::list<RecipientInfo> setHeaderField_RecipientInfoList()
     for (size_t c = 0; c < key.t.size(); ++c) {
         key.t[c] = c;
     }
-    key.v = setEccPoint_Compressed_Lsb_Y_0();
+    key.v = Compressed_Lsb_Y_0 { random_byte_sequence(ecc_field_size, 18) };
     info.enc_key = key;
     list.push_back(info);
 
@@ -341,7 +310,7 @@ std::list<RecipientInfo> setHeaderField_RecipientInfoList()
     for (size_t c = 0; c < key2.t.size(); ++c) {
         key2.t[c] = c + 1;
     }
-    key2.v = setEccPoint_uncompressed();
+    key2.v = Uncompressed { random_byte_sequence(ecc_field_size, 14), random_byte_sequence(ecc_field_size, 15) };
     info2.enc_key = key2;
     list.push_back(info2);
     return list;
