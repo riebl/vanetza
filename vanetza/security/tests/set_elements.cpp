@@ -3,27 +3,6 @@
 
 static const std::size_t ecc_field_size = field_size(PublicKeyAlgorithm::Ecies_Nistp256);
 
-PublicKey setPublicKey_Ecies_Nistp256()
-{
-    EccPoint point = Uncompressed { random_byte_sequence(ecc_field_size, 1), random_byte_sequence(ecc_field_size, 2) };
-    PublicKey key;
-    ecies_nistp256 ecies;
-    ecies.public_key = point;
-    ecies.supported_symm_alg = SymmetricAlgorithm::Aes128_Ccm;
-    key = ecies;
-    return key;
-}
-
-PublicKey setPublicKey_Ecdsa_Nistp256_With_Sha256()
-{
-    EccPoint point = X_Coordinate_Only { random_byte_sequence(ecc_field_size, 1) };
-    PublicKey key;
-    ecdsa_nistp256_with_sha256 ecdsa;
-    ecdsa.public_key = point;
-    key = ecdsa;
-    return key;
-}
-
 std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List()
 {
     std::list<ItsAidSsp> itsAidSsp_list;

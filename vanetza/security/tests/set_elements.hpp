@@ -6,7 +6,6 @@
 #include <vanetza/security/encryption_parameter.hpp>
 #include <vanetza/security/header_field.hpp>
 #include <vanetza/security/payload.hpp>
-#include <vanetza/security/public_key.hpp>
 #include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/signer_info.hpp>
@@ -18,9 +17,6 @@
 using namespace vanetza::security;
 using namespace vanetza;
 using namespace std;
-
-PublicKey setPublicKey_Ecies_Nistp256();
-PublicKey setPublicKey_Ecdsa_Nistp256_With_Sha256();
 
 EncryptionKey setSubjectAttribute_Encryption_Key();
 std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List();
