@@ -1,9 +1,9 @@
-set(GTest_VERSION 1.7.0)
-set(GTest_ARCHIVE gtest-${GTest_VERSION}.zip)
-set(GTest_ARCHIVE_SHA1 f85f6d2481e2c6c4a18539e391aa4ea8ab0394af)
+set(GTest_VERSION d945d8c000a0ade73585d143532266968339bbb3)
+set(GTest_ARCHIVE ${GTest_VERSION}.zip)
+set(GTest_ARCHIVE_SHA1 e60441b3b02f0de37a7b1afc3e83ba83aac00f52)
 
 set(GTest_DIR ${PROJECT_SOURCE_DIR}/gtest)
-set(GTest_ARCHIVE_DIR ${GTest_DIR}/gtest-${GTest_VERSION})
+set(GTest_ARCHIVE_DIR ${GTest_DIR}/googletest-${GTest_VERSION}/googletest)
 set(GTest_SOURCE_DIR ${GTest_ARCHIVE_DIR}/src)
 set(GTest_INCLUDE_DIR ${GTest_ARCHIVE_DIR}/include)
 
@@ -13,7 +13,7 @@ set(GTest_MAIN_LIBRARY gtest_main)
 set(GTest_MAIN_LIBRARY_SOURCES ${GTest_SOURCE_DIR}/gtest_main.cc)
 
 file(DOWNLOAD
-    http://googletest.googlecode.com/files/${GTest_ARCHIVE}
+    https://github.com/google/googletest/archive/${GTest_ARCHIVE}
     ${GTest_DIR}/${GTest_ARCHIVE}
     EXPECTED_HASH SHA1=${GTest_ARCHIVE_SHA1}
 )
