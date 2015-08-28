@@ -27,7 +27,7 @@ vanetza_module_property(security INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
 )
 
-vanetza_module_dependencies(security LINKING
+vanetza_module_link_libraries(security
     ${Boost_SERIALIZATION_LIBRARY}
 )
 

@@ -12,7 +12,7 @@ vanetza_intermodule_dependencies(facilities asn1)
 vanetza_module_property(facilities INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
 )
-vanetza_module_dependencies(facilities LINKING
+vanetza_module_link_libraries(facilities
     ${Boost_DATE_TIME_LIBRARY}
 )
 
