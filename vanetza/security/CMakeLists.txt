@@ -11,6 +11,7 @@ set(CXX_SOURCES
     length_coding.cpp
     int_x.cpp
     secured_message.cpp
+    serialization.cpp
     signature.cpp
     signer_info.cpp
     subject_attribute.cpp

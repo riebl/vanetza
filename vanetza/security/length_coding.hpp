@@ -2,18 +2,14 @@
 #define LENGTH_CODING_HPP_UQ1OIDUN
 
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/geonet/serialization.hpp>
+#include <vanetza/security/serialization.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/iterator_range.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 
 namespace vanetza
 {
 namespace security
 {
-typedef boost::archive::binary_iarchive InputArchive;
-typedef boost::archive::binary_oarchive OutputArchive;
 
 /**
  * Calculate length coding for variable length fields
@@ -45,25 +41,11 @@ boost::optional<std::tuple<ByteBuffer::const_iterator, std::size_t>> decode_leng
 std::size_t count_leading_ones(uint8_t);
 
 /**
- * Serialize given length
- * \param size to encode
- * \param archive to serialize in
- */
-void serialize_length(OutputArchive&, size_t);
-
-/**
  * Determines the number of bytes, needed to store a given size
  * \param size
  * \return number of bytes needed to store length
  */
 std::size_t length_coding_size(size_t);
-
-/**
- * Deserialize length from a given archive
- * \param archive, shall start with length encoding
- * \return length
- */
-size_t deserialize_length(InputArchive&);
 
 } // namespace security
 } // namespace vanetza

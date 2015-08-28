@@ -1,10 +1,8 @@
-#ifndef SERIALZATION_HPP_IENSIAL4
-#define SERIALZATION_HPP_IENSIAL4
+#ifndef SERIALIZATION_HPP_IENSIAL4
+#define SERIALIZATION_HPP_IENSIAL4
 
 #include <vanetza/geonet/serialization.hpp>
 #include <vanetza/security/length_coding.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <list>
 #include <type_traits>
 
@@ -13,8 +11,22 @@ namespace vanetza
 namespace security
 {
 
-typedef boost::archive::binary_iarchive InputArchive;
-typedef boost::archive::binary_oarchive OutputArchive;
+using vanetza::geonet::InputArchive;
+using vanetza::geonet::OutputArchive;
+
+/**
+ * Serialize given length
+ * \param size to encode
+ * \param archive to serialize in
+ */
+void serialize_length(OutputArchive&, size_t);
+
+/**
+ * Deserialize length from a given archive
+ * \param archive, shall start with length encoding
+ * \return length
+ */
+size_t deserialize_length(InputArchive&);
 
 template<class T>
 typename std::enable_if<std::is_enum<T>::value>::type serialize(OutputArchive& ar, const T& t)
@@ -65,4 +77,4 @@ size_t deserialize(InputArchive& ar, std::list<T>& list)
 } // namespace security
 } // namespace vanetza
 
-#endif /* SERIALZATION_HPP_IENSIAL4 */
+#endif /* SERIALIZATION_HPP_IENSIAL4 */
