@@ -1,46 +1,31 @@
 #include <vanetza/security/int_x.hpp>
+#include <vanetza/security/length_coding.hpp>
 
 namespace vanetza
 {
 namespace security
 {
 
+IntX::IntX() : m_value(0) {}
+
 void IntX::set(integer_type x)
 {
-    m_octets.clear();
-    for (std::size_t i = 0; i < sizeof(integer_type); ++i) {
-        static const auto msb_shift = (sizeof(integer_type) - 1) * 8;
-        static const auto msb_mask = static_cast<integer_type>(0xff) << msb_shift;
-        if (!m_octets.empty() || (x & msb_mask) != 0) {
-            m_octets.push_back(x >> msb_shift);
-        }
-        x <<= 8;
-    }
+    m_value = x;
 }
 
 IntX::integer_type IntX::get() const
 {
-    integer_type result = 0;
-    for (uint8_t octet : m_octets) {
-        result <<= 8;
-        result |= octet;
-    }
-    return result;
+    return m_value;
 }
 
 bool IntX::operator==(const IntX& other) const
 {
-    return this->m_octets == other.m_octets;
+    return this->m_value == other.m_value;
 }
 
 ByteBuffer IntX::encode() const
 {
-    ByteBuffer result;
-    if (sizeof(std::size_t) >= m_octets.size()) {
-        std::size_t length = this->get<std::size_t>();
-        result = encode_length(length);
-    }
-    return result;
+    return encode_length(m_value);
 }
 
 boost::optional<IntX> IntX::decode(const ByteBuffer& buffer)
@@ -57,7 +42,7 @@ boost::optional<IntX> IntX::decode(const ByteBuffer& buffer)
 
 size_t get_size(IntX intx)
 {
-    return (length_coding_size(intx.size()) + intx.size());
+    return length_coding_size(intx.get());
 }
 
 void serialize(OutputArchive& ar, const IntX& intx)
@@ -70,8 +55,8 @@ void serialize(OutputArchive& ar, const IntX& intx)
 
 void deserialize(InputArchive& ar, IntX& intx)
 {
-    size_t size = deserialize_length(ar);
-    intx.set(int(size));
+    const auto size = deserialize_length(ar);
+    intx.set(size);
 }
 
 } // namespace security

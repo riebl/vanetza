@@ -8,37 +8,40 @@ using vanetza::security::IntX;
 TEST(IntX, set_and_get)
 {
     IntX a;
-    EXPECT_EQ(0, a.get<int>());
-    EXPECT_EQ(0, a.get<uint16_t>());
+    EXPECT_EQ(0, a.get());
 
     a.set(static_cast<int8_t>(89));
-    EXPECT_EQ(89, a.get<int8_t>());
-    EXPECT_EQ(89, a.get<uint32_t>());
+    EXPECT_EQ(89, a.get());
 
     a.set(static_cast<uint32_t>(0x12345678));
-    EXPECT_EQ(0x12345678, a.get<uint32_t>());
-#ifndef NDEBUG
-    // assertion is only triggered for debug builds
-    EXPECT_DEATH(a.get<uint16_t>(), "");
-#endif
+    EXPECT_EQ(0x12345678, a.get());
 }
 
-TEST(IntX, size)
+TEST(IntX, get_size)
 {
     IntX a;
-    EXPECT_EQ(0, a.size());
+    EXPECT_EQ(1, get_size(a));
 
     a.set(static_cast<int8_t>(89));
-    EXPECT_EQ(1, a.size());
+    EXPECT_EQ(1, get_size(a));
 
-    a.set(static_cast<uint32_t>(0x00330033));
-    EXPECT_EQ(3, a.size());
+    a.set(127);
+    EXPECT_EQ(1, get_size(a));
+
+    a.set(128);
+    EXPECT_EQ(2, get_size(a));
+
+    a.set(0x23);
+    EXPECT_EQ(1, get_size(a));
+
+    a.set(static_cast<uint32_t>(0x00130033));
+    EXPECT_EQ(3, get_size(a));
+
+    a.set(static_cast<uint32_t>(0x00230033));
+    EXPECT_EQ(4, get_size(a));
 
     a.set(static_cast<uint32_t>(0x33003300));
-    EXPECT_EQ(4, a.size());
-
-    a.set(0);
-    EXPECT_EQ(0, a.size());
+    EXPECT_EQ(5, get_size(a));
 }
 
 TEST(IntX, encode)

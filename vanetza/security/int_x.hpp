@@ -2,9 +2,10 @@
 #define INT_X_HPP_RW3TJBBI
 
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/security/length_coding.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <boost/operators.hpp>
+#include <boost/optional.hpp>
+#include <cstdint>
 #include <list>
 
 namespace vanetza
@@ -16,22 +17,10 @@ class IntX : public boost::equality_comparable<IntX>
 {
 public:
     using integer_type = std::uintmax_t;
-    using octets_type = std::list<uint8_t>;
+    IntX();
 
     void set(integer_type x);
     integer_type get() const;
-
-    template<typename T>
-    T get() const
-    {
-        assert(sizeof(T) >= size());
-        return get();
-    }
-
-    std::size_t size() const
-    {
-        return m_octets.size();
-    }
 
     bool operator==(const IntX&) const;
 
@@ -39,7 +28,7 @@ public:
     static boost::optional<IntX> decode(const ByteBuffer&);
 
 private:
-    octets_type m_octets;
+    integer_type m_value;
 };
 
 /**
