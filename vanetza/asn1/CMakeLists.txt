@@ -37,5 +37,5 @@ if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
     vanetza_module_property(asn1 COMPILE_OPTIONS "-Wno-parentheses-equality")
 endif()
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)
 

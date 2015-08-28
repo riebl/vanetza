@@ -12,5 +12,5 @@ set(CXX_SOURCES
 vanetza_module(net ${CXX_SOURCES})
 vanetza_intermodule_dependencies(net common)
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)
 

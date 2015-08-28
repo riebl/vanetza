@@ -7,5 +7,5 @@ set(CXX_SOURCES
 )
 vanetza_module(common ${CXX_SOURCES})
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)
 

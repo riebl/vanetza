@@ -7,6 +7,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib/static)
 include(VanetzaModule)
 
+
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif()
@@ -16,6 +17,15 @@ if(ENABLE_TESTS)
     enable_testing()
     include(gtest/GTestFramework.cmake)
 endif()
+
+# Add subdirectory only when tests are enabled
+## DIR subdirectory name
+macro(add_test_subdirectory DIR)
+  if(ENABLE_TESTS)
+    add_subdirectory(${DIR})
+  endif(ENABLE_TESTS)
+endmacro(add_test_subdirectory)
+
 
 add_subdirectory(vanetza)
 add_subdirectory(tools/cohda_proxy)

@@ -11,5 +11,5 @@ set(CXX_SOURCES
 vanetza_module(dcc ${CXX_SOURCES})
 vanetza_intermodule_dependencies(dcc net)
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)
 

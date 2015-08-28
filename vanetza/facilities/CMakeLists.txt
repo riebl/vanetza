@@ -16,5 +16,5 @@ vanetza_module_dependencies(facilities LINKING
     ${Boost_DATE_TIME_LIBRARY}
 )
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)
 

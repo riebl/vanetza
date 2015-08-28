@@ -44,4 +44,4 @@ vanetza_module_dependencies(geonet LINKING
     ${GeographicLib_LIBRARY}
 )
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)

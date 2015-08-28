@@ -31,4 +31,4 @@ vanetza_module_dependencies(security LINKING
     ${Boost_SERIALIZATION_LIBRARY}
 )
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)
