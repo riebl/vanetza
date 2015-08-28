@@ -1,5 +1,5 @@
 include(UseGTest)
-set(VANETZA_MODULE_TEST common)
+prepare_gtest(common)
 
 add_gtest(BitNumber bit_number.cpp)
 add_gtest(ByteBuffer byte_buffer.cpp)

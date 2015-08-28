@@ -1,5 +1,4 @@
 include(UseGTest)
-
 prepare_gtest(security set_elements.cpp test_elements.cpp)
 target_link_libraries(security_test INTERFACE common)
 

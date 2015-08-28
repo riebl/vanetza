@@ -1,6 +1,6 @@
 include(UseGTest)
+prepare_gtest(geonet)
 
-set(VANETZA_MODULE_TEST geonet)
 add_gtest(Address address.cpp)
 add_gtest(Areas areas.cpp)
 add_gtest(BasicHeader basic_header.cpp)

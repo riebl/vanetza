@@ -1,6 +1,6 @@
 include(UseGTest)
+prepare_gtest(net)
 
-set(VANETZA_MODULE_TEST net)
 add_gtest(ChunkPacket chunk_packet.cpp)
 add_gtest(CohesivePacket cohesive_packet.cpp)
 add_gtest(EthernetHeader ethernet_header.cpp)

@@ -1,5 +1,5 @@
 include(UseGTest)
-set(VANETZA_MODULE_TEST dcc)
+prepare_gtest(dcc)
 
 add_gtest(AccessControl access_control.cpp)
 add_gtest(BurstBudget burst_budget.cpp)

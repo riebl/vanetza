@@ -1,5 +1,5 @@
 include(UseGTest)
-set(VANETZA_MODULE_TEST gnss)
+prepare_gtest(gnss)
 
 add_gtest(NMEA nmea.cpp)
 
