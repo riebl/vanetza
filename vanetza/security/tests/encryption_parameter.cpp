@@ -11,10 +11,9 @@ EncryptionParameter serialize(const EncryptionParameter& param)
     OutputArchive oa(stream);
     serialize(oa, param);
 
-    SymmetricAlgorithm sym;
     EncryptionParameter deParam;
     InputArchive ia(stream);
-    deserialize(ia, deParam, sym);
+    deserialize(ia, deParam);
     return deParam;
 }
 

@@ -38,11 +38,11 @@ size_t get_size(const EncryptionParameter&);
 
 /**
  * Deserializes an EncryptionParameter from a binary archive
- * \param archive with a serialized EncryptionParameter at the beginning
- * \param EncryptionParameter to safe deserialized values in
+ * \param archive Input expected to start with an EncryptionParameter
+ * \param enc Deserialized encryption parameter
  * \return size of deserialized EncryptionParameter
  */
-size_t deserialize(InputArchive&, EncryptionParameter&, SymmetricAlgorithm& sym);
+size_t deserialize(InputArchive&, EncryptionParameter&);
 
 } // namespace security
 } // namespace vanetzta

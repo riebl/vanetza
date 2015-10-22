@@ -1,5 +1,7 @@
 #include <vanetza/security/certificate.hpp>
+#include <vanetza/security/deserialization_error.hpp>
 #include <vanetza/security/header_field.hpp>
+#include <boost/optional.hpp>
 #include <string>
 #include <sstream>
 #include <memory>
@@ -168,6 +170,7 @@ void serialize(OutputArchive& ar, const HeaderField& field)
         {
             serialize(m_archive, param);
         }
+
         OutputArchive& m_archive;
     };
     HeaderFieldType type = get_type(field);
@@ -179,8 +182,8 @@ void serialize(OutputArchive& ar, const HeaderField& field)
 size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
 {
     size_t size = deserialize_length(ar);
-    SymmetricAlgorithm sym = static_cast<SymmetricAlgorithm>(255);
     size_t ret_size = size;
+    boost::optional<SymmetricAlgorithm> sym_algo;
     while (size > 0) {
         HeaderField field;
         HeaderFieldType type;
@@ -253,17 +256,22 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Recipient_Info: {
                 std::list<RecipientInfo> recipientList;
-                size_t tmp_size = deserialize(ar, recipientList, sym);
-                size -= tmp_size;
-                size -= length_coding_size(tmp_size);
-                field = recipientList;
-                list.push_back(field);
+                if (sym_algo) {
+                    size_t tmp_size = deserialize(ar, recipientList, sym_algo.get());
+                    size -= tmp_size;
+                    size -= length_coding_size(tmp_size);
+                    field = recipientList;
+                    list.push_back(field);
+                } else {
+                    throw deserialization_error("HeaderFields: RecipientInfo read before EncryptionParameters: SymmetricAlgorithm still unknown");
+                }
                 break;
             }
             case HeaderFieldType::Encryption_Parameters: {
                 EncryptionParameter param;
-                size -= deserialize(ar, param, sym);
+                size -= deserialize(ar, param);
                 field = param;
+                sym_algo = get_type(param);
                 list.push_back(field);
                 break;
             }

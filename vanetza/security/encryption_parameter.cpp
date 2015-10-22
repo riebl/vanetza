@@ -62,7 +62,7 @@ size_t get_size(const EncryptionParameter& param)
     return size;
 }
 
-size_t deserialize(InputArchive& ar, EncryptionParameter& param, SymmetricAlgorithm& sym)
+size_t deserialize(InputArchive& ar, EncryptionParameter& param)
 {
     SymmetricAlgorithm algo;
     deserialize(ar, algo);
@@ -72,7 +72,6 @@ size_t deserialize(InputArchive& ar, EncryptionParameter& param, SymmetricAlgori
             for (size_t s = 0; s < nonce.size(); s++) {
                 ar >> nonce[s];
             }
-            sym = SymmetricAlgorithm::Aes128_Ccm;
             param = nonce;
             break;
         }
