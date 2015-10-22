@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/tests/check_region.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
 
@@ -10,25 +11,13 @@ using vanetza::geonet::geo_angle_i32t;
 using vanetza::units::degrees;
 using vanetza::units::si::meter;
 
-GeographicRegion serialize(GeographicRegion reg)
-{
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, reg);
-    GeographicRegion dereg;
-    InputArchive ia(stream);
-    size_t size = deserialize(ia, dereg);
-    EXPECT_EQ(get_size(dereg), size);
-    return dereg;
-}
-
 TEST(Region, Serialize_CircularRegion)
 {
     CircularRegion reg;
     reg.center.latitude = static_cast<geo_angle_i32t>(12564 * degrees);
     reg.center.longitude = static_cast<geo_angle_i32t>(654321 * degrees);
     reg.radius = static_cast<distance_u16t>(1337 * meter);
-    GeographicRegion deReg = serialize(reg);
+    GeographicRegion deReg = serialize_roundtrip(reg);
     check(reg, deReg);
 }
 
@@ -38,7 +27,7 @@ TEST(Region, Serialize_IdentifiedRegion)
     reg.region_dictionary = RegionDictionary::Iso_3166_1;
     reg.region_identifier = 12345;
     reg.local_region.set(546);
-    GeographicRegion dereg = serialize(reg);
+    GeographicRegion dereg = serialize_roundtrip(reg);
     check(reg, dereg);
 }
 
@@ -51,7 +40,7 @@ TEST(Region, Serialize_PolygonalRegion)
                 geo_angle_i32t::from_value(26 + i)
             });
     }
-    GeographicRegion dereg = serialize(reg);
+    GeographicRegion dereg = serialize_roundtrip(reg);
     check(reg, dereg);
 }
 
@@ -70,6 +59,6 @@ TEST(Region, Serialize_RectangularRegion_list)
                 }
             });
     }
-    GeographicRegion dereg = serialize(reg);
+    GeographicRegion dereg = serialize_roundtrip(reg);
     check(reg, dereg);
 }
