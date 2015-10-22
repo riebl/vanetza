@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/subject_attribute.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 #include <vanetza/security/tests/set_elements.hpp>
 #include <vanetza/security/tests/test_elements.hpp>
 
@@ -30,15 +31,8 @@ TEST(SubjectAttribute, serialize)
 
     sub = setSubjectAttribute_Priority_Ssp_List();
     list.push_back(sub);
-//-----------------------------Serialization---------------------------------------------
 
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, list);
-
-    std::list<SubjectAttribute> delist;
-    InputArchive ia(stream);
-    deserialize(ia, delist);
+    auto delist = serialize_roundtrip(list);
 
 //---------------------------------TEST------------------------------------------------
 
