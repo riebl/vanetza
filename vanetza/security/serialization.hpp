@@ -52,12 +52,13 @@ size_t get_size(std::list<T> list)
     return size;
 }
 
-template<class T>
-void serialize(OutputArchive& ar, std::list<T> list) {
+template<class T, typename... ARGS>
+void serialize(OutputArchive& ar, const std::list<T>& list, ARGS&&... args)
+{
     size_t size = get_size(list);
     serialize_length(ar, size);
     for (auto& elem : list) {
-        serialize(ar, elem);
+        serialize(ar, elem, std::forward<ARGS>(args)...);
     }
 }
 
