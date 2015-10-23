@@ -49,12 +49,21 @@ size_t get_size(const RecipientInfo&);
 void serialize(OutputArchive&, const RecipientInfo&);
 
 /**
- * Deserializes a RecipientInfo / RecipientInfo list from a binary archive
- * \param archive with a serialized RecipientInfo / RecipientInfo list at the beginning
- * \param a RecipientInfo / RecipientInfo list to deserialize
- * \return size of the deserialized a RecipientInfo / RecipientInfo list
+ * Deserialize a RecipientInfo
+ * \param archive Input starting with serialized RecipientInfo
+ * \param info Deserialized RecipientInfo
+ * \param sym Symmetric algorithm required to deserialize encrypted key
+ * \return length of deserialized RecipientInfo in bytes
  */
 size_t deserialize(InputArchive&, RecipientInfo&, const SymmetricAlgorithm&);
+
+/**
+ * Deserialize a list of RecipientInfo
+ * \param archive Input starting with several RecipientInfo objects
+ * \param list Deserialized RecipientInfo objects
+ * \param sym Symmetric algorithm required to deserialize encrypted key
+ * \return size of deserialized objects in bytes
+ */
 size_t deserialize(InputArchive&, std::list<RecipientInfo>&, const SymmetricAlgorithm&);
 
 } // namespace security
