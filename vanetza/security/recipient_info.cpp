@@ -20,6 +20,11 @@ PublicKeyAlgorithm get_type(const RecipientInfo& info)
     return boost::apply_visitor(visit, info.enc_key);
 }
 
+PublicKeyAlgorithm RecipientInfo::pk_encryption() const
+{
+    return get_type(*this);
+}
+
 size_t get_size(const RecipientInfo& info)
 {
     size_t size = info.cert_id.size();

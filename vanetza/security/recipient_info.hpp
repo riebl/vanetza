@@ -21,10 +21,15 @@ struct EciesNistP256EncryptedKey
 
 typedef boost::variant<EciesNistP256EncryptedKey> Key;
 
+/**
+ * According to TS 103 097 V1.2.1, section 5.8
+ */
 struct RecipientInfo
 {
     HashedId8 cert_id;
     Key enc_key;
+
+    PublicKeyAlgorithm pk_encryption() const;
 };
 
 /**
