@@ -3,6 +3,7 @@
 
 #include <vanetza/geonet/serialization.hpp>
 #include <vanetza/security/length_coding.hpp>
+#include <cassert>
 #include <list>
 #include <type_traits>
 
@@ -62,17 +63,18 @@ void serialize(OutputArchive& ar, const std::list<T>& list, ARGS&&... args)
     }
 }
 
-template<class T>
-size_t deserialize(InputArchive& ar, std::list<T>& list)
+template<class T, typename... ARGS>
+size_t deserialize(InputArchive& ar, std::list<T>& list, ARGS&&... args)
 {
-    size_t size = deserialize_length(ar);
-    size_t ret_size = size;
-    while (size > 0) {
-        T elem;
-        size -= deserialize(ar, elem);
-        list.push_back(T(elem));
+    const size_t length = deserialize_length(ar);
+    int remainder = length;
+    while (remainder > 0) {
+        T t;
+        remainder -= deserialize(ar, t, std::forward<ARGS>(args)...);
+        list.push_back(std::move(t));
     }
-    return ret_size;
+    assert(remainder == 0);
+    return length;
 }
 
 } // namespace security

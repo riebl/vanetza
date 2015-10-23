@@ -62,15 +62,6 @@ void serialize(OutputArchive&, const RecipientInfo&);
  */
 size_t deserialize(InputArchive&, RecipientInfo&, const SymmetricAlgorithm&);
 
-/**
- * Deserialize a list of RecipientInfo
- * \param archive Input starting with several RecipientInfo objects
- * \param list Deserialized RecipientInfo objects
- * \param sym Symmetric algorithm required to deserialize encrypted key
- * \return size of deserialized objects in bytes
- */
-size_t deserialize(InputArchive&, std::list<RecipientInfo>&, const SymmetricAlgorithm&);
-
 } // namespace security
 } // namespace vanetza
 

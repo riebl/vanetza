@@ -76,19 +76,6 @@ void serialize(OutputArchive& ar, const RecipientInfo& info)
     boost::apply_visitor(visitor, info.enc_key);
 }
 
-size_t deserialize(InputArchive& ar, std::list<RecipientInfo>& list,
-    const SymmetricAlgorithm& symAlgo)
-{
-    size_t size = deserialize_length(ar);
-    size_t ret_size = size;
-    while (size > 0) {
-        RecipientInfo info;
-        size -= deserialize(ar, info, symAlgo);
-        list.push_back(info);
-    }
-    return ret_size;
-}
-
 size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorithm& symAlgo)
 {
     size_t fieldSize = field_size(symAlgo);
