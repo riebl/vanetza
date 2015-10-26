@@ -12,6 +12,9 @@ namespace vanetza
 namespace security
 {
 
+
+/** \brief HeaderFieldType list specified in TS 103 097 v1.2.1p in 5.5
+ */
 enum class HeaderFieldType : uint8_t
 {
     Generation_Time = 0,                    // Time64
@@ -21,8 +24,8 @@ enum class HeaderFieldType : uint8_t
     Request_Unrecognized_Certificate = 4,   // std::list<HashedId3>
     Message_Type = 5,                       // uint16 -> uint16be_t
     Signer_Info = 128,                      // SignerInfo
-    Recipient_Info = 129,                   // std::list<RecipientInfo>
-    Encryption_Parameters = 130             // EncryptionParameters
+    Encryption_Parameters = 129,            // EncryptionParameters
+    Recipient_Info = 130,                   // std::list<RecipientInfo>
 };
 
 typedef boost::variant<std::list<HashedId3>, Time32, Time64, uint16_t, SignerInfo,
