@@ -22,11 +22,6 @@ EncryptionKey setSubjectAttribute_Encryption_Key();
 std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List();
 std::list<IntX> setSubjectAttribute_Its_Aid_List();
 
-ValidityRestriction setValidityRestriction_Time_End();
-ValidityRestriction setValidityRestriction_Time_Start_And_End();
-ValidityRestriction setValidityRestriction_Time_Start_And_Duration();
-ValidityRestriction setValidityRestriction_Region();
-
 Signature setSignature_Ecdsa_Signature();
 
 SubjectInfo setSubjectInfo();

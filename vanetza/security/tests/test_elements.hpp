@@ -22,13 +22,6 @@ void testSubjectAttribute_Encryption_Key(const SubjectAttribute&, const SubjectA
 void testSubjectAttribute_Its_Aid_List(const SubjectAttribute&, const SubjectAttribute&);
 void testSubjectAttribute_Its_Aid_Ssp_List(const SubjectAttribute&, const SubjectAttribute&);
 
-void testValidityRestriction_Time_End(const ValidityRestriction&, const ValidityRestriction&);
-void testValidityRestriction_Time_Start_And_End(const ValidityRestriction&,
-    const ValidityRestriction&);
-void testValidityRestriction_Time_Start_And_Duration(const ValidityRestriction&,
-    const ValidityRestriction&);
-void testValidityRestriction_Region(const ValidityRestriction&, const ValidityRestriction&);
-
 void testSignature_Ecdsa_Signature(const Signature&, const Signature&);
 
 void testSubjectInfo(const SubjectInfo&, const SubjectInfo&);

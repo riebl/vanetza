@@ -41,36 +41,6 @@ std::list<IntX> setSubjectAttribute_Its_Aid_List()
     return intx_list;
 }
 
-ValidityRestriction setValidityRestriction_Time_End()
-{
-    EndValidity end = 0x548736;
-    ValidityRestriction restriction = end;
-    return restriction;
-}
-
-ValidityRestriction setValidityRestriction_Time_Start_And_End()
-{
-    StartAndEndValidity start;
-    start.end_validity = 0x54;
-    start.start_validity = 0x5712;
-    ValidityRestriction restriction = start;
-    return restriction;
-}
-
-ValidityRestriction setValidityRestriction_Time_Start_And_Duration()
-{
-    StartAndDurationValidity duration;
-    duration.duration = Duration(uint16_t(0x8007));
-    duration.start_validity = 0x5712;
-    ValidityRestriction restriction = duration;
-    return restriction;
-}
-
-ValidityRestriction setValidityRestriction_Region()
-{
-    return GeographicRegion { CircularRegion {} };
-}
-
 Signature setSignature_Ecdsa_Signature()
 {
     Signature sig;
@@ -134,9 +104,10 @@ std::list<SubjectAttribute> setCertificate_SubjectAttributeList()
 std::list<ValidityRestriction> setCertificate_ValidityRestriction()
 {
     std::list<ValidityRestriction> list;
-    list.push_back(setValidityRestriction_Region());
-    list.push_back(setValidityRestriction_Time_Start_And_End());
-    list.push_back(setValidityRestriction_Time_Start_And_Duration());
+    // TODO: set these restrictions in certificate test
+    //list.push_back(setValidityRestriction_Region());
+    //list.push_back(setValidityRestriction_Time_Start_And_End());
+    //list.push_back(setValidityRestriction_Time_Start_And_Duration());
     return list;
 }
 

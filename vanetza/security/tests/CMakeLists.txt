@@ -6,6 +6,7 @@ prepare_gtest(security
     check_region.cpp
     check_signature.cpp
     check_subject_attribute.cpp
+    check_validity_restriction.cpp
     set_elements.cpp
     test_elements.cpp
     web_validator.cpp
