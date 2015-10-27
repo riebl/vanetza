@@ -23,6 +23,30 @@ TEST(SecuredMessage, Serialization)
     check(m, serialize_roundtrip(m));
 }
 
+TEST(SecuredMessage, header_field_extractor)
+{
+    SecuredMessage m;
+    auto empty = m.header_field(HeaderFieldType::Generation_Time);
+    EXPECT_FALSE(!!empty);
+
+    m.header_fields.push_back(Time64 { 25 });
+    m.header_fields.push_back(IntX { 23 });
+
+    auto time = m.header_field(HeaderFieldType::Generation_Time);
+    ASSERT_TRUE(!!time);
+    EXPECT_EQ(25, boost::get<Time64>(time.get()));
+
+    auto msg = m.header_field(HeaderFieldType::Its_Aid);
+    ASSERT_TRUE(!!msg);
+    EXPECT_EQ(23, boost::get<IntX>(msg.get()).get());
+
+    // field modifications should pass through
+    boost::get<Time64>(time.get()) = 26;
+    auto time2 = m.header_field(HeaderFieldType::Generation_Time);
+    ASSERT_TRUE(!!time2);
+    EXPECT_EQ(Time64 { 26 }, boost::get<Time64>(time2.get()));
+}
+
 TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
 {
     // SecuredMessage/v1 from FOKUS WebValidator adapted for v2
