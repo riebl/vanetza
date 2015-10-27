@@ -8,12 +8,10 @@ namespace vanetza
 namespace security
 {
 
-struct deserialization_error : public std::runtime_error
+class deserialization_error : public std::runtime_error
 {
 public:
-    deserialization_error(const std::string msg) : std::runtime_error(msg)
-    {
-    }
+    using std::runtime_error::runtime_error;
 };
 
 } // namespace security
