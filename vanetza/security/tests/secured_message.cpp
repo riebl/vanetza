@@ -47,6 +47,19 @@ TEST(SecuredMessage, header_field_extractor)
     EXPECT_EQ(Time64 { 26 }, boost::get<Time64>(time2.get()));
 }
 
+TEST(SecuredMessage, trailer_field_extractor)
+{
+    SecuredMessage m;
+    auto empty = m.trailer_field(TrailerFieldType::Signature);
+    EXPECT_FALSE(!!empty);
+
+    m.trailer_fields.push_back(Signature {});
+    m.trailer_fields.push_back(Signature {});
+    auto first = m.trailer_field(TrailerFieldType::Signature);
+    ASSERT_TRUE(!!first);
+    EXPECT_EQ(&m.trailer_fields.front(), &first.get());
+}
+
 TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
 {
     // SecuredMessage/v1 from FOKUS WebValidator adapted for v2
