@@ -43,6 +43,25 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessage1)
     SecuredMessage m;
     InputArchive inAr(stream);
     deserialize(inAr, m);
+
+    EXPECT_EQ(1, m.protocol_version);
+    EXPECT_EQ(Profile::CAM, m.security_profile);
+
+    ASSERT_EQ(3, m.header_fields.size());
+    auto signer_info = m.header_field(HeaderFieldType::Signer_Info);
+    ASSERT_TRUE(!!signer_info);
+    auto generation_time = m.header_field(HeaderFieldType::Generation_Time);
+    ASSERT_TRUE(!!generation_time);
+    auto message_type = m.header_field(HeaderFieldType::Message_Type);
+    ASSERT_TRUE(!!message_type);
+    EXPECT_EQ(2, boost::get<uint16_t>(message_type.get()));
+
+    ASSERT_EQ(1, m.payload.size());
+    EXPECT_EQ(PayloadType::Signed, m.payload.front().type);
+    EXPECT_EQ(28, m.payload.front().buffer.size());
+
+    ASSERT_EQ(1, m.trailer_fields.size());
+    EXPECT_EQ(TrailerFieldType::Signature, get_type(m.trailer_fields.front()));
 }
 
 TEST(SecuredMessage, WebValidator_Serialize_SecuredMessage2)
