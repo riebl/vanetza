@@ -19,7 +19,7 @@ SignerInfo serialize(const SignerInfo& info)
     return deserializedInfo;
 }
 
-TEST(SignerInfo, Serialzation)
+TEST(SignerInfo, Serialization)
 {
     SignerInfo info;
     info = setSignerInfo_CertificateList();

@@ -96,7 +96,7 @@ size_t deserialize(InputArchive& ar, PublicKey& key)
             break;
         }
         default:
-            throw deserialization_error("Unknown PublicKeyAlgortihm");
+            throw deserialization_error("Unknown PublicKeyAlgorithm");
             break;
     }
     return get_size(key);
