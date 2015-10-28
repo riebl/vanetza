@@ -3,6 +3,7 @@
 
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <boost/variant/variant.hpp>
 
 namespace vanetza
 {
@@ -19,7 +20,12 @@ struct EciesNistP256EncryptedKey
     std::array<uint8_t, 16> t;
 };
 
-typedef boost::variant<EciesNistP256EncryptedKey, ByteBuffer> Key;
+struct OpaqueKey
+{
+    ByteBuffer data;
+};
+
+typedef boost::variant<EciesNistP256EncryptedKey, OpaqueKey> Key;
 
 /**
  * According to TS 103 097 V1.2.1, section 5.8
@@ -33,11 +39,11 @@ struct RecipientInfo
 };
 
 /**
- * Determines PublicKeyAlgorithm to a RecipientInfo
- * \param RecipientInfo
- * \return PublicKeyAlgoritm
+ * Determines applicable PublicKeyAlgorithm
+ * \param key Algorithm has to fit this kind of key
+ * \return PublicKeyAlgorithm
  */
-PublicKeyAlgorithm get_type(const RecipientInfo&);
+PublicKeyAlgorithm get_type(const Key&);
 
 /**
  * Calculates size of a RecipientInfo

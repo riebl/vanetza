@@ -86,26 +86,6 @@ void testSignerInfo_Certificate(const Certificate& cert, const Certificate& deCe
     testSignature_Ecdsa_Signature(cert.signature, deCert.signature);
 }
 
-void testRecipientInfo(const RecipientInfo& info, const RecipientInfo& deInfo)
-{
-    EXPECT_EQ(info.cert_id, deInfo.cert_id);
-    EXPECT_EQ(boost::get<EciesNistP256EncryptedKey>(info.enc_key).c,
-        boost::get<EciesNistP256EncryptedKey>(deInfo.enc_key).c);
-    EXPECT_EQ(boost::get<EciesNistP256EncryptedKey>(info.enc_key).t,
-        boost::get<EciesNistP256EncryptedKey>(deInfo.enc_key).t);
-    check(boost::get<EciesNistP256EncryptedKey>(info.enc_key).v,
-        boost::get<EciesNistP256EncryptedKey>(deInfo.enc_key).v);
-}
-
-void testRecipientInfoList(const std::list<RecipientInfo>& list,
-    const std::list<RecipientInfo>& deList)
-{
-    auto it = list.begin();
-    auto deIt = deList.begin();
-    testRecipientInfo(*it++, *deIt++);
-    testRecipientInfo(*it, *deIt);
-}
-
 void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<HeaderField>& deList)
 {
     auto it = list.begin();

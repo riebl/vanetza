@@ -6,29 +6,29 @@ namespace vanetza
 namespace security
 {
 
-PublicKeyAlgorithm get_type(const RecipientInfo& info)
+PublicKeyAlgorithm get_type(const Key& key)
 {
-    struct RecipientInfoKey_visitor : public boost::static_visitor<PublicKeyAlgorithm>
+    struct key_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
         PublicKeyAlgorithm operator()(const EciesNistP256EncryptedKey& key)
         {
             return PublicKeyAlgorithm::Ecies_Nistp256;
         }
 
-        PublicKeyAlgorithm operator()(const ByteBuffer& key)
+        PublicKeyAlgorithm operator()(const OpaqueKey& key)
         {
             // TODO: could be anything except Ecies_Nistp256
             return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
         }
     };
 
-    RecipientInfoKey_visitor visit;
-    return boost::apply_visitor(visit, info.enc_key);
+    key_visitor visitor;
+    return boost::apply_visitor(visitor, key);
 }
 
 PublicKeyAlgorithm RecipientInfo::pk_encryption() const
 {
-    return get_type(*this);
+    return get_type(enc_key);
 }
 
 size_t get_size(const RecipientInfo& info)
@@ -42,9 +42,9 @@ size_t get_size(const RecipientInfo& info)
             return key.c.size() + key.t.size() + get_size(key.v);
         }
 
-        size_t operator()(const ByteBuffer& key)
+        size_t operator()(const OpaqueKey& key)
         {
-            return length_coding_size(key.size()) + key.size();
+            return length_coding_size(key.data.size()) + key.data.size();
         }
     };
 
@@ -73,10 +73,10 @@ void serialize(OutputArchive& ar, const RecipientInfo& info, SymmetricAlgorithm 
             }
         }
 
-        void operator()(const ByteBuffer& key)
+        void operator()(const OpaqueKey& key)
         {
-            serialize_length(m_archive, key.size());
-            for (auto byte : key) {
+            serialize_length(m_archive, key.data.size());
+            for (auto byte : key.data) {
                 m_archive << byte;
             }
         }
@@ -126,7 +126,7 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
             for (size_t i = 0; i < length; ++i) {
                 ar >> opaque[i];
             }
-            info.enc_key = std::move(opaque);
+            info.enc_key = OpaqueKey { std::move(opaque) };
             break;
         }
     }

@@ -10,16 +10,16 @@ namespace vanetza
 namespace security
 {
 
-template<typename T>
-T serialize_roundtrip(const T& source)
+template<typename T, typename... ARGS>
+T serialize_roundtrip(const T& source, ARGS&&... args)
 {
     std::stringstream stream;
     OutputArchive oa(stream);
-    serialize(oa, source);
+    serialize(oa, source, std::forward<ARGS>(args)...);
 
     T result;
     InputArchive ia(stream);
-    deserialize(ia, result);
+    deserialize(ia, result, std::forward<ARGS>(args)...);
 
     return result;
 }

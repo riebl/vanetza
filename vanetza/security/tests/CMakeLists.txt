@@ -3,6 +3,7 @@ prepare_gtest(security
     check_basic_elements.cpp
     check_encryption_parameter.cpp
     check_public_key.cpp
+    check_recipient_info.cpp
     check_region.cpp
     check_signature.cpp
     check_subject_attribute.cpp

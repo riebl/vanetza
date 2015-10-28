@@ -31,9 +31,6 @@ void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction
     const std::list<ValidityRestriction>&);
 void testSignerInfo_Certificate(const Certificate&, const Certificate&);
 
-void testRecipientInfo(const RecipientInfo&, const RecipientInfo&);
-void testRecipientInfoList(const std::list<RecipientInfo>&, const std::list<RecipientInfo>&);
-
 void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<HeaderField>& deList);
 
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

@@ -131,31 +131,6 @@ Nonce setEncryptionParemeter_nonce()
     return nonce;
 }
 
-RecipientInfo setRecipientInfo()
-{
-    RecipientInfo info;
-    EciesNistP256EncryptedKey &ecies = boost::get<EciesNistP256EncryptedKey>(info.enc_key);
-    for (size_t c = 0; c < info.cert_id.size(); ++c) {
-        info.cert_id[c] = 10 + c;
-    }
-    for (size_t c = 0; c < field_size(SymmetricAlgorithm::Aes128_Ccm); ++c) {
-        ecies.c.push_back(c);
-    }
-    for (size_t c = 0; c < ecies.t.size(); ++c) {
-        ecies.t[c] = c;
-    }
-    ecies.v = Compressed_Lsb_Y_0 { random_byte_sequence(ecc_field_size, 1337) };
-    return info;
-}
-
-std::list<RecipientInfo> setRecipientInfoList()
-{
-    std::list<RecipientInfo> list;
-    list.push_back(setRecipientInfo());
-    list.push_back(setRecipientInfo());
-    return list;
-}
-
 std::list<HashedId3> setHeaderField_hashedList()
 {
     std::list<HashedId3> list;
