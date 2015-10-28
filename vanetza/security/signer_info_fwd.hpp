@@ -15,11 +15,11 @@ struct Certificate;
 
 enum class SignerInfoType : uint8_t
 {
-    Self = 0,                                   //nothing
-    Certificate_Digest_With_EDCSAP256 = 1,      //HashedId8
-    Certificate = 2,                            //Certificate
-    Certificate_Chain = 3,                      //std::list<Certificate>
-    Certificate_Digest_With_Other_Algorithm = 4 //CertificateDigestWithOtherAlgorithm
+    Self = 0,                                   // nothing -> nullptr_t
+    Certificate_Digest_With_EDCSAP256 = 1,      // HashedId8
+    Certificate = 2,                            // Certificate
+    Certificate_Chain = 3,                      // std::list<Certificate>
+    Certificate_Digest_With_Other_Algorithm = 4 // CertificateDigestWithOtherAlgorithm
 };
 
 struct CertificateDigestWithOtherAlgorithm
@@ -28,7 +28,7 @@ struct CertificateDigestWithOtherAlgorithm
     HashedId8 digest;
 };
 
-typedef boost::variant<HashedId8, Certificate, std::list<Certificate>, CertificateDigestWithOtherAlgorithm> SignerInfo;
+typedef boost::variant<std::nullptr_t, HashedId8, Certificate, std::list<Certificate>, CertificateDigestWithOtherAlgorithm> SignerInfo;
 
 } // namespace security
 } // namespace vanetza

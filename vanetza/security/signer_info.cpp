@@ -10,6 +10,10 @@ SignerInfoType get_type(const SignerInfo& info)
 {
     struct SignerInfo_visitor : public boost::static_visitor<SignerInfoType>
     {
+        SignerInfoType operator()(const std::nullptr_t)
+        {
+            return SignerInfoType::Self;
+        }
         SignerInfoType operator()(const HashedId8& id)
         {
             return SignerInfoType::Certificate_Digest_With_EDCSAP256;
@@ -44,6 +48,10 @@ size_t get_size(const SignerInfo& info)
     size_t size = sizeof(SignerInfoType);
     struct SignerInfo_visitor : public boost::static_visitor<size_t>
     {
+        size_t operator()(const std::nullptr_t&)
+        {
+            return 0;
+        }
         size_t operator()(const HashedId8& id)
         {
             return id.size();
@@ -86,24 +94,33 @@ void serialize(OutputArchive& ar, const SignerInfo& info)
         {
         }
 
+        void operator()(const std::nullptr_t)
+        {
+            // intentionally do nothing
+        }
+
         void operator()(const HashedId8& id)
         {
             for (auto& byte : id) {
                 m_archive << byte;
             }
         }
+
         void operator()(const Certificate& cert)
         {
             serialize(m_archive, cert);
         }
+
         void operator()(const std::list<Certificate>& list)
         {
             serialize(m_archive, list);
         }
+
         void operator()(const CertificateDigestWithOtherAlgorithm& cert)
         {
             serialize(m_archive, cert);
         }
+
         OutputArchive& m_archive;
     };
     SignerInfoType type = get_type(info);
@@ -159,6 +176,7 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
             break;
         }
         case SignerInfoType::Self:
+            info = nullptr;
             break;
         default:
             throw deserialization_error("Unknown SignerInfoType");
