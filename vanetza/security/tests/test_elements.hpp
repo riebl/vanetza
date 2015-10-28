@@ -24,8 +24,6 @@ void testSubjectAttribute_Its_Aid_Ssp_List(const SubjectAttribute&, const Subjec
 
 void testSignature_Ecdsa_Signature(const Signature&, const Signature&);
 
-void testSubjectInfo(const SubjectInfo&, const SubjectInfo&);
-
 void testCertificate_SignerInfo(const std::list<SignerInfo>&, const std::list<SignerInfo>&);
 void testCertificate_SubjectAttributeList(const std::list<SubjectAttribute>&,
     const std::list<SubjectAttribute>&);

@@ -24,8 +24,6 @@ std::list<IntX> setSubjectAttribute_Its_Aid_List();
 
 Signature setSignature_Ecdsa_Signature();
 
-SubjectInfo setSubjectInfo();
-
 HashedId8 setSignerInfo_HashedId();
 CertificateDigestWithOtherAlgorithm setSignerInfo_CertDigest();
 std::list<SignerInfo> setCertificate_SignerInfo();

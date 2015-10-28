@@ -1,6 +1,7 @@
 #include <vanetza/security/tests/check_ecc_point.hpp>
 #include <vanetza/security/tests/check_public_key.hpp>
 #include <vanetza/security/tests/check_region.hpp>
+#include <vanetza/security/tests/check_subject_info.hpp>
 #include <vanetza/security/tests/check_validity_restriction.hpp>
 #include <vanetza/security/tests/test_elements.hpp>
 
@@ -48,14 +49,6 @@ void testSignature_Ecdsa_Signature(const Signature& sig, const Signature& deseri
     EXPECT_EQ(boost::get<EcdsaSignature>(sig).s, boost::get<EcdsaSignature>(deserializedSig).s);
 }
 
-void testSubjectInfo(const SubjectInfo& sub, const SubjectInfo& desub)
-{
-    EXPECT_EQ(sub.subject_name.size(), get_size(sub) - 2);
-    EXPECT_EQ(sub.subject_name.size(), desub.subject_name.size());
-    EXPECT_EQ(sub.subject_type, desub.subject_type);
-    EXPECT_EQ(sub.subject_name, desub.subject_name);
-}
-
 void testCertificate_SignerInfo(const std::list<SignerInfo>& list,
     const std::list<SignerInfo>& deList)
 {
@@ -87,7 +80,7 @@ void testSignerInfo_Certificate(const Certificate& cert, const Certificate& deCe
 {
     EXPECT_EQ(cert.version, deCert.version);
     testCertificate_SignerInfo(cert.signer_info, deCert.signer_info);
-    testSubjectInfo(cert.subject_info, deCert.subject_info);
+    check(cert.subject_info, deCert.subject_info);
     testCertificate_SubjectAttributeList(cert.subject_attributes, deCert.subject_attributes);
     testCertificate_ValidityRestrictionList(cert.validity_restriction, deCert.validity_restriction);
     testSignature_Ecdsa_Signature(cert.signature, deCert.signature);

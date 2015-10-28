@@ -56,16 +56,6 @@ Signature setSignature_Ecdsa_Signature()
     return sig;
 }
 
-SubjectInfo setSubjectInfo()
-{
-    SubjectInfo sub;
-    sub.subject_type = SubjectType::Enrollment_Credential;
-    for (int c = 0; c < 24; c++) {
-        sub.subject_name.push_back(25 + c);
-    }
-    return sub;
-}
-
 HashedId8 setSignerInfo_HashedId()
 {
     HashedId8 id;
@@ -117,13 +107,13 @@ std::list<Certificate> setSignerInfo_CertificateList()
     Certificate cert;
     cert.version = 0x5;
     cert.signer_info = setCertificate_SignerInfo();
-    cert.subject_info = setSubjectInfo();
+    cert.subject_info = { SubjectType::Enrollment_Credential, random_byte_sequence(28, 1) };
     cert.subject_attributes = setCertificate_SubjectAttributeList();
     cert.validity_restriction = setCertificate_ValidityRestriction();
     cert.signature = setSignature_Ecdsa_Signature();
     list.push_back(cert);
     cert.signer_info = setCertificate_SignerInfo();
-    cert.subject_info = setSubjectInfo();
+    cert.subject_info = { SubjectType::Authorization_Authority, random_byte_sequence(16, 2) };
     cert.subject_attributes = setCertificate_SubjectAttributeList();
     cert.validity_restriction = setCertificate_ValidityRestriction();
     cert.signature = setSignature_Ecdsa_Signature();
