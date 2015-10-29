@@ -170,6 +170,9 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
         // Security
         if (m_mib.itsGnSecurity) {
             // TODO: SN-ENCAP.request
+            security::SecuredMessage sec_msg;
+            pdu->secured() = std::move(sec_msg);
+
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
         }
 

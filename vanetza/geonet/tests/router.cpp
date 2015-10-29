@@ -1,49 +1,12 @@
 #include <gtest/gtest.h>
-#include <vanetza/dcc/data_request.hpp>
-#include <vanetza/dcc/interface.hpp>
-#include <vanetza/geonet/data_confirm.hpp>
-#include <vanetza/geonet/data_indication.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/router.hpp>
-#include <vanetza/geonet/transport_interface.hpp>
 #include <boost/optional.hpp>
+
+#include <vanetza/geonet/tests/fake_interfaces.hpp>
 
 using namespace vanetza;
 using namespace vanetza::geonet;
-
-class FakeRequestInterface : public dcc::RequestInterface
-{
-public:
-    FakeRequestInterface() : m_requests(0) {}
-
-    void request(const dcc::DataRequest& req, std::unique_ptr<ChunkPacket> packet) override
-    {
-        ++m_requests;
-        m_last_request = req;
-        m_last_packet = std::move(packet);
-    }
-
-    unsigned m_requests;
-    dcc::DataRequest m_last_request;
-    std::unique_ptr<ChunkPacket> m_last_packet;
-};
-
-class FakeTransportInterface : public TransportInterface
-{
-public:
-    FakeTransportInterface() : m_indications(0) {}
-
-    void indicate(const DataIndication& ind, std::unique_ptr<UpPacket> packet) override
-    {
-        ++m_indications;
-        m_last_indication = ind;
-        m_last_packet = std::move(packet);
-    }
-
-    unsigned m_indications;
-    boost::optional<DataIndication> m_last_indication;
-    std::unique_ptr<UpPacket> m_last_packet;
-};
 
 TEST(Router, shb_round_trip)
 {
