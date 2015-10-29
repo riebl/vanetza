@@ -1,12 +1,13 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/signature.hpp>
+#include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/set_elements.hpp>
 #include <vanetza/security/tests/test_elements.hpp>
 #include <vanetza/security/tests/web_validator.hpp>
 
 TEST(Signature, serialize)
 {
-    Signature sig = setSignature_Ecdsa_Signature();
+    Signature sig = create_random_ecdsa_signature(42);
 
     std::stringstream stream;
     OutputArchive oa(stream);

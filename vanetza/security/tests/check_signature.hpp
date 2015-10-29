@@ -11,6 +11,8 @@ namespace security
 void check(const EcdsaSignature&, const EcdsaSignature&);
 void check(const Signature&, const Signature&);
 
+EcdsaSignature create_random_ecdsa_signature(int seed = 0);
+
 } // namespace security
 } // namespace vanetza
 
