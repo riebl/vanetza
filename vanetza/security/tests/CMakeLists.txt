@@ -13,8 +13,6 @@ prepare_gtest(security
     check_subject_attribute.cpp
     check_trailer_field.cpp
     check_validity_restriction.cpp
-    set_elements.cpp
-    test_elements.cpp
     web_validator.cpp
 )
 target_link_libraries(security_test INTERFACE common)
