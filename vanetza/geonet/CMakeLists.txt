@@ -32,7 +32,7 @@ set(CXX_SOURCES
 )
 
 vanetza_module(geonet ${CXX_SOURCES})
-vanetza_intermodule_dependencies(geonet dcc net)
+vanetza_intermodule_dependencies(geonet dcc net security)
 
 vanetza_module_property(geonet INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}

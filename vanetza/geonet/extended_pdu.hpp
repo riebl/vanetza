@@ -5,6 +5,7 @@
 #include <vanetza/geonet/common_header.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/geonet/serialization.hpp>
+#include <vanetza/security/secured_message.hpp>
 
 namespace vanetza
 {
@@ -19,6 +20,9 @@ template<class HEADER>
 void serialize(const ExtendedPdu<HEADER>&, OutputArchive&);
 
 template<class HEADER>
+void serialize_for_signing(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar);
+
+template<class HEADER>
 class ExtendedPduRefs;
 
 template<class HEADER>
@@ -28,6 +32,8 @@ void serialize(const ExtendedPduRefs<HEADER>&, OutputArchive&);
 template<class HEADER>
 class ExtendedPdu : public Pdu
 {
+    using SecuredMessage = security::SecuredMessage;
+
 public:
     ExtendedPdu() {}
     ExtendedPdu(const MIB& mib) : m_basic(mib), m_common(mib) {}
@@ -41,12 +47,19 @@ public:
     const CommonHeader& common() const override { return m_common; }
     HEADER& extended() { return m_extended; }
     const HEADER& extended() const { return m_extended; }
+    boost::optional<SecuredMessage>& secured() { return m_secured; }
+    const boost::optional<SecuredMessage>& secured() const { return m_secured; }
 
     ExtendedPdu* clone() const override { return new ExtendedPdu(*this); }
 
     std::size_t length() const override
     {
+        std::size_t secured_length = 0;
+        if (m_secured.is_initialized())
+            secured_length = get_size(m_secured.get());
+
         return BasicHeader::length_bytes +
+            secured_length +
             CommonHeader::length_bytes +
             HEADER::length_bytes;
     }
@@ -58,6 +71,7 @@ public:
 
 private:
     BasicHeader m_basic;
+    boost::optional<SecuredMessage> m_secured;
     CommonHeader m_common;
     HEADER m_extended;
 };
@@ -92,6 +106,11 @@ public:
         geonet::serialize(*this, ar);
     }
 
+    void serialize_for_signing(OutputArchive& ar) const
+    {
+        geonet::serialize_for_signing(*this, ar);
+    }
+
 private:
     BasicHeader& mr_basic;
     CommonHeader& mr_common;
@@ -102,6 +121,17 @@ template<class HEADER>
 void serialize(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar)
 {
     serialize(pdu.basic(), ar);
+    if (pdu.secured().is_initialized())
+    {
+        serialize(ar, pdu.secured().get());
+    }
+    serialize(pdu.common(), ar);
+    serialize(pdu.extended(), ar);
+}
+
+template<class HEADER>
+void serialize_for_signing(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar)
+{
     serialize(pdu.common(), ar);
     serialize(pdu.extended(), ar);
 }
