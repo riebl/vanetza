@@ -111,7 +111,10 @@ std::unique_ptr<ParsedPdu> parse(CohesivePacket& packet)
     }
 
     if (pdu) {
-        const std::size_t pdu_length = basic_common_pdu_length + extended_pdu_length;
+        std::size_t pdu_length = basic_common_pdu_length + extended_pdu_length;
+        if (pdu->secured.is_initialized()) {
+            pdu_length += get_size(pdu->secured.get());
+        }
         if (pdu_length + common.payload == packet.size(OsiLayer::Network, max_osi_layer())) {
             packet.set_boundary(OsiLayer::Network, pdu_length);
             assert(packet.size(OsiLayer::Transport, max_osi_layer()) == common.payload);
