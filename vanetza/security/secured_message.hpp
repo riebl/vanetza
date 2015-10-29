@@ -31,6 +31,13 @@ struct SecuredMessage
 };
 
 /**
+ * Calculates size of a SecuredMessage object
+ * \param SecuredMessage to calculate size
+ * \return size_t containing the number of octets needed to serialize the object
+ */
+size_t get_size(const SecuredMessage&);
+
+/**
  * Serializes a SecuredMessage into a binary archive
  * \param SecuredMessage to serialize
  * \param achive to serialize in
