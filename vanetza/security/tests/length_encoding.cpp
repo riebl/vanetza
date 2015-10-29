@@ -2,6 +2,7 @@
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/security/length_coding.hpp>
+#include <vanetza/security/serialization.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 
 using vanetza::ByteBuffer;
