@@ -54,13 +54,16 @@ std::unique_ptr<ParsedPdu> parse(CohesivePacket& packet)
     deserialize(basic, ar);
 
     CommonHeader& common = pdu->common;
+    security::SecuredMessage secured;
     switch (basic.next_header) {
+        case NextHeaderBasic::SECURED:
+            deserialize(ar, secured);
+            pdu->secured = std::move(secured);
+            // TODO: invoke SN-DECAP.service
         case NextHeaderBasic::ANY:
         case NextHeaderBasic::COMMON:
             deserialize(common, ar);
             break;
-        case NextHeaderBasic::SECURED:
-            // TODO: invoke SN-DECAP.service
         default:
             // unhandled header type, reset PDU
             pdu.reset();

@@ -9,7 +9,9 @@
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 #include <vanetza/net/cohesive_packet.hpp>
+#include <vanetza/security/secured_message.hpp>
 #include <boost/variant.hpp>
+#include <boost/optional.hpp>
 
 namespace vanetza
 {
@@ -19,6 +21,7 @@ namespace geonet
 struct ParsedPdu
 {
     BasicHeader basic;
+    boost::optional<security::SecuredMessage> secured;
     CommonHeader common;
     boost::variant<BeaconHeader, GeoBroadcastHeader, ShbHeader> extended;
 };
