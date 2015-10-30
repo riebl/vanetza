@@ -27,25 +27,26 @@ void serialize(OutputArchive& ar, const PublicKey& key)
 {
     struct public_key_visitor : public boost::static_visitor<>
     {
-        public_key_visitor(OutputArchive& ar) :
-            m_archive(ar)
+        public_key_visitor(OutputArchive& ar, PublicKeyAlgorithm algo) :
+            m_archive(ar), m_algo(algo)
         {
         }
         void operator()(const ecdsa_nistp256_with_sha256& ecdsa)
         {
-            serialize(m_archive, ecdsa.public_key);
+            serialize(m_archive, ecdsa.public_key, m_algo);
         }
         void operator()(const ecies_nistp256& ecies)
         {
             serialize(m_archive, ecies.supported_symm_alg);
-            serialize(m_archive, ecies.public_key);
+            serialize(m_archive, ecies.public_key, m_algo);
         }
         OutputArchive& m_archive;
+        PublicKeyAlgorithm m_algo;
     };
 
     PublicKeyAlgorithm type = get_type(key);
     serialize(ar, type);
-    public_key_visitor visit(ar);
+    public_key_visitor visit(ar, type);
     boost::apply_visitor(visit, key);
 }
 

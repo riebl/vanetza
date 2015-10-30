@@ -55,8 +55,9 @@ EccPointType get_type(const EccPoint&);
  * Serializes an EccPoint into a binary archive
  * \param achive to serialize in
  * \param EccPoint to serialize
+ * \param pka Public key algorithm used for EccPoint
  */
-void serialize(OutputArchive&, const EccPoint&);
+void serialize(OutputArchive&, const EccPoint&, PublicKeyAlgorithm);
 
 /**
  * Deserializes an EccPoint from a binary archive

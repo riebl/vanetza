@@ -16,7 +16,7 @@ EccPoint serialize_roundtrip(const EccPoint& point)
     EccPoint outPoint;
     std::stringstream stream;
     OutputArchive oa(stream);
-    serialize(oa, point);
+    serialize(oa, point, PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
     InputArchive ia(stream);
     deserialize(ia, outPoint, PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
     return outPoint;
@@ -43,16 +43,6 @@ TEST(EccPoint, X_Coordinate_Only)
     EccPoint point = X_Coordinate_Only { random_byte_sequence(length, 4) };
     EccPoint outPoint = serialize_roundtrip(point);
     check(point, outPoint);
-    EXPECT_EQ(EccPointType::X_Coordinate_Only, get_type(outPoint));
-}
-
-TEST(EccPoint, X_Coordinate_too_Long)
-{
-    EccPoint point = X_Coordinate_Only { random_byte_sequence(length + 8, 5) };
-    EccPoint testPoint = X_Coordinate_Only { random_byte_sequence(length, 5) };
-
-    EccPoint outPoint = serialize_roundtrip(point);
-    check(testPoint, outPoint);
     EXPECT_EQ(EccPointType::X_Coordinate_Only, get_type(outPoint));
 }
 

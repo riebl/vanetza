@@ -43,10 +43,10 @@ size_t get_size(const RecipientInfo& info)
 
 void serialize(OutputArchive& ar, const RecipientInfo& info)
 {
-    struct RecipientInfo_visitor : public boost::static_visitor<>
+    struct key_visitor : public boost::static_visitor<>
     {
-        RecipientInfo_visitor(OutputArchive& ar) :
-            m_archive(ar)
+        key_visitor(OutputArchive& ar, PublicKeyAlgorithm pk_algo) :
+            m_archive(ar), m_pk_algo(pk_algo)
         {
         }
         void operator()(const EciesNistP256EncryptedKey& key)
@@ -57,17 +57,18 @@ void serialize(OutputArchive& ar, const RecipientInfo& info)
             for (auto& byte : key.t) {
                 m_archive << byte;
             }
-            serialize(m_archive, key.v);
+            serialize(m_archive, key.v, m_pk_algo);
         }
         OutputArchive& m_archive;
+        PublicKeyAlgorithm m_pk_algo;
     };
     for (auto& byte : info.cert_id) {
         ar << byte;
     }
     PublicKeyAlgorithm algo = get_type(info);
     serialize(ar, algo);
-    RecipientInfo_visitor visit(ar);
-    boost::apply_visitor(visit, info.enc_key);
+    key_visitor visitor(ar, algo);
+    boost::apply_visitor(visitor, info.enc_key);
 }
 
 size_t deserialize(InputArchive& ar, std::list<RecipientInfo>& list,

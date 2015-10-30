@@ -42,25 +42,29 @@ size_t get_size(const Signature& sig)
 
 void serialize(OutputArchive& ar, const Signature& sig)
 {
-    struct Signature_visitor : public boost::static_visitor<>
+    struct signature_visitor : public boost::static_visitor<>
     {
-        Signature_visitor(OutputArchive& ar) :
-            m_archive(ar)
+        signature_visitor(OutputArchive& ar, PublicKeyAlgorithm algo) :
+            m_archive(ar), m_algo(algo)
         {
         }
+
         void operator()(const EcdsaSignature& sig)
         {
-            serialize(m_archive, sig.R);
+            serialize(m_archive, sig.R, m_algo);
             for (auto& byte : sig.s) {
                 m_archive << byte;
             }
         }
+
         OutputArchive& m_archive;
+        PublicKeyAlgorithm m_algo;
     };
+
     PublicKeyAlgorithm algo = get_type(sig);
     serialize(ar, algo);
-    Signature_visitor visit(ar);
-    boost::apply_visitor(visit, sig);
+    signature_visitor visitor(ar, algo);
+    boost::apply_visitor(visitor, sig);
 }
 
 size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorithm& algo)
