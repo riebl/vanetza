@@ -10,7 +10,7 @@ RecipientInfo serialize(RecipientInfo info)
 {
     std::stringstream stream;
     OutputArchive oa(stream);
-    serialize(oa, info);
+    serialize(oa, info, SymmetricAlgorithm::Aes128_Ccm);
 
     RecipientInfo deInfo;
     InputArchive ia(stream);
@@ -22,7 +22,7 @@ std::list<RecipientInfo> serialize(std::list<RecipientInfo> list)
 {
     std::stringstream stream;
     OutputArchive oa(stream);
-    serialize(oa, list);
+    serialize(oa, list, SymmetricAlgorithm::Aes128_Ccm);
 
     std::list<RecipientInfo> deList;
     InputArchive ia(stream);

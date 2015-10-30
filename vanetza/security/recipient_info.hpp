@@ -48,10 +48,11 @@ size_t get_size(const RecipientInfo&);
 
 /**
  * Serializes a RecipientInfo into a binary archive
- * \param RecipientInfo to serialize
- * \param achive to serialize in
+ * \param achive Destination of serialized object
+ * \param info RecipientInfo to serialize
+ * \param sym Applicable symmetric algorithm
  */
-void serialize(OutputArchive&, const RecipientInfo&);
+void serialize(OutputArchive&, const RecipientInfo&, SymmetricAlgorithm);
 
 /**
  * Deserialize a RecipientInfo

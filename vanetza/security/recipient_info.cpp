@@ -46,33 +46,36 @@ size_t get_size(const RecipientInfo& info)
     return size;
 }
 
-void serialize(OutputArchive& ar, const RecipientInfo& info)
+void serialize(OutputArchive& ar, const RecipientInfo& info, SymmetricAlgorithm sym_algo)
 {
     struct key_visitor : public boost::static_visitor<>
     {
-        key_visitor(OutputArchive& ar, PublicKeyAlgorithm pk_algo) :
-            m_archive(ar), m_pk_algo(pk_algo)
+        key_visitor(OutputArchive& ar, SymmetricAlgorithm sym_algo, PublicKeyAlgorithm pk_algo) :
+            m_archive(ar), m_sym_algo(sym_algo), m_pk_algo(pk_algo)
         {
         }
         void operator()(const EciesNistP256EncryptedKey& key)
         {
+            assert(key.c.size() == field_size(m_sym_algo));
+            serialize(m_archive, key.v, m_pk_algo);
             for (auto& byte : key.c) {
                 m_archive << byte;
             }
             for (auto& byte : key.t) {
                 m_archive << byte;
             }
-            serialize(m_archive, key.v, m_pk_algo);
         }
         OutputArchive& m_archive;
+        SymmetricAlgorithm m_sym_algo;
         PublicKeyAlgorithm m_pk_algo;
     };
+
     for (auto& byte : info.cert_id) {
         ar << byte;
     }
-    PublicKeyAlgorithm algo = get_type(info);
-    serialize(ar, algo);
-    key_visitor visitor(ar, algo);
+    const PublicKeyAlgorithm pk_algo = info.pk_encryption();
+    serialize(ar, pk_algo);
+    key_visitor visitor(ar, sym_algo, pk_algo);
     boost::apply_visitor(visitor, info.enc_key);
 }
 
@@ -87,6 +90,7 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
     EciesNistP256EncryptedKey &ecies = boost::get<EciesNistP256EncryptedKey>(info.enc_key);
     switch (algo) {
         case PublicKeyAlgorithm::Ecies_Nistp256:
+            deserialize(ar, ecies.v, PublicKeyAlgorithm::Ecies_Nistp256);
             for (size_t c = 0; c < fieldSize; ++c) {
                 uint8_t tmp;
                 ar >> tmp;
@@ -97,7 +101,6 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
                 ar >> tmp;
                 ecies.t[c] = tmp;
             }
-            deserialize(ar, ecies.v, PublicKeyAlgorithm::Ecies_Nistp256);
             break;
         default:
             throw deserialization_error("Unknown PublicKeyAlgoritm");
