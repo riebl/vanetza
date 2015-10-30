@@ -6,6 +6,7 @@
 #include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/signer_info.hpp>
+#include <boost/variant/variant.hpp>
 
 namespace vanetza
 {

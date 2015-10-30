@@ -4,6 +4,7 @@
 #include <vanetza/common/bit_number.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/serialization.hpp>
+#include <boost/variant/variant.hpp>
 
 namespace vanetza
 {

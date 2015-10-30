@@ -5,6 +5,7 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/serialization.hpp>
+#include <boost/variant/variant.hpp>
 
 namespace vanetza
 {

@@ -2,6 +2,7 @@
 #define TRAILER_FIELDS_HPP_3PDKGWCQ
 
 #include <vanetza/security/signature.hpp>
+#include <boost/variant/variant.hpp>
 #include <cstdint>
 
 namespace vanetza

@@ -4,7 +4,7 @@
 #include <vanetza/geonet/units.hpp>
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/deserialization_error.hpp>
-#include <boost/variant.hpp>
+#include <boost/variant/variant.hpp>
 
 namespace vanetza
 {
