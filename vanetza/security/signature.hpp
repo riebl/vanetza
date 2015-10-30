@@ -1,7 +1,6 @@
 #ifndef SIGNATURE_HPP_ZWPLNDVE
 #define SIGNATURE_HPP_ZWPLNDVE
 
-#include <vanetza/security/deserialization_error.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/serialization.hpp>

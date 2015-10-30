@@ -1,3 +1,4 @@
+#include <vanetza/security/deserialization_error.hpp>
 #include <vanetza/security/signature.hpp>
 
 namespace vanetza
