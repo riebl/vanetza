@@ -49,6 +49,4 @@ void testRecipientInfoList(const std::list<RecipientInfo>&, const std::list<Reci
 
 void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<HeaderField>& deList);
 
-void testPayload_list(const std::list<Payload>&, const std::list<Payload>&);
-
 #endif /* TEST_ELEMENTS_HPP_KISBVCLSDSICN */

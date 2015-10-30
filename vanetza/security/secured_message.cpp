@@ -1,3 +1,4 @@
+#include <vanetza/security/deserialization_error.hpp>
 #include <vanetza/security/secured_message.hpp>
 
 namespace vanetza
@@ -7,21 +8,19 @@ namespace security
 
 size_t get_size(const SecuredMessage& message)
 {
-    size_t size = sizeof(message.protocol_version);
-    size += sizeof(message.security_profile);
+    size_t size = sizeof(message.protocol_version());
     size += get_size(message.header_fields);
     size += length_coding_size(get_size(message.header_fields));
     size += get_size(message.trailer_fields);
     size += length_coding_size(get_size(message.trailer_fields));
     size += get_size(message.payload);
-    size += length_coding_size(get_size(message.payload));
     return size;
 }
 
 void serialize(OutputArchive& ar, const SecuredMessage& message)
 {
-    ar << message.protocol_version;
-    serialize(ar, message.security_profile);
+    const uint8_t protocol_version = message.protocol_version();
+    ar << protocol_version;
     serialize(ar, message.header_fields);
     serialize(ar, message.payload);
     serialize(ar, message.trailer_fields);
@@ -29,11 +28,15 @@ void serialize(OutputArchive& ar, const SecuredMessage& message)
 
 void deserialize(InputArchive& ar, SecuredMessage& message)
 {
-    ar >> message.protocol_version;
-    deserialize(ar, message.security_profile);
-    deserialize(ar, message.header_fields);
-    deserialize(ar, message.payload);
-    deserialize(ar, message.trailer_fields);
+    uint8_t protocol_version = 0;
+    ar >> protocol_version;
+    if (protocol_version == 2) {
+        deserialize(ar, message.header_fields);
+        deserialize(ar, message.payload);
+        deserialize(ar, message.trailer_fields);
+    } else {
+        throw deserialization_error("Unsupported SecuredMessage protocol version");
+    }
 }
 
 } // namespace security

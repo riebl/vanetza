@@ -1,9 +1,8 @@
 #ifndef SECURED_MESSAGE_HPP_MO3HBSXG
 #define SECURED_MESSAGE_HPP_MO3HBSXG
 
-
 #include <cstdint>
-#include <boost/serialization/vector.hpp>
+#include <list>
 #include <vanetza/security/header_field.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/payload.hpp>
@@ -14,21 +13,16 @@ namespace vanetza
 namespace security
 {
 
-enum class Profile : uint8_t
+struct SecuredMessageV2
 {
-    Generic = 0,
-    CAM = 1,
-    DENM = 2
-};
-
-struct SecuredMessage
-{
-    uint8_t protocol_version;
-    Profile security_profile;
     std::list<HeaderField> header_fields;
     std::list<TrailerField> trailer_fields;
-    std::list<Payload> payload;
+    Payload payload;
+
+    unsigned protocol_version() const { return 2; }
 };
+
+using SecuredMessage = SecuredMessageV2;
 
 /**
  * Calculates size of a SecuredMessage object

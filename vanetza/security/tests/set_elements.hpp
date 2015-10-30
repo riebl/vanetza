@@ -50,6 +50,4 @@ ThreeDLocation setHeaderField_threeDLoc();
 std::list<RecipientInfo> setHeaderField_RecipientInfoList();
 std::list<HeaderField> setHeaderField_list();
 
-std::list<Payload> setPayload_List();
-
 #endif /* SETELEMENTS_HPP_ */

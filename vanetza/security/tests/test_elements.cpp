@@ -221,12 +221,3 @@ void testHeaderFieldList(const std::list<HeaderField>& list, const std::list<Hea
     EXPECT_EQ(boost::get<std::list<RecipientInfo>>(*it).begin()->cert_id, boost::get<std::list<RecipientInfo>>(*deIt).begin()->cert_id);
 }
 
-void testPayload_list(const std::list<Payload>& list, const std::list<Payload>& deList)
-{
-    auto it = list.begin();
-    auto deIt = deList.begin();
-
-    EXPECT_EQ((*it++).buffer, (*deIt++).buffer);
-    EXPECT_EQ((*it++).buffer, (*deIt++).buffer);
-    EXPECT_EQ((*it).buffer, (*deIt).buffer);
-}
