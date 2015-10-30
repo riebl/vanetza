@@ -3,6 +3,7 @@
 
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <boost/variant/variant.hpp>
 #include <list>
 
 namespace vanetza
@@ -10,7 +11,15 @@ namespace vanetza
 namespace security
 {
 
-using SubjectAssurance = uint8_t;
+struct SubjectAssurance
+{
+    SubjectAssurance(uint8_t _raw = 0) : raw(_raw) {}
+
+    static const uint8_t assurance_mask = 0xE0;
+    static const uint8_t confidence_mask = 0x03;
+
+    uint8_t raw;
+};
 
 struct ItsAidSsp
 {

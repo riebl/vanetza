@@ -41,7 +41,7 @@ TEST(SubjectAttribute, serialize)
 
     testSubjectAttribute_Encryption_Key(*it++, *deIt++);
     EXPECT_EQ(get_type(*deIt), SubjectAttributeType::Assurance_Level);
-    EXPECT_EQ(boost::get<SubjectAssurance>(*deIt++), boost::get<SubjectAssurance>(*it++));
+    EXPECT_EQ(boost::get<SubjectAssurance>(*deIt++).raw, boost::get<SubjectAssurance>(*it++).raw);
     testSubjectAttribute_Its_Aid_List(*it++, *deIt++);
     testSubjectAttribute_Its_Aid_Ssp_List(*it++, *deIt++);
     testSubjectAttribute_Priority_Its_Aid_List(*it++, *deIt++);

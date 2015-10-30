@@ -177,7 +177,7 @@ size_t get_size(const std::list<IntX>& list)
 
 size_t get_size(const SubjectAssurance& assurance)
 {
-    return sizeof(uint8_t);
+    return sizeof(assurance.raw);
 }
 
 size_t get_size(const std::list<ItsAidSsp>& list)
@@ -283,7 +283,7 @@ void serialize(OutputArchive& ar, const SubjectAttribute& subjectAttribute)
         }
         void operator()(SubjectAssurance assurance)
         {
-            m_archive << assurance;
+            m_archive << assurance.raw;
         }
         void operator()(std::list<IntX> list)
         {
@@ -322,7 +322,7 @@ size_t deserialize(InputArchive& ar, SubjectAttribute& sub)
     switch (type) {
         case SubjectAttributeType::Assurance_Level: {
             SubjectAssurance assurance;
-            ar >> assurance;
+            ar >> assurance.raw;
             size += get_size(assurance);
             sub = assurance;
             break;
