@@ -59,7 +59,7 @@ std::unique_ptr<ParsedPdu> parse(CohesivePacket& packet)
         case NextHeaderBasic::SECURED:
             deserialize(ar, secured);
             pdu->secured = std::move(secured);
-            // TODO: invoke SN-DECAP.service
+            // TODO: invoke SN-DECAP.service, just remember to do decap and verify
         case NextHeaderBasic::ANY:
         case NextHeaderBasic::COMMON:
             deserialize(common, ar);
@@ -121,6 +121,10 @@ std::unique_ptr<ParsedPdu> parse(CohesivePacket& packet)
         } else {
             pdu.reset();
         }
+    }
+
+    if (basic.next_header == NextHeaderBasic::SECURED) {
+        // TODO actually do decap and verify the message
     }
 
     return pdu;
