@@ -131,15 +131,6 @@ void testSignerInfo_Certificate(const Certificate& cert, const Certificate& deCe
     testSignature_Ecdsa_Signature(cert.signature, deCert.signature);
 }
 
-void testEncryptionParemeter_nonce(const EncryptionParameter& param,
-    const EncryptionParameter& deParam)
-{
-    EXPECT_EQ(get_type(param), get_type(deParam));
-    Nonce a = boost::get<Nonce>(param);
-    Nonce b = boost::get<Nonce>(deParam);
-    EXPECT_EQ(a, b);
-}
-
 void testRecipientInfo(const RecipientInfo& info, const RecipientInfo& deInfo)
 {
     EXPECT_EQ(info.cert_id, deInfo.cert_id);

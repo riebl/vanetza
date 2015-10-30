@@ -40,8 +40,6 @@ void testCertificate_ValidityRestrictionList(const std::list<ValidityRestriction
     const std::list<ValidityRestriction>&);
 void testSignerInfo_Certificate(const Certificate&, const Certificate&);
 
-void testEncryptionParemeter_nonce(const EncryptionParameter&, const EncryptionParameter&);
-
 void testRecipientInfo(const RecipientInfo&, const RecipientInfo&);
 void testRecipientInfoList(const std::list<RecipientInfo>&, const std::list<RecipientInfo>&);
 
