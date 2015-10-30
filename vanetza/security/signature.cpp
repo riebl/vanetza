@@ -1,5 +1,6 @@
 #include <vanetza/security/deserialization_error.hpp>
 #include <vanetza/security/signature.hpp>
+#include <cassert>
 
 namespace vanetza
 {
@@ -52,6 +53,7 @@ void serialize(OutputArchive& ar, const Signature& sig)
 
         void operator()(const EcdsaSignature& sig)
         {
+            assert(field_size(m_algo) == sig.s.size());
             serialize(m_archive, sig.R, m_algo);
             for (auto& byte : sig.s) {
                 m_archive << byte;
