@@ -19,7 +19,7 @@ struct EciesNistP256EncryptedKey
     std::array<uint8_t, 16> t;
 };
 
-typedef boost::variant<EciesNistP256EncryptedKey> Key;
+typedef boost::variant<EciesNistP256EncryptedKey, ByteBuffer> Key;
 
 /**
  * According to TS 103 097 V1.2.1, section 5.8
