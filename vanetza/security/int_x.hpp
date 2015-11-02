@@ -42,7 +42,7 @@ void serialize(OutputArchive&, const IntX&);
  * \param archive with a serialized IntX at the beginning, IntX to deserialize
  * \return size of the deserialized IntX
  */
-void deserialize(InputArchive&, IntX&);
+size_t deserialize(InputArchive&, IntX&);
 
 /**
  * Calculates size of an IntX

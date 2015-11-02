@@ -53,10 +53,11 @@ void serialize(OutputArchive& ar, const IntX& intx)
     }
 }
 
-void deserialize(InputArchive& ar, IntX& intx)
+size_t deserialize(InputArchive& ar, IntX& intx)
 {
     const auto size = deserialize_length(ar);
     intx.set(size);
+    return get_size(intx);
 }
 
 } // namespace security
