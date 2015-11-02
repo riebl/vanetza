@@ -168,7 +168,7 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
         pdu->common().payload = payload->size();
 
         // Security
-        if (request.security_profile) {
+        if (m_mib.itsGnSecurity) {
             // TODO: SN-ENCAP.request
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
         }
@@ -203,7 +203,7 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
         pdu->common().payload = payload->size();
 
         // Security
-        if (request.security_profile) {
+        if (m_mib.itsGnSecurity) {
             // TODO: SN-ENCAP.request
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
         }

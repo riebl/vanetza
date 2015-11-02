@@ -27,7 +27,7 @@ BasicHeader::BasicHeader(const MIB& mib) :
 BasicHeader::BasicHeader(const DataRequest& request, const MIB& mib) :
     BasicHeader(mib)
 {
-    if (request.security_profile) {
+    if (mib.itsGnSecurity) {
         next_header = NextHeaderBasic::SECURED;
     } else {
         next_header = NextHeaderBasic::COMMON;
