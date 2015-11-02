@@ -1,5 +1,6 @@
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/length_coding.hpp>
+#include <vanetza/security/serialization.hpp>
 
 namespace vanetza
 {
@@ -47,10 +48,7 @@ size_t get_size(IntX intx)
 
 void serialize(OutputArchive& ar, const IntX& intx)
 {
-    ByteBuffer buf = intx.encode();
-    for (auto byte : buf) {
-        ar << byte;
-    }
+    serialize_length(ar, intx.get());
 }
 
 size_t deserialize(InputArchive& ar, IntX& intx)
