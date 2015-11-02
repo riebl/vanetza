@@ -1,5 +1,6 @@
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/length_coding.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 #include <gtest/gtest.h>
 
 using vanetza::ByteBuffer;
@@ -70,3 +71,18 @@ TEST(IntX, decode)
     EXPECT_EQ(0x320034, decoded->get());
 }
 
+TEST(IntX, serialization)
+{
+    IntX x;
+    x.set(0);
+    EXPECT_EQ(x, serialize_roundtrip(x));
+
+    x.set(255);
+    EXPECT_EQ(x, serialize_roundtrip(x));
+
+    x.set(0x123456);
+    EXPECT_EQ(x, serialize_roundtrip(x));
+
+    x.set(~1);
+    EXPECT_DEBUG_DEATH(serialize_roundtrip(x), "");
+}
