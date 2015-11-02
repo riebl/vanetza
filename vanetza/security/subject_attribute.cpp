@@ -292,6 +292,8 @@ void serialize(OutputArchive& ar, const SubjectAttribute& subjectAttribute)
         }
         void operator()(EccPoint ecc)
         {
+            // TODO: specification of corresponding public key algorithm is missing
+            throw serialization_error("unsupported serialization of SubjectAttribute with EccPoint");
         }
         void operator()(std::list<ItsAidSsp> list)
         {
@@ -365,6 +367,7 @@ size_t deserialize(InputArchive& ar, SubjectAttribute& sub)
             break;
         }
         case SubjectAttributeType::Reconstruction_Value:
+            throw deserialization_error("unsupported deserialization of SubjectAttribute with EccPoint");
             break;
         case SubjectAttributeType::Priority_Ssp_List: {
             std::list<ItsAidPrioritySsp> itsAidPrioritySsp_list;
