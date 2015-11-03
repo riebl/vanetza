@@ -1,5 +1,10 @@
 include(UseGTest)
-prepare_gtest(security set_elements.cpp test_elements.cpp web_validator.cpp)
+prepare_gtest(security
+    check_basic_elements.cpp
+    set_elements.cpp
+    test_elements.cpp
+    web_validator.cpp
+)
 target_link_libraries(security_test INTERFACE common)
 
 add_gtest(EccPoint ecc_point.cpp)
