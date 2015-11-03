@@ -9,6 +9,7 @@ prepare_gtest(security
     check_signature.cpp
     check_signer_info.cpp
     check_subject_attribute.cpp
+    check_trailer_field.cpp
     check_validity_restriction.cpp
     set_elements.cpp
     test_elements.cpp
