@@ -2,10 +2,7 @@
 #define SIGNER_INFO_HPP_9K6GXK4R
 
 #include <vanetza/security/certificate.hpp>
-#include <vanetza/security/length_coding.hpp>
 #include <vanetza/security/signer_info_fwd.hpp>
-#include <boost/variant.hpp>
-#include <list>
 
 namespace vanetza
 {

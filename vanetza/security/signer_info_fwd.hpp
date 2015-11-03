@@ -3,6 +3,7 @@
 
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <boost/variant/variant.hpp>
 #include <cstdint>
 #include <list>
 
