@@ -7,6 +7,7 @@ prepare_gtest(security
     check_public_key.cpp
     check_recipient_info.cpp
     check_region.cpp
+    check_secured_message.cpp
     check_signature.cpp
     check_signer_info.cpp
     check_subject_attribute.cpp

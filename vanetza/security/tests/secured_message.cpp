@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
+#include <vanetza/security/tests/check_secured_message.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/check_signature.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 #include <vanetza/security/tests/web_validator.hpp>
 
 using namespace vanetza::security;
@@ -12,7 +13,7 @@ TEST(SecuredMessage, Serialization)
 {
     SecuredMessage m;
 
-    m.header_fields = setHeaderField_list();
+    m.header_fields.push_back(Time64 { 0x4711 });
     m.payload = {PayloadType::Unsecured, { 5, 10, 15, 25, 40 }};
     std::list<TrailerField> list;
     list.push_back(Signature { create_random_ecdsa_signature(44) });
@@ -27,8 +28,7 @@ TEST(SecuredMessage, Serialization)
     InputArchive ia(stream);
     deserialize(ia, deMessage);
 
-    testHeaderFieldList(m.header_fields, deMessage.header_fields);
-    check(m.payload, deMessage.payload);
+    check(m, serialize_roundtrip(m));
 }
 
 TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
