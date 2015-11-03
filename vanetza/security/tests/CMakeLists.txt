@@ -1,6 +1,7 @@
 include(UseGTest)
 prepare_gtest(security
     check_basic_elements.cpp
+    check_public_key.cpp
     check_region.cpp
     set_elements.cpp
     test_elements.cpp
