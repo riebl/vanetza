@@ -1,77 +1,108 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/security/header_field.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/geonet/units.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/check_header_field.hpp>
+#include <vanetza/security/tests/check_signature.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 #include <vanetza/security/tests/web_validator.hpp>
+#include <algorithm>
 
-using namespace std;
 using namespace vanetza::security;
 using namespace vanetza;
 
-std::list<HeaderField> serialize(std::list<HeaderField> list)
-{
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, list);
-    std::list<HeaderField> deList;
-    InputArchive ia(stream);
-    deserialize(ia, deList);
-    return deList;
-}
-
 TEST(HeaderField, Serialize)
 {
-    std::list<HeaderField> list = setHeaderField_list();
-    std::list<HeaderField> deList = serialize(list);
-    testHeaderFieldList(list, deList);
+    std::list<HeaderField> list;
+
+    std::list<Certificate> certificates;
+    for (unsigned i = 0; i < 2; ++i) {
+        auto rand_gen = random_byte_generator(i + 8 * 3);
+        Certificate cert;
+        cert.version = rand_gen();
+
+        std::list<SignerInfo> signer_info;
+        HashedId8 cert_digest;
+        std::generate(cert_digest.begin(), cert_digest.end(), rand_gen);
+        signer_info.push_back(cert_digest);
+        CertificateDigestWithOtherAlgorithm cert_other;
+        cert_other.algorithm = PublicKeyAlgorithm::Ecies_Nistp256;
+        std::generate(cert_other.digest.begin(), cert_other.digest.end(), rand_gen);
+        signer_info.push_back(cert_other);
+
+        cert.signer_info = signer_info;
+        cert.subject_info = { SubjectType::Enrollment_Credential, random_byte_sequence(28, i) };
+        cert.signature = create_random_ecdsa_signature(i + 8);
+        certificates.push_back(cert);
+    }
+    list.push_back(SignerInfo { certificates });
+
+    list.push_back(Time64 { 983 });
+
+    Time64WithStandardDeviation time_dev;
+    time_dev.log_std_dev = 1;
+    time_dev.time64 = 2000;
+    list.push_back(time_dev);
+
+    list.push_back(Time32 { 434 });
+
+    ThreeDLocation loc;
+    loc.latitude.from_value(838);
+    loc.longitude.from_value(37);
+    loc.elevation = {{ 83, 17 }};
+    list.push_back(loc);
+
+    std::list<HashedId3> hashed;
+    for (unsigned i = 0; i < 3; ++i) {
+        HashedId3 id;
+        std::generate(id.begin(), id.end(), random_byte_generator(i + 8943));
+        hashed.push_back(id);
+    }
+    list.push_back(hashed);
+
+    list.push_back(uint16_t { 43 });
+
+    Nonce nonce;
+    std::generate(nonce.begin(), nonce.end(), random_byte_generator(22));
+    list.push_back(EncryptionParameter { nonce });
+
+    std::list<RecipientInfo> recipients;
+    for (unsigned i = 0; i < 2; ++i) {
+        const std::size_t length = field_size(PublicKeyAlgorithm::Ecies_Nistp256);
+        auto rand_gen = random_byte_generator(i + 93);
+        RecipientInfo info;
+        EciesNistP256EncryptedKey key;
+        std::generate(info.cert_id.begin(), info.cert_id.end(), rand_gen);
+        key.c = random_byte_sequence(field_size(SymmetricAlgorithm::Aes128_Ccm), rand_gen());
+        std::generate(key.t.begin(), key.t.end(), rand_gen);
+        key.v = Uncompressed {
+            random_byte_sequence(length, rand_gen()),
+            random_byte_sequence(length, rand_gen()) };
+        info.enc_key = key;
+        recipients.push_back(info);
+    }
+    list.push_back(recipients);
+
+    check(list, serialize_roundtrip(list));
 }
 
-TEST(HeaderField, WebValidator_SecuredMessage3_Size)
+TEST(HeaderField, WebValidator_SecuredMessage3)
 {
+    const char str[] =
+        "81038002010901A8ED6DF65B0E6D6A010080940000040209B0434163CCBAFDD34A45333E418FB96C"
+        "05BBE0E7E1D755D40D0B4BBE8DA508EC2F2723B7ADF0F27C39F3AECFF0783C196F9961F8821E6294"
+        "375D9294CD6A01000452113CE698DB081491675DF8FFE81C23EA5D0071B2D2BF0E0DA4ADA0CDA582"
+        "59CA5D999200B6565E194EDAB8BD3DCA863F2DDF39C13E7A0375ECE2566C5EB8C60200210AC04080"
+        "0101C0408101010F01099EB20109B1270003040100960000008DA1F3F9F35E04C3DE77D7438988A8"
+        "D57EBE44DAA021A4269E297C177C9CFE458E128EC290785D6631961625020943B6D87DAA54919A98"
+        "F7865709929A7C6E480000009373CF482D40050002";
+    std::stringstream stream;
+    stream_from_string(stream, str);
+    InputArchive ar(stream);
+
     std::list<HeaderField> list;
-    HeaderField field1;
-    std::list<SignerInfo> infoList1;
-    SignerInfo info1;
-    Certificate cert1;
-    cert1.version = uint8_t(1);
-    //-------------------- signer info
-    HashedId8 id1 {{ 0xA8, 0xED, 0x6D, 0xF6, 0x5B, 0x0E, 0x6D, 0x6A }};
-    info1 = id1;
-    infoList1.push_back(info1);
-    cert1.signer_info = infoList1;
-
-    //-------------------- subject_info
-
-    SubjectInfo subInfo1;
-    subInfo1.subject_type = SubjectType::Authorization_Ticket;
-    cert1.subject_info = subInfo1;
-
-    //-------------------- subject_attribute
-
-    cert1.subject_attributes = SetWebValidator_SecuredMessage3_Attribute();
-
-    //-------------------- validity_restriction
-
-    cert1.validity_restriction = setWebValidator_SecuredMessage3_Restriction();
-
-    //-------------------- signature
-
-    cert1.signature = setWebValidator_SecuredMessage3_Signature();
-    info1 = cert1;
-    field1 = info1;
-    list.push_back(field1);
-    EXPECT_EQ(247, get_size(list));
-
-    Time64 time64 = 0x1111111111111111;
-    field1 = time64;
-    list.push_back(field1);
-    uint16_t elem = 0x1111;
-    field1 = elem;
-    list.push_back(field1);
-
+    const size_t deserialize_length = deserialize(ar, list);
+    EXPECT_EQ(259, deserialize_length);
     EXPECT_EQ(259, get_size(list));
-
+    EXPECT_EQ(3, list.size());
 }
 
