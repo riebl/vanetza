@@ -8,6 +8,7 @@ namespace vanetza
 namespace security
 {
 
+void check(const ThreeDLocation&, const ThreeDLocation&);
 void check(const TwoDLocation& expected, const TwoDLocation& actual);
 void check(const CircularRegion& expected, const CircularRegion& actual);
 void check(const RectangularRegion& expected, const RectangularRegion& actual);

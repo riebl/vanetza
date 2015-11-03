@@ -8,6 +8,13 @@ namespace vanetza
 namespace security
 {
 
+void check(const ThreeDLocation& expected, const ThreeDLocation& actual)
+{
+    EXPECT_EQ(expected.latitude, actual.latitude);
+    EXPECT_EQ(expected.longitude, actual.longitude);
+    EXPECT_EQ(expected.elevation, actual.elevation);
+}
+
 void check(const TwoDLocation& expected, const TwoDLocation& actual)
 {
     EXPECT_EQ(expected.longitude, actual.longitude);
