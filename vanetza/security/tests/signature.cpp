@@ -1,23 +1,17 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_sequence.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 #include <vanetza/security/tests/web_validator.hpp>
+
+using namespace vanetza::security;
 
 TEST(Signature, serialize)
 {
-    Signature sig = create_random_ecdsa_signature(42);
-
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, sig);
-
-    Signature deserializedSig;
-    InputArchive ia(stream);
-    deserialize(ia, deserializedSig);
-
-    testSignature_Ecdsa_Signature(sig, deserializedSig);
+    Signature signature = create_random_ecdsa_signature(42);
+    check(signature, serialize_roundtrip(signature));
 }
 
 TEST(Signature, WebValidator_Size)
