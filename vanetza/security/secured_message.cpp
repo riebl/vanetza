@@ -8,7 +8,7 @@ namespace security
 
 size_t get_size(const SecuredMessage& message)
 {
-    size_t size = sizeof(message.protocol_version());
+    size_t size = sizeof(uint8_t); // protocol version
     size += get_size(message.header_fields);
     size += length_coding_size(get_size(message.header_fields));
     size += get_size(message.trailer_fields);

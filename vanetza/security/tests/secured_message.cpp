@@ -41,6 +41,7 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
     InputArchive inAr(stream);
     deserialize(inAr, m);
 
+    EXPECT_EQ(360, get_size(m));
     EXPECT_EQ(2, m.protocol_version());
 
     ASSERT_EQ(3, m.header_fields.size());
