@@ -3,6 +3,7 @@ prepare_gtest(security
     check_basic_elements.cpp
     check_public_key.cpp
     check_region.cpp
+    check_signature.cpp
     set_elements.cpp
     test_elements.cpp
     web_validator.cpp
