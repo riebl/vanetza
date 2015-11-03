@@ -4,7 +4,7 @@
 #include <vanetza/geonet/units.hpp>
 #include <vanetza/security/tests/set_elements.hpp>
 #include <vanetza/security/tests/test_elements.hpp>
-#include <vanetza/security/tests/web_validator.cpp>
+#include <vanetza/security/tests/web_validator.hpp>
 
 using namespace std;
 using namespace vanetza::security;
