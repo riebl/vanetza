@@ -17,8 +17,7 @@ TEST(Region, Serialize_CircularRegion)
     reg.center.latitude = static_cast<geo_angle_i32t>(12564 * degrees);
     reg.center.longitude = static_cast<geo_angle_i32t>(654321 * degrees);
     reg.radius = static_cast<distance_u16t>(1337 * meter);
-    GeographicRegion deReg = serialize_roundtrip(reg);
-    check(reg, deReg);
+    check(reg, serialize_roundtrip(reg));
 }
 
 TEST(Region, Serialize_IdentifiedRegion)
@@ -27,8 +26,7 @@ TEST(Region, Serialize_IdentifiedRegion)
     reg.region_dictionary = RegionDictionary::Iso_3166_1;
     reg.region_identifier = 12345;
     reg.local_region.set(546);
-    GeographicRegion dereg = serialize_roundtrip(reg);
-    check(reg, dereg);
+    check(reg, serialize_roundtrip(reg));
 }
 
 TEST(Region, Serialize_PolygonalRegion)
@@ -40,8 +38,7 @@ TEST(Region, Serialize_PolygonalRegion)
                 geo_angle_i32t::from_value(26 + i)
             });
     }
-    GeographicRegion dereg = serialize_roundtrip(reg);
-    check(reg, dereg);
+    check(reg, serialize_roundtrip(reg));
 }
 
 TEST(Region, Serialize_RectangularRegion_list)
@@ -59,6 +56,5 @@ TEST(Region, Serialize_RectangularRegion_list)
                 }
             });
     }
-    GeographicRegion dereg = serialize_roundtrip(reg);
-    check(reg, dereg);
+    check(reg, serialize_roundtrip(reg));
 }
