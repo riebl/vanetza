@@ -2,6 +2,7 @@
 #define SERIALIZATION_HPP_ZWGI3RCG
 
 #include <vanetza/security/serialization.hpp>
+#include <vanetza/security/tests/web_validator.hpp>
 #include <sstream>
 
 namespace vanetza
@@ -21,6 +22,19 @@ T serialize_roundtrip(const T& source)
     deserialize(ia, result);
 
     return result;
+}
+
+template<typename T, typename... ARGS>
+T deserialize(const char* input, ARGS&&... args)
+{
+    std::stringstream stream;
+    stream_from_string(stream, input);
+
+    T t;
+    InputArchive ar(stream);
+    deserialize(ar, t, std::forward<ARGS>(args)...);
+
+    return t;
 }
 
 } // namespace security
