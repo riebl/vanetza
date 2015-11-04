@@ -81,29 +81,29 @@ size_t get_size(const SubjectAttribute& sub)
     size_t size = sizeof(SubjectAttributeType);
     struct subject_attribute_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(VerificationKey key)
+        size_t operator()(const VerificationKey& key)
         {
             return get_size(key.key);
         }
-        size_t operator()(EncryptionKey key)
+        size_t operator()(const EncryptionKey& key)
         {
             return get_size(key.key);
         }
-        size_t operator()(SubjectAssurance assurance)
+        size_t operator()(const SubjectAssurance& assurance)
         {
             return get_size(assurance);
         }
-        size_t operator()(std::list<IntX> list)
+        size_t operator()(const std::list<IntX>& list)
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
             return size;
         }
-        size_t operator()(EccPoint ecc)
+        size_t operator()(const EccPoint& ecc)
         {
             return get_size(ecc);
         }
-        size_t operator()(std::list<ItsAidSsp> list)
+        size_t operator()(const std::list<ItsAidSsp>& list)
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
@@ -124,28 +124,28 @@ void serialize(OutputArchive& ar, const SubjectAttribute& subjectAttribute)
             m_archive(ar)
         {
         }
-        void operator()(VerificationKey key)
+        void operator()(const VerificationKey& key)
         {
             serialize(m_archive, key.key);
         }
-        void operator()(EncryptionKey key)
+        void operator()(const EncryptionKey& key)
         {
             serialize(m_archive, key.key);
         }
-        void operator()(SubjectAssurance assurance)
+        void operator()(const SubjectAssurance& assurance)
         {
             m_archive << assurance.raw;
         }
-        void operator()(std::list<IntX> list)
+        void operator()(const std::list<IntX>& list)
         {
             serialize(m_archive, list);
         }
-        void operator()(EccPoint ecc)
+        void operator()(const EccPoint& ecc)
         {
             // TODO: specification of corresponding public key algorithm is missing
             throw serialization_error("unsupported serialization of SubjectAttribute with EccPoint");
         }
-        void operator()(std::list<ItsAidSsp> list)
+        void operator()(const std::list<ItsAidSsp>& list)
         {
             serialize(m_archive, list);
         }
