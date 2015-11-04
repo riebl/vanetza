@@ -1,3 +1,4 @@
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/public_key.hpp>
 
 namespace vanetza

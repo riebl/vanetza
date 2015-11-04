@@ -1,4 +1,4 @@
-#include <vanetza/security/deserialization_error.hpp>
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/secured_message.hpp>
 
 namespace vanetza

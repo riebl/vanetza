@@ -1,3 +1,4 @@
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/length_coding.hpp>
 

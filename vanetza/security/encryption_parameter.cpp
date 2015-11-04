@@ -1,11 +1,11 @@
 #include <vanetza/security/encryption_parameter.hpp>
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/public_key.hpp>
 
 namespace vanetza
 {
 namespace security
 {
-
 
 SymmetricAlgorithm get_type(const EncryptionParameter& param)
 {
@@ -20,7 +20,6 @@ SymmetricAlgorithm get_type(const EncryptionParameter& param)
     Encryption_visitor visit;
     return boost::apply_visitor(visit, param);
 }
-
 
 void serialize(OutputArchive& ar, const EncryptionParameter& param)
 {
@@ -44,7 +43,6 @@ void serialize(OutputArchive& ar, const EncryptionParameter& param)
     Encryption_visitor visit(ar);
     boost::apply_visitor(visit, param);
 }
-
 
 size_t get_size(const EncryptionParameter& param)
 {

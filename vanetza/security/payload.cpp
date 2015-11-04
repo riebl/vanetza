@@ -1,13 +1,10 @@
 #include <vanetza/security/payload.hpp>
-#include <vanetza/security/deserialization_error.hpp>
 #include <vanetza/security/length_coding.hpp>
 
 namespace vanetza
 {
 namespace security
 {
-
-
 
 size_t get_size(const Payload& payload)
 {
@@ -33,7 +30,6 @@ void serialize(OutputArchive& ar, const Payload& payload)
         ar << elem;
     }
 }
-
 
 size_t deserialize(InputArchive& ar, ByteBuffer& buf)
 {

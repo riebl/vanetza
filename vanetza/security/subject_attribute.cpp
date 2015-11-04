@@ -1,3 +1,4 @@
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 
 namespace vanetza

@@ -1,5 +1,5 @@
 #include <vanetza/security/certificate.hpp>
-#include <vanetza/security/deserialization_error.hpp>
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/header_field.hpp>
 #include <boost/optional.hpp>
 #include <string>

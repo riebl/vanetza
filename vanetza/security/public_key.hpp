@@ -2,7 +2,6 @@
 #define PUBLIC_KEY_HPP_DRZFSERF
 
 #include <vanetza/security/ecc_point.hpp>
-#include <vanetza/security/deserialization_error.hpp>
 #include <boost/variant.hpp>
 
 namespace vanetza

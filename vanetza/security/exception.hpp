@@ -1,5 +1,5 @@
-#ifndef DESERIALIZATION_ERROR_HPP_MEINSOIS
-#define DESERIALIZATION_ERROR_HPP_MEINSOIS
+#ifndef EXCEPTION_HPP_IY8LEMBQ
+#define EXCEPTION_HPP_IY8LEMBQ
 
 #include <stdexcept>
 
@@ -7,6 +7,12 @@ namespace vanetza
 {
 namespace security
 {
+
+class serialization_error : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+};
 
 class deserialization_error : public std::runtime_error
 {
@@ -17,4 +23,4 @@ public:
 } // namespace security
 } // namespace vanetza
 
-#endif /* DESERIALIZATION_ERROR_HPP_MEINSOIS */
+#endif /* EXCEPTION_HPP_IY8LEMBQ */
