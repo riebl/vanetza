@@ -21,8 +21,6 @@ using namespace std;
 EncryptionKey setSubjectAttribute_Encryption_Key();
 std::list<ItsAidSsp> setSubjectAttribute_Its_Aid_Ssp_List();
 std::list<IntX> setSubjectAttribute_Its_Aid_List();
-std::list<ItsAidPriority> setSubjectAttribute_Priority_Its_Aid_List();
-std::list<ItsAidPrioritySsp> setSubjectAttribute_Priority_Ssp_List();
 
 ValidityRestriction setValidityRestriction_Time_End();
 ValidityRestriction setValidityRestriction_Time_Start_And_End();

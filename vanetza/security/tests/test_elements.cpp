@@ -40,44 +40,6 @@ void testSubjectAttribute_Its_Aid_Ssp_List(const SubjectAttribute& sub,
     }
 }
 
-void testSubjectAttribute_Priority_Its_Aid_List(const SubjectAttribute& sub,
-    const SubjectAttribute& deSub)
-{
-    EXPECT_EQ(get_type(deSub), get_type(sub));
-    int c = 0;
-    for (auto& itsAidPriorityList : boost::get<std::list<ItsAidPriority>>(deSub)) {
-        EXPECT_EQ(itsAidPriorityList.its_aid.get(), c + 35);
-        EXPECT_EQ(itsAidPriorityList.max_priority, (125 + c));
-        c++;
-    }
-}
-
-void testSubjectAttribute_Priority_Ssp_List(const SubjectAttribute& sub,
-    const SubjectAttribute& deSub)
-{
-    EXPECT_EQ(get_type(deSub), get_type(sub));
-    auto iter = boost::get<std::list<ItsAidPrioritySsp>>(deSub).begin();
-    EXPECT_EQ(iter->its_aid.get(), 10);
-    EXPECT_EQ(iter->max_priority, 15);
-    auto buf_it = iter->service_specific_permissions.begin();
-    for (int c = 0; c < 5; c++) {
-        uint8_t x;
-        x = uint8_t(*buf_it);
-        EXPECT_EQ(x, c + 100);
-        buf_it++;
-    }
-    iter++;
-    EXPECT_EQ(iter->its_aid.get(), 12);
-    EXPECT_EQ(iter->max_priority, 125);
-    buf_it = iter->service_specific_permissions.begin();
-    for (int c = 0; c < 7; c++) {
-        uint8_t x;
-        x = uint8_t(*buf_it);
-        EXPECT_EQ(int(x), c + 200);
-        buf_it++;
-    }
-}
-
 void testValidityRestriction_Time_End(const ValidityRestriction& res,
     const ValidityRestriction& deserializedRes)
 {

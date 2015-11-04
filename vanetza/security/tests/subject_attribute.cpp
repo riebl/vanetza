@@ -26,12 +26,6 @@ TEST(SubjectAttribute, serialize)
     sub = setSubjectAttribute_Its_Aid_Ssp_List();
     list.push_back(sub);
 
-    sub = setSubjectAttribute_Priority_Its_Aid_List();
-    list.push_back(sub);
-
-    sub = setSubjectAttribute_Priority_Ssp_List();
-    list.push_back(sub);
-
     auto delist = serialize_roundtrip(list);
 
 //---------------------------------TEST------------------------------------------------
@@ -44,9 +38,6 @@ TEST(SubjectAttribute, serialize)
     EXPECT_EQ(boost::get<SubjectAssurance>(*deIt++).raw, boost::get<SubjectAssurance>(*it++).raw);
     testSubjectAttribute_Its_Aid_List(*it++, *deIt++);
     testSubjectAttribute_Its_Aid_Ssp_List(*it++, *deIt++);
-    testSubjectAttribute_Priority_Its_Aid_List(*it++, *deIt++);
-    testSubjectAttribute_Priority_Ssp_List(*it++, *deIt++);
-
 }
 
 TEST(SubjectAttribute, WebValidator_ItsAidSsp_Size)

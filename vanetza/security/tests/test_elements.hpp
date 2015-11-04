@@ -21,8 +21,6 @@ using namespace std;
 void testSubjectAttribute_Encryption_Key(const SubjectAttribute&, const SubjectAttribute&);
 void testSubjectAttribute_Its_Aid_List(const SubjectAttribute&, const SubjectAttribute&);
 void testSubjectAttribute_Its_Aid_Ssp_List(const SubjectAttribute&, const SubjectAttribute&);
-void testSubjectAttribute_Priority_Its_Aid_List(const SubjectAttribute&, const SubjectAttribute&);
-void testSubjectAttribute_Priority_Ssp_List(const SubjectAttribute&, const SubjectAttribute&);
 
 void testValidityRestriction_Time_End(const ValidityRestriction&, const ValidityRestriction&);
 void testValidityRestriction_Time_Start_And_End(const ValidityRestriction&,
