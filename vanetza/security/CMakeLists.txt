@@ -13,6 +13,7 @@ set(CXX_SOURCES
     length_coding.cpp
     int_x.cpp
     secured_message.cpp
+    security_entity.cpp
     serialization.cpp
     signature.cpp
     signer_info.cpp
