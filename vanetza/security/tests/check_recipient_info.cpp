@@ -14,7 +14,7 @@ void check(const RecipientInfo& expected, const RecipientInfo& actual)
     check(expected.enc_key, actual.enc_key);
 }
 
-void check(const EciesNistP256EncryptedKey& expected, const EciesNistP256EncryptedKey& actual)
+void check(const EciesEncryptedKey& expected, const EciesEncryptedKey& actual)
 {
     check(expected.v, actual.v);
     EXPECT_EQ(expected.c, actual.c);

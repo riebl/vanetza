@@ -10,7 +10,7 @@ PublicKeyAlgorithm get_type(const Key& key)
 {
     struct key_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
-        PublicKeyAlgorithm operator()(const EciesNistP256EncryptedKey& key)
+        PublicKeyAlgorithm operator()(const EciesEncryptedKey& key)
         {
             return PublicKeyAlgorithm::Ecies_Nistp256;
         }
@@ -37,7 +37,7 @@ size_t get_size(const RecipientInfo& info)
     size += sizeof(PublicKeyAlgorithm);
     struct RecipientInfoKey_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(const EciesNistP256EncryptedKey& key)
+        size_t operator()(const EciesEncryptedKey& key)
         {
             return key.c.size() + key.t.size() + get_size(key.v);
         }
@@ -61,7 +61,7 @@ void serialize(OutputArchive& ar, const RecipientInfo& info, SymmetricAlgorithm 
             m_archive(ar), m_sym_algo(sym_algo), m_pk_algo(pk_algo)
         {
         }
-        void operator()(const EciesNistP256EncryptedKey& key)
+        void operator()(const EciesEncryptedKey& key)
         {
             assert(key.c.size() == field_size(m_sym_algo));
             serialize(m_archive, key.v, m_pk_algo);
@@ -104,7 +104,7 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
     deserialize(ar, algo);
     switch (algo) {
         case PublicKeyAlgorithm::Ecies_Nistp256: {
-            EciesNistP256EncryptedKey ecies;
+            EciesEncryptedKey ecies;
             deserialize(ar, ecies.v, PublicKeyAlgorithm::Ecies_Nistp256);
             const size_t fieldSize = field_size(symAlgo);
             for (size_t c = 0; c < fieldSize; ++c) {

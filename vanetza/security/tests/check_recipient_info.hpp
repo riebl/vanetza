@@ -8,7 +8,7 @@ namespace vanetza
 namespace security
 {
 
-void check(const EciesNistP256EncryptedKey&, const EciesNistP256EncryptedKey&);
+void check(const EciesEncryptedKey&, const EciesEncryptedKey&);
 void check(const OpaqueKey&, const OpaqueKey&);
 void check(const Key&, const Key&);
 void check(const RecipientInfo&, const RecipientInfo&);

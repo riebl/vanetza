@@ -13,7 +13,7 @@ namespace security
 /**
  * According to TS 103 097 V1.2.1, section 5.9
  */
-struct EciesNistP256EncryptedKey
+struct EciesEncryptedKey
 {
     EccPoint v;
     ByteBuffer c;
@@ -25,7 +25,7 @@ struct OpaqueKey
     ByteBuffer data;
 };
 
-typedef boost::variant<EciesNistP256EncryptedKey, OpaqueKey> Key;
+typedef boost::variant<EciesEncryptedKey, OpaqueKey> Key;
 
 /**
  * According to TS 103 097 V1.2.1, section 5.8
