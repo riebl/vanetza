@@ -19,14 +19,6 @@ TEST(SecuredMessage, Serialization)
     list.push_back(Signature { create_random_ecdsa_signature(45) });
     m.trailer_fields = list;
 
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, m);
-
-    SecuredMessage deMessage;
-    InputArchive ia(stream);
-    deserialize(ia, deMessage);
-
     check(m, serialize_roundtrip(m));
 }
 
