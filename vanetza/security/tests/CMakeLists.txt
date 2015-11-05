@@ -17,6 +17,7 @@ prepare_gtest(security
 )
 target_link_libraries(security_test INTERFACE common)
 
+add_gtest(Certificate certificate.cpp)
 add_gtest(EccPoint ecc_point.cpp)
 add_gtest(EncryptionParameter encryption_parameter.cpp)
 add_gtest(HeaderField header_field.cpp)
