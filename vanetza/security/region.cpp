@@ -189,7 +189,6 @@ void serialize(OutputArchive& ar, const IdentifiedRegion& reg)
 {
     serialize(ar, reg.region_dictionary);
     geonet::serialize(host_cast(reg.region_identifier), ar);
-    serialize_length(ar, reg.local_region.get());
     serialize(ar, reg.local_region);
 }
 
