@@ -26,17 +26,21 @@ void serialize(OutputArchive& ar, const SecuredMessage& message)
     serialize(ar, message.trailer_fields);
 }
 
-void deserialize(InputArchive& ar, SecuredMessage& message)
+size_t deserialize(InputArchive& ar, SecuredMessage& message)
 {
     uint8_t protocol_version = 0;
     ar >> protocol_version;
+    size_t length = sizeof(protocol_version);
     if (protocol_version == 2) {
-        deserialize(ar, message.header_fields);
-        deserialize(ar, message.payload);
-        deserialize(ar, message.trailer_fields);
+        const size_t hdr_length = deserialize(ar, message.header_fields);
+        length += hdr_length + length_coding_size(hdr_length);
+        length += deserialize(ar, message.payload);
+        const size_t trlr_length = deserialize(ar, message.trailer_fields);
+        length += trlr_length + length_coding_size(trlr_length);
     } else {
         throw deserialization_error("Unsupported SecuredMessage protocol version");
     }
+    return length;
 }
 
 } // namespace security

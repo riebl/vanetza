@@ -44,7 +44,7 @@ void serialize(OutputArchive& ar, const SecuredMessage& message);
  * \param SecuredMessage to safe deserialized values in
  * \return size of deserialized SecuredMessage
  */
-void deserialize(InputArchive& ar, SecuredMessage& message);
+size_t deserialize(InputArchive& ar, SecuredMessage& message);
 
 } // namespace security
 } // namespace vanetza
