@@ -1,14 +1,28 @@
 #ifndef SERIALIZATION_HPP_ZWGI3RCG
 #define SERIALIZATION_HPP_ZWGI3RCG
 
+#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/security/serialization.hpp>
-#include <vanetza/security/tests/web_validator.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
 #include <sstream>
 
 namespace vanetza
 {
 namespace security
 {
+
+ByteBuffer buffer_from_hexstring(const char*);
+
+template<typename T, typename... ARGS>
+size_t deserialize_from_hexstring(const char* string, T& result, ARGS&&... args)
+{
+    auto buffer = buffer_from_hexstring(string);
+    byte_buffer_source source(buffer);
+    boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
+    InputArchive ar(stream, boost::archive::no_header);
+    return deserialize(ar, result, std::forward<ARGS>(args)...);
+}
 
 template<typename T, typename... ARGS>
 T serialize_roundtrip(const T& source, ARGS&&... args)
@@ -22,19 +36,6 @@ T serialize_roundtrip(const T& source, ARGS&&... args)
     deserialize(ia, result, std::forward<ARGS>(args)...);
 
     return result;
-}
-
-template<typename T, typename... ARGS>
-T deserialize(const char* input, ARGS&&... args)
-{
-    std::stringstream stream;
-    stream_from_string(stream, input);
-
-    T t;
-    InputArchive ar(stream);
-    deserialize(ar, t, std::forward<ARGS>(args)...);
-
-    return t;
 }
 
 } // namespace security

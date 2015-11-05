@@ -40,5 +40,7 @@ TEST(SubjectAttribute, WebValidator_ItsAidSsp)
     list.push_back(its2);
 
     EXPECT_EQ(10, get_size(list));
-    check(list, deserialize<decltype(list)>("0AC040800101C040810101"));
+    std::list<ItsAidSsp> other_list;
+    deserialize_from_hexstring("0AC040800101C040810101", other_list);
+    check(list, other_list);
 }

@@ -4,7 +4,6 @@
 #include <vanetza/security/tests/check_header_field.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/serialization.hpp>
-#include <vanetza/security/tests/web_validator.hpp>
 #include <algorithm>
 
 using namespace vanetza::security;
@@ -95,12 +94,8 @@ TEST(HeaderField, WebValidator_SecuredMessage3)
         "0101C0408101010F01099EB20109B1270003040100960000008DA1F3F9F35E04C3DE77D7438988A8"
         "D57EBE44DAA021A4269E297C177C9CFE458E128EC290785D6631961625020943B6D87DAA54919A98"
         "F7865709929A7C6E480000009373CF482D40050002";
-    std::stringstream stream;
-    stream_from_string(stream, str);
-    InputArchive ar(stream);
-
     std::list<HeaderField> list;
-    const size_t deserialize_length = deserialize(ar, list);
+    const size_t deserialize_length = deserialize_from_hexstring(str, list);
     EXPECT_EQ(259, deserialize_length);
     EXPECT_EQ(259, get_size(list));
     EXPECT_EQ(3, list.size());

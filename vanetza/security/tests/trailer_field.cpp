@@ -5,7 +5,6 @@
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/check_trailer_field.hpp>
 #include <vanetza/security/tests/serialization.hpp>
-#include <vanetza/security/tests/web_validator.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -28,13 +27,10 @@ TEST(TrailerField, WebValidator_Size)
     EcdsaSignature ecdsa;
     EccPoint point;
     X_Coordinate_Only x;
-
-    byteBuffer_from_string(x.x, "371423BBA0902D8AF2FB2226D73A7781D4D6B6772650A8BEE5A1AF198CEDABA2");
+    x.x = buffer_from_hexstring("371423BBA0902D8AF2FB2226D73A7781D4D6B6772650A8BEE5A1AF198CEDABA2");
     point = x;
     ecdsa.R = point;
-
-    byteBuffer_from_string(ecdsa.s,
-        "C9BF57540C629E6A1E629B8812AEBDDDBCAF472F6586F16C14B3DEFBE9B6ADB2");
+    ecdsa.s = buffer_from_hexstring("C9BF57540C629E6A1E629B8812AEBDDDBCAF472F6586F16C14B3DEFBE9B6ADB2");
     sig = ecdsa;
     field = sig;
 
