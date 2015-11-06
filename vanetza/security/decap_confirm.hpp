@@ -3,7 +3,7 @@
 
 #include <boost/optional.hpp>
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/geonet/extendet_pdu.hpp>
+#include <vanetza/geonet/extended_pdu.hpp>
 
 namespace vanetza
 {
@@ -26,7 +26,6 @@ enum class ReportType : uint8_t
     Incompatible_Protocol = 11,
     Unencrypted_Message = 12,
     Decryption_Error = 13,
-    Incompatible_Protocol = 14,
 };
 
 /**
@@ -41,7 +40,7 @@ struct DecapConfirm
     geonet::ExtendedPdu<HEADER> plaintext_pdu; // valid range plaintext_packet_length; mandatory
     ByteBuffer plaintext_payload; // mandatory
     ReportType report; // mandatory
-    boost::optional<uint64_t> certificate_id // optional
+    boost::optional<uint64_t> certificate_id; // optional
     // member field 'permissions' currently not used; optional
 };
 
