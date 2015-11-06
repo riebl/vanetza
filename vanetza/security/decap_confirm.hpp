@@ -12,20 +12,20 @@ namespace security
 
 enum class ReportType : uint8_t
 {
-    Success = 0,
-    False_Signature = 1,
-    Invalid_Certificate = 2,
-    Revoked_Certificate = 3,
-    Incosistant_Chain = 4,
-    Invalid_Timestamp = 5,
-    Duplicate_Message = 6,
-    Invalid_Mobility_Data = 7,
-    Unsigned_Message = 8,
-    Signer_Certificate_Not_Found = 9,
-    Unsupported_Signer_Identifier_Type = 10,
-    Incompatible_Protocol = 11,
-    Unencrypted_Message = 12,
-    Decryption_Error = 13,
+    Success,
+    False_Signature,
+    Invalid_Certificate,
+    Revoked_Certificate,
+    Incosistant_Chain,
+    Invalid_Timestamp,
+    Duplicate_Message,
+    Invalid_Mobility_Data,
+    Unsigned_Message,
+    Signer_Certificate_Not_Found,
+    Unsupported_Signer_Identifier_Type,
+    Incompatible_Protocol,
+    Unencrypted_Message,
+    Decryption_Error,
 };
 
 /**
