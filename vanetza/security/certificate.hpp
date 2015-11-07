@@ -13,14 +13,19 @@ namespace vanetza
 namespace security
 {
 
+/*
+* described in
+* TS 103 097 v1.2.1 (2015-06) section 6.1
+*/
 struct Certificate
 {
-    uint8_t version;
     SignerInfo signer_info;
     SubjectInfo subject_info;
     std::list<SubjectAttribute> subject_attributes;
     std::list<ValidityRestriction> validity_restriction;
     Signature signature;
+    // certificate version is two, for conformance with the present standard
+    uint8_t version() const { return 2; }
 };
 
 /**

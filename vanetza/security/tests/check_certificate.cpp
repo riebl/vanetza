@@ -14,7 +14,7 @@ namespace security
 
 void check(const Certificate& expected, const Certificate& actual)
 {
-    EXPECT_EQ(expected.version, actual.version);
+    // certificate version is static, no check required
     check(expected.signer_info, actual.signer_info);
     check(expected.subject_info, actual.subject_info);
     check(expected.subject_attributes, actual.subject_attributes, "SubjectAttribute");

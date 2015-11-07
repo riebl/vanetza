@@ -17,7 +17,6 @@ TEST(HeaderField, Serialize)
     for (unsigned i = 0; i < 2; ++i) {
         auto rand_gen = random_byte_generator(i + 8 * 3);
         Certificate cert;
-        cert.version = rand_gen();
         HashedId8 cert_digest;
         std::generate(cert_digest.begin(), cert_digest.end(), rand_gen);
         cert.signer_info = cert_digest;
