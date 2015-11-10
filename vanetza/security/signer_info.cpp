@@ -1,3 +1,4 @@
+#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/length_coding.hpp>
 #include <vanetza/security/signer_info.hpp>

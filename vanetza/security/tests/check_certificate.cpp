@@ -15,7 +15,7 @@ namespace security
 void check(const Certificate& expected, const Certificate& actual)
 {
     EXPECT_EQ(expected.version, actual.version);
-    check(expected.signer_info, actual.signer_info, "SignerInfo");
+    check(expected.signer_info, actual.signer_info);
     check(expected.subject_info, actual.subject_info);
     check(expected.subject_attributes, actual.subject_attributes, "SubjectAttribute");
     check(expected.validity_restriction, actual.validity_restriction, "ValidityRestriction");

@@ -18,17 +18,9 @@ TEST(HeaderField, Serialize)
         auto rand_gen = random_byte_generator(i + 8 * 3);
         Certificate cert;
         cert.version = rand_gen();
-
-        std::list<SignerInfo> signer_info;
         HashedId8 cert_digest;
         std::generate(cert_digest.begin(), cert_digest.end(), rand_gen);
-        signer_info.push_back(cert_digest);
-        CertificateDigestWithOtherAlgorithm cert_other;
-        cert_other.algorithm = PublicKeyAlgorithm::Ecies_Nistp256;
-        std::generate(cert_other.digest.begin(), cert_other.digest.end(), rand_gen);
-        signer_info.push_back(cert_other);
-
-        cert.signer_info = signer_info;
+        cert.signer_info = cert_digest;
         cert.subject_info = { SubjectType::Enrollment_Credential, random_byte_sequence(28, i) };
         cert.signature = create_random_ecdsa_signature(i + 8);
         certificates.push_back(cert);
@@ -84,10 +76,10 @@ TEST(HeaderField, Serialize)
     check(list, serialize_roundtrip(list));
 }
 
-TEST(HeaderField, WebValidator_SecuredMessage3)
+TEST(HeaderField, WebValidator_SecuredMessage3_adapted)
 {
     const char str[] =
-        "81038002010901A8ED6DF65B0E6D6A010080940000040209B0434163CCBAFDD34A45333E418FB96C"
+        "810380020201A8ED6DF65B0E6D6A010080940000040209B0434163CCBAFDD34A45333E418FB96C"
         "05BBE0E7E1D755D40D0B4BBE8DA508EC2F2723B7ADF0F27C39F3AECFF0783C196F9961F8821E6294"
         "375D9294CD6A01000452113CE698DB081491675DF8FFE81C23EA5D0071B2D2BF0E0DA4ADA0CDA582"
         "59CA5D999200B6565E194EDAB8BD3DCA863F2DDF39C13E7A0375ECE2566C5EB8C60200210AC04080"

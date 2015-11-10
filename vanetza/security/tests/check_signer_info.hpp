@@ -10,6 +10,7 @@ namespace security
 
 void check(const std::nullptr_t&, const std::nullptr_t&);
 void check(const CertificateDigestWithOtherAlgorithm&, const CertificateDigestWithOtherAlgorithm&);
+void check(const boost::recursive_wrapper<Certificate>&, const boost::recursive_wrapper<Certificate>&);
 void check(const SignerInfo&, const SignerInfo&);
 
 } // namespace security

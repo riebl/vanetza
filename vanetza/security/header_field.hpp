@@ -2,6 +2,7 @@
 #define HEADER_FIELDS_HPP_IHIAKD4K
 
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/encryption_parameter.hpp>
 #include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/region.hpp>

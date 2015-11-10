@@ -20,6 +20,11 @@ void check(const CertificateDigestWithOtherAlgorithm& expected, const Certificat
     EXPECT_EQ(expected.digest, actual.digest);
 }
 
+void check(const boost::recursive_wrapper<Certificate>& expected, const boost::recursive_wrapper<Certificate>& actual)
+{
+    check(expected.get(), actual.get());
+}
+
 void check(const SignerInfo& expected, const SignerInfo& actual)
 {
     ASSERT_EQ(get_type(expected), get_type(actual));

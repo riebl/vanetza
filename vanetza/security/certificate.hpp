@@ -3,7 +3,7 @@
 
 #include <vanetza/security/serialization.hpp>
 #include <vanetza/security/signature.hpp>
-#include <vanetza/security/signer_info_fwd.hpp>
+#include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 #include <vanetza/security/validity_restriction.hpp>
@@ -16,7 +16,7 @@ namespace security
 struct Certificate
 {
     uint8_t version;
-    std::list<SignerInfo> signer_info;
+    SignerInfo signer_info;
     SubjectInfo subject_info;
     std::list<SubjectAttribute> subject_attributes;
     std::list<ValidityRestriction> validity_restriction;
