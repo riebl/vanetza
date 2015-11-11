@@ -1,4 +1,5 @@
 find_package(Boost COMPONENTS serialization REQUIRED)
+find_package(CryptoPP 5.6.1 REQUIRED)
 
 set(CXX_SOURCES
     basic_elements.cpp
@@ -26,10 +27,12 @@ vanetza_module(security ${CXX_SOURCES})
 
 vanetza_module_property(security INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
+    ${CryptoPP_INCLUDE_DIR}
 )
 
 vanetza_module_link_libraries(security
     ${Boost_SERIALIZATION_LIBRARY}
+    ${CryptoPP_LIBRARY}
 )
 
 add_test_subdirectory(tests)
