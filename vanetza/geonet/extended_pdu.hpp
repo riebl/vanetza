@@ -6,6 +6,7 @@
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/geonet/serialization.hpp>
 #include <vanetza/security/secured_message.hpp>
+#include <sstream>
 
 namespace vanetza
 {
@@ -106,11 +107,6 @@ public:
         geonet::serialize(*this, ar);
     }
 
-    void serialize_for_signing(OutputArchive& ar) const
-    {
-        geonet::serialize_for_signing(*this, ar);
-    }
-
 private:
     BasicHeader& mr_basic;
     CommonHeader& mr_common;
@@ -125,13 +121,6 @@ void serialize(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar)
     {
         serialize(ar, pdu.secured().get());
     }
-    serialize(pdu.common(), ar);
-    serialize(pdu.extended(), ar);
-}
-
-template<class HEADER>
-void serialize_for_signing(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar)
-{
     serialize(pdu.common(), ar);
     serialize(pdu.extended(), ar);
 }
