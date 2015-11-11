@@ -10,7 +10,7 @@ namespace vanetza
 namespace security
 {
 
-enum class ReportType : uint8_t
+enum class ReportType
 {
     Success,
     False_Signature,
