@@ -9,6 +9,7 @@
 #include <vanetza/security/encap_request.hpp>
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/encap_confirm.hpp>
+#include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/signature.hpp>
 #include <cryptopp/osrng.h>
 #include <cryptopp/oids.h>
@@ -58,12 +59,10 @@ public:
 
     /** \brief serialize a TrailerField to a std::string (for use with crypto++)
      *
-     * \tparam HEADER the extended header type
      * \param field the TrailerField to serialize
      * \return serialized representation of the given TrailerField
      */
-    template<class HEADER>
-    std::string serialize_trailer_field(const geonet::TrailerField& field);
+    std::string serialize_trailer_field(const TrailerField& field);
 
     /** \brief serialize a ExtendedPdu to a std::string (for use with crypto++)
      *         using common and extended header
@@ -107,7 +106,7 @@ EncapConfirm<HEADER> CertificateManager::sign_message(const EncapRequest<HEADER>
     CryptoPP::AutoSeededRandomPool prng;
     std::string signature;
     std::string payload = buffer_cast_to_string(request.plaintext_payload);
-    std::string header = serialize_extendedpdu(request.plaintext_pdu);
+    std::string header = serialize_extended_pdu(request.plaintext_pdu);
 
     std::string message = header + payload;
 
@@ -138,7 +137,7 @@ template<class HEADER>
 DecapConfirm<HEADER> CertificateManager::verify_message(const DecapRequest& request)
 {
     // convert signature byte buffer to string
-    boost::optional<geonet::SecuredMessage> secured_header = request.sec_pdu.secured;
+    boost::optional<SecuredMessage> secured_header = request.sec_pdu.secured;
     std::list<TrailerField> trailer_fields;
     assert(secured_header);
 
@@ -181,12 +180,11 @@ DecapConfirm<HEADER> CertificateManager::verify_message(const DecapRequest& requ
     return std::move(decap_confirm);
 }
 
-template<class HEADER>
-std::string CertificateManager::serialize_trailer_field(const geonet::TrailerField& field)
+std::string CertificateManager::serialize_trailer_field(const TrailerField& field)
 {
     std::stringstream ss;
     OutputArchive ar(ss);
-    serialize(field, ar);
+    serialize(ar, field);
 
     return std::move(ss.str());
 }
