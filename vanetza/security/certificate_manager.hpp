@@ -50,12 +50,10 @@ public:
     /** \brief use common header, extended header and payload to create a signature
      *         check with given signature in SecuredMessage
      *
-     * \tparam HEADER the extended header type
      * \param request the pdu and payload to verify
      * \return the verified pdu, payload and the ReportType
      */
-    template<class HEADER>
-    DecapConfirm<HEADER> verify_message(const DecapRequest& request);
+    DecapConfirm verify_message(const DecapRequest& request);
 
     /** \brief serialize a TrailerField to a std::string (for use with crypto++)
      *
@@ -65,7 +63,7 @@ public:
     std::string serialize_trailer_field(const TrailerField& field);
 
     /** \brief serialize a ExtendedPdu to a std::string (for use with crypto++)
-     *         using common and extended header
+     *         using common and extended header for signing
      *
      * \tparam HEADER the extended header type
      * \param pdu the pdu to serialize
@@ -73,6 +71,14 @@ public:
      */
     template<class HEADER>
     std::string serialize_extended_pdu(const geonet::ExtendedPdu<HEADER>& pdu);
+
+    /** \brief serialize a ParsedPdu to a std::string (for use with crypto++)
+     *         using common and extended header for signing
+     *
+     * \param pdu the pdu to serialize
+     * \return serialized representation of common and extended header
+     */
+    std::string serialize_parsed_pdu(const geonet::ParsedPdu& pdu);
 
     /** \brief cast ByteBuffer to std::string (for use with crypto++)
      *
@@ -133,8 +139,7 @@ EncapConfirm<HEADER> CertificateManager::sign_message(const EncapRequest<HEADER>
     return std::move(encap_confirm);
 }
 
-template<class HEADER>
-DecapConfirm<HEADER> CertificateManager::verify_message(const DecapRequest& request)
+DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 {
     // convert signature byte buffer to string
     boost::optional<SecuredMessage> secured_header = request.sec_pdu.secured;
@@ -150,15 +155,15 @@ DecapConfirm<HEADER> CertificateManager::verify_message(const DecapRequest& requ
     signature = serialize_trailer_field(*it);
 
     // build decap result object
-    geonet::ExtendedPdu<HEADER> extended_pdu;
-    extended_pdu.basic() = request.sec_pdu.basic;
-    extended_pdu.common() = request.sec_pdu.common;
-    extended_pdu.extended() = request.sec_pdu.extended;
+    geonet::ParsedPdu parsed_pdu;
+    parsed_pdu.basic = request.sec_pdu.basic;
+    parsed_pdu.common = request.sec_pdu.common;
+    parsed_pdu.extended = request.sec_pdu.extended;
 
     // convert message byte buffer to string
     ByteBuffer message_buffer = request.sec_payload;
     std::string payload = buffer_cast_to_string(message_buffer);
-    std::string header = serialize_extendedpdu(extended_pdu);
+    std::string header = serialize_parsed_pdu(parsed_pdu);
 
     std::string message = header + payload;
 
@@ -168,8 +173,8 @@ DecapConfirm<HEADER> CertificateManager::verify_message(const DecapRequest& requ
                             new CryptoPP::SignatureVerificationFilter(Verifier(m_public_key), new CryptoPP::ArraySink( (byte*)&result, sizeof(result) ))
     );
 
-    DecapConfirm<HEADER> decap_confirm;
-    decap_confirm.plaintext_pdu = extended_pdu;
+    DecapConfirm decap_confirm;
+    decap_confirm.plaintext_pdu = parsed_pdu;
     decap_confirm.plaintext_payload = request.sec_payload;
     if (result) {
         decap_confirm.report = ReportType::Success;
@@ -196,6 +201,16 @@ std::string CertificateManager::serialize_extended_pdu(const geonet::ExtendedPdu
     OutputArchive ar(ss);
     serialize(pdu.common(), ar);
     serialize(pdu.extended(), ar);
+
+    return std::move(ss.str());
+}
+
+std::string CertificateManager::serialize_parsed_pdu(const geonet::ParsedPdu& pdu)
+{
+    std::stringstream ss;
+    OutputArchive ar(ss);
+    serialize(pdu.common, ar);
+    serialize(pdu.extended, ar);
 
     return std::move(ss.str());
 }

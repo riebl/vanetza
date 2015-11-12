@@ -14,6 +14,7 @@ set(CXX_SOURCES
     gbc_gac_header.cpp
     gbc_header.cpp
     header_type.cpp
+    header_variant.cpp
     mib.cpp
     packet.cpp
     sequence_number.cpp

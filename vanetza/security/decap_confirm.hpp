@@ -3,7 +3,7 @@
 
 #include <boost/optional.hpp>
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/geonet/extended_pdu.hpp>
+#include <vanetza/geonet/parsed_pdu.hpp>
 
 namespace vanetza
 {
@@ -33,11 +33,10 @@ enum class ReportType : uint8_t
 *   TS 102 723-8 v1.0.0 (2013-07)
 *   TS 102 636-4-1 v1.2.3 (2015-01)
 */
-template<class HEADER>
 struct DecapConfirm
 {
     // plaintext_packet_length is gathered via ByteBuffer::size(); valid range 0 ... 2^16-1; mandatory
-    geonet::ExtendedPdu<HEADER> plaintext_pdu; // valid range plaintext_packet_length; mandatory
+    geonet::ParsedPdu plaintext_pdu; // valid range plaintext_packet_length; mandatory
     ByteBuffer plaintext_payload; // mandatory
     ReportType report; // mandatory
     boost::optional<uint64_t> certificate_id; // optional

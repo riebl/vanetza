@@ -2,6 +2,7 @@
 #include "pdu.hpp"
 #include "pdu_conversion.hpp"
 #include "pdu_variant.hpp"
+#include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/net/osi_layer.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -159,6 +160,20 @@ std::unique_ptr<ParsedPdu> parse(ChunkPacket& packet)
     }
 
     return parsed_pdu;
+}
+
+ByteBuffer convert_for_signing(const ParsedPdu& pdu)
+{
+    ByteBuffer buf;
+    byte_buffer_sink sink(buf);
+
+    boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
+    OutputArchive ar(stream, boost::archive::no_header);
+
+    serialize(pdu.common, ar);
+    serialize(pdu.extended, ar);
+
+    return std::move(buf);
 }
 
 } // namespace geonet
