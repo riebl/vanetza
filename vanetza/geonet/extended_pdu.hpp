@@ -5,8 +5,10 @@
 #include <vanetza/geonet/common_header.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/geonet/serialization.hpp>
+#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/security/secured_message.hpp>
-#include <sstream>
+#include <boost/iostreams/stream.hpp>
 
 namespace vanetza
 {
@@ -131,6 +133,21 @@ void serialize(const ExtendedPduRefs<HEADER>& pdu, OutputArchive& ar)
     serialize(pdu.basic(), ar);
     serialize(pdu.common(), ar);
     serialize(pdu.extended(), ar);
+}
+
+template<class HEADER>
+ByteBuffer convert_for_signing(const ExtendedPdu<HEADER>& pdu)
+{
+    ByteBuffer buf;
+    byte_buffer_sink sink(buf);
+
+    boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
+    OutputArchive ar(stream, boost::archive::no_header);
+
+    serialize(pdu.common(), ar);
+    serialize(pdu.extended(), ar);
+
+    return std::move(buf);
 }
 
 } // namespace geonet
