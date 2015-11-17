@@ -18,8 +18,9 @@ namespace security
 struct DecapRequest
 {
     // plaintext_packet_length is gathered via ByteBuffer::size(); valid range 0 ... 2^16-1; mandatory
-    geonet::ParsedPdu sec_pdu; // mandatory
+    ByteBuffer sec_pdu; // mandatory
     ByteBuffer sec_payload; // sec_pdu and sec_payload forms the sec_packet, which is described by ETSI; mandatory
+    SecuredMessage sec_header;
 };
 
 } // namespace security

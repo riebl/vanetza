@@ -36,7 +36,6 @@ enum class ReportType : uint8_t
 struct DecapConfirm
 {
     // plaintext_packet_length is gathered via ByteBuffer::size(); valid range 0 ... 2^16-1; mandatory
-    geonet::ParsedPdu plaintext_pdu; // valid range plaintext_packet_length; mandatory
     ByteBuffer plaintext_payload; // mandatory
     ReportType report; // mandatory
     boost::optional<uint64_t> certificate_id; // optional
