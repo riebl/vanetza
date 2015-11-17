@@ -4,6 +4,7 @@ find_package(CryptoPP 5.6.1 REQUIRED)
 set(CXX_SOURCES
     basic_elements.cpp
     certificate.cpp
+    certificate_manager.cpp
     ecc_point.cpp
     encryption_parameter.cpp
     header_field.cpp

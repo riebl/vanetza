@@ -15,9 +15,10 @@ prepare_gtest(security
     check_validity_restriction.cpp
     serialization.cpp
 )
-target_link_libraries(security_test INTERFACE common)
+target_link_libraries(security_test INTERFACE common geonet)
 
 add_gtest(Certificate certificate.cpp)
+add_gtest(CertificateManager certificate_manager.cpp)
 add_gtest(EccPoint ecc_point.cpp)
 add_gtest(EncryptionParameter encryption_parameter.cpp)
 add_gtest(HeaderField header_field.cpp)
