@@ -20,6 +20,7 @@
 #include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
+#include <vanetza/security/security_entity.hpp>
 #include <boost/variant.hpp>
 #include <cstdint>
 #include <memory>
@@ -64,6 +65,7 @@ public:
     typedef std::unique_ptr<UpPacket> UpPacketPtr;
 
     Router(const MIB&, dcc::RequestInterface&);
+    Router(const MIB&, dcc::RequestInterface&, const security::SecurityEntity& security_entity);
     ~Router();
     DataConfirm request(const ShbDataRequest&, DownPacketPtr);
     DataConfirm request(const GbcDataRequest&, DownPacketPtr);
@@ -136,6 +138,7 @@ private:
 
     const MIB& m_mib;
     dcc::RequestInterface& m_request_interface;
+    security::SecurityEntity m_security_entity;
     transport_map_t m_transport_ifcs;
     LocationTable m_location_table;
     PacketBuffer m_bc_forward_buffer;

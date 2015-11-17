@@ -14,6 +14,8 @@
 #include <vanetza/units/frequency.hpp>
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
+#include <vanetza/geonet/extended_pdu.hpp>
+#include <vanetza/net/osi_layer.hpp>
 #include <boost/units/cmath.hpp>
 #include <functional>
 #include <stdexcept>
@@ -69,8 +71,14 @@ public:
 const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 
 Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
+    Router(mib, ifc, security::SecurityEntity())
+{
+}
+
+Router::Router(const MIB& mib, dcc::RequestInterface& ifc, const security::SecurityEntity& security_entity) :
     m_mib(mib),
     m_request_interface(ifc),
+    m_security_entity(security_entity),
     m_location_table(mib),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
@@ -169,9 +177,28 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
 
         // Security
         if (m_mib.itsGnSecurity) {
-            // TODO: SN-ENCAP.request
-            security::SecuredMessage sec_msg;
-            pdu->secured() = std::move(sec_msg);
+            // serialize (to ByteBuffer) the parts of pdu for signing
+            security::EncapRequest encap_request;
+            encap_request.plaintext_pdu = convert_for_signing(*pdu.get());
+
+            // get the payload
+            ByteBuffer payload_buffer;
+            auto layer_array = osi_layer_range<OsiLayer::Transport, max_osi_layer()>();
+            for (auto layer : layer_array) {
+                    ByteBuffer layer_payload;
+                    (*payload)[layer].convert(layer_payload);
+                    payload_buffer.insert(payload_buffer.end(), layer_payload.begin(), layer_payload.end());
+            }
+
+            encap_request.plaintext_payload = std::move(payload_buffer);
+
+            // set the requested SecurityProfile
+            encap_request.security_profile = request.security_profile;
+
+            security::EncapConfirm confirm = m_security_entity.encapsulate_packet(encap_request);
+
+            pdu->secured() = std::move(confirm.sec_header);
+            // TODO (simon,markus): set payload
 
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
         }
@@ -290,6 +317,28 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
     } else if (common.payload != size(*packet, OsiLayer::Transport, max_osi_layer())) {
         // payload length does not match packet size
         return;
+    }
+
+    if (m_mib.itsGnSecurity)
+    {
+        if (pdu->basic.next_header != NextHeaderBasic::SECURED || !pdu->secured.is_initialized())
+        {
+            // discard packet
+            return;
+        }
+
+        // Decap packet
+        security::DecapRequest decap_request;
+        decap_request.sec_header = pdu->secured.get();
+        decap_request.sec_pdu = std::move(convert_for_signing(*pdu.get()));
+
+        ByteBuffer payload_buffer;
+        // TODO (simon,markus): write payload to payload_buffer
+        decap_request.sec_payload = std::move(payload_buffer);
+
+        security::DecapConfirm decap_confirm = m_security_entity.decapsulate_packet(decap_request);
+
+        // TODO (simon,markus): check where to save the payload for next stage
     }
 
     flush_broadcast_forwarding_buffer();
