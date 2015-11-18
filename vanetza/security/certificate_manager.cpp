@@ -58,6 +58,9 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     ecdsa_signature.s = std::move(trailer_field);
     encap_confirm.sec_header.trailer_fields.push_back(ecdsa_signature);
 
+    // set payload type
+    encap_confirm.sec_header.payload.type = PayloadType::Signed;
+
     return std::move(encap_confirm);
 }
 
