@@ -6,6 +6,11 @@ namespace vanetza
 namespace security
 {
 
+PayloadType get_type(const Payload& payload)
+{
+    return payload.type;
+}
+
 size_t get_size(const Payload& payload)
 {
     size_t size = sizeof(PayloadType);
@@ -59,4 +64,3 @@ size_t deserialize(InputArchive& ar, Payload& payload)
 
 } // namespace security
 } // namespace vanetza
-
