@@ -166,6 +166,21 @@ void deserialize(InputArchive& ar, EccPoint& point, PublicKeyAlgorithm algo)
     }
 }
 
+class EccPointVisitor : public boost::static_visitor<ByteBuffer>
+{
+public:
+    template<typename T>
+    ByteBuffer operator()(const T& point)
+    {
+        return point.x;
+    }
+};
+
+ByteBuffer convert_for_signing(const EccPoint& ecc_point)
+{
+    EccPointVisitor visit;
+    return std::move(boost::apply_visitor(visit, ecc_point));
+}
+
 } // namespace security
 } // namespace vanetza
-

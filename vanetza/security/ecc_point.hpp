@@ -74,6 +74,14 @@ void deserialize(InputArchive&, EccPoint&, PublicKeyAlgorithm);
  */
 size_t get_size(const EccPoint&);
 
+/**
+* Serialize EccPoint and return the ByteBuffer representation,
+* use ECC_POINT.x
+* \param ecc_point
+* \return ByteBuffer
+*/
+ByteBuffer convert_for_signing(const EccPoint& ecc_point);
+
 } //namespace security
 } //namespace vanetza
 
