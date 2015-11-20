@@ -1,5 +1,9 @@
+#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/byte_buffer_sink.hpp>
+#include <vanetza/geonet/serialization.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/secured_message.hpp>
+#include <boost/iostreams/stream.hpp>
 
 namespace vanetza
 {
@@ -41,6 +45,24 @@ size_t deserialize(InputArchive& ar, SecuredMessage& message)
         throw deserialization_error("Unsupported SecuredMessage protocol version");
     }
     return length;
+}
+
+ByteBuffer convert_for_signing(const SecuredMessage& message, TrailerFieldType type, size_t trailer_fields_size)
+{
+    ByteBuffer buf;
+    byte_buffer_sink sink(buf);
+
+    boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
+    OutputArchive ar(stream, boost::archive::no_header);
+
+    const uint8_t protocol_version = message.protocol_version();
+    ar << protocol_version;
+    serialize(ar, message.header_fields);
+    serialize(ar, message.payload);
+
+    ar << trailer_fields_size;
+
+    return buf;
 }
 
 } // namespace security

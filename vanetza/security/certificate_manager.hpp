@@ -4,6 +4,7 @@
 #include <vanetza/geonet/extended_pdu.hpp>
 #include <vanetza/geonet/header_variant.hpp>
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_request.hpp>
 #include <vanetza/security/decap_confirm.hpp>
@@ -48,13 +49,6 @@ public:
      */
     DecapConfirm verify_message(const DecapRequest& request);
 
-    /** \brief serialize a TrailerField to a std::string (for use with crypto++)
-     *
-     * \param field the TrailerField to serialize
-     * \return serialized representation of the given TrailerField
-     */
-    std::string serialize_trailer_field(const TrailerField& field);
-
     /** \brief cast ByteBuffer to std::string (for use with crypto++)
      *
      * \param buffer the ByteBuffer to convert
@@ -64,6 +58,8 @@ public:
     const std::string buffer_cast_to_string(const ByteBuffer& buffer);
 
 private:
+    Time64 get_time();
+
     PrivateKey m_private_key;
     PublicKey m_public_key;
 };

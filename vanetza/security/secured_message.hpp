@@ -46,8 +46,15 @@ void serialize(OutputArchive& ar, const SecuredMessage& message);
  */
 size_t deserialize(InputArchive& ar, SecuredMessage& message);
 
+/**
+* Serialize SecuredMessage and return the ByteBuffer representation,
+* use version, header_fields, payload
+* \param message Message to be converted
+* \return ByteBuffer
+*/
+ByteBuffer convert_for_signing(const SecuredMessage& message, TrailerFieldType type, size_t trailer_fields_size);
+
 } // namespace security
 } // namespace vanetza
 
 #endif /* SECURED_MESSAGE_HPP_MO3HBSXG */
-

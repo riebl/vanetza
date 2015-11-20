@@ -197,8 +197,8 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
 
             security::EncapConfirm confirm = m_security_entity.encapsulate_packet(encap_request);
 
-            pdu->secured() = std::move(confirm.sec_header);
-            // TODO (simon,markus): set payload
+            pdu->secured() = std::move(confirm.sec_packet);
+            // TODO (simon,markus): set payload to null, original payload is in secured message
 
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
         }
@@ -329,15 +329,10 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
 
         // Decap packet
         security::DecapRequest decap_request;
-        decap_request.sec_header = pdu->secured.get();
+        decap_request.sec_packet = pdu->secured.get();
         decap_request.sec_pdu = std::move(convert_for_signing(*pdu.get()));
 
-        ByteBuffer payload_buffer;
-        // TODO (simon,markus): write payload to payload_buffer
-        decap_request.sec_payload = std::move(payload_buffer);
-
         security::DecapConfirm decap_confirm = m_security_entity.decapsulate_packet(decap_request);
-
         // TODO (simon,markus): check where to save the payload for next stage
     }
 

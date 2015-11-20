@@ -1,6 +1,9 @@
+#include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signature.hpp>
+#include <vanetza/security/payload.hpp>
 #include <cryptopp/osrng.h>
 #include <cryptopp/oids.h>
 #include <cryptopp/filters.h>
@@ -25,9 +28,33 @@ CertificateManager::CertificateManager()
 
 EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
 {
+    EncapConfirm encap_confirm;
+    // set secured message data
+    encap_confirm.sec_packet.payload.type = PayloadType::Signed;
+    encap_confirm.sec_packet.payload.buffer = std::move(request.plaintext_payload);
+    // set header field data
+    // TODO: header_fieds.signerInfo.type = certificate, fill in certificate or add certificate_digest_with_sha256
+    encap_confirm.sec_packet.header_fields.push_back(get_time());
+    encap_confirm.sec_packet.header_fields.push_back((uint16_t) 36); // according to TS 102 965, and ITS-AID_AssignedNumbers
+
+    // create trailer field to get the size in bytes
+    size_t trailer_field_size = 0;
+    {
+        security::EcdsaSignature temp_signature;
+        temp_signature.s.resize(32);
+        Compressed_Lsb_Y_0 compressed_Lsb_Y_0;
+        compressed_Lsb_Y_0.x.resize(32);
+        temp_signature.R = compressed_Lsb_Y_0;
+
+        security::TrailerField temp_trailer_field = temp_signature;
+
+        trailer_field_size = get_size(temp_trailer_field);
+    }
+
     CryptoPP::AutoSeededRandomPool prng;
     std::string signature;
-    std::string payload = buffer_cast_to_string(request.plaintext_payload);
+    std::string payload = buffer_cast_to_string(
+            convert_for_signing(encap_confirm.sec_packet, TrailerFieldType::Signature, trailer_field_size));
     std::string header = buffer_cast_to_string(request.plaintext_pdu);
 
     std::string message = header + payload;
@@ -38,12 +65,12 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     Signer signer(m_private_key);
     CryptoPP::SignerFilter* signer_filter = new CryptoPP::SignerFilter(prng, std::move(signer), string_sink);
 
-    CryptoPP::StringSource( message, true,
-                            signer_filter
-    ); // StringSource
-
-    EncapConfirm encap_confirm;
-    encap_confirm.sec_payload = std::move(request.plaintext_payload);
+    // Covered by signature:
+    //      SecuredMessage: protocol_version, header_fields (incl. its length), payload_field, trailer_field.trailer_field_type
+    //      CommonHeader: complete
+    //      ExtendedHeader: complete
+    // p. 27 in TS 103 097 v1.2.1
+    CryptoPP::StringSource( message, true, signer_filter); // StringSource
 
     std::string signature_x = signature.substr(0, 32);
     std::string signature_s = signature.substr(32);
@@ -54,12 +81,12 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     lsb.x = ByteBuffer(signature_x.begin(), signature_x.end());
     ecdsa_signature.R = std::move(lsb);
     // set s
-    ByteBuffer trailer_field(signature_s.begin(), signature_s.end());
-    ecdsa_signature.s = std::move(trailer_field);
-    encap_confirm.sec_header.trailer_fields.push_back(ecdsa_signature);
+    ByteBuffer trailer_field_buffer(signature_s.begin(), signature_s.end());
+    ecdsa_signature.s = std::move(trailer_field_buffer);
+    encap_confirm.sec_packet.trailer_fields.push_back(ecdsa_signature);
 
-    // set payload type
-    encap_confirm.sec_header.payload.type = PayloadType::Signed;
+    TrailerField trailer_field = ecdsa_signature;
+    assert(get_size(trailer_field) == trailer_field_size);
 
     return std::move(encap_confirm);
 }
@@ -69,19 +96,19 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     // TODO (simon,markus): check certificate
 
     // convert signature byte buffer to string
-    SecuredMessage secured_header = std::move(request.sec_header);
+    SecuredMessage secured_message = std::move(request.sec_packet);
     std::list<TrailerField> trailer_fields;
 
-    trailer_fields = secured_header.trailer_fields;
+    trailer_fields = secured_message.trailer_fields;
     std::string signature;
 
     assert(!trailer_fields.empty());
 
     std::list<TrailerField>::iterator it = trailer_fields.begin();
-    signature = serialize_trailer_field(*it);
+    signature = buffer_cast_to_string(extract_signature_buffer(*it));
 
     // convert message byte buffer to string
-    std::string payload = buffer_cast_to_string(request.sec_payload);
+    std::string payload = buffer_cast_to_string(convert_for_signing(secured_message, get_type(*it), get_size(*it)));
     std::string pdu = buffer_cast_to_string(request.sec_pdu);
 
     std::string message = pdu + payload;
@@ -93,7 +120,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     );
 
     DecapConfirm decap_confirm;
-    decap_confirm.plaintext_payload = std::move(request.sec_payload);
+    decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.buffer);
     if (result) {
         decap_confirm.report = ReportType::Success;
     } else {
@@ -103,22 +130,16 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     return std::move(decap_confirm);
 }
 
-std::string CertificateManager::serialize_trailer_field(const TrailerField& field)
-{
-    std::stringstream ss;
-    OutputArchive ar(ss);
-    serialize(ar, field);
-
-    ss.flush();
-
-    return std::move(ss.str());
-}
-
 const std::string CertificateManager::buffer_cast_to_string(const ByteBuffer& buffer)
 {
     std::stringstream oss;
     std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<ByteBuffer::value_type>(oss));
     return std::move(oss.str());
+}
+
+Time64 CertificateManager::get_time()
+{
+    return ((Time64) m_time_now.raw()) * 1000 * 1000;
 }
 
 } // namespace security

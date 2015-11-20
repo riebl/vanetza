@@ -15,8 +15,7 @@ namespace security
 * TS 102 636-4-1 v1.2.3 (2015-01)
 */
 struct EncapConfirm {
-    SecuredMessage sec_header; // mandatory
-    ByteBuffer sec_payload; // sec_pdu and sec_payload forms the sec_packet, which is described by ETSI; mandatory
+    SecuredMessage sec_packet; // mandatory
 };
 
 } // namespace security
