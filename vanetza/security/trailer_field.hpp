@@ -1,6 +1,7 @@
 #ifndef TRAILER_FIELDS_HPP_3PDKGWCQ
 #define TRAILER_FIELDS_HPP_3PDKGWCQ
 
+#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/signature.hpp>
 #include <boost/variant/variant.hpp>
 #include <cstdint>
@@ -46,8 +47,15 @@ void serialize(OutputArchive&, const TrailerField&);
  */
 size_t deserialize(InputArchive&, TrailerField&);
 
+/**
+* Serialize TrailerField and return the ByteBuffer representation,
+* use Signature.ECC_POINT.x, Signatur.s
+* \param trailer_field field to be converted
+* \return ByteBuffer
+*/
+ByteBuffer extract_signature_buffer(const TrailerField& trailer_field);
+
 } // namespace security
 } // namespace vanetza
 
 #endif /* TRAILER_FIELDS_HPP_3PDKGWCQ */
-

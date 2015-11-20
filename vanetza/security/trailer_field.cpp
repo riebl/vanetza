@@ -1,6 +1,8 @@
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/length_coding.hpp>
+#include <boost/variant/get.hpp>
+#include <cassert>
 
 namespace vanetza
 {
@@ -72,6 +74,18 @@ size_t deserialize(InputArchive& ar, TrailerField& field)
             throw deserialization_error("Unknown TrailerFieldType");
     }
     return size;
+}
+
+ByteBuffer extract_signature_buffer(const TrailerField& trailer_field)
+{
+    assert(TrailerFieldType::Signature == get_type(trailer_field));
+    assert(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(boost::get<Signature>(trailer_field)));
+
+    EcdsaSignature signature = boost::get<EcdsaSignature>(boost::get<Signature>(trailer_field));
+    ByteBuffer buf = std::move(convert_for_signing(signature.R));
+    buf.insert(buf.end(), signature.s.begin(), signature.s.end());
+
+    return std::move(buf);
 }
 
 } // namespace security
