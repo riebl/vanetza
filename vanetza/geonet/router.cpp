@@ -71,7 +71,7 @@ public:
 const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 
 Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
-    Router(mib, ifc, security::SecurityEntity())
+    Router(mib, ifc, security::SecurityEntity(m_time_now))
 {
 }
 
@@ -916,4 +916,3 @@ std::unique_ptr<GbcPdu> Router::create_gbc_pdu(const GbcDataRequest& request)
 
 } // namespace geonet
 } // namespace vanetza
-

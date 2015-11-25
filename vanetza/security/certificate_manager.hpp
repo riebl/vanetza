@@ -3,6 +3,7 @@
 
 #include <vanetza/geonet/extended_pdu.hpp>
 #include <vanetza/geonet/header_variant.hpp>
+#include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/decap_request.hpp>
@@ -20,7 +21,7 @@ namespace security
 {
 
 /** \brief A Manager to handle Certificates using Crypto++
- *  \TODO: move function implementations in source file + rename to CryptoPPCertManager
+ *  \TODO: rename to CryptoPPCertManager
  *         create a base class
  */
 class CertificateManager
@@ -31,7 +32,7 @@ public:
     typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer Signer;
     typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier Verifier;
 
-    CertificateManager();
+    CertificateManager(const geonet::Timestamp& time_now);
 
     /** \brief use common header, extended header and payload to create a signature
      *         write signature to pdu.SecuredMessage
@@ -62,6 +63,7 @@ private:
 
     PrivateKey m_private_key;
     PublicKey m_public_key;
+    const geonet::Timestamp& m_time_now;
 };
 
 } // namespace security

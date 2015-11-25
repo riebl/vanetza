@@ -5,7 +5,13 @@ using namespace vanetza;
 
 class CertificateManager : public ::testing::Test
 {
+public:
+    CertificateManager() : time_now(0), cert_manager(time_now)
+    {
+    }
+
 protected:
+    geonet::Timestamp time_now;
     security::CertificateManager cert_manager;
 };
 

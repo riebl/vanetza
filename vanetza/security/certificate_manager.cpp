@@ -13,7 +13,7 @@ namespace vanetza
 namespace security
 {
 
-CertificateManager::CertificateManager()
+CertificateManager::CertificateManager(const geonet::Timestamp& time_now) : m_time_now(time_now)
 {
     // generate private key
     CryptoPP::OID oid(CryptoPP::ASN1::secp256r1());

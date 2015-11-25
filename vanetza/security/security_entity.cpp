@@ -6,8 +6,8 @@ namespace vanetza
 namespace security
 {
 
-SecurityEntity::SecurityEntity() :
-    m_certificate_manager(new CertificateManager())
+SecurityEntity::SecurityEntity(const geonet::Timestamp& time_now) :
+    m_certificate_manager(new CertificateManager(time_now))
 {
 }
 
