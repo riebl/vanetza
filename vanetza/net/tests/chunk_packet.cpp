@@ -88,3 +88,49 @@ TEST(ChunkPacket, extract)
     b[OsiLayer::Session].convert(tmp);
     EXPECT_EQ(buffer[3], tmp);
 }
+
+TEST(ChunkPacket, merge)
+{
+    std::array<ByteBuffer, 11> buffer;
+    for (unsigned i = 0; i < buffer.size(); ++i) {
+        ByteBuffer tmp;
+        tmp.resize(10, static_cast<ByteBuffer::value_type>(i));
+        buffer[i] = std::move(tmp);
+    }
+
+    ChunkPacket a;
+    a[OsiLayer::Physical] = ByteBuffer { buffer[0] };
+    a[OsiLayer::Link] = ByteBuffer { buffer[1] };
+    a[OsiLayer::Network] = ByteBuffer { buffer[2] };
+    a[OsiLayer::Transport] = ByteBuffer { buffer[3] };
+    a[OsiLayer::Session] = ByteBuffer { buffer[4] };
+    a[OsiLayer::Application] = ByteBuffer { buffer[5] };
+    ASSERT_EQ(60, a.size());
+
+    ChunkPacket b;
+    b[OsiLayer::Physical] = ByteBuffer { buffer[6] };
+    b[OsiLayer::Link] = ByteBuffer { buffer[7] };
+    b[OsiLayer::Network] = ByteBuffer { buffer[8] };
+    b[OsiLayer::Transport] = ByteBuffer { buffer[9] };
+    b[OsiLayer::Application] = ByteBuffer { buffer[10] };
+    ASSERT_EQ(50, b.size());
+
+    a.merge(b, OsiLayer::Link, OsiLayer::Presentation);
+    EXPECT_EQ(50, a.size());
+
+    ByteBuffer tmp;
+    a[OsiLayer::Physical].convert(tmp);
+    EXPECT_EQ(buffer[0], tmp);
+    a[OsiLayer::Link].convert(tmp);
+    EXPECT_EQ(buffer[7], tmp);
+    a[OsiLayer::Network].convert(tmp);
+    EXPECT_EQ(buffer[8], tmp);
+    a[OsiLayer::Transport].convert(tmp);
+    EXPECT_EQ(buffer[9], tmp);
+    a[OsiLayer::Session].convert(tmp);
+    EXPECT_TRUE(tmp.empty());
+    a[OsiLayer::Presentation].convert(tmp);
+    EXPECT_TRUE(tmp.empty());
+    a[OsiLayer::Application].convert(tmp);
+    EXPECT_EQ(buffer[5], tmp);
+}

@@ -74,5 +74,14 @@ ChunkPacket ChunkPacket::extract(OsiLayer from, OsiLayer to)
     return result;
 }
 
+ChunkPacket& ChunkPacket::merge(ChunkPacket& source, OsiLayer from, OsiLayer to)
+{
+    for (auto layer : osi_layer_range(from, to)) {
+        (*this)[layer] = std::move(source[layer]);
+        source[layer] = empty_byte_buffer_convertible;
+    }
+    return *this;
+}
+
 } // namespace vanetza
 
