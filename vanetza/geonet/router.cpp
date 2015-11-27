@@ -1,21 +1,21 @@
-#include "router.hpp"
-#include "data_confirm.hpp"
-#include "data_indication.hpp"
-#include "data_request.hpp"
-#include "next_hop.hpp"
-#include "parsed_pdu.hpp"
-#include "pdu_conversion.hpp"
-#include "repetition_dispatcher.hpp"
-#include "transport_interface.hpp"
+#include <vanetza/btp/data_indication.hpp>
+#include <vanetza/btp/data_request.hpp>
 #include <vanetza/dcc/access_control.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/profile.hpp>
 #include <vanetza/net/mac_address.hpp>
+#include <vanetza/net/osi_layer.hpp>
 #include <vanetza/units/frequency.hpp>
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
+#include <vanetza/geonet/router.hpp>
+#include <vanetza/geonet/data_confirm.hpp>
+#include <vanetza/geonet/next_hop.hpp>
+#include <vanetza/geonet/parsed_pdu.hpp>
+#include <vanetza/geonet/pdu_conversion.hpp>
+#include <vanetza/geonet/repetition_dispatcher.hpp>
+#include <vanetza/geonet/transport_interface.hpp>
 #include <vanetza/geonet/extended_pdu.hpp>
-#include <vanetza/net/osi_layer.hpp>
 #include <boost/units/cmath.hpp>
 #include <functional>
 #include <stdexcept>
@@ -302,12 +302,14 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
 
     if (!basic) {
         // parsing of packet failed
+        packet_dropped(PacketDropReason::PARSE_BASIC);
         return;
     }
 
     // check protocol version
     if (basic.get().version.raw() != m_mib.itsGnProtocolVersion) {
         // discard packet
+        packet_dropped(PacketDropReason::ITS_PROTOCOL_VERSION);
         return;
     }
 
@@ -319,6 +321,7 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         secured_message = extract_secured_message(*packet);
         if (!secured_message) {
             // discard Packet
+            packet_dropped(PacketDropReason::EXTRACT_SECURED_MESSAGE);
             return;
         }
 
@@ -330,6 +333,7 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         // check whether the received packet is valid
         if (security::ReportType::Success != decap_confirm.report) {
             // discard packet
+            packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
 
             // TODO handle the packet anyway, when itsGnDecapResultHandling is set to NON-STRICT (1)
             //      according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
@@ -339,6 +343,12 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         // extract payload from secured message
         const ByteBuffer& plaintext_payload = decap_confirm.plaintext_payload;
         pdu = parse_secured_header(plaintext_payload, basic.get());
+
+        if (!pdu) {
+            // discard packet
+            packet_dropped(PacketDropReason::PARSE_HEADER);
+            return;
+        }
 
         auto after_extended = plaintext_payload.begin();
         std::advance(after_extended, CommonHeader::length_bytes + get_length(pdu->extended));
@@ -350,11 +360,19 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         pdu = parse_header(*packet, basic.get());
     }
 
+    if (!pdu) {
+        // discard packet
+        packet_dropped(PacketDropReason::PARSE_HEADER);
+        return;
+    }
+
     if (pdu->common.maximum_hop_limit < pdu->basic.hop_limit) {
         // discard packet
+        packet_dropped(PacketDropReason::HOP_LIMIT);
         return;
     } else if (pdu->common.payload != size(*packet, OsiLayer::Transport, max_osi_layer())) {
         // payload length does not match packet size, discard packet
+        packet_dropped(PacketDropReason::PAYLOAD_SIZE);
         return;
     }
 

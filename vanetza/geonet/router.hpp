@@ -2,6 +2,7 @@
 #define ROUTER_HPP_UKYYCAR0
 
 #include <vanetza/common/byte_order.hpp>
+#include <vanetza/common/hook.hpp>
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/common_header.hpp>
@@ -64,6 +65,17 @@ public:
     typedef std::unique_ptr<DownPacket> DownPacketPtr;
     typedef std::unique_ptr<UpPacket> UpPacketPtr;
 
+    enum class PacketDropReason
+    {
+        ITS_PROTOCOL_VERSION,
+        PARSE_BASIC,
+        EXTRACT_SECURED_MESSAGE,
+        DECAP_UNSUCCESSFUL_STRICT,
+        PARSE_HEADER,
+        HOP_LIMIT,
+        PAYLOAD_SIZE,
+    };
+
     Router(const MIB&, dcc::RequestInterface&);
     Router(const MIB&, dcc::RequestInterface&, const security::SecurityEntity& security_entity);
     ~Router();
@@ -74,6 +86,8 @@ public:
     DataConfirm request(const GacDataRequest&, DownPacketPtr);
     DataConfirm request(const TsbDataRequest&, DownPacketPtr);
     void indicate(UpPacketPtr, const MacAddress& sender, const MacAddress& destination);
+
+    Hook<PacketDropReason> packet_dropped;
 
     /**
      * Get time stamp of next required update call
@@ -158,4 +172,3 @@ private:
 } // namespace vanetza
 
 #endif /* ROUTER_HPP_UKYYCAR0 */
-
