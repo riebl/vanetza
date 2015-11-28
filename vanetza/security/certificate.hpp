@@ -1,6 +1,7 @@
 #ifndef CERTIFICATE_HPP_LWBWIAVL
 #define CERTIFICATE_HPP_LWBWIAVL
 
+#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/signer_info.hpp>
@@ -50,8 +51,19 @@ void serialize(OutputArchive&, const Certificate&);
  */
 size_t deserialize(InputArchive&, Certificate&);
 
+/**
+* Serialize the parts of a Certificate
+* to create the Signature within that Certificate
+* return the ByteBuffer representation,
+* use   version, signer_field, subject_info,
+*       subject_attributes + length,
+*       validity_restriction + length
+* \param certificate Certificate to be converted
+* \return ByteBuffer
+*/
+ByteBuffer convert_for_signing(const Certificate&);
+
 } // namespace security
 } // namespace vanetza
 
 #endif /* CERTIFICATE_HPP_LWBWIAVL */
-

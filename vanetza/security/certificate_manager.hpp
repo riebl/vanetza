@@ -11,6 +11,7 @@
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/encap_confirm.hpp>
 #include <vanetza/security/trailer_field.hpp>
+#include <vanetza/security/certificate.hpp>
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/sha.h>
 #include <string>
@@ -59,10 +60,42 @@ public:
     const std::string buffer_cast_to_string(const ByteBuffer& buffer);
 
 private:
+    /** \brief generate a certificate with given public_key
+     *
+     * \param public_key which's coordinates will be included in the certificate
+     * \return Certificate the data filled generated Certificate
+     */
+    Certificate generate_certificate(const PublicKey& public_key);
+
+    /** \brief extract public key from certificate
+     *
+     * \param certificate
+     * \return PublicKey
+     */
+    PublicKey get_public_key_from_certificate(const Certificate& certificate);
+
+    /** \brief get the current (system) time in microseconds
+     *
+     * \return Time64
+     */
     Time64 get_time();
 
+    /** \brief get the current (system) time in seconds
+     *
+     * \return Time32
+     */
+    Time32 get_time_in_seconds();
+
+    /** \brief generate EcdsaSignature, for given data with private_key
+     *
+     * \param private_key
+     * \param data_buffer
+     * \return EcdsaSignature
+     */
+    EcdsaSignature sign_data(const PrivateKey& private_key, ByteBuffer data_buffer);
+
     PrivateKey m_private_key;
-    PublicKey m_public_key;
+    Certificate m_certificate;
     const geonet::Timestamp& m_time_now;
 };
 

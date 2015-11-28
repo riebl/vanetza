@@ -40,7 +40,7 @@ protected:
 
         // prepare decap request
         security::DecapRequest decap_request;
-        decap_request.sec_pdu = expected_pdu;
+        decap_request.sec_pdu = encap_request.plaintext_pdu;
         decap_request.sec_packet = secured_message;
 
         return decap_request;
@@ -84,7 +84,7 @@ TEST_F(CertificateManager, expected_header_field_size)
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 
     // check header_field size
-    EXPECT_EQ(2, confirm.sec_packet.header_fields.size());
+    EXPECT_EQ(3, confirm.sec_packet.header_fields.size());
 }
 
 TEST_F(CertificateManager, expected_payload)
@@ -98,23 +98,6 @@ TEST_F(CertificateManager, expected_payload)
     EXPECT_EQ(security::PayloadType::Signed, get_type(payload));
 }
 
-TEST_F(CertificateManager, verify_smoke_test)
-{
-    security::EcdsaSignature signature;
-    signature.s = random_byte_sequence(32, 42);
-    security::Compressed_Lsb_Y_0 compressed_Lsb_Y_0;
-    compressed_Lsb_Y_0.x = random_byte_sequence(32, 27);
-    signature.R = compressed_Lsb_Y_0;
-
-    security::DecapRequest decap_request;
-    decap_request.sec_pdu = {21, 42, 23, 15, 8};
-    decap_request.sec_packet.trailer_fields.push_back(signature);
-
-    security::DecapConfirm confirm = cert_manager.verify_message(decap_request);
-
-    EXPECT_EQ(security::ReportType::False_Signature, confirm.report);
-}
-
 TEST_F(CertificateManager, verify_message)
 {
     // prepare decap request
@@ -122,6 +105,7 @@ TEST_F(CertificateManager, verify_message)
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
+
     // check if verify was successful
     EXPECT_EQ(security::ReportType::Success, decap_confirm.report);
     // check if payload was not changed
