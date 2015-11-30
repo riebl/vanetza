@@ -18,7 +18,7 @@ SignerInfoType get_type(const SignerInfo& info)
         }
         SignerInfoType operator()(const HashedId8& id)
         {
-            return SignerInfoType::Certificate_Digest_With_EDCSAP256;
+            return SignerInfoType::Certificate_Digest_With_SHA256;
         }
         SignerInfoType operator()(const Certificate& cert)
         {
@@ -162,7 +162,7 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
             info = list;
             break;
         }
-        case SignerInfoType::Certificate_Digest_With_EDCSAP256: {
+        case SignerInfoType::Certificate_Digest_With_SHA256: {
             HashedId8 cert;
             for (size_t c = 0; c < 8; c++) {
                 ar >> cert[c];

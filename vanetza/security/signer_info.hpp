@@ -17,7 +17,7 @@ struct Certificate;
 enum class SignerInfoType : uint8_t
 {
     Self = 0,                                   // nothing -> nullptr_t
-    Certificate_Digest_With_EDCSAP256 = 1,      // HashedId8
+    Certificate_Digest_With_SHA256 = 1,         // HashedId8
     Certificate = 2,                            // Certificate
     Certificate_Chain = 3,                      // std::list<Certificate>
     Certificate_Digest_With_Other_Algorithm = 4 // CertificateDigestWithOtherAlgorithm
@@ -73,4 +73,3 @@ size_t deserialize(InputArchive&, SignerInfo&);
 } // namespace vanetza
 
 #endif /* SIGNER_INFO_HPP_9K6GXK4R */
-
