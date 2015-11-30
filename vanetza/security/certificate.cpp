@@ -12,7 +12,6 @@ size_t get_size(const Certificate& cert)
 {
     size_t size = sizeof(cert.version());
     size += get_size(cert.signer_info);
-    size += length_coding_size(get_size(cert.signer_info));
     size += get_size(cert.subject_info);
     size += get_size(cert.subject_attributes);
     size += length_coding_size(get_size(cert.subject_attributes));
@@ -40,7 +39,6 @@ size_t deserialize(InputArchive& ar, Certificate& cert)
     size_t size = sizeof(cert.version());
     if ( 2 == version ) {
         size += deserialize(ar, cert.signer_info);
-        size += length_coding_size(get_size(cert.signer_info));
         size += deserialize(ar, cert.subject_info);
         size += deserialize(ar, cert.subject_attributes);
         size += length_coding_size(get_size(cert.subject_attributes));
