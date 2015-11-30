@@ -10,7 +10,7 @@ size_t get_size(const SubjectInfo& sub)
 {
     size_t size = sizeof(sub.subject_type);
     size += sub.subject_name.size();
-    size += length_coding_size(size);
+    size += length_coding_size(sub.subject_name.size());
     return size;
 }
 
@@ -38,4 +38,3 @@ size_t deserialize(InputArchive& ar, SubjectInfo& sub)
 
 } // ns security
 } // ns vanetza
-
