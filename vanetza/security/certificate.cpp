@@ -37,7 +37,7 @@ size_t deserialize(InputArchive& ar, Certificate& cert)
     uint8_t version = 0;
     geonet::deserialize(version, ar);
     size_t size = sizeof(cert.version());
-    if ( 2 == version ) {
+    if (2 == version) {
         size += deserialize(ar, cert.signer_info);
         size += deserialize(ar, cert.subject_info);
         size += deserialize(ar, cert.subject_attributes);
