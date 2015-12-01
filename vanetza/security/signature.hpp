@@ -50,6 +50,14 @@ void serialize(OutputArchive&, const Signature&);
 size_t deserialize(InputArchive&, EcdsaSignature&, const PublicKeyAlgorithm&);
 size_t deserialize(InputArchive&, Signature&);
 
+/**
+ * Serialize the parts of a Signature
+ * to return the ByteBuffer representation
+ * \param Signature to be converted
+ * \return ByteBuffer
+ */
+boost::optional<ByteBuffer> extract_signature_buffer(const Signature& sig);
+
 }
 }
 #endif /* SIGNATURE_HPP_ZWPLNDVE */

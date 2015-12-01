@@ -67,6 +67,13 @@ private:
      */
     Certificate generate_certificate(const PublicKey& public_key);
 
+    /** \brief verifies the certificate
+     *
+     * \param certificate: Certificate to verify
+     * \return true if certificate could be verified
+     */
+    bool verify_certificate(const Certificate& certificate);
+
     /** \brief extract public key from certificate
      *
      * \param certificate
@@ -93,6 +100,15 @@ private:
      * \return EcdsaSignature
      */
     EcdsaSignature sign_data(const PrivateKey& private_key, ByteBuffer data_buffer);
+
+    /** \brief checks if the data_buffer can be verified with the public_key
+     *
+     * \param public_key
+     * \param data_buffer: data to be verified
+     * \return true if the data_buffer could be verified
+     *
+     */
+    bool verify_data(const PublicKey& public_key, ByteBuffer data_buffer);
 
     PrivateKey m_private_key;
     Certificate m_certificate;

@@ -1,3 +1,5 @@
+#include <boost/iostreams/stream.hpp>
+#include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/signature.hpp>
 #include <cassert>
@@ -102,6 +104,17 @@ size_t deserialize(InputArchive& ar, Signature& sig)
             throw deserialization_error("Unknown PublicKeyAlgorithm");
     }
     return size;
+}
+
+boost::optional<ByteBuffer> extract_signature_buffer(const Signature& sig)
+{
+    ByteBuffer buf;
+    if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(sig)) {
+        EcdsaSignature signature = boost::get<EcdsaSignature>(sig);
+        buf = convert_for_signing(signature.R);
+        buf.insert(buf.end(), signature.s.begin(), signature.s.end());
+    }
+    return buf;
 }
 
 } // ns security

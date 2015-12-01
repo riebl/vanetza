@@ -53,7 +53,7 @@ size_t deserialize(InputArchive&, TrailerField&);
 * \param trailer_field field to be converted
 * \return ByteBuffer
 */
-ByteBuffer extract_signature_buffer(const TrailerField& trailer_field);
+boost::optional<ByteBuffer> extract_signature_buffer(const TrailerField& trailer_field);
 
 } // namespace security
 } // namespace vanetza

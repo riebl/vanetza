@@ -86,36 +86,45 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
         }
     }
 
-    assert(certificate.is_initialized());
-    // TODO (simon,markus): check certificate
+    DecapConfirm decap_confirm;
+    if (!certificate) {
+        decap_confirm.report = ReportType::Signer_Certificate_Not_Found;
+        return decap_confirm;
+    }
 
     PublicKey public_key = get_public_key_from_certificate(certificate.get());
+
+    // if certificate could not be verified return correct ReportType
+    if (!verify_certificate(certificate.get())) {
+        decap_confirm.report = ReportType::Invalid_Certificate;
+        return decap_confirm;
+    }
 
     // convert signature byte buffer to string
     SecuredMessage secured_message = std::move(request.sec_packet);
     std::list<TrailerField> trailer_fields;
 
     trailer_fields = secured_message.trailer_fields;
-    std::string signature;
 
     assert(!trailer_fields.empty());
 
     std::list<TrailerField>::iterator it = trailer_fields.begin();
-    signature = buffer_cast_to_string(extract_signature_buffer(*it));
 
-    // convert message byte buffer to string
-    std::string payload = buffer_cast_to_string(convert_for_signing(secured_message, get_type(*it), get_size(*it)));
-    std::string pdu = buffer_cast_to_string(request.sec_pdu);
+    // build message buffer that has to be verified
+    boost::optional<ByteBuffer> signature = extract_signature_buffer(*it);
+    if (!signature) {
+        decap_confirm.report = ReportType::False_Signature;
+        return decap_confirm;
+    }
+    ByteBuffer payload = convert_for_signing(secured_message, get_type(*it), get_size(*it));
+    ByteBuffer pdu = request.sec_pdu;
+    ByteBuffer message = signature.get();
+    message.insert(message.end(), pdu.begin(), pdu.end());
+    message.insert(message.end(), payload.begin(), payload.end());
 
-    std::string message = pdu + payload;
+    // result of verify function
+    bool result = verify_data(public_key, message);
 
-    // verify message signature
-    bool result = false;
-    CryptoPP::StringSource( signature+message, true,
-                            new CryptoPP::SignatureVerificationFilter(Verifier(public_key), new CryptoPP::ArraySink((byte*)&result, sizeof(result)))
-    );
-
-    DecapConfirm decap_confirm;
     decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.buffer);
     if (result) {
         decap_confirm.report = ReportType::Success;
@@ -124,6 +133,42 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     }
 
     return std::move(decap_confirm);
+}
+
+bool CertificateManager::verify_certificate(const Certificate& certificate)
+{
+    // check validity restriction
+    for (auto& restriction : certificate.validity_restriction) {
+        ValidityRestriction validity_restriction = restriction;
+
+        ValidityRestrictionType type = get_type(validity_restriction);
+        if (type == ValidityRestrictionType::Time_Start_And_End) {
+            // change start and end time of certificate validity
+            StartAndEndValidity start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
+            // check if certificate validity restriction timestamps are logically correct
+            if (start_and_end.start_validity >= start_and_end.end_validity) {
+                return false;
+            }
+            // check if certificate is premature or outdated
+            if (get_time_in_seconds() < start_and_end.start_validity || get_time_in_seconds() > start_and_end.end_validity ) {
+                return false;
+            }
+        }
+    }
+
+    PublicKey public_key = get_public_key_from_certificate(certificate);
+
+    // create buffer of certificate
+    ByteBuffer cert = convert_for_signing(certificate);
+
+    // create ByteBuffer of Signature + Certificate
+    boost::optional<ByteBuffer> sig_and_cert = extract_signature_buffer(certificate.signature);
+    if (!sig_and_cert) {
+        return false;
+    }
+    sig_and_cert.get().insert(sig_and_cert.get().end(), cert.begin(), cert.end());
+
+    return verify_data(public_key, sig_and_cert.get());
 }
 
 const std::string CertificateManager::buffer_cast_to_string(const ByteBuffer& buffer)
@@ -264,6 +309,18 @@ EcdsaSignature CertificateManager::sign_data(const PrivateKey& private_key, Byte
     ecdsa_signature.s = std::move(trailer_field_buffer);
 
     return ecdsa_signature;
+}
+
+bool CertificateManager::verify_data(const PublicKey& public_key, ByteBuffer data_buffer)
+{
+    std::string data_string = buffer_cast_to_string(data_buffer);
+    // verify certificate signature
+    bool result = false;
+    CryptoPP::StringSource( data_string, true,
+                            new CryptoPP::SignatureVerificationFilter(Verifier(public_key), new CryptoPP::ArraySink((byte*)&result, sizeof(result)))
+    );
+
+    return result;
 }
 
 Time64 CertificateManager::get_time()
