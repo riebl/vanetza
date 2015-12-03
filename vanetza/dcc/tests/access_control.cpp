@@ -87,6 +87,32 @@ TEST_F(AccessControlTest, dropping)
     EXPECT_TRUE(dropped);
 }
 
+TEST_F(AccessControlTest, no_enforcement)
+{
+    DataRequest request;
+    request.dcc_profile = Profile::DP1;
+    bool dropped = false;
+    ctrl.hook_dropped = [&dropped](const DataRequest& req, std::unique_ptr<ChunkPacket> p) {
+        dropped = true;
+    };
+
+    sc.notify(request.dcc_profile);
+    ASSERT_LT(std::chrono::milliseconds(0), sc.delay(request.dcc_profile));
+
+    EXPECT_FALSE(dropped);
+    ctrl.request(request, nullptr);
+    EXPECT_TRUE(dropped);
+    dropped = false;
+
+    ctrl.drop_excess(false);
+    ctrl.request(request, nullptr);
+    EXPECT_FALSE(dropped);
+
+    ctrl.drop_excess(true);
+    ctrl.request(request, nullptr);
+    EXPECT_TRUE(dropped);
+}
+
 TEST_F(AccessControlTest, scheduler_notification)
 {
     ASSERT_EQ(std::chrono::milliseconds(0), sc.delay(Profile::DP2));
