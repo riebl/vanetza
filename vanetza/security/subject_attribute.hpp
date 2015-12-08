@@ -13,6 +13,10 @@ namespace vanetza
 namespace security
 {
 
+/**
+*   SubjectAssurance
+*   conformable to TS 103 097 v1.2.1 (2015-06), section 6.6 and 7.4.1
+*/
 struct SubjectAssurance
 {
     SubjectAssurance(uint8_t _raw = 0) : raw(_raw) {}
