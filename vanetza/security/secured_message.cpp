@@ -47,7 +47,7 @@ size_t deserialize(InputArchive& ar, SecuredMessage& message)
     return length;
 }
 
-ByteBuffer convert_for_signing(const SecuredMessage& message, TrailerFieldType type, size_t trailer_fields_size)
+ByteBuffer convert_for_signing(const SecuredMessage& message, size_t trailer_fields_size)
 {
     ByteBuffer buf;
     byte_buffer_sink sink(buf);

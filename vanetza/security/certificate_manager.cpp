@@ -64,7 +64,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     //      ExtendedHeader: complete
     // p. 27 in TS 103 097 v1.2.1
     ByteBuffer data_buffer = request.plaintext_pdu;
-    ByteBuffer data_payload = convert_for_signing(encap_confirm.sec_packet, TrailerFieldType::Signature, trailer_field_size);
+    ByteBuffer data_payload = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
     data_buffer.insert(data_buffer.end(), data_payload.begin(), data_payload.end());
 
     TrailerField trailer_field = sign_data(m_private_key, data_buffer);
@@ -116,7 +116,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
         decap_confirm.report = ReportType::False_Signature;
         return decap_confirm;
     }
-    ByteBuffer payload = convert_for_signing(secured_message, get_type(*it), get_size(*it));
+    ByteBuffer payload = convert_for_signing(secured_message, get_size(*it));
     ByteBuffer pdu = request.sec_pdu;
     ByteBuffer message = signature.get();
     message.insert(message.end(), pdu.begin(), pdu.end());

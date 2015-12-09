@@ -52,7 +52,7 @@ size_t deserialize(InputArchive& ar, SecuredMessage& message);
 * \param message Message to be converted
 * \return ByteBuffer
 */
-ByteBuffer convert_for_signing(const SecuredMessage& message, TrailerFieldType type, size_t trailer_fields_size);
+ByteBuffer convert_for_signing(const SecuredMessage& message, size_t trailer_fields_size);
 
 } // namespace security
 } // namespace vanetza
