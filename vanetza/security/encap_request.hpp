@@ -1,5 +1,5 @@
-#ifndef ENCAP_REQUEST_HPP
-#define ENCAP_REQUEST_HPP
+#ifndef ENCAP_REQUEST_HPP_OX8CLPLW
+#define ENCAP_REQUEST_HPP_OX8CLPLW
 
 #include <boost/optional.hpp>
 #include <vanetza/common/byte_buffer.hpp>
@@ -17,7 +17,6 @@ namespace security
 *   TS 102 636-4-1 v1.2.3 (2015-01)
 */
 struct EncapRequest {
-    ByteBuffer plaintext_pdu;
     ByteBuffer plaintext_payload; // mandatory
     boost::optional<Profile> security_profile; // optional
 };
@@ -25,4 +24,4 @@ struct EncapRequest {
 } // namespace security
 } // namespace vanetza
 
-#endif // ENCAP_REQUEST_HPP
+#endif // ENCAP_REQUEST_HPP_OX8CLPLW

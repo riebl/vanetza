@@ -5,133 +5,215 @@
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/net/osi_layer.hpp>
+#include <vanetza/security/exception.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/variant/static_visitor.hpp>
+#include <boost/archive/archive_exception.hpp>
 
 namespace vanetza
 {
 namespace geonet
 {
 
-std::unique_ptr<ParsedPdu> parse(PacketVariant& packet)
+boost::optional<BasicHeader> parse_basic(PacketVariant& packet)
 {
-    struct parse_packet_visitor : public boost::static_visitor<>
+    struct parse_packet_visitor : public boost::static_visitor<boost::optional<BasicHeader> >
     {
-        void operator()(CohesivePacket& packet)
+        boost::optional<BasicHeader> operator()(CohesivePacket& packet)
         {
-            result = parse(packet);
+            return parse_basic(packet);
         }
 
-        void operator()(ChunkPacket& packet)
+        boost::optional<BasicHeader> operator()(ChunkPacket& packet)
         {
-            result = parse(packet);
+            return parse_basic(packet);
         }
-
-        std::unique_ptr<ParsedPdu> result;
     };
 
     parse_packet_visitor visitor;
-    boost::apply_visitor(visitor, packet);
-    return std::move(visitor.result);
+    return std::move(boost::apply_visitor(visitor, packet));
 }
 
-std::unique_ptr<ParsedPdu> parse(CohesivePacket& packet)
+boost::optional<BasicHeader> parse_basic(CohesivePacket& packet)
 {
-    std::unique_ptr<ParsedPdu> pdu;
+    boost::optional<BasicHeader> header;
 
-    static const std::size_t basic_common_pdu_length =
-        BasicHeader::length_bytes + CommonHeader::length_bytes;
-    if (packet.size(OsiLayer::Network) < basic_common_pdu_length) {
-        assert(!pdu);
-        return pdu;
+    static const std::size_t basic_pdu_length = BasicHeader::length_bytes;
+
+    if (packet.size(OsiLayer::Network) < basic_pdu_length) {
+        return boost::none;
     }
 
     byte_buffer_source source(packet[OsiLayer::Network]);
     boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
     InputArchive ar(stream, boost::archive::no_header);
 
-    pdu.reset(new ParsedPdu());
-    BasicHeader& basic = pdu->basic;
-    deserialize(basic, ar);
+    try {
+        BasicHeader basic;
+        deserialize(basic, ar);
+        header = std::move(basic);
+    } catch (const boost::archive::archive_exception& e) {
+        header = boost::none;
+    } catch (security::deserialization_error& e) {
+        header = boost::none;
+    }
 
-    CommonHeader& common = pdu->common;
-    security::SecuredMessage secured;
-    switch (basic.next_header) {
-        case NextHeaderBasic::SECURED:
-            deserialize(ar, secured);
-            pdu->secured = std::move(secured);
-            // TODO: invoke SN-DECAP.service, just remember to do decap and verify
-        case NextHeaderBasic::ANY:
-        case NextHeaderBasic::COMMON:
-            deserialize(common, ar);
-            break;
-        default:
-            // unhandled header type, reset PDU
-            pdu.reset();
-            break;
+    return header;
+}
+
+boost::optional<BasicHeader> parse_basic(ChunkPacket& packet)
+{
+    boost::optional<BasicHeader> header;
+
+    using convertible_pdu_t = convertible::byte_buffer_impl<std::unique_ptr<Pdu>>;
+
+    const convertible::byte_buffer* convertible = packet[OsiLayer::Network].ptr();
+    const convertible_pdu_t* convertible_pdu =
+        dynamic_cast<const convertible_pdu_t*>(convertible);
+
+    if (nullptr != convertible_pdu) {
+        header = std::move(convertible_pdu->m_pdu.get()->basic());
+    } else {
+        header = boost::none;
+    }
+
+    return header;
+}
+
+std::size_t parse_extended(std::unique_ptr<ParsedPdu>& pdu, InputArchive& ar)
+{
+    std::size_t extended_pdu_length = 0;
+
+    try {
+        switch (pdu->common.header_type) {
+            case HeaderType::TSB_SINGLE_HOP: {
+                    ShbHeader shb;
+                    deserialize(shb, ar);
+                    pdu->extended = shb;
+                    extended_pdu_length = ShbHeader::length_bytes;
+                }
+                break;
+            case HeaderType::GEOBROADCAST_CIRCLE:
+            case HeaderType::GEOBROADCAST_RECT:
+            case HeaderType::GEOBROADCAST_ELIP: {
+                    GeoBroadcastHeader gbc;
+                    deserialize(gbc, ar);
+                    pdu->extended = gbc;
+                    extended_pdu_length = GeoBroadcastHeader::length_bytes;
+                }
+                break;
+            case HeaderType::ANY:
+            case HeaderType::BEACON:
+            case HeaderType::GEOUNICAST:
+            case HeaderType::GEOANYCAST_CIRCLE:
+            case HeaderType::GEOANYCAST_RECT:
+            case HeaderType::GEOANYCAST_ELIP:
+            case HeaderType::TSB_MULTI_HOP:
+            case HeaderType::LS_REQUEST:
+            case HeaderType::LS_REPLY:
+                // unimplemented types
+                pdu.reset();
+                break;
+            default:
+                // invalid types
+                pdu.reset();
+                break;
+        }
+    } catch (const boost::archive::archive_exception& e) {
+        pdu.reset();
+    } catch (security::deserialization_error& e) {
+        pdu.reset();
+    }
+
+    return extended_pdu_length;
+}
+
+std::unique_ptr<ParsedPdu> parse_header(PacketVariant& packet, BasicHeader& basic)
+{
+    struct parse_packet_visitor : public boost::static_visitor<>
+    {
+        parse_packet_visitor(BasicHeader& basic) : m_basic(basic)
+        {
+        }
+
+        void operator()(CohesivePacket& packet)
+        {
+            result = parse_header(packet, m_basic);
+        }
+
+        void operator()(ChunkPacket& packet)
+        {
+            result = parse_header(packet);
+        }
+
+        std::unique_ptr<ParsedPdu> result;
+
+        BasicHeader m_basic;
+    };
+
+    parse_packet_visitor visitor(basic);
+    boost::apply_visitor(visitor, packet);
+    return std::move(visitor.result);
+}
+
+std::unique_ptr<ParsedPdu> parse_header(CohesivePacket& packet, BasicHeader& basic)
+{
+    std::unique_ptr<ParsedPdu> pdu(new ParsedPdu());
+
+    static const std::size_t basic_common_pdu_length =
+        BasicHeader::length_bytes + CommonHeader::length_bytes;
+
+    if (packet.size(OsiLayer::Network) < basic_common_pdu_length) {
+        pdu.reset();
+        return pdu;
+    }
+
+    // set basic header in pdu
+    pdu->basic = std::move(basic);
+
+    ByteBuffer source_buffer(packet[OsiLayer::Network].begin() + BasicHeader::length_bytes, packet[OsiLayer::Network].end());
+    byte_buffer_source source(std::move(source_buffer));
+    boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
+    InputArchive ar(stream, boost::archive::no_header);
+
+    try {
+        CommonHeader& common = pdu->common;
+        switch (basic.next_header) {
+            case NextHeaderBasic::ANY:
+            case NextHeaderBasic::COMMON:
+                deserialize(common, ar);
+                break;
+            default:
+                // unhandled header type, reset PDU
+                pdu.reset();
+                break;
+        }
+    } catch (const boost::archive::archive_exception& e) {
+        pdu.reset();
+    } catch (security::deserialization_error& e) {
+        pdu.reset();
     }
 
     if (!pdu) {
         return pdu;
     }
 
-    std::size_t extended_pdu_length = 0;
-    switch (common.header_type) {
-        case HeaderType::TSB_SINGLE_HOP: {
-                ShbHeader shb;
-                deserialize(shb, ar);
-                pdu->extended = shb;
-                extended_pdu_length = ShbHeader::length_bytes;
-            }
-            break;
-        case HeaderType::GEOBROADCAST_CIRCLE:
-        case HeaderType::GEOBROADCAST_RECT:
-        case HeaderType::GEOBROADCAST_ELIP: {
-                GeoBroadcastHeader gbc;
-                deserialize(gbc, ar);
-                pdu->extended = gbc;
-                extended_pdu_length = GeoBroadcastHeader::length_bytes;
-            }
-            break;
-        case HeaderType::ANY:
-        case HeaderType::BEACON:
-        case HeaderType::GEOUNICAST:
-        case HeaderType::GEOANYCAST_CIRCLE:
-        case HeaderType::GEOANYCAST_RECT:
-        case HeaderType::GEOANYCAST_ELIP:
-        case HeaderType::TSB_MULTI_HOP:
-        case HeaderType::LS_REQUEST:
-        case HeaderType::LS_REPLY:
-            // unimplemented types
-            pdu.reset();
-            break;
-        default:
-            // invalid types
-            pdu.reset();
-            break;
-    }
+    std::size_t extended_pdu_length = parse_extended(pdu, ar);
 
     if (pdu) {
         std::size_t pdu_length = basic_common_pdu_length + extended_pdu_length;
-        if (pdu->secured.is_initialized()) {
-            pdu_length += get_size(pdu->secured.get());
-        }
-        if (pdu_length + common.payload == packet.size(OsiLayer::Network, max_osi_layer())) {
+        if (pdu_length + pdu->common.payload == packet.size(OsiLayer::Network, max_osi_layer())) {
             packet.set_boundary(OsiLayer::Network, pdu_length);
-            assert(packet.size(OsiLayer::Transport, max_osi_layer()) == common.payload);
+            assert(packet.size(OsiLayer::Transport, max_osi_layer()) == pdu->common.payload);
         } else {
             pdu.reset();
         }
     }
 
-    if (basic.next_header == NextHeaderBasic::SECURED) {
-        // TODO actually do decap and verify the message
-    }
-
     return pdu;
 }
 
-std::unique_ptr<ParsedPdu> parse(ChunkPacket& packet)
+std::unique_ptr<ParsedPdu> parse_header(ChunkPacket& packet)
 {
     using convertible_pdu_t = convertible::byte_buffer_impl<std::unique_ptr<Pdu>>;
 
@@ -160,6 +242,99 @@ std::unique_ptr<ParsedPdu> parse(ChunkPacket& packet)
     }
 
     return parsed_pdu;
+}
+
+std::unique_ptr<ParsedPdu> parse_secured_header(const ByteBuffer& data_buffer, const BasicHeader& basic)
+{
+    std::unique_ptr<ParsedPdu> pdu(new ParsedPdu());
+
+    // set basic header in pdu
+    pdu->basic = basic;
+
+    std::size_t buffer_size = data_buffer.size();
+    byte_buffer_source source(std::move(data_buffer));
+    boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
+    InputArchive ar(stream, boost::archive::no_header);
+
+    std::size_t extended_pdu_length = 0;
+    try {
+        CommonHeader& common = pdu->common;
+        deserialize(common, ar);
+        // add extended header to pdu
+        extended_pdu_length = parse_extended(pdu, ar);
+    } catch (const boost::archive::archive_exception& e) {
+        pdu.reset();
+    } catch (security::deserialization_error& e) {
+        pdu.reset();
+    }
+
+    if (pdu) {
+        const std::size_t pdu_length = CommonHeader::length_bytes + extended_pdu_length;
+        if (pdu_length + pdu->common.payload != buffer_size) {
+            pdu.reset();
+        }
+    }
+
+    return pdu;
+}
+
+boost::optional<security::SecuredMessage> extract_secured_message(PacketVariant& packet)
+{
+    struct extract_secured_message_visitor : public boost::static_visitor<boost::optional<security::SecuredMessage>>
+    {
+        boost::optional<security::SecuredMessage> operator()(CohesivePacket& packet)
+        {
+            return extract_secured_message(packet);
+        }
+
+        boost::optional<security::SecuredMessage> operator()(ChunkPacket& packet)
+        {
+            return extract_secured_message(packet);
+        }
+    };
+
+    extract_secured_message_visitor visitor;
+    return std::move(boost::apply_visitor(visitor, packet));
+}
+
+boost::optional<security::SecuredMessage> extract_secured_message(ByteBuffer secured_buffer)
+{
+    boost::optional<security::SecuredMessage> secured_message;
+
+    // create the InputArchive for deserialization
+    byte_buffer_source source(std::move(secured_buffer));
+    boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
+    InputArchive ar(stream, boost::archive::no_header);
+
+    try {
+        security::SecuredMessage secured;
+        deserialize(ar, secured);
+        secured_message = std::move(secured);
+    } catch (const boost::archive::archive_exception& e) {
+        secured_message = boost::none;
+    } catch (security::deserialization_error& e) {
+        secured_message = boost::none;
+    }
+
+    return secured_message;
+}
+
+boost::optional<security::SecuredMessage> extract_secured_message(CohesivePacket& packet)
+{
+    // get all data from Network layer
+    ByteBuffer source_buffer(packet[OsiLayer::Network].begin() + BasicHeader::length_bytes, packet[OsiLayer::Network].end());
+
+    return extract_secured_message(std::move(source_buffer));
+}
+
+boost::optional<security::SecuredMessage> extract_secured_message(ChunkPacket& packet)
+{
+    // get all data from Network layer
+    ByteBuffer layer_buffer;
+    packet[OsiLayer::Network].convert(layer_buffer);
+    ByteBuffer source_buffer(layer_buffer.begin() + BasicHeader::length_bytes, layer_buffer.end());
+
+    return extract_secured_message(std::move(source_buffer));
 }
 
 ByteBuffer convert_for_signing(const ParsedPdu& pdu)

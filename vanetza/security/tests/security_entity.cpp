@@ -10,13 +10,11 @@ protected:
     security::EncapRequest create_encap_request()
     {
         geonet::ManagementInformationBase mib;
-        geonet::ExtendedPdu<geonet::ShbHeader> epdu = geonet::ExtendedPdu<geonet::ShbHeader>(mib);
         const ByteBuffer send_payload {
             89, 27, 1, 4, 18, 85
         };
 
         security::EncapRequest encap_request;
-        encap_request.plaintext_pdu = convert_for_signing(epdu);
         encap_request.plaintext_payload = send_payload;
 
         return encap_request;
@@ -57,7 +55,6 @@ TEST_F(SecurityEntity, test_verify_method)
 
     //create decap_request
     security::DecapRequest decap_request;
-    decap_request.sec_pdu = encap_request.plaintext_pdu;
     decap_request.sec_packet = encap_confirm.sec_packet;
 
     //create decap_confirm
@@ -80,7 +77,6 @@ TEST_F(SecurityEntity, test_verify_method_fail)
 
     //create decap_request
     security::DecapRequest decap_request;
-    decap_request.sec_pdu = encap_request.plaintext_pdu;
 
     //create new (wrong) payload
     ByteBuffer wrong_payload { 7 };

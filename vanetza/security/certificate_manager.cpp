@@ -63,9 +63,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     //      CommonHeader: complete
     //      ExtendedHeader: complete
     // p. 27 in TS 103 097 v1.2.1
-    ByteBuffer data_buffer = request.plaintext_pdu;
-    ByteBuffer data_payload = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-    data_buffer.insert(data_buffer.end(), data_payload.begin(), data_payload.end());
+    ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
 
     TrailerField trailer_field = sign_data(m_private_key, data_buffer);
     assert(get_size(trailer_field) == trailer_field_size);
@@ -110,20 +108,20 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 
     std::list<TrailerField>::iterator it = trailer_fields.begin();
 
-    // build message buffer that has to be verified
+    // check Signature
     boost::optional<ByteBuffer> signature = extract_signature_buffer(*it);
     if (!signature) {
         decap_confirm.report = ReportType::False_Signature;
         return decap_confirm;
     }
+
+    // convert message byte buffer to string
+    ByteBuffer message = std::move(signature.get());
     ByteBuffer payload = convert_for_signing(secured_message, get_size(*it));
-    ByteBuffer pdu = request.sec_pdu;
-    ByteBuffer message = signature.get();
-    message.insert(message.end(), pdu.begin(), pdu.end());
     message.insert(message.end(), payload.begin(), payload.end());
 
     // result of verify function
-    bool result = verify_data(public_key, message);
+    bool result = verify_data(public_key, std::move(message));
 
     decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.buffer);
     if (result) {

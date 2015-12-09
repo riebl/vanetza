@@ -26,7 +26,6 @@ public:
 protected:
     virtual void SetUp() override
     {
-        encap_request.plaintext_pdu = expected_pdu;
         encap_request.plaintext_payload = expected_payload;
         encap_request.security_profile = security::Profile::CAM;
     }
@@ -41,13 +40,11 @@ protected:
 
         // prepare decap request
         security::DecapRequest decap_request;
-        decap_request.sec_pdu = encap_request.plaintext_pdu;
         decap_request.sec_packet = secured_message;
 
         return decap_request;
     }
 
-    ByteBuffer expected_pdu = {21, 42, 23, 15, 8};
     ByteBuffer expected_payload = {8, 25, 13, 2};
     security::EncapRequest encap_request;
     geonet::Timestamp time_now;
@@ -274,7 +271,6 @@ TEST_F(CertificateManager, verify_message_premature_certificate)
 
     // prepare decap request
     security::DecapRequest decap_request;
-    decap_request.sec_pdu = encap_request.plaintext_pdu;
     decap_request.sec_packet = secured_message;
 
     // verify message

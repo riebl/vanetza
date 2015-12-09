@@ -35,15 +35,18 @@ void serialize(const ExtendedPduRefs<HEADER>&, OutputArchive&);
 template<class HEADER>
 class ExtendedPdu : public Pdu
 {
+public:
     using SecuredMessage = security::SecuredMessage;
 
-public:
     ExtendedPdu() {}
     ExtendedPdu(const MIB& mib) : m_basic(mib), m_common(mib) {}
     ExtendedPdu(const DataRequest& request, const MIB& mib) :
         m_basic(request, mib), m_common(request, mib) {}
     ExtendedPdu(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended) :
         m_basic(basic), m_common(common), m_extended(extended) {}
+    ExtendedPdu(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended,
+            const SecuredMessage& secured) :
+        m_basic(basic), m_common(common), m_extended(extended), m_secured(secured) {}
     BasicHeader& basic() override { return m_basic; }
     const BasicHeader& basic() const override { return m_basic; }
     CommonHeader& common() override { return m_common; }
@@ -74,34 +77,48 @@ public:
 
 private:
     BasicHeader m_basic;
-    boost::optional<SecuredMessage> m_secured;
     CommonHeader m_common;
     HEADER m_extended;
+    boost::optional<SecuredMessage> m_secured;
 };
 
 template<class HEADER>
 class ExtendedPduRefs : public Pdu
 {
 public:
+    using SecuredMessage = security::SecuredMessage;
+
     ExtendedPduRefs(BasicHeader& basic, CommonHeader& common, HEADER& extended) :
-        mr_basic(basic), mr_common(common), mr_extended(extended) {}
+        mr_basic(basic), mr_common(common), mr_extended(extended), mp_secured(nullptr) {}
+    ExtendedPduRefs(BasicHeader& basic, CommonHeader& common, HEADER& extended,
+            SecuredMessage& secured) :
+        mr_basic(basic), mr_common(common), mr_extended(extended), mp_secured(&secured) {}
     BasicHeader& basic() { return mr_basic; }
     const BasicHeader& basic() const { return mr_basic; }
     CommonHeader& common() { return mr_common; }
     const CommonHeader& common() const { return mr_common; }
     HEADER& extended() { return mr_extended; }
     const HEADER& extended() const { return mr_extended; }
+    SecuredMessage* secured() { return mp_secured; }
+    const SecuredMessage* secured() const { return mp_secured; }
 
     ExtendedPdu<HEADER>* clone() const
     {
-        return new ExtendedPdu<HEADER>(mr_basic, mr_common, mr_extended);
+        if (mp_secured) {
+            return new ExtendedPdu<HEADER>(mr_basic, mr_common, mr_extended, *mp_secured);
+        } else {
+            return new ExtendedPdu<HEADER>(mr_basic, mr_common, mr_extended);
+        }
     }
 
     std::size_t length() const
     {
-        return BasicHeader::length_bytes +
-            CommonHeader::length_bytes +
-            HEADER::length_bytes;
+        std::size_t length = BasicHeader::length_bytes + CommonHeader::length_bytes;
+        length += HEADER::length_bytes;
+        if (mp_secured) {
+            length += get_size(*mp_secured);
+        }
+        return length;
     }
 
     void serialize(OutputArchive& ar) const
@@ -113,26 +130,31 @@ private:
     BasicHeader& mr_basic;
     CommonHeader& mr_common;
     HEADER& mr_extended;
+    SecuredMessage* mp_secured;
 };
 
 template<class HEADER>
 void serialize(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar)
 {
     serialize(pdu.basic(), ar);
-    if (pdu.secured().is_initialized())
-    {
+    if (pdu.secured()) {
         serialize(ar, pdu.secured().get());
+    } else {
+        serialize(pdu.common(), ar);
+        serialize(pdu.extended(), ar);
     }
-    serialize(pdu.common(), ar);
-    serialize(pdu.extended(), ar);
 }
 
 template<class HEADER>
 void serialize(const ExtendedPduRefs<HEADER>& pdu, OutputArchive& ar)
 {
     serialize(pdu.basic(), ar);
-    serialize(pdu.common(), ar);
-    serialize(pdu.extended(), ar);
+    if (pdu.secured()) {
+        serialize(ar, *pdu.secured());
+    } else {
+        serialize(pdu.common(), ar);
+        serialize(pdu.extended(), ar);
+    }
 }
 
 template<class HEADER>
@@ -147,11 +169,10 @@ ByteBuffer convert_for_signing(const ExtendedPdu<HEADER>& pdu)
     serialize(pdu.common(), ar);
     serialize(pdu.extended(), ar);
 
-    return std::move(buf);
+    return buf;
 }
 
 } // namespace geonet
 } // namespace vanetza
 
 #endif /* EXTENDED_PDU_HPP_TL2WFH9W */
-

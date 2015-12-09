@@ -177,28 +177,26 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
 
         // Security
         if (m_mib.itsGnSecurity) {
-            // serialize (to ByteBuffer) the parts of pdu for signing
             security::EncapRequest encap_request;
-            encap_request.plaintext_pdu = convert_for_signing(*pdu.get());
 
             // get the payload
-            ByteBuffer payload_buffer;
+            ByteBuffer payload_buffer = convert_for_signing(*pdu.get());
             auto layer_array = osi_layer_range<OsiLayer::Transport, max_osi_layer()>();
             for (auto layer : layer_array) {
                     ByteBuffer layer_payload;
                     (*payload)[layer].convert(layer_payload);
                     payload_buffer.insert(payload_buffer.end(), layer_payload.begin(), layer_payload.end());
-            }
 
+                    // set payload to zero, original payload is in secured message
+                    payload->layer(layer) = {};
+            }
             encap_request.plaintext_payload = std::move(payload_buffer);
 
             // set the requested SecurityProfile
             encap_request.security_profile = request.security_profile;
 
             security::EncapConfirm confirm = m_security_entity.encapsulate_packet(encap_request);
-
             pdu->secured() = std::move(confirm.sec_packet);
-            // TODO (simon,markus): set payload to null, original payload is in secured message
 
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
         }
@@ -298,42 +296,66 @@ DataConfirm Router::request(const TsbDataRequest&, DownPacketPtr)
 void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
 {
     assert(packet);
-    auto pdu = parse(*packet);
-    if (!pdu) {
+
+    boost::optional<BasicHeader> basic = parse_basic(*packet);
+    boost::optional<security::SecuredMessage> secured_message;
+
+    if (!basic) {
         // parsing of packet failed
         return;
     }
 
-    BasicHeader& basic = pdu->basic;
-    if (basic.version.raw() != m_mib.itsGnProtocolVersion) {
+    // check protocol version
+    if (basic.get().version.raw() != m_mib.itsGnProtocolVersion) {
         // discard packet
         return;
     }
 
-    CommonHeader& common = pdu->common;
-    if (common.maximum_hop_limit < basic.hop_limit) {
-        // discard packet
-        return;
-    } else if (common.payload != size(*packet, OsiLayer::Transport, max_osi_layer())) {
-        // payload length does not match packet size
-        return;
-    }
+    std::unique_ptr<ParsedPdu> pdu;
 
-    if (m_mib.itsGnSecurity)
-    {
-        if (pdu->basic.next_header != NextHeaderBasic::SECURED || !pdu->secured.is_initialized())
-        {
-            // discard packet
+    // special treatment, when the next header in the packet is a SecuredMessage
+    if (basic.get().next_header == NextHeaderBasic::SECURED) {
+        // deserialize payload from packet
+        secured_message = extract_secured_message(*packet);
+        if (!secured_message) {
+            // discard Packet
             return;
         }
 
         // Decap packet
         security::DecapRequest decap_request;
-        decap_request.sec_packet = pdu->secured.get();
-        decap_request.sec_pdu = std::move(convert_for_signing(*pdu.get()));
-
+        decap_request.sec_packet = secured_message.get();
         security::DecapConfirm decap_confirm = m_security_entity.decapsulate_packet(decap_request);
-        // TODO (simon,markus): check where to save the payload for next stage
+
+        // check whether the received packet is valid
+        if (security::ReportType::Success != decap_confirm.report) {
+            // discard packet
+
+            // TODO handle the packet anyway, when itsGnDecapResultHandling is set to NON-STRICT (1)
+            //      according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
+            return;
+        }
+
+        // extract payload from secured message
+        const ByteBuffer& plaintext_payload = decap_confirm.plaintext_payload;
+        pdu = parse_secured_header(plaintext_payload, basic.get());
+
+        auto after_extended = plaintext_payload.begin();
+        std::advance(after_extended, CommonHeader::length_bytes + get_length(pdu->extended));
+        ByteBuffer payload { after_extended, plaintext_payload.end() };
+
+        (*packet) = CohesivePacket  { std::move(payload), OsiLayer::Transport };
+    } else {
+        // parse remaining header of the packet and rebuild parsed_pdu
+        pdu = parse_header(*packet, basic.get());
+    }
+
+    if (pdu->common.maximum_hop_limit < pdu->basic.hop_limit) {
+        // discard packet
+        return;
+    } else if (pdu->common.payload != size(*packet, OsiLayer::Transport, max_osi_layer())) {
+        // payload length does not match packet size, discard packet
+        return;
     }
 
     flush_broadcast_forwarding_buffer();
@@ -343,13 +365,17 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         extended_header_visitor(Router* router,
                 std::unique_ptr<UpPacket> packet,
                 ParsedPdu& pdu,
+                boost::optional<security::SecuredMessage>&& secured_message,
                 const MacAddress& sender,
                 const MacAddress& destination) :
             m_router(router),
             m_packet(std::move(packet)),
+            m_secured_message(std::move(secured_message)),
             m_pdu(pdu),
             m_sender(sender),
-            m_destination(destination) {}
+            m_destination(destination)
+        {
+        }
 
         void operator()(ShbHeader& shb)
         {
@@ -372,11 +398,12 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         Router* m_router;
         std::unique_ptr<UpPacket> m_packet;
         ParsedPdu& m_pdu;
+        boost::optional<security::SecuredMessage> m_secured_message;
         const MacAddress& m_sender;
         const MacAddress& m_destination;
     };
 
-    extended_header_visitor visitor(this, std::move(packet), *pdu, sender, destination);
+    extended_header_visitor visitor(this, std::move(packet), *pdu, std::move(secured_message), sender, destination);
     boost::apply_visitor(visitor, pdu->extended);
 }
 

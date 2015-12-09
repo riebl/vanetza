@@ -1,5 +1,5 @@
-#ifndef DECAP_REQUEST_HPP
-#define DECAP_REQUEST_HPP
+#ifndef DECAP_REQUEST_HPP_WH8O09MB
+#define DECAP_REQUEST_HPP_WH8O09MB
 
 #include <vanetza/geonet/parsed_pdu.hpp>
 #include <vanetza/common/byte_buffer.hpp>
@@ -17,10 +17,9 @@ namespace security
 struct DecapRequest
 {
     // plaintext_packet_length is gathered via ByteBuffer::size(); valid range 0 ... 2^16-1; mandatory
-    ByteBuffer sec_pdu; // mandatory
     SecuredMessage sec_packet;
 };
 
 } // namespace security
 } // namespace vanetza
-#endif // DECAP_REQUEST_HPP
+#endif // DECAP_REQUEST_HPP_WH8O09MB
