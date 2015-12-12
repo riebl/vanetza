@@ -18,6 +18,10 @@ class CertificateManager;
 class SecurityEntity
 {
 public:
+    /** \brief
+     *
+     * \param time_now timestamp stored in the used CertificateManger
+     */
     SecurityEntity(const geonet::Timestamp& time_now);
 
     /** \brief

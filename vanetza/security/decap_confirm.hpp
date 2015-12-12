@@ -28,7 +28,7 @@ enum class ReportType
     Decryption_Error,
 };
 
-/**
+/** \brief contains output of the verify process
 *   described in
 *   TS 102 723-8 v1.0.0 (2013-07)
 *   TS 102 636-4-1 v1.2.3 (2015-01)

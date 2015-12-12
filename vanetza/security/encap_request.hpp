@@ -12,7 +12,7 @@ namespace vanetza
 namespace security
 {
 
-/**
+/** \brief contains input for signing process
 *   described in
 *   TS 102 636-4-1 v1.2.3 (2015-01)
 */
