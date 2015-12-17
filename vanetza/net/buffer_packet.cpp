@@ -1,19 +1,19 @@
-#include "packet.hpp"
+#include "buffer_packet.hpp"
 
 namespace vanetza
 {
 
-Packet::Packet()
+BufferPacket::BufferPacket()
 {
 }
 
-void Packet::swap(OsiLayer layer, ByteBuffer& replacement)
+void BufferPacket::swap(OsiLayer layer, ByteBuffer& replacement)
 {
     ByteBuffer& stored = mBuffers[layer];
     stored.swap(replacement);
 }
 
-const ByteBuffer& Packet::operator[](OsiLayer layer) const
+const ByteBuffer& BufferPacket::operator[](OsiLayer layer) const
 {
     auto match = mBuffers.find(layer);
     if (match == mBuffers.end()) {
@@ -24,7 +24,7 @@ const ByteBuffer& Packet::operator[](OsiLayer layer) const
     }
 }
 
-std::size_t Packet::size() const
+std::size_t BufferPacket::size() const
 {
     std::size_t packet_size = 0;
     for (const auto& it : *this) {
@@ -33,7 +33,7 @@ std::size_t Packet::size() const
     return packet_size;
 }
 
-void Packet::clear()
+void BufferPacket::clear()
 {
     for (auto& it : mBuffers) {
         it.second.clear();

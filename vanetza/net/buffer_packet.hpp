@@ -1,5 +1,5 @@
-#ifndef PACKET_HPP_QYLSJSX5
-#define PACKET_HPP_QYLSJSX5
+#ifndef BUFFER_PACKET_HPP_QYLSJSX5
+#define BUFFER_PACKET_HPP_QYLSJSX5
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/net/osi_layer.hpp>
@@ -9,11 +9,11 @@
 namespace vanetza
 {
 
-class Packet
+class BufferPacket
 {
 public:
     typedef std::map<OsiLayer, ByteBuffer> map_t;
-    Packet();
+    BufferPacket();
     void swap(OsiLayer layer, ByteBuffer&);
     const ByteBuffer& operator[](OsiLayer layer) const;
     ByteBuffer& operator[](OsiLayer layer) { return mBuffers[layer]; }
@@ -31,5 +31,5 @@ private:
 
 } // namespace vanetza
 
-#endif /* PACKET_HPP_QYLSJSX5 */
+#endif /* BUFFER_PACKET_HPP_QYLSJSX5 */
 

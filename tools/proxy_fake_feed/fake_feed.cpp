@@ -1,7 +1,7 @@
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/net/ethernet_header.hpp>
 #include <vanetza/net/mac_address.hpp>
-#include <vanetza/net/packet.hpp>
+#include <vanetza/net/buffer_packet.hpp>
 #include <vanetza/net/proxy_header.hpp>
 #include <boost/array.hpp>
 #include <boost/asio/io_service.hpp>
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     MacAddress src_mac { 0xde, 0xad, 8, 8, 8, 2 };
     uint16be_t eth_proto = host_cast<uint16_t>(0x0707u);
 
-    Packet packet;
+    BufferPacket packet;
     packet[OsiLayer::Link] = create_ethernet_header(dst_mac, src_mac, eth_proto);
     packet[OsiLayer::Network].assign(10, 0xab);
 

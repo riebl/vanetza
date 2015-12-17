@@ -1,5 +1,5 @@
 #include "io_vector.hpp"
-#include "packet.hpp"
+#include "buffer_packet.hpp"
 
 namespace vanetza
 {
@@ -17,7 +17,7 @@ void IoVector::append(const void* base, std::size_t length)
     m_vector.push_back(node);
 }
 
-void IoVector::append(const Packet& packet)
+void IoVector::append(const BufferPacket& packet)
 {
     for (auto& kv : packet) {
         const ByteBuffer& buffer = kv.second;
