@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <boost/variant.hpp>
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/net/packet.hpp>
 #include <vanetza/security/serialization.hpp>
 
 namespace vanetza
@@ -23,7 +24,7 @@ enum class PayloadType : uint8_t
 struct Payload
 {
     PayloadType type;
-    ByteBuffer buffer;
+    PacketVariant data;
 };
 
 /**
@@ -45,7 +46,6 @@ size_t get_size(const Payload&);
  * \param object to serialize
  * \param achive to serialize in,
  */
-void serialize(OutputArchive& ar, const ByteBuffer&);
 void serialize(OutputArchive& ar, const Payload&);
 
 /**
@@ -54,7 +54,6 @@ void serialize(OutputArchive& ar, const Payload&);
  * \param object to deserialize
  * \return size of the deserialized object
  */
-size_t deserialize(InputArchive& ar, ByteBuffer&);
 size_t deserialize(InputArchive& ar, Payload&);
 
 } // namespace security

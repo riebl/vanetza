@@ -18,13 +18,12 @@ protected:
     {
         mib.itsGnSecurity = true;
         router.set_transport_handler(geonet::UpperProtocol::IPv6, ind_ifc);
-        test_payload = {47, 11, 1, 4, 42, 85};
+        test_payload[OsiLayer::Application] = ByteBuffer {47, 11, 1, 4, 42, 85};
     }
 
     std::unique_ptr<geonet::DownPacket> create_packet()
     {
-        std::unique_ptr<DownPacket> packet { new DownPacket() };
-        packet->layer(OsiLayer::Transport) = ByteBuffer(test_payload);
+        std::unique_ptr<DownPacket> packet { new DownPacket(test_payload) };
         return packet;
     }
 
@@ -32,7 +31,7 @@ protected:
     Router router;
     FakeRequestInterface req_ifc;
     FakeTransportInterface ind_ifc;
-    ByteBuffer test_payload;
+    ChunkPacket test_payload;
 };
 
 TEST_F(RouterRequest, router_request)
@@ -77,18 +76,21 @@ TEST_F(RouterRequest, router_request)
     EXPECT_EQ(security::PayloadType::Signed, secured.payload.type);
     EXPECT_EQ(test_payload.size(), pdu->common().payload);
     const size_t payload_header_length = CommonHeader::length_bytes + ShbHeader::length_bytes;
-    EXPECT_EQ(test_payload.size() + payload_header_length, secured.payload.buffer.size());
-    ByteBuffer payload {
-        secured.payload.buffer.begin() + payload_header_length,
-        secured.payload.buffer.end()
-    };
-    EXPECT_EQ(test_payload, payload);
-    ByteBuffer payload_header;
-    serialize_into_buffer(pdu_ext->common(), payload_header);
-    serialize_into_buffer(pdu_ext->extended(), payload_header);
-    EXPECT_EQ(payload_header_length, payload_header.size());
-    secured.payload.buffer.resize(payload_header_length);
-    EXPECT_EQ(payload_header, secured.payload.buffer);
+    EXPECT_EQ(payload_header_length, size(secured.payload.data, OsiLayer::Network));
+    EXPECT_EQ(test_payload.size(), size(secured.payload.data, OsiLayer::Transport, OsiLayer::Application));
+
+    ChunkPacket sec_payload = boost::get<ChunkPacket>(secured.payload.data);
+    ChunkPacket sec_header = sec_payload.extract(OsiLayer::Network, OsiLayer::Network);
+    ByteBuffer actual_payload, expected_payload;
+    serialize_into_buffer(sec_payload, actual_payload);
+    serialize_into_buffer(test_payload, expected_payload);
+    EXPECT_EQ(expected_payload, actual_payload);
+
+    ByteBuffer actual_payload_header, expected_payload_header;
+    geonet::serialize_into_buffer(pdu_ext->common(), expected_payload_header);
+    geonet::serialize_into_buffer(pdu_ext->extended(), expected_payload_header);
+    sec_header[OsiLayer::Network].convert(actual_payload_header);
+    EXPECT_EQ(expected_payload_header, actual_payload_header);
 }
 
 TEST_F(RouterRequest, modified_request_maximum_lifetime)

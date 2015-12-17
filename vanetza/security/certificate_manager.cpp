@@ -31,7 +31,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     EncapConfirm encap_confirm;
     // set secured message data
     encap_confirm.sec_packet.payload.type = PayloadType::Signed;
-    encap_confirm.sec_packet.payload.buffer = std::move(request.plaintext_payload);
+    encap_confirm.sec_packet.payload.data = std::move(request.plaintext_payload);
     // set header field data
     encap_confirm.sec_packet.header_fields.push_back(get_time()); // generation_time
     encap_confirm.sec_packet.header_fields.push_back((uint16_t) 36); // its_aid, according to TS 102 965, and ITS-AID_AssignedNumbers
@@ -74,7 +74,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 
     SecuredMessage secured_message = std::move(request.sec_packet);
     // set the payload, when verfiy != success, we need this for NON_STRICT packet handling
-    decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.buffer);
+    decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.data);
 
     if (PayloadType::Signed != secured_message.payload.type) {
         decap_confirm.report = ReportType::Unsigned_Message;

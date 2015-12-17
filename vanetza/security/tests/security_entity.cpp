@@ -1,8 +1,10 @@
 #include <gtest/gtest.h>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/tests/check_payload.hpp>
 
 using namespace vanetza;
+using vanetza::security::check;
 
 class SecurityEntity : public ::testing::Test
 {
@@ -10,9 +12,8 @@ protected:
     security::EncapRequest create_encap_request()
     {
         geonet::ManagementInformationBase mib;
-        const ByteBuffer send_payload {
-            89, 27, 1, 4, 18, 85
-        };
+        ChunkPacket send_payload;
+        send_payload[OsiLayer::Application] = ByteBuffer {89, 27, 1, 4, 18, 85};
 
         security::EncapRequest encap_request;
         encap_request.plaintext_payload = send_payload;
@@ -40,7 +41,7 @@ TEST_F(SecurityEntity, test_sign_method)
     EXPECT_EQ(encap_confirm.sec_packet.payload.type, security::PayloadType::Signed);
 
     //check if bytebuffers are the same
-    EXPECT_EQ(encap_request.plaintext_payload, encap_confirm.sec_packet.payload.buffer);
+    check(encap_request.plaintext_payload, encap_confirm.sec_packet.payload.data);
 }
 
 TEST_F(SecurityEntity, test_verify_method)
@@ -85,7 +86,7 @@ TEST_F(SecurityEntity, test_verify_method_fail)
     decap_request.sec_packet = encap_confirm.sec_packet;
 
     //replace correct payload with new payload
-    decap_request.sec_packet.payload.buffer = wrong_payload;
+    decap_request.sec_packet.payload.data = CohesivePacket(wrong_payload, OsiLayer::Application);
 
     //create decap_confirm
     security::DecapConfirm decap_confirm;

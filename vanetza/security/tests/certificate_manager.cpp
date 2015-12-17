@@ -12,10 +12,12 @@
 #include <vanetza/security/profile.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
+#include <vanetza/security/tests/check_payload.hpp>
 #include <gtest/gtest.h>
 
 using namespace vanetza;
 using CM = vanetza::security::CertificateManager;
+using vanetza::security::check;
 
 class CertificateManager : public ::testing::Test
 {
@@ -27,6 +29,7 @@ public:
 protected:
     virtual void SetUp() override
     {
+        expected_payload[OsiLayer::Transport] = ByteBuffer {8, 25, 13, 2};
         encap_request.plaintext_payload = expected_payload;
         encap_request.security_profile = security::Profile::CAM;
 
@@ -59,7 +62,7 @@ protected:
         return result;
     }
 
-    ByteBuffer expected_payload = {8, 25, 13, 2};
+    ChunkPacket expected_payload;
     security::EncapRequest encap_request;
     geonet::Timestamp time_now;
     security::CertificateManager cert_manager;
@@ -85,7 +88,7 @@ TEST_F(CertificateManager, sec_payload_equals_plaintext_payload)
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 
     // check if sec_payload equals plaintext_payload
-    EXPECT_EQ(expected_payload, confirm.sec_packet.payload.buffer);
+    check(expected_payload, confirm.sec_packet.payload.data);
 }
 
 TEST_F(CertificateManager, signature_is_ecdsa)
@@ -115,8 +118,7 @@ TEST_F(CertificateManager, expected_payload)
 
     // check payload
     security::Payload payload = confirm.sec_packet.payload;
-
-    EXPECT_EQ(expected_payload.size(), payload.buffer.size());
+    EXPECT_EQ(expected_payload.size(), size(payload.data, min_osi_layer(), max_osi_layer()));
     EXPECT_EQ(security::PayloadType::Signed, get_type(payload));
 }
 
@@ -131,7 +133,7 @@ TEST_F(CertificateManager, verify_message)
     // check if verify was successful
     EXPECT_EQ(security::ReportType::Success, decap_confirm.report);
     // check if payload was not changed
-    EXPECT_EQ(expected_payload, decap_confirm.plaintext_payload);
+    check(expected_payload, decap_confirm.plaintext_payload);
     // check hook
     EXPECT_FALSE(test_and_reset_invalid_certificate());
 }
@@ -400,7 +402,7 @@ TEST_F(CertificateManager, verify_message_modified_payload)
     security::DecapRequest decap_request = getDecapRequest();
 
     // modify payload buffer
-    decap_request.sec_packet.payload.buffer = {42, 42, 42};
+    decap_request.sec_packet.payload.data = CohesivePacket({42, 42, 42}, OsiLayer::Session);
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);

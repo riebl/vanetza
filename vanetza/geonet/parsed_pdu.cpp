@@ -2,6 +2,7 @@
 #include "pdu.hpp"
 #include "pdu_conversion.hpp"
 #include "pdu_variant.hpp"
+#include "secured_pdu.hpp"
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/net/osi_layer.hpp>
@@ -244,37 +245,60 @@ std::unique_ptr<ParsedPdu> parse_header(ChunkPacket& packet)
     return parsed_pdu;
 }
 
-std::unique_ptr<ParsedPdu> parse_secured_header(const ByteBuffer& data_buffer, const BasicHeader& basic)
+std::unique_ptr<ParsedPdu> parse_secured_header(PacketVariant& packet, const BasicHeader& basic)
 {
-    std::unique_ptr<ParsedPdu> pdu(new ParsedPdu());
+    using PduPtr = std::unique_ptr<ParsedPdu>;
+    PduPtr pdu(new ParsedPdu());
 
     // set basic header in pdu
     pdu->basic = basic;
 
-    std::size_t buffer_size = data_buffer.size();
-    byte_buffer_source source(std::move(data_buffer));
-    boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
-    InputArchive ar(stream, boost::archive::no_header);
+    struct parse_visitor : public boost::static_visitor<>
+    {
+        parse_visitor(PduPtr& _pdu) : pdu(_pdu) {}
 
-    std::size_t extended_pdu_length = 0;
-    try {
-        CommonHeader& common = pdu->common;
-        deserialize(common, ar);
-        // add extended header to pdu
-        extended_pdu_length = parse_extended(pdu, ar);
-    } catch (const boost::archive::archive_exception& e) {
-        pdu.reset();
-    } catch (security::deserialization_error& e) {
-        pdu.reset();
-    }
+        void operator()(CohesivePacket& packet)
+        {
+            byte_buffer_source source(packet[OsiLayer::Network]);
+            boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
+            InputArchive ar(stream, boost::archive::no_header);
 
-    if (pdu) {
-        const std::size_t pdu_length = CommonHeader::length_bytes + extended_pdu_length;
-        if (pdu_length + pdu->common.payload != buffer_size) {
-            pdu.reset();
+            try {
+                std::size_t pdu_length = CommonHeader::length_bytes;
+                deserialize(pdu->common, ar);
+                pdu_length += parse_extended(pdu, ar);
+                packet.set_boundary(OsiLayer::Network, pdu_length);
+            } catch (const boost::archive::archive_exception& e) {
+                pdu.reset();
+            } catch (security::deserialization_error& e) {
+                pdu.reset();
+            }
+
+            if (pdu.get()) {
+                if (pdu->common.payload != size(packet, OsiLayer::Transport, max_osi_layer())) {
+                    pdu.reset();
+                }
+            }
         }
-    }
 
+        void operator()(const ChunkPacket& packet)
+        {
+            using sec_pdu_ptr = const convertible::byte_buffer_impl<SecuredPdu>*;
+            const ByteBufferConvertible& net = packet[OsiLayer::Network];
+            const auto* sec_pdu = dynamic_cast<sec_pdu_ptr>(net.ptr());
+            if (sec_pdu) {
+                pdu->common = sec_pdu->pdu.common;
+                pdu->extended = sec_pdu->pdu.extended;
+            } else {
+                pdu.reset();
+            }
+        }
+
+        PduPtr& pdu;
+    };
+
+    parse_visitor visitor(pdu);
+    boost::apply_visitor(visitor, packet);
     return pdu;
 }
 
@@ -349,6 +373,32 @@ ByteBuffer convert_for_signing(const ParsedPdu& pdu)
     serialize(pdu.extended, ar);
 
     return std::move(buf);
+}
+
+PacketVariant extract_secured_payload(PacketVariant& packet, std::size_t offset)
+{
+    struct extract_visitor : public boost::static_visitor<PacketVariant>
+    {
+        extract_visitor(std::size_t _offset) : offset(_offset) {}
+
+        PacketVariant operator()(ChunkPacket& packet) const
+        {
+            return packet.extract(OsiLayer::Transport, max_osi_layer());
+        }
+
+        PacketVariant operator()(CohesivePacket& packet) const
+        {
+            assert(offset <= packet.size(OsiLayer::Network));
+            CohesivePacket payload = std::move(packet);
+            payload.set_boundary(OsiLayer::Network, offset);
+            return payload;
+        }
+
+        const std::size_t offset;
+    };
+
+    extract_visitor visitor(offset);
+    return boost::apply_visitor(visitor, packet);
 }
 
 } // namespace geonet

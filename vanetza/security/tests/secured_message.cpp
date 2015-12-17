@@ -4,6 +4,7 @@
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
+using namespace vanetza;
 using namespace vanetza::security;
 
 // Note: WebValidator refers to https://werkzeug.dcaiti.tu-berlin.de/etsi/ts103097/
@@ -13,7 +14,7 @@ TEST(SecuredMessage, Serialization)
     SecuredMessage m;
 
     m.header_fields.push_back(Time64 { 0x4711 });
-    m.payload = {PayloadType::Unsecured, { 5, 10, 15, 25, 40 }};
+    m.payload = {PayloadType::Unsecured, CohesivePacket({ 5, 10, 15, 25, 40 }, OsiLayer::Application)};
     std::list<TrailerField> list;
     list.push_back(Signature { create_random_ecdsa_signature(44) });
     list.push_back(Signature { create_random_ecdsa_signature(45) });
@@ -52,7 +53,7 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
     EXPECT_EQ(2, message_type);
 
     EXPECT_EQ(PayloadType::Signed, m.payload.type);
-    EXPECT_EQ(28, m.payload.buffer.size());
+    EXPECT_EQ(28, size(m.payload.data, min_osi_layer(), max_osi_layer()));
 
     ASSERT_EQ(1, m.trailer_fields.size());
     EXPECT_EQ(TrailerFieldType::Signature, get_type(m.trailer_fields.front()));

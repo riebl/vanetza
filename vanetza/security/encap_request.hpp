@@ -1,7 +1,7 @@
 #ifndef ENCAP_REQUEST_HPP_OX8CLPLW
 #define ENCAP_REQUEST_HPP_OX8CLPLW
 
-#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/net/packet.hpp>
 #include <vanetza/security/profile.hpp>
 #include <boost/optional.hpp>
 
@@ -15,7 +15,7 @@ namespace security
 *   TS 102 636-4-1 v1.2.3 (2015-01)
 */
 struct EncapRequest {
-    ByteBuffer plaintext_payload; // mandatory
+    DownPacket plaintext_payload; // mandatory
     boost::optional<Profile> security_profile; // optional
 };
 

@@ -79,7 +79,7 @@ std::unique_ptr<ParsedPdu> parse_header(ChunkPacket&);
   * \param basic
   * \return std::unique_ptr<ParsedPdu>
   */
-std::unique_ptr<ParsedPdu> parse_secured_header(const ByteBuffer&, const BasicHeader&);
+std::unique_ptr<ParsedPdu> parse_secured_header(PacketVariant&, const BasicHeader&);
 
  /**
   * Extract just the SecuredMessage from the packet
@@ -108,6 +108,14 @@ boost::optional<security::SecuredMessage> extract_secured_message(CohesivePacket
   * \return boost::optional<security::SecuredMessage>
   */
 boost::optional<security::SecuredMessage> extract_secured_message(ChunkPacket&);
+
+/**
+ * Extract payload of network layer
+ * \param packet decapsulated packet
+ * \param offset number of bytes belonging to network layer in payload
+ * \return packet containing network layer's payload
+ */
+PacketVariant extract_secured_payload(PacketVariant&, std::size_t offset);
 
 ByteBuffer convert_for_signing(const ParsedPdu& pdu);
 

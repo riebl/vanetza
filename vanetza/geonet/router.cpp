@@ -16,6 +16,7 @@
 #include <vanetza/geonet/repetition_dispatcher.hpp>
 #include <vanetza/geonet/transport_interface.hpp>
 #include <vanetza/geonet/extended_pdu.hpp>
+#include <vanetza/geonet/secured_pdu.hpp>
 #include <boost/units/cmath.hpp>
 #include <functional>
 #include <stdexcept>
@@ -179,18 +180,10 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
         if (m_mib.itsGnSecurity) {
             security::EncapRequest encap_request;
 
-            // get the payload
-            ByteBuffer payload_buffer = convert_for_signing(*pdu.get());
-            auto layer_array = osi_layer_range<OsiLayer::Transport, max_osi_layer()>();
-            for (auto layer : layer_array) {
-                    ByteBuffer layer_payload;
-                    (*payload)[layer].convert(layer_payload);
-                    payload_buffer.insert(payload_buffer.end(), layer_payload.begin(), layer_payload.end());
-
-                    // set payload to zero, original payload is in secured message
-                    payload->layer(layer) = {};
-            }
-            encap_request.plaintext_payload = std::move(payload_buffer);
+            DownPacket sec_payload;
+            sec_payload[OsiLayer::Network] = SecuredPdu(*pdu);
+            sec_payload.merge(*payload, OsiLayer::Transport, max_osi_layer());
+            encap_request.plaintext_payload = std::move(sec_payload);
 
             // set the requested SecurityProfile
             encap_request.security_profile = request.security_profile;
@@ -363,20 +356,15 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         }
 
         // extract payload from secured message
-        const ByteBuffer& plaintext_payload = decap_confirm.plaintext_payload;
-        pdu = parse_secured_header(plaintext_payload, basic.get());
-
+        pdu = parse_secured_header(decap_confirm.plaintext_payload, basic.get());
         if (!pdu) {
             // discard packet
             packet_dropped(PacketDropReason::PARSE_HEADER);
             return;
         }
 
-        auto after_extended = plaintext_payload.begin();
-        std::advance(after_extended, CommonHeader::length_bytes + get_length(pdu->extended));
-        ByteBuffer payload { after_extended, plaintext_payload.end() };
-
-        (*packet) = CohesivePacket  { std::move(payload), OsiLayer::Transport };
+        const std::size_t offset = CommonHeader::length_bytes + get_length(pdu->extended);
+        (*packet) = extract_secured_payload(decap_confirm.plaintext_payload, offset);
     } else {
         // parse remaining header of the packet and rebuild parsed_pdu
         pdu = parse_header(*packet, basic.get());

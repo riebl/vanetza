@@ -1,7 +1,7 @@
 #ifndef DECAP_CONFIRM_HPP
 #define DECAP_CONFIRM_HPP
 
-#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/payload.hpp>
 #include <boost/optional.hpp>
 #include <cstdint>
 
@@ -36,7 +36,7 @@ enum class ReportType
 struct DecapConfirm
 {
     // plaintext_packet_length is gathered via ByteBuffer::size(); valid range 0 ... 2^16-1; mandatory
-    ByteBuffer plaintext_payload; // mandatory
+    PacketVariant plaintext_payload; // mandatory
     ReportType report; // mandatory
     boost::optional<uint64_t> certificate_id; // optional
     // member field 'permissions' currently not used; optional
