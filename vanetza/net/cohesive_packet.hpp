@@ -64,6 +64,12 @@ public:
      */
     std::size_t size(OsiLayer from, OsiLayer to) const;
 
+    /**
+     * Non-mutable access to internal byte buffer
+     * \return const byte buffer reference
+     */
+    const ByteBuffer& buffer() const { return m_buffer; }
+
 private:
     void reset_iterators(OsiLayer layer);
     buffer_const_range get(unsigned idx) const;
