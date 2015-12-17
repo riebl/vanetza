@@ -26,7 +26,7 @@ size_t get_size(const Certificate& cert)
 
 void serialize(OutputArchive& ar, const Certificate& cert)
 {
-    geonet::serialize(host_cast(cert.version()), ar);
+    serialize(ar, host_cast(cert.version()));
     serialize(ar, cert.signer_info);
     serialize(ar, cert.subject_info);
     serialize(ar, cert.subject_attributes);
@@ -37,7 +37,7 @@ void serialize(OutputArchive& ar, const Certificate& cert)
 size_t deserialize(InputArchive& ar, Certificate& cert)
 {
     uint8_t version = 0;
-    geonet::deserialize(version, ar);
+    deserialize(ar, version);
     size_t size = sizeof(cert.version());
     if (2 == version) {
         size += deserialize(ar, cert.signer_info);

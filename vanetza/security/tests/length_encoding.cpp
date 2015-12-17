@@ -6,6 +6,8 @@
 #include <boost/iostreams/stream_buffer.hpp>
 
 using vanetza::ByteBuffer;
+using vanetza::InputArchive;
+using vanetza::OutputArchive;
 using namespace vanetza::security;
 
 TEST(LengthEncoding, count_leading_ones)

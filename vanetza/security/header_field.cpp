@@ -126,16 +126,16 @@ void serialize(OutputArchive& ar, const HeaderField& field)
         }
         void operator()(const Time64& time)
         {
-            geonet::serialize(host_cast(time), m_archive);
+            serialize(m_archive, host_cast(time));
         }
         void operator()(const Time64WithStandardDeviation& time)
         {
-            geonet::serialize(host_cast(time.time64), m_archive);
-            geonet::serialize(host_cast(time.log_std_dev), m_archive);
+            serialize(m_archive, host_cast(time.time64));
+            serialize(m_archive, host_cast(time.log_std_dev));
         }
         void operator()(const Time32& time)
         {
-            geonet::serialize(host_cast(time), m_archive);
+            serialize(m_archive, host_cast(time));
         }
         void operator()(const ThreeDLocation& loc)
         {
@@ -156,7 +156,7 @@ void serialize(OutputArchive& ar, const HeaderField& field)
         }
         void operator()(const uint16_t& msg_type)
         {
-            geonet::serialize(host_cast(msg_type), m_archive);
+            serialize(m_archive, host_cast(msg_type));
         }
         void operator()(const SignerInfo& info)
         {
@@ -193,7 +193,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
         switch (type) {
             case HeaderFieldType::Generation_Time: {
                 Time64 time;
-                geonet::deserialize(time, ar);
+                deserialize(ar, time);
                 field = time;
                 list.push_back(field);
                 size -= sizeof(Time64);
@@ -201,8 +201,8 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Generation_Time_Confidence: {
                 Time64WithStandardDeviation time;
-                geonet::deserialize(time.time64, ar);
-                geonet::deserialize(time.log_std_dev, ar);
+                deserialize(ar, time.time64);
+                deserialize(ar, time.log_std_dev);
                 field = time;
                 list.push_back(field);
                 size -= sizeof(Time64);
@@ -211,7 +211,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Expiration: {
                 Time32 time;
-                geonet::deserialize(time, ar);
+                deserialize(ar, time);
                 field = time;
                 list.push_back(field);
                 size -= sizeof(Time32);
@@ -242,7 +242,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Message_Type: {
                 uint16_t uint;
-                geonet::deserialize(uint, ar);
+                deserialize(ar, uint);
                 field = uint;
                 list.push_back(field);
                 size -= sizeof(uint16_t);

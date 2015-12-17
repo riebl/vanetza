@@ -1,19 +1,18 @@
 #ifndef SERIALIZATION_HPP_IENSIAL4
 #define SERIALIZATION_HPP_IENSIAL4
 
-#include <vanetza/geonet/serialization.hpp>
+#include <vanetza/common/serialization.hpp>
 #include <vanetza/security/length_coding.hpp>
 #include <cassert>
 #include <list>
-#include <type_traits>
 
 namespace vanetza
 {
 namespace security
 {
 
-using vanetza::geonet::InputArchive;
-using vanetza::geonet::OutputArchive;
+using vanetza::serialize;
+using vanetza::deserialize;
 
 /**
  * Serialize given length
@@ -28,20 +27,6 @@ void serialize_length(OutputArchive&, size_t);
  * \return length
  */
 size_t deserialize_length(InputArchive&);
-
-template<class T>
-typename std::enable_if<std::is_enum<T>::value>::type serialize(OutputArchive& ar, const T& t)
-{
-    geonet::serialize(host_cast(static_cast<typename std::underlying_type<T>::type const>(t)), ar);
-}
-
-template<class T>
-typename std::enable_if<std::is_enum<T>::value>::type deserialize(InputArchive& ar, T& t)
-{
-    typename std::underlying_type<T>::type tmp;
-    geonet::deserialize(tmp, ar);
-    t = static_cast<T>(tmp);
-}
 
 template<class T>
 size_t get_size(std::list<T> list)

@@ -1,8 +1,8 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/byte_buffer_sink.hpp>
-#include <vanetza/geonet/serialization.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/secured_message.hpp>
+#include <vanetza/security/serialization.hpp>
 #include <boost/iostreams/stream.hpp>
 
 namespace vanetza
