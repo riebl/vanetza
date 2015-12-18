@@ -16,4 +16,3 @@ void check(const EncryptionParameter& expected, const EncryptionParameter& actua
 
 } // namespace security
 } // namespace vanetza
-
