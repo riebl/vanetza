@@ -1,5 +1,7 @@
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 namespace vanetza
 {
@@ -125,4 +127,3 @@ size_t get_size(const PublicKey& key)
 
 } // namespace security
 } // namespace vanetza
-

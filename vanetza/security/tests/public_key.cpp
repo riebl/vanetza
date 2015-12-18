@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/security/public_key.hpp>
-#include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/tests/check_public_key.hpp>
 
 using namespace vanetza::security;
