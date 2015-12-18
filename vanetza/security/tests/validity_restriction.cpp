@@ -8,7 +8,7 @@ using namespace vanetza::security;
 
 TEST(Duration, Duration)
 {
-    uint16_t a = 0x8007;    // 1000000000000007
+    uint16_t a = 0x8007;
     uint16_t b = 7;
 
     Duration dur(b, Duration::Units::Years);
