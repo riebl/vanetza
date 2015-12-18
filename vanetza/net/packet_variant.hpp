@@ -36,8 +36,6 @@ size(const ChunkPacket& packet, OsiLayer layer)
     return packet[layer].size();
 }
 
-std::unique_ptr<ChunkPacket> duplicate(const ChunkPacket&);
-
 /**
  * Create a view of a packet's bytes assigned to a certain layer
  * \param packet
@@ -63,7 +61,6 @@ namespace boost
 // PacketVariant is only a type alias, so we need this quirk for proper name lookup
 std::size_t size(const vanetza::PacketVariant&, vanetza::OsiLayer from, vanetza::OsiLayer to);
 std::size_t size(const vanetza::PacketVariant&, vanetza::OsiLayer);
-std::unique_ptr<vanetza::ChunkPacket> duplicate(const vanetza::PacketVariant&);
 vanetza::byte_view_range create_byte_view(const vanetza::PacketVariant&, vanetza::OsiLayer);
 void serialize(vanetza::OutputArchive&, const vanetza::PacketVariant&);
 
