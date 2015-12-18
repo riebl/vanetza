@@ -41,4 +41,3 @@ template void check<Time32>(const Time32&, const Time32&);
 } // namespace vanetza
 
 #endif /* CHECK_BASIC_ELEMENTS_HPP_XLHVYJ0S */
-
