@@ -214,6 +214,16 @@ std::unique_ptr<ParsedPdu> parse_header(CohesivePacket& packet, BasicHeader& bas
     return pdu;
 }
 
+template<typename EXT_PDU>
+bool extended_pdu_cast(ParsedPdu& parsed_pdu, const Pdu* pdu_ptr)
+{
+    if (auto ptr = dynamic_cast<const EXT_PDU*>(pdu_ptr)) {
+        parsed_pdu.extended = ptr->extended();
+        return true;
+    }
+    return false;
+}
+
 std::unique_ptr<ParsedPdu> parse_header(ChunkPacket& packet)
 {
     using convertible_pdu_t = convertible::byte_buffer_impl<std::unique_ptr<Pdu>>;
@@ -230,14 +240,24 @@ std::unique_ptr<ParsedPdu> parse_header(ChunkPacket& packet)
         parsed_pdu->basic = pdu_ptr->basic();
         parsed_pdu->common = pdu_ptr->common();
 
-        // TODO: dynamic_cast cascades are ugly, but getting the job done for now
-        if (const ShbPdu* shb = dynamic_cast<const ShbPdu*>(pdu_ptr)) {
-            parsed_pdu->extended = shb->extended();
-        } else if (const GbcPdu* gbc = dynamic_cast<const GbcPdu*>(pdu_ptr)) {
-            parsed_pdu->extended = gbc->extended();
-        } else if (const BeaconPdu* beacon = dynamic_cast<const BeaconPdu*>(pdu_ptr)) {
-            parsed_pdu->extended = beacon->extended();
-        } else {
+        bool ext_pdu = false;
+        switch (parsed_pdu->common.header_type) {
+            case HeaderType::TSB_SINGLE_HOP:
+                ext_pdu = extended_pdu_cast<ShbPdu>(*parsed_pdu, pdu_ptr);
+                break;
+            case HeaderType::GEOBROADCAST_CIRCLE:
+            case HeaderType::GEOBROADCAST_RECT:
+            case HeaderType::GEOBROADCAST_ELIP:
+                ext_pdu = extended_pdu_cast<GbcPdu>(*parsed_pdu, pdu_ptr);
+                break;
+            case HeaderType::BEACON:
+                ext_pdu = extended_pdu_cast<BeaconPdu>(*parsed_pdu, pdu_ptr);
+                break;
+            default:
+                ext_pdu = false;
+        }
+
+        if (!ext_pdu) {
             parsed_pdu.reset();
         }
     }
