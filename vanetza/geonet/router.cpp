@@ -28,6 +28,8 @@ namespace vanetza
 namespace geonet
 {
 
+// all referenced sections belong to TS 102 636-4 (v1.2.3)
+
 template<typename PDU>
 class PacketBufferData : public packet_buffer::Data
 {
