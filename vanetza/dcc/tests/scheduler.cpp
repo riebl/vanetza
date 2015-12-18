@@ -1,19 +1,20 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/scheduler.hpp>
 #include <vanetza/dcc/state_machine.hpp>
 
 using namespace std::chrono;
 using namespace vanetza::dcc;
-using vanetza::clock;
+using vanetza::Clock;
 
-static const clock::duration immediately = milliseconds(0);
+static const Clock::duration immediately = milliseconds(0);
 
 class SchedulerTest : public ::testing::Test
 {
 protected:
     SchedulerTest() : now(seconds(4711)), sc(fsm, now) {}
 
-    clock::time_point now;
+    Clock::time_point now;
     StateMachine fsm;
     Scheduler sc;
 };

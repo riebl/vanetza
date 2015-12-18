@@ -1,6 +1,7 @@
 #ifndef TIMESTAMP_HPP_SFETMZJI
 #define TIMESTAMP_HPP_SFETMZJI
 
+#include <vanetza/common/clock.hpp>
 #include <vanetza/geonet/serialization.hpp>
 #include <cstdint>
 #include <boost/operators.hpp>
@@ -32,6 +33,7 @@ public:
 
     Timestamp() : m_timestamp(0) {}
     Timestamp(time_type t) : m_timestamp(t) {}
+    Timestamp(const Clock::time_point&);
     Timestamp(const boost::posix_time::ptime&);
     value_type raw() const { return m_timestamp.value(); }
     time_type quantity() const { return m_timestamp; }

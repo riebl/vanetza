@@ -5,7 +5,7 @@ namespace vanetza
 namespace dcc
 {
 
-BurstBudget::BurstBudget(const clock::time_point& clock) :
+BurstBudget::BurstBudget(const Clock::time_point& clock) :
     m_clock(clock), m_bursts(N_Burst)
 {
 }
@@ -14,17 +14,17 @@ BurstBudget::~BurstBudget()
 {
 }
 
-clock::duration BurstBudget::delay()
+Clock::duration BurstBudget::delay()
 {
-    clock::duration delay = clock::duration::max();
+    Clock::duration delay = Clock::duration::max();
 
     if (m_bursts.empty()) {
-        delay = clock::duration::zero();
+        delay = Clock::duration::zero();
     } else if (m_bursts.front() + T_Burst > m_clock && !m_bursts.full()) {
-        delay = clock::duration::zero();
+        delay = Clock::duration::zero();
     } else if (m_bursts.front() + T_BurstPeriod < m_clock) {
         m_bursts.clear();
-        delay = clock::duration::zero();
+        delay = Clock::duration::zero();
     } else {
         delay = m_bursts.front() + T_BurstPeriod - m_clock;
     }

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
@@ -21,7 +22,7 @@ protected:
         return encap_request;
     }
 
-    geonet::Timestamp time_now;
+    Clock::time_point time_now;
 };
 
 TEST_F(SecurityEntity, test_sign_method)

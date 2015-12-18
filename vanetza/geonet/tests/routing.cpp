@@ -49,7 +49,7 @@ protected:
         net.set_position(cars[5], CartesianPosition(2.0_m, -1.0_m));
 
         // advance time 5 seconds
-        net.advance_time(5000 * Timestamp::millisecond);
+        net.advance_time(std::chrono::seconds(5));
         net.reset_counters();
     }
 
@@ -122,7 +122,7 @@ TEST_F(Routing, advanced_forwarding__in_destarea__unbuffered__receiver_is_not_de
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
 
-    net.advance_time(100 * Timestamp::millisecond);
+    net.advance_time(std::chrono::milliseconds(100));
     EXPECT_TRUE(!!net.get_interface(cars[0])->last_packet);
     EXPECT_EQ(cBroadcastMacAddress, net.get_interface(cars[0])->last_request.destination);
 }
@@ -199,7 +199,7 @@ TEST_F(Routing, advanced_forwarding__in_destarea__buffered__max_counter_below__i
 TEST_F(Routing, advanced_forwarding__in_destarea__buffered__max_counter_below__out_sectorial)
 {
     net.set_position(cars[5], CartesianPosition(20.0_m, -1.0_m));
-    net.advance_time(5000 * Timestamp::millisecond);
+    net.advance_time(std::chrono::seconds(5));
     EXPECT_TRUE(net.get_router(cars[5])->outside_sectorial_contention_area(cars[0], cars[2]));
 
     GbcDataRequest gbc_request(net.get_mib());
@@ -299,7 +299,7 @@ TEST_F(Routing, advanced_forwarding__out_destarea__senderpos_unreliable)
     LongPositionVector lpv = sender->get_local_position_vector();
     lpv.position_accuracy_indicator = false;
     sender->update(lpv);
-    net.advance_time(1000 * Timestamp::millisecond);
+    net.advance_time(std::chrono::seconds(1));
     net.reset_counters();
 
     GbcDataRequest gbc_request(net.get_mib());
@@ -334,7 +334,7 @@ TEST_F(Routing, advanced_forwarding__out_destarea__senderpos_reliable)
     LongPositionVector lpv = sender->get_local_position_vector();
     lpv.position_accuracy_indicator = true;
     sender->update(lpv);
-    net.advance_time(1000 * Timestamp::millisecond);
+    net.advance_time(std::chrono::seconds(1));
     net.reset_counters();
 
     GbcDataRequest gbc_request(net.get_mib());

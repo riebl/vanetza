@@ -9,13 +9,15 @@
 #include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
 #include <boost/format.hpp>
+#include <chrono>
+#include <sstream>
 
 namespace vanetza
 {
 namespace security
 {
 
-CertificateManager::CertificateManager(const geonet::Timestamp& time_now) :
+CertificateManager::CertificateManager(const Clock::time_point& time_now) :
     m_time_now(time_now), m_root_key_pair(get_root_key_pair())
 {
     // TODO(aaron,robert): this is random for now, has to be calculated later (for HashedId8 calculation see TS 103 097 v1.2.1 section 4.2.12)
@@ -428,12 +430,14 @@ bool CertificateManager::verify_data(const PublicKey& public_key, ByteBuffer dat
 
 Time64 CertificateManager::get_time()
 {
-    return ((Time64) m_time_now.raw()) * 1000 * 1000;
+    using namespace std::chrono;
+    return duration_cast<microseconds>(m_time_now.time_since_epoch()).count();
 }
 
 Time32 CertificateManager::get_time_in_seconds()
 {
-    return m_time_now.raw();
+    using namespace std::chrono;
+    return duration_cast<seconds>(m_time_now.time_since_epoch()).count();
 }
 
 const CertificateManager::KeyPair& CertificateManager::get_root_key_pair()

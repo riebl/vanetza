@@ -1,5 +1,6 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/byte_sequence.hpp>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/encap_request.hpp>
@@ -22,7 +23,7 @@ using vanetza::security::check;
 class CertificateManager : public ::testing::Test
 {
 public:
-    CertificateManager() : time_now(0), cert_manager(time_now)
+    CertificateManager() : cert_manager(time_now)
     {
     }
 
@@ -64,7 +65,7 @@ protected:
 
     ChunkPacket expected_payload;
     security::EncapRequest encap_request;
-    geonet::Timestamp time_now;
+    Clock::time_point time_now;
     security::CertificateManager cert_manager;
     security::CertificateManager::CertificateInvalidReason invalid_cert_reason;
     bool invalid_cert_occured;
@@ -275,8 +276,8 @@ TEST_F(CertificateManager, verify_message_outdated_certificate)
     // prepare decap request
     security::DecapRequest decap_request = getDecapRequest();
 
-    // set new value for Timestamp
-    time_now += 3000000 * geonet::Timestamp::millisecond;
+    // let time pass by... our certificates are valid for one day currently
+    time_now += std::chrono::hours(25);
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
@@ -291,7 +292,7 @@ TEST_F(CertificateManager, verify_message_premature_certificate)
     security::DecapRequest decap_request = getDecapRequest();
 
     // subtract offset from time_now
-    time_now -= 1000 * 1000 * geonet::Timestamp::millisecond;
+    time_now -= std::chrono::hours(1);
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
@@ -413,13 +414,13 @@ TEST_F(CertificateManager, verify_message_modified_payload)
 TEST_F(CertificateManager, verify_message_modified_generation_time_before_current_time)
 {
     // change the time, so the generation time of SecuredMessage is before current time
-    time_now += 3600 * 12 * 1000 * geonet::Timestamp::millisecond;
+    time_now += std::chrono::hours(12);
 
     // prepare decap request
     security::DecapRequest decap_request = getDecapRequest();
 
     // change the time, so the current time is before generation time of SecuredMessage
-    time_now -= 3600 * 12 * 1000 * geonet::Timestamp::millisecond;
+    time_now -= std::chrono::hours(12);
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);

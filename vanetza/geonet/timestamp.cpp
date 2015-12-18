@@ -2,6 +2,7 @@
 #include "vanetza/common/byte_order.hpp"
 #include <boost/date_time/gregorian/gregorian.hpp>
 #include <cassert>
+#include <chrono>
 #include <limits>
 
 namespace vanetza
@@ -15,6 +16,14 @@ const boost::posix_time::ptime Timestamp::start_time {
     boost::gregorian::date(2004, 1, 1),
     boost::posix_time::milliseconds(0)
 };
+
+Timestamp::Timestamp(const Clock::time_point& time)
+{
+    using namespace std::chrono;
+    const auto since_epoch = time.time_since_epoch();
+    const auto since_epoch_ms = duration_cast<milliseconds>(since_epoch);
+    m_timestamp = since_epoch_ms.count() * absolute_unit_type();
+}
 
 Timestamp::Timestamp(const boost::posix_time::ptime& time)
 {

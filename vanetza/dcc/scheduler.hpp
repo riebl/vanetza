@@ -14,9 +14,9 @@ namespace dcc
 class Scheduler
 {
 public:
-    Scheduler(const StateMachine&, const clock::time_point& clock);
+    Scheduler(const StateMachine&, const Clock::time_point& clock);
 
-    clock::duration delay(Profile);
+    Clock::duration delay(Profile);
     void notify(Profile);
 
 private:

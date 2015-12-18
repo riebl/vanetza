@@ -11,21 +11,21 @@ namespace vanetza
 namespace dcc
 {
 
-static const clock::duration T_Burst = std::chrono::seconds(1);
-static const clock::duration T_BurstPeriod = std::chrono::seconds(10);
+static const Clock::duration T_Burst = std::chrono::seconds(1);
+static const Clock::duration T_BurstPeriod = std::chrono::seconds(10);
 constexpr std::size_t N_Burst = 20;
 
 class BurstBudget
 {
 public:
-    BurstBudget(const clock::time_point&);
+    BurstBudget(const Clock::time_point&);
     ~BurstBudget();
 
     /**
      * Get current delay to remain in budget
      * \return shortest delay not exceeding budget
      */
-    clock::duration delay();
+    Clock::duration delay();
 
     /**
      * Notify budget of consumption
@@ -33,8 +33,8 @@ public:
     void notify();
 
 private:
-    const clock::time_point& m_clock;
-    boost::circular_buffer<clock::time_point> m_bursts;
+    const Clock::time_point& m_clock;
+    boost::circular_buffer<Clock::time_point> m_bursts;
 };
 
 } // namespace dcc

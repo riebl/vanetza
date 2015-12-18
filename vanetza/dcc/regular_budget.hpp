@@ -15,14 +15,14 @@ class StateMachine;
 class RegularBudget
 {
 public:
-    RegularBudget(const StateMachine&, const clock::time_point&);
-    clock::duration delay();
+    RegularBudget(const StateMachine&, const Clock::time_point&);
+    Clock::duration delay();
     void notify();
 
 private:
     const StateMachine& m_fsm;
-    const clock::time_point& m_clock;
-    boost::optional<clock::time_point> m_last_tx;
+    const Clock::time_point& m_clock;
+    boost::optional<Clock::time_point> m_last_tx;
 };
 
 } // namespace dcc

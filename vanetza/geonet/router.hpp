@@ -91,12 +91,18 @@ public:
     Hook<PacketDropReason> packet_dropped;
 
     /**
-     * Get time stamp of next required update call
-     * \note time stamp has an upper bound derived from MIB's itsGnMinimumUpdateFrequencyLPV
-     * \return time stamp of next update
+     * Get duration until next required update call
+     * \note duration has an upper bound derived from MIB's itsGnMinimumUpdateFrequencyLPV
+     * \return duration until next update
      */
-    Timestamp next_update() const;
-    void update(Timestamp now);
+    Clock::duration next_update() const;
+
+    /**
+     * Update router time stamp by given duration
+     * \param duration time passed since last update
+     */
+    void update(Clock::duration);
+
     /**
      * Update router's local position vector
      * \note GN Address of given LongPositionVector is ignored!
@@ -104,7 +110,7 @@ public:
      */
     void update(const LongPositionVector&);
     void set_transport_handler(UpperProtocol, TransportInterface&);
-    void set_time(Timestamp init);
+    void set_time(const Clock::time_point&);
     void set_address(const Address&);
     const CbfPacketBuffer& get_cbf_buffer() const { return m_cbf_buffer; }
     const LocationTable& get_location_table() const { return m_location_table; }
@@ -152,6 +158,7 @@ private:
     void dispatch_repetition(const DataRequestVariant&, DownPacketPtr);
 
     const MIB& m_mib;
+    Clock::time_point m_clock;
     dcc::RequestInterface& m_request_interface;
     security::SecurityEntity m_security_entity;
     transport_map_t m_transport_ifcs;

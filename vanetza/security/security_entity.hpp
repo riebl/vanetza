@@ -1,7 +1,7 @@
 #ifndef SECURITY_ENTITY_HPP
 #define SECURITY_ENTITY_HPP
 
-#include <vanetza/geonet/timestamp.hpp>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_confirm.hpp>
@@ -22,7 +22,7 @@ public:
      *
      * \param time_now timestamp stored in the used CertificateManger
      */
-    SecurityEntity(const geonet::Timestamp& time_now);
+    SecurityEntity(const Clock::time_point& time_now);
 
     /** \brief
      *

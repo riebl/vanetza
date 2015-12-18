@@ -149,9 +149,9 @@ void NetworkTopology::set_position(const MacAddress& addr, CartesianPosition c)
     }
 }
 
-void NetworkTopology::advance_time(Timestamp::duration_type t)
+void NetworkTopology::advance_time(Clock::duration t)
 {
-    const Timestamp::duration_type max_step { 500 * Timestamp::millisecond };
+    const Clock::duration max_step = std::chrono::milliseconds(500);
     do {
         const auto step = std::min(t, max_step);
         now += step;
@@ -159,13 +159,13 @@ void NetworkTopology::advance_time(Timestamp::duration_type t)
         // update timestamp for every router
         for (auto& host : hosts) {
             Router& router = host.second->router;
-            router.update(now);
+            router.update(step);
             LongPositionVector lpv = router.get_local_position_vector();
             lpv.timestamp = now;
             router.update(lpv);
         }
-       dispatch();
-    } while (t.value() > 0);
+        dispatch();
+    } while (t.count() > 0);
 }
 
 void NetworkTopology::reset_counters()

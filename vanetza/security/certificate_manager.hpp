@@ -1,11 +1,9 @@
 #ifndef CERTIFICATE_MANAGER_HPP
 #define CERTIFICATE_MANAGER_HPP
 
-#include <vanetza/common/hook.hpp>
-#include <vanetza/geonet/extended_pdu.hpp>
-#include <vanetza/geonet/header_variant.hpp>
-#include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/clock.hpp>
+#include <vanetza/common/hook.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_request.hpp>
@@ -52,7 +50,7 @@ public:
 
     Hook<CertificateInvalidReason> certificate_invalid;
 
-    CertificateManager(const geonet::Timestamp& time_now);
+    CertificateManager(const Clock::time_point& time_now);
 
     /** \brief use common header, extended header and payload to create a signature
      *         write signature to pdu.SecuredMessage
@@ -142,7 +140,7 @@ private:
      */
     const KeyPair& get_root_key_pair();
 
-    const geonet::Timestamp& m_time_now;
+    const Clock::time_point& m_time_now;
     const KeyPair& m_root_key_pair;
     HashedId8 m_root_certificate_hash;
 };

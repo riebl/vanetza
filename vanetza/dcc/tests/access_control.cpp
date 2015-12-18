@@ -24,7 +24,7 @@ class AccessControlTest : public ::testing::Test
 protected:
     AccessControlTest() : sc(fsm, now), ctrl(sc, ifc) {}
 
-    clock::time_point now;
+    Clock::time_point now;
     StateMachine fsm;
     Scheduler sc;
     FakeAccessInterface ifc;
