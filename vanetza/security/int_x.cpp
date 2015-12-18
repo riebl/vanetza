@@ -1,6 +1,5 @@
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/length_coding.hpp>
-#include <vanetza/security/serialization.hpp>
 
 namespace vanetza
 {
