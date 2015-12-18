@@ -1,12 +1,8 @@
-#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/header_field.hpp>
 #include <boost/optional.hpp>
-#include <string>
-#include <sstream>
-#include <memory>
-
-using namespace std;
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 namespace vanetza
 {
@@ -114,7 +110,6 @@ size_t get_size(const HeaderField& field)
     size += visit.m_size;
     return size;
 }
-
 
 void serialize(OutputArchive& ar, const HeaderField& field)
 {
@@ -285,4 +280,4 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
 }
 
 } // namespace security
-} // namespace vanextza
+} // namespace vanetza

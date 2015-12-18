@@ -91,4 +91,3 @@ TEST(HeaderField, WebValidator_SecuredMessage3_adapted)
     EXPECT_EQ(258, get_size(list));
     EXPECT_EQ(3, list.size());
 }
-
