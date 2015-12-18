@@ -3,7 +3,9 @@
 
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <boost/variant/recursive_wrapper.hpp>
 #include <boost/variant/variant.hpp>
+#include <cstddef>
 #include <cstdint>
 #include <list>
 
@@ -14,6 +16,7 @@ namespace security
 
 struct Certificate;
 
+/// described in TS 103 097 v1.2.1, section 4.2.11
 enum class SignerInfoType : uint8_t
 {
     Self = 0,                                   // nothing -> nullptr_t
@@ -23,12 +26,14 @@ enum class SignerInfoType : uint8_t
     Certificate_Digest_With_Other_Algorithm = 4 // CertificateDigestWithOtherAlgorithm
 };
 
+/// described in TS 103 097 v1.2.1, section 4.2.10
 struct CertificateDigestWithOtherAlgorithm
 {
     PublicKeyAlgorithm algorithm;
     HashedId8 digest;
 };
 
+/// described in TS 103 097 v1.2.1, section 4.2.10
 using SignerInfo = boost::variant<
     std::nullptr_t,
     HashedId8,
@@ -38,35 +43,50 @@ using SignerInfo = boost::variant<
 >;
 
 /**
- * Determines SignerInfoType to a SignerInfo field
+ * \brief Determines SignerInfoType of SignerInfo
  * \param SignerInfo
  * \return SignerInfoType
  */
 SignerInfoType get_type(const SignerInfo&);
 
 /**
- * Calculates size of an object
- * \param Object
- * \return size_t containing the number of octets needed to serialize the object
+ * \brief Calculates size of an CertificateDigestWithOtherAlgorithm
+ * \param CertificateDigestWithOtherAlgorithm
+ * \return number of octets needed to serialize the CertificateDigestWithOtherAlgorithm
  */
 size_t get_size(const CertificateDigestWithOtherAlgorithm&);
+
+/**
+ * \brief Calculates size of an SignerInfo
+ * \param SignerInfo
+ * \return number of octets needed to serialize the SignerInfo
+ */
 size_t get_size(const SignerInfo&);
 
 /**
- * Serializes an object into a binary archive
- * \param achive to serialize in
- * \param object to serialize
+ * \brief Serializes an CertificateDigestWithOtherAlgorithm into a binary archive
  */
 void serialize(OutputArchive&, const CertificateDigestWithOtherAlgorithm&);
+
+/**
+ * \brief Serializes an SignerInfo into a binary archive
+ */
 void serialize(OutputArchive&, const SignerInfo&);
 
 /**
- * Deserializes an object from a binary archive
- * \param archive with a serialized object at the beginning
- * \param object to deserialize
- * \return size of the deserialized object
+ * \brief Deserializes an CertificateDigestWithOtherAlgorithm from a binary archive
+ * \param archive with a CertificateDigestWithOtherAlgorithm at the beginning
+ * \param CertificateDigestWithOtherAlgorithm to deserialize
+ * \return size of the deserialized CertificateDigestWithOtherAlgorithm
  */
 size_t deserialize(InputArchive&, CertificateDigestWithOtherAlgorithm&);
+
+/**
+ * \brief Deserializes an SignerInfo from a binary archive
+ * \param archive with a SignerInfo at the beginning
+ * \param SignerInfo to deserialize
+ * \return size of the deserialized SignerInfo
+ */
 size_t deserialize(InputArchive&, SignerInfo&);
 
 } // namespace security
