@@ -15,19 +15,29 @@ using vanetza::serialize;
 using vanetza::deserialize;
 
 /**
- * Serialize given length
+ * \brief Serialize given length
+ * \param ar to serialize in
  * \param size to encode
- * \param archive to serialize in
  */
 void serialize_length(OutputArchive&, size_t);
 
 /**
- * Deserialize length from a given archive
- * \param archive, shall start with length encoding
- * \return length
+ * \brief Deserialize length from a given archive
+ * \param ar shall start with encoded length
+ * \return length deserialized from archive
  */
 size_t deserialize_length(InputArchive&);
 
+/**
+ * \brief Calculate size of a list
+ *
+ * Sums up sizes of all list elements only, length itself is not included.
+ * Therefore, the returned length is suitable as argument for serialize_length.
+ *
+ * \tparam T list element type
+ * \param list
+ * \return accumulated elements' size
+ */
 template<class T>
 size_t get_size(const std::list<T>& list)
 {
@@ -38,6 +48,13 @@ size_t get_size(const std::list<T>& list)
     return size;
 }
 
+/** \brief Serialize from any given list into given binary archive
+ * \tparam T the type of the list
+ * \tparam ARGS all additional arguments for the underlying functions
+ * \param ar to serialize in
+ * \param list
+ * \param args the additional arguments
+ */
 template<class T, typename... ARGS>
 void serialize(OutputArchive& ar, const std::list<T>& list, ARGS&&... args)
 {
@@ -48,6 +65,13 @@ void serialize(OutputArchive& ar, const std::list<T>& list, ARGS&&... args)
     }
 }
 
+/** \brief Deserialize a list from given archive
+ * \tparam T the type of the list
+ * \tparam ARGS all additional arguments for the underlying functions
+ * \param ar, shall start with the list
+ * \param args the additional arguments
+ * \return size of the deserialized list in bytes
+ */
 template<class T, typename... ARGS>
 size_t deserialize(InputArchive& ar, std::list<T>& list, ARGS&&... args)
 {
