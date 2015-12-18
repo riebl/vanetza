@@ -1,8 +1,8 @@
 #include <vanetza/common/serialization.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/region.hpp>
-
-using namespace std;
+#include <boost/variant/static_visitor.hpp>
+#include <boost/variant/apply_visitor.hpp>
 
 namespace vanetza
 {

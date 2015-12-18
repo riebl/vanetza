@@ -46,15 +46,15 @@ TEST(Region, Serialize_RectangularRegion_list)
     std::list<RectangularRegion> reg;
     for (std::size_t i = 0; i < 5; ++i) {
         reg.push_back(RectangularRegion {
-                TwoDLocation {
-                    geo_angle_i32t::from_value(1000000 + i),
-                    geo_angle_i32t::from_value(1010000 + i)
-                },
-                TwoDLocation {
-                    geo_angle_i32t::from_value(1020000 + i),
-                    geo_angle_i32t::from_value(1030000 + i)
-                }
-            });
+            TwoDLocation {
+                geo_angle_i32t::from_value(1000000 + i),
+                geo_angle_i32t::from_value(1010000 + i)
+            },
+            TwoDLocation {
+                geo_angle_i32t::from_value(1020000 + i),
+                geo_angle_i32t::from_value(1030000 + i)
+            }
+        });
     }
     check(reg, serialize_roundtrip(reg));
 }
