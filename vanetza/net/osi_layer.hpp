@@ -31,6 +31,23 @@ constexpr std::array<OsiLayer, 7> osi_layers {{
             OsiLayer::Application
 }};
 
+constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
+{
+    using num_type = std::underlying_type<OsiLayer>::type;
+    return static_cast<num_type>(lhs) < static_cast<num_type>(rhs);
+}
+
+constexpr bool operator==(OsiLayer lhs, OsiLayer rhs)
+{
+    using num_type = std::underlying_type<OsiLayer>::type;
+    return static_cast<num_type>(lhs) == static_cast<num_type>(rhs);
+}
+
+constexpr bool operator!=(OsiLayer lhs, OsiLayer rhs) { return !(lhs == rhs); }
+constexpr bool operator>=(OsiLayer lhs, OsiLayer rhs) { return !(lhs < rhs); }
+constexpr bool operator<=(OsiLayer lhs, OsiLayer rhs) { return (lhs < rhs || lhs == rhs); }
+constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
+
 constexpr std::size_t num_osi_layers(OsiLayer from, OsiLayer to)
 {
     typedef typename std::underlying_type<OsiLayer>::type num_type;
@@ -52,21 +69,6 @@ std::array<OsiLayer, num_osi_layers(FROM, TO)> osi_layer_range()
     }
     return layers;
 }
-
-constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
-{
-    return static_cast<uint8_t>(lhs) < static_cast<uint8_t>(rhs);
-}
-
-constexpr bool operator==(OsiLayer lhs, OsiLayer rhs)
-{
-    return static_cast<uint8_t>(lhs) == static_cast<uint8_t>(rhs);
-}
-
-constexpr bool operator!=(OsiLayer lhs, OsiLayer rhs) { return !(lhs == rhs); }
-constexpr bool operator>=(OsiLayer lhs, OsiLayer rhs) { return !(lhs < rhs); }
-constexpr bool operator<=(OsiLayer lhs, OsiLayer rhs) { return (lhs < rhs || lhs == rhs); }
-constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
 
 } // namespace vanetza
 
