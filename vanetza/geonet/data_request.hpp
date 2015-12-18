@@ -46,17 +46,23 @@ struct DataRequest
 };
 
 /**
- * Decrement maximum repetition by one interval
+ * \brief Decrement maximum repetition by one interval
  * \param repetition Repetition data structure
  */
 void decrement_by_one(DataRequest::Repetition& repetition);
 
 /**
- * Request has to be repeated at least once more
- * \param request considered data request
+ * \brief Test if request has to be repeated at least once more
+ * \param request DataRequest
  * \return true if there is at least one repetition left
  */
 bool has_further_repetition(const DataRequest&);
+
+/**
+ * \brief Test if at least one repetition is outstanding
+ * \param repetition
+ * \return true if there is at least one repetition left
+ */
 bool has_further_repetition(const DataRequest::Repetition&);
 
 struct DataRequestWithAddress : public DataRequest

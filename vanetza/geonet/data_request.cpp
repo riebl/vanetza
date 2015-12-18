@@ -52,4 +52,3 @@ DataRequest& access_request(DataRequestVariant& variant)
 
 } // namespace geonet
 } // namespace vanetza
-
