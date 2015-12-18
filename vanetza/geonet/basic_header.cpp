@@ -1,6 +1,6 @@
-#include "basic_header.hpp"
-#include "data_request.hpp"
-#include "serialization.hpp"
+#include <vanetza/geonet/basic_header.hpp>
+#include <vanetza/geonet/data_request.hpp>
+#include <vanetza/geonet/serialization.hpp>
 
 namespace vanetza
 {
@@ -69,4 +69,3 @@ void deserialize(BasicHeader& hdr, InputArchive& ar)
 
 } // namespace geonet
 } // namespace vanetza
-
