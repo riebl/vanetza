@@ -20,9 +20,10 @@ namespace vanetza
 namespace security
 {
 
-/** \brief A Manager to handle Certificates using Crypto++
- *  \TODO: rename to CryptoPPCertManager
- *         create a base class
+/**
+ * \brief A Manager to handle Certificates using Crypto++
+ * \todo rename to CryptoPPCertManager
+ * \todo create a base class
  */
 class CertificateManager
 {
@@ -52,85 +53,97 @@ public:
 
     CertificateManager(const Clock::time_point& time_now);
 
-    /** \brief use common header, extended header and payload to create a signature
-     *         write signature to pdu.SecuredMessage
+    /**
+     * \brief Creates an security envelope covering the given payload.
      *
-     * \param request the pdu and payload to sign
-     * \return the signed pdu and payload
+     * The payload consists of the CommonHeader, ExtendedHeader and the payload of
+     * the layers above the network layer. The entire security envelope is used
+     * to calculate a signature which gets added to the resulting SecuredMessage.
+     *
+     * \param request containing payload to sign
+     * \return confirmation containing signed SecuredMessage
      */
     EncapConfirm sign_message(const EncapRequest& request);
 
-    /** \brief use common header, extended header and payload to create a signature
-     *         check with given signature in SecuredMessage
+    /**
+     * \brief Verifies the Signature and SignerInfo of a SecuredMessage
      *
-     * \param request the pdu and payload to verify
-     * \return the verified pdu, payload and the ReportType
+     * It also decapsulates the data from the SecuredMessage.
+     *
+     * \param request containing a SecuredMessage
+     * \return decapsulation confirmation
      */
     DecapConfirm verify_message(const DecapRequest& request);
 
-    /** \brief generate a certificate
+    /**
+     * \brief generate a certificate
      *
      * \param key_pair keys used to create the certificate
-     * \return Certificate
+     * \return generated certificate
      */
     Certificate generate_certificate(const KeyPair& key_pair);
 
-    /** \brief enable deferred signature creation
+    /**
+     * \brief enable deferred signature creation
      *
      * SecuredMessages contain EcdsaSignatureFuture instead of EcdsaSignature
-     * when this feature is enabled
+     * when this feature is enabled.
      *
      * \param flag true for enabling deferred signature calculation
      */
     void enable_deferred_signing(bool flag);
 
-    /** \brief generate a private key and the corresponding public key
-     *
-     * \return KeyPair
+    /**
+     * \brief generate a private key and the corresponding public key
+     * \return generated key pair
      */
      KeyPair generate_key_pair();
 
 private:
-     /** \brief check the certificate
+    /**
+     * \brief check the certificate
      *
      * \param certificate to verify
      * \return true if certificate could be verified
      */
     bool check_certificate(const Certificate& certificate);
 
-    /** \brief extract public key from certificate
+    /**
+     * \brief extract public key from a certificate
      *
      * \param certificate
      * \return PublicKey
      */
     boost::optional<PublicKey> get_public_key_from_certificate(const Certificate& certificate);
 
-    /** \brief get the current (system) time in microseconds
-     *
+    /**
+     * \brief get the current (system) time in microseconds
      * \return Time64
      */
     Time64 get_time();
 
-    /** \brief get the current (system) time in seconds
-     *
+    /**
+     * \brief get the current (system) time in seconds
      * \return Time32
      */
     Time32 get_time_in_seconds();
 
-    /** \brief generate EcdsaSignature, for given data with private_key
+    /**
+     * \brief generate EcdsaSignature, for given data with private_key
      *
-     * \param private_key
-     * \param data_buffer
-     * \return EcdsaSignature
+     * \param private_key used to sign the data
+     * \param data_buffer the data
+     * \return EcdsaSignature resulting signature
      */
     EcdsaSignature sign_data(const PrivateKey& private_key, const ByteBuffer& data_buffer);
 
-    /** \brief checks if the data_buffer can be verified with the public_key
+    /**
+     * \brief checks if the data_buffer can be verified with the public_key
      *
      * \param public_key
-     * \param data: data to be verified
-     * \param sig: signature for verification
-     * \return true if the data_buffer could be verified
+     * \param data to be verified
+     * \param sig signature for verification
+     * \return true if the data could be verified
      *
      */
     bool verify_data(const PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig);
