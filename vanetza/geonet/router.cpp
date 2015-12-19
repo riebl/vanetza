@@ -38,7 +38,7 @@ public:
     std::size_t length() const override
     {
         assert(m_pdu && m_payload);
-        return m_pdu->length() +
+        return get_length(*m_pdu) +
                 m_payload->size(OsiLayer::Transport, max_osi_layer());
     }
 

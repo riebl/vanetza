@@ -47,16 +47,6 @@ public:
 
     ExtendedPdu* clone() const override { return new ExtendedPdu(*this); }
 
-    std::size_t length() const override
-    {
-        const std::size_t secured_length = m_secured ? get_size(*m_secured) : 0;
-
-        return BasicHeader::length_bytes +
-            secured_length +
-            CommonHeader::length_bytes +
-            HEADER::length_bytes;
-    }
-
 private:
     BasicHeader m_basic;
     CommonHeader m_common;
@@ -92,16 +82,6 @@ public:
         } else {
             return new ExtendedPdu<HEADER>(mr_basic, mr_common, mr_extended);
         }
-    }
-
-    std::size_t length() const
-    {
-        std::size_t length = BasicHeader::length_bytes + CommonHeader::length_bytes;
-        length += HEADER::length_bytes;
-        if (mp_secured) {
-            length += get_size(*mp_secured);
-        }
-        return length;
     }
 
 private:

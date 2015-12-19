@@ -30,11 +30,12 @@ public:
     virtual const SecuredMessage* secured() const = 0;
     virtual HeaderConstRefVariant extended_variant() const = 0;
     virtual Pdu* clone() const = 0;
-    virtual std::size_t length() const = 0;
     virtual ~Pdu() {}
 };
 
 void serialize(const Pdu&, OutputArchive&);
+
+std::size_t get_length(const Pdu&);
 
 } // namespace geonet
 } // namespace vanetza

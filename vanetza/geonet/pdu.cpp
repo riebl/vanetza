@@ -20,5 +20,17 @@ void serialize(const Pdu& pdu, OutputArchive& ar)
     }
 }
 
+std::size_t get_length(const Pdu& pdu)
+{
+    std::size_t length = BasicHeader::length_bytes;
+    if (pdu.secured()) {
+        length += get_size(*pdu.secured());
+    } else {
+        length += CommonHeader::length_bytes;
+        length += get_length(pdu.extended_variant());
+    }
+    return length;
+}
+
 } // namespace geonet
 } // namespace vanetza
