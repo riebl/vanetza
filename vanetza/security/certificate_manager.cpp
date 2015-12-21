@@ -279,7 +279,7 @@ CertificateManager::PublicKey CertificateManager::get_public_key_from_certificat
         }
     }
 
-    assert(public_key_coordinates.is_initialized());
+    assert(public_key_coordinates);
 
     std::stringstream ss;
     for (uint8_t b : public_key_coordinates.get().x) {

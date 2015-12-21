@@ -60,9 +60,7 @@ public:
 
     std::size_t length() const override
     {
-        std::size_t secured_length = 0;
-        if (m_secured.is_initialized())
-            secured_length = get_size(m_secured.get());
+        const std::size_t secured_length = m_secured ? get_size(*m_secured) : 0;
 
         return BasicHeader::length_bytes +
             secured_length +
