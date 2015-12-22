@@ -6,6 +6,11 @@ namespace vanetza
 namespace geonet
 {
 
+SecuredPdu::SecuredPdu(const Pdu& pdu) :
+    common(pdu.common()), extended(pdu.extended_variant())
+{
+}
+
 void serialize(const SecuredPdu& pdu, OutputArchive& ar)
 {
     serialize(pdu.common, ar);

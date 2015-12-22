@@ -24,6 +24,8 @@ public:
     {
     }
 
+    SecuredPdu(const Pdu&);
+
     CommonHeader common;
     HeaderVariant extended;
 };
