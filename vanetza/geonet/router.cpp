@@ -445,7 +445,18 @@ void Router::pass_down(const dcc::DataRequest& request, PduPtr pdu, DownPacketPt
 {
     assert(pdu);
     assert(payload);
-    // TODO: we could do a PDU consistency check here
+    if (pdu->secured()) {
+        if (pdu->basic().next_header != NextHeaderBasic::SECURED) {
+            throw std::runtime_error("PDU with secured message but SECURED not set in basic header");
+        }
+        if (payload->size(OsiLayer::Transport, max_osi_layer()) > 0) {
+            throw std::runtime_error("PDU with secured message and illegal upper layer payload");
+        }
+    } else {
+        if (pdu->basic().next_header == NextHeaderBasic::SECURED) {
+            throw std::runtime_error("PDU without secured message but SECURED set in basic header");
+        }
+    }
 
     (*payload)[OsiLayer::Network] = ByteBufferConvertible(std::move(pdu));
     m_request_interface.request(request, std::move(payload));
