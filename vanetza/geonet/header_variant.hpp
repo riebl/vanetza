@@ -13,14 +13,8 @@ namespace geonet
 {
 
 typedef boost::variant<BeaconHeader, GeoBroadcastHeader, ShbHeader> HeaderVariant;
-
-/** \brief serialize the underlying header type to an OutputArchive
- *
- * \param header the header to serialize
- * \param ar the archive to write to
- *
- */
-void serialize(const HeaderVariant& header, OutputArchive& ar);
+typedef boost::variant<BeaconHeader&, GeoBroadcastHeader&, ShbHeader&> HeaderRefVariant;
+typedef boost::variant<const BeaconHeader&, const GeoBroadcastHeader&, const ShbHeader&> HeaderConstRefVariant;
 
 /** \brief get the length of the underlying header type
  *
@@ -29,8 +23,25 @@ void serialize(const HeaderVariant& header, OutputArchive& ar);
  *
  */
 std::size_t get_length(const HeaderVariant& header);
+std::size_t get_length(const HeaderRefVariant& header);
+std::size_t get_length(const HeaderConstRefVariant& header);
 
 } // namespace geonet
 } // namespace vanetza
+
+namespace boost
+{
+
+/** \brief serialize the underlying header type to an OutputArchive
+ *
+ * \param header the header to serialize
+ * \param ar the archive to write to
+ *
+ */
+void serialize(const vanetza::geonet::HeaderVariant& header, vanetza::OutputArchive& ar);
+void serialize(const vanetza::geonet::HeaderRefVariant& header, vanetza::OutputArchive& ar);
+void serialize(const vanetza::geonet::HeaderConstRefVariant& header, vanetza::OutputArchive& ar);
+
+} // namespace boost
 
 #endif // HEADER_VARIANT_HPP
