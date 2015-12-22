@@ -172,21 +172,24 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
         auto pdu = create_shb_pdu(request);
         pdu->common().payload = payload->size();
 
-        // Security
-        if (m_mib.itsGnSecurity) {
-            payload = encap_packet(request.security_profile, *pdu, std::move(payload));
-        }
-
         // forward buffering
         if (request.traffic_class.store_carry_forward() && !m_location_table.has_neighbours()) {
+            if (m_mib.itsGnSecurity) {
+                payload = encap_packet(request.security_profile, *pdu, std::move(payload));
+            }
             std::unique_ptr<BroadcastBufferData> data {
                 new BroadcastBufferData(*this, std::move(pdu), std::move(payload))
             };
             m_bc_forward_buffer.push(std::move(data), m_time_now);
         } else {
             if (request.repetition) {
+                // plaintext payload needs to get passed
                 m_repeater.add(request, *payload, m_time_now);
             }
+            if (m_mib.itsGnSecurity) {
+                payload = encap_packet(request.security_profile, *pdu, std::move(payload));
+            }
+
             execute_media_procedures(request.communication_profile);
             pass_down(cBroadcastMacAddress, std::move(pdu), std::move(payload));
             reset_beacon_timer();

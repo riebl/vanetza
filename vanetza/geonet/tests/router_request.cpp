@@ -164,3 +164,25 @@ TEST_F(RouterRequest, modified_request_large_payload)
     auto confirm = router.request(request, std::move(packet));
     EXPECT_EQ(DataConfirm::ResultCode::REJECTED_MAX_SDU_SIZE, confirm.result_code);
 }
+
+TEST_F(RouterRequest, shb_repetition)
+{
+    ShbDataRequest request(mib, security::Profile::CAM);
+    request.repetition = DataRequest::Repetition {
+        0.1 * units::si::seconds, 10.0 * units::si::seconds
+    };
+    EXPECT_EQ(0, req_ifc.m_requests);
+
+    auto confirm = router.request(request, create_packet());
+    EXPECT_EQ(DataConfirm::ResultCode::ACCEPTED, confirm.result_code);
+    EXPECT_EQ(1, req_ifc.m_requests);
+    ASSERT_TRUE(!!req_ifc.m_last_packet);
+    const auto packet_size = size(*req_ifc.m_last_packet, OsiLayer::Network, OsiLayer::Application);
+
+    // trigger five repetitions
+    for (unsigned i = 0; i < 5; ++i) {
+        router.update(std::chrono::milliseconds(100));
+    }
+    EXPECT_EQ(6, req_ifc.m_requests);
+    EXPECT_EQ(packet_size, size(*req_ifc.m_last_packet, OsiLayer::Network, OsiLayer::Application));
+}
