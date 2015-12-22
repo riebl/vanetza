@@ -174,21 +174,7 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
 
         // Security
         if (m_mib.itsGnSecurity) {
-            security::EncapRequest encap_request;
-
-            DownPacket sec_payload;
-            sec_payload[OsiLayer::Network] = SecuredPdu(*pdu);
-            sec_payload.merge(*payload, OsiLayer::Transport, max_osi_layer());
-            encap_request.plaintext_payload = std::move(sec_payload);
-
-            // set the requested SecurityProfile
-            encap_request.security_profile = request.security_profile;
-
-            security::EncapConfirm confirm = m_security_entity.encapsulate_packet(encap_request);
-            pdu->secured(std::move(confirm.sec_packet));
-
-            assert(size(*payload, OsiLayer::Transport, max_osi_layer()) == 0);
-            assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
+            payload = encap_packet(request.security_profile, *pdu, std::move(payload));
         }
 
         // forward buffering
@@ -964,6 +950,24 @@ std::unique_ptr<GbcPdu> Router::create_gbc_pdu(const GbcDataRequest& request)
     pdu->extended().source_position = m_local_position_vector;
     pdu->extended().destination(request.destination);
     return pdu;
+}
+
+Router::DownPacketPtr Router::encap_packet(security::Profile profile, Pdu& pdu, DownPacketPtr packet)
+{
+    security::EncapRequest encap_request;
+
+    DownPacket sec_payload;
+    sec_payload[OsiLayer::Network] = SecuredPdu(pdu);
+    sec_payload.merge(*packet, OsiLayer::Transport, max_osi_layer());
+    encap_request.plaintext_payload = std::move(sec_payload);
+    encap_request.security_profile = profile;
+
+    security::EncapConfirm confirm = m_security_entity.encapsulate_packet(encap_request);
+    pdu.secured(std::move(confirm.sec_packet));
+
+    assert(size(*packet, OsiLayer::Transport, max_osi_layer()) == 0);
+    assert(pdu.basic().next_header == NextHeaderBasic::SECURED);
+    return packet;
 }
 
 } // namespace geonet

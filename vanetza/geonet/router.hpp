@@ -155,6 +155,7 @@ private:
     units::Duration timeout_cbf_gbc(units::Length distance) const;
     units::Duration timeout_cbf_gbc(const MacAddress& sender) const;
     void dispatch_repetition(const DataRequestVariant&, DownPacketPtr);
+    DownPacketPtr encap_packet(security::Profile, Pdu&, DownPacketPtr);
 
     const MIB& m_mib;
     Clock::time_point m_clock;
