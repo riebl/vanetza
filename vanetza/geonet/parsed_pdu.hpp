@@ -89,13 +89,6 @@ std::unique_ptr<ParsedPdu> parse_secured_header(PacketVariant&, const BasicHeade
 boost::optional<security::SecuredMessage> extract_secured_message(PacketVariant&);
 
  /**
-  * Deserialize SecuredMessage from ByteBuffer
-  * \param secured_buffer
-  * \return boost::optional<security::SecuredMessage>
-  */
-boost::optional<security::SecuredMessage> extract_secured_message(ByteBuffer);
-
- /**
   * Extract just the SecuredMessage from the packet
   * \param packet the CohesivePacket
   * \return boost::optional<security::SecuredMessage>

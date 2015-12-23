@@ -172,8 +172,9 @@ std::unique_ptr<ParsedPdu> parse_header(CohesivePacket& packet, BasicHeader& bas
     // set basic header in pdu
     pdu->basic = std::move(basic);
 
-    ByteBuffer source_buffer(packet[OsiLayer::Network].begin() + BasicHeader::length_bytes, packet[OsiLayer::Network].end());
-    byte_buffer_source source(std::move(source_buffer));
+    auto net_begin = packet[OsiLayer::Network].begin() + BasicHeader::length_bytes;
+    auto net_end = packet[OsiLayer::Network].end();
+    byte_buffer_source source(net_begin, net_end);
     boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
     InputArchive ar(stream, boost::archive::no_header);
 
@@ -341,12 +342,14 @@ boost::optional<security::SecuredMessage> extract_secured_message(PacketVariant&
     return std::move(boost::apply_visitor(visitor, packet));
 }
 
-boost::optional<security::SecuredMessage> extract_secured_message(ByteBuffer secured_buffer)
+boost::optional<security::SecuredMessage> extract_secured_message(CohesivePacket& packet)
 {
     boost::optional<security::SecuredMessage> secured_message;
 
     // create the InputArchive for deserialization
-    byte_buffer_source source(std::move(secured_buffer));
+    auto net_begin = packet[OsiLayer::Network].begin() + BasicHeader::length_bytes;
+    auto net_end = packet[OsiLayer::Network].end();
+    byte_buffer_source source(net_begin, net_end);
     boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
     InputArchive ar(stream, boost::archive::no_header);
 
@@ -363,22 +366,21 @@ boost::optional<security::SecuredMessage> extract_secured_message(ByteBuffer sec
     return secured_message;
 }
 
-boost::optional<security::SecuredMessage> extract_secured_message(CohesivePacket& packet)
-{
-    // get all data from Network layer
-    ByteBuffer source_buffer(packet[OsiLayer::Network].begin() + BasicHeader::length_bytes, packet[OsiLayer::Network].end());
-
-    return extract_secured_message(std::move(source_buffer));
-}
-
 boost::optional<security::SecuredMessage> extract_secured_message(ChunkPacket& packet)
 {
-    // get all data from Network layer
-    ByteBuffer layer_buffer;
-    packet[OsiLayer::Network].convert(layer_buffer);
-    ByteBuffer source_buffer(layer_buffer.begin() + BasicHeader::length_bytes, layer_buffer.end());
+    using convertible_pdu_t = convertible::byte_buffer_impl<std::unique_ptr<Pdu>>;
+    const convertible::byte_buffer* convertible = packet[OsiLayer::Network].ptr();
+    const convertible_pdu_t* convertible_pdu =
+        dynamic_cast<const convertible_pdu_t*>(convertible);
 
-    return extract_secured_message(std::move(source_buffer));
+    boost::optional<security::SecuredMessage> secured_message;
+    if (convertible_pdu && convertible_pdu->m_pdu) {
+        if (convertible_pdu->m_pdu->secured()) {
+            secured_message = *convertible_pdu->m_pdu->secured();
+        }
+    }
+
+    return secured_message;
 }
 
 ByteBuffer convert_for_signing(const ParsedPdu& pdu)
