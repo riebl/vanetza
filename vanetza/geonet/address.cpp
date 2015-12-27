@@ -6,6 +6,7 @@ namespace vanetza
 namespace geonet
 {
 
+const std::size_t Address::length_bytes;
 const uint16_t manually_configured_mask = 0x8000;
 const uint16_t station_type_mask = 0x7c00;
 const uint16_t country_code_mask = 0x03ff;
@@ -63,7 +64,10 @@ void deserialize(Address& addr, InputArchive& ar)
     deserialize(tmp, ar);
     addr.is_manually_configured((tmp & manually_configured_mask) != 0);
     addr.country_code(tmp & country_code_mask);
-    addr.station_type(static_cast<StationType>(tmp & station_type_mask >> station_type_shift));
+    addr.station_type(static_cast<StationType>((tmp & station_type_mask) >> station_type_shift));
+    MacAddress mid;
+    deserialize(mid, ar);
+    addr.mid(mid);
 }
 
 void deserialize(MacAddress& addr, InputArchive& ar)
