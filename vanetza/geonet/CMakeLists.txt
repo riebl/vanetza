@@ -31,6 +31,7 @@ set(CXX_SOURCES
     shb_header.cpp
     timestamp.cpp
     traffic_class.cpp
+    variant_pdu.cpp
 )
 
 vanetza_module(geonet ${CXX_SOURCES})
