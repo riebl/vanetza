@@ -8,6 +8,7 @@
 #include <vanetza/net/mac_address.hpp>
 #include <vanetza/units/length.hpp>
 #include <boost/optional.hpp>
+#include <functional>
 #include <initializer_list>
 #include <list>
 #include <set>
@@ -21,6 +22,12 @@ namespace geonet
 class NetworkTopology
 {
 public:
+    enum class PacketDuplicationMode
+    {
+        COPY_CONSTRUCT,
+        SERIALIZE
+    };
+
     class RequestInterface : public dcc::RequestInterface
     {
     public:
@@ -45,6 +52,7 @@ public:
         Router router;
     };
 
+    NetworkTopology();
     boost::optional<RouterContext&> get_host(const MacAddress&);
     boost::optional<Router&> get_router(const MacAddress&);
     boost::optional<RequestInterface&> get_interface(const MacAddress&);
@@ -59,6 +67,7 @@ public:
     void set_position(const MacAddress&, CartesianPosition);
     void advance_time(Clock::duration);
     void reset_counters();
+    void set_duplication_mode(PacketDuplicationMode);
 
 private:
     std::unordered_map<MacAddress, unsigned> counter_requests;
@@ -68,6 +77,7 @@ private:
     Clock::time_point now;
     ManagementInformationBase mib;
     unsigned counter_indications;
+    std::function<std::unique_ptr<UpPacket>(const ChunkPacket&)> fn_duplicate;
 };
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition&);
