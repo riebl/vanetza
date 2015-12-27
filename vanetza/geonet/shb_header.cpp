@@ -6,6 +6,8 @@ namespace vanetza
 namespace geonet
 {
 
+const std::size_t ShbHeader::length_bytes;
+
 ShbHeader::ShbHeader() : reserved(0)
 {
 }

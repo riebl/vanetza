@@ -13,6 +13,7 @@ namespace vanetza
 {
 
 const MacAddress cBroadcastMacAddress = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+const std::size_t MacAddress::length_bytes;
 
 MacAddress::MacAddress()
 {
