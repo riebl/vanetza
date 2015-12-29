@@ -41,19 +41,10 @@ protected:
         };
     }
 
-    security::DecapRequest getDecapRequest()
+    security::SecuredMessage create_secured_message()
     {
-        // sign message
         security::EncapConfirm encap_confirm = cert_manager.sign_message(encap_request);
-
-        // prepare secured message
-        security::SecuredMessage secured_message = encap_confirm.sec_packet;
-
-        // prepare decap request
-        security::DecapRequest decap_request;
-        decap_request.sec_packet = secured_message;
-
-        return decap_request;
+        return encap_confirm.sec_packet;
     }
 
     bool test_and_reset_invalid_certificate()
@@ -126,7 +117,8 @@ TEST_F(CertificateManager, expected_payload)
 TEST_F(CertificateManager, verify_message)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
@@ -142,14 +134,15 @@ TEST_F(CertificateManager, verify_message)
 TEST_F(CertificateManager, verify_message_modified_message_type)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    std::list<security::HeaderField>& header_fields = decap_request.sec_packet.header_fields;
-    for (std::list<security::HeaderField>::iterator it = header_fields.begin(); it != header_fields.end(); ++it) {
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
         // modify message type
-        if (security::HeaderFieldType::Message_Type == get_type(*it)) {
-            uint16_t& its_aid = boost::get<uint16_t>(*it);
+        if (security::HeaderFieldType::Message_Type == get_type(field)) {
+            uint16_t& its_aid = boost::get<uint16_t>(field);
             its_aid = 42;
         }
     }
@@ -163,10 +156,11 @@ TEST_F(CertificateManager, verify_message_modified_message_type)
 TEST_F(CertificateManager, verify_message_modified_certificate_name)
 {
     // create decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    auto& header_fields = decap_request.sec_packet.header_fields;
+    auto& header_fields = secured_message.header_fields;
     for (auto& field : header_fields) {
         // modify certificate
         if (security::HeaderFieldType::Signer_Info == get_type(field)) {
@@ -188,10 +182,11 @@ TEST_F(CertificateManager, verify_message_modified_certificate_name)
 TEST_F(CertificateManager, verify_message_modified_certificate_signer_info)
 {
     // create decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    auto& header_fields = decap_request.sec_packet.header_fields;
+    auto& header_fields = secured_message.header_fields;
     for (auto& field : header_fields) {
         // modify certificate
         if (security::HeaderFieldType::Signer_Info == get_type(field)) {
@@ -214,10 +209,11 @@ TEST_F(CertificateManager, verify_message_modified_certificate_signer_info)
 TEST_F(CertificateManager, verify_message_modified_certificate_subject_info)
 {
     // create decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    auto& header_fields = decap_request.sec_packet.header_fields;
+    auto& header_fields = secured_message.header_fields;
     for (auto& field : header_fields) {
         // modify certificate
         if (security::HeaderFieldType::Signer_Info == get_type(field)) {
@@ -239,10 +235,11 @@ TEST_F(CertificateManager, verify_message_modified_certificate_subject_info)
 TEST_F(CertificateManager, verify_message_modified_certificate_subject_assurance)
 {
     // create decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    auto& header_fields = decap_request.sec_packet.header_fields;
+    auto& header_fields = secured_message.header_fields;
     for (auto& field : header_fields) {
         // modify certificate
         if (security::HeaderFieldType::Signer_Info == get_type(field)) {
@@ -274,7 +271,8 @@ TEST_F(CertificateManager, verify_message_modified_certificate_subject_assurance
 TEST_F(CertificateManager, verify_message_outdated_certificate)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // let time pass by... our certificates are valid for one day currently
     time_now += std::chrono::hours(25);
@@ -289,7 +287,8 @@ TEST_F(CertificateManager, verify_message_outdated_certificate)
 TEST_F(CertificateManager, verify_message_premature_certificate)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // subtract offset from time_now
     time_now -= std::chrono::hours(1);
@@ -305,10 +304,11 @@ TEST_F(CertificateManager, verify_message_premature_certificate)
 TEST_F(CertificateManager, verify_message_modified_certificate_validity_restriction)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    auto& header_fields = decap_request.sec_packet.header_fields;
+    auto& header_fields = secured_message.header_fields;
     for (auto& field : header_fields) {
         // modify certificate
         if (security::HeaderFieldType::Signer_Info == get_type(field)) {
@@ -341,10 +341,11 @@ TEST_F(CertificateManager, verify_message_modified_certificate_validity_restrict
 TEST_F(CertificateManager, verify_message_modified_certificate_signature)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    auto& header_fields = decap_request.sec_packet.header_fields;
+    auto& header_fields = secured_message.header_fields;
     for (auto& field : header_fields) {
         // modify certificate
         if (security::HeaderFieldType::Signer_Info == get_type(field)) {
@@ -364,15 +365,16 @@ TEST_F(CertificateManager, verify_message_modified_certificate_signature)
 TEST_F(CertificateManager, verify_message_modified_signature)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all trailer_fields
-    std::list<security::TrailerField>& trailer_fields = decap_request.sec_packet.trailer_fields;
-    for (std::list<security::TrailerField>::iterator it = trailer_fields.begin(); it != trailer_fields.end(); ++it) {
+    auto& trailer_fields = secured_message.trailer_fields;
+    for (auto& field : trailer_fields) {
         // modify signature
-        if (security::TrailerFieldType::Signature == get_type(*it)) {
-            ASSERT_EQ(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(boost::get<security::Signature>(*it)));
-            security::EcdsaSignature& signature = boost::get<security::EcdsaSignature>(boost::get<security::Signature>(*it));
+        if (security::TrailerFieldType::Signature == get_type(field)) {
+            ASSERT_EQ(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(boost::get<security::Signature>(field)));
+            security::EcdsaSignature& signature = boost::get<security::EcdsaSignature>(boost::get<security::Signature>(field));
             signature.s = {8, 15, 23};
         }
     }
@@ -386,10 +388,11 @@ TEST_F(CertificateManager, verify_message_modified_signature)
 TEST_F(CertificateManager, verify_message_modified_payload_type)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // change the payload.type
-    decap_request.sec_packet.payload.type = security::PayloadType::Unsecured;
+    secured_message.payload.type = security::PayloadType::Unsecured;
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
@@ -400,10 +403,11 @@ TEST_F(CertificateManager, verify_message_modified_payload_type)
 TEST_F(CertificateManager, verify_message_modified_payload)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // modify payload buffer
-    decap_request.sec_packet.payload.data = CohesivePacket({42, 42, 42}, OsiLayer::Session);
+    secured_message.payload.data = CohesivePacket({42, 42, 42}, OsiLayer::Session);
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
@@ -417,7 +421,8 @@ TEST_F(CertificateManager, verify_message_modified_generation_time_before_curren
     time_now += std::chrono::hours(12);
 
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // change the time, so the current time is before generation time of SecuredMessage
     time_now -= std::chrono::hours(12);
@@ -482,10 +487,11 @@ TEST_F(CertificateManager, generate_certificate)
 TEST_F(CertificateManager, verify_message_without_signer_info)
 {
     // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
+    auto secured_message = create_secured_message();
+    security::DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
-    auto& header_fields = decap_request.sec_packet.header_fields;
+    auto& header_fields = secured_message.header_fields;
     for (auto field = header_fields.begin(); field != header_fields.end(); ++field) {
         // modify certificate
         if (security::HeaderFieldType::Signer_Info == get_type(*field)) {

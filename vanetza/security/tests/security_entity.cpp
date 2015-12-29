@@ -56,8 +56,7 @@ TEST_F(SecurityEntity, test_verify_method)
     encap_confirm = sec_ent.encapsulate_packet(encap_request);
 
     //create decap_request
-    security::DecapRequest decap_request;
-    decap_request.sec_packet = encap_confirm.sec_packet;
+    security::DecapRequest decap_request(encap_confirm.sec_packet);
 
     //create decap_confirm
     security::DecapConfirm decap_confirm;
@@ -76,18 +75,16 @@ TEST_F(SecurityEntity, test_verify_method_fail)
     security::EncapRequest encap_request = create_encap_request();
     security::EncapConfirm encap_confirm;
     encap_confirm = sec_ent.encapsulate_packet(encap_request);
+    security::SecuredMessage& secured_message = encap_confirm.sec_packet;
 
-    //create decap_request
-    security::DecapRequest decap_request;
+    //create decap_request of signed packet
+    security::DecapRequest decap_request(secured_message);
 
     //create new (wrong) payload
     ByteBuffer wrong_payload { 7 };
 
-    //get signed packet in the decap_request
-    decap_request.sec_packet = encap_confirm.sec_packet;
-
     //replace correct payload with new payload
-    decap_request.sec_packet.payload.data = CohesivePacket(wrong_payload, OsiLayer::Application);
+    secured_message.payload.data = CohesivePacket(wrong_payload, OsiLayer::Application);
 
     //create decap_confirm
     security::DecapConfirm decap_confirm;

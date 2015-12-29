@@ -15,8 +15,8 @@ namespace security
 */
 struct DecapRequest
 {
-    // plaintext_packet_length is gathered via ByteBuffer::size(); valid range 0 ... 2^16-1; mandatory
-    SecuredMessage sec_packet;
+    DecapRequest(const SecuredMessage& secmsg) : sec_packet(secmsg) {}
+    const SecuredMessage& sec_packet;
 };
 
 } // namespace security

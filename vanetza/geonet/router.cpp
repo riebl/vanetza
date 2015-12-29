@@ -366,8 +366,7 @@ void Router::indicate_secured(IndicationContext& ctx, const BasicHeader& basic)
         packet_dropped(PacketDropReason::PARSE_SECURED_HEADER);
     } else {
         // Decap packet
-        security::DecapRequest decap_request;
-        decap_request.sec_packet = *secured_message;
+        security::DecapRequest decap_request(*secured_message);
         security::DecapConfirm decap_confirm = m_security_entity.decapsulate_packet(decap_request);
         secured_payload_visitor visitor(*this, ctx, basic);
 
