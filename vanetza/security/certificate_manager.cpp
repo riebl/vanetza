@@ -72,7 +72,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 {
     DecapConfirm decap_confirm;
 
-    SecuredMessage secured_message = std::move(request.sec_packet);
+    const SecuredMessage& secured_message = request.sec_packet;
     // set the payload, when verfiy != success, we need this for NON_STRICT packet handling
     decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.data);
 
