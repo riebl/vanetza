@@ -67,7 +67,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
 
     encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
 
-    return std::move(encap_confirm);
+    return encap_confirm;
 }
 
 DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
@@ -192,14 +192,14 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
         decap_confirm.report = ReportType::False_Signature;
     }
 
-    return std::move(decap_confirm);
+    return decap_confirm;
 }
 
 const std::string CertificateManager::buffer_cast_to_string(const ByteBuffer& buffer)
 {
     std::stringstream oss;
     std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<ByteBuffer::value_type>(oss));
-    return std::move(oss.str());
+    return oss.str();
 }
 
 Certificate CertificateManager::generate_certificate(const CertificateManager::KeyPair& key_pair)
@@ -254,7 +254,7 @@ Certificate CertificateManager::generate_certificate(const CertificateManager::K
     // section 7.4 in TS 103 097 v1.2.1
     certificate.signature = std::move(sign_data(m_root_key_pair.private_key, data_buffer));
 
-    return std::move(certificate);
+    return certificate;
 }
 
 CertificateManager::KeyPair CertificateManager::generate_key_pair()
