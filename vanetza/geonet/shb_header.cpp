@@ -6,6 +6,10 @@ namespace vanetza
 namespace geonet
 {
 
+ShbHeader::ShbHeader() : reserved(0)
+{
+}
+
 void serialize(const ShbHeader& hdr, OutputArchive& ar)
 {
     serialize(hdr.source_position, ar);
