@@ -113,6 +113,29 @@ private:
     bool packet_drop_occurred;
 };
 
+TEST_F(RouterIndicate, shb_unsecured_equal_payload)
+{
+    // create shb-up-packet by calling request
+    ByteBuffer sec_packet_buffer = create_plain_packet();
+    std::unique_ptr<geonet::UpPacket> packet_up = get_up_packet(sec_packet_buffer);
+
+    // call indicate
+    router.indicate(std::move(packet_up), mac_address_sender, mac_address_destination);
+
+    // check hook, it shouldn't have been called
+    EXPECT_FALSE(test_and_reset_packet_drop());
+
+    // check if packet was not discarded
+    ASSERT_NE(nullptr, ind_ifc.m_last_packet.get());
+    // prepare a packet to check it's payload
+    CohesivePacket* received_payload_ptr = boost::get<CohesivePacket>(ind_ifc.m_last_packet.get());
+    ASSERT_NE(nullptr, received_payload_ptr);
+    // extract received payload
+    auto received_payload_range = (*received_payload_ptr)[OsiLayer::Transport];
+    const ByteBuffer received_payload = ByteBuffer(received_payload_range.begin(), received_payload_range.end());
+    // check payload
+    EXPECT_EQ(send_payload, received_payload);
+}
 TEST_F(RouterIndicate, shb_secured_equal_payload)
 {
     // create shb-up-packet by calling request
