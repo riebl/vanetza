@@ -25,6 +25,19 @@ CohesivePacket::CohesivePacket(ByteBuffer&& buffer, OsiLayer layer) :
     reset_iterators(layer);
 }
 
+CohesivePacket::CohesivePacket(const CohesivePacket& other) :
+    m_buffer(other.m_buffer)
+{
+    rebuild_iterators(other);
+}
+
+CohesivePacket& CohesivePacket::operator=(const CohesivePacket& other)
+{
+    m_buffer = other.m_buffer;
+    rebuild_iterators(other);
+    return *this;
+}
+
 auto CohesivePacket::operator[](OsiLayer layer) const -> buffer_const_range
 {
     return get(layer_index(layer));
@@ -74,6 +87,18 @@ void CohesivePacket::reset_iterators(OsiLayer ins_layer)
     }
 
     assert(m_iterators.size() == layer_idx);
+}
+
+void CohesivePacket::rebuild_iterators(const CohesivePacket& other)
+{
+    assert(m_buffer.size() == other.m_buffer.size());
+    m_iterators.front() = m_buffer.begin();
+    auto next = m_iterators.front();
+    for (unsigned i = 1; i < m_iterators.size(); ++i) {
+        next += other.m_iterators[i] - other.m_iterators[i - 1];
+        m_iterators[i] = next;
+    }
+    assert(m_iterators.back() == m_buffer.end());
 }
 
 auto CohesivePacket::get(unsigned layer_idx) -> buffer_range
