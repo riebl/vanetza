@@ -18,6 +18,10 @@ class VariantPdu : public Pdu
 public:
     using SecuredMessage = security::SecuredMessage;
 
+    VariantPdu() = default;
+    VariantPdu(const Pdu&);
+    VariantPdu& operator=(const Pdu&);
+
     BasicHeader& basic() override;
     const BasicHeader& basic() const override;
     CommonHeader& common() override;

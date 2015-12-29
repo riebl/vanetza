@@ -6,6 +6,26 @@ namespace vanetza
 namespace geonet
 {
 
+VariantPdu::VariantPdu(const Pdu& pdu) :
+    m_basic(pdu.basic()), m_common(pdu.common()), m_extended(pdu.extended_variant()),
+    m_secured(pdu.secured() != nullptr, *pdu.secured())
+{
+}
+
+VariantPdu& VariantPdu::operator=(const Pdu& pdu)
+{
+    m_basic = pdu.basic();
+    m_common = pdu.common();
+    m_extended = pdu.extended_variant();
+    if (pdu.secured()) {
+        m_secured = *pdu.secured();
+    } else {
+        m_secured = boost::none;
+    }
+
+    return *this;
+}
+
 BasicHeader& VariantPdu::basic()
 {
     return m_basic;
