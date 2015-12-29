@@ -74,7 +74,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 
     const SecuredMessage& secured_message = request.sec_packet;
     // set the payload, when verfiy != success, we need this for NON_STRICT packet handling
-    decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.data);
+    decap_confirm.plaintext_payload = request.sec_packet.payload.data;
 
     if (PayloadType::Signed != secured_message.payload.type) {
         decap_confirm.report = ReportType::Unsigned_Message;
