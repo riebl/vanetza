@@ -108,7 +108,7 @@ using DataRequestVariant =
 /**
  * Get access to common base data request class of all variants
  * \param variant DataRequestVariant object
- * \return referencet to underlying DataRequest
+ * \return reference to underlying DataRequest
  */
 DataRequest& access_request(DataRequestVariant&);
 
