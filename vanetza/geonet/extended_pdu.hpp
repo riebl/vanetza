@@ -47,10 +47,12 @@ public:
     ExtendedPdu(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended,
             const SecuredMessage& secured) :
         m_basic(basic), m_common(common), m_extended(extended), m_secured(secured) {}
+
     BasicHeader& basic() override { return m_basic; }
     const BasicHeader& basic() const override { return m_basic; }
     CommonHeader& common() override { return m_common; }
     const CommonHeader& common() const override { return m_common; }
+    HeaderConstRefVariant extended_variant() const override { return m_extended; }
     HEADER& extended() { return m_extended; }
     const HEADER& extended() const { return m_extended; }
     SecuredMessage* secured() override { return m_secured.get_ptr(); }
@@ -99,6 +101,7 @@ public:
     const BasicHeader& basic() const { return mr_basic; }
     CommonHeader& common() { return mr_common; }
     const CommonHeader& common() const { return mr_common; }
+    HeaderConstRefVariant extended_variant() const override { return mr_extended; }
     HEADER& extended() { return mr_extended; }
     const HEADER& extended() const { return mr_extended; }
     SecuredMessage* secured() override { return mp_secured; }

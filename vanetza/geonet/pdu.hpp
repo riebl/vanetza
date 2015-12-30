@@ -1,6 +1,7 @@
 #ifndef PDU_HPP_PQEC9PDO
 #define PDU_HPP_PQEC9PDO
 
+#include <vanetza/geonet/header_variant.hpp>
 #include <vanetza/geonet/serialization.hpp>
 #include <boost/optional.hpp>
 #include <cstddef>
@@ -28,6 +29,7 @@ public:
     virtual SecuredMessage* secured() = 0;
     virtual const SecuredMessage* secured() const = 0;
     virtual void serialize(OutputArchive&) const = 0;
+    virtual HeaderConstRefVariant extended_variant() const = 0;
     virtual Pdu* clone() const = 0;
     virtual std::size_t length() const = 0;
     virtual ~Pdu() {}
