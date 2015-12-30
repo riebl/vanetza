@@ -269,6 +269,25 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_extended_header)
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
 
+TEST_F(RouterIndicate, shb_secured_hook_payload_size)
+{
+    // modify up_packet for negative test
+    ByteBuffer broken_packet_buffer = create_plain_packet();
+    // cut payload partly off (18 bytes payload)
+    ASSERT_LT(7, broken_packet_buffer.size());
+    broken_packet_buffer.erase(broken_packet_buffer.end() - 7, broken_packet_buffer.end());
+
+    std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
+    router.indicate(std::move(broken_packet_up), mac_address_sender, mac_address_destination);
+
+    // check hook
+    EXPECT_TRUE(test_and_reset_packet_drop());
+    EXPECT_EQ(geonet::Router::PacketDropReason::PAYLOAD_SIZE, drop_reason);
+
+    // check if packet was dropped
+    EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
+}
+
 TEST_F(RouterIndicate, shb_secured_hook_hop_limit)
 {
     // modify up_packet for negative test
@@ -287,4 +306,3 @@ TEST_F(RouterIndicate, shb_secured_hook_hop_limit)
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
 
-// TODO: add test for payload_size hook
