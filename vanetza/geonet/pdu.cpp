@@ -9,7 +9,7 @@ namespace vanetza
 namespace geonet
 {
 
-void serialize(const Pdu& pdu, OutputArchive& ar)
+void serialize(const ConstAccessiblePdu& pdu, OutputArchive& ar)
 {
     serialize(pdu.basic(), ar);
     if (pdu.secured()) {

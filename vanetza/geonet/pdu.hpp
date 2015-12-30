@@ -46,7 +46,11 @@ public:
     virtual void secured(SecuredMessage&&) = 0;
 };
 
-void serialize(const Pdu&, OutputArchive&);
+void serialize(const ConstAccessiblePdu&, OutputArchive&);
+inline void serialize(const Pdu& pdu, OutputArchive& ar)
+{
+    serialize(static_cast<const ConstAccessiblePdu&>(pdu), ar);
+}
 
 std::size_t get_length(const Pdu&);
 
