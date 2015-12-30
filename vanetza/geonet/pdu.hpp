@@ -17,20 +17,33 @@ namespace geonet
 struct BasicHeader;
 struct CommonHeader;
 
-class Pdu
+class Pdu;
+
+class ConstAccessiblePdu
 {
 public:
     using SecuredMessage = security::SecuredMessageV2;
 
-    virtual BasicHeader& basic() = 0;
     virtual const BasicHeader& basic() const = 0;
-    virtual CommonHeader& common() = 0;
     virtual const CommonHeader& common() const = 0;
-    virtual SecuredMessage* secured() = 0;
     virtual const SecuredMessage* secured() const = 0;
     virtual HeaderConstRefVariant extended_variant() const = 0;
     virtual Pdu* clone() const = 0;
-    virtual ~Pdu() {}
+    virtual ~ConstAccessiblePdu() = default;
+};
+
+class Pdu : public ConstAccessiblePdu
+{
+public:
+    using ConstAccessiblePdu::basic;
+    using ConstAccessiblePdu::common;
+    using ConstAccessiblePdu::secured;
+
+    virtual BasicHeader& basic() = 0;
+    virtual CommonHeader& common() = 0;
+    virtual SecuredMessage* secured() = 0;
+    virtual void secured(SecuredMessage*) = 0;
+    virtual void secured(SecuredMessage&&) = 0;
 };
 
 void serialize(const Pdu&, OutputArchive&);

@@ -402,21 +402,21 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
         {
         }
 
-        void operator()(ShbHeader& shb)
+        void operator()(const ShbHeader& shb)
         {
-            ExtendedPduRefs<ShbHeader> pdu(m_pdu.basic, m_pdu.common, shb);
+            ExtendedPduConstRefs<ShbHeader> pdu(m_pdu.basic, m_pdu.common, shb, m_secured_message.get_ptr());
             m_router->process_extended(pdu, std::move(m_packet));
         }
 
-        void operator()(GeoBroadcastHeader& gbc)
+        void operator()(const GeoBroadcastHeader& gbc)
         {
-            ExtendedPduRefs<GeoBroadcastHeader> pdu(m_pdu.basic, m_pdu.common, gbc);
+            ExtendedPduConstRefs<GeoBroadcastHeader> pdu(m_pdu.basic, m_pdu.common, gbc, m_secured_message.get_ptr());
             m_router->process_extended(pdu, std::move(m_packet), m_sender, m_destination);
         }
 
-        void operator()(BeaconHeader& beacon)
+        void operator()(const BeaconHeader& beacon)
         {
-            ExtendedPduRefs<BeaconHeader> pdu(m_pdu.basic, m_pdu.common, beacon);
+            ExtendedPduConstRefs<BeaconHeader> pdu(m_pdu.basic, m_pdu.common, beacon, m_secured_message.get_ptr());
             m_router->process_extended(pdu, std::move(m_packet));
         }
 
@@ -755,7 +755,7 @@ bool Router::outside_sectorial_contention_area(const MacAddress& sender, const M
     }
 }
 
-void Router::process_extended(const ExtendedPduRefs<ShbHeader>& pdu, UpPacketPtr packet)
+void Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, UpPacketPtr packet)
 {
     const ShbHeader& shb = pdu.extended();
     const Address& source_addr = shb.source_position.gn_addr;
@@ -785,7 +785,7 @@ void Router::process_extended(const ExtendedPduRefs<ShbHeader>& pdu, UpPacketPtr
     pass_up(ind, std::move(packet));
 }
 
-void Router::process_extended(const ExtendedPduRefs<BeaconHeader>& pdu, UpPacketPtr packet)
+void Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, UpPacketPtr packet)
 {
     const BeaconHeader& beacon = pdu.extended();
     const Address& source_addr = beacon.source_position.gn_addr;
@@ -809,7 +809,7 @@ void Router::process_extended(const ExtendedPduRefs<BeaconHeader>& pdu, UpPacket
     m_location_table.is_neighbour(source_addr, true);
 }
 
-void Router::process_extended(const ExtendedPduRefs<GeoBroadcastHeader>& pdu,
+void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pdu,
         UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
 {
     assert(packet);

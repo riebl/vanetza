@@ -40,10 +40,10 @@ public:
     const HEADER& extended() const { return m_extended; }
     SecuredMessage* secured() override { return m_secured.get_ptr(); }
     const SecuredMessage* secured() const override { return m_secured.get_ptr(); }
-    void secured(SecuredMessage* smsg) {
+    void secured(SecuredMessage* smsg) override {
         m_secured = boost::optional<SecuredMessage>(smsg, *smsg);
     }
-    void secured(SecuredMessage&& smsg) { m_secured = std::move(smsg); }
+    void secured(SecuredMessage&& smsg) override{ m_secured = std::move(smsg); }
 
     ExtendedPdu* clone() const override { return new ExtendedPdu(*this); }
 
@@ -55,27 +55,24 @@ private:
 };
 
 template<class HEADER>
-class ExtendedPduRefs : public Pdu
+class ExtendedPduConstRefs : public ConstAccessiblePdu
 {
 public:
     using SecuredMessage = security::SecuredMessage;
 
-    ExtendedPduRefs(BasicHeader& basic, CommonHeader& common, HEADER& extended) :
+    ExtendedPduConstRefs(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended) :
         mr_basic(basic), mr_common(common), mr_extended(extended), mp_secured(nullptr) {}
-    ExtendedPduRefs(BasicHeader& basic, CommonHeader& common, HEADER& extended,
-            SecuredMessage& secured) :
-        mr_basic(basic), mr_common(common), mr_extended(extended), mp_secured(&secured) {}
-    BasicHeader& basic() { return mr_basic; }
-    const BasicHeader& basic() const { return mr_basic; }
-    CommonHeader& common() { return mr_common; }
-    const CommonHeader& common() const { return mr_common; }
+    ExtendedPduConstRefs(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended,
+            const SecuredMessage* secured) :
+        mr_basic(basic), mr_common(common), mr_extended(extended), mp_secured(secured) {}
+
+    const BasicHeader& basic() const override { return mr_basic; }
+    const CommonHeader& common() const override { return mr_common; }
     HeaderConstRefVariant extended_variant() const override { return mr_extended; }
-    HEADER& extended() { return mr_extended; }
     const HEADER& extended() const { return mr_extended; }
-    SecuredMessage* secured() override { return mp_secured; }
     const SecuredMessage* secured() const override { return mp_secured; }
 
-    ExtendedPdu<HEADER>* clone() const
+    ExtendedPdu<HEADER>* clone() const override
     {
         if (mp_secured) {
             return new ExtendedPdu<HEADER>(mr_basic, mr_common, mr_extended, *mp_secured);
@@ -85,10 +82,10 @@ public:
     }
 
 private:
-    BasicHeader& mr_basic;
-    CommonHeader& mr_common;
-    HEADER& mr_extended;
-    SecuredMessage* mp_secured;
+    const BasicHeader& mr_basic;
+    const CommonHeader& mr_common;
+    const HEADER& mr_extended;
+    const SecuredMessage* mp_secured;
 };
 
 template<class HEADER>
