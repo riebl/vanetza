@@ -43,10 +43,10 @@ protected:
         return std::move(up_packet);
     }
 
-    ByteBuffer get_sec_packet(bool is_secured)
+    ByteBuffer create_secured_packet()
     {
         // enable security
-        mib.itsGnSecurity = is_secured;
+        mib.itsGnSecurity = true;
 
         // create ShbDataRequest
         geonet::ShbDataRequest request(mib, security::Profile::CAM);
@@ -54,14 +54,40 @@ protected:
 
         // Router handles request
         auto confirm = router.request(request, create_packet());
+        assert(confirm.accepted());
 
         // secured packet on network layer
         ByteBuffer sec_packet_buffer;
         req_ifc.m_last_packet->layer(OsiLayer::Network).convert(sec_packet_buffer);
+        assert(req_ifc.m_last_packet->size(OsiLayer::Transport, max_osi_layer()) == 0);
 
         assert(!sec_packet_buffer.empty());
-
         return sec_packet_buffer;
+    }
+
+    ByteBuffer create_plain_packet()
+    {
+        // disable security
+        mib.itsGnSecurity = false;
+
+        // create ShbDataRequest
+        geonet::ShbDataRequest request(mib, security::Profile::CAM);
+        request.upper_protocol = geonet::UpperProtocol::IPv6;
+
+        // Router handles request
+        auto confirm = router.request(request, create_packet());
+        assert(confirm.accepted());
+
+        // secured packet on network layer
+        ByteBuffer plain_packet_buffer;
+        for (auto layer : osi_layer_range<OsiLayer::Network, max_osi_layer()>()) {
+            ByteBuffer layer_buffer;
+            req_ifc.m_last_packet->layer(layer).convert(layer_buffer);
+            plain_packet_buffer.insert(plain_packet_buffer.end(), layer_buffer.begin(), layer_buffer.end());
+        }
+
+        assert(!plain_packet_buffer.empty());
+        return plain_packet_buffer;
     }
 
     bool test_and_reset_packet_drop()
@@ -90,7 +116,7 @@ private:
 TEST_F(RouterIndicate, shb_secured_equal_payload)
 {
     // create shb-up-packet by calling request
-    ByteBuffer sec_packet_buffer = get_sec_packet(true);
+    ByteBuffer sec_packet_buffer = create_secured_packet();
     std::unique_ptr<geonet::UpPacket> packet_up = get_up_packet(sec_packet_buffer);
 
     // call indicate
@@ -114,7 +140,7 @@ TEST_F(RouterIndicate, shb_secured_equal_payload)
 TEST_F(RouterIndicate, shb_secured_hook_its_protocol_version)
 {
     // modify up_packet for negative test
-    ByteBuffer broken_packet_buffer = get_sec_packet(true);
+    ByteBuffer broken_packet_buffer = create_secured_packet();
     broken_packet_buffer[0] ^= 0xff;
 
     std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
@@ -131,7 +157,7 @@ TEST_F(RouterIndicate, shb_secured_hook_its_protocol_version)
 TEST_F(RouterIndicate, shb_secured_hook_parse_basic)
 {
     // modify up_packet for negative test
-    ByteBuffer broken_packet_buffer = get_sec_packet(true);
+    ByteBuffer broken_packet_buffer = create_secured_packet();
     broken_packet_buffer.erase(broken_packet_buffer.begin() + 3, broken_packet_buffer.end());
 
     std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
@@ -148,7 +174,7 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_basic)
 TEST_F(RouterIndicate, shb_secured_hook_extract_secured_message)
 {
     // modify up_packet for negative test
-    ByteBuffer broken_packet_buffer = get_sec_packet(true);
+    ByteBuffer broken_packet_buffer = create_secured_packet();
     broken_packet_buffer[geonet::BasicHeader::length_bytes] = 0x01;
 
     std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
@@ -167,7 +193,7 @@ TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_non_strict)
     mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::NON_STRICT;
 
     // modify up_packet for positive test
-    ByteBuffer broken_packet_buffer = get_sec_packet(true);
+    ByteBuffer broken_packet_buffer = create_secured_packet();
     broken_packet_buffer[broken_packet_buffer.size() - 1] ^= 0xff;
 
     std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
@@ -186,7 +212,7 @@ TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_strict)
     mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::STRICT;
 
     // modify up_packet for negative test
-    ByteBuffer broken_packet_buffer = get_sec_packet(true);
+    ByteBuffer broken_packet_buffer = create_secured_packet();
     broken_packet_buffer[broken_packet_buffer.size() - 1] ^= 0xff;
 
     std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
@@ -203,9 +229,10 @@ TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_strict)
 TEST_F(RouterIndicate, shb_secured_hook_parse_header)
 {
     // modify up_packet for negative test
-    ByteBuffer broken_packet_buffer = get_sec_packet(false);
-    // reduce payload
-    broken_packet_buffer.erase(broken_packet_buffer.end() - 5, broken_packet_buffer.end());
+    ByteBuffer broken_packet_buffer = create_plain_packet();
+    // cut extended header partly off (18 bytes payload)
+    ASSERT_LT(32, broken_packet_buffer.size());
+    broken_packet_buffer.erase(broken_packet_buffer.end() - 32, broken_packet_buffer.end());
 
     std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
     router.indicate(std::move(broken_packet_up), mac_address_sender, mac_address_destination);
@@ -221,7 +248,7 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_header)
 TEST_F(RouterIndicate, shb_secured_hook_hop_limit)
 {
     // modify up_packet for negative test
-    ByteBuffer broken_packet_buffer = get_sec_packet(true);
+    ByteBuffer broken_packet_buffer = create_secured_packet();
     // resest hop limit in basic header
     broken_packet_buffer[geonet::BasicHeader::length_bytes - 1] = mib.itsGnDefaultHopLimit + 1;
 
