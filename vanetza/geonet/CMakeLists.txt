@@ -16,7 +16,6 @@ set(CXX_SOURCES
     header_type.cpp
     header_variant.cpp
     mib.cpp
-    packet.cpp
     sequence_number.cpp
     lifetime.cpp
     location_table.cpp

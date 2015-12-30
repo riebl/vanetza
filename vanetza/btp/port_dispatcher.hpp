@@ -4,8 +4,8 @@
 #include <vanetza/btp/data_interface.hpp>
 #include <vanetza/btp/header.hpp>
 #include <vanetza/common/hook.hpp>
-#include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/transport_interface.hpp>
+#include <vanetza/net/packet.hpp>
 #include <list>
 #include <unordered_map>
 
@@ -14,8 +14,6 @@ namespace vanetza
 
 namespace btp
 {
-
-using geonet::UpPacket;
 
 class PortDispatcher : public geonet::TransportInterface
 {

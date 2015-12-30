@@ -6,6 +6,7 @@ set(CXX_SOURCES
     ethernet_header.cpp
     io_vector.cpp
     mac_address.cpp
+    packet_variant.cpp
     proxy_header.cpp
     sockaddr.cpp
 )

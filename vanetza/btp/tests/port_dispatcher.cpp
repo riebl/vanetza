@@ -3,8 +3,8 @@
 #include <vanetza/btp/port_dispatcher.hpp>
 #include <vanetza/btp/ports.hpp>
 #include <vanetza/geonet/data_indication.hpp>
-#include <vanetza/geonet/packet.hpp>
 #include <vanetza/net/osi_layer.hpp>
+#include <vanetza/net/packet.hpp>
 
 using namespace vanetza;
 using namespace vanetza::btp;

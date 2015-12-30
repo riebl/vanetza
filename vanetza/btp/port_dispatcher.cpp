@@ -26,7 +26,7 @@ HeaderB parse_btp_b(ChunkPacket& packet)
     return hdr;
 }
 
-HeaderB parse_btp_b(geonet::PacketVariant& packet)
+HeaderB parse_btp_b(PacketVariant& packet)
 {
     struct parse_btp_visitor : public boost::static_visitor<HeaderB>
     {
@@ -43,7 +43,7 @@ HeaderB parse_btp_b(geonet::PacketVariant& packet)
     return boost::apply_visitor(visitor, packet);
 }
 
-boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, geonet::PacketVariant& packet)
+boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, PacketVariant& packet)
 {
     boost::optional<DataIndication> indication;
 
