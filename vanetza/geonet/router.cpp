@@ -72,14 +72,9 @@ public:
 const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 
 Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
-    Router(mib, ifc, security::SecurityEntity(m_clock))
-{
-}
-
-Router::Router(const MIB& mib, dcc::RequestInterface& ifc, const security::SecurityEntity& security_entity) :
     m_mib(mib),
     m_request_interface(ifc),
-    m_security_entity(security_entity),
+    m_security_entity(m_clock),
     m_location_table(mib),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),

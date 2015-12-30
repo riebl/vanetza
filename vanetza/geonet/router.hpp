@@ -78,7 +78,6 @@ public:
     };
 
     Router(const MIB&, dcc::RequestInterface&);
-    Router(const MIB&, dcc::RequestInterface&, const security::SecurityEntity& security_entity);
     ~Router();
     DataConfirm request(const ShbDataRequest&, DownPacketPtr);
     DataConfirm request(const GbcDataRequest&, DownPacketPtr);
