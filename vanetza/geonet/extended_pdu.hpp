@@ -15,23 +15,6 @@ namespace vanetza
 namespace geonet
 {
 
-// various forward declarations
-template<class HEADER>
-class ExtendedPdu;
-
-template<class HEADER>
-void serialize(const ExtendedPdu<HEADER>&, OutputArchive&);
-
-template<class HEADER>
-void serialize_for_signing(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar);
-
-template<class HEADER>
-class ExtendedPduRefs;
-
-template<class HEADER>
-void serialize(const ExtendedPduRefs<HEADER>&, OutputArchive&);
-
-
 template<class HEADER>
 class ExtendedPdu : public Pdu
 {
@@ -72,11 +55,6 @@ public:
             secured_length +
             CommonHeader::length_bytes +
             HEADER::length_bytes;
-    }
-
-    void serialize(OutputArchive& ar) const override
-    {
-        geonet::serialize(*this, ar);
     }
 
 private:
@@ -126,41 +104,12 @@ public:
         return length;
     }
 
-    void serialize(OutputArchive& ar) const
-    {
-        geonet::serialize(*this, ar);
-    }
-
 private:
     BasicHeader& mr_basic;
     CommonHeader& mr_common;
     HEADER& mr_extended;
     SecuredMessage* mp_secured;
 };
-
-template<class HEADER>
-void serialize(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar)
-{
-    serialize(pdu.basic(), ar);
-    if (pdu.secured()) {
-        serialize(ar, *pdu.secured());
-    } else {
-        serialize(pdu.common(), ar);
-        serialize(pdu.extended(), ar);
-    }
-}
-
-template<class HEADER>
-void serialize(const ExtendedPduRefs<HEADER>& pdu, OutputArchive& ar)
-{
-    serialize(pdu.basic(), ar);
-    if (pdu.secured()) {
-        serialize(ar, *pdu.secured());
-    } else {
-        serialize(pdu.common(), ar);
-        serialize(pdu.extended(), ar);
-    }
-}
 
 template<class HEADER>
 ByteBuffer convert_for_signing(const ExtendedPdu<HEADER>& pdu)

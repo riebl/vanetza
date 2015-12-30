@@ -28,17 +28,13 @@ public:
     virtual const CommonHeader& common() const = 0;
     virtual SecuredMessage* secured() = 0;
     virtual const SecuredMessage* secured() const = 0;
-    virtual void serialize(OutputArchive&) const = 0;
     virtual HeaderConstRefVariant extended_variant() const = 0;
     virtual Pdu* clone() const = 0;
     virtual std::size_t length() const = 0;
     virtual ~Pdu() {}
 };
 
-inline void serialize(const Pdu& pdu, OutputArchive& ar)
-{
-    pdu.serialize(ar);
-}
+void serialize(const Pdu&, OutputArchive&);
 
 } // namespace geonet
 } // namespace vanetza
