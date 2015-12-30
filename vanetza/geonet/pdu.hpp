@@ -52,7 +52,7 @@ inline void serialize(const Pdu& pdu, OutputArchive& ar)
     serialize(static_cast<const ConstAccessiblePdu&>(pdu), ar);
 }
 
-std::size_t get_length(const Pdu&);
+std::size_t get_length(const ConstAccessiblePdu&);
 
 } // namespace geonet
 } // namespace vanetza

@@ -20,7 +20,7 @@ void serialize(const ConstAccessiblePdu& pdu, OutputArchive& ar)
     }
 }
 
-std::size_t get_length(const Pdu& pdu)
+std::size_t get_length(const ConstAccessiblePdu& pdu)
 {
     std::size_t length = BasicHeader::length_bytes;
     if (pdu.secured()) {
