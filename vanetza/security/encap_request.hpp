@@ -1,11 +1,9 @@
 #ifndef ENCAP_REQUEST_HPP_OX8CLPLW
 #define ENCAP_REQUEST_HPP_OX8CLPLW
 
-#include <boost/optional.hpp>
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/geonet/extended_pdu.hpp>
-#include <vanetza/geonet/header_variant.hpp>
 #include <vanetza/security/profile.hpp>
+#include <boost/optional.hpp>
 
 namespace vanetza
 {

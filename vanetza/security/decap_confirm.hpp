@@ -1,9 +1,9 @@
 #ifndef DECAP_CONFIRM_HPP
 #define DECAP_CONFIRM_HPP
 
-#include <boost/optional.hpp>
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/geonet/parsed_pdu.hpp>
+#include <boost/optional.hpp>
+#include <cstdint>
 
 namespace vanetza
 {

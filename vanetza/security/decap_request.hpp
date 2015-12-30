@@ -1,8 +1,7 @@
 #ifndef DECAP_REQUEST_HPP_WH8O09MB
 #define DECAP_REQUEST_HPP_WH8O09MB
 
-#include <vanetza/geonet/parsed_pdu.hpp>
-#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/secured_message.hpp>
 
 namespace vanetza
 {

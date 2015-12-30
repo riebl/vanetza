@@ -1,9 +1,7 @@
 #ifndef ENCAP_CONFIRM_HPP
 #define ENCAP_CONFIRM_HPP
 
-#include <vanetza/geonet/extended_pdu.hpp>
-#include <vanetza/geonet/header_variant.hpp>
-#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/secured_message.hpp>
 
 namespace vanetza
 {
