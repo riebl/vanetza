@@ -185,7 +185,7 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
             encap_request.security_profile = request.security_profile;
 
             security::EncapConfirm confirm = m_security_entity.encapsulate_packet(encap_request);
-            pdu->secured() = std::move(confirm.sec_packet);
+            pdu->secured(std::move(confirm.sec_packet));
 
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
         }

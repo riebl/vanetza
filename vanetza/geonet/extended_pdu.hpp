@@ -53,8 +53,12 @@ public:
     const CommonHeader& common() const override { return m_common; }
     HEADER& extended() { return m_extended; }
     const HEADER& extended() const { return m_extended; }
-    boost::optional<SecuredMessage>& secured() { return m_secured; }
-    const boost::optional<SecuredMessage>& secured() const { return m_secured; }
+    SecuredMessage* secured() override { return m_secured.get_ptr(); }
+    const SecuredMessage* secured() const override { return m_secured.get_ptr(); }
+    void secured(SecuredMessage* smsg) {
+        m_secured = boost::optional<SecuredMessage>(smsg, *smsg);
+    }
+    void secured(SecuredMessage&& smsg) { m_secured = std::move(smsg); }
 
     ExtendedPdu* clone() const override { return new ExtendedPdu(*this); }
 
@@ -97,8 +101,8 @@ public:
     const CommonHeader& common() const { return mr_common; }
     HEADER& extended() { return mr_extended; }
     const HEADER& extended() const { return mr_extended; }
-    SecuredMessage* secured() { return mp_secured; }
-    const SecuredMessage* secured() const { return mp_secured; }
+    SecuredMessage* secured() override { return mp_secured; }
+    const SecuredMessage* secured() const override { return mp_secured; }
 
     ExtendedPdu<HEADER>* clone() const
     {
@@ -136,7 +140,7 @@ void serialize(const ExtendedPdu<HEADER>& pdu, OutputArchive& ar)
 {
     serialize(pdu.basic(), ar);
     if (pdu.secured()) {
-        serialize(ar, pdu.secured().get());
+        serialize(ar, *pdu.secured());
     } else {
         serialize(pdu.common(), ar);
         serialize(pdu.extended(), ar);
