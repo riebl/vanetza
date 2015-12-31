@@ -57,7 +57,7 @@ EncryptionKey create_random_encryption_key(int seed)
 IntX create_random_its_aid(int seed)
 {
     IntX result;
-    result.set(seed ^ (seed >> 23) & 0xffffff);
+    result.set((seed ^ (seed >> 23)) & 0xffffff);
     return result;
 }
 
