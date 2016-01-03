@@ -80,7 +80,13 @@ std::size_t IndicationContextDeserializer::parse_extended(HeaderVariant& extende
                     bytes = GeoBroadcastHeader::length_bytes;
                 }
                 break;
-            case HeaderType::BEACON:
+            case HeaderType::BEACON: {
+                    BeaconHeader beacon;
+                    deserialize(beacon, m_archive);
+                    extended = std::move(beacon);
+                    bytes = BeaconHeader::length_bytes;
+                }
+                break;
             case HeaderType::ANY:
             case HeaderType::GEOUNICAST:
             case HeaderType::GEOANYCAST_CIRCLE:
