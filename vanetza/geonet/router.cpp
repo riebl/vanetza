@@ -20,6 +20,8 @@
 #include <boost/units/cmath.hpp>
 #include <functional>
 #include <stdexcept>
+#include <tuple>
+#include <type_traits>
 
 namespace vanetza
 {
@@ -68,6 +70,24 @@ public:
         return next_hop;
     }
 };
+
+template<typename PDU>
+auto create_forwarding_duplicate(const PDU& pdu, const UpPacket& packet) ->
+std::tuple<
+    std::unique_ptr<typename std::remove_pointer<decltype(pdu.clone())>::type>,
+    std::unique_ptr<DownPacket>
+>
+{
+    using PduCloneType = typename std::remove_pointer<decltype(pdu.clone())>::type;
+    std::unique_ptr<PduCloneType> pdu_dup { pdu.clone() };
+    std::unique_ptr<DownPacket> packet_dup;
+    if (pdu.secured()) {
+        packet_dup.reset(new DownPacket());
+    } else {
+        packet_dup = duplicate(packet);
+    }
+    return std::make_tuple(std::move(pdu_dup), std::move(packet_dup));
+}
 
 const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 
@@ -209,16 +229,17 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
         auto pdu = create_gbc_pdu(request);
         pdu->common().payload = payload->size();
 
-        // Security
-        if (m_mib.itsGnSecurity) {
-            // TODO: SN-ENCAP.request
-            assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
-        }
 
-        // Set up packet repetition
+        // Set up packet repetition (plaintext payload)
         if (request.repetition) {
             assert(payload);
             m_repeater.add(request, *payload, m_time_now);
+        }
+
+        // Security
+        if (m_mib.itsGnSecurity) {
+            assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
+            payload = encap_packet(request.security_profile, *pdu, std::move(payload));
         }
 
         // Forwarding
@@ -863,7 +884,7 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
         m_location_table.is_neighbour(source_addr, false);
     }
 
-    DownPacketPtr payload = duplicate(*packet);
+    auto fwd_dup = create_forwarding_duplicate(pdu, *packet);
 
     const Area dest_area = gbc.destination(pdu.common().header_type);
     if (inside_or_at_border(dest_area, m_local_position_vector.position())) {
@@ -881,9 +902,10 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
         return; // discard packet
     }
 
-    std::unique_ptr<GbcPdu> pdu_dup { pdu.clone() };
-    assert(pdu_dup->basic().hop_limit > 0);
-    pdu_dup->basic().hop_limit--;
+    auto& fwd_pdu = std::get<0>(fwd_dup);
+    assert(fwd_pdu->basic().hop_limit > 0);
+    fwd_pdu->basic().hop_limit--;
+    auto& fwd_packet = std::get<1>(fwd_dup);
 
     const bool scf = pdu.common().traffic_class.store_carry_forward();
     NextHop next_hop;
@@ -893,10 +915,10 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
             throw std::runtime_error("simple broadcast forwarding unimplemented");
             break;
         case BroadcastForwarding::CBF:
-            next_hop = next_hop_contention_based_forwarding(scf, sender, std::move(pdu_dup), std::move(payload));
+            next_hop = next_hop_contention_based_forwarding(scf, sender, std::move(fwd_pdu), std::move(fwd_packet));
             break;
         case BroadcastForwarding::ADVANCED:
-            next_hop = next_hop_gbc_advanced(scf, sender, destination, std::move(pdu_dup), std::move(payload));
+            next_hop = next_hop_gbc_advanced(scf, sender, destination, std::move(fwd_pdu), std::move(fwd_packet));
             break;
         default:
             throw std::runtime_error("unhandeld broadcast forwarding algorithm");
