@@ -5,6 +5,7 @@
 #include <vanetza/net/mac_address.hpp>
 #include <gtest/gtest.h>
 #include <list>
+#include <tuple>
 
 using namespace vanetza;
 using namespace vanetza::geonet;
@@ -15,12 +16,15 @@ vanetza::units::Length operator"" _m(long double length)
     return vanetza::units::Length(length * vanetza::units::si::meters);
 }
 
-class Routing : public ::testing::TestWithParam<NetworkTopology::PacketDuplicationMode>
+using RoutingParam = std::tuple<NetworkTopology::PacketDuplicationMode, bool>;
+
+class Routing : public ::testing::TestWithParam<RoutingParam>
 {
 protected:
     virtual void SetUp() override
     {
-        net.set_duplication_mode(GetParam());
+        net.set_duplication_mode(std::get<0>(GetParam()));
+        net.get_mib().itsGnSecurity = std::get<1>(GetParam());
 
         cars[0] = {0x00, 0x02, 0x03, 0x04, 0x05, 0x06};
         cars[1] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
@@ -359,6 +363,11 @@ TEST_P(Routing, advanced_forwarding__out_destarea__senderpos_reliable)
     EXPECT_EQ(cars[4], net.get_interface(cars[3])->last_request.destination);
 }
 
-INSTANTIATE_TEST_CASE_P(RoutingInstantiation, Routing, ::testing::Values(
-            NetworkTopology::PacketDuplicationMode::COPY_CONSTRUCT,
-            NetworkTopology::PacketDuplicationMode::SERIALIZE));
+INSTANTIATE_TEST_CASE_P(RoutingInstantiation, Routing,
+        ::testing::Combine(
+            ::testing::Values(
+                NetworkTopology::PacketDuplicationMode::COPY_CONSTRUCT,
+                NetworkTopology::PacketDuplicationMode::SERIALIZE),
+            ::testing::Bool()
+        )
+);
