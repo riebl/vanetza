@@ -58,7 +58,7 @@ public:
     boost::optional<RequestInterface&> get_interface(const MacAddress&);
     const unsigned& get_counter_requests(const MacAddress&);
     const unsigned& get_counter_indications() const { return counter_indications; }
-    const ManagementInformationBase& get_mib() const { return mib; }
+    ManagementInformationBase& get_mib() { return mib; }
     void add_router(const MacAddress&);
     void add_reachability(const MacAddress&, std::initializer_list<MacAddress>);
     void save_request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>);
