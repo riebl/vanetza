@@ -43,6 +43,30 @@ struct byte_order_converter<T, 8>
     static T network_to_host(T value) { return be64toh(value); }
 };
 
+template<class T>
+struct byte_order_converter<T, 16>
+{
+    union mask128 {
+        mask128(T t) : value(t) {}
+        T value;
+        uint64_t part[2];
+    };
+
+    static T host_to_network(mask128 in) {
+        mask128 out(0);
+        out.part[1] = byte_order_converter<uint64_t>::host_to_network(in.part[0]);
+        out.part[0] = byte_order_converter<uint64_t>::host_to_network(in.part[1]);
+        return out.value;
+    }
+
+    static T network_to_host(mask128 in) {
+        mask128 out(0);
+        out.part[1] = byte_order_converter<uint64_t>::network_to_host(in.part[0]);
+        out.part[0] = byte_order_converter<uint64_t>::network_to_host(in.part[1]);
+        return out.value;
+    }
+};
+
 } // namespace detail
 
 
