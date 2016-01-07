@@ -251,30 +251,14 @@ TEST_F(CertificateManager, verify_message_outdated_certificate)
 
 TEST_F(CertificateManager, verify_message_premature_certificate)
 {
-    // random offset
-    auto time_offset = 1000 * 1000 * geonet::Timestamp::millisecond;
-
-    // add offset to time_now
-    time_now += time_offset;
-
-    security::CertificateManager cert_past (time_now);
+    // prepare decap request
+    security::DecapRequest decap_request = getDecapRequest();
 
     // subtract offset from time_now
-    time_now -= time_offset;
-
-    // prepare decap request
-    // sign message
-    security::EncapConfirm encap_confirm = cert_past.sign_message(encap_request);
-
-    // prepare secured message
-    security::SecuredMessage secured_message = encap_confirm.sec_packet;
-
-    // prepare decap request
-    security::DecapRequest decap_request;
-    decap_request.sec_packet = secured_message;
+    time_now -= 1000 * 1000 * geonet::Timestamp::millisecond;
 
     // verify message
-    security::DecapConfirm decap_confirm = cert_past.verify_message(decap_request);
+    security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check if verify indicates invalid certificate
     EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
 }

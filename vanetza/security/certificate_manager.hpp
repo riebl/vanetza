@@ -33,6 +33,12 @@ public:
     typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer Signer;
     typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier Verifier;
 
+    struct KeyPair
+    {
+        PrivateKey private_key;
+        PublicKey public_key;
+    };
+
     CertificateManager(const geonet::Timestamp& time_now);
 
     /** \brief use common header, extended header and payload to create a signature
@@ -59,20 +65,26 @@ public:
      */
     const std::string buffer_cast_to_string(const ByteBuffer& buffer);
 
-private:
-    /** \brief generate a certificate with given public_key
+    /** \brief generate a certificate
      *
-     * \param public_key which's coordinates will be included in the certificate
-     * \return Certificate the data filled generated Certificate
+     * \param key_pair keys used to create the certificate
+     * \return Certificate
      */
-    Certificate generate_certificate(const PublicKey& public_key);
+    Certificate generate_certificate(const KeyPair& key_pair);
 
-    /** \brief verifies the certificate
+    /** \brief generate a private key and the corresponding public key
      *
-     * \param certificate: Certificate to verify
+     * \return KeyPair
+     */
+     KeyPair generate_key_pair();
+
+private:
+     /** \brief check the certificate
+     *
+     * \param certificate to verify
      * \return true if certificate could be verified
      */
-    bool verify_certificate(const Certificate& certificate);
+    bool check_certificate(const Certificate& certificate);
 
     /** \brief extract public key from certificate
      *
@@ -110,8 +122,8 @@ private:
      */
     bool verify_data(const PublicKey& public_key, ByteBuffer data_buffer);
 
-    PrivateKey m_private_key;
-    Certificate m_certificate;
+    KeyPair m_root_key_pair;
+    HashedId8 m_root_certificate_hash;
     const geonet::Timestamp& m_time_now;
 };
 

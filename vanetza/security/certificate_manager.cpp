@@ -17,22 +17,19 @@ namespace security
 
 CertificateManager::CertificateManager(const geonet::Timestamp& time_now) : m_time_now(time_now)
 {
-    // generate private key
-    CryptoPP::OID oid(CryptoPP::ASN1::secp256r1());
-    CryptoPP::AutoSeededRandomPool prng;
-    m_private_key.Initialize(prng, oid);
-    assert(m_private_key.Validate(prng, 3));
+    // generate key pair
+    m_root_key_pair = generate_key_pair();
 
-    // generate public key
-    PublicKey public_key;
-    m_private_key.MakePublicKey(public_key);
-    assert(public_key.Validate(prng, 3));
-
-    m_certificate = generate_certificate(public_key);
+    // TODO(aaron,robert): this is random for now, has to be calculated later (for HashedId8 calculation see TS 103 097 v1.2.1 section 4.2.12)
+    m_root_certificate_hash = HashedId8{ 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab };
 }
 
 EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
 {
+    // create certificate and key pair
+    KeyPair key_pair = generate_key_pair();
+    Certificate temp_certificate = generate_certificate(key_pair);
+
     EncapConfirm encap_confirm;
     // set secured message data
     encap_confirm.sec_packet.payload.type = PayloadType::Signed;
@@ -40,8 +37,8 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     // set header field data
     encap_confirm.sec_packet.header_fields.push_back(get_time()); // generation_time
     encap_confirm.sec_packet.header_fields.push_back((uint16_t) 36); // its_aid, according to TS 102 965, and ITS-AID_AssignedNumbers
-    // TODO: header_fieds.signerInfo.type = certificate, fill in certificate or add certificate_digest_with_sha256
-    SignerInfo signer_info = m_certificate;
+
+    SignerInfo signer_info = temp_certificate;
     encap_confirm.sec_packet.header_fields.push_back(signer_info);
 
     // create trailer field to get the size in bytes
@@ -65,7 +62,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     // p. 27 in TS 103 097 v1.2.1
     ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
 
-    TrailerField trailer_field = sign_data(m_private_key, data_buffer);
+    TrailerField trailer_field = sign_data(key_pair.private_key, data_buffer);
     assert(get_size(trailer_field) == trailer_field_size);
 
     encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
@@ -93,7 +90,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     PublicKey public_key = get_public_key_from_certificate(certificate.get());
 
     // if certificate could not be verified return correct ReportType
-    if (!verify_certificate(certificate.get())) {
+    if (!check_certificate(certificate.get())) {
         decap_confirm.report = ReportType::Invalid_Certificate;
         return decap_confirm;
     }
@@ -133,42 +130,6 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     return std::move(decap_confirm);
 }
 
-bool CertificateManager::verify_certificate(const Certificate& certificate)
-{
-    // check validity restriction
-    for (auto& restriction : certificate.validity_restriction) {
-        ValidityRestriction validity_restriction = restriction;
-
-        ValidityRestrictionType type = get_type(validity_restriction);
-        if (type == ValidityRestrictionType::Time_Start_And_End) {
-            // change start and end time of certificate validity
-            StartAndEndValidity start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
-            // check if certificate validity restriction timestamps are logically correct
-            if (start_and_end.start_validity >= start_and_end.end_validity) {
-                return false;
-            }
-            // check if certificate is premature or outdated
-            if (get_time_in_seconds() < start_and_end.start_validity || get_time_in_seconds() > start_and_end.end_validity ) {
-                return false;
-            }
-        }
-    }
-
-    PublicKey public_key = get_public_key_from_certificate(certificate);
-
-    // create buffer of certificate
-    ByteBuffer cert = convert_for_signing(certificate);
-
-    // create ByteBuffer of Signature + Certificate
-    boost::optional<ByteBuffer> sig_and_cert = extract_signature_buffer(certificate.signature);
-    if (!sig_and_cert) {
-        return false;
-    }
-    sig_and_cert.get().insert(sig_and_cert.get().end(), cert.begin(), cert.end());
-
-    return verify_data(public_key, sig_and_cert.get());
-}
-
 const std::string CertificateManager::buffer_cast_to_string(const ByteBuffer& buffer)
 {
     std::stringstream oss;
@@ -176,17 +137,20 @@ const std::string CertificateManager::buffer_cast_to_string(const ByteBuffer& bu
     return std::move(oss.str());
 }
 
-Certificate CertificateManager::generate_certificate(const PublicKey& public_key)
+Certificate CertificateManager::generate_certificate(const CertificateManager::KeyPair& key_pair)
 {
+    // create certificate
     Certificate certificate;
 
     // section 6.1 in TS 103 097 v1.2.1
-    // TODO exchange with SignerInfoType::Certificate_Digest_With_ECDSA_P256 when there is a root certificate
-    certificate.signer_info = std::nullptr_t(); // nullptr means self signed
+    certificate.signer_info = m_root_certificate_hash;
 
     // section 6.3 in TS 103 097 v1.2.1
     certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
     // section 7.4.2 in TS 103 097 v1.2.1, subject_name implicit empty
+
+    // set assurance level
+    certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
@@ -195,8 +159,8 @@ Certificate CertificateManager::generate_certificate(const PublicKey& public_key
     {
         coordinates.x.resize(32);
         coordinates.y.resize(32);
-        public_key.GetPublicElement().x.Encode(&coordinates.x[0], 32);
-        public_key.GetPublicElement().y.Encode(&coordinates.y[0], 32);
+        key_pair.public_key.GetPublicElement().x.Encode(coordinates.x.data(), coordinates.x.size());
+        key_pair.public_key.GetPublicElement().y.Encode(coordinates.y.data(), coordinates.y.size());
 
         assert(CryptoPP::SHA256::DIGESTSIZE == coordinates.x.size());
         assert(CryptoPP::SHA256::DIGESTSIZE == coordinates.y.size());
@@ -207,9 +171,6 @@ Certificate CertificateManager::generate_certificate(const PublicKey& public_key
     VerificationKey verification_key;
     verification_key.key = ecdsa;
     certificate.subject_attributes.push_back(verification_key);
-
-    // set assurance level
-    certificate.subject_attributes.push_back(SubjectAssurance()); // TODO change confidence if necessary
 
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
@@ -226,9 +187,67 @@ Certificate CertificateManager::generate_certificate(const PublicKey& public_key
     //      subject_attributes + length,
     //      validity_restriction + length
     // section 7.4 in TS 103 097 v1.2.1
-    certificate.signature = std::move(sign_data(m_private_key, data_buffer));
+    certificate.signature = std::move(sign_data(m_root_key_pair.private_key, data_buffer));
 
     return std::move(certificate);
+}
+
+CertificateManager::KeyPair CertificateManager::generate_key_pair()
+{
+    KeyPair key_pair;
+    // generate private key
+    CryptoPP::OID oid(CryptoPP::ASN1::secp256r1());
+    CryptoPP::AutoSeededRandomPool prng;
+    key_pair.private_key.Initialize(prng, oid);
+    assert(key_pair.private_key.Validate(prng, 3));
+
+    // generate public key
+    key_pair.private_key.MakePublicKey(key_pair.public_key);
+    assert(key_pair.public_key.Validate(prng, 3));
+
+    return key_pair;
+}
+
+bool CertificateManager::check_certificate(const Certificate& certificate)
+{
+    // check validity restriction
+    for (auto& restriction : certificate.validity_restriction) {
+        ValidityRestriction validity_restriction = restriction;
+
+        ValidityRestrictionType type = get_type(validity_restriction);
+        if (type == ValidityRestrictionType::Time_Start_And_End) {
+            // change start and end time of certificate validity
+            StartAndEndValidity start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
+            // check if certificate validity restriction timestamps are logically correct
+            if (start_and_end.start_validity >= start_and_end.end_validity) {
+                return false;
+            }
+            // check if certificate is premature or outdated
+            if (get_time_in_seconds() < start_and_end.start_validity || get_time_in_seconds() > start_and_end.end_validity) {
+                return false;
+            }
+        }
+    }
+
+    // check signer info
+    if(get_type(certificate.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
+        HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
+        if(signer_hash != m_root_certificate_hash) {
+            return false;
+        }
+    }
+
+    // create buffer of certificate
+    ByteBuffer cert = convert_for_signing(certificate);
+
+    // create ByteBuffer of Signature + Certificate
+    boost::optional<ByteBuffer> sig_and_cert = extract_signature_buffer(certificate.signature);
+    if (!sig_and_cert) {
+        return false;
+    }
+    sig_and_cert.get().insert(sig_and_cert.get().end(), cert.begin(), cert.end());
+
+    return verify_data(m_root_key_pair.public_key, sig_and_cert.get());
 }
 
 CertificateManager::PublicKey CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
