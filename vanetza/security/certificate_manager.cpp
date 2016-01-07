@@ -88,7 +88,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
         return decap_confirm;
     }
 
-    boost::optional<Certificate> certificate;
+    boost::optional<const Certificate&> certificate;
     boost::optional<Time64> generation_time;
     for (auto& field : request.sec_packet.header_fields) {
         switch (get_type(field)) {
@@ -147,7 +147,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     // TODO check if Revoked_Certificate
 
     // convert signature byte buffer to string
-    std::list<TrailerField> trailer_fields = secured_message.trailer_fields;
+    auto& trailer_fields = secured_message.trailer_fields;
 
     if (trailer_fields.empty()) {
         decap_confirm.report = ReportType::Unsigned_Message;
