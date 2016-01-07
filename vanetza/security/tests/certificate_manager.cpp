@@ -376,7 +376,7 @@ TEST_F(CertificateManager, verify_message_modified_signature)
     // prepare decap request
     security::DecapRequest decap_request = getDecapRequest();
 
-    // iterate through all header_fields
+    // iterate through all trailer_fields
     std::list<security::TrailerField>& trailer_fields = decap_request.sec_packet.trailer_fields;
     for (std::list<security::TrailerField>::iterator it = trailer_fields.begin(); it != trailer_fields.end(); ++it) {
         // modify signature
