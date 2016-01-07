@@ -107,7 +107,7 @@ TEST_F(CertificateManager, expected_payload)
 
     // check payload
     security::Payload payload = confirm.sec_packet.payload;
-    // TODO (simon, markus): check ETSI standard whether entire payload is in secured message when security is enabled
+
     EXPECT_EQ(expected_payload.size(), payload.buffer.size());
     EXPECT_EQ(security::PayloadType::Signed, get_type(payload));
 }
