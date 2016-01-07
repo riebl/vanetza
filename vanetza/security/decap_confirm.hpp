@@ -16,7 +16,7 @@ enum class ReportType
     False_Signature,
     Invalid_Certificate,
     Revoked_Certificate,
-    Incosistant_Chain,
+    Inconsistant_Chain,
     Invalid_Timestamp,
     Duplicate_Message,
     Invalid_Mobility_Data,
