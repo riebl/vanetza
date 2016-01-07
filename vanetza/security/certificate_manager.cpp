@@ -72,20 +72,63 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
 
 DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 {
+    DecapConfirm decap_confirm;
+
+    SecuredMessage secured_message = std::move(request.sec_packet);
+    // set the payload, when verfiy != success, we need this for NON_STRICT packet handling
+    decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.buffer);
+
+    if (PayloadType::Signed != secured_message.payload.type) {
+        decap_confirm.report = ReportType::Unsigned_Message;
+        return decap_confirm;
+    }
+
+    if (SecuredMessage().protocol_version() != secured_message.protocol_version()) {
+        decap_confirm.report = ReportType::Incompatible_Protocol;
+        return decap_confirm;
+    }
+
     boost::optional<Certificate> certificate;
+    boost::optional<Time64> generation_time;
     for (auto& field : request.sec_packet.header_fields) {
-        if (get_type(field) == HeaderFieldType::Signer_Info) {
-            assert(SignerInfoType::Certificate == get_type(boost::get<SignerInfo>(field)));
-            certificate = boost::get<Certificate>(boost::get<SignerInfo>(field));
+        switch (get_type(field)) {
+        case HeaderFieldType::Signer_Info:
+            switch (get_type(boost::get<SignerInfo>(field))) {
+            case SignerInfoType::Certificate:
+                certificate = boost::get<Certificate>(boost::get<SignerInfo>(field));
+                break;
+            case SignerInfoType::Self:
+            case SignerInfoType::Certificate_Digest_With_SHA256:
+            case SignerInfoType::Certificate_Digest_With_Other_Algorithm:
+                break;
+            case SignerInfoType::Certificate_Chain:
+                //TODO check if Certificate_Chain is inconsistant
+                break;
+            default:
+                decap_confirm.report = ReportType::Unsupported_Signer_Identifier_Type;
+                return decap_confirm;
+                break;
+            }
+            break;
+        case HeaderFieldType::Generation_Time:
+            generation_time = boost::get<Time64>(field);
+            break;
+        default:
             break;
         }
     }
 
-    DecapConfirm decap_confirm;
     if (!certificate) {
         decap_confirm.report = ReportType::Signer_Certificate_Not_Found;
         return decap_confirm;
     }
+
+    if (!generation_time || (generation_time && (get_time() < generation_time.get()))) {
+        decap_confirm.report = ReportType::Invalid_Timestamp;
+        return decap_confirm;
+    }
+
+    // TODO check Duplicate_Message, Invalid_Mobility_Data, Unencrypted_Message, Decryption_Error
 
     boost::optional<PublicKey> public_key = get_public_key_from_certificate(certificate.get());
 
@@ -101,32 +144,48 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
         return decap_confirm;
     }
 
+    // TODO check if Revoked_Certificate
+
     // convert signature byte buffer to string
-    SecuredMessage secured_message = std::move(request.sec_packet);
-    std::list<TrailerField> trailer_fields;
+    std::list<TrailerField> trailer_fields = secured_message.trailer_fields;
 
-    trailer_fields = secured_message.trailer_fields;
+    if (trailer_fields.empty()) {
+        decap_confirm.report = ReportType::Unsigned_Message;
+        return decap_confirm;
+    }
 
-    assert(!trailer_fields.empty());
-
-    std::list<TrailerField>::iterator it = trailer_fields.begin();
+    boost::optional<EcdsaSignature> signature;
+    for (auto& field : trailer_fields) {
+        if (TrailerFieldType::Signature == get_type(field)) {
+            if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(boost::get<Signature>(field))) {
+                signature = boost::get<EcdsaSignature>(boost::get<Signature>(field));
+                break;
+            }
+        }
+    }
 
     // check Signature
-    boost::optional<ByteBuffer> signature = extract_signature_buffer(*it);
     if (!signature) {
+        decap_confirm.report = ReportType::Unsigned_Message;
+        return decap_confirm;
+    }
+
+    // check the size of signature.R and siganture.s
+    ByteBuffer signature_buffer = extract_signature_buffer(Signature(signature.get()));
+    if (field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) * 2 != signature_buffer.size() ||
+        field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) != signature.get().s.size()) {
         decap_confirm.report = ReportType::False_Signature;
         return decap_confirm;
     }
 
     // convert message byte buffer to string
-    ByteBuffer message = std::move(signature.get());
-    ByteBuffer payload = convert_for_signing(secured_message, get_size(*it));
+    ByteBuffer message = std::move(signature_buffer);
+    ByteBuffer payload = convert_for_signing(secured_message, get_size(TrailerField(Signature(signature.get()))));
     message.insert(message.end(), payload.begin(), payload.end());
 
     // result of verify function
     bool result = verify_data(public_key.get(), std::move(message));
 
-    decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.buffer);
     if (result) {
         decap_confirm.report = ReportType::Success;
     } else {

@@ -128,27 +128,6 @@ TEST_F(CertificateManager, verify_message)
     EXPECT_FALSE(test_and_reset_invalid_certificate());
 }
 
-TEST_F(CertificateManager, verify_message_modified_generation_time)
-{
-    // prepare decap request
-    security::DecapRequest decap_request = getDecapRequest();
-
-    // iterate through all header_fields
-    std::list<security::HeaderField>& header_fields = decap_request.sec_packet.header_fields;
-    for (std::list<security::HeaderField>::iterator it = header_fields.begin(); it != header_fields.end(); ++it) {
-        // modify generation time
-        if (security::HeaderFieldType::Generation_Time == get_type(*it)) {
-            security::Time64& generation_time = boost::get<security::Time64>(*it);
-            generation_time = 1988711;
-        }
-    }
-
-    // verify message
-    security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify was successful
-    EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
-}
-
 TEST_F(CertificateManager, verify_message_modified_message_type)
 {
     // prepare decap request
@@ -398,13 +377,13 @@ TEST_F(CertificateManager, verify_message_modified_payload_type)
     // prepare decap request
     security::DecapRequest decap_request = getDecapRequest();
 
-    // modify payload type
-    decap_request.sec_packet.payload.type = security::PayloadType::Encrypted;
+    // change the payload.type
+    decap_request.sec_packet.payload.type = security::PayloadType::Unsecured;
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check if verify was successful
-    EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
+    EXPECT_EQ(security::ReportType::Unsigned_Message, decap_confirm.report);
 }
 
 TEST_F(CertificateManager, verify_message_modified_payload)
@@ -419,6 +398,23 @@ TEST_F(CertificateManager, verify_message_modified_payload)
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check if verify was successful
     EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
+}
+
+TEST_F(CertificateManager, verify_message_modified_generation_time_before_current_time)
+{
+    // change the time, so the generation time of SecuredMessage is before current time
+    time_now += 3600 * 12 * 1000 * geonet::Timestamp::millisecond;
+
+    // prepare decap request
+    security::DecapRequest decap_request = getDecapRequest();
+
+    // change the time, so the current time is before generation time of SecuredMessage
+    time_now -= 3600 * 12 * 1000 * geonet::Timestamp::millisecond;
+
+    // verify message
+    security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(security::ReportType::Invalid_Timestamp, decap_confirm.report);
 }
 
 TEST_F(CertificateManager, generate_certificate)
@@ -471,3 +467,26 @@ TEST_F(CertificateManager, generate_certificate)
     }
     EXPECT_LT(start_time, end_time);
 }
+
+TEST_F(CertificateManager, verify_message_without_signer_info)
+{
+    // prepare decap request
+    security::DecapRequest decap_request = getDecapRequest();
+
+    // iterate through all header_fields
+    auto& header_fields = decap_request.sec_packet.header_fields;
+    for (auto field = header_fields.begin(); field != header_fields.end(); ++field) {
+        // modify certificate
+        if (security::HeaderFieldType::Signer_Info == get_type(*field)) {
+            header_fields.erase(field);
+            break;
+        }
+    }
+
+    // verify message
+    security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(security::ReportType::Signer_Certificate_Not_Found, decap_confirm.report);
+}
+
+// TODO add tests for Unsupported_Signer_Identifier_Type, Incompatible_Protocol
