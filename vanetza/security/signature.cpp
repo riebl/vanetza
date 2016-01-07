@@ -17,6 +17,11 @@ PublicKeyAlgorithm get_type(const Signature& sig)
         {
             return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
         }
+
+        PublicKeyAlgorithm operator()(const EcdsaSignatureFuture& sig)
+        {
+            return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+        }
     };
     Signature_visitor visit;
     return boost::apply_visitor(visit, sig);
@@ -29,12 +34,22 @@ size_t get_size(const EcdsaSignature& sig)
     return size;
 }
 
+size_t get_size(const EcdsaSignatureFuture& sig)
+{
+    return sig.size();
+}
+
 size_t get_size(const Signature& sig)
 {
     size_t size = sizeof(PublicKeyAlgorithm);
     struct Signature_visitor : public boost::static_visitor<size_t>
     {
         size_t operator()(const EcdsaSignature& sig)
+        {
+            return get_size(sig);
+        }
+
+        size_t operator()(const EcdsaSignatureFuture& sig)
         {
             return get_size(sig);
         }
@@ -51,6 +66,11 @@ void serialize(OutputArchive& ar, const Signature& sig)
         signature_visitor(OutputArchive& ar) : m_archive(ar) {}
 
         void operator()(const EcdsaSignature& sig)
+        {
+            serialize(m_archive, sig);
+        }
+
+        void operator()(const EcdsaSignatureFuture& sig)
         {
             serialize(m_archive, sig);
         }
@@ -73,6 +93,12 @@ void serialize(OutputArchive& ar, const EcdsaSignature& sig)
     for (auto& byte : sig.s) {
         ar << byte;
     }
+}
+
+void serialize(OutputArchive& ar, const EcdsaSignatureFuture& sig)
+{
+    auto& ecdsa = sig.get();
+    serialize(ar, ecdsa);
 }
 
 size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorithm& algo)
@@ -111,13 +137,48 @@ size_t deserialize(InputArchive& ar, Signature& sig)
 
 ByteBuffer extract_signature_buffer(const Signature& sig)
 {
-    ByteBuffer buf;
-    if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(sig)) {
-        EcdsaSignature signature = boost::get<EcdsaSignature>(sig);
-        buf = convert_for_signing(signature.R);
-        buf.insert(buf.end(), signature.s.begin(), signature.s.end());
+    struct extraction_visitor : public boost::static_visitor<>
+    {
+        void operator()(const EcdsaSignature& sig)
+        {
+            m_buffer = convert_for_signing(sig.R);
+            m_buffer.insert(m_buffer.end(), sig.s.begin(), sig.s.end());
+        }
+
+        void operator()(const EcdsaSignatureFuture& sig_future)
+        {
+            const EcdsaSignature& sig = sig_future.get();
+            (*this)(sig);
+        }
+
+        ByteBuffer m_buffer;
+    };
+
+    extraction_visitor visitor;
+    boost::apply_visitor(visitor, sig);
+
+    return visitor.m_buffer;
+}
+
+EcdsaSignatureFuture::EcdsaSignatureFuture(const std::shared_future<EcdsaSignature>& future, std::size_t bytes) :
+    m_future(future), m_bytes(bytes)
+{
+    if (!m_future.valid()) {
+        throw std::invalid_argument("EcdsaSignature future has to be valid");
     }
-    return buf;
+}
+
+const EcdsaSignature& EcdsaSignatureFuture::get() const
+{
+    assert(m_future.valid());
+    const EcdsaSignature& signature = m_future.get();
+    assert(get_size(signature) == m_bytes);
+    return signature;
+}
+
+std::size_t EcdsaSignatureFuture::size() const
+{
+    return m_bytes;
 }
 
 } // ns security

@@ -83,6 +83,15 @@ public:
      */
     Certificate generate_certificate(const KeyPair& key_pair);
 
+    /** \brief enable deferred signature creation
+     *
+     * SecuredMessages contain EcdsaSignatureFuture instead of EcdsaSignature
+     * when this feature is enabled
+     *
+     * \param flag true for enabling deferred signature calculation
+     */
+    void enable_deferred_signing(bool flag);
+
     /** \brief generate a private key and the corresponding public key
      *
      * \return KeyPair
@@ -143,6 +152,7 @@ private:
     const Clock::time_point& m_time_now;
     const KeyPair& m_root_key_pair;
     HashedId8 m_root_certificate_hash;
+    bool m_sign_deferred;
 };
 
 } // namespace security

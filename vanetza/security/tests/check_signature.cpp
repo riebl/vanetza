@@ -15,6 +15,11 @@ void check(const EcdsaSignature& expected, const EcdsaSignature& actual)
     EXPECT_EQ(expected.s, actual.s);
 }
 
+void check(const EcdsaSignatureFuture& expected, const EcdsaSignatureFuture& actual)
+{
+    check(expected.get(), actual.get());
+}
+
 void check(const Signature& expected, const Signature& actual)
 {
     ASSERT_EQ(get_type(expected), get_type(actual));

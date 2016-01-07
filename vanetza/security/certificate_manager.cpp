@@ -10,6 +10,7 @@
 #include <cryptopp/hex.h>
 #include <boost/format.hpp>
 #include <chrono>
+#include <future>
 #include <sstream>
 
 namespace vanetza
@@ -18,7 +19,7 @@ namespace security
 {
 
 CertificateManager::CertificateManager(const Clock::time_point& time_now) :
-    m_time_now(time_now), m_root_key_pair(get_root_key_pair())
+    m_time_now(time_now), m_root_key_pair(get_root_key_pair()), m_sign_deferred(false)
 {
     // TODO(aaron,robert): this is random for now, has to be calculated later (for HashedId8 calculation see TS 103 097 v1.2.1 section 4.2.12)
     m_root_certificate_hash = HashedId8{ 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab };
@@ -43,6 +44,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
 
     // create trailer field to get the size in bytes
     size_t trailer_field_size = 0;
+    size_t signature_size = 0;
     {
         security::EcdsaSignature temp_signature;
         temp_signature.s.resize(field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
@@ -53,6 +55,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
         security::TrailerField temp_trailer_field = temp_signature;
 
         trailer_field_size = get_size(temp_trailer_field);
+        signature_size = get_size(temp_signature);
     }
 
     // Covered by signature:
@@ -60,12 +63,19 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     //      CommonHeader: complete
     //      ExtendedHeader: complete
     // p. 27 in TS 103 097 v1.2.1
-    ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-
-    TrailerField trailer_field = sign_data(key_pair.private_key, data_buffer);
-    assert(get_size(trailer_field) == trailer_field_size);
-
-    encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
+    if (m_sign_deferred) {
+        auto future = std::async(std::launch::deferred, [=]() {
+            ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
+            return sign_data(key_pair.private_key, data);
+        });
+        EcdsaSignatureFuture signature(future.share(), signature_size);
+        encap_confirm.sec_packet.trailer_fields.push_back(signature);
+    } else {
+        ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
+        TrailerField trailer_field = sign_data(key_pair.private_key, data_buffer);
+        assert(get_size(trailer_field) == trailer_field_size);
+        encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
+    }
 
     return encap_confirm;
 }
@@ -426,6 +436,11 @@ bool CertificateManager::verify_data(const PublicKey& public_key, ByteBuffer dat
     );
 
     return result;
+}
+
+void CertificateManager::enable_deferred_signing(bool flag)
+{
+    m_sign_deferred = flag;
 }
 
 Time64 CertificateManager::get_time()

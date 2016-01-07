@@ -5,6 +5,7 @@
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <boost/variant/variant.hpp>
+#include <future>
 
 namespace vanetza
 {
@@ -17,7 +18,20 @@ struct EcdsaSignature
     ByteBuffer s;
 };
 
-typedef boost::variant<EcdsaSignature> Signature;
+class EcdsaSignatureFuture
+{
+public:
+    EcdsaSignatureFuture(const std::shared_future<EcdsaSignature>&, std::size_t);
+
+    const EcdsaSignature& get() const;
+    std::size_t size() const;
+
+private:
+    mutable std::shared_future<EcdsaSignature> m_future;
+    std::size_t m_bytes;
+};
+
+typedef boost::variant<EcdsaSignature, EcdsaSignatureFuture> Signature;
 
 /**
  * Determines PublcKeyAlgorithm to a given Signature
@@ -32,6 +46,7 @@ PublicKeyAlgorithm get_type(const Signature&);
  * \return size_t containing the number of octets needed to serialize the Sigtnature
  */
 size_t get_size(const EcdsaSignature&);
+size_t get_size(const EcdsaSignatureFuture&);
 size_t get_size(const Signature&);
 
 /**
@@ -41,6 +56,7 @@ size_t get_size(const Signature&);
  */
 void serialize(OutputArchive&, const Signature&);
 void serialize(OutputArchive&, const EcdsaSignature&);
+void serialize(OutputArchive&, const EcdsaSignatureFuture&);
 
 /**
  * Deserializes an object from a binary archive

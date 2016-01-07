@@ -9,6 +9,7 @@ namespace security
 {
 
 void check(const EcdsaSignature&, const EcdsaSignature&);
+void check(const EcdsaSignatureFuture&, const EcdsaSignatureFuture&);
 void check(const Signature&, const Signature&);
 
 EcdsaSignature create_random_ecdsa_signature(int seed = 0);
