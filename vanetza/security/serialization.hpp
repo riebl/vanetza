@@ -29,10 +29,10 @@ void serialize_length(OutputArchive&, size_t);
 size_t deserialize_length(InputArchive&);
 
 template<class T>
-size_t get_size(std::list<T> list)
+size_t get_size(const std::list<T>& list)
 {
     size_t size = 0;
-    for (auto elem : list) {
+    for (auto& elem : list) {
         size += get_size(elem);
     }
     return size;
