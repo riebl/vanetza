@@ -369,3 +369,54 @@ TEST_F(CertificateManager, verify_message_modified_payload)
     // check if verify was successful
     EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
 }
+
+TEST_F(CertificateManager, generate_certificate)
+{
+    // Create signed certificate
+    security::Certificate signed_certificate = cert_manager.generate_certificate(cert_manager.generate_key_pair());
+
+    // Check signature
+    EXPECT_EQ(2 * field_size(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256),
+              get(security::extract_signature_buffer(signed_certificate.signature)).size());
+    EXPECT_EQ(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(signed_certificate.signature));
+
+    // Check signer_info and subject_info
+    EXPECT_EQ(2, signed_certificate.version());
+    EXPECT_EQ(security::SignerInfoType::Certificate_Digest_With_SHA256, get_type(signed_certificate.signer_info));
+    EXPECT_EQ(security::SubjectType::Authorization_Ticket, signed_certificate.subject_info.subject_type);
+    EXPECT_TRUE(signed_certificate.subject_info.subject_name.empty());
+
+    // Check subject attributes
+    int verification_key_counter = 0;
+    security::SubjectAssurance test_assurance_level;
+    int assurance_level_counter = 0;
+
+    for (auto& subject_attribute : signed_certificate.subject_attributes) {
+
+        if (security::SubjectAttributeType::Verification_Key == get_type(subject_attribute)) {
+            verification_key_counter++;
+        } else if (security::SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
+            test_assurance_level = boost::get<security::SubjectAssurance>(subject_attribute);
+            assurance_level_counter++;
+        } else if (security::SubjectAttributeType::Its_Aid_Ssp_List == get_type(subject_attribute)) {
+            // TODO: check aid permissions
+        }
+    }
+    EXPECT_EQ(1, verification_key_counter);
+    ASSERT_EQ(1, assurance_level_counter);
+    EXPECT_EQ(0, test_assurance_level.raw);
+
+    // Check validity restrictions
+    security::Time32 start_time;
+    security::Time32 end_time;
+    for (security::ValidityRestriction restriction : signed_certificate.validity_restriction){
+        if (security::ValidityRestrictionType::Time_Start_And_End == get_type(restriction)) {
+            security::StartAndEndValidity& time_validation = boost::get<security::StartAndEndValidity>(restriction);
+            start_time = time_validation.start_validity;
+            end_time = time_validation.end_validity;
+        } else if (security::ValidityRestrictionType::Region == get_type(restriction)) {
+            // TODO: Region not specified yet
+        }
+    }
+    EXPECT_LT(start_time, end_time);
+}
