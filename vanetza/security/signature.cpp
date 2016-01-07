@@ -48,28 +48,31 @@ void serialize(OutputArchive& ar, const Signature& sig)
 {
     struct signature_visitor : public boost::static_visitor<>
     {
-        signature_visitor(OutputArchive& ar, PublicKeyAlgorithm algo) :
-            m_archive(ar), m_algo(algo)
-        {
-        }
+        signature_visitor(OutputArchive& ar) : m_archive(ar) {}
 
         void operator()(const EcdsaSignature& sig)
         {
-            assert(field_size(m_algo) == sig.s.size());
-            serialize(m_archive, sig.R, m_algo);
-            for (auto& byte : sig.s) {
-                m_archive << byte;
-            }
+            serialize(m_archive, sig);
         }
 
         OutputArchive& m_archive;
-        PublicKeyAlgorithm m_algo;
     };
 
     PublicKeyAlgorithm algo = get_type(sig);
     serialize(ar, algo);
-    signature_visitor visitor(ar, algo);
+    signature_visitor visitor(ar);
     boost::apply_visitor(visitor, sig);
+}
+
+void serialize(OutputArchive& ar, const EcdsaSignature& sig)
+{
+    const PublicKeyAlgorithm algo = PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+    assert(field_size(algo) == sig.s.size());
+
+    serialize(ar, sig.R, algo);
+    for (auto& byte : sig.s) {
+        ar << byte;
+    }
 }
 
 size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorithm& algo)

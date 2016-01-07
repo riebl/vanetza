@@ -40,6 +40,7 @@ size_t get_size(const Signature&);
  * \param PublicKey to serialize
  */
 void serialize(OutputArchive&, const Signature&);
+void serialize(OutputArchive&, const EcdsaSignature&);
 
 /**
  * Deserializes an object from a binary archive
