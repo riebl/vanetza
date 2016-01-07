@@ -1,6 +1,7 @@
 #ifndef CERTIFICATE_MANAGER_HPP
 #define CERTIFICATE_MANAGER_HPP
 
+#include <vanetza/common/hook.hpp>
 #include <vanetza/geonet/extended_pdu.hpp>
 #include <vanetza/geonet/header_variant.hpp>
 #include <vanetza/geonet/timestamp.hpp>
@@ -33,11 +34,23 @@ public:
     typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer Signer;
     typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier Verifier;
 
+    enum class CertificateInvalidReason
+    {
+        BROKEN_TIME_PERIOD,
+        OFF_TIME_PERIOD,
+        INVALID_ROOT_HASH,
+        MISSING_SIGNATURE,
+        INVALID_SIGNATURE,
+        INVALID_NAME,
+    };
+
     struct KeyPair
     {
         PrivateKey private_key;
         PublicKey public_key;
     };
+
+    Hook<CertificateInvalidReason> certificate_invalid;
 
     CertificateManager(const geonet::Timestamp& time_now);
 

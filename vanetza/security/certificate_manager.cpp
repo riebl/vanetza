@@ -220,34 +220,52 @@ bool CertificateManager::check_certificate(const Certificate& certificate)
             StartAndEndValidity start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
             // check if certificate validity restriction timestamps are logically correct
             if (start_and_end.start_validity >= start_and_end.end_validity) {
+                certificate_invalid(CertificateInvalidReason::BROKEN_TIME_PERIOD);
                 return false;
             }
             // check if certificate is premature or outdated
             if (get_time_in_seconds() < start_and_end.start_validity || get_time_in_seconds() > start_and_end.end_validity) {
+                certificate_invalid(CertificateInvalidReason::OFF_TIME_PERIOD);
                 return false;
             }
         }
+    }
+
+    // check if subject_name is empty
+    if (0 != certificate.subject_info.subject_name.size()) {
+        certificate_invalid(CertificateInvalidReason::INVALID_NAME);
+        return false;
     }
 
     // check signer info
     if(get_type(certificate.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
         HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
         if(signer_hash != m_root_certificate_hash) {
+            certificate_invalid(CertificateInvalidReason::INVALID_ROOT_HASH);
             return false;
         }
+    }
+
+    // create ByteBuffer of Signature
+    boost::optional<ByteBuffer> sig = extract_signature_buffer(certificate.signature);
+    if (!sig) {
+        certificate_invalid(CertificateInvalidReason::MISSING_SIGNATURE);
+        return false;
     }
 
     // create buffer of certificate
     ByteBuffer cert = convert_for_signing(certificate);
 
-    // create ByteBuffer of Signature + Certificate
-    boost::optional<ByteBuffer> sig_and_cert = extract_signature_buffer(certificate.signature);
-    if (!sig_and_cert) {
+    // append certificate to signature buffer
+    ByteBuffer sig_and_cert = sig.get();
+    sig_and_cert.insert(sig_and_cert.end(), cert.begin(), cert.end());
+
+    if (!verify_data(m_root_key_pair.public_key, sig_and_cert)) {
+        certificate_invalid(CertificateInvalidReason::INVALID_SIGNATURE);
         return false;
     }
-    sig_and_cert.get().insert(sig_and_cert.get().end(), cert.begin(), cert.end());
 
-    return verify_data(m_root_key_pair.public_key, sig_and_cert.get());
+    return true;
 }
 
 CertificateManager::PublicKey CertificateManager::get_public_key_from_certificate(const Certificate& certificate)

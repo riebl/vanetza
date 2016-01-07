@@ -15,6 +15,7 @@
 #include <gtest/gtest.h>
 
 using namespace vanetza;
+using CM = vanetza::security::CertificateManager;
 
 class CertificateManager : public ::testing::Test
 {
@@ -28,6 +29,12 @@ protected:
     {
         encap_request.plaintext_payload = expected_payload;
         encap_request.security_profile = security::Profile::CAM;
+
+        invalid_cert_occured = false;
+        cert_manager.certificate_invalid = [this](security::CertificateManager::CertificateInvalidReason r) {
+            invalid_cert_reason = r;
+            invalid_cert_occured = true;
+        };
     }
 
     security::DecapRequest getDecapRequest()
@@ -45,10 +52,19 @@ protected:
         return decap_request;
     }
 
+    bool test_and_reset_invalid_certificate()
+    {
+        bool result = invalid_cert_occured;
+        invalid_cert_occured = false;
+        return result;
+    }
+
     ByteBuffer expected_payload = {8, 25, 13, 2};
     security::EncapRequest encap_request;
     geonet::Timestamp time_now;
     security::CertificateManager cert_manager;
+    security::CertificateManager::CertificateInvalidReason invalid_cert_reason;
+    bool invalid_cert_occured;
 };
 
 TEST_F(CertificateManager, sign_smoke_test)
@@ -108,6 +124,8 @@ TEST_F(CertificateManager, verify_message)
     EXPECT_EQ(security::ReportType::Success, decap_confirm.report);
     // check if payload was not changed
     EXPECT_EQ(expected_payload, decap_confirm.plaintext_payload);
+    // check hook
+    EXPECT_FALSE(test_and_reset_invalid_certificate());
 }
 
 TEST_F(CertificateManager, verify_message_modified_generation_time)
@@ -173,8 +191,9 @@ TEST_F(CertificateManager, verify_message_modified_certificate_signer_info)
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify indicates invalid certificate
-    EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_ROOT_HASH, invalid_cert_reason);
 }
 
 TEST_F(CertificateManager, verify_message_modified_certificate_subject_info)
@@ -197,8 +216,9 @@ TEST_F(CertificateManager, verify_message_modified_certificate_subject_info)
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify indicates invalid certificate
-    EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
 }
 
 TEST_F(CertificateManager, verify_message_modified_certificate_subject_assurance)
@@ -231,8 +251,9 @@ TEST_F(CertificateManager, verify_message_modified_certificate_subject_assurance
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify indicates invalid certificate
-    EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
 }
 
 TEST_F(CertificateManager, verify_message_outdated_certificate)
@@ -245,8 +266,9 @@ TEST_F(CertificateManager, verify_message_outdated_certificate)
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify indicates invalid certificate
-    EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::OFF_TIME_PERIOD, invalid_cert_reason);
 }
 
 TEST_F(CertificateManager, verify_message_premature_certificate)
@@ -259,8 +281,10 @@ TEST_F(CertificateManager, verify_message_premature_certificate)
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify indicates invalid certificate
-    EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
+
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::OFF_TIME_PERIOD, invalid_cert_reason);
 }
 
 TEST_F(CertificateManager, verify_message_modified_certificate_validity_restriction)
@@ -294,8 +318,9 @@ TEST_F(CertificateManager, verify_message_modified_certificate_validity_restrict
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify indicates invalid certificate
-    EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::BROKEN_TIME_PERIOD, invalid_cert_reason);
 }
 
 TEST_F(CertificateManager, verify_message_modified_certificate_signature)
@@ -316,8 +341,9 @@ TEST_F(CertificateManager, verify_message_modified_certificate_signature)
 
     // verify message
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
-    // check if verify indicates invalid certificate
-    EXPECT_EQ(security::ReportType::Invalid_Certificate, decap_confirm.report);
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
 }
 
 TEST_F(CertificateManager, verify_message_modified_signature)
