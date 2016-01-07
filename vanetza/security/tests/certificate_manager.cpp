@@ -170,6 +170,31 @@ TEST_F(CertificateManager, verify_message_modified_message_type)
     EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
 }
 
+TEST_F(CertificateManager, verify_message_modified_certificate_name)
+{
+    // create decap request
+    security::DecapRequest decap_request = getDecapRequest();
+
+    // iterate through all header_fields
+    auto& header_fields = decap_request.sec_packet.header_fields;
+    for (auto& field : header_fields) {
+        // modify certificate
+        if (security::HeaderFieldType::Signer_Info == get_type(field)) {
+            security::SignerInfo& signer_info = boost::get<security::SignerInfo>(field);
+            security::Certificate& certificate = boost::get<security::Certificate>(signer_info);
+
+            // change the subject name
+            certificate.subject_info.subject_name = {42};
+        }
+    }
+
+    // verify message
+    security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
+    // check hook
+    EXPECT_TRUE(test_and_reset_invalid_certificate());
+    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_NAME, invalid_cert_reason);
+}
+
 TEST_F(CertificateManager, verify_message_modified_certificate_signer_info)
 {
     // create decap request
