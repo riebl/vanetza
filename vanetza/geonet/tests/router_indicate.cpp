@@ -14,6 +14,7 @@ protected:
     virtual void SetUp() override
     {
         router.set_transport_handler(geonet::UpperProtocol::IPv6, ind_ifc);
+        packet_drop_occurred = false;
         router.packet_dropped = [this](geonet::Router::PacketDropReason r) {
             drop_reason = r;
             packet_drop_occurred = true;
