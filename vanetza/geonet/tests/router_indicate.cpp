@@ -161,8 +161,29 @@ TEST_F(RouterIndicate, shb_secured_hook_extract_secured_message)
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
 
+TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_non_strict)
+{
+    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::NON_STRICT;
+
+    // modify up_packet for positive test
+    ByteBuffer broken_packet_buffer = get_sec_packet(true);
+    broken_packet_buffer[broken_packet_buffer.size() - 1] ^= 0xff;
+
+    std::unique_ptr<geonet::UpPacket> broken_packet_up = get_up_packet(broken_packet_buffer);
+    router.indicate(std::move(broken_packet_up), mac_address_sender, mac_address_destination);
+
+    // check hook
+    EXPECT_FALSE(test_and_reset_packet_drop());
+
+    // check if packet arrived at transport layer
+    EXPECT_EQ(1, ind_ifc.m_indications);
+    EXPECT_NE(nullptr, ind_ifc.m_last_packet.get());
+}
+
 TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_strict)
 {
+    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::STRICT;
+
     // modify up_packet for negative test
     ByteBuffer broken_packet_buffer = get_sec_packet(true);
     broken_packet_buffer[broken_packet_buffer.size() - 1] ^= 0xff;

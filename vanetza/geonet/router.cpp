@@ -332,12 +332,34 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
 
         // check whether the received packet is valid
         if (security::ReportType::Success != decap_confirm.report) {
-            // discard packet
-            packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
-
-            // TODO handle the packet anyway, when itsGnDecapResultHandling is set to NON-STRICT (1)
-            //      according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
-            return;
+            // according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
+            // handle the packet anyway, when itsGnDecapResultHandling is set to NON-STRICT (1)
+            if (SecurityDecapHandling::NON_STRICT == m_mib.itsGnSnDecapResultHandling) {
+                switch (decap_confirm.report) {
+                    case security::ReportType::False_Signature:
+                    case security::ReportType::Invalid_Certificate:
+                    case security::ReportType::Revoked_Certificate:
+                    case security::ReportType::Inconsistant_Chain:
+                    case security::ReportType::Invalid_Timestamp:
+                    case security::ReportType::Invalid_Mobility_Data:
+                    case security::ReportType::Unsigned_Message:
+                    case security::ReportType::Signer_Certificate_Not_Found:
+                    case security::ReportType::Unsupported_Signer_Identifier_Type:
+                    case security::ReportType::Unencrypted_Message:
+                        // ok, continue
+                        break;
+                    case security::ReportType::Duplicate_Message:
+                    case security::ReportType::Incompatible_Protocol:
+                    case security::ReportType::Decryption_Error:
+                    default:
+                        packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT);
+                        return;
+                }
+            } else {
+                // discard packet
+                packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
+                return;
+            }
         }
 
         // extract payload from secured message
