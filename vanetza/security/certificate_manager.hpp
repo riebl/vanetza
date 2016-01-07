@@ -104,7 +104,7 @@ private:
      * \param certificate
      * \return PublicKey
      */
-    PublicKey get_public_key_from_certificate(const Certificate& certificate);
+    boost::optional<PublicKey> get_public_key_from_certificate(const Certificate& certificate);
 
     /** \brief get the current (system) time in microseconds
      *

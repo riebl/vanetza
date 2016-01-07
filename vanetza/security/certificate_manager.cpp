@@ -87,7 +87,13 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
         return decap_confirm;
     }
 
-    PublicKey public_key = get_public_key_from_certificate(certificate.get());
+    boost::optional<PublicKey> public_key = get_public_key_from_certificate(certificate.get());
+
+    // public key could not be extracted
+    if (!public_key) {
+        decap_confirm.report = ReportType::Invalid_Certificate;
+        return decap_confirm;
+    }
 
     // if certificate could not be verified return correct ReportType
     if (!check_certificate(certificate.get())) {
@@ -118,7 +124,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     message.insert(message.end(), payload.begin(), payload.end());
 
     // result of verify function
-    bool result = verify_data(public_key, std::move(message));
+    bool result = verify_data(public_key.get(), std::move(message));
 
     decap_confirm.plaintext_payload = std::move(request.sec_packet.payload.buffer);
     if (result) {
@@ -268,8 +274,10 @@ bool CertificateManager::check_certificate(const Certificate& certificate)
     return true;
 }
 
-CertificateManager::PublicKey CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
+boost::optional<CertificateManager::PublicKey> CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
 {
+    boost::optional<CertificateManager::PublicKey> public_key;
+
     // generate public key from certificate data (x_coordinate + y_coordinate)
     boost::optional<Uncompressed> public_key_coordinates;
     for (auto& attribute : certificate.subject_attributes) {
@@ -279,7 +287,10 @@ CertificateManager::PublicKey CertificateManager::get_public_key_from_certificat
         }
     }
 
-    assert(public_key_coordinates);
+    if (!public_key_coordinates) {
+        public_key = boost::none;
+        return public_key;
+    }
 
     std::stringstream ss;
     for (uint8_t b : public_key_coordinates.get().x) {
@@ -308,10 +319,10 @@ CertificateManager::PublicKey CertificateManager::get_public_key_from_certificat
     q.x.Decode(x_decoder, len);
     q.y.Decode(y_decoder, len);
 
-    PublicKey public_key;
-    public_key.Initialize(CryptoPP::ASN1::secp256r1(), q);
+    public_key = CertificateManager::PublicKey();
+    public_key.get().Initialize(CryptoPP::ASN1::secp256r1(), q);
     CryptoPP::AutoSeededRandomPool prng;
-    assert(public_key.Validate(prng, 3));
+    assert(public_key.get().Validate(prng, 3));
 
     return public_key;
 }
