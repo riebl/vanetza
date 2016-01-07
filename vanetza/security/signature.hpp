@@ -56,7 +56,7 @@ size_t deserialize(InputArchive&, Signature&);
  * \param Signature to be converted
  * \return ByteBuffer
  */
-boost::optional<ByteBuffer> extract_signature_buffer(const Signature& sig);
+ByteBuffer extract_signature_buffer(const Signature& sig);
 
 }
 }

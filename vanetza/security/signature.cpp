@@ -106,7 +106,7 @@ size_t deserialize(InputArchive& ar, Signature& sig)
     return size;
 }
 
-boost::optional<ByteBuffer> extract_signature_buffer(const Signature& sig)
+ByteBuffer extract_signature_buffer(const Signature& sig)
 {
     ByteBuffer buf;
     if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(sig)) {

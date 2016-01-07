@@ -428,7 +428,7 @@ TEST_F(CertificateManager, generate_certificate)
 
     // Check signature
     EXPECT_EQ(2 * field_size(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256),
-              get(security::extract_signature_buffer(signed_certificate.signature)).size());
+              security::extract_signature_buffer(signed_certificate.signature).size());
     EXPECT_EQ(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(signed_certificate.signature));
 
     // Check signer_info and subject_info
