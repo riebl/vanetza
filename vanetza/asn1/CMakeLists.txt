@@ -10,13 +10,10 @@ if(NOT ${VANETZA_ASN1_NO_ASN1C})
     endif()
 
     add_custom_command(
-        OUTPUT ${ASN1C_GEN_DIR}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${ASN1C_GEN_DIR})
-
-    add_custom_command(
         OUTPUT ${ASN1C_GEN_DIR}/CAM.h ${ASN1C_GEN_DIR}/DENM.h
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${ASN1C_GEN_DIR}
         COMMAND ${ASN1C} ${ASN1C_ARGS} ${ASN1_SOURCES}
-        DEPENDS ${ASN1C_GEN_DIR}
+        DEPENDS ${ASN1C_SOURCES}
         WORKING_DIRECTORY ${ASN1C_GEN_DIR}
         VERBATIM)
 else()
