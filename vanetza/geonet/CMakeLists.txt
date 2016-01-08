@@ -1,4 +1,4 @@
-find_package(Boost COMPONENTS date_time REQUIRED)
+find_package(Boost 1.56 COMPONENTS date_time REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
 
 set(CXX_SOURCES
