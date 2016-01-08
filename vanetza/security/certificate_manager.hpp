@@ -135,9 +135,16 @@ private:
      */
     bool verify_data(const PublicKey& public_key, ByteBuffer data_buffer);
 
-    KeyPair m_root_key_pair;
-    HashedId8 m_root_certificate_hash;
+    /** \brief retrieve common root key pair (for all instances)
+     *
+     * \note This is only a temporary workaround!
+     * \return root key pair
+     */
+    const KeyPair& get_root_key_pair();
+
     const geonet::Timestamp& m_time_now;
+    const KeyPair& m_root_key_pair;
+    HashedId8 m_root_certificate_hash;
 };
 
 } // namespace security

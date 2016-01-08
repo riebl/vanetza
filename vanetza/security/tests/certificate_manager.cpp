@@ -72,6 +72,14 @@ TEST_F(CertificateManager, sign_smoke_test)
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 }
 
+TEST_F(CertificateManager, mutual_acceptance)
+{
+    security::CertificateManager cert_manager_other(time_now);
+    security::EncapConfirm encap_confirm = cert_manager_other.sign_message(encap_request);
+    security::DecapConfirm decap_confirm = cert_manager.verify_message(security::DecapRequest { encap_confirm.sec_packet });
+    EXPECT_EQ(security::ReportType::Success, decap_confirm.report);
+}
+
 TEST_F(CertificateManager, sec_payload_equals_plaintext_payload)
 {
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);

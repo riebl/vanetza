@@ -15,11 +15,9 @@ namespace vanetza
 namespace security
 {
 
-CertificateManager::CertificateManager(const geonet::Timestamp& time_now) : m_time_now(time_now)
+CertificateManager::CertificateManager(const geonet::Timestamp& time_now) :
+    m_time_now(time_now), m_root_key_pair(get_root_key_pair())
 {
-    // generate key pair
-    m_root_key_pair = generate_key_pair();
-
     // TODO(aaron,robert): this is random for now, has to be calculated later (for HashedId8 calculation see TS 103 097 v1.2.1 section 4.2.12)
     m_root_certificate_hash = HashedId8{ 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab };
 }
@@ -436,6 +434,12 @@ Time64 CertificateManager::get_time()
 Time32 CertificateManager::get_time_in_seconds()
 {
     return m_time_now.raw();
+}
+
+const CertificateManager::KeyPair& CertificateManager::get_root_key_pair()
+{
+    static KeyPair root = generate_key_pair();
+    return root;
 }
 
 } // namespace security
