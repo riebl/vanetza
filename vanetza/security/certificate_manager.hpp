@@ -68,14 +68,6 @@ public:
      */
     DecapConfirm verify_message(const DecapRequest& request);
 
-    /** \brief cast ByteBuffer to std::string (for use with crypto++)
-     *
-     * \param buffer the ByteBuffer to convert
-     * \return the std::string representation
-     *
-     */
-    const std::string buffer_cast_to_string(const ByteBuffer& buffer);
-
     /** \brief generate a certificate
      *
      * \param key_pair keys used to create the certificate

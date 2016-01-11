@@ -203,13 +203,6 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     return decap_confirm;
 }
 
-const std::string CertificateManager::buffer_cast_to_string(const ByteBuffer& buffer)
-{
-    std::stringstream oss;
-    std::copy(buffer.begin(), buffer.end(), std::ostream_iterator<ByteBuffer::value_type>(oss));
-    return oss.str();
-}
-
 Certificate CertificateManager::generate_certificate(const CertificateManager::KeyPair& key_pair)
 {
     // create certificate
