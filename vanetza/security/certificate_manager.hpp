@@ -131,7 +131,7 @@ private:
      * \param data_buffer
      * \return EcdsaSignature
      */
-    EcdsaSignature sign_data(const PrivateKey& private_key, ByteBuffer data_buffer);
+    EcdsaSignature sign_data(const PrivateKey& private_key, const ByteBuffer& data_buffer);
 
     /** \brief checks if the data_buffer can be verified with the public_key
      *

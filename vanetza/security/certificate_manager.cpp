@@ -396,31 +396,26 @@ boost::optional<CertificateManager::PublicKey> CertificateManager::get_public_ke
     return public_key;
 }
 
-EcdsaSignature CertificateManager::sign_data(const PrivateKey& private_key, ByteBuffer data_buffer)
+EcdsaSignature CertificateManager::sign_data(const PrivateKey& private_key, const ByteBuffer& data)
 {
     CryptoPP::AutoSeededRandomPool prng;
-    std::string signature;
-
-    std::string data = buffer_cast_to_string(data_buffer);
 
     // calculate signature
-    // TODO (simon, markus): write Source and Sink classes for ByteBuffer
-    CryptoPP::StringSink* string_sink = new CryptoPP::StringSink(signature);
     Signer signer(private_key);
-    CryptoPP::SignerFilter* signer_filter = new CryptoPP::SignerFilter(prng, std::move(signer), string_sink);
+    ByteBuffer signature(signer.MaxSignatureLength(), 0x00);
+    auto signature_length = signer.SignMessage(prng, data.data(), data.size(), signature.data());
+    signature.resize(signature_length);
 
-    CryptoPP::StringSource( data, true, signer_filter); // StringSource
-
-    std::string signature_x = signature.substr(0, 32);
-    std::string signature_s = signature.substr(32);
+    auto signature_delimiter = signature.begin();
+    std::advance(signature_delimiter, 32);
 
     EcdsaSignature ecdsa_signature;
     // set R
     X_Coordinate_Only coordinate;
-    coordinate.x = ByteBuffer(signature_x.begin(), signature_x.end());
+    coordinate.x = ByteBuffer(signature.begin(), signature_delimiter);
     ecdsa_signature.R = std::move(coordinate);
     // set s
-    ByteBuffer trailer_field_buffer(signature_s.begin(), signature_s.end());
+    ByteBuffer trailer_field_buffer(signature_delimiter, signature.end());
     ecdsa_signature.s = std::move(trailer_field_buffer);
 
     return ecdsa_signature;
