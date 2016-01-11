@@ -136,11 +136,12 @@ private:
     /** \brief checks if the data_buffer can be verified with the public_key
      *
      * \param public_key
-     * \param data_buffer: data to be verified
+     * \param data: data to be verified
+     * \param sig: signature for verification
      * \return true if the data_buffer could be verified
      *
      */
-    bool verify_data(const PublicKey& public_key, ByteBuffer data_buffer);
+    bool verify_data(const PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig);
 
     /** \brief retrieve common root key pair (for all instances)
      *

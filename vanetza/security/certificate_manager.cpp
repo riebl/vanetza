@@ -189,12 +189,10 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     }
 
     // convert message byte buffer to string
-    ByteBuffer message = std::move(signature_buffer);
     ByteBuffer payload = convert_for_signing(secured_message, get_size(TrailerField(Signature(signature.get()))));
-    message.insert(message.end(), payload.begin(), payload.end());
 
     // result of verify function
-    bool result = verify_data(public_key.get(), std::move(message));
+    bool result = verify_data(public_key.get(), payload, signature_buffer);
 
     if (result) {
         decap_confirm.report = ReportType::Success;
@@ -331,11 +329,7 @@ bool CertificateManager::check_certificate(const Certificate& certificate)
     // create buffer of certificate
     ByteBuffer cert = convert_for_signing(certificate);
 
-    // append certificate to signature buffer
-    ByteBuffer sig_and_cert = sig.get();
-    sig_and_cert.insert(sig_and_cert.end(), cert.begin(), cert.end());
-
-    if (!verify_data(m_root_key_pair.public_key, sig_and_cert)) {
+    if (!verify_data(m_root_key_pair.public_key, cert, sig.get())) {
         certificate_invalid(CertificateInvalidReason::INVALID_SIGNATURE);
         return false;
     }
@@ -421,16 +415,10 @@ EcdsaSignature CertificateManager::sign_data(const PrivateKey& private_key, cons
     return ecdsa_signature;
 }
 
-bool CertificateManager::verify_data(const PublicKey& public_key, ByteBuffer data_buffer)
+bool CertificateManager::verify_data(const PublicKey& public_key, const ByteBuffer& msg, const ByteBuffer& sig)
 {
-    std::string data_string = buffer_cast_to_string(data_buffer);
-    // verify certificate signature
-    bool result = false;
-    CryptoPP::StringSource( data_string, true,
-                            new CryptoPP::SignatureVerificationFilter(Verifier(public_key), new CryptoPP::ArraySink((byte*)&result, sizeof(result)))
-    );
-
-    return result;
+    Verifier verifier(public_key);
+    return verifier.VerifyMessage(msg.data(), msg.size(), sig.data(), sig.size());
 }
 
 void CertificateManager::enable_deferred_signing(bool flag)
