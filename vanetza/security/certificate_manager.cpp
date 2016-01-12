@@ -19,17 +19,26 @@ namespace security
 {
 
 CertificateManager::CertificateManager(const Clock::time_point& time_now) :
-    m_time_now(time_now), m_root_key_pair(get_root_key_pair()), m_sign_deferred(false)
+    m_time_now(time_now), m_root_key_pair(get_root_key_pair()),
+    m_root_certificate_hash(HashedId8 { 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab }),
+    m_own_key_pair(generate_key_pair()),
+    m_own_certificate(generate_certificate(m_own_key_pair)),
+    m_sign_deferred(false)
 {
-    // TODO(aaron,robert): this is random for now, has to be calculated later (for HashedId8 calculation see TS 103 097 v1.2.1 section 4.2.12)
-    m_root_certificate_hash = HashedId8{ 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab };
+    // TODO: root certifiate hash is arbitrarily chosen for now
+    // It has to be calculated later, see TS 103 097 v1.2.1 section 4.2.12 for HashedId8
 }
 
 EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
 {
-    // create certificate and key pair
-    KeyPair key_pair = generate_key_pair();
-    Certificate temp_certificate = generate_certificate(key_pair);
+    // renew certificate if necessary
+    for (auto& validity_restriction : m_own_certificate.validity_restriction) {
+        auto start_and_end = boost::get<StartAndEndValidity>(&validity_restriction);
+        if (start_and_end && start_and_end->end_validity < get_time_in_seconds() + 3600) {
+            m_own_certificate = generate_certificate(m_own_key_pair);
+            break;
+        }
+    }
 
     EncapConfirm encap_confirm;
     // set secured message data
@@ -39,7 +48,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     encap_confirm.sec_packet.header_fields.push_back(get_time()); // generation_time
     encap_confirm.sec_packet.header_fields.push_back((uint16_t) 36); // its_aid, according to TS 102 965, and ITS-AID_AssignedNumbers
 
-    SignerInfo signer_info = temp_certificate;
+    SignerInfo signer_info = m_own_certificate;
     encap_confirm.sec_packet.header_fields.push_back(signer_info);
 
     // create trailer field to get the size in bytes
@@ -66,13 +75,13 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     if (m_sign_deferred) {
         auto future = std::async(std::launch::deferred, [=]() {
             ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-            return sign_data(key_pair.private_key, data);
+            return sign_data(m_own_key_pair.private_key, data);
         });
         EcdsaSignatureFuture signature(future.share(), signature_size);
         encap_confirm.sec_packet.trailer_fields.push_back(signature);
     } else {
         ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-        TrailerField trailer_field = sign_data(key_pair.private_key, data_buffer);
+        TrailerField trailer_field = sign_data(m_own_key_pair.private_key, data_buffer);
         assert(get_size(trailer_field) == trailer_field_size);
         encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
     }

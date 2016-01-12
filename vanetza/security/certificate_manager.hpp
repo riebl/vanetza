@@ -145,6 +145,8 @@ private:
     const Clock::time_point& m_time_now;
     const KeyPair& m_root_key_pair;
     HashedId8 m_root_certificate_hash;
+    KeyPair m_own_key_pair;
+    Certificate m_own_certificate;
     bool m_sign_deferred;
 };
 
