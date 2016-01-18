@@ -84,7 +84,7 @@ Router::~Router()
 {
 }
 
-Timestamp Router::next_update() const
+Clock::duration Router::next_update() const
 {
     const Timestamp::duration_type upper_bound { 1.0 / m_mib.itsGnMinimumUpdateFrequencyLPV };
     Timestamp next = m_time_now + upper_bound;
@@ -96,14 +96,14 @@ Timestamp Router::next_update() const
     if (repeater_timer && *repeater_timer < next) {
         next = *repeater_timer;
     }
-    return next;
+    return std::chrono::milliseconds((next - m_time_now) / Timestamp::millisecond);
 }
 
-void Router::update(Timestamp now)
+void Router::update(Clock::duration now)
 {
-    // require monotonic clock
-    assert(now >= m_time_now);
-    m_time_now = now;
+    const auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now);
+    m_time_now += static_cast<Timestamp::value_type>(now_ms.count()) * Timestamp::millisecond;
+    m_clock += now;
 
     if (m_next_beacon <= m_time_now) {
         on_beacon_timer_expired();
@@ -140,11 +140,12 @@ void Router::set_transport_handler(UpperProtocol proto, TransportInterface& ifc)
     m_transport_ifcs[proto] = &ifc;
 }
 
-void Router::set_time(Timestamp init)
+void Router::set_time(const Clock::time_point& init)
 {
-    m_time_now = init;
-    m_last_update_lpv = init;
-    m_next_beacon = init; // send BEACON at start-up
+    m_clock = init;
+    m_time_now = m_clock;
+    m_last_update_lpv = m_time_now;
+    m_next_beacon = m_time_now; // send BEACON at start-up
 }
 
 void Router::set_address(const Address& addr)

@@ -15,13 +15,13 @@ namespace dcc
 struct ChannelLoad;
 
 // constants
-static const clock::duration NDL_minDccSampling = std::chrono::milliseconds(100);
+static const Clock::duration NDL_minDccSampling = std::chrono::milliseconds(100);
 
 
 class State
 {
 public:
-    virtual clock::duration transmission_interval() const = 0;
+    virtual Clock::duration transmission_interval() const = 0;
     virtual const char* name() const = 0;
     virtual ~State() {}
 };
@@ -29,7 +29,7 @@ public:
 class Relaxed : public State
 {
 public:
-    clock::duration transmission_interval() const override;
+    Clock::duration transmission_interval() const override;
     const char* name() const override;
 };
 
@@ -38,7 +38,7 @@ class Active : public State
 public:
     Active();
     void update(double min, double max);
-    clock::duration transmission_interval() const override;
+    Clock::duration transmission_interval() const override;
     const char* name() const override;
 
 private:
@@ -49,7 +49,7 @@ private:
 class Restrictive : public State
 {
 public:
-    clock::duration transmission_interval() const override;
+    Clock::duration transmission_interval() const override;
     const char* name() const override;
 };
 
@@ -77,7 +77,7 @@ public:
      * Get advised transmission interval between consecutive messages
      * \return message transmission interval
      */
-    clock::duration transmission_interval() const;
+    Clock::duration transmission_interval() const;
 
     /**
      * Get state machine's active state

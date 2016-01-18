@@ -16,7 +16,7 @@ static const std::size_t N_samples_down = std::chrono::seconds(5) / NDL_minDccSa
 static const double NDL_minChannelLoad = 0.19;
 static const double NDL_maxChannelLoad = 0.59;
 
-clock::duration Relaxed::transmission_interval() const
+Clock::duration Relaxed::transmission_interval() const
 {
     return std::chrono::milliseconds(60);
 }
@@ -26,7 +26,7 @@ const char* Relaxed::name() const
     return "Relaxed";
 }
 
-clock::duration Restrictive::transmission_interval() const
+Clock::duration Restrictive::transmission_interval() const
 {
     return std::chrono::milliseconds(460);
 }
@@ -61,9 +61,9 @@ void Active::update(double min_cl, double max_cl)
     assert(m_substate < sc_substates);
 }
 
-clock::duration Active::transmission_interval() const
+Clock::duration Active::transmission_interval() const
 {
-    static const std::array<clock::duration, sc_substates> tx_intervals {{
+    static const std::array<Clock::duration, sc_substates> tx_intervals {{
         std::chrono::milliseconds(100),
         std::chrono::milliseconds(180),
         std::chrono::milliseconds(260),
@@ -151,7 +151,7 @@ double StateMachine::message_rate() const
     return one_sec / transmission_interval();
 }
 
-clock::duration StateMachine::transmission_interval() const
+Clock::duration StateMachine::transmission_interval() const
 {
     return m_state->transmission_interval();
 }

@@ -1,10 +1,10 @@
+#include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/geonet/areas.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/router.hpp>
-#include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/net/mac_address.hpp>
 #include <vanetza/units/length.hpp>
 #include <boost/optional.hpp>
@@ -57,7 +57,7 @@ public:
     void dispatch();
     void send(const MacAddress&, const MacAddress&);
     void set_position(const MacAddress&, CartesianPosition);
-    void advance_time(Timestamp::duration_type);
+    void advance_time(Clock::duration);
     void reset_counters();
 
 private:
@@ -65,7 +65,7 @@ private:
     std::unordered_map<MacAddress, std::unique_ptr<RouterContext>> hosts;
     std::unordered_map<MacAddress, std::set<MacAddress>> reachability;
     std::list<std::tuple<dcc::DataRequest, std::unique_ptr<ChunkPacket>>> requests;
-    Timestamp now;
+    Clock::time_point now;
     ManagementInformationBase mib;
     unsigned counter_indications;
 };

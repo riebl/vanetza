@@ -6,14 +6,14 @@ namespace vanetza
 namespace dcc
 {
 
-Scheduler::Scheduler(const StateMachine& fsm, const clock::time_point& clock) :
+Scheduler::Scheduler(const StateMachine& fsm, const Clock::time_point& clock) :
     m_burst_budget(clock), m_regular_budget(fsm, clock)
 {
 }
 
-clock::duration Scheduler::delay(Profile dp)
+Clock::duration Scheduler::delay(Profile dp)
 {
-    clock::duration delay = clock::duration::max();
+    Clock::duration delay = Clock::duration::max();
 
     switch (dp) {
         case Profile::DP0:

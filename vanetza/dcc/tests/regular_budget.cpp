@@ -1,19 +1,20 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/regular_budget.hpp>
 #include <vanetza/dcc/state_machine.hpp>
 
 using namespace vanetza::dcc;
-using vanetza::clock;
+using vanetza::Clock;
 using std::chrono::milliseconds;
 
-static const clock::duration immediately = milliseconds(0);
+static const Clock::duration immediately = milliseconds(0);
 
 class RegularBudgetTest : public ::testing::Test
 {
 protected:
     RegularBudgetTest() : now(std::chrono::seconds(4711)), budget(fsm, now) {}
 
-    clock::time_point now;
+    Clock::time_point now;
     StateMachine fsm;
     RegularBudget budget;
 };

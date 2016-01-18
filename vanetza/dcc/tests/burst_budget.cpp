@@ -3,11 +3,11 @@
 
 using namespace vanetza::dcc;
 
-static const vanetza::clock::duration immediately = std::chrono::milliseconds(0);
+static const vanetza::Clock::duration immediately = std::chrono::milliseconds(0);
 
 TEST(BurstBudget, normal)
 {
-    vanetza::clock::time_point now;
+    vanetza::Clock::time_point now;
     BurstBudget budget(now);
 
     // consume whole budget
@@ -25,7 +25,7 @@ TEST(BurstBudget, normal)
 
 TEST(BurstBudget, too_many_messages)
 {
-    vanetza::clock::time_point now;
+    vanetza::Clock::time_point now;
     BurstBudget budget(now);
 
     // consume whole budget immediately
@@ -44,7 +44,7 @@ TEST(BurstBudget, too_many_messages)
 
 TEST(BurstBudget, too_long)
 {
-    vanetza::clock::time_point now;
+    vanetza::Clock::time_point now;
     BurstBudget budget(now);
 
     // start burst with one consumption

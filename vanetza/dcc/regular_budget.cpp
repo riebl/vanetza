@@ -6,25 +6,25 @@ namespace vanetza
 namespace dcc
 {
 
-RegularBudget::RegularBudget(const StateMachine& fsm, const clock::time_point& clock) :
+RegularBudget::RegularBudget(const StateMachine& fsm, const Clock::time_point& clock) :
     m_fsm(fsm), m_clock(clock)
 {
 }
 
-clock::duration RegularBudget::delay()
+Clock::duration RegularBudget::delay()
 {
-    clock::duration delay = clock::duration::max();
+    Clock::duration delay = Clock::duration::max();
 
     if (m_last_tx) {
         const auto last_tx = m_last_tx.get();
         const auto tx_interval = m_fsm.transmission_interval();
         if (last_tx + tx_interval < m_clock) {
-            delay = clock::duration::zero();
+            delay = Clock::duration::zero();
         } else {
             delay = last_tx + tx_interval - m_clock;
         }
     } else {
-        delay = clock::duration::zero();
+        delay = Clock::duration::zero();
     }
 
     return delay;
