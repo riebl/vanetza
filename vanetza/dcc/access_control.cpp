@@ -1,4 +1,5 @@
 #include "access_control.hpp"
+#include "mapping.hpp"
 #include "scheduler.hpp"
 #include <vanetza/access/data_request.hpp>
 #include <vanetza/access/interface.hpp>
@@ -31,32 +32,6 @@ void AccessControl::request(const DataRequest& dcc_req, std::unique_ptr<ChunkPac
         // drop packet
         hook_dropped(dcc_req, std::move(packet));
     }
-}
-
-AccessCategory map_profile_onto_ac(Profile dp_id)
-{
-    AccessCategory ac = AccessCategory::BE;
-
-    switch (dp_id)
-    {
-        case Profile::DP0:
-            ac = AccessCategory::VO;
-            break;
-        case Profile::DP1:
-            ac = AccessCategory::VI;
-            break;
-        case Profile::DP2:
-            ac = AccessCategory::BE;
-            break;
-        case Profile::DP3:
-            ac = AccessCategory::BK;
-            break;
-        default:
-            throw std::invalid_argument("Invalid DCC Profile ID");
-            break;
-    }
-
-    return ac;
 }
 
 } // namespace dcc

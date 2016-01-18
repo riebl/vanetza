@@ -5,8 +5,6 @@
 #include <vanetza/common/hook.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
-#include <vanetza/dcc/profile.hpp>
-#include <vanetza/net/access_category.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 #include <memory>
 
@@ -47,13 +45,6 @@ private:
     access::Interface& m_access;
     bool m_drop_excess;
 };
-
-/**
- * Map DCC Profile to EDCA access category
- * \param profile DCC Profile ID
- * \return mapped access category
- */
-AccessCategory map_profile_onto_ac(Profile);
 
 } // namespace dcc
 } // namespace vanetza
