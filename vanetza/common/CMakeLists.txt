@@ -7,6 +7,7 @@ set(CXX_SOURCES
     byte_sequence.cpp
     byte_view.cpp
     clock.cpp
+    runtime.cpp
 )
 vanetza_module(common ${CXX_SOURCES})
 vanetza_module_property(common INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
