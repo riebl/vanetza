@@ -2,6 +2,7 @@
 #define DATA_REQUEST_HPP_A5DWTTJN
 
 #include <vanetza/common/byte_order.hpp>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/profile.hpp>
 #include <vanetza/net/mac_address.hpp>
 
@@ -18,6 +19,7 @@ struct DataRequest
     MacAddress source;
     MacAddress destination;
     Profile dcc_profile;
+    Clock::duration lifetime;
 };
 
 } // namespace dcc
