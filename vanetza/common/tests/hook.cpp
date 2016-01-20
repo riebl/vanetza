@@ -7,13 +7,20 @@ using namespace vanetza;
 
 TEST(Hook, variants) {
     Hook<int> hook_int;
-    hook_int(28);
+    hook_int(28); // rvalue call
+    int x = 29;
+    hook_int(x); // lvalue (exact type)
+    int& y = x;
+    hook_int(y); // lvalue (compatible type)
 
     Hook<double, float> hook_fp;
     hook_fp(23.0, -42.0f);
 
     Hook<const std::string&, std::vector<int>> hook_objects;
     hook_objects("foo", {3, 2});
+
+    Hook<std::string&&> hook_rvalue_ref;
+    hook_rvalue_ref("bar");
 }
 
 TEST(Hook, invocation) {

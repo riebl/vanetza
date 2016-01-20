@@ -29,7 +29,7 @@ public:
      * Execute hook callback if assigned
      * \param Args... various arguments passed to assigned callback
      */
-    void operator()(Args&&... args)
+    void operator()(Args... args)
     {
         if (m_function) {
             // that's an arcane syntax, isn't it?
