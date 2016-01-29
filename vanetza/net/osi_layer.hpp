@@ -1,6 +1,7 @@
 #ifndef OSI_LAYER_HPP_C4VTEZJP
 #define OSI_LAYER_HPP_C4VTEZJP
 
+#include <boost/range/iterator_range.hpp>
 #include <array>
 #include <cstdint>
 
@@ -71,6 +72,15 @@ std::array<OsiLayer, num_osi_layers(FROM, TO)> osi_layer_range()
         layer = static_cast<OsiLayer>(num++);
     }
     return layers;
+}
+
+inline boost::iterator_range<decltype(osi_layers)::const_iterator>
+osi_layer_range(OsiLayer from, OsiLayer to)
+{
+    assert(from <= to);
+    auto begin = osi_layers.cbegin() + (from - min_osi_layer());
+    auto end = osi_layers.cend() - (max_osi_layer() - to);
+    return boost::make_iterator_range(begin, end);
 }
 
 } // namespace vanetza
