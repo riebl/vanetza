@@ -31,6 +31,12 @@ constexpr std::array<OsiLayer, 7> osi_layers {{
             OsiLayer::Application
 }};
 
+constexpr int operator-(OsiLayer lhs, OsiLayer rhs)
+{
+    using num_type = std::underlying_type<OsiLayer>::type;
+    return static_cast<num_type>(lhs) - static_cast<num_type>(rhs);
+}
+
 constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
 {
     using num_type = std::underlying_type<OsiLayer>::type;
@@ -50,10 +56,7 @@ constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
 
 constexpr std::size_t num_osi_layers(OsiLayer from, OsiLayer to)
 {
-    typedef typename std::underlying_type<OsiLayer>::type num_type;
-    return static_cast<num_type>(from) <= static_cast<num_type>(to) ?
-        static_cast<num_type>(to) - static_cast<num_type>(from) + 1 :
-        0;
+    return (from <= to ? to - from + 1 : 0);
 }
 
 template<OsiLayer FROM, OsiLayer TO>

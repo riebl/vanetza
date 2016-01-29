@@ -51,7 +51,15 @@ TEST(OsiLayer, num) {
     EXPECT_EQ(0, num_osi_layers(OsiLayer::Network, OsiLayer::Link));
 }
 
-TEST(OsiLayer, range) {
+TEST(OsiLayer, subtraction) {
+    EXPECT_EQ(0, OsiLayer::Session - OsiLayer::Session);
+    EXPECT_EQ(1, OsiLayer::Transport - OsiLayer::Network);
+    EXPECT_EQ(-1, OsiLayer::Network - OsiLayer::Transport);
+    EXPECT_EQ(num_osi_layers(min_osi_layer(), max_osi_layer()) - 1,
+        max_osi_layer() - min_osi_layer());
+}
+
+TEST(OsiLayer, compile_time_range) {
     const auto r1_ref = osi_layers;
     ASSERT_EQ(7, r1_ref.size());
     auto r1 = osi_layer_range<min_osi_layer(), max_osi_layer()>();
