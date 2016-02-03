@@ -180,5 +180,25 @@ std::size_t EcdsaSignatureFuture::size() const
     return m_bytes;
 }
 
+boost::optional<EcdsaSignature> extract_ecdsa_signature(const Signature& sig)
+{
+    struct signature_visitor : public boost::static_visitor<const EcdsaSignature*>
+    {
+        const EcdsaSignature* operator()(const EcdsaSignature& sig)
+        {
+            return &sig;
+        }
+
+        const EcdsaSignature* operator()(const EcdsaSignatureFuture& sig)
+        {
+            return &sig.get();
+        }
+    };
+
+    signature_visitor visitor;
+    const EcdsaSignature* ecdsa = boost::apply_visitor(visitor, sig);
+    return boost::optional<EcdsaSignature>(ecdsa != nullptr, *ecdsa);
+}
+
 } // namespace security
 } // namespace vanetza

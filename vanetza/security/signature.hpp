@@ -97,6 +97,13 @@ size_t deserialize(InputArchive&, Signature&);
  */
 ByteBuffer extract_signature_buffer(const Signature& sig);
 
+/**
+ * Try to extract ECDSA signature from signature variant
+ * \param sig Signature variant (of some type)
+ * \return ECDSA signature (optionally)
+ */
+boost::optional<EcdsaSignature> extract_ecdsa_signature(const Signature& sig);
+
 } // namespace security
 } // namespace vanetza
 
