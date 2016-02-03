@@ -173,11 +173,11 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
         return decap_confirm;
     }
 
-    boost::optional<EcdsaSignature> signature;
+    boost::optional<Signature> signature;
     for (auto& field : trailer_fields) {
         if (TrailerFieldType::Signature == get_type(field)) {
             if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(boost::get<Signature>(field))) {
-                signature = boost::get<EcdsaSignature>(boost::get<Signature>(field));
+                signature = boost::get<Signature>(field);
                 break;
             }
         }
@@ -190,15 +190,16 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     }
 
     // check the size of signature.R and siganture.s
-    ByteBuffer signature_buffer = extract_signature_buffer(Signature(signature.get()));
+    auto ecdsa = extract_ecdsa_signature(signature.get());
+    ByteBuffer signature_buffer = extract_signature_buffer(signature.get());
     if (field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) * 2 != signature_buffer.size() ||
-        field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) != signature.get().s.size()) {
+        field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) != ecdsa.get().s.size()) {
         decap_confirm.report = ReportType::False_Signature;
         return decap_confirm;
     }
 
     // convert message byte buffer to string
-    ByteBuffer payload = convert_for_signing(secured_message, get_size(TrailerField(Signature(signature.get()))));
+    ByteBuffer payload = convert_for_signing(secured_message, get_size(TrailerField(signature.get())));
 
     // result of verify function
     bool result = verify_data(public_key.get(), payload, signature_buffer);
