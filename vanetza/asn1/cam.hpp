@@ -17,18 +17,6 @@ public:
 };
 
 } // namespace asn1
-
-namespace convertible
-{
-
-template<>
-struct byte_buffer_impl<vanetza::asn1::Cam> :
-public asn1::byte_buffer_impl<vanetza::asn1::Cam>
-{
-    using asn1::byte_buffer_impl<vanetza::asn1::Cam>::byte_buffer_impl;
-};
-
-} // namespace convertible
 } // namespace vanetza
 
 #endif /* CAM_HPP_WXYNEKFN */
