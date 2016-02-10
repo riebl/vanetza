@@ -10,8 +10,8 @@
 #include <vanetza/units/time.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/data_confirm.hpp>
+#include <vanetza/geonet/indication_context.hpp>
 #include <vanetza/geonet/next_hop.hpp>
-#include <vanetza/geonet/parsed_pdu.hpp>
 #include <vanetza/geonet/pdu_conversion.hpp>
 #include <vanetza/geonet/repetition_dispatcher.hpp>
 #include <vanetza/geonet/transport_interface.hpp>
@@ -276,149 +276,179 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
 {
     assert(packet);
 
-    boost::optional<BasicHeader> basic = parse_basic(*packet);
-    boost::optional<security::SecuredMessage> secured_message;
-
-    if (!basic) {
-        // parsing of packet failed
-        packet_dropped(PacketDropReason::PARSE_BASIC);
-        return;
-    }
-
-    // check protocol version
-    if (basic.get().version.raw() != m_mib.itsGnProtocolVersion) {
-        // discard packet
-        packet_dropped(PacketDropReason::ITS_PROTOCOL_VERSION);
-        return;
-    }
-
-    std::unique_ptr<ParsedPdu> pdu;
-
-    // special treatment, when the next header in the packet is a SecuredMessage
-    if (basic.get().next_header == NextHeaderBasic::SECURED) {
-        // deserialize payload from packet
-        secured_message = extract_secured_message(*packet);
-        if (!secured_message) {
-            // discard Packet
-            packet_dropped(PacketDropReason::EXTRACT_SECURED_MESSAGE);
-            return;
+    struct indication_visitor : public boost::static_visitor<>
+    {
+        indication_visitor(Router& router, const IndicationContext::LinkLayer& link_layer, UpPacketPtr packet) :
+            m_router(router), m_link_layer(link_layer), m_packet(std::move(packet))
+        {
         }
 
+        void operator()(CohesivePacket& packet)
+        {
+            IndicationContextDeserialize ctx(std::move(m_packet), packet, m_link_layer);
+            m_router.indicate_basic(ctx);
+        }
+
+        void operator()(ChunkPacket& packet)
+        {
+            IndicationContextCast ctx(std::move(m_packet), packet, m_link_layer);
+            m_router.indicate_basic(ctx);
+        }
+
+        Router& m_router;
+        const IndicationContext::LinkLayer& m_link_layer;
+        UpPacketPtr m_packet;
+    };
+
+    IndicationContext::LinkLayer link_layer;
+    link_layer.sender = sender;
+    link_layer.destination = destination;
+    UpPacket* packet_tmp = packet.get();
+    indication_visitor visitor(*this, link_layer, std::move(packet));
+    boost::apply_visitor(visitor, *packet_tmp);
+}
+
+void Router::indicate_basic(IndicationContext& ctx)
+{
+    BasicHeader* basic = ctx.parse_basic();
+    if (!basic) {
+        packet_dropped(PacketDropReason::PARSE_BASIC_HEADER);
+    } else if (basic->version.raw() != m_mib.itsGnProtocolVersion) {
+        packet_dropped(PacketDropReason::ITS_PROTOCOL_VERSION);
+    } else if (basic->next_header == NextHeaderBasic::SECURED) {
+        indicate_secured(ctx, *basic);
+    } else if (basic->next_header == NextHeaderBasic::COMMON) {
+        indicate_common(ctx, *basic);
+    }
+}
+
+void Router::indicate_common(IndicationContext& ctx, const BasicHeader& basic)
+{
+    CommonHeader* common = ctx.parse_common();
+    if (!common) {
+        packet_dropped(PacketDropReason::PARSE_COMMON_HEADER);
+    } else if (common->maximum_hop_limit < basic.hop_limit) {
+        packet_dropped(PacketDropReason::HOP_LIMIT);
+    } else {
+        flush_broadcast_forwarding_buffer();
+        indicate_extended(ctx, *common);
+    }
+}
+
+void Router::indicate_secured(IndicationContext& ctx, const BasicHeader& basic)
+{
+    struct secured_payload_visitor : public boost::static_visitor<>
+    {
+        secured_payload_visitor(Router& router, IndicationContext& ctx, const BasicHeader& basic) :
+            m_router(router), m_parent_ctx(ctx), m_basic(basic)
+        {
+        }
+
+        void operator()(ChunkPacket& packet)
+        {
+            IndicationContextSecuredCast ctx(m_parent_ctx, packet);
+            m_router.indicate_common(ctx, m_basic);
+        }
+
+        void operator()(CohesivePacket& packet)
+        {
+            IndicationContextSecuredDeserialize ctx(m_parent_ctx, packet);
+            m_router.indicate_common(ctx, m_basic);
+        }
+
+        Router& m_router;
+        IndicationContext& m_parent_ctx;
+        const BasicHeader& m_basic;
+    };
+
+    auto secured_message = ctx.parse_secured();
+    if (!secured_message) {
+        packet_dropped(PacketDropReason::PARSE_SECURED_HEADER);
+    } else {
         // Decap packet
         security::DecapRequest decap_request;
-        decap_request.sec_packet = secured_message.get();
+        decap_request.sec_packet = *secured_message;
         security::DecapConfirm decap_confirm = m_security_entity.decapsulate_packet(decap_request);
+        secured_payload_visitor visitor(*this, ctx, basic);
 
         // check whether the received packet is valid
-        if (security::ReportType::Success != decap_confirm.report) {
+        if (security::ReportType::Success == decap_confirm.report) {
+            boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
+        } else if (SecurityDecapHandling::NON_STRICT == m_mib.itsGnSnDecapResultHandling) {
             // according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
             // handle the packet anyway, when itsGnDecapResultHandling is set to NON-STRICT (1)
-            if (SecurityDecapHandling::NON_STRICT == m_mib.itsGnSnDecapResultHandling) {
-                switch (decap_confirm.report) {
-                    case security::ReportType::False_Signature:
-                    case security::ReportType::Invalid_Certificate:
-                    case security::ReportType::Revoked_Certificate:
-                    case security::ReportType::Inconsistant_Chain:
-                    case security::ReportType::Invalid_Timestamp:
-                    case security::ReportType::Invalid_Mobility_Data:
-                    case security::ReportType::Unsigned_Message:
-                    case security::ReportType::Signer_Certificate_Not_Found:
-                    case security::ReportType::Unsupported_Signer_Identifier_Type:
-                    case security::ReportType::Unencrypted_Message:
-                        // ok, continue
-                        break;
-                    case security::ReportType::Duplicate_Message:
-                    case security::ReportType::Incompatible_Protocol:
-                    case security::ReportType::Decryption_Error:
-                    default:
-                        packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT);
-                        return;
-                }
-            } else {
-                // discard packet
-                packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
-                return;
+            switch (decap_confirm.report) {
+                case security::ReportType::False_Signature:
+                case security::ReportType::Invalid_Certificate:
+                case security::ReportType::Revoked_Certificate:
+                case security::ReportType::Inconsistant_Chain:
+                case security::ReportType::Invalid_Timestamp:
+                case security::ReportType::Invalid_Mobility_Data:
+                case security::ReportType::Unsigned_Message:
+                case security::ReportType::Signer_Certificate_Not_Found:
+                case security::ReportType::Unsupported_Signer_Identifier_Type:
+                case security::ReportType::Unencrypted_Message:
+                    // ok, continue
+                    boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
+                    break;
+                case security::ReportType::Duplicate_Message:
+                case security::ReportType::Incompatible_Protocol:
+                case security::ReportType::Decryption_Error:
+                default:
+                    packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT);
+                    break;
             }
-        }
-
-        // extract payload from secured message
-        pdu = parse_secured_header(decap_confirm.plaintext_payload, basic.get());
-        if (!pdu) {
+        } else {
             // discard packet
-            packet_dropped(PacketDropReason::PARSE_HEADER);
-            return;
+            packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
         }
-
-        const std::size_t offset = CommonHeader::length_bytes + get_length(pdu->extended);
-        (*packet) = extract_secured_payload(decap_confirm.plaintext_payload, offset);
-    } else {
-        // parse remaining header of the packet and rebuild parsed_pdu
-        pdu = parse_header(*packet, basic.get());
     }
+}
 
-    if (!pdu) {
-        // discard packet
-        packet_dropped(PacketDropReason::PARSE_HEADER);
-        return;
-    }
-
-    if (pdu->common.maximum_hop_limit < pdu->basic.hop_limit) {
-        // discard packet
-        packet_dropped(PacketDropReason::HOP_LIMIT);
-        return;
-    } else if (pdu->common.payload != size(*packet, OsiLayer::Transport, max_osi_layer())) {
-        // payload length does not match packet size, discard packet
-        packet_dropped(PacketDropReason::PAYLOAD_SIZE);
-        return;
-    }
-
-    flush_broadcast_forwarding_buffer();
-
+void Router::indicate_extended(IndicationContext& ctx, const CommonHeader& common)
+{
     struct extended_header_visitor : public boost::static_visitor<>
     {
-        extended_header_visitor(Router* router,
-                std::unique_ptr<UpPacket> packet,
-                ParsedPdu& pdu,
-                boost::optional<security::SecuredMessage>&& secured_message,
-                const MacAddress& sender,
-                const MacAddress& destination) :
+        extended_header_visitor(Router* router, IndicationContext& ctx) :
             m_router(router),
-            m_packet(std::move(packet)),
-            m_secured_message(std::move(secured_message)),
-            m_pdu(pdu),
-            m_sender(sender),
-            m_destination(destination)
+            m_context(ctx),
+            m_pdu(ctx.pdu())
         {
         }
 
         void operator()(const ShbHeader& shb)
         {
-            ExtendedPduConstRefs<ShbHeader> pdu(m_pdu.basic, m_pdu.common, shb, m_secured_message.get_ptr());
-            m_router->process_extended(pdu, std::move(m_packet));
+            ExtendedPduConstRefs<ShbHeader> pdu(m_pdu.basic(), m_pdu.common(), shb, m_pdu.secured());
+            m_router->process_extended(pdu, m_context.finish());
         }
 
         void operator()(const GeoBroadcastHeader& gbc)
         {
-            ExtendedPduConstRefs<GeoBroadcastHeader> pdu(m_pdu.basic, m_pdu.common, gbc, m_secured_message.get_ptr());
-            m_router->process_extended(pdu, std::move(m_packet), m_sender, m_destination);
+            ExtendedPduConstRefs<GeoBroadcastHeader> pdu(m_pdu.basic(), m_pdu.common(), gbc, m_pdu.secured());
+            const IndicationContext::LinkLayer& ll = m_context.link_layer();
+            m_router->process_extended(pdu, m_context.finish(), ll.sender, ll.destination);
         }
 
         void operator()(const BeaconHeader& beacon)
         {
-            ExtendedPduConstRefs<BeaconHeader> pdu(m_pdu.basic, m_pdu.common, beacon, m_secured_message.get_ptr());
-            m_router->process_extended(pdu, std::move(m_packet));
+            ExtendedPduConstRefs<BeaconHeader> pdu(m_pdu.basic(), m_pdu.common(), beacon, m_pdu.secured());
+            m_router->process_extended(pdu, m_context.finish());
         }
 
         Router* m_router;
-        std::unique_ptr<UpPacket> m_packet;
-        ParsedPdu& m_pdu;
-        boost::optional<security::SecuredMessage> m_secured_message;
-        const MacAddress& m_sender;
-        const MacAddress& m_destination;
+        IndicationContext& m_context;
+        const ConstAccessiblePdu& m_pdu;
     };
 
-    extended_header_visitor visitor(this, std::move(packet), *pdu, std::move(secured_message), sender, destination);
-    boost::apply_visitor(visitor, pdu->extended);
+    auto extended = ctx.parse_extended(common.header_type);
+    if (!extended) {
+        packet_dropped(PacketDropReason::PARSE_EXTENDED_HEADER);
+    } else if (common.payload != ctx.payload_length()) {
+        packet_dropped(PacketDropReason::PAYLOAD_SIZE);
+    } else {
+        extended_header_visitor visitor(this, ctx);
+        boost::apply_visitor(visitor, *extended);
+    }
 }
 
 void Router::execute_media_procedures(CommunicationProfile com_profile)

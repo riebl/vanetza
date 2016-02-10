@@ -15,13 +15,13 @@ set(CXX_SOURCES
     gbc_header.cpp
     header_type.cpp
     header_variant.cpp
+    indication_context.cpp
     mib.cpp
     sequence_number.cpp
     lifetime.cpp
     location_table.cpp
     next_hop.cpp
     packet_buffer.cpp
-    parsed_pdu.cpp
     pdu.cpp
     pdu_conversion.cpp
     position_vector.cpp

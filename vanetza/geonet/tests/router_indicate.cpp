@@ -136,6 +136,7 @@ TEST_F(RouterIndicate, shb_unsecured_equal_payload)
     // check payload
     EXPECT_EQ(send_payload, received_payload);
 }
+
 TEST_F(RouterIndicate, shb_secured_equal_payload)
 {
     // create shb-up-packet by calling request
@@ -177,7 +178,7 @@ TEST_F(RouterIndicate, shb_secured_hook_its_protocol_version)
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
 
-TEST_F(RouterIndicate, shb_secured_hook_parse_basic)
+TEST_F(RouterIndicate, shb_secured_hook_parse_basic_header)
 {
     // modify up_packet for negative test
     ByteBuffer broken_packet_buffer = create_secured_packet();
@@ -188,13 +189,13 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_basic)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_BASIC, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_BASIC_HEADER, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
 
-TEST_F(RouterIndicate, shb_secured_hook_extract_secured_message)
+TEST_F(RouterIndicate, shb_secured_hook_parse_secured_header)
 {
     // modify up_packet for negative test
     ByteBuffer broken_packet_buffer = create_secured_packet();
@@ -205,7 +206,7 @@ TEST_F(RouterIndicate, shb_secured_hook_extract_secured_message)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::EXTRACT_SECURED_MESSAGE, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_SECURED_HEADER, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -249,7 +250,7 @@ TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_strict)
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
 
-TEST_F(RouterIndicate, shb_secured_hook_parse_header)
+TEST_F(RouterIndicate, shb_secured_hook_parse_extended_header)
 {
     // modify up_packet for negative test
     ByteBuffer broken_packet_buffer = create_plain_packet();
@@ -262,7 +263,7 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_header)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_HEADER, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_EXTENDED_HEADER, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());

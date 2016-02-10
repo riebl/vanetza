@@ -44,6 +44,7 @@ namespace geonet
 
 extern const uint16be_t ether_type;
 
+class IndicationContext;
 class TransportInterface;
 class NextHop;
 struct ShbDataRequest;
@@ -67,12 +68,13 @@ public:
 
     enum class PacketDropReason
     {
+        PARSE_BASIC_HEADER,
+        PARSE_COMMON_HEADER,
+        PARSE_SECURED_HEADER,
+        PARSE_EXTENDED_HEADER,
         ITS_PROTOCOL_VERSION,
-        PARSE_BASIC,
-        EXTRACT_SECURED_MESSAGE,
         DECAP_UNSUCCESSFUL_NON_STRICT,
         DECAP_UNSUCCESSFUL_STRICT,
-        PARSE_HEADER,
         HOP_LIMIT,
         PAYLOAD_SIZE,
     };
@@ -132,6 +134,10 @@ private:
 
     void on_beacon_timer_expired();
     void reset_beacon_timer();
+    void indicate_basic(IndicationContext&);
+    void indicate_common(IndicationContext&, const BasicHeader&);
+    void indicate_extended(IndicationContext&, const CommonHeader&);
+    void indicate_secured(IndicationContext&, const BasicHeader&);
     void process_extended(const ExtendedPduConstRefs<BeaconHeader>&, UpPacketPtr);
     void process_extended(const ExtendedPduConstRefs<ShbHeader>&, UpPacketPtr);
     void process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>&, UpPacketPtr,
