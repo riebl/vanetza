@@ -3,6 +3,9 @@
 
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <vanetza/security/serialization.hpp>
+#include <boost/variant/variant.hpp>
+#include <cstdint>
 #include <list>
 
 namespace vanetza
@@ -10,27 +13,25 @@ namespace vanetza
 namespace security
 {
 
-using SubjectAssurance = uint8_t;
+/// SubjectAssurance specified in TS 103 097 v1.2.1 in section 6.6 and 7.4.1
+struct SubjectAssurance
+{
+    SubjectAssurance(uint8_t _raw = 0) : raw(_raw) {}
 
+    static const uint8_t assurance_mask = 0xE0;
+    static const uint8_t confidence_mask = 0x03;
+
+    uint8_t raw;
+};
+
+/// ItsAidSsp specified in TS 103 097 v1.2.1, section 6.9
 struct ItsAidSsp
 {
     IntX its_aid;
     ByteBuffer service_specific_permissions;
 };
 
-struct ItsAidPriority
-{
-    IntX its_aid;
-    uint8_t max_priority;
-};
-
-struct ItsAidPrioritySsp
-{
-    IntX its_aid;
-    uint8_t max_priority;
-    ByteBuffer service_specific_permissions;
-};
-
+/// SubjectAttributeType specified in TS 103 097 v1.2.1, section 6.5
 enum class SubjectAttributeType : uint8_t {
     Verification_Key = 0,       //VerificationKey
     Encryption_Key = 1,         //EncryptionKey
@@ -38,64 +39,87 @@ enum class SubjectAttributeType : uint8_t {
     Reconstruction_Value = 3,   //EccPoint
     Its_Aid_List = 32,          //std::list<IntX>
     Its_Aid_Ssp_List = 33,      //std::list<ItsAidSsp>
-    Priority_Its_Aid_List = 34, //std::list<ItsAidPriority>
-    Priority_Ssp_List = 35      //std::list<ItsAidPrioritySsp>
 };
 
+/// VerificationKey specified in TS 103 097 v1.2.1, section 6.4
 struct VerificationKey
 {
     PublicKey key;
 };
+
+/// EncryptionKey specified in TS 103 097 v1.2.1, section 6.4
 struct EncryptionKey
 {
     PublicKey key;
 };
 
-typedef boost::variant<VerificationKey, EncryptionKey, SubjectAssurance, EccPoint,
-    std::list<ItsAidSsp>, std::list<ItsAidPriority>, std::list<ItsAidPrioritySsp>, std::list<IntX>> SubjectAttribute;
-//TODO: EccPoint not used at the moment
+/// SubjectAttribute specified in TS 103 097 v1.2.1, section 6.4
+using SubjectAttribute = boost::variant<
+    VerificationKey,
+    EncryptionKey,
+    SubjectAssurance,
+    EccPoint,
+    std::list<IntX>,
+    std::list<ItsAidSsp>
+>;
 
 /**
- * Determines SubjectAttributeType to a given SubjectAttribute
- * \param SubjectAttribute
+ * \brief Determines SubjectAttributeType to a given SubjectAttribute
+ * \param attribute
+ * \return type
  */
-
 SubjectAttributeType get_type(const SubjectAttribute&);
 
 /**
- * Calculates size of an object
- * \param Object
- * \return size_t containing the number of octets needed to serialize the object
+ * \brief Calculates size of a SubjectAttribute
+ * \param sub
+ * \return number of octets needed to serialize the SubjectAttribute
  */
 size_t get_size(const SubjectAttribute&);
-size_t get_size(const std::list<IntX>&);
-size_t get_size(const SubjectAssurance&);
-size_t get_size(const std::list<ItsAidSsp>&);
-size_t get_size(const std::list<ItsAidPriority>&);
-size_t get_size(const std::list<ItsAidPrioritySsp>&);
 
 /**
- * Deserializes an object from a binary archive
- * \param archive with a serialized object at the beginning
- * \param object to deserialize
- * \return size of the deserialized object
+ * \brief Calculates size of a SubjectAssurance
+ * \param sub
+ * \return number of octets needed to serialize the SubjectAssurance
+ */
+size_t get_size(const SubjectAssurance&);
+
+/**
+ * \brief Calculates size of an ItsAidSsp
+ * \param its_aid_ssp
+ * \return number of octets needed to serialize the ItsAidSsp
+ */
+size_t get_size(const ItsAidSsp&);
+
+/**
+ * \brief Deserializes a SubjectAttribute from a binary archive
+ * \param ar with a serialized SubjectAttribute at the beginning
+ * \param sub to deserialize
+ * \return size of the deserialized SubjectAttribute
  */
 size_t deserialize(InputArchive&, SubjectAttribute&);
-size_t deserialize(InputArchive&, std::list<IntX>&);
-size_t deserialize(InputArchive&, std::list<ItsAidSsp>&);
-size_t deserialize(InputArchive&, std::list<ItsAidPriority>&);
-size_t deserialize(InputArchive&, std::list<ItsAidPrioritySsp>&);
 
 /**
- * Serializes an object into a binary archive
- * \param object to serialize
- * \param achive to serialize in,
+ * \brief Deserializes an ItsAidSsp from a binary archive
+ * \param ar with a serialized ItsAidSsp at the beginning
+ * \param its_aid_ssp to deserialize
+ * \return size of the deserialized ItsAidSsp
+ */
+size_t deserialize(InputArchive&, ItsAidSsp&);
+
+/**
+ * \brief Serializes a SubjectAttribute into a binary archive
+ * \param ar to serialize in
+ * \param sub to serialize
  */
 void serialize(OutputArchive&, const SubjectAttribute&);
-void serialize(OutputArchive&, const std::list<IntX>&);
-void serialize(OutputArchive&, const std::list<ItsAidSsp>&);
-void serialize(OutputArchive&, const std::list<ItsAidPriority>&);
-void serialize(OutputArchive&, const std::list<ItsAidPrioritySsp>&);
+
+/**
+ * \brief Serializes an ItsAidSsp into a binary archive
+ * \param ar to serialize in
+ * \param its_aid_ssp to serialize
+ */
+void serialize(OutputArchive&, const ItsAidSsp&);
 
 } // namespace security
 } // namespace vanetza

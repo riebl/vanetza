@@ -1,4 +1,7 @@
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/signature.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <cassert>
 
 namespace vanetza
 {
@@ -10,6 +13,11 @@ PublicKeyAlgorithm get_type(const Signature& sig)
     struct Signature_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
         PublicKeyAlgorithm operator()(const EcdsaSignature& sig)
+        {
+            return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+        }
+
+        PublicKeyAlgorithm operator()(const EcdsaSignatureFuture& sig)
         {
             return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
         }
@@ -25,12 +33,22 @@ size_t get_size(const EcdsaSignature& sig)
     return size;
 }
 
+size_t get_size(const EcdsaSignatureFuture& sig)
+{
+    return sig.size();
+}
+
 size_t get_size(const Signature& sig)
 {
     size_t size = sizeof(PublicKeyAlgorithm);
     struct Signature_visitor : public boost::static_visitor<size_t>
     {
         size_t operator()(const EcdsaSignature& sig)
+        {
+            return get_size(sig);
+        }
+
+        size_t operator()(const EcdsaSignatureFuture& sig)
         {
             return get_size(sig);
         }
@@ -42,25 +60,44 @@ size_t get_size(const Signature& sig)
 
 void serialize(OutputArchive& ar, const Signature& sig)
 {
-    struct Signature_visitor : public boost::static_visitor<>
+    struct signature_visitor : public boost::static_visitor<>
     {
-        Signature_visitor(OutputArchive& ar) :
-            m_archive(ar)
-        {
-        }
+        signature_visitor(OutputArchive& ar) : m_archive(ar) {}
+
         void operator()(const EcdsaSignature& sig)
         {
-            serialize(m_archive, sig.R);
-            for (auto& byte : sig.s) {
-                m_archive << byte;
-            }
+            serialize(m_archive, sig);
         }
+
+        void operator()(const EcdsaSignatureFuture& sig)
+        {
+            serialize(m_archive, sig);
+        }
+
         OutputArchive& m_archive;
     };
+
     PublicKeyAlgorithm algo = get_type(sig);
     serialize(ar, algo);
-    Signature_visitor visit(ar);
-    boost::apply_visitor(visit, sig);
+    signature_visitor visitor(ar);
+    boost::apply_visitor(visitor, sig);
+}
+
+void serialize(OutputArchive& ar, const EcdsaSignature& sig)
+{
+    const PublicKeyAlgorithm algo = PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+    assert(field_size(algo) == sig.s.size());
+
+    serialize(ar, sig.R, algo);
+    for (auto& byte : sig.s) {
+        ar << byte;
+    }
+}
+
+void serialize(OutputArchive& ar, const EcdsaSignatureFuture& sig)
+{
+    auto& ecdsa = sig.get();
+    serialize(ar, ecdsa);
 }
 
 size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorithm& algo)
@@ -97,5 +134,51 @@ size_t deserialize(InputArchive& ar, Signature& sig)
     return size;
 }
 
-} // ns security
-} // ns vanetza
+ByteBuffer extract_signature_buffer(const Signature& sig)
+{
+    struct extraction_visitor : public boost::static_visitor<>
+    {
+        void operator()(const EcdsaSignature& sig)
+        {
+            m_buffer = convert_for_signing(sig.R);
+            m_buffer.insert(m_buffer.end(), sig.s.begin(), sig.s.end());
+        }
+
+        void operator()(const EcdsaSignatureFuture& sig_future)
+        {
+            const EcdsaSignature& sig = sig_future.get();
+            (*this)(sig);
+        }
+
+        ByteBuffer m_buffer;
+    };
+
+    extraction_visitor visitor;
+    boost::apply_visitor(visitor, sig);
+
+    return visitor.m_buffer;
+}
+
+EcdsaSignatureFuture::EcdsaSignatureFuture(const std::shared_future<EcdsaSignature>& future, std::size_t bytes) :
+    m_future(future), m_bytes(bytes)
+{
+    if (!m_future.valid()) {
+        throw std::invalid_argument("EcdsaSignature future has to be valid");
+    }
+}
+
+const EcdsaSignature& EcdsaSignatureFuture::get() const
+{
+    assert(m_future.valid());
+    const EcdsaSignature& signature = m_future.get();
+    assert(get_size(signature) == m_bytes);
+    return signature;
+}
+
+std::size_t EcdsaSignatureFuture::size() const
+{
+    return m_bytes;
+}
+
+} // namespace security
+} // namespace vanetza

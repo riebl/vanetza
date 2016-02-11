@@ -2,9 +2,10 @@
 #define LENGTH_CODING_HPP_UQ1OIDUN
 
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/security/serialization.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <cstdint>
+#include <tuple>
 
 namespace vanetza
 {

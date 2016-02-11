@@ -1,5 +1,9 @@
 #include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
+#include <cassert>
 
 namespace vanetza
 {
@@ -62,34 +66,39 @@ EccPointType get_type(const EccPoint& point)
     return boost::apply_visitor(visit, point);
 }
 
-void serialize(OutputArchive& ar, const EccPoint& point)
+void serialize(OutputArchive& ar, const EccPoint& point, PublicKeyAlgorithm algo)
 {
     struct ecc_point_visitor : public boost::static_visitor<>
     {
-        ecc_point_visitor(OutputArchive& ar) :
-            m_archive(ar)
+        ecc_point_visitor(OutputArchive& ar, PublicKeyAlgorithm algo) :
+            m_archive(ar), m_algo(algo)
         {
         }
         void operator()(X_Coordinate_Only coord)
         {
+            assert(coord.x.size() == field_size(m_algo));
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
         }
         void operator()(Compressed_Lsb_Y_0 coord)
         {
+            assert(coord.x.size() == field_size(m_algo));
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
         }
         void operator()(Compressed_Lsb_Y_1 coord)
         {
+            assert(coord.x.size() == field_size(m_algo));
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
         }
         void operator()(Uncompressed coord)
         {
+            assert(coord.x.size() == field_size(m_algo));
+            assert(coord.y.size() == field_size(m_algo));
             for (auto byte : coord.x) {
                 m_archive << byte;
             }
@@ -98,11 +107,12 @@ void serialize(OutputArchive& ar, const EccPoint& point)
             }
         }
         OutputArchive& m_archive;
+        PublicKeyAlgorithm m_algo;
     };
 
     EccPointType type = get_type(point);
     serialize(ar, type);
-    ecc_point_visitor visit(ar);
+    ecc_point_visitor visit(ar, algo);
     boost::apply_visitor(visit, point);
 }
 
@@ -158,6 +168,21 @@ void deserialize(InputArchive& ar, EccPoint& point, PublicKeyAlgorithm algo)
     }
 }
 
+class EccPointVisitor : public boost::static_visitor<ByteBuffer>
+{
+public:
+    template<typename T>
+    ByteBuffer operator()(const T& point)
+    {
+        return point.x;
+    }
+};
+
+ByteBuffer convert_for_signing(const EccPoint& ecc_point)
+{
+    EccPointVisitor visit;
+    return std::move(boost::apply_visitor(visit, ecc_point));
+}
+
 } // namespace security
 } // namespace vanetza
-

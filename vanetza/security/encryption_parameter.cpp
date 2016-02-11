@@ -1,11 +1,13 @@
 #include <vanetza/security/encryption_parameter.hpp>
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 namespace vanetza
 {
 namespace security
 {
-
 
 SymmetricAlgorithm get_type(const EncryptionParameter& param)
 {
@@ -20,7 +22,6 @@ SymmetricAlgorithm get_type(const EncryptionParameter& param)
     Encryption_visitor visit;
     return boost::apply_visitor(visit, param);
 }
-
 
 void serialize(OutputArchive& ar, const EncryptionParameter& param)
 {
@@ -45,7 +46,6 @@ void serialize(OutputArchive& ar, const EncryptionParameter& param)
     boost::apply_visitor(visit, param);
 }
 
-
 size_t get_size(const EncryptionParameter& param)
 {
     size_t size = sizeof(SymmetricAlgorithm);
@@ -62,7 +62,7 @@ size_t get_size(const EncryptionParameter& param)
     return size;
 }
 
-size_t deserialize(InputArchive& ar, EncryptionParameter& param, SymmetricAlgorithm& sym)
+size_t deserialize(InputArchive& ar, EncryptionParameter& param)
 {
     SymmetricAlgorithm algo;
     deserialize(ar, algo);
@@ -72,7 +72,6 @@ size_t deserialize(InputArchive& ar, EncryptionParameter& param, SymmetricAlgori
             for (size_t s = 0; s < nonce.size(); s++) {
                 ar >> nonce[s];
             }
-            sym = SymmetricAlgorithm::Aes128_Ccm;
             param = nonce;
             break;
         }

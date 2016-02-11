@@ -1,16 +1,14 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/bit_number.hpp>
 #include <vanetza/security/validity_restriction.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/check_validity_restriction.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 
-using namespace vanetza;
-using namespace security;
-using namespace std;
+using namespace vanetza::security;
 
 TEST(Duration, Duration)
 {
-    uint16_t a = 0x8007;    // 1000000000000007
+    uint16_t a = 0x8007;
     uint16_t b = 7;
 
     Duration dur(b, Duration::Units::Years);
@@ -23,26 +21,20 @@ TEST(Duration, Duration)
 TEST(ValidityRestriction, Serialization)
 {
     std::list<ValidityRestriction> list;
-    list.push_back(setValidityRestriction_Time_End());
-    list.push_back(setValidityRestriction_Time_Start_And_End());
-    list.push_back(setValidityRestriction_Time_Start_And_Duration());
-    list.push_back(setValidityRestriction_Region());
+    EndValidity ev = 0x548736;
+    list.push_back(ev);
+    StartAndEndValidity sev;
+    sev.start_validity = 0x54;
+    sev.end_validity = 0x5712;
+    list.push_back(sev);
+    StartAndDurationValidity sdv;
+    sdv.start_validity = 0x5712;
+    sdv.duration = Duration { 13, Duration::Units::Hours };
+    list.push_back(sdv);
+    GeographicRegion grv = CircularRegion {};
+    list.push_back(grv);
 
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, list);
-
-    std::list<ValidityRestriction> delist;
-    InputArchive ia(stream);
-    deserialize(ia, delist);
-
-    auto it1 = delist.begin();
-    auto it2 = list.begin();
-
-    testValidityRestriction_Time_End(*it2++, *it1++);
-    testValidityRestriction_Time_Start_And_End(*it2++, *it1++);
-    testValidityRestriction_Time_Start_And_Duration(*it2++, *it1++);
-    testValidityRestriction_Region(*it2++, *it1++);
+    check(list, serialize_roundtrip(list));
 }
 
 TEST(ValidityRestriction, WebValidator_Size)
@@ -53,7 +45,6 @@ TEST(ValidityRestriction, WebValidator_Size)
     start.start_validity = 12345;
     start.end_validity = 4786283;
     res = start;
-
     list.push_back(res);
 
     GeographicRegion reg;
@@ -61,7 +52,6 @@ TEST(ValidityRestriction, WebValidator_Size)
     id.region_dictionary = RegionDictionary::Un_Stats;
     id.region_identifier = 150;
     id.local_region.set(0);
-
     reg = id;
     res = reg;
     list.push_back(res);

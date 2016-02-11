@@ -1,5 +1,6 @@
 #include <vanetza/security/length_coding.hpp>
 #include <cmath>
+#include <iterator>
 #include <list>
 
 namespace vanetza

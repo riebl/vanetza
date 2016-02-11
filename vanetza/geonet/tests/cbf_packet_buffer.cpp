@@ -30,8 +30,8 @@ CbfPacketData CbfPacketBufferTest::create_packet(std::size_t size)
 {
     auto packet = create_packet();
     assert(packet.pdu);
-    assert(packet.pdu->length() <= size);
-    const std::size_t payload = size - packet.pdu->length();
+    assert(get_length(*packet.pdu) <= size);
+    const std::size_t payload = size - get_length(*packet.pdu);
     packet.payload->operator[](OsiLayer::Application) = ByteBuffer(payload);
     assert(length(packet) == size);
     return packet;
@@ -41,10 +41,10 @@ CbfPacketData CbfPacketBufferTest::create_packet(std::size_t size)
 TEST_F(CbfPacketBufferTest, packet_length)
 {
     CbfPacketData packet = create_packet();
-    EXPECT_EQ(packet.pdu->length(), length(packet));
+    EXPECT_EQ(get_length(*packet.pdu), length(packet));
 
     packet.payload->operator[](OsiLayer::Application) = ByteBuffer(30);
-    EXPECT_EQ(packet.pdu->length() + 30, length(packet));
+    EXPECT_EQ(get_length(*packet.pdu) + 30, length(packet));
 
     packet.pdu.reset();
     EXPECT_EQ(30, length(packet));

@@ -1,4 +1,4 @@
-find_package(Boost COMPONENTS date_time REQUIRED)
+find_package(Boost COMPONENTS date_time serialization REQUIRED)
 
 set(CXX_SOURCES
     byte_buffer_convertible.cpp
@@ -11,7 +11,7 @@ set(CXX_SOURCES
 )
 vanetza_module(common ${CXX_SOURCES})
 vanetza_module_property(common INCLUDE_DIRECTORIES ${Boost_INCLUDE_DIRS})
-vanetza_module_link_libraries(common ${Boost_DATE_TIME_LIBRARY})
+vanetza_module_link_libraries(common ${Boost_DATE_TIME_LIBRARY} ${Boost_SERIALIZATION_LIBRARY})
 
 add_test_subdirectory(tests)
 

@@ -64,5 +64,24 @@ std::size_t ChunkPacket::size(OsiLayer from, OsiLayer to) const
     return size;
 }
 
+ChunkPacket ChunkPacket::extract(OsiLayer from, OsiLayer to)
+{
+    ChunkPacket result;
+    for (auto layer : osi_layer_range(from, to)) {
+        using namespace std;
+        swap(result[layer], (*this)[layer]);
+    }
+    return result;
+}
+
+ChunkPacket& ChunkPacket::merge(ChunkPacket& source, OsiLayer from, OsiLayer to)
+{
+    for (auto layer : osi_layer_range(from, to)) {
+        (*this)[layer] = std::move(source[layer]);
+        source[layer] = empty_byte_buffer_convertible;
+    }
+    return *this;
+}
+
 } // namespace vanetza
 

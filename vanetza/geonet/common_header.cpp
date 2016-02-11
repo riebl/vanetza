@@ -8,6 +8,8 @@ namespace vanetza
 namespace geonet
 {
 
+const std::size_t CommonHeader::length_bytes;
+
 CommonHeader::CommonHeader() :
     next_header(NextHeaderCommon::ANY),
     reserved1(0),

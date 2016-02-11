@@ -1,21 +1,27 @@
 #include "header.hpp"
-#include <vanetza/geonet/serialization.hpp>
+#include <vanetza/common/serialization.hpp>
 
 namespace vanetza
 {
 namespace btp
 {
 
-void serialize(const HeaderB& hdr, geonet::OutputArchive& ar)
+using vanetza::serialize;
+using vanetza::deserialize;
+
+const std::size_t HeaderA::length_bytes;
+const std::size_t HeaderB::length_bytes;
+
+void serialize(OutputArchive& ar, const HeaderB& hdr)
 {
-    geonet::serialize(hdr.destination_port, ar);
-    geonet::serialize(hdr.destination_port_info, ar);
+    serialize(ar, hdr.destination_port);
+    serialize(ar, hdr.destination_port_info);
 }
 
-void deserialize(HeaderB& hdr, geonet::InputArchive& ar)
+void deserialize(InputArchive& ar, HeaderB& hdr)
 {
-    geonet::deserialize(hdr.destination_port, ar);
-    geonet::deserialize(hdr.destination_port_info, ar);
+    deserialize(ar, hdr.destination_port);
+    deserialize(ar, hdr.destination_port_info);
 }
 
 } // namespace btp

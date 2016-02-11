@@ -18,7 +18,7 @@ void byte_buffer_impl<PduPtr>::convert(ByteBuffer& dest) const
 std::size_t byte_buffer_impl<PduPtr>::size() const
 {
     assert(m_pdu);
-    return m_pdu->length();
+    return get_length(*m_pdu);
 }
 
 std::unique_ptr<byte_buffer> byte_buffer_impl<PduPtr>::duplicate() const

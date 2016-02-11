@@ -1,11 +1,13 @@
-#include "basic_header.hpp"
-#include "data_request.hpp"
-#include "serialization.hpp"
+#include <vanetza/geonet/basic_header.hpp>
+#include <vanetza/geonet/data_request.hpp>
+#include <vanetza/geonet/serialization.hpp>
 
 namespace vanetza
 {
 namespace geonet
 {
+
+const std::size_t BasicHeader::length_bytes;
 
 BasicHeader::BasicHeader() :
     version(0),
@@ -27,7 +29,7 @@ BasicHeader::BasicHeader(const MIB& mib) :
 BasicHeader::BasicHeader(const DataRequest& request, const MIB& mib) :
     BasicHeader(mib)
 {
-    if (request.security_profile) {
+    if (mib.itsGnSecurity) {
         next_header = NextHeaderBasic::SECURED;
     } else {
         next_header = NextHeaderBasic::COMMON;
@@ -67,4 +69,3 @@ void deserialize(BasicHeader& hdr, InputArchive& ar)
 
 } // namespace geonet
 } // namespace vanetza
-

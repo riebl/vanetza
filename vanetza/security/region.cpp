@@ -1,6 +1,8 @@
+#include <vanetza/common/serialization.hpp>
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/region.hpp>
-
-using namespace std;
+#include <boost/variant/static_visitor.hpp>
+#include <boost/variant/apply_visitor.hpp>
 
 namespace vanetza
 {
@@ -140,14 +142,14 @@ size_t get_size(const GeographicRegion& reg)
 
 void serialize(OutputArchive& ar, const TwoDLocation& loc)
 {
-    geonet::serialize(loc.latitude, ar);
-    geonet::serialize(loc.longitude, ar);
+    serialize(ar, loc.latitude);
+    serialize(ar, loc.longitude);
 }
 
 void serialize(OutputArchive& ar, const ThreeDLocation& loc)
 {
-    geonet::serialize(loc.latitude, ar);
-    geonet::serialize(loc.longitude, ar);
+    serialize(ar, loc.latitude);
+    serialize(ar, loc.longitude);
     ar << loc.elevation[0];
     ar << loc.elevation[1];
 }
@@ -155,7 +157,7 @@ void serialize(OutputArchive& ar, const ThreeDLocation& loc)
 void serialize(OutputArchive& ar, const CircularRegion& reg)
 {
     serialize(ar, reg.center);
-    geonet::serialize(reg.radius, ar);
+    serialize(ar, reg.radius);
 }
 
 void serialize(OutputArchive& ar, const RectangularRegion& reg)
@@ -187,8 +189,7 @@ void serialize(OutputArchive& ar, const PolygonalRegion& reg)
 void serialize(OutputArchive& ar, const IdentifiedRegion& reg)
 {
     serialize(ar, reg.region_dictionary);
-    geonet::serialize(host_cast(reg.region_identifier), ar);
-    serialize_length(ar, reg.local_region.get());
+    serialize(ar, host_cast(reg.region_identifier));
     serialize(ar, reg.local_region);
 }
 
@@ -227,15 +228,15 @@ void serialize(OutputArchive& ar, const GeographicRegion& reg)
 
 size_t deserialize(InputArchive& ar, TwoDLocation& loc)
 {
-    geonet::deserialize(loc.latitude, ar);
-    geonet::deserialize(loc.longitude, ar);
+    deserialize(ar, loc.latitude);
+    deserialize(ar, loc.longitude);
     return get_size(loc);
 }
 
 size_t deserialize(InputArchive& ar, ThreeDLocation& loc)
 {
-    geonet::deserialize(loc.latitude, ar);
-    geonet::deserialize(loc.longitude, ar);
+    deserialize(ar, loc.latitude);
+    deserialize(ar, loc.longitude);
     ar >> loc.elevation[0];
     ar >> loc.elevation[1];
     return get_size(loc);
@@ -245,7 +246,7 @@ size_t deserialize(InputArchive& ar, CircularRegion& reg)
 {
     size_t size = 0;
     size += deserialize(ar, reg.center);
-    geonet::deserialize(reg.radius, ar);
+    deserialize(ar, reg.radius);
     size += sizeof(reg.radius);
     return size;
 }
@@ -282,7 +283,7 @@ size_t deserialize(InputArchive& ar, IdentifiedRegion& reg)
     size_t size = 0;
     deserialize(ar, reg.region_dictionary);
     size += sizeof(RegionDictionary);
-    geonet::deserialize(reg.region_identifier, ar);
+    deserialize(ar, reg.region_identifier);
     size += sizeof(reg.region_identifier);
     deserialize(ar, reg.local_region);
     size += get_size(reg.local_region);

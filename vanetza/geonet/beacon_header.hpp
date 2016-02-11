@@ -18,6 +18,7 @@ public:
 };
 
 void serialize(const BeaconHeader&, OutputArchive&);
+void deserialize(BeaconHeader&, InputArchive&);
 
 } // namespace geonet
 } // namespace vanetza

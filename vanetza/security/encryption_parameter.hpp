@@ -2,47 +2,51 @@
 #define ENCRYPTION_PARAMETER_HPP_EIAWNAWY
 
 #include <vanetza/security/serialization.hpp>
-#include <boost/variant.hpp>
+#include <boost/variant/variant.hpp>
+#include <cstdint>
 
 namespace vanetza
 {
 namespace security
 {
 
+/// forward declaration, see public_key.hpp
 enum class SymmetricAlgorithm : uint8_t;
 
+/// Nonce specified in TS 103 097 v1.2.1, section 4.2.7
 using Nonce = std::array<uint8_t, 12>;
 
-typedef boost::variant<Nonce> EncryptionParameter;
+/// EncryptionParameter specified in TS 103 097 v1.2.1, section 4.2.7
+using EncryptionParameter = boost::variant<Nonce>;
 
 /**
- * Determines SymmetricAlgorithm to a given PublicKey
- * \param EncryptionParameter
+ * \brief Determines SymmetricAlgorithm for an EncryptionParameter
+ * \param param
  * \return SymmetricAlgorithm
  */
 SymmetricAlgorithm get_type(const EncryptionParameter&);
 
 /**
- * Serializes an EncryptionParameter into a binary archive
- * \param achive to serialize in
- * \param EncryptionParameter to serialize
+ * \brief Serializes an EncryptionParameter into a binary archive
+ * \param ar to serialize in
+ * \param param to serialize
  */
 void serialize(OutputArchive&, const EncryptionParameter&);
 
 /**
- * Calculates size of an EncryptionParameter
- * \param EncryptionParameter
- * \return size_t containing the number of octets needed to serialize the EncryptionParameter
+ * \brief Calculates size of an EncryptionParameter
+ * \param param
+ * \return number of octets needed to serialize the EncryptionParameter
  */
 size_t get_size(const EncryptionParameter&);
 
 /**
- * Deserializes an EncryptionParameter from a binary archive
- * \param archive with a serialized EncryptionParameter at the beginning
- * \param EncryptionParameter to safe deserialized values in
+ * \brief Deserializes an EncryptionParameter from a binary archive
+ * \param ar Input expected to start with an EncryptionParameter
+ * \param enc Deserialized encryption parameter
  * \return size of deserialized EncryptionParameter
  */
-size_t deserialize(InputArchive&, EncryptionParameter&, SymmetricAlgorithm& sym);
+size_t deserialize(InputArchive&, EncryptionParameter&);
 
 } // namespace security
 } // namespace vanetzta

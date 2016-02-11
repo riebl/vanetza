@@ -1,3 +1,4 @@
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 
 namespace vanetza
@@ -33,183 +34,45 @@ SubjectAttributeType get_type(const SubjectAttribute& sub)
         {
             return SubjectAttributeType::Its_Aid_Ssp_List;
         }
-        SubjectAttributeType operator()(std::list<ItsAidPriority> list)
-        {
-            return SubjectAttributeType::Priority_Its_Aid_List;
-        }
-        SubjectAttributeType operator()(std::list<ItsAidPrioritySsp> list)
-        {
-            return SubjectAttributeType::Priority_Ssp_List;
-        }
     };
 
     subject_attribute_visitor visit;
     return boost::apply_visitor(visit, sub);
 }
 
-void serialize(OutputArchive& ar, const std::list<IntX>& list)
+void serialize(OutputArchive& ar, const ItsAidSsp& its_aid_ssp)
 {
-    serialize_length(ar, get_size(list));
-    for (auto& x : list) {
-        serialize(ar, x);
+    serialize(ar, its_aid_ssp.its_aid);
+    size_t size = its_aid_ssp.service_specific_permissions.size();
+    serialize_length(ar, size);
+    for (auto& byte : its_aid_ssp.service_specific_permissions) {
+        ar << byte;
     }
 }
 
-void serialize(OutputArchive& ar, const std::list<ItsAidSsp>& list)
-{
-    serialize_length(ar, get_size(list));
-    for (auto& itsAidSsp : list) {
-        serialize(ar, itsAidSsp.its_aid);
-        size_t size = itsAidSsp.service_specific_permissions.size();
-        serialize_length(ar, size);
-        for (auto& byte : itsAidSsp.service_specific_permissions) {
-            ar << byte;
-        }
-    }
-}
-
-void serialize(OutputArchive& ar, const std::list<ItsAidPriority>& list)
-{
-    serialize_length(ar, get_size(list));
-    for (auto& itsAidPriority : list) {
-        serialize(ar, itsAidPriority.its_aid);
-        geonet::serialize(host_cast(itsAidPriority.max_priority), ar);
-    }
-}
-
-void serialize(OutputArchive& ar, const std::list<ItsAidPrioritySsp>& list)
-{
-    serialize_length(ar, get_size(list));
-    for (auto& itsAidPrioritySsp : list) {
-        serialize(ar, itsAidPrioritySsp.its_aid);
-        geonet::serialize(host_cast(itsAidPrioritySsp.max_priority), ar);
-        size_t size = itsAidPrioritySsp.service_specific_permissions.size();
-        serialize_length(ar, size);
-        for (auto& byte : itsAidPrioritySsp.service_specific_permissions) {
-            ar << byte;
-        }
-    }
-}
-
-size_t deserialize(InputArchive& ar, std::list<IntX>& list)
-{
-    size_t ret_size = 0;
-    ret_size = deserialize_length(ar);
-    size_t size = ret_size;
-    while (size > 0) {
-        IntX x;
-        deserialize(ar, x);
-        size -= get_size(x);
-        list.push_back(x);
-    }
-    return ret_size;
-}
-
-size_t deserialize(InputArchive& ar, std::list<ItsAidSsp>& list)
+size_t deserialize(InputArchive& ar, ItsAidSsp& its_aid_ssp)
 {
     size_t size = 0;
-    size_t ret_size = deserialize_length(ar);
-    size = ret_size;
-    while (size > 0) {
-        ItsAidSsp ssp;
-        deserialize(ar, ssp.its_aid);
-        size -= get_size(ssp.its_aid);
-        size_t buf_size = deserialize_length(ar);
-        size -= buf_size;
-        uint8_t uint;
-        size -= length_coding_size(buf_size);
-        for (; buf_size > 0; buf_size--) {
-            ar >> uint;
-            ssp.service_specific_permissions.push_back(uint);
-        }
-        list.push_back(ssp);
-    }
-    return ret_size;
-}
-
-size_t deserialize(InputArchive& ar, std::list<ItsAidPriority>& list)
-{
-    size_t size = 0;
-    size_t ret_size = deserialize_length(ar);
-    size = ret_size;
-    while (size > 0) {
-        ItsAidPriority aid;
-        deserialize(ar, aid.its_aid);
-        size -= get_size(aid.its_aid);
-        geonet::deserialize(aid.max_priority, ar);
-        size -= sizeof(uint8_t);
-        list.push_back(aid);
-    }
-    return ret_size;
-}
-
-size_t deserialize(InputArchive& ar, std::list<ItsAidPrioritySsp>& list)
-{
-    size_t ret_size = deserialize_length(ar);
-    size_t size = ret_size;
-    while (size > 0) {
-        ItsAidPrioritySsp aid;
-        deserialize(ar, aid.its_aid);
-        size -= get_size(aid.its_aid);
-        geonet::deserialize(aid.max_priority, ar);
-        size -= sizeof(uint8_t);
-        size_t buf_size = deserialize_length(ar);
-        size -= buf_size;
-        uint8_t uint;
-        size -= length_coding_size(buf_size);
-        for (; buf_size > 0; buf_size--) {
-            ar >> uint;
-            aid.service_specific_permissions.push_back(uint);
-        }
-        list.push_back(aid);
-    }
-    return ret_size;
-}
-
-size_t get_size(const std::list<IntX>& list)
-{
-    size_t size = 0;
-    for (auto& x : list) {
-        size += get_size(x);
+    size += deserialize(ar, its_aid_ssp.its_aid);
+    const size_t buf_size = deserialize_length(ar);
+    its_aid_ssp.service_specific_permissions.resize(buf_size);
+    size += buf_size + length_coding_size(buf_size);
+    for (size_t i = 0; i < buf_size; ++i) {
+        ar >> its_aid_ssp.service_specific_permissions[i];
     }
     return size;
 }
 
 size_t get_size(const SubjectAssurance& assurance)
 {
-    return sizeof(uint8_t);
+    return sizeof(assurance.raw);
 }
 
-size_t get_size(const std::list<ItsAidSsp>& list)
+size_t get_size(const ItsAidSsp& its_aid_ssp)
 {
-    size_t size = 0;
-    for (auto& itsAidSsp : list) {
-        size += get_size(itsAidSsp.its_aid);
-        size += itsAidSsp.service_specific_permissions.size();
-        size += length_coding_size(itsAidSsp.service_specific_permissions.size());
-    }
-    return size;
-}
-
-size_t get_size(const std::list<ItsAidPriority>& list)
-{
-    size_t size = 0;
-    for (auto& itsAidPriority : list) {
-        size += get_size(itsAidPriority.its_aid);
-        size += sizeof(uint8_t);
-    }
-    return size;
-}
-
-size_t get_size(const std::list<ItsAidPrioritySsp>& list)
-{
-    size_t size = 0;
-    for (auto& itsAidPrioritySssp : list) {
-        size += get_size(itsAidPrioritySssp.its_aid);
-        size += sizeof(uint8_t);
-        size += itsAidPrioritySssp.service_specific_permissions.size();
-        size += length_coding_size(itsAidPrioritySssp.service_specific_permissions.size());
-    }
+    size_t size = get_size(its_aid_ssp.its_aid);
+    size += its_aid_ssp.service_specific_permissions.size();
+    size += length_coding_size(its_aid_ssp.service_specific_permissions.size());
     return size;
 }
 
@@ -218,41 +81,29 @@ size_t get_size(const SubjectAttribute& sub)
     size_t size = sizeof(SubjectAttributeType);
     struct subject_attribute_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(VerificationKey key)
+        size_t operator()(const VerificationKey& key)
         {
             return get_size(key.key);
         }
-        size_t operator()(EncryptionKey key)
+        size_t operator()(const EncryptionKey& key)
         {
             return get_size(key.key);
         }
-        size_t operator()(SubjectAssurance assurance)
+        size_t operator()(const SubjectAssurance& assurance)
         {
             return get_size(assurance);
         }
-        size_t operator()(std::list<IntX> list)
+        size_t operator()(const std::list<IntX>& list)
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
             return size;
         }
-        size_t operator()(EccPoint ecc)
+        size_t operator()(const EccPoint& ecc)
         {
             return get_size(ecc);
         }
-        size_t operator()(std::list<ItsAidSsp> list)
-        {
-            size_t size = get_size(list);
-            size += length_coding_size(size);
-            return size;
-        }
-        size_t operator()(std::list<ItsAidPriority> list)
-        {
-            size_t size = get_size(list);
-            size += length_coding_size(size);
-            return size;
-        }
-        size_t operator()(std::list<ItsAidPrioritySsp> list)
+        size_t operator()(const std::list<ItsAidSsp>& list)
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
@@ -273,34 +124,28 @@ void serialize(OutputArchive& ar, const SubjectAttribute& subjectAttribute)
             m_archive(ar)
         {
         }
-        void operator()(VerificationKey key)
+        void operator()(const VerificationKey& key)
         {
             serialize(m_archive, key.key);
         }
-        void operator()(EncryptionKey key)
+        void operator()(const EncryptionKey& key)
         {
             serialize(m_archive, key.key);
         }
-        void operator()(SubjectAssurance assurance)
+        void operator()(const SubjectAssurance& assurance)
         {
-            m_archive << assurance;
+            m_archive << assurance.raw;
         }
-        void operator()(std::list<IntX> list)
-        {
-            serialize(m_archive, list);
-        }
-        void operator()(EccPoint ecc)
-        {
-        }
-        void operator()(std::list<ItsAidSsp> list)
+        void operator()(const std::list<IntX>& list)
         {
             serialize(m_archive, list);
         }
-        void operator()(std::list<ItsAidPriority> list)
+        void operator()(const EccPoint& ecc)
         {
-            serialize(m_archive, list);
+            // TODO: specification of corresponding public key algorithm is missing
+            throw serialization_error("unsupported serialization of SubjectAttribute with EccPoint");
         }
-        void operator()(std::list<ItsAidPrioritySsp> list)
+        void operator()(const std::list<ItsAidSsp>& list)
         {
             serialize(m_archive, list);
         }
@@ -322,7 +167,7 @@ size_t deserialize(InputArchive& ar, SubjectAttribute& sub)
     switch (type) {
         case SubjectAttributeType::Assurance_Level: {
             SubjectAssurance assurance;
-            ar >> assurance;
+            ar >> assurance.raw;
             size += get_size(assurance);
             sub = assurance;
             break;
@@ -355,24 +200,9 @@ size_t deserialize(InputArchive& ar, SubjectAttribute& sub)
             sub = itsAidSsp_list;
             break;
         }
-        case SubjectAttributeType::Priority_Its_Aid_List: {
-            std::list<ItsAidPriority> itsAidPriority_list;
-            size_t tmp_size = deserialize(ar, itsAidPriority_list);
-            size += tmp_size;
-            size += length_coding_size(tmp_size);
-            sub = itsAidPriority_list;
-            break;
-        }
         case SubjectAttributeType::Reconstruction_Value:
+            throw deserialization_error("unsupported deserialization of SubjectAttribute with EccPoint");
             break;
-        case SubjectAttributeType::Priority_Ssp_List: {
-            std::list<ItsAidPrioritySsp> itsAidPrioritySsp_list;
-            size_t tmp_size = deserialize(ar, itsAidPrioritySsp_list);
-            size += tmp_size;
-            size += length_coding_size(tmp_size);
-            sub = itsAidPrioritySsp_list;
-            break;
-        }
         default:
             throw deserialization_error("Unknown SubjectAttributeType");
     }

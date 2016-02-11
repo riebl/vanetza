@@ -43,6 +43,30 @@ struct byte_order_converter<T, 8>
     static T network_to_host(T value) { return be64toh(value); }
 };
 
+template<class T>
+struct byte_order_converter<T, 16>
+{
+    union mask128 {
+        mask128(T t) : value(t) {}
+        T value;
+        uint64_t part[2];
+    };
+
+    static T host_to_network(mask128 in) {
+        mask128 out(0);
+        out.part[1] = byte_order_converter<uint64_t>::host_to_network(in.part[0]);
+        out.part[0] = byte_order_converter<uint64_t>::host_to_network(in.part[1]);
+        return out.value;
+    }
+
+    static T network_to_host(mask128 in) {
+        mask128 out(0);
+        out.part[1] = byte_order_converter<uint64_t>::network_to_host(in.part[0]);
+        out.part[0] = byte_order_converter<uint64_t>::network_to_host(in.part[1]);
+        return out.value;
+    }
+};
+
 } // namespace detail
 
 
@@ -76,7 +100,9 @@ namespace detail
 #   error "Unknown byte order"
 #endif
 
-constexpr ByteOrder getHostByteOrder() { return host_byte_order; }
+} // namespace detail
+
+constexpr ByteOrder getHostByteOrder() { return detail::host_byte_order; }
 
 template<typename T, ByteOrder ORDER = getHostByteOrder()>
 class EndianType;
@@ -116,6 +142,9 @@ EndianType<T, ByteOrder::BigEndian> network_cast(T value)
     return endian_cast<ByteOrder::BigEndian>(value);
 }
 
+
+namespace detail
+{
 
 template<typename T>
 class EndianTypeStorage
@@ -167,18 +196,20 @@ class EndianTypeCaster<T, BASE, ORDER, false> : public
         EndianTypeCasterToNetwork<T, BASE>
     >::type {};
 
+} // namespace detail
+
 
 template<typename T, ByteOrder ORDER>
-class EndianType : public EndianTypeCaster<T, EndianTypeStorage<T>, ORDER>
+class EndianType : public detail::EndianTypeCaster<T, detail::EndianTypeStorage<T>, ORDER>
 {
 public:
-    typedef EndianTypeStorage<T> storage_type;
-    typedef EndianTypeCaster<T, storage_type, ORDER> base_type;
+    typedef detail::EndianTypeStorage<T> storage_type;
+    typedef detail::EndianTypeCaster<T, storage_type, ORDER> base_type;
     typedef EndianType<T, getHostByteOrder()> host_type;
     typedef EndianType<T, ByteOrder::BigEndian> network_type;
 
     EndianType() = default;
-    explicit EndianType(T value) { EndianTypeStorage<T>::set(value); }
+    explicit EndianType(T value) { storage_type::set(value); }
 
     bool operator==(const EndianType& other) const
     {
@@ -215,23 +246,15 @@ std::ostream& operator<<(std::ostream& os, const EndianType<T, ORDER>& t)
     return os;
 }
 
-} // namespace detail
+typedef EndianType<uint8_t, ByteOrder::BigEndian> uint8be_t;
+typedef EndianType<uint16_t, ByteOrder::BigEndian> uint16be_t;
+typedef EndianType<uint32_t, ByteOrder::BigEndian> uint32be_t;
+typedef EndianType<uint64_t, ByteOrder::BigEndian> uint64be_t;
 
-using detail::EndianType;
-using detail::endian_cast;
-using detail::host_cast;
-using detail::network_cast;
-using detail::getHostByteOrder;
-
-typedef detail::EndianType<uint8_t, ByteOrder::BigEndian> uint8be_t;
-typedef detail::EndianType<uint16_t, ByteOrder::BigEndian> uint16be_t;
-typedef detail::EndianType<uint32_t, ByteOrder::BigEndian> uint32be_t;
-typedef detail::EndianType<uint64_t, ByteOrder::BigEndian> uint64be_t;
-
-typedef detail::EndianType<int8_t, ByteOrder::BigEndian> int8be_t;
-typedef detail::EndianType<int16_t, ByteOrder::BigEndian> int16be_t;
-typedef detail::EndianType<int32_t, ByteOrder::BigEndian> int32be_t;
-typedef detail::EndianType<int64_t, ByteOrder::BigEndian> int64be_t;
+typedef EndianType<int8_t, ByteOrder::BigEndian> int8be_t;
+typedef EndianType<int16_t, ByteOrder::BigEndian> int16be_t;
+typedef EndianType<int32_t, ByteOrder::BigEndian> int32be_t;
+typedef EndianType<int64_t, ByteOrder::BigEndian> int64be_t;
 
 } // namespace vanetza
 

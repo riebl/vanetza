@@ -67,4 +67,3 @@ TEST(DataRequest, decrement_by_one) {
     decrement_by_one(repetition);
     EXPECT_DOUBLE_EQ(repetition.maximum / seconds, 0.0);
 }
-

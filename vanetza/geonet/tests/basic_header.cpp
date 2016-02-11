@@ -22,4 +22,3 @@ TEST(BasicHeader, ctor) {
     BasicHeader c(shb, mib);
     EXPECT_EQ(c.hop_limit, 1);
 }
-

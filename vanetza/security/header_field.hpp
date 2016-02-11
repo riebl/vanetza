@@ -1,17 +1,21 @@
-#ifndef HEADER_FIELDS_HPP_IHIAKD4K
-#define HEADER_FIELDS_HPP_IHIAKD4K
+#ifndef HEADER_FIELD_HPP_IHIAKD4K
+#define HEADER_FIELD_HPP_IHIAKD4K
 
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/encryption_parameter.hpp>
 #include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/signer_info.hpp>
+#include <boost/variant/variant.hpp>
+#include <list>
 
 namespace vanetza
 {
 namespace security
 {
 
+/// HeaderFieldType specified in TS 103 097 v1.2.1, section 5.5
 enum class HeaderFieldType : uint8_t
 {
     Generation_Time = 0,                    // Time64
@@ -21,45 +25,54 @@ enum class HeaderFieldType : uint8_t
     Request_Unrecognized_Certificate = 4,   // std::list<HashedId3>
     Message_Type = 5,                       // uint16 -> uint16be_t
     Signer_Info = 128,                      // SignerInfo
-    Recipient_Info = 129,                   // std::list<RecipientInfo>
-    Encryption_Parameters = 130             // EncryptionParameters
+    Encryption_Parameters = 129,            // EncryptionParameters
+    Recipient_Info = 130,                   // std::list<RecipientInfo>
 };
 
-typedef boost::variant<std::list<HashedId3>, Time32, Time64, uint16_t, SignerInfo,
-    Time64WithStandardDeviation, ThreeDLocation, std::list<RecipientInfo>, EncryptionParameter> HeaderField;
+/// HeaderField specified in TS 103 097 v1.2.1, section 5.4
+using HeaderField =  boost::variant<
+    Time64,
+    Time64WithStandardDeviation,
+    Time32,
+    ThreeDLocation,
+    std::list<HashedId3>,
+    uint16_t,
+    SignerInfo,
+    EncryptionParameter,
+    std::list<RecipientInfo>
+>;
 
 /**
- * Determines HeaderFieldType to a given HeaderField
- * \param HeaderField
- * \return HeaderFieldType
+ * \brief Determines HeaderFieldType to a given HeaderField
+ * \param field
+ * \return type
  */
 HeaderFieldType get_type(const HeaderField& field);
 
 /**
- * Calculates size of an object
- * \param Object
- * \return size_t containing the number of octets needed to serialize the object
+ * \brief Calculates size of a HeaderField
+ * \param field
+ * \return number of octets needed to serialize the HeaderField
  */
 size_t get_size(const HeaderField& field);
 
 /**
- * Serializes an object into a binary archive
- * \param object to serialize
- * \param achive to serialize in,
+ * \brief Serializes a HeaderField into a binary archive
+ * \note Serialization of HeaderField lists is provided by template
+ * \param ar to serialize in
+ * \param field to serialize
  */
 void serialize(OutputArchive& ar, const HeaderField& field);
 
 /**
- * Deserializes an object from a binary archive
- * \param archive with a serialized object at the beginning
- * \param object to deserialize
- * \return size of the deserialized object
+ * \brief Deserializes a list of HeaderFields from a binary archive
+ * \param ar with a serialized list of HeaderFields at the beginning
+ * \param list of HeaderFields to deserialize
+ * \return size of the deserialized list
  */
 size_t deserialize(InputArchive& ar, std::list<HeaderField>& list);
-size_t deserialize(InputArchive& ar, HeaderField&);
 
 } // namespace security
 } // namespace vanetza
 
-#endif /* HEADER_FIELDS_HPP_IHIAKD4K */
-
+#endif /* HEADER_FIELD_HPP_IHIAKD4K */

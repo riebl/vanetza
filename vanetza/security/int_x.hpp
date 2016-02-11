@@ -6,13 +6,13 @@
 #include <boost/operators.hpp>
 #include <boost/optional.hpp>
 #include <cstdint>
-#include <list>
 
 namespace vanetza
 {
 namespace security
 {
 
+/// IntX specified in TS 103 097 v1.2.1, section 4.2.1
 class IntX : public boost::equality_comparable<IntX>
 {
 public:
@@ -32,22 +32,24 @@ private:
 };
 
 /**
- * Serializes an IntX into a binary archive
- * \param achive to serialize in, IntX to serialize
+ * \brief Serializes an IntX into a binary archive
+ * \param ar to serialize in
+ * \param intx to serialize
  */
 void serialize(OutputArchive&, const IntX&);
 
 /**
- * Deserializes an IntX from a binary archive
- * \param archive with a serialized IntX at the beginning, IntX to deserialize
+ * \brief Deserializes an IntX from a binary archive
+ * \param ar with a serialized IntX at the beginning
+ * \param intx to deserialize
  * \return size of the deserialized IntX
  */
-void deserialize(InputArchive&, IntX&);
+size_t deserialize(InputArchive&, IntX&);
 
 /**
- * Calculates size of an IntX
- * \param IntX
- * \return size_t containing the number of octets needed to serialize the IntX
+ * \brief Calculates size of an IntX
+ * \param intx
+ * \return number of octets needed to serialize the IntX
  */
 size_t get_size(IntX);
 
@@ -55,4 +57,3 @@ size_t get_size(IntX);
 } // namespace vanetza
 
 #endif /* INT_X_HPP_RW3TJBBI */
-

@@ -9,7 +9,7 @@ namespace vanetza
 {
 
 // forward declaration
-class Packet;
+class BufferPacket;
 
 /**
  * IoVector eaeses population of struct msghdr.
@@ -19,7 +19,7 @@ class IoVector
 {
 public:
     void append(const void* base, std::size_t length);
-    void append(const Packet&);
+    void append(const BufferPacket&);
     void clear();
     std::size_t length() const;
     const iovec* base() const;

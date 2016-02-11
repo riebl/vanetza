@@ -1,52 +1,38 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/payload.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/check_payload.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 
+using namespace vanetza;
 using namespace vanetza::security;
 
-std::list<Payload> serialize(const std::list<Payload>& p)
-{
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, p);
-    InputArchive ia(stream);
-    std::list<Payload> deP;
-    deserialize(ia, deP);
-    return deP;
-}
-
-TEST(Payload, Serialize)
+TEST(Payload, serialize_cohesive)
 {
     Payload p;
     p.type = PayloadType::Unsecured;
-    for (int c = 0; c < 12; c++) {
-        p.buffer.push_back(c);
-    }
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, p);
-    InputArchive ia(stream);
-    Payload deP;
-    deserialize(ia, deP);
+    p.data = CohesivePacket({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 }, OsiLayer::Application);
 
-    EXPECT_EQ(p.buffer, deP.buffer);
+    check(p, serialize_roundtrip(p));
 }
 
-TEST(Payload, Serialize_List)
+TEST(Payload, serialize_chunk)
 {
-    std::list<Payload> list = setPayload_List();
-    std::list<Payload> deList = serialize(list);
-
-    testPayload_list(list, deList);
-}
-
-TEST(Payload, WebValidator_Size)
-{
-    std::list<Payload> list;
     Payload p;
-    p.buffer = {{ 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF }};
-    list.push_back(p);
+    p.type = PayloadType::Encrypted;
+    ChunkPacket packet;
+    packet[OsiLayer::Network] = ByteBuffer { 1, 2, 3, 4 };
+    packet[OsiLayer::Transport] = ByteBuffer { 5, 6, 7, 8 };
+    packet[OsiLayer::Application] = ByteBuffer { 9, 10, 11, 12 };
+    p.data = packet;
 
-    EXPECT_EQ(10, get_size(list));
+    check(p, serialize_roundtrip(p));
 }
+
+TEST(Payload, size)
+{
+    Payload p;
+    p.type = PayloadType::Signed;
+    p.data = CohesivePacket({ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, OsiLayer::Session);
+    EXPECT_EQ(1 /* type */ + 1 /* length coding */ + 10 /* bytes */, get_size(p));
+}
+

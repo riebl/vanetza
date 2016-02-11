@@ -51,12 +51,20 @@ TEST(OsiLayer, num) {
     EXPECT_EQ(0, num_osi_layers(OsiLayer::Network, OsiLayer::Link));
 }
 
-TEST(OsiLayer, range) {
+TEST(OsiLayer, subtraction) {
+    EXPECT_EQ(0, OsiLayer::Session - OsiLayer::Session);
+    EXPECT_EQ(1, OsiLayer::Transport - OsiLayer::Network);
+    EXPECT_EQ(-1, OsiLayer::Network - OsiLayer::Transport);
+    EXPECT_EQ(num_osi_layers(min_osi_layer(), max_osi_layer()) - 1,
+        max_osi_layer() - min_osi_layer());
+}
+
+TEST(OsiLayer, compile_time_range) {
     const auto r1_ref = osi_layers;
     ASSERT_EQ(7, r1_ref.size());
     auto r1 = osi_layer_range<min_osi_layer(), max_osi_layer()>();
     EXPECT_EQ(r1_ref.size(), r1.size());
-    for (unsigned i = 0; i <= r1.size(); ++i) {
+    for (unsigned i = 0; i < r1.size(); ++i) {
         EXPECT_EQ(r1_ref[i], r1[i]);
     }
 
@@ -68,4 +76,24 @@ TEST(OsiLayer, range) {
 
     auto r3 = osi_layer_range<OsiLayer::Application, OsiLayer::Application>();
     EXPECT_EQ(1, r3.size());
+}
+
+TEST(OsiLayer, run_time_range) {
+    const auto r1_ref = osi_layers;
+    ASSERT_EQ(7, r1_ref.size());
+    auto r1 = osi_layer_range(min_osi_layer(), max_osi_layer());
+    EXPECT_EQ(r1_ref.size(), r1.size());
+    for (unsigned i = 0; i < r1.size(); ++i) {
+        EXPECT_EQ(r1_ref[i], r1[i]);
+    }
+
+    auto r2 = osi_layer_range(OsiLayer::Link, OsiLayer::Transport);
+    ASSERT_EQ(3, r2.size());
+    EXPECT_EQ(OsiLayer::Link, r2[0]);
+    EXPECT_EQ(OsiLayer::Network, r2[1]);
+    EXPECT_EQ(OsiLayer::Transport, r2[2]);
+
+    auto r3 = osi_layer_range(OsiLayer::Application, OsiLayer::Application);
+    ASSERT_EQ(1, r3.size());
+    EXPECT_EQ(OsiLayer::Application, r3[0]);
 }

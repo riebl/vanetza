@@ -11,6 +11,8 @@ namespace geonet
 
 struct ShbHeader
 {
+    ShbHeader();
+
     static const std::size_t length_bytes = 4 + LongPositionVector::length_bytes;
 
     LongPositionVector source_position;

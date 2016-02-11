@@ -11,6 +11,7 @@ namespace vanetza
 namespace security
 {
 
+/// described in TS 103 097 v1.2.1, section 6.3
 enum class SubjectType : uint8_t
 {
     Enrollment_Credential = 0,
@@ -21,32 +22,30 @@ enum class SubjectType : uint8_t
     Crl_Signer = 5
 };
 
+/// described in TS 103 097 v1.2.1, section 6.2
 struct SubjectInfo
 {
     SubjectType subject_type;
     ByteBuffer subject_name;
 };
 
-
 /**
- * Serializes a SubjectInfo into a binary archive
- * \param SubjectInfo to serialize
- * \param achive to serialize in
+ * \brief Serializes a SubjectInfo into a binary archive
  */
 void serialize(OutputArchive&, const SubjectInfo&);
 
 /**
- * Deserializes a SubjectInfo from a binary archive
+ * \brief Deserializes a SubjectInfo from a binary archive
  * \param archive with a serialized SubjectInfo at the beginning
- * \param SubjectInfo to deserialize
+ * \param SubjectInfo
  * \return size of the deserialized SubjectInfo
  */
 size_t deserialize(InputArchive&, SubjectInfo&);
 
 /**
- * Calculates size of a SubjectInfo
+ * \brief Calculates size of a SubjectInfo
  * \param SubjectInfo
- * \return size_t containing the number of octets needed to serialize the SubjectInfo
+ * \return number of octets needed to serialize SubjectInfo
  */
 size_t get_size(const SubjectInfo&);
 
@@ -54,4 +53,3 @@ size_t get_size(const SubjectInfo&);
 } // namespace vanetza
 
 #endif /* SUBJECT_INFO_HPP_WCKSWSKY */
-

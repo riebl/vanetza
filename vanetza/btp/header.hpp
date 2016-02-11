@@ -2,7 +2,7 @@
 #define HEADER_HPP_FNKGEM7C
 
 #include <vanetza/common/byte_order.hpp>
-#include <vanetza/geonet/serialization.hpp>
+#include <vanetza/common/serialization.hpp>
 #include <cstdint>
 
 namespace vanetza
@@ -34,8 +34,8 @@ struct HeaderB
 
 static_assert(sizeof(HeaderB) == HeaderB::length_bytes, "Wrong size");
 
-void serialize(const HeaderB&, geonet::OutputArchive&);
-void deserialize(HeaderB&, geonet::InputArchive&);
+void serialize(OutputArchive&, const HeaderB&);
+void deserialize(InputArchive&, HeaderB&);
 
 } // namepsace btp
 } // namespace vanetza

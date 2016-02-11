@@ -4,6 +4,7 @@
 #include <vanetza/geonet/destination_variant.hpp>
 #include <vanetza/geonet/interface.hpp>
 #include <vanetza/geonet/position_vector.hpp>
+#include <vanetza/security/decap_confirm.hpp>
 #include <boost/optional.hpp>
 
 namespace vanetza
@@ -24,7 +25,8 @@ struct DataIndication
     TransportType transport_type;
     DestinationVariant destination;
     ShortPositionVector source_position;
-    // TODO: security report, certificate id and permissions are missing
+    security::ReportType security_report;
+    // TODO: certificate id and permissions are missing (optional)
     TrafficClass traffic_class;
     boost::optional<Lifetime> remaining_packet_lifetime;
     boost::optional<unsigned> remaining_hop_limit;

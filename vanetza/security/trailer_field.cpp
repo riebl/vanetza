@@ -1,5 +1,7 @@
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/trailer_field.hpp>
-#include <vanetza/security/length_coding.hpp>
+#include <boost/variant/get.hpp>
+#include <cassert>
 
 namespace vanetza
 {
@@ -36,9 +38,9 @@ size_t get_size(const TrailerField& field)
 
 void serialize(OutputArchive& ar, const TrailerField& field)
 {
-    struct trailerFieldVisitor : public boost::static_visitor<>
+    struct trailer_visitor : public boost::static_visitor<>
     {
-        trailerFieldVisitor(OutputArchive& ar) :
+        trailer_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }
@@ -50,8 +52,8 @@ void serialize(OutputArchive& ar, const TrailerField& field)
     };
     TrailerFieldType type = get_type(field);
     serialize(ar, type);
-    trailerFieldVisitor visit(ar);
-    boost::apply_visitor(visit, field);
+    trailer_visitor visitor(ar);
+    boost::apply_visitor(visitor, field);
 }
 
 size_t deserialize(InputArchive& ar, TrailerField& field)
@@ -71,6 +73,14 @@ size_t deserialize(InputArchive& ar, TrailerField& field)
             throw deserialization_error("Unknown TrailerFieldType");
     }
     return size;
+}
+
+boost::optional<ByteBuffer> extract_signature_buffer(const TrailerField& trailer_field)
+{
+    assert(TrailerFieldType::Signature == get_type(trailer_field));
+    assert(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(boost::get<Signature>(trailer_field)));
+
+    return extract_signature_buffer(boost::get<Signature>(trailer_field));
 }
 
 } // namespace security

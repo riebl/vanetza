@@ -2,6 +2,7 @@
 #define BYTE_SEQUENCE_HPP_10RLFUNF
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <functional>
 
 namespace vanetza
 {
@@ -12,6 +13,13 @@ namespace vanetza
  * \param seed initializing random number generator
  */
 ByteBuffer random_byte_sequence(std::size_t length, int seed = 0);
+
+/**
+ * Create generator function for random bytes
+ * \param seed initializing random number generator
+ * \return Generator function producing random bytes
+ */
+std::function<uint8_t()> random_byte_generator(int seed = 0);
 
 } // namespace vanetza
 

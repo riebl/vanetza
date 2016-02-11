@@ -58,8 +58,9 @@ struct byte_buffer_impl<std::string> : public byte_buffer
 template<>
 struct byte_buffer_impl<std::nullptr_t> : public byte_buffer
 {
-    void convert(ByteBuffer&) const override {}
+    void convert(ByteBuffer& buffer) const override { buffer.clear(); }
     std::size_t size() const override { return 0; }
+    std::unique_ptr<byte_buffer> duplicate() const override;
 };
 
 } // namespace convertible

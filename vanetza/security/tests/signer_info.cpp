@@ -1,34 +1,26 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/signer_info.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
+#include <vanetza/security/tests/check_signature.hpp>
+#include <vanetza/security/tests/check_signer_info.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 
-using namespace vanetza;
-using namespace security;
+using vanetza::random_byte_sequence;
+using namespace vanetza::security;
 
-SignerInfo serialize(const SignerInfo& info)
+TEST(SignerInfo, Serialization)
 {
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, info);
+    std::list<Certificate> certificates;
+    Certificate a;
+    a.signature = create_random_ecdsa_signature(28);
+    Certificate b;
+    b.signature = create_random_ecdsa_signature(29);
+    certificates.push_back(a);
+    certificates.push_back(b);
+    SignerInfo info { certificates };
 
-    SignerInfo deserializedInfo;
-    InputArchive ia(stream);
-    deserialize(ia, deserializedInfo);
-    return deserializedInfo;
-}
-
-TEST(SignerInfo, Serialzation)
-{
-    SignerInfo info;
-    info = setSignerInfo_CertificateList();
-    SignerInfo deInfo = serialize(info);
-
-    auto it = boost::get<std::list<Certificate>>(info).begin();
-    auto deIt = boost::get<std::list<Certificate>>(deInfo).begin();
-    testSignerInfo_Certificate(*it++, *deIt++);
-    testSignerInfo_Certificate(*it, *deIt);
+    check(info, serialize_roundtrip(info));
 }
 
 TEST(SignerInfo, WebValidator_Size)

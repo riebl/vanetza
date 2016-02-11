@@ -1,10 +1,8 @@
-#include <vanetza/security/certificate.hpp>
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/header_field.hpp>
-#include <string>
-#include <sstream>
-#include <memory>
-
-using namespace std;
+#include <boost/optional.hpp>
+#include <boost/variant/apply_visitor.hpp>
+#include <boost/variant/static_visitor.hpp>
 
 namespace vanetza
 {
@@ -113,7 +111,6 @@ size_t get_size(const HeaderField& field)
     return size;
 }
 
-
 void serialize(OutputArchive& ar, const HeaderField& field)
 {
     struct HeaderFieldVisitor : public boost::static_visitor<>
@@ -124,16 +121,16 @@ void serialize(OutputArchive& ar, const HeaderField& field)
         }
         void operator()(const Time64& time)
         {
-            geonet::serialize(host_cast(time), m_archive);
+            serialize(m_archive, host_cast(time));
         }
         void operator()(const Time64WithStandardDeviation& time)
         {
-            geonet::serialize(host_cast(time.time64), m_archive);
-            geonet::serialize(host_cast(time.log_std_dev), m_archive);
+            serialize(m_archive, host_cast(time.time64));
+            serialize(m_archive, host_cast(time.log_std_dev));
         }
         void operator()(const Time32& time)
         {
-            geonet::serialize(host_cast(time), m_archive);
+            serialize(m_archive, host_cast(time));
         }
         void operator()(const ThreeDLocation& loc)
         {
@@ -154,7 +151,7 @@ void serialize(OutputArchive& ar, const HeaderField& field)
         }
         void operator()(const uint16_t& msg_type)
         {
-            geonet::serialize(host_cast(msg_type), m_archive);
+            serialize(m_archive, host_cast(msg_type));
         }
         void operator()(const SignerInfo& info)
         {
@@ -162,12 +159,14 @@ void serialize(OutputArchive& ar, const HeaderField& field)
         }
         void operator()(const std::list<RecipientInfo>& list)
         {
-            serialize(m_archive, list);
+            // TODO: only works until further symmetric algorithms are introduced
+            serialize(m_archive, list, SymmetricAlgorithm::Aes128_Ccm);
         }
         void operator()(const EncryptionParameter& param)
         {
             serialize(m_archive, param);
         }
+
         OutputArchive& m_archive;
     };
     HeaderFieldType type = get_type(field);
@@ -179,8 +178,8 @@ void serialize(OutputArchive& ar, const HeaderField& field)
 size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
 {
     size_t size = deserialize_length(ar);
-    SymmetricAlgorithm sym = static_cast<SymmetricAlgorithm>(255);
     size_t ret_size = size;
+    boost::optional<SymmetricAlgorithm> sym_algo;
     while (size > 0) {
         HeaderField field;
         HeaderFieldType type;
@@ -189,7 +188,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
         switch (type) {
             case HeaderFieldType::Generation_Time: {
                 Time64 time;
-                geonet::deserialize(time, ar);
+                deserialize(ar, time);
                 field = time;
                 list.push_back(field);
                 size -= sizeof(Time64);
@@ -197,8 +196,8 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Generation_Time_Confidence: {
                 Time64WithStandardDeviation time;
-                geonet::deserialize(time.time64, ar);
-                geonet::deserialize(time.log_std_dev, ar);
+                deserialize(ar, time.time64);
+                deserialize(ar, time.log_std_dev);
                 field = time;
                 list.push_back(field);
                 size -= sizeof(Time64);
@@ -207,7 +206,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Expiration: {
                 Time32 time;
-                geonet::deserialize(time, ar);
+                deserialize(ar, time);
                 field = time;
                 list.push_back(field);
                 size -= sizeof(Time32);
@@ -238,7 +237,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Message_Type: {
                 uint16_t uint;
-                geonet::deserialize(uint, ar);
+                deserialize(ar, uint);
                 field = uint;
                 list.push_back(field);
                 size -= sizeof(uint16_t);
@@ -253,17 +252,22 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Recipient_Info: {
                 std::list<RecipientInfo> recipientList;
-                size_t tmp_size = deserialize(ar, recipientList, sym);
-                size -= tmp_size;
-                size -= length_coding_size(tmp_size);
-                field = recipientList;
-                list.push_back(field);
+                if (sym_algo) {
+                    size_t tmp_size = deserialize(ar, recipientList, sym_algo.get());
+                    size -= tmp_size;
+                    size -= length_coding_size(tmp_size);
+                    field = recipientList;
+                    list.push_back(field);
+                } else {
+                    throw deserialization_error("HeaderFields: RecipientInfo read before EncryptionParameters: SymmetricAlgorithm still unknown");
+                }
                 break;
             }
             case HeaderFieldType::Encryption_Parameters: {
                 EncryptionParameter param;
-                size -= deserialize(ar, param, sym);
+                size -= deserialize(ar, param);
                 field = param;
+                sym_algo = get_type(param);
                 list.push_back(field);
                 break;
             }
@@ -276,4 +280,4 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
 }
 
 } // namespace security
-} // namespace vanextza
+} // namespace vanetza

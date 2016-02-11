@@ -1,26 +1,17 @@
-#include <vanetza/security/subject_info.hpp>
-#include <vanetza/security/tests/test_elements.hpp>
-#include <vanetza/security/tests/set_elements.hpp>
 #include <gtest/gtest.h>
+#include <vanetza/common/byte_sequence.hpp>
+#include <vanetza/security/subject_info.hpp>
+#include <vanetza/security/tests/check_subject_info.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza::security;
 
-SubjectInfo serialize(SubjectInfo sub)
-{
-    std::stringstream stream;
-    OutputArchive oa(stream);
-    serialize(oa, sub);
-    SubjectInfo desub;
-    InputArchive ia(stream);
-    deserialize(ia, desub);
-    return desub;
-}
-
 TEST(SubjectInfo, Serialization)
 {
-    SubjectInfo sub = setSubjectInfo();
-    SubjectInfo desub = serialize(sub);
-    testSubjectInfo(sub, desub);
+    SubjectInfo sub;
+    sub.subject_type = SubjectType::Root_Ca;
+    sub.subject_name = vanetza::random_byte_sequence(40);
+    check(sub, serialize_roundtrip(sub));
 }
 
 TEST(SubjectInfo, WebValidator_Size)

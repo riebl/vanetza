@@ -1,6 +1,7 @@
 #ifndef OSI_LAYER_HPP_C4VTEZJP
 #define OSI_LAYER_HPP_C4VTEZJP
 
+#include <boost/range/iterator_range.hpp>
 #include <array>
 #include <cstdint>
 
@@ -31,12 +32,32 @@ constexpr std::array<OsiLayer, 7> osi_layers {{
             OsiLayer::Application
 }};
 
+constexpr int operator-(OsiLayer lhs, OsiLayer rhs)
+{
+    using num_type = std::underlying_type<OsiLayer>::type;
+    return static_cast<num_type>(lhs) - static_cast<num_type>(rhs);
+}
+
+constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
+{
+    using num_type = std::underlying_type<OsiLayer>::type;
+    return static_cast<num_type>(lhs) < static_cast<num_type>(rhs);
+}
+
+constexpr bool operator==(OsiLayer lhs, OsiLayer rhs)
+{
+    using num_type = std::underlying_type<OsiLayer>::type;
+    return static_cast<num_type>(lhs) == static_cast<num_type>(rhs);
+}
+
+constexpr bool operator!=(OsiLayer lhs, OsiLayer rhs) { return !(lhs == rhs); }
+constexpr bool operator>=(OsiLayer lhs, OsiLayer rhs) { return !(lhs < rhs); }
+constexpr bool operator<=(OsiLayer lhs, OsiLayer rhs) { return (lhs < rhs || lhs == rhs); }
+constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
+
 constexpr std::size_t num_osi_layers(OsiLayer from, OsiLayer to)
 {
-    typedef typename std::underlying_type<OsiLayer>::type num_type;
-    return static_cast<num_type>(from) <= static_cast<num_type>(to) ?
-        static_cast<num_type>(to) - static_cast<num_type>(from) + 1 :
-        0;
+    return (from <= to ? to - from + 1 : 0);
 }
 
 template<OsiLayer FROM, OsiLayer TO>
@@ -53,20 +74,14 @@ std::array<OsiLayer, num_osi_layers(FROM, TO)> osi_layer_range()
     return layers;
 }
 
-constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
+inline boost::iterator_range<decltype(osi_layers)::const_iterator>
+osi_layer_range(OsiLayer from, OsiLayer to)
 {
-    return static_cast<uint8_t>(lhs) < static_cast<uint8_t>(rhs);
+    assert(from <= to);
+    auto begin = osi_layers.cbegin() + (from - min_osi_layer());
+    auto end = osi_layers.cend() - (max_osi_layer() - to);
+    return boost::make_iterator_range(begin, end);
 }
-
-constexpr bool operator==(OsiLayer lhs, OsiLayer rhs)
-{
-    return static_cast<uint8_t>(lhs) == static_cast<uint8_t>(rhs);
-}
-
-constexpr bool operator!=(OsiLayer lhs, OsiLayer rhs) { return !(lhs == rhs); }
-constexpr bool operator>=(OsiLayer lhs, OsiLayer rhs) { return !(lhs < rhs); }
-constexpr bool operator<=(OsiLayer lhs, OsiLayer rhs) { return (lhs < rhs || lhs == rhs); }
-constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
 
 } // namespace vanetza
 

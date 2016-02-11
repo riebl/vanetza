@@ -47,16 +47,14 @@ size_t get_size(IntX intx)
 
 void serialize(OutputArchive& ar, const IntX& intx)
 {
-    ByteBuffer buf = intx.encode();
-    for (auto byte : buf) {
-        ar << byte;
-    }
+    serialize_length(ar, intx.get());
 }
 
-void deserialize(InputArchive& ar, IntX& intx)
+size_t deserialize(InputArchive& ar, IntX& intx)
 {
     const auto size = deserialize_length(ar);
     intx.set(size);
+    return get_size(intx);
 }
 
 } // namespace security

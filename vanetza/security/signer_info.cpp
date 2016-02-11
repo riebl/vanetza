@@ -1,5 +1,7 @@
-#include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/certificate.hpp>
+#include <vanetza/security/exception.hpp>
+#include <vanetza/security/length_coding.hpp>
+#include <vanetza/security/signer_info.hpp>
 
 namespace vanetza
 {
@@ -10,9 +12,13 @@ SignerInfoType get_type(const SignerInfo& info)
 {
     struct SignerInfo_visitor : public boost::static_visitor<SignerInfoType>
     {
+        SignerInfoType operator()(const std::nullptr_t)
+        {
+            return SignerInfoType::Self;
+        }
         SignerInfoType operator()(const HashedId8& id)
         {
-            return SignerInfoType::Certificate_Digest_With_EDCSAP256;
+            return SignerInfoType::Certificate_Digest_With_SHA256;
         }
         SignerInfoType operator()(const Certificate& cert)
         {
@@ -44,6 +50,10 @@ size_t get_size(const SignerInfo& info)
     size_t size = sizeof(SignerInfoType);
     struct SignerInfo_visitor : public boost::static_visitor<size_t>
     {
+        size_t operator()(const std::nullptr_t&)
+        {
+            return 0;
+        }
         size_t operator()(const HashedId8& id)
         {
             return id.size();
@@ -86,24 +96,33 @@ void serialize(OutputArchive& ar, const SignerInfo& info)
         {
         }
 
+        void operator()(const std::nullptr_t)
+        {
+            // intentionally do nothing
+        }
+
         void operator()(const HashedId8& id)
         {
             for (auto& byte : id) {
                 m_archive << byte;
             }
         }
+
         void operator()(const Certificate& cert)
         {
             serialize(m_archive, cert);
         }
+
         void operator()(const std::list<Certificate>& list)
         {
             serialize(m_archive, list);
         }
+
         void operator()(const CertificateDigestWithOtherAlgorithm& cert)
         {
             serialize(m_archive, cert);
         }
+
         OutputArchive& m_archive;
     };
     SignerInfoType type = get_type(info);
@@ -143,7 +162,7 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
             info = list;
             break;
         }
-        case SignerInfoType::Certificate_Digest_With_EDCSAP256: {
+        case SignerInfoType::Certificate_Digest_With_SHA256: {
             HashedId8 cert;
             for (size_t c = 0; c < 8; c++) {
                 ar >> cert[c];
@@ -159,6 +178,7 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
             break;
         }
         case SignerInfoType::Self:
+            info = nullptr;
             break;
         default:
             throw deserialization_error("Unknown SignerInfoType");

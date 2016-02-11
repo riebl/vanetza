@@ -4,6 +4,7 @@
 #include <vanetza/common/bit_number.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/serialization.hpp>
+#include <boost/variant/variant.hpp>
 
 namespace vanetza
 {
@@ -42,10 +43,10 @@ size_t get_size(const Duration&);
 
 enum class ValidityRestrictionType : uint8_t
 {
-    Time_End = 0,                   //end_validity
-    Time_Start_And_End = 1,         //start_and_end_valididty
-    Time_Start_And_Duration = 2,    //start_and_duration_validity
-    Region = 3                      //GeographicRegion
+    Time_End = 0,                   // end_validity
+    Time_Start_And_End = 1,         // start_and_end_valididty
+    Time_Start_And_Duration = 2,    // start_and_duration_validity
+    Region = 3                      // GeographicRegion
 };
 
 struct StartAndEndValidity
@@ -92,8 +93,8 @@ size_t deserialize(InputArchive&, ValidityRestriction&);
 
 /**
  * Serializes a ValidityRestriction list into a binary archive
+ * \param archive to serialize in
  * \param ValidityRestriction list to serialize
- * \param achive to serialize in
  */
 void serialize(OutputArchive&, const ValidityRestriction&);
 

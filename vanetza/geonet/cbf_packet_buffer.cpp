@@ -21,7 +21,7 @@ bool node_match(
 
 std::size_t length(const CbfPacketData& packet)
 {
-    return (packet.pdu ? packet.pdu->length() : 0) +
+    return (packet.pdu ? get_length(*packet.pdu) : 0) +
         (packet.payload ? packet.payload->size(OsiLayer::Transport, max_osi_layer()) : 0);
 }
 

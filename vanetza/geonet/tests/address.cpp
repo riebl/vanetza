@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/geonet/address.hpp>
+#include <vanetza/geonet/serialization_buffer.hpp>
 #include <vanetza/net/mac_address.hpp>
 
 using namespace vanetza;
@@ -30,6 +31,21 @@ TEST(Address, equality) {
     e.country_code(8);
     EXPECT_NE(d, e);
     a.mid(b.mid());
+    EXPECT_EQ(a, b);
+}
+
+TEST(Address, serialization) {
+    Address a({1, 2, 3, 4, 5, 6});
+    a.is_manually_configured(true);
+    a.station_type(StationType::TRAM);
+    a.country_code(0x0333);
+
+    ByteBuffer buffer;
+    serialize_into_buffer(a, buffer);
+    EXPECT_EQ(Address::length_bytes, buffer.size());
+
+    Address b;
+    deserialize_from_buffer(b, buffer);
     EXPECT_EQ(a, b);
 }
 

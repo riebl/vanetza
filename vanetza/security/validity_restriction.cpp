@@ -1,3 +1,4 @@
+#include <vanetza/security/exception.hpp>
 #include <vanetza/security/validity_restriction.hpp>
 
 namespace vanetza
@@ -112,16 +113,16 @@ size_t deserialize(InputArchive& ar, ValidityRestriction& restriction)
     switch (type) {
         case ValidityRestrictionType::Time_End: {
             EndValidity end;
-            geonet::deserialize(end, ar);
+            deserialize(ar, end);
             size += sizeof(end);
             restriction = end;
             break;
         }
         case ValidityRestrictionType::Time_Start_And_Duration: {
             StartAndDurationValidity validity;
-            geonet::deserialize(validity.start_validity, ar);
+            deserialize(ar, validity.start_validity);
             uint16_t duration;
-            geonet::deserialize(duration, ar);
+            deserialize(ar, duration);
             validity.duration = Duration(duration);
             size += get_size(validity);
             restriction = validity;
@@ -129,8 +130,8 @@ size_t deserialize(InputArchive& ar, ValidityRestriction& restriction)
         }
         case ValidityRestrictionType::Time_Start_And_End: {
             StartAndEndValidity validity;
-            geonet::deserialize(validity.start_validity, ar);
-            geonet::deserialize(validity.end_validity, ar);
+            deserialize(ar, validity.start_validity);
+            deserialize(ar, validity.end_validity);
             restriction = validity;
             size += get_size(validity);
             break;
@@ -157,17 +158,17 @@ void serialize(OutputArchive& ar, const ValidityRestriction& restriction)
         }
         void operator()(const EndValidity& validity)
         {
-            geonet::serialize(host_cast(validity), m_archive);
+            serialize(m_archive, host_cast(validity));
         }
         void operator()(const StartAndEndValidity& validity)
         {
-            geonet::serialize(host_cast(validity.start_validity), m_archive);
-            geonet::serialize(host_cast(validity.end_validity), m_archive);
+            serialize(m_archive, host_cast(validity.start_validity));
+            serialize(m_archive, host_cast(validity.end_validity));
         }
         void operator()(const StartAndDurationValidity& validity)
         {
-            geonet::serialize(host_cast(validity.start_validity), m_archive);
-            geonet::serialize(host_cast(validity.duration.raw()), m_archive);
+            serialize(m_archive, host_cast(validity.start_validity));
+            serialize(m_archive, host_cast(validity.duration.raw()));
         }
         void operator()(const GeographicRegion& region)
         {

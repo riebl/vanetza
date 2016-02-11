@@ -57,6 +57,23 @@ public:
      */
     std::size_t size(OsiLayer from, OsiLayer to) const;
 
+    /**
+     * Extract a range of layers from this packet to a new one
+     * \param from start at this layer (inclusive)
+     * \param to stop at this layer (inclusive)
+     * \return new packet containing layers of specified range
+     */
+    ChunkPacket extract(OsiLayer from, OsiLayer to);
+
+    /**
+     * Merge layers from another packet
+     * \param packet source packet (layers will be moved from there)
+     * \param from start at this layer (inclusive)
+     * \param to stop at this layer (inclusive)
+     * \return reference to this packet
+     */
+    ChunkPacket& merge(ChunkPacket&, OsiLayer from, OsiLayer to);
+
 private:
     typedef std::map<OsiLayer, ByteBufferConvertible> map_type;
     map_type m_layers;

@@ -1,7 +1,7 @@
 #include "port_dispatcher.hpp"
 #include "data_indication.hpp"
 #include <vanetza/geonet/data_indication.hpp>
-#include <vanetza/geonet/serialization_buffer.hpp>
+#include <vanetza/common/serialization_buffer.hpp>
 #include <cassert>
 
 namespace vanetza
@@ -12,7 +12,7 @@ namespace btp
 HeaderB parse_btp_b(CohesivePacket& packet)
 {
     HeaderB hdr;
-    geonet::deserialize_from_range(hdr, packet[OsiLayer::Transport]);
+    deserialize_from_range(hdr, packet[OsiLayer::Transport]);
     packet.set_boundary(OsiLayer::Transport, btp::HeaderB::length_bytes);
     return hdr;
 }
@@ -22,11 +22,11 @@ HeaderB parse_btp_b(ChunkPacket& packet)
     HeaderB hdr;
     ByteBuffer tmp;
     packet[OsiLayer::Transport].convert(tmp);
-    geonet::deserialize_from_buffer(hdr, tmp);
+    deserialize_from_buffer(hdr, tmp);
     return hdr;
 }
 
-HeaderB parse_btp_b(geonet::PacketVariant& packet)
+HeaderB parse_btp_b(PacketVariant& packet)
 {
     struct parse_btp_visitor : public boost::static_visitor<HeaderB>
     {
@@ -43,7 +43,7 @@ HeaderB parse_btp_b(geonet::PacketVariant& packet)
     return boost::apply_visitor(visitor, packet);
 }
 
-boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, geonet::PacketVariant& packet)
+boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, PacketVariant& packet)
 {
     boost::optional<DataIndication> indication;
 

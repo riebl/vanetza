@@ -1,44 +1,38 @@
-#include "packet.hpp"
+#include <vanetza/net/packet.hpp>
 
 namespace vanetza
 {
 
-Packet::Packet()
+std::unique_ptr<DownPacket> duplicate(const PacketVariant& packet)
 {
+    struct duplication_visitor : public boost::static_visitor<>
+    {
+        void operator()(const CohesivePacket& packet)
+        {
+            m_duplicate.reset(new ChunkPacket());
+            for (auto layer : osi_layers) {
+                const auto source = packet[layer];
+                auto& dest = m_duplicate->layer(layer);
+                dest = ByteBuffer(source.begin(), source.end());
+            }
+        }
+
+        void operator()(const ChunkPacket& packet)
+        {
+            m_duplicate = std::move(duplicate(packet));
+        }
+
+        std::unique_ptr<ChunkPacket> m_duplicate;
+    };
+
+    duplication_visitor visitor;
+    boost::apply_visitor(visitor, packet);
+    return std::move(visitor.m_duplicate);
 }
 
-void Packet::swap(OsiLayer layer, ByteBuffer& replacement)
+std::unique_ptr<DownPacket> duplicate(const DownPacket& packet)
 {
-    ByteBuffer& stored = mBuffers[layer];
-    stored.swap(replacement);
-}
-
-const ByteBuffer& Packet::operator[](OsiLayer layer) const
-{
-    auto match = mBuffers.find(layer);
-    if (match == mBuffers.end()) {
-        static const ByteBuffer scEmptyBuffer;
-        return scEmptyBuffer;
-    } else {
-        return match->second;
-    }
-}
-
-std::size_t Packet::size() const
-{
-    std::size_t packet_size = 0;
-    for (const auto& it : *this) {
-        packet_size += it.second.size();
-    }
-    return packet_size;
-}
-
-void Packet::clear()
-{
-    for (auto& it : mBuffers) {
-        it.second.clear();
-    }
+    return std::unique_ptr<DownPacket> { new DownPacket(packet) };
 }
 
 } // namespace vanetza
-

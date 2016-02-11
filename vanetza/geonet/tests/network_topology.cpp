@@ -21,6 +21,24 @@ namespace vanetza
 namespace geonet
 {
 
+std::unique_ptr<UpPacket> duplicate_copy_construct(const ChunkPacket& packet)
+{
+    return std::unique_ptr<UpPacket> { new UpPacket(packet) };
+}
+
+std::unique_ptr<UpPacket> duplicate_serialize(const ChunkPacket& packet)
+{
+    ByteBuffer buf_packet;
+    for (auto layer : osi_layer_range<OsiLayer::Network, OsiLayer::Application>()) {
+        ByteBuffer buf_layer;
+        packet[layer].convert(buf_layer);
+        buf_packet.insert(buf_packet.end(), buf_layer.begin(), buf_layer.end());
+    }
+    assert(buf_packet.size() == packet.size(OsiLayer::Network, OsiLayer::Application));
+
+    return std::unique_ptr<UpPacket> { new UpPacket(CohesivePacket(std::move(buf_packet), OsiLayer::Network)) };
+}
+
 NetworkTopology::RequestInterface::RequestInterface(NetworkTopology& network, const MacAddress& mac) :
     network(network), address(mac)
 {
@@ -38,6 +56,12 @@ NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
     request_interface(network, mac_address),
     router(network.get_mib(), request_interface)
 {
+}
+
+NetworkTopology::NetworkTopology()
+{
+    set_duplication_mode(PacketDuplicationMode::COPY_CONSTRUCT);
+    assert(fn_duplicate);
 }
 
 boost::optional<NetworkTopology::RouterContext&> NetworkTopology::get_host(const MacAddress& addr)
@@ -130,7 +154,7 @@ void NetworkTopology::dispatch()
 void NetworkTopology::send(const MacAddress& sender, const MacAddress& destination)
 {
     counter_indications++;
-    std::unique_ptr<UpPacket> packet_up { new UpPacket(*get_interface(sender)->last_packet) };
+    std::unique_ptr<UpPacket> packet_up = fn_duplicate(*get_interface(sender)->last_packet);
     auto router = get_router(destination);
     if (router) router->indicate(std::move(packet_up), sender, destination);
 }
@@ -172,6 +196,21 @@ void NetworkTopology::reset_counters()
 {
     counter_indications = 0;
     counter_requests.clear();
+}
+
+void NetworkTopology::set_duplication_mode(PacketDuplicationMode mode)
+{
+    switch (mode) {
+        case PacketDuplicationMode::COPY_CONSTRUCT:
+            fn_duplicate = &duplicate_copy_construct;
+            break;
+        case PacketDuplicationMode::SERIALIZE:
+            fn_duplicate = &duplicate_serialize;
+            break;
+        default:
+            throw std::runtime_error("Invalid PacketDuplicationMode");
+            break;
+    }
 }
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)

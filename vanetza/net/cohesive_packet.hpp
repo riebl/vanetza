@@ -26,6 +26,12 @@ public:
     CohesivePacket(const ByteBuffer& buffer, OsiLayer layer);
     CohesivePacket(ByteBuffer&& buffer, OsiLayer layer);
 
+    CohesivePacket(const CohesivePacket&);
+    CohesivePacket& operator=(const CohesivePacket&);
+
+    CohesivePacket(CohesivePacket&&) = default;
+    CohesivePacket& operator=(CohesivePacket&&) = default;
+
     /**
      * Access a certain sub-range of packet data belonging to a specific layer
      * \param layer requested layer data
@@ -64,8 +70,15 @@ public:
      */
     std::size_t size(OsiLayer from, OsiLayer to) const;
 
+    /**
+     * Non-mutable access to internal byte buffer
+     * \return const byte buffer reference
+     */
+    const ByteBuffer& buffer() const { return m_buffer; }
+
 private:
     void reset_iterators(OsiLayer layer);
+    void rebuild_iterators(const CohesivePacket&);
     buffer_const_range get(unsigned idx) const;
     buffer_range get(unsigned idx);
 

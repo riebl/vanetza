@@ -4,17 +4,13 @@
 #include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/data_request.hpp>
 #include <vanetza/common/byte_order.hpp>
-#include <vanetza/geonet/packet.hpp>
+#include <vanetza/net/packet.hpp>
 #include <memory>
 
 namespace vanetza
 {
-
 namespace btp
 {
-
-using geonet::DownPacket;
-using geonet::UpPacket;
 
 class IndicationInterface
 {

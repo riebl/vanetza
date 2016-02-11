@@ -17,7 +17,9 @@ void Repeater::trigger(Timestamp now)
 {
     while (!m_repetitions.empty() && m_repetitions.top().m_next <= now) {
         // This cast is safe because element is removed afterwards anyway
-        Repetition& repetition = const_cast<Repetition&>(m_repetitions.top());
+        Repetition repetition = std::move(const_cast<Repetition&>(m_repetitions.top()));
+        m_repetitions.pop();
+
         if (m_repeat_fn) {
             DataRequest& request = access_request(repetition.m_request);
             assert(request.repetition);
@@ -33,7 +35,6 @@ void Repeater::trigger(Timestamp now)
             }
             m_repeat_fn(repetition.m_request, std::move(repetition.m_payload));
         }
-        m_repetitions.pop();
     }
 }
 
