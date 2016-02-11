@@ -1,5 +1,7 @@
 #include <vanetza/security/recipient_info.hpp>
 #include <vanetza/security/length_coding.hpp>
+#include <boost/variant/static_visitor.hpp>
+#include <boost/variant/apply_visitor.hpp>
 
 namespace vanetza
 {

@@ -22,4 +22,3 @@ TEST(RecipientInfo, Serialize)
 
     check(info, serialize_roundtrip(info, SymmetricAlgorithm::Aes128_Ccm));
 }
-
