@@ -560,12 +560,15 @@ void Router::reset_beacon_timer()
 {
     typedef decltype(m_mib.itsGnBeaconServiceMaxJitter) duration_t;
     typedef duration_t::value_type real_t;
+
     const real_t max_jitter = m_mib.itsGnBeaconServiceMaxJitter.value();
     std::uniform_real_distribution<real_t> dist_jitter(0.0, max_jitter);
     const real_t random_jitter = dist_jitter(m_random_gen);
     const Timestamp::duration_type next_beacon_in {
         m_mib.itsGnBeaconServiceRetransmitTimer +
-        duration_t::from_value(random_jitter) };
+        duration_t::from_value(random_jitter)
+    };
+
     m_next_beacon = m_time_now + next_beacon_in;
 }
 
