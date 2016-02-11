@@ -12,6 +12,7 @@ namespace vanetza
 namespace security
 {
 
+/// EcdsaSignature specified in TS 103 097 v1.2.1, section 4.2.9
 struct EcdsaSignature
 {
     EccPoint R;
@@ -31,50 +32,72 @@ private:
     std::size_t m_bytes;
 };
 
+/// Signature specified in TS 103 097 v1.2.1, section 4.2.8
 typedef boost::variant<EcdsaSignature, EcdsaSignatureFuture> Signature;
 
 /**
- * Determines PublcKeyAlgorithm to a given Signature
- * \param Signature
+ * brief Determines PublicKeyAlgorithm of a given Signature
+ * \param signature
  * \return PublicKeyAlgorithm
  */
 PublicKeyAlgorithm get_type(const Signature&);
 
 /**
- * Calculates size of a Signature
- * \param Sigtnature
- * \return size_t containing the number of octets needed to serialize the Sigtnature
+ * \brief Calculates size of a EcdsaSignature
+ * \param signature
+ * \return number of octets needed for serialization
  */
 size_t get_size(const EcdsaSignature&);
+
+/**
+ * \brief Calculates size of a EcdsaSignatureFuture
+ * \param signature
+ * \return number of octets needed for serialization
+ */
 size_t get_size(const EcdsaSignatureFuture&);
+
+/**
+ * \brief Calculates size of a Signature
+ * \param signature
+ * \return number of octets needed for serialization
+ */
 size_t get_size(const Signature&);
 
 /**
- * Serializes a Signature into a binary archive
- * \param achive to serialize in
- * \param PublicKey to serialize
+ * \brief Serializes a signature into a binary archive
+ * \param ar to serialize in
+ * \param signature
  */
 void serialize(OutputArchive&, const Signature&);
 void serialize(OutputArchive&, const EcdsaSignature&);
 void serialize(OutputArchive&, const EcdsaSignatureFuture&);
 
 /**
- * Deserializes an object from a binary archive
- * \param archive with a serialized object at the beginning
- * \param object to deserialize
- * \return size of the deserialized object
+ * \brief Deserializes an EcdsaSignature from a binary archive
+ *  Requires PublicKeyAlgorithm for determining the signature size
+ * \param ar with a serialized EcdsaSignature at the beginning
+ * \param signature to deserialize
+ * \param public_key_algorithm to determine the size of the signature
+ * \return size of the deserialized EcdsaSignature
  */
 size_t deserialize(InputArchive&, EcdsaSignature&, const PublicKeyAlgorithm&);
+
+/**
+ * \brief Deserializes a Signature from a binary archive
+ * \param ar with a serialized Signature at the beginning
+ * \param signature to deserialize
+ * \return size of the deserialized Signature
+ */
 size_t deserialize(InputArchive&, Signature&);
 
 /**
- * Serialize the parts of a Signature
- * to return the ByteBuffer representation
- * \param Signature to be converted
- * \return ByteBuffer
+ * \brief Extracts binary signature
+ * \param signature source for binary signature
+ * \return signature as binary
  */
 ByteBuffer extract_signature_buffer(const Signature& sig);
 
-}
-}
+} // namespace security
+} // namespace vanetza
+
 #endif /* SIGNATURE_HPP_ZWPLNDVE */

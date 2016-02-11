@@ -1,7 +1,6 @@
-#include <boost/iostreams/stream.hpp>
-#include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/signature.hpp>
+#include <boost/iostreams/stream.hpp>
 #include <cassert>
 
 namespace vanetza
@@ -181,5 +180,5 @@ std::size_t EcdsaSignatureFuture::size() const
     return m_bytes;
 }
 
-} // ns security
-} // ns vanetza
+} // namespace security
+} // namespace vanetza
