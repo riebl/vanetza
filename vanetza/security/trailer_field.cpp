@@ -1,6 +1,5 @@
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/trailer_field.hpp>
-#include <vanetza/security/length_coding.hpp>
 #include <boost/variant/get.hpp>
 #include <cassert>
 
@@ -39,9 +38,9 @@ size_t get_size(const TrailerField& field)
 
 void serialize(OutputArchive& ar, const TrailerField& field)
 {
-    struct trailerFieldVisitor : public boost::static_visitor<>
+    struct trailer_visitor : public boost::static_visitor<>
     {
-        trailerFieldVisitor(OutputArchive& ar) :
+        trailer_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }
@@ -53,8 +52,8 @@ void serialize(OutputArchive& ar, const TrailerField& field)
     };
     TrailerFieldType type = get_type(field);
     serialize(ar, type);
-    trailerFieldVisitor visit(ar);
-    boost::apply_visitor(visit, field);
+    trailer_visitor visitor(ar);
+    boost::apply_visitor(visitor, field);
 }
 
 size_t deserialize(InputArchive& ar, TrailerField& field)
