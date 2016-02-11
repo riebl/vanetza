@@ -3,6 +3,7 @@
 #include <vanetza/security/tests/check_trailer_field.hpp>
 #include <vanetza/security/tests/check_visitor.hpp>
 #include <boost/mpl/size.hpp>
+#include <boost/variant/get.hpp>
 
 namespace vanetza
 {
