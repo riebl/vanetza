@@ -88,6 +88,12 @@ private:
     const SecuredMessage* mp_secured;
 };
 
+/**
+ * \brief Serialize relevant header parts for signing
+ * Uses common and extended headers.
+ * \param pdu containing GN headers
+ * \return binary form of relevant header parts
+ */
 template<class HEADER>
 ByteBuffer convert_for_signing(const ExtendedPdu<HEADER>& pdu)
 {
