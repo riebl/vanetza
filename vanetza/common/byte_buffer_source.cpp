@@ -18,7 +18,7 @@ std::streamsize byte_buffer_source::read(char_type* buf, std::streamsize n)
     if (m_begin == m_end) {
         return -1;
     } else {
-        auto remaining = std::distance(m_begin, m_end);
+        std::streamsize remaining = std::distance(m_begin, m_end);
         std::streamsize consume = std::min(remaining, n);
         std::copy(m_begin, m_begin + consume, buf);
         std::advance(m_begin, consume);
