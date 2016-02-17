@@ -982,7 +982,7 @@ void Router::detect_duplicate_address(const Address& addr_so)
             && addr_so == m_local_position_vector.gn_addr) {
 
         MacAddress random_mac_addr;
-        std::uniform_int_distribution<uint8_t> octet_dist;
+        std::uniform_int_distribution<unsigned> octet_dist;
         for (auto& octet : random_mac_addr.octets) {
             octet = octet_dist(m_random_gen);
         }
