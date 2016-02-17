@@ -68,10 +68,10 @@ endmacro()
 
 macro(vanetza_module_property NAME)
     if(TARGET ${NAME}_shared)
-        set_property(TARGET ${NAME}_shared APPEND PROPERTY ${PROPERTY} ${ARGN})
+        set_property(TARGET ${NAME}_shared APPEND PROPERTY ${ARGN})
     endif()
     if(TARGET ${NAME}_static)
-        set_property(TARGET ${NAME}_static APPEND PROPERTY ${PROPERTY} ${ARGN})
+        set_property(TARGET ${NAME}_static APPEND PROPERTY ${ARGN})
     endif()
 endmacro()
 
