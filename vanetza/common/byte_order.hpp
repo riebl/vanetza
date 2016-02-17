@@ -5,81 +5,21 @@
 #include <functional>
 #include <iosfwd>
 #include <type_traits>
-#include <endian.h>
+#include <boost/endian/conversion.hpp>
 
 namespace vanetza
 {
-namespace detail
-{
-
-template<class T, int SIZE = sizeof(T)>
-struct byte_order_converter;
-
-template<class T>
-struct byte_order_converter<T, 1>
-{
-    static T host_to_network(T value) { return value; }
-    static T network_to_host(T value) { return value; }
-};
-
-template<class T>
-struct byte_order_converter<T, 2>
-{
-    static T host_to_network(T value) { return htobe16(value); }
-    static T network_to_host(T value) { return be16toh(value); }
-};
-
-template<class T>
-struct byte_order_converter<T, 4>
-{
-    static T host_to_network(T value) { return htobe32(value); }
-    static T network_to_host(T value) { return be32toh(value); }
-};
-
-template<class T>
-struct byte_order_converter<T, 8>
-{
-    static T host_to_network(T value) { return htobe64(value); }
-    static T network_to_host(T value) { return be64toh(value); }
-};
-
-template<class T>
-struct byte_order_converter<T, 16>
-{
-    union mask128 {
-        mask128(T t) : value(t) {}
-        T value;
-        uint64_t part[2];
-    };
-
-    static T host_to_network(mask128 in) {
-        mask128 out(0);
-        out.part[1] = byte_order_converter<uint64_t>::host_to_network(in.part[0]);
-        out.part[0] = byte_order_converter<uint64_t>::host_to_network(in.part[1]);
-        return out.value;
-    }
-
-    static T network_to_host(mask128 in) {
-        mask128 out(0);
-        out.part[1] = byte_order_converter<uint64_t>::network_to_host(in.part[0]);
-        out.part[0] = byte_order_converter<uint64_t>::network_to_host(in.part[1]);
-        return out.value;
-    }
-};
-
-} // namespace detail
-
 
 template<class T>
 T hton(T host_value)
 {
-    return detail::byte_order_converter<T>::host_to_network(host_value);
+    return boost::endian::native_to_big(host_value);
 }
 
 template<class T>
 T ntoh(T network_value)
 {
-    return detail::byte_order_converter<T>::network_to_host(network_value);
+    return boost::endian::big_to_native(network_value);
 }
 
 

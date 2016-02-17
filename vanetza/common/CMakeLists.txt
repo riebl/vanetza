@@ -1,4 +1,4 @@
-find_package(Boost COMPONENTS date_time serialization REQUIRED)
+find_package(Boost 1.58 COMPONENTS date_time serialization REQUIRED)
 
 set(CXX_SOURCES
     byte_buffer_convertible.cpp
