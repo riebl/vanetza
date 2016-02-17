@@ -1,5 +1,6 @@
 #include "byte_buffer_convertible.hpp"
 #include <algorithm>
+#include <iterator>
 
 namespace vanetza
 {

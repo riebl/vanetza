@@ -1,6 +1,7 @@
 #include "channel_load.hpp"
 #include "state_machine.hpp"
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <limits>

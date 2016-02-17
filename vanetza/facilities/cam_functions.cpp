@@ -10,6 +10,7 @@
 #include <vanetza/facilities/path_history.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
+#include <algorithm>
 
 namespace vanetza
 {

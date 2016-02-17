@@ -5,6 +5,7 @@
 #include <boost/format.hpp>
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 #include <memory>
 #include <stdexcept>
 #include <string>
