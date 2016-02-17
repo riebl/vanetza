@@ -8,8 +8,18 @@
 namespace vanetza
 {
 
-struct ProxyHeader
-{
+#ifndef _MSC_VER
+// GCC and Clang support packed attribute
+#define PACKED_STRUCT(name, block) struct name { block } __attribute__((__packed__));
+#else
+// MSVC variant
+#define PACKED_STRUCT(name, block) \
+__pragma(pack(push, 1)) \
+struct name { block }; \
+__pragma(pack(pop))
+#endif
+
+PACKED_STRUCT(ProxyHeader,
     /** offset in bytes to payload's first byte, counting from packet start */
     uint16_t payload_offset;
 
@@ -21,7 +31,7 @@ struct ProxyHeader
 
     /** access category (transmission only) */
     uint8_t access_category;
-} __attribute__((__packed__));
+)
 
 static_assert(sizeof(ProxyHeader) == 9, "ProxyHeader has invalid size");
 
