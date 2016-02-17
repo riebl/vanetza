@@ -1,3 +1,7 @@
+if(NOT VANETZA_NET_WITH_POSIX)
+    return()
+endif()
+
 find_package(Boost MODULE COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_SYSTEM_LIBRARY})
