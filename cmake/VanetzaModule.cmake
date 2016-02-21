@@ -21,7 +21,7 @@ macro(vanetza_module NAME)
         install(TARGETS ${NAME}_static EXPORT ${PROJECT_NAME} DESTINATION lib)
     endif(VANETZA_BUILD_STATIC)
 
-    if(VANETZA_BUILD_STATIC AND VANETZA_PREFER_STATIC)
+    if(VANETZA_BUILD_STATIC AND (VANETZA_PREFER_STATIC OR NOT VANETZA_BUILD_SHARED))
         add_library(${NAME} ALIAS ${NAME}_static)
     elseif(VANETZA_BUILD_SHARED)
         add_library(${NAME} ALIAS ${NAME}_shared)
