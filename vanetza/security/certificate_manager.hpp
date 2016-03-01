@@ -37,12 +37,6 @@ public:
         INVALID_NAME,
     };
 
-    struct KeyPair
-    {
-        BackendCryptoPP::PrivateKey private_key;
-        BackendCryptoPP::PublicKey public_key;
-    };
-
     Hook<CertificateInvalidReason> certificate_invalid;
 
     CertificateManager(const Clock::time_point& time_now);
@@ -75,7 +69,7 @@ public:
      * \param key_pair keys used to create the certificate
      * \return generated certificate
      */
-    Certificate generate_certificate(const KeyPair& key_pair);
+    Certificate generate_certificate(const BackendCryptoPP::KeyPair& key_pair);
 
     /**
      * \brief enable deferred signature creation
@@ -86,12 +80,6 @@ public:
      * \param flag true for enabling deferred signature calculation
      */
     void enable_deferred_signing(bool flag);
-
-    /**
-     * \brief generate a private key and the corresponding public key
-     * \return generated key pair
-     */
-     KeyPair generate_key_pair();
 
 private:
     /**
@@ -127,13 +115,13 @@ private:
      * \note This is only a temporary workaround!
      * \return root key pair
      */
-    const KeyPair& get_root_key_pair();
+    const BackendCryptoPP::KeyPair& get_root_key_pair();
 
     const Clock::time_point& m_time_now;
-    const KeyPair& m_root_key_pair;
+    const BackendCryptoPP::KeyPair& m_root_key_pair;
     BackendCryptoPP m_crypto_backend;
     HashedId8 m_root_certificate_hash;
-    KeyPair m_own_key_pair;
+    BackendCryptoPP::KeyPair m_own_key_pair;
     Certificate m_own_certificate;
     bool m_sign_deferred;
 };

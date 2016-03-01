@@ -59,6 +59,7 @@ protected:
     Clock::time_point time_now;
     security::CertificateManager cert_manager;
     security::CertificateManager::CertificateInvalidReason invalid_cert_reason;
+    security::BackendCryptoPP crypto_backend;
     bool invalid_cert_occured;
 };
 
@@ -436,7 +437,7 @@ TEST_F(CertificateManager, verify_message_modified_generation_time_before_curren
 TEST_F(CertificateManager, generate_certificate)
 {
     // Create signed certificate
-    security::Certificate signed_certificate = cert_manager.generate_certificate(cert_manager.generate_key_pair());
+    security::Certificate signed_certificate = cert_manager.generate_certificate(crypto_backend.generate_key_pair());
 
     // Check signature
     EXPECT_EQ(2 * field_size(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256),

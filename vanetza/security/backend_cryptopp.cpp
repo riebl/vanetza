@@ -1,6 +1,7 @@
 #include <vanetza/security/backend_cryptopp.hpp>
-#include <cryptopp/osrng.h>
 #include <cryptopp/filters.h>
+#include <cryptopp/oids.h>
+#include <cryptopp/osrng.h>
 
 namespace vanetza
 {
@@ -36,6 +37,22 @@ bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer&
 {
     Verifier verifier(public_key);
     return verifier.VerifyMessage(msg.data(), msg.size(), sig.data(), sig.size());
+}
+
+BackendCryptoPP::KeyPair BackendCryptoPP::generate_key_pair()
+{
+    KeyPair key_pair;
+    // generate private key
+    CryptoPP::OID oid(CryptoPP::ASN1::secp256r1());
+    CryptoPP::AutoSeededRandomPool prng;
+    key_pair.private_key.Initialize(prng, oid);
+    assert(key_pair.private_key.Validate(prng, 3));
+
+    // generate public key
+    key_pair.private_key.MakePublicKey(key_pair.public_key);
+    assert(key_pair.public_key.Validate(prng, 3));
+
+    return key_pair;
 }
 
 } // namespace security

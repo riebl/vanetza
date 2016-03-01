@@ -20,7 +20,7 @@ namespace security
 CertificateManager::CertificateManager(const Clock::time_point& time_now) :
     m_time_now(time_now), m_root_key_pair(get_root_key_pair()),
     m_root_certificate_hash(HashedId8 { 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab }),
-    m_own_key_pair(generate_key_pair()),
+    m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_certificate(m_own_key_pair)),
     m_sign_deferred(false)
 {
@@ -212,7 +212,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     return decap_confirm;
 }
 
-Certificate CertificateManager::generate_certificate(const CertificateManager::KeyPair& key_pair)
+Certificate CertificateManager::generate_certificate(const BackendCryptoPP::KeyPair& key_pair)
 {
     // create certificate
     Certificate certificate;
@@ -265,22 +265,6 @@ Certificate CertificateManager::generate_certificate(const CertificateManager::K
     certificate.signature = m_crypto_backend.sign_data(m_root_key_pair.private_key, data_buffer);
 
     return certificate;
-}
-
-CertificateManager::KeyPair CertificateManager::generate_key_pair()
-{
-    KeyPair key_pair;
-    // generate private key
-    CryptoPP::OID oid(CryptoPP::ASN1::secp256r1());
-    CryptoPP::AutoSeededRandomPool prng;
-    key_pair.private_key.Initialize(prng, oid);
-    assert(key_pair.private_key.Validate(prng, 3));
-
-    // generate public key
-    key_pair.private_key.MakePublicKey(key_pair.public_key);
-    assert(key_pair.public_key.Validate(prng, 3));
-
-    return key_pair;
 }
 
 bool CertificateManager::check_certificate(const Certificate& certificate)
@@ -409,9 +393,9 @@ Time32 CertificateManager::get_time_in_seconds()
     return duration_cast<seconds>(m_time_now.time_since_epoch()).count();
 }
 
-const CertificateManager::KeyPair& CertificateManager::get_root_key_pair()
+const BackendCryptoPP::KeyPair& CertificateManager::get_root_key_pair()
 {
-    static KeyPair root = generate_key_pair();
+    static BackendCryptoPP::KeyPair root = m_crypto_backend.generate_key_pair();
     return root;
 }
 

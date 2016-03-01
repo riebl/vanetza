@@ -20,6 +20,12 @@ public:
     using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
     using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
 
+    struct KeyPair
+    {
+        PrivateKey private_key;
+        PublicKey public_key;
+    };
+
     /**
      * \brief generate EcdsaSignature, for given data with private_key
      *
@@ -38,6 +44,12 @@ public:
      * \return true if the data could be verified
      */
     bool verify_data(const PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig);
+
+    /**
+     * \brief generate a private key and the corresponding public key
+     * \return generated key pair
+     */
+    KeyPair generate_key_pair();
 };
 
 } // namespace security
