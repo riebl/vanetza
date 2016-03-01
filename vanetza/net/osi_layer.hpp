@@ -38,23 +38,6 @@ constexpr int operator-(OsiLayer lhs, OsiLayer rhs)
     return static_cast<num_type>(lhs) - static_cast<num_type>(rhs);
 }
 
-constexpr bool operator<(OsiLayer lhs, OsiLayer rhs)
-{
-    using num_type = std::underlying_type<OsiLayer>::type;
-    return static_cast<num_type>(lhs) < static_cast<num_type>(rhs);
-}
-
-constexpr bool operator==(OsiLayer lhs, OsiLayer rhs)
-{
-    using num_type = std::underlying_type<OsiLayer>::type;
-    return static_cast<num_type>(lhs) == static_cast<num_type>(rhs);
-}
-
-constexpr bool operator!=(OsiLayer lhs, OsiLayer rhs) { return !(lhs == rhs); }
-constexpr bool operator>=(OsiLayer lhs, OsiLayer rhs) { return !(lhs < rhs); }
-constexpr bool operator<=(OsiLayer lhs, OsiLayer rhs) { return (lhs < rhs || lhs == rhs); }
-constexpr bool operator>(OsiLayer lhs, OsiLayer rhs) { return  !(lhs <= rhs); }
-
 constexpr std::size_t num_osi_layers(OsiLayer from, OsiLayer to)
 {
     return (from <= to ? to - from + 1 : 0);
