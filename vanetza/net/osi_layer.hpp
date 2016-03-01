@@ -32,15 +32,20 @@ constexpr std::array<OsiLayer, 7> osi_layers {{
             OsiLayer::Application
 }};
 
-constexpr int operator-(OsiLayer lhs, OsiLayer rhs)
+/**
+ * Calculate distance between layers
+ * \param from start counting at this layer
+ * \param to stop counting here
+ * \return 0 if equal layers, positive if "to" is a higher layer, negative if "to" is below "from"
+ */
+constexpr int distance(OsiLayer from, OsiLayer to)
 {
-    using num_type = std::underlying_type<OsiLayer>::type;
-    return static_cast<num_type>(lhs) - static_cast<num_type>(rhs);
+    return static_cast<int>(to) - static_cast<int>(from);
 }
 
 constexpr std::size_t num_osi_layers(OsiLayer from, OsiLayer to)
 {
-    return (from <= to ? to - from + 1 : 0);
+    return (from <= to ? distance(from, to) + 1 : 0);
 }
 
 template<OsiLayer FROM, OsiLayer TO>
@@ -61,8 +66,8 @@ inline boost::iterator_range<decltype(osi_layers)::const_iterator>
 osi_layer_range(OsiLayer from, OsiLayer to)
 {
     assert(from <= to);
-    auto begin = osi_layers.cbegin() + (from - min_osi_layer());
-    auto end = osi_layers.cend() - (max_osi_layer() - to);
+    auto begin = osi_layers.cbegin() + distance(min_osi_layer(), from);
+    auto end = osi_layers.cend() - distance(to, max_osi_layer());
     return boost::make_iterator_range(begin, end);
 }
 

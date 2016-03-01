@@ -51,12 +51,12 @@ TEST(OsiLayer, num) {
     EXPECT_EQ(0, num_osi_layers(OsiLayer::Network, OsiLayer::Link));
 }
 
-TEST(OsiLayer, subtraction) {
-    EXPECT_EQ(0, OsiLayer::Session - OsiLayer::Session);
-    EXPECT_EQ(1, OsiLayer::Transport - OsiLayer::Network);
-    EXPECT_EQ(-1, OsiLayer::Network - OsiLayer::Transport);
+TEST(OsiLayer, distance) {
+    EXPECT_EQ(0, distance(OsiLayer::Session, OsiLayer::Session));
+    EXPECT_EQ(1, distance(OsiLayer::Network, OsiLayer::Transport));
+    EXPECT_EQ(-1, distance(OsiLayer::Transport, OsiLayer::Network));
     EXPECT_EQ(num_osi_layers(min_osi_layer(), max_osi_layer()) - 1,
-        max_osi_layer() - min_osi_layer());
+        distance(min_osi_layer(), max_osi_layer()));
 }
 
 TEST(OsiLayer, compile_time_range) {
