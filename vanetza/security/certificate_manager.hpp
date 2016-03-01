@@ -4,6 +4,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/hook.hpp>
+#include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_request.hpp>
@@ -11,8 +12,6 @@
 #include <vanetza/security/encap_confirm.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/certificate.hpp>
-#include <cryptopp/eccrypto.h>
-#include <cryptopp/sha.h>
 #include <string>
 
 namespace vanetza
@@ -28,11 +27,6 @@ namespace security
 class CertificateManager
 {
 public:
-    typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey PrivateKey;
-    typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PublicKey PublicKey;
-    typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer Signer;
-    typedef CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier Verifier;
-
     enum class CertificateInvalidReason
     {
         BROKEN_TIME_PERIOD,
@@ -45,8 +39,8 @@ public:
 
     struct KeyPair
     {
-        PrivateKey private_key;
-        PublicKey public_key;
+        BackendCryptoPP::PrivateKey private_key;
+        BackendCryptoPP::PublicKey public_key;
     };
 
     Hook<CertificateInvalidReason> certificate_invalid;
@@ -114,7 +108,7 @@ private:
      * \param certificate
      * \return PublicKey
      */
-    boost::optional<PublicKey> get_public_key_from_certificate(const Certificate& certificate);
+    boost::optional<BackendCryptoPP::PublicKey> get_public_key_from_certificate(const Certificate& certificate);
 
     /**
      * \brief get the current (system) time in microseconds
@@ -128,26 +122,6 @@ private:
      */
     Time32 get_time_in_seconds();
 
-    /**
-     * \brief generate EcdsaSignature, for given data with private_key
-     *
-     * \param private_key used to sign the data
-     * \param data_buffer the data
-     * \return EcdsaSignature resulting signature
-     */
-    EcdsaSignature sign_data(const PrivateKey& private_key, const ByteBuffer& data_buffer);
-
-    /**
-     * \brief checks if the data_buffer can be verified with the public_key
-     *
-     * \param public_key
-     * \param data to be verified
-     * \param sig signature for verification
-     * \return true if the data could be verified
-     *
-     */
-    bool verify_data(const PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig);
-
     /** \brief retrieve common root key pair (for all instances)
      *
      * \note This is only a temporary workaround!
@@ -157,6 +131,7 @@ private:
 
     const Clock::time_point& m_time_now;
     const KeyPair& m_root_key_pair;
+    BackendCryptoPP m_crypto_backend;
     HashedId8 m_root_certificate_hash;
     KeyPair m_own_key_pair;
     Certificate m_own_certificate;

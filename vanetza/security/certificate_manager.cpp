@@ -6,7 +6,6 @@
 #include <vanetza/security/payload.hpp>
 #include <cryptopp/osrng.h>
 #include <cryptopp/oids.h>
-#include <cryptopp/filters.h>
 #include <cryptopp/hex.h>
 #include <boost/format.hpp>
 #include <chrono>
@@ -75,13 +74,13 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     if (m_sign_deferred) {
         auto future = std::async(std::launch::deferred, [=]() {
             ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-            return sign_data(m_own_key_pair.private_key, data);
+            return m_crypto_backend.sign_data(m_own_key_pair.private_key, data);
         });
         EcdsaSignatureFuture signature(future.share(), signature_size);
         encap_confirm.sec_packet.trailer_fields.push_back(signature);
     } else {
         ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-        TrailerField trailer_field = sign_data(m_own_key_pair.private_key, data_buffer);
+        TrailerField trailer_field = m_crypto_backend.sign_data(m_own_key_pair.private_key, data_buffer);
         assert(get_size(trailer_field) == trailer_field_size);
         encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
     }
@@ -149,7 +148,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 
     // TODO check Duplicate_Message, Invalid_Mobility_Data, Unencrypted_Message, Decryption_Error
 
-    boost::optional<PublicKey> public_key = get_public_key_from_certificate(certificate.get());
+    boost::optional<BackendCryptoPP::PublicKey> public_key = get_public_key_from_certificate(certificate.get());
 
     // public key could not be extracted
     if (!public_key) {
@@ -202,7 +201,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     ByteBuffer payload = convert_for_signing(secured_message, get_size(TrailerField(signature.get())));
 
     // result of verify function
-    bool result = verify_data(public_key.get(), payload, signature_buffer);
+    bool result = m_crypto_backend.verify_data(public_key.get(), payload, signature_buffer);
 
     if (result) {
         decap_confirm.report = ReportType::Success;
@@ -263,7 +262,7 @@ Certificate CertificateManager::generate_certificate(const CertificateManager::K
     //      subject_attributes + length,
     //      validity_restriction + length
     // section 7.4 in TS 103 097 v1.2.1
-    certificate.signature = std::move(sign_data(m_root_key_pair.private_key, data_buffer));
+    certificate.signature = m_crypto_backend.sign_data(m_root_key_pair.private_key, data_buffer);
 
     return certificate;
 }
@@ -332,7 +331,7 @@ bool CertificateManager::check_certificate(const Certificate& certificate)
     // create buffer of certificate
     ByteBuffer cert = convert_for_signing(certificate);
 
-    if (!verify_data(m_root_key_pair.public_key, cert, sig.get())) {
+    if (!m_crypto_backend.verify_data(m_root_key_pair.public_key, cert, sig.get())) {
         certificate_invalid(CertificateInvalidReason::INVALID_SIGNATURE);
         return false;
     }
@@ -340,9 +339,9 @@ bool CertificateManager::check_certificate(const Certificate& certificate)
     return true;
 }
 
-boost::optional<CertificateManager::PublicKey> CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
+boost::optional<BackendCryptoPP::PublicKey> CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
 {
-    boost::optional<CertificateManager::PublicKey> public_key;
+    boost::optional<BackendCryptoPP::PublicKey> public_key;
 
     // generate public key from certificate data (x_coordinate + y_coordinate)
     boost::optional<Uncompressed> public_key_coordinates;
@@ -385,43 +384,12 @@ boost::optional<CertificateManager::PublicKey> CertificateManager::get_public_ke
     q.x.Decode(x_decoder, len);
     q.y.Decode(y_decoder, len);
 
-    public_key = CertificateManager::PublicKey();
+    public_key = BackendCryptoPP::PublicKey();
     public_key.get().Initialize(CryptoPP::ASN1::secp256r1(), q);
     CryptoPP::AutoSeededRandomPool prng;
     assert(public_key.get().Validate(prng, 3));
 
     return public_key;
-}
-
-EcdsaSignature CertificateManager::sign_data(const PrivateKey& private_key, const ByteBuffer& data)
-{
-    CryptoPP::AutoSeededRandomPool prng;
-
-    // calculate signature
-    Signer signer(private_key);
-    ByteBuffer signature(signer.MaxSignatureLength(), 0x00);
-    auto signature_length = signer.SignMessage(prng, data.data(), data.size(), signature.data());
-    signature.resize(signature_length);
-
-    auto signature_delimiter = signature.begin();
-    std::advance(signature_delimiter, 32);
-
-    EcdsaSignature ecdsa_signature;
-    // set R
-    X_Coordinate_Only coordinate;
-    coordinate.x = ByteBuffer(signature.begin(), signature_delimiter);
-    ecdsa_signature.R = std::move(coordinate);
-    // set s
-    ByteBuffer trailer_field_buffer(signature_delimiter, signature.end());
-    ecdsa_signature.s = std::move(trailer_field_buffer);
-
-    return ecdsa_signature;
-}
-
-bool CertificateManager::verify_data(const PublicKey& public_key, const ByteBuffer& msg, const ByteBuffer& sig)
-{
-    Verifier verifier(public_key);
-    return verifier.VerifyMessage(msg.data(), msg.size(), sig.data(), sig.size());
 }
 
 void CertificateManager::enable_deferred_signing(bool flag)

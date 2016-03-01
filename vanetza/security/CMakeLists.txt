@@ -2,6 +2,7 @@ find_package(Boost COMPONENTS serialization REQUIRED)
 find_package(CryptoPP 5.6.1 REQUIRED)
 
 set(CXX_SOURCES
+    backend_cryptopp.cpp
     basic_elements.cpp
     certificate.cpp
     certificate_manager.cpp
