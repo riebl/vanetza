@@ -2,6 +2,7 @@
 #define CERTIFICATE_HPP_LWBWIAVL
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <vanetza/security/signature.hpp>
@@ -116,6 +117,13 @@ ByteBuffer convert_for_signing(const Certificate&);
  * \return Uncompressed public key (if available)
  */
 boost::optional<Uncompressed> get_public_key(const Certificate&);
+
+/**
+ * Calculate hash id of certificate
+ * \param cert Certificate
+ * \return hash
+ */
+HashedId8 calculate_hash(const Certificate&);
 
 } // namespace security
 } // namespace vanetza
