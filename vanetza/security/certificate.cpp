@@ -4,6 +4,7 @@
 #include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/exception.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/variant/get.hpp>
 
 namespace vanetza
 {
@@ -70,6 +71,21 @@ ByteBuffer convert_for_signing(const Certificate& cert)
     serialize(ar, cert.validity_restriction);
 
     return buf;
+}
+
+boost::optional<Uncompressed> get_public_key(const Certificate& cert)
+{
+    boost::optional<Uncompressed> public_key_coordinates;
+    for (auto& attribute : cert.subject_attributes) {
+        if (get_type(attribute) == SubjectAttributeType::Verification_Key) {
+            const VerificationKey& verification_key = boost::get<VerificationKey>(attribute);
+            const EccPoint& ecc_point = boost::get<ecdsa_nistp256_with_sha256>(verification_key.key).public_key;
+            public_key_coordinates = boost::get<Uncompressed>(ecc_point);
+            break;
+        }
+    }
+
+    return public_key_coordinates;
 }
 
 } // ns security

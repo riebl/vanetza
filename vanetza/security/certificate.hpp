@@ -2,12 +2,14 @@
 #define CERTIFICATE_HPP_LWBWIAVL
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 #include <vanetza/security/validity_restriction.hpp>
+#include <boost/optional/optional.hpp>
 
 namespace vanetza
 {
@@ -61,6 +63,13 @@ size_t deserialize(InputArchive&, Certificate&);
 * \return binary representation
 */
 ByteBuffer convert_for_signing(const Certificate&);
+
+/**
+ * \brief Extract public key from certificate
+ * \param cert Certificate
+ * \return Uncompressed public key (if available)
+ */
+boost::optional<Uncompressed> get_public_key(const Certificate&);
 
 } // namespace security
 } // namespace vanetza

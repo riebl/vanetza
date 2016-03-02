@@ -6,11 +6,8 @@
 #include <vanetza/security/payload.hpp>
 #include <cryptopp/osrng.h>
 #include <cryptopp/oids.h>
-#include <cryptopp/hex.h>
-#include <boost/format.hpp>
 #include <chrono>
 #include <future>
-#include <sstream>
 
 namespace vanetza
 {
@@ -326,22 +323,12 @@ bool CertificateManager::check_certificate(const Certificate& certificate)
 boost::optional<BackendCryptoPP::PublicKey> CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
 {
     boost::optional<BackendCryptoPP::PublicKey> public_key;
-
-    // generate public key from certificate data (x_coordinate + y_coordinate)
-    boost::optional<Uncompressed> public_key_coordinates;
-    for (auto& attribute : certificate.subject_attributes) {
-        if (get_type(attribute) == SubjectAttributeType::Verification_Key) {
-            public_key_coordinates = boost::get<Uncompressed>(boost::get<ecdsa_nistp256_with_sha256>(boost::get<VerificationKey>(attribute).key).public_key);
-            break;
-        }
+    boost::optional<Uncompressed> public_key_coordinates = get_public_key(certificate);
+    if (public_key_coordinates) {
+        public_key = m_crypto_backend.public_key(*public_key_coordinates);
     }
 
-    if (!public_key_coordinates) {
-        public_key = boost::none;
-        return public_key;
-    }
-
-    return m_crypto_backend.public_key(*public_key_coordinates);
+    return public_key;
 }
 
 void CertificateManager::enable_deferred_signing(bool flag)
