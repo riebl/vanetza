@@ -126,9 +126,8 @@ TEST_F(CertificateManagerTest, verify_message_modified_message_type)
     auto& header_fields = secured_message.header_fields;
     for (auto& field : header_fields) {
         // modify message type
-        if (security::HeaderFieldType::Message_Type == get_type(field)) {
-            uint16_t& its_aid = boost::get<uint16_t>(field);
-            its_aid = 42;
+        if (security::HeaderFieldType::Its_Aid == get_type(field)) {
+            boost::get<IntX>(field).set(42);
         }
     }
 

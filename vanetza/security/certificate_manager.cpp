@@ -1,9 +1,10 @@
-#include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate_manager.hpp>
+#include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/its_aid.hpp>
+#include <vanetza/security/payload.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signature.hpp>
-#include <vanetza/security/payload.hpp>
 #include <cryptopp/osrng.h>
 #include <cryptopp/oids.h>
 #include <chrono>
@@ -47,7 +48,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     encap_confirm.sec_packet.payload.data = std::move(request.plaintext_payload);
     // set header field data
     encap_confirm.sec_packet.header_fields.push_back(get_time()); // generation_time
-    encap_confirm.sec_packet.header_fields.push_back((uint16_t) 36); // its_aid, according to TS 102 965, and ITS-AID_AssignedNumbers
+    encap_confirm.sec_packet.header_fields.push_back(itsAidCa);
 
     SignerInfo signer_info = own_certificate();
     encap_confirm.sec_packet.header_fields.push_back(signer_info);
