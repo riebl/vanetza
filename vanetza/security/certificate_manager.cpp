@@ -25,7 +25,7 @@ CertificateManager::CertificateManager(const Clock::time_point& time_now) :
     // It has to be calculated later, see TS 103 097 v1.2.1 section 4.2.12 for HashedId8
 }
 
-EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
+const Certificate& CertificateManager::own_certificate()
 {
     // renew certificate if necessary
     for (auto& validity_restriction : m_own_certificate.validity_restriction) {
@@ -36,6 +36,11 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
         }
     }
 
+    return m_own_certificate;
+}
+
+EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
+{
     EncapConfirm encap_confirm;
     // set secured message data
     encap_confirm.sec_packet.payload.type = PayloadType::Signed;
@@ -44,7 +49,7 @@ EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
     encap_confirm.sec_packet.header_fields.push_back(get_time()); // generation_time
     encap_confirm.sec_packet.header_fields.push_back((uint16_t) 36); // its_aid, according to TS 102 965, and ITS-AID_AssignedNumbers
 
-    SignerInfo signer_info = m_own_certificate;
+    SignerInfo signer_info = own_certificate();
     encap_confirm.sec_packet.header_fields.push_back(signer_info);
 
     // create trailer field to get the size in bytes

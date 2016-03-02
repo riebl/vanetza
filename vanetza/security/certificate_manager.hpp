@@ -77,6 +77,12 @@ public:
      */
     CertificateValidity check_certificate(const Certificate& certificate);
 
+    /**
+     * \brief get own certificate for signing
+     * \return own certificate
+     */
+    const Certificate& own_certificate();
+
 private:
     /**
      * \brief extract public key from a certificate
