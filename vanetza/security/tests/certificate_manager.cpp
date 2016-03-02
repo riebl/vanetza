@@ -17,13 +17,12 @@
 #include <gtest/gtest.h>
 
 using namespace vanetza;
-using CM = vanetza::security::CertificateManager;
-using vanetza::security::check;
+using namespace vanetza::security;
 
-class CertificateManager : public ::testing::Test
+class CertificateManagerTest : public ::testing::Test
 {
 public:
-    CertificateManager() : cert_manager(time_now)
+    CertificateManagerTest() : cert_manager(time_now)
     {
     }
 
@@ -35,7 +34,7 @@ protected:
         encap_request.security_profile = security::Profile::CAM;
 
         invalid_cert_occured = false;
-        cert_manager.certificate_invalid = [this](security::CertificateManager::CertificateInvalidReason r) {
+        cert_manager.certificate_invalid = [this](CertificateManager::CertificateInvalidReason r) {
             invalid_cert_reason = r;
             invalid_cert_occured = true;
         };
@@ -63,12 +62,12 @@ protected:
     bool invalid_cert_occured;
 };
 
-TEST_F(CertificateManager, sign_smoke_test)
+TEST_F(CertificateManagerTest, sign_smoke_test)
 {
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 }
 
-TEST_F(CertificateManager, mutual_acceptance)
+TEST_F(CertificateManagerTest, mutual_acceptance)
 {
     security::CertificateManager cert_manager_other(time_now);
     security::EncapConfirm encap_confirm = cert_manager_other.sign_message(encap_request);
@@ -76,7 +75,7 @@ TEST_F(CertificateManager, mutual_acceptance)
     EXPECT_EQ(security::ReportType::Success, decap_confirm.report);
 }
 
-TEST_F(CertificateManager, sec_payload_equals_plaintext_payload)
+TEST_F(CertificateManagerTest, sec_payload_equals_plaintext_payload)
 {
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 
@@ -84,7 +83,7 @@ TEST_F(CertificateManager, sec_payload_equals_plaintext_payload)
     check(expected_payload, confirm.sec_packet.payload.data);
 }
 
-TEST_F(CertificateManager, signature_is_ecdsa)
+TEST_F(CertificateManagerTest, signature_is_ecdsa)
 {
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 
@@ -97,7 +96,7 @@ TEST_F(CertificateManager, signature_is_ecdsa)
     EXPECT_EQ(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(signature));
 }
 
-TEST_F(CertificateManager, expected_header_field_size)
+TEST_F(CertificateManagerTest, expected_header_field_size)
 {
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 
@@ -105,7 +104,7 @@ TEST_F(CertificateManager, expected_header_field_size)
     EXPECT_EQ(3, confirm.sec_packet.header_fields.size());
 }
 
-TEST_F(CertificateManager, expected_payload)
+TEST_F(CertificateManagerTest, expected_payload)
 {
     security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
 
@@ -115,7 +114,7 @@ TEST_F(CertificateManager, expected_payload)
     EXPECT_EQ(security::PayloadType::Signed, get_type(payload));
 }
 
-TEST_F(CertificateManager, verify_message)
+TEST_F(CertificateManagerTest, verify_message)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -132,7 +131,7 @@ TEST_F(CertificateManager, verify_message)
     EXPECT_FALSE(test_and_reset_invalid_certificate());
 }
 
-TEST_F(CertificateManager, verify_message_modified_message_type)
+TEST_F(CertificateManagerTest, verify_message_modified_message_type)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -154,7 +153,7 @@ TEST_F(CertificateManager, verify_message_modified_message_type)
     EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
 }
 
-TEST_F(CertificateManager, verify_message_modified_certificate_name)
+TEST_F(CertificateManagerTest, verify_message_modified_certificate_name)
 {
     // create decap request
     auto secured_message = create_secured_message();
@@ -177,10 +176,10 @@ TEST_F(CertificateManager, verify_message_modified_certificate_name)
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_NAME, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::INVALID_NAME, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_modified_certificate_signer_info)
+TEST_F(CertificateManagerTest, verify_message_modified_certificate_signer_info)
 {
     // create decap request
     auto secured_message = create_secured_message();
@@ -204,10 +203,10 @@ TEST_F(CertificateManager, verify_message_modified_certificate_signer_info)
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_ROOT_HASH, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::INVALID_ROOT_HASH, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_modified_certificate_subject_info)
+TEST_F(CertificateManagerTest, verify_message_modified_certificate_subject_info)
 {
     // create decap request
     auto secured_message = create_secured_message();
@@ -230,10 +229,10 @@ TEST_F(CertificateManager, verify_message_modified_certificate_subject_info)
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_modified_certificate_subject_assurance)
+TEST_F(CertificateManagerTest, verify_message_modified_certificate_subject_assurance)
 {
     // create decap request
     auto secured_message = create_secured_message();
@@ -266,10 +265,10 @@ TEST_F(CertificateManager, verify_message_modified_certificate_subject_assurance
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_outdated_certificate)
+TEST_F(CertificateManagerTest, verify_message_outdated_certificate)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -282,10 +281,10 @@ TEST_F(CertificateManager, verify_message_outdated_certificate)
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::OFF_TIME_PERIOD, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::OFF_TIME_PERIOD, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_premature_certificate)
+TEST_F(CertificateManagerTest, verify_message_premature_certificate)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -299,10 +298,10 @@ TEST_F(CertificateManager, verify_message_premature_certificate)
 
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::OFF_TIME_PERIOD, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::OFF_TIME_PERIOD, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_modified_certificate_validity_restriction)
+TEST_F(CertificateManagerTest, verify_message_modified_certificate_validity_restriction)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -336,10 +335,10 @@ TEST_F(CertificateManager, verify_message_modified_certificate_validity_restrict
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::BROKEN_TIME_PERIOD, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::BROKEN_TIME_PERIOD, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_modified_certificate_signature)
+TEST_F(CertificateManagerTest, verify_message_modified_certificate_signature)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -360,10 +359,10 @@ TEST_F(CertificateManager, verify_message_modified_certificate_signature)
     security::DecapConfirm decap_confirm = cert_manager.verify_message(decap_request);
     // check hook
     EXPECT_TRUE(test_and_reset_invalid_certificate());
-    EXPECT_EQ(CM::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
+    EXPECT_EQ(CertificateManager::CertificateInvalidReason::INVALID_SIGNATURE, invalid_cert_reason);
 }
 
-TEST_F(CertificateManager, verify_message_modified_signature)
+TEST_F(CertificateManagerTest, verify_message_modified_signature)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -386,7 +385,7 @@ TEST_F(CertificateManager, verify_message_modified_signature)
     EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
 }
 
-TEST_F(CertificateManager, verify_message_modified_payload_type)
+TEST_F(CertificateManagerTest, verify_message_modified_payload_type)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -401,7 +400,7 @@ TEST_F(CertificateManager, verify_message_modified_payload_type)
     EXPECT_EQ(security::ReportType::Unsigned_Message, decap_confirm.report);
 }
 
-TEST_F(CertificateManager, verify_message_modified_payload)
+TEST_F(CertificateManagerTest, verify_message_modified_payload)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
@@ -416,7 +415,7 @@ TEST_F(CertificateManager, verify_message_modified_payload)
     EXPECT_EQ(security::ReportType::False_Signature, decap_confirm.report);
 }
 
-TEST_F(CertificateManager, verify_message_modified_generation_time_before_current_time)
+TEST_F(CertificateManagerTest, verify_message_modified_generation_time_before_current_time)
 {
     // change the time, so the generation time of SecuredMessage is before current time
     time_now += std::chrono::hours(12);
@@ -434,7 +433,7 @@ TEST_F(CertificateManager, verify_message_modified_generation_time_before_curren
     EXPECT_EQ(security::ReportType::Invalid_Timestamp, decap_confirm.report);
 }
 
-TEST_F(CertificateManager, generate_certificate)
+TEST_F(CertificateManagerTest, generate_certificate)
 {
     // Create signed certificate
     security::Certificate signed_certificate = cert_manager.generate_certificate(crypto_backend.generate_key_pair());
@@ -485,7 +484,7 @@ TEST_F(CertificateManager, generate_certificate)
     EXPECT_LT(start_time, end_time);
 }
 
-TEST_F(CertificateManager, verify_message_without_signer_info)
+TEST_F(CertificateManagerTest, verify_message_without_signer_info)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
