@@ -351,14 +351,12 @@ void CertificateManager::enable_deferred_signing(bool flag)
 
 Time64 CertificateManager::get_time()
 {
-    using namespace std::chrono;
-    return duration_cast<microseconds>(m_time_now.time_since_epoch()).count();
+    return convert_time64(m_time_now);
 }
 
 Time32 CertificateManager::get_time_in_seconds()
 {
-    using namespace std::chrono;
-    return duration_cast<seconds>(m_time_now.time_since_epoch()).count();
+    return convert_time32(m_time_now);
 }
 
 const BackendCryptoPP::KeyPair& CertificateManager::get_root_key_pair()
