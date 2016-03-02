@@ -1,7 +1,9 @@
 #include <vanetza/security/backend_cryptopp.hpp>
+#include <vanetza/security/ecc_point.hpp>
 #include <cryptopp/filters.h>
 #include <cryptopp/oids.h>
 #include <cryptopp/osrng.h>
+#include <cassert>
 
 namespace vanetza
 {
@@ -53,6 +55,21 @@ BackendCryptoPP::KeyPair BackendCryptoPP::generate_key_pair()
     assert(key_pair.public_key.Validate(prng, 3));
 
     return key_pair;
+}
+
+BackendCryptoPP::PublicKey BackendCryptoPP::public_key(const Uncompressed& unc)
+{
+    CryptoPP::Integer x { unc.x.data(), unc.x.size() };
+    CryptoPP::Integer y { unc.y.data(), unc.y.size() };
+    CryptoPP::ECP::Point q { x, y };
+
+    BackendCryptoPP::PublicKey pub;
+    pub.Initialize(CryptoPP::ASN1::secp256r1(), q);
+
+    CryptoPP::AutoSeededRandomPool prng;
+    assert(pub.Validate(prng, 3));
+
+    return pub;
 }
 
 } // namespace security

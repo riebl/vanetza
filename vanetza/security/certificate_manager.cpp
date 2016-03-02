@@ -341,39 +341,7 @@ boost::optional<BackendCryptoPP::PublicKey> CertificateManager::get_public_key_f
         return public_key;
     }
 
-    std::stringstream ss;
-    for (uint8_t b : public_key_coordinates.get().x) {
-        ss << boost::format("%02x") % (int)b;
-    }
-    std::string x_coordinate = ss.str();
-    ss.str("");
-    for (uint8_t b : public_key_coordinates.get().y) {
-        ss << boost::format("%02x") % (int)b;
-    }
-    std::string y_coordinate = ss.str();
-
-    CryptoPP::HexDecoder x_decoder, y_decoder;
-    x_decoder.Put((byte*)x_coordinate.c_str(), x_coordinate.length());
-    x_decoder.MessageEnd();
-    y_decoder.Put((byte*)y_coordinate.c_str(), y_coordinate.length());
-    y_decoder.MessageEnd();
-
-    size_t len = x_decoder.MaxRetrievable();
-    assert(len == CryptoPP::SHA256::DIGESTSIZE);
-    len = y_decoder.MaxRetrievable();
-    assert(len == CryptoPP::SHA256::DIGESTSIZE);
-
-    CryptoPP::ECP::Point q;
-    q.identity = false;
-    q.x.Decode(x_decoder, len);
-    q.y.Decode(y_decoder, len);
-
-    public_key = BackendCryptoPP::PublicKey();
-    public_key.get().Initialize(CryptoPP::ASN1::secp256r1(), q);
-    CryptoPP::AutoSeededRandomPool prng;
-    assert(public_key.get().Validate(prng, 3));
-
-    return public_key;
+    return m_crypto_backend.public_key(*public_key_coordinates);
 }
 
 void CertificateManager::enable_deferred_signing(bool flag)

@@ -12,6 +12,9 @@ namespace vanetza
 namespace security
 {
 
+// forward declaration
+struct Uncompressed;
+
 class BackendCryptoPP
 {
 public:
@@ -50,6 +53,13 @@ public:
      * \return generated key pair
      */
     KeyPair generate_key_pair();
+
+    /**
+     * Create public key from uncrompressed ECC point
+     * \param unc uncompressed ECC point (secured message format)
+     * \return public key
+     */
+    PublicKey public_key(const Uncompressed& unc);
 };
 
 } // namespace security
