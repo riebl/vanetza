@@ -6,6 +6,7 @@
 #include <vanetza/common/hook.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_request.hpp>
 #include <vanetza/security/decap_confirm.hpp>
@@ -27,18 +28,6 @@ namespace security
 class CertificateManager
 {
 public:
-    enum class CertificateInvalidReason
-    {
-        BROKEN_TIME_PERIOD,
-        OFF_TIME_PERIOD,
-        INVALID_ROOT_HASH,
-        MISSING_SIGNATURE,
-        INVALID_SIGNATURE,
-        INVALID_NAME,
-    };
-
-    Hook<CertificateInvalidReason> certificate_invalid;
-
     CertificateManager(const Clock::time_point& time_now);
 
     /**
@@ -81,15 +70,14 @@ public:
      */
     void enable_deferred_signing(bool flag);
 
-private:
     /**
-     * \brief check the certificate
-     *
+     * \brief check certificate
      * \param certificate to verify
-     * \return true if certificate could be verified
+     * \return certificate status
      */
-    bool check_certificate(const Certificate& certificate);
+    CertificateValidity check_certificate(const Certificate& certificate);
 
+private:
     /**
      * \brief extract public key from a certificate
      *

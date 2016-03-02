@@ -28,6 +28,52 @@ struct Certificate
     uint8_t version() const { return 2; }
 };
 
+enum class CertificateInvalidReason
+{
+    BROKEN_TIME_PERIOD,
+    OFF_TIME_PERIOD,
+    INVALID_ROOT_HASH,
+    MISSING_SIGNATURE,
+    INVALID_SIGNATURE,
+    INVALID_NAME,
+};
+
+class CertificateValidity
+{
+public:
+    CertificateValidity() = default;
+
+    /**
+     * Create CertificateValidity signalling an invalid certificate
+     * \param reason Reason for invalidity
+     */
+    CertificateValidity(CertificateInvalidReason reason) : m_reason(reason) {}
+
+    /**
+     * \brief Create CertificateValidity signalling a valid certificate
+     * This method is equivalent to default construction but should be more expressive.
+     * \return validity
+     */
+    static CertificateValidity valid() { return CertificateValidity(); }
+
+    /**
+     * Check if status corresponds to a valid certificate
+     * \return true if certificate is valid
+     */
+    operator bool() const { return !m_reason; }
+
+    /**
+     * \brief Get reason for certificate invalidity
+     * This call is only safe if reason is available, i.e. check validity before!
+     *
+     * \return reason
+     */
+    CertificateInvalidReason reason() const { return *m_reason; }
+
+private:
+    boost::optional<CertificateInvalidReason> m_reason;
+};
+
 /**
  * \brief Calculates size of an certificate object
  *

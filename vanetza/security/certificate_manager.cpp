@@ -154,8 +154,10 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     }
 
     // if certificate could not be verified return correct ReportType
-    if (!check_certificate(certificate.get())) {
+    CertificateValidity cert_validity = check_certificate(*certificate);
+    if (!cert_validity) {
         decap_confirm.report = ReportType::Invalid_Certificate;
+        decap_confirm.certificate_validity = cert_validity;
         return decap_confirm;
     }
 
@@ -264,7 +266,7 @@ Certificate CertificateManager::generate_certificate(const BackendCryptoPP::KeyP
     return certificate;
 }
 
-bool CertificateManager::check_certificate(const Certificate& certificate)
+CertificateValidity CertificateManager::check_certificate(const Certificate& certificate)
 {
     // check validity restriction
     for (auto& restriction : certificate.validity_restriction) {
@@ -276,48 +278,42 @@ bool CertificateManager::check_certificate(const Certificate& certificate)
             StartAndEndValidity start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
             // check if certificate validity restriction timestamps are logically correct
             if (start_and_end.start_validity >= start_and_end.end_validity) {
-                certificate_invalid(CertificateInvalidReason::BROKEN_TIME_PERIOD);
-                return false;
+                return CertificateInvalidReason::BROKEN_TIME_PERIOD;
             }
             // check if certificate is premature or outdated
             if (get_time_in_seconds() < start_and_end.start_validity || get_time_in_seconds() > start_and_end.end_validity) {
-                certificate_invalid(CertificateInvalidReason::OFF_TIME_PERIOD);
-                return false;
+                return CertificateInvalidReason::OFF_TIME_PERIOD;
             }
         }
     }
 
     // check if subject_name is empty
     if (0 != certificate.subject_info.subject_name.size()) {
-        certificate_invalid(CertificateInvalidReason::INVALID_NAME);
-        return false;
+        return CertificateInvalidReason::INVALID_NAME;
     }
 
     // check signer info
     if(get_type(certificate.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
         HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
         if(signer_hash != m_root_certificate_hash) {
-            certificate_invalid(CertificateInvalidReason::INVALID_ROOT_HASH);
-            return false;
+            return CertificateInvalidReason::INVALID_ROOT_HASH;
         }
     }
 
     // create ByteBuffer of Signature
     boost::optional<ByteBuffer> sig = extract_signature_buffer(certificate.signature);
     if (!sig) {
-        certificate_invalid(CertificateInvalidReason::MISSING_SIGNATURE);
-        return false;
+        return CertificateInvalidReason::MISSING_SIGNATURE;
     }
 
     // create buffer of certificate
     ByteBuffer cert = convert_for_signing(certificate);
 
     if (!m_crypto_backend.verify_data(m_root_key_pair.public_key, cert, sig.get())) {
-        certificate_invalid(CertificateInvalidReason::INVALID_SIGNATURE);
-        return false;
+        return CertificateInvalidReason::INVALID_SIGNATURE;
     }
 
-    return true;
+    return CertificateValidity::valid();
 }
 
 boost::optional<BackendCryptoPP::PublicKey> CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
