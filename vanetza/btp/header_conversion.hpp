@@ -11,7 +11,7 @@ namespace convertible
 {
 
 template<>
-struct byte_buffer_impl<btp::HeaderB&> : public byte_buffer
+struct byte_buffer_impl<btp::HeaderB> : public byte_buffer
 {
     byte_buffer_impl(const btp::HeaderB& header) : m_header(header) {}
     void convert(ByteBuffer& buffer) const override
