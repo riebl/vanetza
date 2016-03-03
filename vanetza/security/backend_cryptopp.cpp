@@ -2,18 +2,24 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <cryptopp/oids.h>
 #include <cassert>
+#include <functional>
 
 namespace vanetza
 {
 namespace security
 {
 
+using std::placeholders::_1;
+
+BackendCryptoPP::BackendCryptoPP() :
+    m_private_cache(std::bind(&BackendCryptoPP::internal_private_key, this, _1), 8),
+    m_public_cache(std::bind(&BackendCryptoPP::internal_public_key, this, _1), 2048)
+{
+}
+
 EcdsaSignature BackendCryptoPP::sign_data(const ecdsa256::PrivateKey& generic_key, const ByteBuffer& data)
 {
-    PrivateKey key;
-    CryptoPP::Integer integer { generic_key.key.data(), generic_key.key.size() };
-    key.Initialize(CryptoPP::ASN1::secp256r1(), integer);
-    return sign_data(key, data);
+    return sign_data(m_private_cache[generic_key], data);
 }
 
 EcdsaSignature BackendCryptoPP::sign_data(const PrivateKey& private_key, const ByteBuffer& data)
@@ -41,7 +47,7 @@ EcdsaSignature BackendCryptoPP::sign_data(const PrivateKey& private_key, const B
 
 bool BackendCryptoPP::verify_data(const ecdsa256::PublicKey& generic_key, const ByteBuffer& msg, const ByteBuffer& sig)
 {
-    return verify_data(internal_public_key(generic_key), msg, sig);
+    return verify_data(m_public_cache[generic_key], msg, sig);
 }
 
 bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer& msg, const ByteBuffer& sig)
@@ -94,6 +100,14 @@ BackendCryptoPP::PublicKey BackendCryptoPP::internal_public_key(const ecdsa256::
     pub.Initialize(CryptoPP::ASN1::secp256r1(), q);
     assert(pub.Validate(m_prng, 3));
     return pub;
+}
+
+BackendCryptoPP::PrivateKey BackendCryptoPP::internal_private_key(const ecdsa256::PrivateKey& generic)
+{
+    PrivateKey key;
+    CryptoPP::Integer integer { generic.key.data(), generic.key.size() };
+    key.Initialize(CryptoPP::ASN1::secp256r1(), integer);
+    return key;
 }
 
 } // namespace security

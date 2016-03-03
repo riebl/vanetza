@@ -1,6 +1,7 @@
 #ifndef BACKEND_CRYPTOPP_HPP_JQWA9MLZ
 #define BACKEND_CRYPTOPP_HPP_JQWA9MLZ
 
+#include <vanetza/common/lru_cache.hpp>
 #include <vanetza/security/backend.hpp>
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/osrng.h>
@@ -18,6 +19,8 @@ public:
     using PublicKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PublicKey;
     using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
     using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
+
+    BackendCryptoPP();
 
     /// \see Backend::sign_data
     EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data_buffer) override;
@@ -47,7 +50,12 @@ private:
     /// adapt generic public key to internal structure
     PublicKey internal_public_key(const ecdsa256::PublicKey&);
 
+    /// adapt generic private key to internal structure
+    PrivateKey internal_private_key(const ecdsa256::PrivateKey&);
+
     CryptoPP::AutoSeededRandomPool m_prng;
+    LruCache<ecdsa256::PrivateKey, PrivateKey> m_private_cache;
+    LruCache<ecdsa256::PublicKey, PublicKey> m_public_cache;
 };
 
 } // namespace security
