@@ -77,12 +77,6 @@ Certificate CertificateManager::generate_certificate(const ecdsa256::KeyPair& ke
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);
-
-    // Covered by signature:
-    //      version, signer_field, subject_info,
-    //      subject_attributes + length,
-    //      validity_restriction + length
-    // section 7.4 in TS 103 097 v1.2.1
     certificate.signature = m_crypto_backend.sign_data(m_root_key_pair.private_key, data_buffer);
 
     return certificate;

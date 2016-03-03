@@ -55,11 +55,6 @@ EncapConfirm SecurityEntity::sign(const EncapRequest& request)
         signature_size = get_size(temp_signature);
     }
 
-    // Covered by signature:
-    //      SecuredMessage: protocol_version, header_fields (incl. its length), payload_field, trailer_field.trailer_field_type
-    //      CommonHeader: complete
-    //      ExtendedHeader: complete
-    // p. 27 in TS 103 097 v1.2.1
     const auto& private_key = m_certificate_manager->own_private_key();
     if (m_sign_deferred) {
         auto future = std::async(std::launch::deferred, [=]() {
