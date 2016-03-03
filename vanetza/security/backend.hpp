@@ -4,6 +4,8 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/signature.hpp>
+#include <memory>
+#include <string>
 
 namespace vanetza
 {
@@ -37,6 +39,17 @@ public:
 
     virtual ~Backend() = default;
 };
+
+/**
+ * \brief create a backend instance
+ *
+ * A backend named "default" is guaranteed not to return a nullptr.
+ * However, it might be a dummy backend.
+ *
+ * \param name identifying name of backend implementation
+ * \return backend instance (if available) or nullptr
+ */
+std::unique_ptr<Backend> create_backend(const std::string& name);
 
 } // namespace security
 } // namespace vanetza

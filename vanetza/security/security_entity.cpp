@@ -1,5 +1,5 @@
 #include <vanetza/security/security_entity.hpp>
-#include <vanetza/security/backend_cryptopp.hpp>
+#include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/its_aid.hpp>
 #include <future>
@@ -13,7 +13,7 @@ namespace security
 SecurityEntity::SecurityEntity(const Clock::time_point& time_now) :
     m_time_now(time_now), m_sign_deferred(false),
     m_certificate_manager(time_now),
-    m_crypto_backend(new BackendCryptoPP())
+    m_crypto_backend(create_backend("default"))
 {
 }
 
