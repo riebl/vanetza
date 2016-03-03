@@ -3,6 +3,7 @@
 #include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/its_aid.hpp>
 #include <future>
+#include <mutex>
 
 namespace vanetza
 {
@@ -39,34 +40,21 @@ EncapConfirm SecurityEntity::sign(const EncapRequest& request)
     SignerInfo signer_info = m_certificate_manager->own_certificate();
     encap_confirm.sec_packet.header_fields.push_back(signer_info);
 
-    // create trailer field to get the size in bytes
-    size_t trailer_field_size = 0;
-    size_t signature_size = 0;
-    {
-        security::EcdsaSignature temp_signature;
-        temp_signature.s.resize(field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
-        X_Coordinate_Only x_coordinate_only;
-        x_coordinate_only.x.resize(field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
-        temp_signature.R = x_coordinate_only;
-
-        security::TrailerField temp_trailer_field = temp_signature;
-
-        trailer_field_size = get_size(temp_trailer_field);
-        signature_size = get_size(temp_signature);
-    }
-
+    const size_t signature_size = get_size(signature_placeholder());
+    const size_t trailer_size = get_size(TrailerField { signature_placeholder() });
     const auto& private_key = m_certificate_manager->own_private_key();
+
     if (m_sign_deferred) {
         auto future = std::async(std::launch::deferred, [=]() {
-            ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
+            ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_size);
             return m_crypto_backend->sign_data(private_key, data);
         });
         EcdsaSignatureFuture signature(future.share(), signature_size);
         encap_confirm.sec_packet.trailer_fields.push_back(signature);
     } else {
-        ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
+        ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_size);
         TrailerField trailer_field = m_crypto_backend->sign_data(private_key, data_buffer);
-        assert(get_size(trailer_field) == trailer_field_size);
+        assert(get_size(trailer_field) == trailer_size);
         encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
     }
 
@@ -202,6 +190,22 @@ DecapConfirm SecurityEntity::verify(const DecapRequest& request)
 void SecurityEntity::enable_deferred_signing(bool flag)
 {
     m_sign_deferred = flag;
+}
+
+const Signature& SecurityEntity::signature_placeholder() const
+{
+    static std::once_flag once_flag;
+    static Signature signature;
+    std::call_once(once_flag, [](Signature& signature) {
+        const auto size = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+        EcdsaSignature ecdsa;
+        ecdsa.s.resize(size, 0x00);
+        X_Coordinate_Only coordinate;
+        coordinate.x.resize(size, 0x00);
+        ecdsa.R = coordinate;
+        signature = ecdsa;
+    }, std::ref(signature));
+    return signature;
 }
 
 } // namespace security

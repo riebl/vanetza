@@ -78,6 +78,12 @@ private:
     */
     DecapConfirm verify(const DecapRequest& decap_request);
 
+    /**
+     * \brief signature used as placeholder until final signature is calculated
+     * \return placeholder containing dummy data
+     */
+    const Signature& signature_placeholder() const;
+
     const Clock::time_point& m_time_now;
     bool m_sign_deferred; /*< controls if EcdsaSignatureFuture is used */
     std::shared_ptr<CertificateManager> m_certificate_manager;
