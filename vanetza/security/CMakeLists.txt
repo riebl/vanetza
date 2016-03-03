@@ -7,6 +7,7 @@ set(CXX_SOURCES
     certificate.cpp
     certificate_manager.cpp
     ecc_point.cpp
+    ecdsa256.cpp
     encryption_parameter.cpp
     header_field.cpp
     payload.cpp
