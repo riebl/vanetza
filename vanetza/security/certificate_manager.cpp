@@ -1,12 +1,10 @@
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/ecc_point.hpp>
-#include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/payload.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signature.hpp>
 #include <chrono>
-#include <future>
 
 namespace vanetza
 {
@@ -17,8 +15,7 @@ CertificateManager::CertificateManager(const Clock::time_point& time_now) :
     m_time_now(time_now), m_root_key_pair(get_root_key_pair()),
     m_root_certificate_hash(HashedId8 { 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab }),
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
-    m_own_certificate(generate_certificate(m_own_key_pair)),
-    m_sign_deferred(false)
+    m_own_certificate(generate_certificate(m_own_key_pair))
 {
     // TODO: root certifiate hash is arbitrarily chosen for now
     // It has to be calculated later, see TS 103 097 v1.2.1 section 4.2.12 for HashedId8
@@ -38,55 +35,9 @@ const Certificate& CertificateManager::own_certificate()
     return m_own_certificate;
 }
 
-EncapConfirm CertificateManager::sign_message(const EncapRequest& request)
+const ecdsa256::PrivateKey& CertificateManager::own_private_key()
 {
-    EncapConfirm encap_confirm;
-    // set secured message data
-    encap_confirm.sec_packet.payload.type = PayloadType::Signed;
-    encap_confirm.sec_packet.payload.data = std::move(request.plaintext_payload);
-    // set header field data
-    encap_confirm.sec_packet.header_fields.push_back(get_time()); // generation_time
-    encap_confirm.sec_packet.header_fields.push_back(itsAidCa);
-
-    SignerInfo signer_info = own_certificate();
-    encap_confirm.sec_packet.header_fields.push_back(signer_info);
-
-    // create trailer field to get the size in bytes
-    size_t trailer_field_size = 0;
-    size_t signature_size = 0;
-    {
-        security::EcdsaSignature temp_signature;
-        temp_signature.s.resize(field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
-        X_Coordinate_Only x_coordinate_only;
-        x_coordinate_only.x.resize(field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256));
-        temp_signature.R = x_coordinate_only;
-
-        security::TrailerField temp_trailer_field = temp_signature;
-
-        trailer_field_size = get_size(temp_trailer_field);
-        signature_size = get_size(temp_signature);
-    }
-
-    // Covered by signature:
-    //      SecuredMessage: protocol_version, header_fields (incl. its length), payload_field, trailer_field.trailer_field_type
-    //      CommonHeader: complete
-    //      ExtendedHeader: complete
-    // p. 27 in TS 103 097 v1.2.1
-    if (m_sign_deferred) {
-        auto future = std::async(std::launch::deferred, [=]() {
-            ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-            return m_crypto_backend.sign_data(m_own_key_pair.private_key, data);
-        });
-        EcdsaSignatureFuture signature(future.share(), signature_size);
-        encap_confirm.sec_packet.trailer_fields.push_back(signature);
-    } else {
-        ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_field_size);
-        TrailerField trailer_field = m_crypto_backend.sign_data(m_own_key_pair.private_key, data_buffer);
-        assert(get_size(trailer_field) == trailer_field_size);
-        encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
-    }
-
-    return encap_confirm;
+    return m_own_key_pair.private_key;
 }
 
 DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
@@ -311,11 +262,6 @@ CertificateValidity CertificateManager::check_certificate(const Certificate& cer
     }
 
     return CertificateValidity::valid();
-}
-
-void CertificateManager::enable_deferred_signing(bool flag)
-{
-    m_sign_deferred = flag;
 }
 
 Time64 CertificateManager::get_time()

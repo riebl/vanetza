@@ -13,6 +13,8 @@ namespace vanetza
 namespace security
 {
 
+// forward declarations
+class Backend;
 class CertificateManager;
 
 class SecurityEntity
@@ -23,10 +25,15 @@ public:
      */
     SecurityEntity(const Clock::time_point& time_now);
 
-    /** \brief encapsulates packet
+    /**
+     * \brief Creates a security envelope covering the given payload.
      *
-     * \param packet that should be encapsulated
-     * \return encapsulated packet
+     * The payload consists of the CommonHeader, ExtendedHeader and the payload of
+     * the layers above the network layer. The entire security envelope is used
+     * to calculate a signature which gets added to the resulting SecuredMessage.
+     *
+     * \param request containing payload to sign
+     * \return confirmation containing signed SecuredMessage
      */
     EncapConfirm encapsulate_packet(const EncapRequest& encap_request);
 
@@ -36,6 +43,16 @@ public:
      * \return decapsulated packet
      */
     DecapConfirm decapsulate_packet(const DecapRequest& decap_request);
+
+    /**
+     * \brief enable deferred signature creation
+     *
+     * SecuredMessages contain EcdsaSignatureFuture instead of EcdsaSignature
+     * when this feature is enabled.
+     *
+     * \param flag true for enabling deferred signature calculation
+     */
+    void enable_deferred_signing(bool flag);
 
 private:
     /** \brief sign the packet
@@ -52,7 +69,10 @@ private:
     */
     DecapConfirm verify(const DecapRequest& decap_request);
 
+    const Clock::time_point& m_time_now;
+    bool m_sign_deferred; /*< controls if EcdsaSignatureFuture is used */
     std::shared_ptr<CertificateManager> m_certificate_manager;
+    std::shared_ptr<Backend> m_crypto_backend;
 };
 
 } // namespace security

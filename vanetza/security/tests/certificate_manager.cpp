@@ -11,6 +11,7 @@
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/payload.hpp>
 #include <vanetza/security/profile.hpp>
+#include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
@@ -22,7 +23,7 @@ using namespace vanetza::security;
 class CertificateManagerTest : public ::testing::Test
 {
 public:
-    CertificateManagerTest() : cert_manager(time_now)
+    CertificateManagerTest() : cert_manager(time_now), sec_ent(time_now)
     {
     }
 
@@ -36,7 +37,7 @@ protected:
 
     security::SecuredMessage create_secured_message()
     {
-        security::EncapConfirm encap_confirm = cert_manager.sign_message(encap_request);
+        security::EncapConfirm encap_confirm = sec_ent.encapsulate_packet(encap_request);
         return encap_confirm.sec_packet;
     }
 
@@ -44,60 +45,9 @@ protected:
     security::EncapRequest encap_request;
     Clock::time_point time_now;
     security::CertificateManager cert_manager;
+    security::SecurityEntity sec_ent;
     security::BackendCryptoPP crypto_backend;
 };
-
-TEST_F(CertificateManagerTest, sign_smoke_test)
-{
-    security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
-}
-
-TEST_F(CertificateManagerTest, mutual_acceptance)
-{
-    security::CertificateManager cert_manager_other(time_now);
-    security::EncapConfirm encap_confirm = cert_manager_other.sign_message(encap_request);
-    security::DecapConfirm decap_confirm = cert_manager.verify_message(security::DecapRequest { encap_confirm.sec_packet });
-    EXPECT_EQ(security::ReportType::Success, decap_confirm.report);
-}
-
-TEST_F(CertificateManagerTest, sec_payload_equals_plaintext_payload)
-{
-    security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
-
-    // check if sec_payload equals plaintext_payload
-    check(expected_payload, confirm.sec_packet.payload.data);
-}
-
-TEST_F(CertificateManagerTest, signature_is_ecdsa)
-{
-    security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
-
-    // check if signature was set into trailer_fields
-    ASSERT_EQ(1, confirm.sec_packet.trailer_fields.size());
-    // check if type is correct
-    ASSERT_EQ(security::TrailerFieldType::Signature, get_type(confirm.sec_packet.trailer_fields.front()));
-    // check signature type
-    security::Signature signature = boost::get<security::Signature>(confirm.sec_packet.trailer_fields.front());
-    EXPECT_EQ(security::PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(signature));
-}
-
-TEST_F(CertificateManagerTest, expected_header_field_size)
-{
-    security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
-
-    // check header_field size
-    EXPECT_EQ(3, confirm.sec_packet.header_fields.size());
-}
-
-TEST_F(CertificateManagerTest, expected_payload)
-{
-    security::EncapConfirm confirm = cert_manager.sign_message(encap_request);
-
-    // check payload
-    security::Payload payload = confirm.sec_packet.payload;
-    EXPECT_EQ(expected_payload.size(), size(payload.data, min_osi_layer(), max_osi_layer()));
-    EXPECT_EQ(security::PayloadType::Signed, get_type(payload));
-}
 
 TEST_F(CertificateManagerTest, verify_message)
 {

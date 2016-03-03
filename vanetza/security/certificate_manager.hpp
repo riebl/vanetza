@@ -32,18 +32,6 @@ public:
     CertificateManager(const Clock::time_point& time_now);
 
     /**
-     * \brief Creates an security envelope covering the given payload.
-     *
-     * The payload consists of the CommonHeader, ExtendedHeader and the payload of
-     * the layers above the network layer. The entire security envelope is used
-     * to calculate a signature which gets added to the resulting SecuredMessage.
-     *
-     * \param request containing payload to sign
-     * \return confirmation containing signed SecuredMessage
-     */
-    EncapConfirm sign_message(const EncapRequest& request);
-
-    /**
      * \brief Verifies the Signature and SignerInfo of a SecuredMessage
      *
      * It also decapsulates the data from the SecuredMessage.
@@ -62,16 +50,6 @@ public:
     Certificate generate_certificate(const ecdsa256::KeyPair& key_pair);
 
     /**
-     * \brief enable deferred signature creation
-     *
-     * SecuredMessages contain EcdsaSignatureFuture instead of EcdsaSignature
-     * when this feature is enabled.
-     *
-     * \param flag true for enabling deferred signature calculation
-     */
-    void enable_deferred_signing(bool flag);
-
-    /**
      * \brief check certificate
      * \param certificate to verify
      * \return certificate status
@@ -83,6 +61,12 @@ public:
      * \return own certificate
      */
     const Certificate& own_certificate();
+
+    /**
+     * \brief get own private key
+     * \return private key
+     */
+    const ecdsa256::PrivateKey& own_private_key();
 
 private:
     /**
@@ -110,7 +94,6 @@ private:
     HashedId8 m_root_certificate_hash;
     ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;
-    bool m_sign_deferred;
 };
 
 } // namespace security
