@@ -8,6 +8,7 @@
 #include <vanetza/security/encap_confirm.hpp>
 #include <vanetza/security/encap_request.hpp>
 #include <memory>
+#include <string>
 
 namespace vanetza
 {
@@ -22,8 +23,9 @@ class SecurityEntity
 public:
     /**
      * \param time_now timestamp referring to current time
+     * \param backend [optional] identifier of desired backend implementation
      */
-    SecurityEntity(const Clock::time_point& time_now);
+    SecurityEntity(const Clock::time_point& time_now, const std::string& backend = "default");
     ~SecurityEntity();
 
     /**

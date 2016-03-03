@@ -10,10 +10,10 @@ namespace vanetza
 namespace security
 {
 
-SecurityEntity::SecurityEntity(const Clock::time_point& time_now) :
+SecurityEntity::SecurityEntity(const Clock::time_point& time_now, const std::string& backend) :
     m_time_now(time_now), m_sign_deferred(false),
     m_certificate_manager(time_now),
-    m_crypto_backend(create_backend("default"))
+    m_crypto_backend(create_backend(backend))
 {
 }
 
