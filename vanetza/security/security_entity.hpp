@@ -18,17 +18,10 @@ class CertificateManager;
 class SecurityEntity
 {
 public:
-    /** \brief
-     *
-     * \param time_now timestamp stored in the used CertificateManger
+    /**
+     * \param time_now timestamp referring to current time
      */
     SecurityEntity(const Clock::time_point& time_now);
-
-    /** \brief
-     *
-     * \param cert_manager a pointer to the used CertificateManager
-     */
-    SecurityEntity(std::shared_ptr<CertificateManager> cert_manager);
 
     /** \brief encapsulates packet
      *

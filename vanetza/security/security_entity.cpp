@@ -11,11 +11,6 @@ SecurityEntity::SecurityEntity(const Clock::time_point& time_now) :
 {
 }
 
-SecurityEntity::SecurityEntity(std::shared_ptr<CertificateManager> cert_manager) :
-    m_certificate_manager(cert_manager)
-{
-}
-
 EncapConfirm SecurityEntity::encapsulate_packet(const EncapRequest& encap_request)
 {
     return sign(encap_request);
