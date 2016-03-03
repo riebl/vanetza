@@ -20,6 +20,26 @@ PublicKey create_public_key(const Uncompressed& unc)
     return pb;
 }
 
+bool operator==(const PublicKey& lhs, const PublicKey& rhs)
+{
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+bool operator!=(const PublicKey& lhs, const PublicKey& rhs)
+{
+    return !(lhs == rhs);
+}
+
+bool operator==(const PrivateKey& lhs, const PrivateKey& rhs)
+{
+    return lhs.key == rhs.key;
+}
+
+bool operator!=(const PrivateKey& lhs, const PrivateKey& rhs)
+{
+    return !(lhs == rhs);
+}
+
 } // namespace ecdsa256
 } // namespace security
 } // namespace vanetza

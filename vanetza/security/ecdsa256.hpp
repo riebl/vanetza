@@ -23,10 +23,18 @@ struct PublicKey
     std::array<uint8_t, digest_octets> y;
 };
 
+bool operator==(const PublicKey& lhs, const PublicKey& rhs);
+bool operator!=(const PublicKey& lhs, const PublicKey& rhs);
+
+
 struct PrivateKey
 {
     std::array<uint8_t, digest_octets> key;
 };
+
+bool operator==(const PrivateKey& lhs, const PrivateKey& rhs);
+bool operator!=(const PrivateKey& lhs, const PrivateKey& rhs);
+
 
 struct KeyPair
 {
