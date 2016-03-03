@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/clock.hpp>
-#include <vanetza/geonet/mib.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
+#include <vanetza/security/tests/check_signature.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -25,6 +25,12 @@ protected:
         encap_request.plaintext_payload = expected_payload;
         encap_request.security_profile = Profile::CAM;
         return encap_request;
+    }
+
+    SecuredMessage create_secured_message()
+    {
+        EncapConfirm confirm = sec_ent.encapsulate_packet(create_encap_request());
+        return confirm.sec_packet;
     }
 
     Clock::time_point time_now;
@@ -79,46 +85,336 @@ TEST_F(SecurityEntityTest, expected_payload)
     EXPECT_EQ(PayloadType::Signed, get_type(payload));
 }
 
-
-TEST_F(SecurityEntityTest, test_verify_method)
+TEST_F(SecurityEntityTest, verify_message)
 {
-    //create signed packet
-    EncapRequest encap_request = create_encap_request();
-    EncapConfirm encap_confirm;
-    encap_confirm = sec_ent.encapsulate_packet(encap_request);
-
-    //create decap_request
-    DecapRequest decap_request(encap_confirm.sec_packet);
-
-    //create decap_confirm
-    DecapConfirm decap_confirm;
-    decap_confirm = sec_ent.decapsulate_packet(decap_request);
-
-    //check ReportType of decap_confirm
-    EXPECT_EQ(decap_confirm.report, ReportType::Success);
-}
-
-TEST_F(SecurityEntityTest, test_verify_method_fail)
-{
-    //create signed packet
-    EncapRequest encap_request = create_encap_request();
-    EncapConfirm encap_confirm;
-    encap_confirm = sec_ent.encapsulate_packet(encap_request);
-    SecuredMessage& secured_message = encap_confirm.sec_packet;
-
-    //create decap_request of signed packet
+    // prepare decap request
+    auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    //create new (wrong) payload
-    ByteBuffer wrong_payload { 7 };
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
 
-    //replace correct payload with new payload
-    secured_message.payload.data = CohesivePacket(wrong_payload, OsiLayer::Application);
-
-    //create decap_confirm
-    DecapConfirm decap_confirm;
-    decap_confirm = sec_ent.decapsulate_packet(decap_request);
-
-    //check ReportType of decap_confirm
-    EXPECT_EQ(decap_confirm.report, ReportType::False_Signature);
+    // check if verify was successful
+    EXPECT_EQ(ReportType::Success, decap_confirm.report);
+    // check if payload was not changed
+    check(expected_payload, decap_confirm.plaintext_payload);
+    // check certificate validity
+    EXPECT_TRUE(decap_confirm.certificate_validity);
 }
+
+TEST_F(SecurityEntityTest, verify_message_modified_message_type)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
+        // modify message type
+        if (HeaderFieldType::Its_Aid == get_type(field)) {
+            boost::get<IntX>(field).set(42);
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(ReportType::False_Signature, decap_confirm.report);
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
+{
+    // create decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
+        // modify certificate
+        if (HeaderFieldType::Signer_Info == get_type(field)) {
+            SignerInfo& signer_info = boost::get<SignerInfo>(field);
+            Certificate& certificate = boost::get<Certificate>(signer_info);
+
+            // change the subject name
+            certificate.subject_info.subject_name = {42};
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::INVALID_NAME, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
+{
+    // create decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
+        // modify certificate
+        if (HeaderFieldType::Signer_Info == get_type(field)) {
+            SignerInfo& signer_info = boost::get<SignerInfo>(field);
+            Certificate& certificate = boost::get<Certificate>(signer_info);
+
+            // change the subject info
+            HashedId8 faulty_hash {{ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }};
+            certificate.signer_info = faulty_hash;
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
+{
+    // create decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
+        // modify certificate
+        if (HeaderFieldType::Signer_Info == get_type(field)) {
+            SignerInfo& signer_info = boost::get<SignerInfo>(field);
+            Certificate& certificate = boost::get<Certificate>(signer_info);
+
+            // change the subject info
+            certificate.subject_info.subject_type = SubjectType::Root_Ca;
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)
+{
+    // create decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
+        // modify certificate
+        if (HeaderFieldType::Signer_Info == get_type(field)) {
+            SignerInfo& signer_info = boost::get<SignerInfo>(field);
+            Certificate& certificate = boost::get<Certificate>(signer_info);
+
+            std::list<SubjectAttribute>& subject_attributes_list = certificate.subject_attributes;
+
+            // iterate over subject_attribute list
+            for (auto& subject_attribute : subject_attributes_list) {
+
+                if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
+                    SubjectAssurance& subject_assurance = boost::get<SubjectAssurance>(subject_attribute);
+
+                    // change raw in subject assurance to random value
+                    subject_assurance.raw = 0x47;
+                }
+            }
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // let time pass by... our certificates are valid for one day currently
+    time_now += std::chrono::hours(25);
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    // check hook
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_premature_certificate)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // subtract offset from time_now
+    time_now -= std::chrono::hours(1);
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restriction)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
+        // modify certificate
+        if (HeaderFieldType::Signer_Info == get_type(field)) {
+            SignerInfo& signer_info = boost::get<SignerInfo>(field);
+            Certificate& certificate = boost::get<Certificate>(signer_info);
+
+            std::list<ValidityRestriction>& restriction_list = certificate.validity_restriction;
+
+            // iterate over validity_restriction list
+            for (auto& validity_restriction : restriction_list) {
+
+                ValidityRestrictionType type = get_type(validity_restriction);
+                ASSERT_EQ(type, ValidityRestrictionType::Time_Start_And_End);
+
+                // change start and end time of certificate validity
+                StartAndEndValidity& start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
+                start_and_end.start_validity = 500;
+                start_and_end.end_validity = 373;
+            }
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto& field : header_fields) {
+        // modify certificate
+        if (HeaderFieldType::Signer_Info == get_type(field)) {
+            SignerInfo& signer_info = boost::get<SignerInfo>(field);
+            Certificate& certificate = boost::get<Certificate>(signer_info);
+            certificate.signature = create_random_ecdsa_signature(0);
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_signature)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all trailer_fields
+    auto& trailer_fields = secured_message.trailer_fields;
+    for (auto& field : trailer_fields) {
+        // modify signature
+        if (TrailerFieldType::Signature == get_type(field)) {
+            ASSERT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(boost::get<Signature>(field)));
+            EcdsaSignature& signature = boost::get<EcdsaSignature>(boost::get<Signature>(field));
+            signature.s = {8, 15, 23};
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(ReportType::False_Signature, decap_confirm.report);
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_payload_type)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // change the payload.type
+    secured_message.payload.type = PayloadType::Unsecured;
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(ReportType::Unsigned_Message, decap_confirm.report);
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_payload)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // modify payload buffer
+    secured_message.payload.data = CohesivePacket({42, 42, 42}, OsiLayer::Session);
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(ReportType::False_Signature, decap_confirm.report);
+}
+
+TEST_F(SecurityEntityTest, verify_message_modified_generation_time_before_current_time)
+{
+    // change the time, so the generation time of SecuredMessage is before current time
+    time_now += std::chrono::hours(12);
+
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // change the time, so the current time is before generation time of SecuredMessage
+    time_now -= std::chrono::hours(12);
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(ReportType::Invalid_Timestamp, decap_confirm.report);
+}
+
+TEST_F(SecurityEntityTest, verify_message_without_signer_info)
+{
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
+    // iterate through all header_fields
+    auto& header_fields = secured_message.header_fields;
+    for (auto field = header_fields.begin(); field != header_fields.end(); ++field) {
+        // modify certificate
+        if (HeaderFieldType::Signer_Info == get_type(*field)) {
+            header_fields.erase(field);
+            break;
+        }
+    }
+
+    // verify message
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    // check if verify was successful
+    EXPECT_EQ(ReportType::Signer_Certificate_Not_Found, decap_confirm.report);
+}
+
+// TODO add tests for Unsupported_Signer_Identifier_Type, Incompatible_Protocol

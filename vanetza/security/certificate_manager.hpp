@@ -1,20 +1,11 @@
 #ifndef CERTIFICATE_MANAGER_HPP
 #define CERTIFICATE_MANAGER_HPP
 
-#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/clock.hpp>
-#include <vanetza/common/hook.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/ecdsa256.hpp>
-#include <vanetza/security/decap_request.hpp>
-#include <vanetza/security/encap_request.hpp>
-#include <vanetza/security/decap_confirm.hpp>
-#include <vanetza/security/encap_confirm.hpp>
-#include <vanetza/security/trailer_field.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <string>
 
 namespace vanetza
 {
@@ -30,16 +21,6 @@ class CertificateManager
 {
 public:
     CertificateManager(const Clock::time_point& time_now);
-
-    /**
-     * \brief Verifies the Signature and SignerInfo of a SecuredMessage
-     *
-     * It also decapsulates the data from the SecuredMessage.
-     *
-     * \param request containing a SecuredMessage
-     * \return decapsulation confirmation
-     */
-    DecapConfirm verify_message(const DecapRequest& request);
 
     /**
      * \brief generate a certificate

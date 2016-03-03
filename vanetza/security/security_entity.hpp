@@ -42,6 +42,15 @@ public:
      * \param packet that should be decapsulated
      * \return decapsulated packet
      */
+
+    /**
+     * \brief Decapsulates the payload within a SecuredMessage
+     *
+     * Verifies the Signature and SignerInfo of a SecuredMessage.
+     *
+     * \param request containing a SecuredMessage
+     * \return decapsulation confirmation including plaintext payload
+     */
     DecapConfirm decapsulate_packet(const DecapRequest& decap_request);
 
     /**
