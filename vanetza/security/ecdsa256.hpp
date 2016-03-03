@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <utility>
 
 namespace vanetza
 {
@@ -52,6 +53,24 @@ PublicKey create_public_key(const Uncompressed&);
 } // namespace ecdsa256
 } // namespace security
 } // namespace vanetza
+
+
+namespace std
+{
+
+template<>
+struct hash<vanetza::security::ecdsa256::PublicKey>
+{
+    size_t operator()(const vanetza::security::ecdsa256::PublicKey&) const;
+};
+
+template<>
+struct hash<vanetza::security::ecdsa256::PrivateKey>
+{
+    size_t operator()(const vanetza::security::ecdsa256::PrivateKey&) const;
+};
+
+} // namespace std
 
 #endif /* ECDSA256_HPP_IOXLJFVZ */
 
