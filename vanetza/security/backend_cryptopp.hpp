@@ -2,7 +2,7 @@
 #define BACKEND_CRYPTOPP_HPP_JQWA9MLZ
 
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/security/public_key.hpp>
+#include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/signature.hpp>
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/sha.h>
@@ -12,9 +12,6 @@ namespace vanetza
 namespace security
 {
 
-// forward declaration
-struct Uncompressed;
-
 class BackendCryptoPP
 {
 public:
@@ -23,12 +20,6 @@ public:
     using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
     using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
 
-    struct KeyPair
-    {
-        PrivateKey private_key;
-        PublicKey public_key;
-    };
-
     /**
      * \brief generate EcdsaSignature, for given data with private_key
      *
@@ -36,7 +27,7 @@ public:
      * \param data_buffer the data
      * \return EcdsaSignature resulting signature
      */
-    EcdsaSignature sign_data(const PrivateKey& private_key, const ByteBuffer& data_buffer);
+    EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data_buffer);
 
     /**
      * \brief checks if the data_buffer can be verified with the public_key
@@ -46,20 +37,29 @@ public:
      * \param sig signature for verification
      * \return true if the data could be verified
      */
-    bool verify_data(const PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig);
+    bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig);
 
     /**
      * \brief generate a private key and the corresponding public key
      * \return generated key pair
      */
-    KeyPair generate_key_pair();
+    ecdsa256::KeyPair generate_key_pair();
 
-    /**
-     * Create public key from uncrompressed ECC point
-     * \param unc uncompressed ECC point (secured message format)
-     * \return public key
-     */
-    PublicKey public_key(const Uncompressed& unc);
+private:
+    /// internal sign method using crypto++ private key
+    EcdsaSignature sign_data(const PrivateKey& key, const ByteBuffer& data);
+
+    /// internal verify method using crypto++ public key
+    bool verify_data(const PublicKey& key, const ByteBuffer& data, const ByteBuffer& sig);
+
+    /// create private key
+    PrivateKey generate_private_key();
+
+    /// derive public key from private key
+    PublicKey generate_public_key(const PrivateKey&);
+
+    /// adapt generic public key to internal structure
+    PublicKey internal_public_key(const ecdsa256::PublicKey&);
 };
 
 } // namespace security

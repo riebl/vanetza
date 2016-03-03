@@ -80,7 +80,7 @@ ByteBuffer convert_for_signing(const Certificate& cert)
     return buf;
 }
 
-boost::optional<Uncompressed> get_public_key(const Certificate& cert)
+boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate& cert)
 {
     boost::optional<Uncompressed> public_key_coordinates;
     for (auto& attribute : cert.subject_attributes) {
@@ -93,6 +93,19 @@ boost::optional<Uncompressed> get_public_key(const Certificate& cert)
     }
 
     return public_key_coordinates;
+}
+
+boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate& cert)
+{
+    auto unc = get_uncompressed_public_key(cert);
+    boost::optional<ecdsa256::PublicKey> result;
+    ecdsa256::PublicKey pub;
+    if (unc && unc->x.size() == pub.x.size() && unc->y.size() == pub.y.size()) {
+        std::copy_n(unc->x.begin(), pub.x.size(), pub.x.data());
+        std::copy_n(unc->y.begin(), pub.y.size(), pub.y.data());
+        result = std::move(pub);
+    }
+    return result;
 }
 
 HashedId8 calculate_hash(const Certificate& cert)

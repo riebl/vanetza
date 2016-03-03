@@ -5,8 +5,6 @@
 #include <vanetza/security/payload.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signature.hpp>
-#include <cryptopp/osrng.h>
-#include <cryptopp/oids.h>
 #include <chrono>
 #include <future>
 
@@ -151,7 +149,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
 
     // TODO check Duplicate_Message, Invalid_Mobility_Data, Unencrypted_Message, Decryption_Error
 
-    boost::optional<BackendCryptoPP::PublicKey> public_key = get_public_key_from_certificate(certificate.get());
+    boost::optional<ecdsa256::PublicKey> public_key = get_public_key(certificate.get());
 
     // public key could not be extracted
     if (!public_key) {
@@ -217,7 +215,7 @@ DecapConfirm CertificateManager::verify_message(const DecapRequest& request)
     return decap_confirm;
 }
 
-Certificate CertificateManager::generate_certificate(const BackendCryptoPP::KeyPair& key_pair)
+Certificate CertificateManager::generate_certificate(const ecdsa256::KeyPair& key_pair)
 {
     // create certificate
     Certificate certificate;
@@ -236,15 +234,8 @@ Certificate CertificateManager::generate_certificate(const BackendCryptoPP::KeyP
     // set subject attributes
     // set the verification_key
     Uncompressed coordinates;
-    {
-        coordinates.x.resize(32);
-        coordinates.y.resize(32);
-        key_pair.public_key.GetPublicElement().x.Encode(coordinates.x.data(), coordinates.x.size());
-        key_pair.public_key.GetPublicElement().y.Encode(coordinates.y.data(), coordinates.y.size());
-
-        assert(CryptoPP::SHA256::DIGESTSIZE == coordinates.x.size());
-        assert(CryptoPP::SHA256::DIGESTSIZE == coordinates.y.size());
-    }
+    coordinates.x.assign(key_pair.public_key.x.begin(), key_pair.public_key.x.end());
+    coordinates.y.assign(key_pair.public_key.y.begin(), key_pair.public_key.y.end());
     EccPoint ecc_point = coordinates;
     ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = ecc_point;
@@ -322,17 +313,6 @@ CertificateValidity CertificateManager::check_certificate(const Certificate& cer
     return CertificateValidity::valid();
 }
 
-boost::optional<BackendCryptoPP::PublicKey> CertificateManager::get_public_key_from_certificate(const Certificate& certificate)
-{
-    boost::optional<BackendCryptoPP::PublicKey> public_key;
-    boost::optional<Uncompressed> public_key_coordinates = get_public_key(certificate);
-    if (public_key_coordinates) {
-        public_key = m_crypto_backend.public_key(*public_key_coordinates);
-    }
-
-    return public_key;
-}
-
 void CertificateManager::enable_deferred_signing(bool flag)
 {
     m_sign_deferred = flag;
@@ -348,9 +328,9 @@ Time32 CertificateManager::get_time_in_seconds()
     return convert_time32(m_time_now);
 }
 
-const BackendCryptoPP::KeyPair& CertificateManager::get_root_key_pair()
+const ecdsa256::KeyPair& CertificateManager::get_root_key_pair()
 {
-    static BackendCryptoPP::KeyPair root = m_crypto_backend.generate_key_pair();
+    static ecdsa256::KeyPair root = m_crypto_backend.generate_key_pair();
     return root;
 }
 

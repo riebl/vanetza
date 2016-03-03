@@ -7,6 +7,7 @@
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
+#include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_request.hpp>
 #include <vanetza/security/decap_confirm.hpp>
@@ -58,7 +59,7 @@ public:
      * \param key_pair keys used to create the certificate
      * \return generated certificate
      */
-    Certificate generate_certificate(const BackendCryptoPP::KeyPair& key_pair);
+    Certificate generate_certificate(const ecdsa256::KeyPair& key_pair);
 
     /**
      * \brief enable deferred signature creation
@@ -85,14 +86,6 @@ public:
 
 private:
     /**
-     * \brief extract public key from a certificate
-     *
-     * \param certificate
-     * \return PublicKey
-     */
-    boost::optional<BackendCryptoPP::PublicKey> get_public_key_from_certificate(const Certificate& certificate);
-
-    /**
      * \brief get the current (system) time in microseconds
      * \return Time64
      */
@@ -109,13 +102,13 @@ private:
      * \note This is only a temporary workaround!
      * \return root key pair
      */
-    const BackendCryptoPP::KeyPair& get_root_key_pair();
+    const ecdsa256::KeyPair& get_root_key_pair();
 
     const Clock::time_point& m_time_now;
-    const BackendCryptoPP::KeyPair& m_root_key_pair;
+    const ecdsa256::KeyPair& m_root_key_pair;
     BackendCryptoPP m_crypto_backend;
     HashedId8 m_root_certificate_hash;
-    BackendCryptoPP::KeyPair m_own_key_pair;
+    ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;
     bool m_sign_deferred;
 };

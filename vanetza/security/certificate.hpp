@@ -4,6 +4,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/signer_info.hpp>
@@ -116,7 +117,14 @@ ByteBuffer convert_for_signing(const Certificate&);
  * \param cert Certificate
  * \return Uncompressed public key (if available)
  */
-boost::optional<Uncompressed> get_public_key(const Certificate&);
+boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate&);
+
+/**
+ * \brief Extract public ECDSA256 key from certificate
+ * \param cert Certificate
+ * \return public key (if available)
+ */
+boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate&);
 
 /**
  * Calculate hash id of certificate
