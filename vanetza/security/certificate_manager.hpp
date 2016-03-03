@@ -50,18 +50,6 @@ public:
     const ecdsa256::PrivateKey& own_private_key();
 
 private:
-    /**
-     * \brief get the current (system) time in microseconds
-     * \return Time64
-     */
-    Time64 get_time();
-
-    /**
-     * \brief get the current (system) time in seconds
-     * \return Time32
-     */
-    Time32 get_time_in_seconds();
-
     /** \brief retrieve common root key pair (for all instances)
      *
      * \note This is only a temporary workaround!

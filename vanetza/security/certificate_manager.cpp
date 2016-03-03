@@ -26,7 +26,8 @@ const Certificate& CertificateManager::own_certificate()
     // renew certificate if necessary
     for (auto& validity_restriction : m_own_certificate.validity_restriction) {
         auto start_and_end = boost::get<StartAndEndValidity>(&validity_restriction);
-        if (start_and_end && start_and_end->end_validity < get_time_in_seconds() + 3600) {
+        auto renewal_deadline = convert_time32(m_time_now + std::chrono::hours(1));
+        if (start_and_end && start_and_end->end_validity < renewal_deadline) {
             m_own_certificate = generate_certificate(m_own_key_pair);
             break;
         }
@@ -71,8 +72,8 @@ Certificate CertificateManager::generate_certificate(const ecdsa256::KeyPair& ke
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
     StartAndEndValidity start_and_end;
-    start_and_end.start_validity = get_time_in_seconds();
-    start_and_end.end_validity = get_time_in_seconds() + 3600 * 24; // add 1 day
+    start_and_end.start_validity = convert_time32(m_time_now);
+    start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(24));
     certificate.validity_restriction.push_back(start_and_end);
 
     // set signature
@@ -97,7 +98,8 @@ CertificateValidity CertificateManager::check_certificate(const Certificate& cer
                 return CertificateInvalidReason::BROKEN_TIME_PERIOD;
             }
             // check if certificate is premature or outdated
-            if (get_time_in_seconds() < start_and_end.start_validity || get_time_in_seconds() > start_and_end.end_validity) {
+            auto now = convert_time32(m_time_now);
+            if (now < start_and_end.start_validity || now > start_and_end.end_validity) {
                 return CertificateInvalidReason::OFF_TIME_PERIOD;
             }
         }
@@ -130,16 +132,6 @@ CertificateValidity CertificateManager::check_certificate(const Certificate& cer
     }
 
     return CertificateValidity::valid();
-}
-
-Time64 CertificateManager::get_time()
-{
-    return convert_time64(m_time_now);
-}
-
-Time32 CertificateManager::get_time_in_seconds()
-{
-    return convert_time32(m_time_now);
 }
 
 const ecdsa256::KeyPair& CertificateManager::get_root_key_pair()
