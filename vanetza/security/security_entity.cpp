@@ -17,6 +17,11 @@ SecurityEntity::SecurityEntity(const Clock::time_point& time_now) :
 {
 }
 
+SecurityEntity::~SecurityEntity()
+{
+    // only defined here so unique_ptr members can be used with incomplete types
+}
+
 EncapConfirm SecurityEntity::encapsulate_packet(const EncapRequest& encap_request)
 {
     return sign(encap_request);

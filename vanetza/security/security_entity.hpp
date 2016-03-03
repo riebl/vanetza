@@ -24,6 +24,7 @@ public:
      * \param time_now timestamp referring to current time
      */
     SecurityEntity(const Clock::time_point& time_now);
+    ~SecurityEntity();
 
     /**
      * \brief Creates a security envelope covering the given payload.
@@ -86,8 +87,8 @@ private:
 
     const Clock::time_point& m_time_now;
     bool m_sign_deferred; /*< controls if EcdsaSignatureFuture is used */
-    std::shared_ptr<CertificateManager> m_certificate_manager;
-    std::shared_ptr<Backend> m_crypto_backend;
+    std::unique_ptr<CertificateManager> m_certificate_manager;
+    std::unique_ptr<Backend> m_crypto_backend;
 };
 
 } // namespace security
