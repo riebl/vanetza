@@ -1,5 +1,6 @@
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
+#include <vanetza/security/backend_null.hpp>
 #include <cassert>
 #include <functional>
 #include <map>
@@ -24,6 +25,7 @@ public:
     {
         // first inserted backend is implicitly "default"
         attach("CryptoPP", []() { return make_unique(new BackendCryptoPP()); });
+        attach("Null", []() { return make_unique(new BackendNull()); });
     }
 
     std::unique_ptr<Backend> create(const std::string& name)

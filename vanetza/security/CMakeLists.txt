@@ -4,6 +4,7 @@ find_package(CryptoPP 5.6.1 REQUIRED)
 set(CXX_SOURCES
     backend.cpp
     backend_cryptopp.cpp
+    backend_null.cpp
     basic_elements.cpp
     certificate.cpp
     certificate_manager.cpp
