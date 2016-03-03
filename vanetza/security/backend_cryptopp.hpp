@@ -5,6 +5,7 @@
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/signature.hpp>
 #include <cryptopp/eccrypto.h>
+#include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
 
 namespace vanetza
@@ -60,6 +61,8 @@ private:
 
     /// adapt generic public key to internal structure
     PublicKey internal_public_key(const ecdsa256::PublicKey&);
+
+    CryptoPP::AutoSeededRandomPool m_prng;
 };
 
 } // namespace security

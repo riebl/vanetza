@@ -104,9 +104,9 @@ private:
      */
     const ecdsa256::KeyPair& get_root_key_pair();
 
+    BackendCryptoPP m_crypto_backend;
     const Clock::time_point& m_time_now;
     const ecdsa256::KeyPair& m_root_key_pair;
-    BackendCryptoPP m_crypto_backend;
     HashedId8 m_root_certificate_hash;
     ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;

@@ -1,8 +1,6 @@
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/ecc_point.hpp>
-#include <cryptopp/filters.h>
 #include <cryptopp/oids.h>
-#include <cryptopp/osrng.h>
 #include <cassert>
 
 namespace vanetza
@@ -20,12 +18,10 @@ EcdsaSignature BackendCryptoPP::sign_data(const ecdsa256::PrivateKey& generic_ke
 
 EcdsaSignature BackendCryptoPP::sign_data(const PrivateKey& private_key, const ByteBuffer& data)
 {
-    CryptoPP::AutoSeededRandomPool prng;
-
     // calculate signature
     Signer signer(private_key);
     ByteBuffer signature(signer.MaxSignatureLength(), 0x00);
-    auto signature_length = signer.SignMessage(prng, data.data(), data.size(), signature.data());
+    auto signature_length = signer.SignMessage(m_prng, data.data(), data.size(), signature.data());
     signature.resize(signature_length);
 
     auto signature_delimiter = signature.begin();
@@ -74,19 +70,17 @@ ecdsa256::KeyPair BackendCryptoPP::generate_key_pair()
 BackendCryptoPP::PrivateKey BackendCryptoPP::generate_private_key()
 {
     CryptoPP::OID oid(CryptoPP::ASN1::secp256r1());
-    CryptoPP::AutoSeededRandomPool prng;
     PrivateKey private_key;
-    private_key.Initialize(prng, oid);
-    assert(private_key.Validate(prng, 3));
+    private_key.Initialize(m_prng, oid);
+    assert(private_key.Validate(m_prng, 3));
     return private_key;
 }
 
 BackendCryptoPP::PublicKey BackendCryptoPP::generate_public_key(const PrivateKey& private_key)
 {
-    CryptoPP::AutoSeededRandomPool prng;
     PublicKey public_key;
     private_key.MakePublicKey(public_key);
-    assert(public_key.Validate(prng, 3));
+    assert(public_key.Validate(m_prng, 3));
     return public_key;
 }
 
@@ -98,10 +92,7 @@ BackendCryptoPP::PublicKey BackendCryptoPP::internal_public_key(const ecdsa256::
 
     BackendCryptoPP::PublicKey pub;
     pub.Initialize(CryptoPP::ASN1::secp256r1(), q);
-
-    CryptoPP::AutoSeededRandomPool prng;
-    assert(pub.Validate(prng, 3));
-
+    assert(pub.Validate(m_prng, 3));
     return pub;
 }
 
