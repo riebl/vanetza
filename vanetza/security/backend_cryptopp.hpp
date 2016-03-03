@@ -1,9 +1,7 @@
 #ifndef BACKEND_CRYPTOPP_HPP_JQWA9MLZ
 #define BACKEND_CRYPTOPP_HPP_JQWA9MLZ
 
-#include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/security/ecdsa256.hpp>
-#include <vanetza/security/signature.hpp>
+#include <vanetza/security/backend.hpp>
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
@@ -13,7 +11,7 @@ namespace vanetza
 namespace security
 {
 
-class BackendCryptoPP
+class BackendCryptoPP : public Backend
 {
 public:
     using PrivateKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey;
@@ -21,24 +19,11 @@ public:
     using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
     using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
 
-    /**
-     * \brief generate EcdsaSignature, for given data with private_key
-     *
-     * \param private_key used to sign the data
-     * \param data_buffer the data
-     * \return EcdsaSignature resulting signature
-     */
-    EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data_buffer);
+    /// \see Backend::sign_data
+    EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data_buffer) override;
 
-    /**
-     * \brief checks if the data_buffer can be verified with the public_key
-     *
-     * \param public_key
-     * \param data to be verified
-     * \param sig signature for verification
-     * \return true if the data could be verified
-     */
-    bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig);
+    /// \see Backend::verify_data
+    bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig) override;
 
     /**
      * \brief generate a private key and the corresponding public key
