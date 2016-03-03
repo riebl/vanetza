@@ -11,17 +11,17 @@ namespace vanetza
 namespace security
 {
 
-CertificateManager::CertificateManager(const Clock::time_point& time_now) :
-    m_time_now(time_now), m_root_key_pair(get_root_key_pair()),
-    m_root_certificate_hash(HashedId8 { 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab }),
+NaiveCertificateManager::NaiveCertificateManager(const Clock::time_point& time_now) :
+    m_time_now(time_now),
+    m_root_key_pair(root_key_pair()),
+    m_root_certificate_hash(HashedId8 {{ 0x17, 0x5c, 0x33, 0x48, 0x25, 0xdc, 0x7f, 0xab }}),
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_certificate(m_own_key_pair))
 {
-    // TODO: root certifiate hash is arbitrarily chosen for now
-    // It has to be calculated later, see TS 103 097 v1.2.1 section 4.2.12 for HashedId8
+    // TODO: root certifiate hash is arbitrarily chosen for now (no root certificate exists)
 }
 
-const Certificate& CertificateManager::own_certificate()
+const Certificate& NaiveCertificateManager::own_certificate()
 {
     // renew certificate if necessary
     for (auto& validity_restriction : m_own_certificate.validity_restriction) {
@@ -36,12 +36,12 @@ const Certificate& CertificateManager::own_certificate()
     return m_own_certificate;
 }
 
-const ecdsa256::PrivateKey& CertificateManager::own_private_key()
+const ecdsa256::PrivateKey& NaiveCertificateManager::own_private_key()
 {
     return m_own_key_pair.private_key;
 }
 
-Certificate CertificateManager::generate_certificate(const ecdsa256::KeyPair& key_pair)
+Certificate NaiveCertificateManager::generate_certificate(const ecdsa256::KeyPair& key_pair)
 {
     // create certificate
     Certificate certificate;
@@ -83,7 +83,7 @@ Certificate CertificateManager::generate_certificate(const ecdsa256::KeyPair& ke
     return certificate;
 }
 
-CertificateValidity CertificateManager::check_certificate(const Certificate& certificate)
+CertificateValidity NaiveCertificateManager::check_certificate(const Certificate& certificate)
 {
     // check validity restriction
     for (auto& restriction : certificate.validity_restriction) {
@@ -134,7 +134,7 @@ CertificateValidity CertificateManager::check_certificate(const Certificate& cer
     return CertificateValidity::valid();
 }
 
-const ecdsa256::KeyPair& CertificateManager::get_root_key_pair()
+const ecdsa256::KeyPair& NaiveCertificateManager::root_key_pair()
 {
     static ecdsa256::KeyPair root = m_crypto_backend.generate_key_pair();
     return root;

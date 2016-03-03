@@ -2,6 +2,7 @@
 #define SECURITY_ENTITY_HPP
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_confirm.hpp>
@@ -13,9 +14,8 @@ namespace vanetza
 namespace security
 {
 
-// forward declarations
+// forward declaration
 class Backend;
-class CertificateManager;
 
 class SecurityEntity
 {
@@ -87,7 +87,7 @@ private:
 
     const Clock::time_point& m_time_now;
     bool m_sign_deferred; /*< controls if EcdsaSignatureFuture is used */
-    std::unique_ptr<CertificateManager> m_certificate_manager;
+    NaiveCertificateManager m_certificate_manager; /*< replace with interface later */
     std::unique_ptr<Backend> m_crypto_backend;
 };
 

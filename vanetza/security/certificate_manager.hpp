@@ -13,22 +13,17 @@ namespace security
 {
 
 /**
- * \brief A Manager to handle Certificates using Crypto++
- * \todo rename to CryptoPPCertManager
- * \todo create a base class
+ * \brief A very simplistic certificate manager
+ *
+ * This certificate manager is INSECURE!
+ * It's only okay for experimenting with flawed secured messages.
+ *
+ * \todo create CertificateManager interface
  */
-class CertificateManager
+class NaiveCertificateManager
 {
 public:
-    CertificateManager(const Clock::time_point& time_now);
-
-    /**
-     * \brief generate a certificate
-     *
-     * \param key_pair keys used to create the certificate
-     * \return generated certificate
-     */
-    Certificate generate_certificate(const ecdsa256::KeyPair& key_pair);
+    NaiveCertificateManager(const Clock::time_point& time_now);
 
     /**
      * \brief check certificate
@@ -50,20 +45,30 @@ public:
     const ecdsa256::PrivateKey& own_private_key();
 
 private:
-    /** \brief retrieve common root key pair (for all instances)
+    /**
+     * \brief generate a certificate
      *
-     * \note This is only a temporary workaround!
+     * \param key_pair keys used to create the certificate
+     * \return generated certificate
+     */
+    Certificate generate_certificate(const ecdsa256::KeyPair& key_pair);
+
+    /**
+     * \brief retrieve common root key pair (for all instances)
      * \return root key pair
      */
-    const ecdsa256::KeyPair& get_root_key_pair();
+    const ecdsa256::KeyPair& root_key_pair();
 
-    BackendCryptoPP m_crypto_backend;
+    BackendCryptoPP m_crypto_backend; /*< key generation is not a generic backend feature */
     const Clock::time_point& m_time_now;
     const ecdsa256::KeyPair& m_root_key_pair;
     HashedId8 m_root_certificate_hash;
     ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;
 };
+
+// TODO CertificateManager shall become an interface one of these days
+using CertificateManager = NaiveCertificateManager;
 
 } // namespace security
 } // namespace vanetza

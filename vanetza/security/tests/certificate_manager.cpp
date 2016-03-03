@@ -1,12 +1,11 @@
 #include <vanetza/common/clock.hpp>
-#include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate_manager.hpp>
-#include <vanetza/security/public_key.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 
 using namespace vanetza;
 using namespace vanetza::security;
+using boost::get;
 
 class CertificateManagerTest : public ::testing::Test
 {
@@ -18,13 +17,11 @@ public:
 protected:
     Clock::time_point time_now;
     CertificateManager cert_manager;
-    BackendCryptoPP crypto_backend;
 };
 
-TEST_F(CertificateManagerTest, generate_certificate)
+TEST_F(CertificateManagerTest, own_certificate)
 {
-    // Create signed certificate
-    Certificate signed_certificate = cert_manager.generate_certificate(crypto_backend.generate_key_pair());
+    Certificate signed_certificate = cert_manager.own_certificate();
 
     // Check signature
     EXPECT_EQ(2 * field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256),
@@ -47,7 +44,7 @@ TEST_F(CertificateManagerTest, generate_certificate)
         if (SubjectAttributeType::Verification_Key == get_type(subject_attribute)) {
             verification_key_counter++;
         } else if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
-            test_assurance_level = boost::get<SubjectAssurance>(subject_attribute);
+            test_assurance_level = get<SubjectAssurance>(subject_attribute);
             assurance_level_counter++;
         } else if (SubjectAttributeType::Its_Aid_Ssp_List == get_type(subject_attribute)) {
             // TODO: check aid permissions
@@ -62,7 +59,7 @@ TEST_F(CertificateManagerTest, generate_certificate)
     Time32 end_time;
     for (ValidityRestriction restriction : signed_certificate.validity_restriction){
         if (ValidityRestrictionType::Time_Start_And_End == get_type(restriction)) {
-            StartAndEndValidity& time_validation = boost::get<StartAndEndValidity>(restriction);
+            StartAndEndValidity& time_validation = get<StartAndEndValidity>(restriction);
             start_time = time_validation.start_validity;
             end_time = time_validation.end_validity;
         } else if (ValidityRestrictionType::Region == get_type(restriction)) {

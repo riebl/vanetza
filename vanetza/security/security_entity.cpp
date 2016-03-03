@@ -12,7 +12,7 @@ namespace security
 
 SecurityEntity::SecurityEntity(const Clock::time_point& time_now) :
     m_time_now(time_now), m_sign_deferred(false),
-    m_certificate_manager(new CertificateManager(time_now)),
+    m_certificate_manager(time_now),
     m_crypto_backend(new BackendCryptoPP())
 {
 }
@@ -42,12 +42,12 @@ EncapConfirm SecurityEntity::sign(const EncapRequest& request)
     encap_confirm.sec_packet.header_fields.push_back(convert_time64(m_time_now));
     encap_confirm.sec_packet.header_fields.push_back(itsAidCa);
 
-    SignerInfo signer_info = m_certificate_manager->own_certificate();
+    SignerInfo signer_info = m_certificate_manager.own_certificate();
     encap_confirm.sec_packet.header_fields.push_back(signer_info);
 
     const size_t signature_size = get_size(signature_placeholder());
     const size_t trailer_size = get_size(TrailerField { signature_placeholder() });
-    const auto& private_key = m_certificate_manager->own_private_key();
+    const auto& private_key = m_certificate_manager.own_private_key();
 
     if (m_sign_deferred) {
         auto future = std::async(std::launch::deferred, [=]() {
@@ -135,7 +135,7 @@ DecapConfirm SecurityEntity::verify(const DecapRequest& request)
     }
 
     // if certificate could not be verified return correct ReportType
-    CertificateValidity cert_validity = m_certificate_manager->check_certificate(*certificate);
+    CertificateValidity cert_validity = m_certificate_manager.check_certificate(*certificate);
     if (!cert_validity) {
         decap_confirm.report = ReportType::Invalid_Certificate;
         decap_confirm.certificate_validity = cert_validity;
