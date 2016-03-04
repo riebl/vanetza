@@ -38,6 +38,11 @@ protected:
     ChunkPacket expected_payload;
 };
 
+TEST_F(SecurityEntityTest, missing_backend)
+{
+    EXPECT_THROW(SecurityEntity invalid_backend(time_now, "Leberkas"), std::runtime_error);
+}
+
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
     SecurityEntity other_sec_ent(time_now);

@@ -4,6 +4,8 @@
 #include <vanetza/security/its_aid.hpp>
 #include <future>
 #include <mutex>
+#include <stdexcept>
+#include <string>
 
 namespace vanetza
 {
@@ -15,6 +17,10 @@ SecurityEntity::SecurityEntity(const Clock::time_point& time_now, const std::str
     m_certificate_manager(time_now),
     m_crypto_backend(create_backend(backend))
 {
+    if (!m_crypto_backend) {
+        std::string msg = "No crypto backend available with name \"" + backend + "\"";
+        throw std::runtime_error(msg);
+    }
 }
 
 SecurityEntity::~SecurityEntity()
