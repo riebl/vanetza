@@ -1,5 +1,6 @@
 #include <vanetza/security/openssl_wrapper.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <vanetza/security/signature.hpp>
 #include <cassert>
 
 namespace vanetza
@@ -68,12 +69,11 @@ Signature::Signature(ECDSA_SIG* sig) :
     check(signature);
 }
 
-Signature::Signature(const ByteBuffer& sig) : signature(ECDSA_SIG_new())
+Signature::Signature(const EcdsaSignature& ecdsa) : signature(ECDSA_SIG_new())
 {
-    const std::size_t size = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
-    assert(sig.size() == 2 * size);
-    BN_bin2bn(sig.data(), size, signature->r);
-    BN_bin2bn(sig.data() + size, size, signature->s);
+    const ByteBuffer r = convert_for_signing(ecdsa.R);
+    BN_bin2bn(r.data(), r.size(), signature->r);
+    BN_bin2bn(ecdsa.s.data(), ecdsa.s.size(), signature->s);
 }
 
 Signature::~Signature()

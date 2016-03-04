@@ -14,6 +14,10 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+struct EcdsaSignature;
+
 namespace openssl
 {
 
@@ -85,7 +89,7 @@ class Signature : private boost::noncopyable
 {
 public:
     explicit Signature(ECDSA_SIG* sig);
-    explicit Signature(const ByteBuffer& sig);
+    explicit Signature(const EcdsaSignature& sig);
     ~Signature();
 
     operator const ECDSA_SIG*() { return signature; }

@@ -26,7 +26,7 @@ public:
     EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data_buffer) override;
 
     /// \see Backend::verify_data
-    bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig) override;
+    bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
 
     /**
      * \brief generate a private key and the corresponding public key

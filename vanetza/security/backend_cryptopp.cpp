@@ -45,9 +45,10 @@ EcdsaSignature BackendCryptoPP::sign_data(const PrivateKey& private_key, const B
     return ecdsa_signature;
 }
 
-bool BackendCryptoPP::verify_data(const ecdsa256::PublicKey& generic_key, const ByteBuffer& msg, const ByteBuffer& sig)
+bool BackendCryptoPP::verify_data(const ecdsa256::PublicKey& generic_key, const ByteBuffer& msg, const EcdsaSignature& sig)
 {
-    return verify_data(m_public_cache[generic_key], msg, sig);
+    const ByteBuffer sigbuf = extract_signature_buffer(sig);
+    return verify_data(m_public_cache[generic_key], msg, sigbuf);
 }
 
 bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer& msg, const ByteBuffer& sig)

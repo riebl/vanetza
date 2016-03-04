@@ -48,11 +48,11 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
     return ecdsa_signature;
 }
 
-bool BackendOpenSsl::verify_data(const ecdsa256::PublicKey& key, const ByteBuffer& data, const ByteBuffer& sig)
+bool BackendOpenSsl::verify_data(const ecdsa256::PublicKey& key, const ByteBuffer& data, const EcdsaSignature& sig)
 {
     auto digest = calculate_digest(data);
     auto pub = internal_public_key(key);
-    openssl::Signature signature { sig };
+    openssl::Signature signature(sig);
 
     return (ECDSA_do_verify(digest.data(), digest.size(), signature, pub) == 1);
 }

@@ -118,8 +118,8 @@ CertificateValidity NaiveCertificateManager::check_certificate(const Certificate
         }
     }
 
-    // create ByteBuffer of Signature
-    boost::optional<ByteBuffer> sig = extract_signature_buffer(certificate.signature);
+    // try to extract ECDSA signature
+    boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.signature);
     if (!sig) {
         return CertificateInvalidReason::MISSING_SIGNATURE;
     }

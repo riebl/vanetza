@@ -176,9 +176,8 @@ DecapConfirm SecurityEntity::verify(const DecapRequest& request)
 
     // check the size of signature.R and siganture.s
     auto ecdsa = extract_ecdsa_signature(signature.get());
-    ByteBuffer signature_buffer = extract_signature_buffer(signature.get());
-    if (field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) * 2 != signature_buffer.size() ||
-        field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) != ecdsa.get().s.size()) {
+    const auto field_len = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    if (!ecdsa || ecdsa->s.size() != field_len) {
         decap_confirm.report = ReportType::False_Signature;
         return decap_confirm;
     }
@@ -187,7 +186,7 @@ DecapConfirm SecurityEntity::verify(const DecapRequest& request)
     ByteBuffer payload = convert_for_signing(secured_message, get_size(TrailerField(signature.get())));
 
     // result of verify function
-    bool result = m_crypto_backend->verify_data(public_key.get(), payload, signature_buffer);
+    bool result = m_crypto_backend->verify_data(public_key.get(), payload, ecdsa.get());
 
     if (result) {
         decap_confirm.report = ReportType::Success;

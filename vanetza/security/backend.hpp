@@ -35,7 +35,7 @@ public:
      * \param sig signature of data
      * \return true if the data could be verified
      */
-    virtual bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const ByteBuffer& sig) = 0;
+    virtual bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) = 0;
 
     virtual ~Backend() = default;
 };
