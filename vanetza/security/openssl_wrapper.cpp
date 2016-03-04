@@ -91,6 +91,17 @@ Key::Key(int nid) : eckey(EC_KEY_new_by_curve_name(nid))
     check(eckey);
 }
 
+Key::Key(Key&& other) : eckey(nullptr)
+{
+    std::swap(eckey, other.eckey);
+}
+
+Key& Key::operator=(Key&& other)
+{
+    std::swap(eckey, other.eckey);
+    return *this;
+}
+
 Key::~Key()
 {
     EC_KEY_free(eckey);

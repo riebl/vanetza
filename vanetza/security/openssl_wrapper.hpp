@@ -111,8 +111,8 @@ public:
     Key(const Key&) = delete;
     Key& operator=(const Key&) = delete;
     // but movable
-    Key(Key&&) = default;
-    Key& operator=(Key&&) = default;
+    Key(Key&&);
+    Key& operator=(Key&&);
     ~Key();
 
     operator EC_KEY*() { return eckey; }
