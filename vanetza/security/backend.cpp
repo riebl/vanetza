@@ -5,6 +5,10 @@
 #include <functional>
 #include <map>
 
+#ifdef VANETZA_WITH_OPENSSL
+#include <vanetza/security/backend_openssl.hpp>
+#endif
+
 namespace vanetza
 {
 namespace security
@@ -24,6 +28,9 @@ public:
     BackendFactory()
     {
         // first inserted backend is implicitly "default"
+#ifdef VANETZA_WITH_OPENSSL
+        attach("OpenSSL", []() { return make_unique(new BackendOpenSsl()); });
+#endif
         attach("CryptoPP", []() { return make_unique(new BackendCryptoPP()); });
         attach("Null", []() { return make_unique(new BackendNull()); });
     }

@@ -46,6 +46,24 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
     EXPECT_EQ(ReportType::Success, decap_confirm.report);
 }
 
+#if defined(VANETZA_WITH_CRYPTOPP) && defined(VANETZA_WITH_OPENSSL)
+TEST_F(SecurityEntityTest, mutual_acceptance_impl)
+{
+    SecurityEntity cryptopp_sec_ent(time_now, "CryptoPP");
+    SecurityEntity openssl_sec_ent(time_now, "OpenSSL");
+
+    // OpenSSL to Crypto++
+    EncapConfirm encap_confirm = openssl_sec_ent.encapsulate_packet(create_encap_request());
+    DecapConfirm decap_confirm = cryptopp_sec_ent.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
+    EXPECT_EQ(ReportType::Success, decap_confirm.report);
+
+    // Crypto++ to OpenSSL
+    encap_confirm = cryptopp_sec_ent.encapsulate_packet(create_encap_request());
+    decap_confirm = openssl_sec_ent.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
+    EXPECT_EQ(ReportType::Success, decap_confirm.report);
+}
+#endif
+
 TEST_F(SecurityEntityTest, signed_payload_equals_plaintext_payload)
 {
     EncapConfirm confirm = sec_ent.encapsulate_packet(create_encap_request());
