@@ -6,7 +6,8 @@ option(VANETZA_ASN1_NO_ASN1C "Use bundled ASN.1 code instead of code generated b
 if(NOT ${VANETZA_ASN1_NO_ASN1C})
     set(ASN1C_ARGS -fcompound-names -gen-PER -pdu=auto)
     if(${ASN1C_VERSION} VERSION_LESS "0.9.26")
-        list(APPEND ASN1C_ARGS -fnative-types)
+        # These options became default with 0.9.26
+        list(APPEND ASN1C_ARGS -fnative-types -fskeletons-copy)
     endif()
 
     add_custom_command(
