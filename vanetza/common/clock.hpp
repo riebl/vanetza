@@ -25,6 +25,13 @@ public:
     static time_point at(const date_time&);
     static date_time at(const time_point&);
     static const date_time& epoch();
+
+    /**
+     * \brief create time point
+     * \param at time string formatted like 2016-07-15 09:48:32
+     * \return time point
+     */
+    static time_point at(const std::string& at);
 };
 
 } // namespace vanetza
