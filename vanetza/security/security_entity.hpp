@@ -87,6 +87,13 @@ private:
      */
     const Signature& signature_placeholder() const;
 
+    /**
+     * \brief check if generation time is within validity range
+     * \param gt generation time
+     * \return true if valid
+     */
+    bool check_generation_time(Time64 gt) const;
+
     const Clock::time_point& m_time_now;
     bool m_sign_deferred; /*< controls if EcdsaSignatureFuture is used */
     NaiveCertificateManager m_certificate_manager; /*< replace with interface later */

@@ -125,7 +125,7 @@ DecapConfirm SecurityEntity::verify(const DecapRequest& request)
         return decap_confirm;
     }
 
-    if (!generation_time || (generation_time && (convert_time64(m_time_now) < generation_time.get()))) {
+    if (!generation_time || !check_generation_time(*generation_time)) {
         decap_confirm.report = ReportType::Invalid_Timestamp;
         return decap_confirm;
     }
@@ -216,6 +216,23 @@ const Signature& SecurityEntity::signature_placeholder() const
         signature = ecdsa;
     }, std::ref(signature));
     return signature;
+}
+
+bool SecurityEntity::check_generation_time(Time64 generation_time) const
+{
+    // Values are picked from C2C-CC Basic System Profile v1.1.0, see RS_BSP_168
+    const auto generation_time_future = std::chrono::milliseconds(40);
+    const auto generation_time_past = std::chrono::minutes(10);
+    // TODO generation_time_past for CAMs is only 2 seconds
+
+    bool valid = true;
+    if (generation_time > convert_time64(m_time_now + generation_time_future)) {
+        valid = false;
+    } else if (generation_time < convert_time64(m_time_now - generation_time_past)) {
+        valid = false;
+    }
+
+    return valid;
 }
 
 } // namespace security

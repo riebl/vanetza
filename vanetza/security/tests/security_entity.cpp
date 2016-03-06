@@ -16,6 +16,7 @@ protected:
 
     void SetUp() override
     {
+        time_now = Clock::at("2016-03-7 08:23");
         expected_payload[OsiLayer::Transport] = ByteBuffer {89, 27, 1, 4, 18, 85};
     }
 
@@ -261,14 +262,21 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
 
-    // let time pass by... our certificates are valid for one day currently
-    time_now += std::chrono::hours(25);
+    // forge certificate with outdatet validity
+    StartAndEndValidity outdated_validity;
+    outdated_validity.start_validity = convert_time32(time_now - std::chrono::hours(1));
+    outdated_validity.end_validity = convert_time32(time_now - std::chrono::minutes(1));
+    auto signer_info_field = secured_message.header_field(HeaderFieldType::Signer_Info);
+    ASSERT_TRUE(signer_info_field);
+    auto certificate = boost::get<Certificate>(&boost::get<SignerInfo>(*signer_info_field));
+    ASSERT_TRUE(certificate);
+    certificate->validity_restriction.clear();
+    certificate->validity_restriction.push_back(outdated_validity);
 
     // verify message
-    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
-    // check hook
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(DecapRequest { secured_message });
+    EXPECT_EQ(ReportType::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
 }
@@ -277,13 +285,21 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
 {
     // prepare decap request
     auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
 
-    // subtract offset from time_now
-    time_now -= std::chrono::hours(1);
+    // forge certificate with premature validity
+    StartAndEndValidity premature_validity;
+    premature_validity.start_validity = convert_time32(time_now + std::chrono::hours(1));
+    premature_validity.end_validity = convert_time32(time_now + std::chrono::hours(25));
+    auto signer_info_field = secured_message.header_field(HeaderFieldType::Signer_Info);
+    ASSERT_TRUE(signer_info_field);
+    auto certificate = boost::get<Certificate>(&boost::get<SignerInfo>(*signer_info_field));
+    ASSERT_TRUE(certificate);
+    certificate->validity_restriction.clear();
+    certificate->validity_restriction.push_back(premature_validity);
 
     // verify message
-    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = sec_ent.decapsulate_packet(DecapRequest { secured_message });
+    EXPECT_EQ(ReportType::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
 }
