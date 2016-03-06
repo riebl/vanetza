@@ -11,7 +11,6 @@ if(NOT ${VANETZA_ASN1_NO_ASN1C})
 
     add_custom_command(
         OUTPUT ${ASN1C_GEN_DIR}/CAM.h ${ASN1C_GEN_DIR}/DENM.h
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${ASN1C_GEN_DIR}
         COMMAND ${ASN1C} ${ASN1C_ARGS} ${ASN1_SOURCES}
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c.cmake
         DEPENDS ${ASN1C_SOURCES}
