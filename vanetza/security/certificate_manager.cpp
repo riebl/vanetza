@@ -72,8 +72,8 @@ Certificate NaiveCertificateManager::generate_certificate(const ecdsa256::KeyPai
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
     StartAndEndValidity start_and_end;
-    start_and_end.start_validity = convert_time32(m_time_now);
-    start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(24));
+    start_and_end.start_validity = convert_time32(m_time_now - std::chrono::hours(1));
+    start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(23));
     certificate.validity_restriction.push_back(start_and_end);
 
     // set signature

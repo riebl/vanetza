@@ -10,7 +10,7 @@ using boost::get;
 class CertificateManagerTest : public ::testing::Test
 {
 public:
-    CertificateManagerTest() : cert_manager(time_now)
+    CertificateManagerTest() : time_now(Clock::at("2016-08-01 00:00")), cert_manager(time_now)
     {
     }
 
