@@ -117,7 +117,7 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_mib(mib),
     m_runtime(rt),
     m_request_interface(&DummyDccRequestInterface::get()),
-    m_security_entity(m_runtime.now()),
+    m_security_entity(m_runtime.now(), m_mib.vanetzaCryptoBackend),
     m_location_table(mib),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
