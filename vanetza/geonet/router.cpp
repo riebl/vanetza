@@ -933,16 +933,18 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
 
     if (next_hop.valid()) {
         execute_media_procedures(m_mib.itsGnIfType);
+        std::unique_ptr<Pdu> pdu;
+        std::unique_ptr<DownPacket> payload;
+        std::tie(pdu, payload) = next_hop.data();
+
         const MacAddress& mac = next_hop.mac();
         dcc::DataRequest request;
         request.destination = mac;
         request.source = m_local_position_vector.gn_addr.mid();
         request.dcc_profile = dcc::Profile::DP3;
         request.ether_type = geonet::ether_type;
+        request.lifetime = std::chrono::seconds(pdu->basic().lifetime.decode() / units::si::seconds);
 
-        std::unique_ptr<Pdu> pdu;
-        std::unique_ptr<DownPacket> payload;
-        std::tie(pdu, payload) = next_hop.data();
         pass_down(request, std::move(pdu), std::move(payload));
     }
 }
@@ -961,6 +963,7 @@ void Router::flush_forwarding_buffer(PacketBuffer& buffer)
         const auto tc = pdu->common().traffic_class;
         dcc_request.destination = packet.mac();
         dcc_request.dcc_profile = map_tc_onto_profile(tc);
+        dcc_request.lifetime = std::chrono::seconds(pdu->basic().lifetime.decode() / units::si::seconds);
         pass_down(dcc_request, std::move(pdu), std::move(payload));
     }
 }
