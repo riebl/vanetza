@@ -980,17 +980,17 @@ void Router::flush_unicast_forwarding_buffer()
 
 void Router::detect_duplicate_address(const Address& addr_so)
 {
-    // Never change address for AUTO and ANONYMOUS here
-    if (m_mib.itsGnLocalAddrConfMethod == AddrConfMethod::MANAGED
-            && addr_so == m_local_position_vector.gn_addr) {
+    // EN 302 636-4-1 V1.2.1 9.2.1.5: DAD is only applied for AUTO
+    if (m_mib.itsGnLocalAddrConfMethod == AddrConfMethod::AUTO) {
+        if (addr_so == m_local_position_vector.gn_addr) {
+            MacAddress random_mac_addr;
+            std::uniform_int_distribution<unsigned> octet_dist;
+            for (auto& octet : random_mac_addr.octets) {
+                octet = octet_dist(m_random_gen);
+            }
 
-        MacAddress random_mac_addr;
-        std::uniform_int_distribution<unsigned> octet_dist;
-        for (auto& octet : random_mac_addr.octets) {
-            octet = octet_dist(m_random_gen);
+            m_local_position_vector.gn_addr.mid(random_mac_addr);
         }
-
-        m_local_position_vector.gn_addr.mid(random_mac_addr);
     }
 }
 
