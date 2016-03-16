@@ -26,10 +26,11 @@ class LocationTable
 public:
     struct EntryData;
     class EntryLifetime;
+    typedef MacAddress key_type;
     typedef std::greater<EntryLifetime> heap_comparator;
     typedef boost::heap::binomial_heap<EntryLifetime,
             boost::heap::compare<heap_comparator>> heap_type;
-    typedef std::unordered_map<Address, EntryData> map_type;
+    typedef std::unordered_map<key_type, EntryData> map_type;
 
     class EntryLifetime : public boost::totally_ordered<EntryLifetime>
     {
@@ -37,10 +38,9 @@ public:
         typedef typename Timestamp::duration_type duration_type;
 
         EntryLifetime() : m_lifetime(0) {}
-        EntryLifetime(const Address&, duration_type lifetime);
+        EntryLifetime(const key_type&, duration_type lifetime);
 
-        const Address& address() const { return m_addr; }
-        const MacAddress& mac() const { return m_addr.mid(); }
+        const key_type& key() const { return m_key; }
         void set_lifetime(duration_type ticks) { m_lifetime = ticks; }
         void reduce_lifetime(duration_type);
         bool is_expired() const { return m_lifetime.value() == 0; }
@@ -49,7 +49,7 @@ public:
         bool operator==(const EntryLifetime& other) const;
 
     private:
-        Address m_addr;
+        key_type m_key;
         duration_type m_lifetime;
     };
 
@@ -70,12 +70,12 @@ public:
 
     LocationTable(const MIB&);
 
-    EntryData& get_entry(const Address&);
-    EntryData* get_entry_ptr(const Address&);
-    const EntryData* get_entry_ptr(const Address&) const;
-    bool has_entry(const Address&) const;
+    EntryData& get_entry(const key_type&);
+    EntryData* get_entry_ptr(const key_type&);
+    const EntryData* get_entry_ptr(const key_type&) const;
+    bool has_entry(const key_type&) const;
     void expire(Timestamp::duration_type);
-    void refresh(const Address&);
+    void refresh(const key_type&);
 
     map_type::iterator begin() { return m_map.begin(); }
     map_type::iterator end() { return m_map.end(); }
@@ -109,6 +109,7 @@ public:
     bool has_entry(const Address&) const;
     boost::optional<const entry_type&> get_entry(const Address&) const;
     boost::optional<const LongPositionVector&> get_position(const Address&) const;
+    boost::optional<const LongPositionVector&> get_position(const MacAddress&) const;
     bool has_neighbours() const;
     neighbour_range neighbours();
     void is_neighbour(const Address&, bool flag);

@@ -19,7 +19,12 @@ TEST(LocationTable, has_entry) {
     pv.gn_addr = a;
     lt.update(pv);
     EXPECT_TRUE(lt.has_entry(a));
+
+    // only MID of GN_ADDR should be used for look-up
     a.country_code(42);
+    EXPECT_TRUE(lt.has_entry(a));
+
+    a.mid({0, 2, 3, 4, 5, 6});
     EXPECT_FALSE(lt.has_entry(a));
 }
 
@@ -36,10 +41,6 @@ TEST(LocationTable, position_vector) {
     auto retrieved_pv = lt.get_position(a);
     ASSERT_TRUE(!!retrieved_pv);
     EXPECT_EQ(pv, retrieved_pv.get());
-
-    Address b = a;
-    b.country_code(1);
-    EXPECT_FALSE(lt.get_position(b));
 }
 
 TEST(LocationTable, neighbourhood) {
@@ -125,9 +126,6 @@ TEST(LocationTable, update_pdr) {
     EXPECT_DOUBLE_EQ(265.0, lt.get_pdr(addr));
     lt.update_pdr(addr, 312, Timestamp(1800 * abs_ms));
     EXPECT_DOUBLE_EQ(392.5, lt.get_pdr(addr));
-
-    addr.station_type(StationType::MOTORCYCLE);
-    EXPECT_DOUBLE_EQ(0.0, lt.get_pdr(addr));
 }
 
 TEST(LocationTable, expire) {

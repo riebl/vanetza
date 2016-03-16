@@ -18,7 +18,7 @@ LocationTable::LocationTable(const MIB& mib) : m_table(mib)
 
 bool LocationTable::has_entry(const Address& addr) const
 {
-    return m_table.has_entry(addr);
+    return m_table.has_entry(addr.mid());
 }
 
 bool LocationTable::has_neighbours() const
@@ -57,7 +57,7 @@ auto LocationTable::neighbours() -> neighbour_range
 
 bool LocationTable::is_duplicate_packet(const Address& source, SequenceNumber sn, Timestamp time)
 {
-    entry_type& entry = m_table.get_entry(source);
+    entry_type& entry = m_table.get_entry(source.mid());
     bool is_duplicate = false;
 
     if (entry.received_timestamp) {
@@ -82,7 +82,7 @@ bool LocationTable::is_duplicate_packet(const Address& source, SequenceNumber sn
 
 bool LocationTable::is_duplicate_packet(const Address& source, Timestamp time)
 {
-    entry_type& entry = m_table.get_entry(source);
+    entry_type& entry = m_table.get_entry(source.mid());
     bool is_duplicate = false;
 
     if (!entry.received_timestamp || entry.received_timestamp <= time) {
@@ -96,14 +96,14 @@ bool LocationTable::is_duplicate_packet(const Address& source, Timestamp time)
 
 void LocationTable::update(const LongPositionVector& lpv)
 {
-    entry_type* entry = m_table.get_entry_ptr(lpv.gn_addr);
+    entry_type* entry = m_table.get_entry_ptr(lpv.gn_addr.mid());
     if (entry) {
         if (entry->position.timestamp < lpv.timestamp) {
             entry->position = lpv;
-            m_table.refresh(lpv.gn_addr);
+            m_table.refresh(lpv.gn_addr.mid());
         }
     } else {
-        m_table.get_entry(lpv.gn_addr).position = lpv;
+        m_table.get_entry(lpv.gn_addr.mid()).position = lpv;
     }
 }
 
@@ -111,7 +111,7 @@ void LocationTable::update_pdr(const Address& addr, std::size_t packet_size, Tim
 {
     using namespace vanetza::units;
 
-    entry_type& data = m_table.get_entry(addr);
+    entry_type& data = m_table.get_entry(addr.mid());
     if (std::isnan(data.packet_data_rate)) {
         data.packet_data_rate = 0.0;
         data.pdr_update = now;
@@ -129,7 +129,7 @@ void LocationTable::update_pdr(const Address& addr, std::size_t packet_size, Tim
 
 double LocationTable::get_pdr(const Address& addr) const
 {
-    const entry_type* entry = m_table.get_entry_ptr(addr);
+    const entry_type* entry = m_table.get_entry_ptr(addr.mid());
     double pdr = 0.0;
     if (entry) {
         pdr = entry->packet_data_rate;
@@ -139,7 +139,7 @@ double LocationTable::get_pdr(const Address& addr) const
 
 void LocationTable::is_neighbour(const Address& addr, bool flag)
 {
-    m_table.get_entry(addr).is_neighbour = flag;
+    m_table.get_entry(addr.mid()).is_neighbour = flag;
 }
 
 void LocationTable::expire(Timestamp now)
@@ -153,7 +153,7 @@ boost::optional<const LocationTable::entry_type&>
 LocationTable::get_entry(const Address& addr) const
 {
     boost::optional<const LocationTable::entry_type&> result;
-    auto* entry = m_table.get_entry_ptr(addr);
+    auto* entry = m_table.get_entry_ptr(addr.mid());
     if (entry) {
         result = *entry;
     }
@@ -163,8 +163,14 @@ LocationTable::get_entry(const Address& addr) const
 boost::optional<const LongPositionVector&>
 LocationTable::get_position(const Address& addr) const
 {
+    return get_position(addr.mid());
+}
+
+boost::optional<const LongPositionVector&>
+LocationTable::get_position(const MacAddress& mac) const
+{
     boost::optional<const LongPositionVector&> position;
-    auto* entry = m_table.get_entry_ptr(addr);
+    auto* entry = m_table.get_entry_ptr(mac);
     if (entry) {
         position = entry->position;
     }
@@ -179,12 +185,12 @@ LocationTable::LocationTable(const MIB& mib) : m_mib(mib)
 {
 }
 
-auto LocationTable::get_entry(const Address& addr) -> EntryData&
+auto LocationTable::get_entry(const key_type& key) -> EntryData&
 {
-    EntryData* entry = get_entry_ptr(addr);
+    EntryData* entry = get_entry_ptr(key);
     if (!entry) {
-        entry = &m_map[addr];
-        EntryLifetime lifetime(addr, Timestamp::duration_type(m_mib.itsGnLifetimeLocTE));
+        entry = &m_map[key];
+        EntryLifetime lifetime(key, Timestamp::duration_type(m_mib.itsGnLifetimeLocTE));
         heap_type::handle_type handle = m_heap.push(std::move(lifetime));
         entry->handle = handle;
     }
@@ -193,10 +199,10 @@ auto LocationTable::get_entry(const Address& addr) -> EntryData&
     return *entry;
 }
 
-auto LocationTable::get_entry_ptr(const Address& addr) -> EntryData*
+auto LocationTable::get_entry_ptr(const key_type& key) -> EntryData*
 {
     EntryData* ptr = nullptr;
-    auto it = m_map.find(addr);
+    auto it = m_map.find(key);
     if (it != m_map.end()) {
         ptr = &it->second;
     }
@@ -204,10 +210,10 @@ auto LocationTable::get_entry_ptr(const Address& addr) -> EntryData*
     return ptr;
 }
 
-auto LocationTable::get_entry_ptr(const Address& addr) const -> const EntryData*
+auto LocationTable::get_entry_ptr(const key_type& key) const -> const EntryData*
 {
     const EntryData* ptr = nullptr;
-    auto it = m_map.find(addr);
+    auto it = m_map.find(key);
     if (it != m_map.end()) {
         ptr = &it->second;
     }
@@ -215,9 +221,9 @@ auto LocationTable::get_entry_ptr(const Address& addr) const -> const EntryData*
     return ptr;
 }
 
-bool LocationTable::has_entry(const Address& addr) const
+bool LocationTable::has_entry(const key_type& key) const
 {
-    auto it = m_map.find(addr);
+    auto it = m_map.find(key);
     return (it != m_map.end());
 }
 
@@ -232,14 +238,14 @@ void LocationTable::expire(EntryLifetime::duration_type ticks)
 
     // delete all entries with lifetime <= 0
     while (!m_heap.empty() && m_heap.top().is_expired()) {
-        m_map.erase(m_heap.top().address());
+        m_map.erase(m_heap.top().key());
         m_heap.pop();
     }
 }
 
-void LocationTable::refresh(const Address& addr)
+void LocationTable::refresh(const key_type& key)
 {
-    auto& entry = get_entry(addr);
+    auto& entry = get_entry(key);
     heap_type::handle_type handle = entry.handle;
     (*handle).set_lifetime(Timestamp::duration_type(m_mib.itsGnLifetimeLocTE));
     m_heap.update(handle);
@@ -251,8 +257,8 @@ LocationTable::EntryData::EntryData() :
 {
 }
 
-LocationTable::EntryLifetime::EntryLifetime(const Address& addr, duration_type lifetime) :
-    m_addr(addr), m_lifetime(lifetime)
+LocationTable::EntryLifetime::EntryLifetime(const key_type& key, duration_type lifetime) :
+    m_key(key), m_lifetime(lifetime)
 {
 }
 

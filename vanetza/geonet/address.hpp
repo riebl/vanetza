@@ -19,7 +19,7 @@ public:
     static const std::size_t length_bytes = 8;
 
     Address();
-    Address(const MacAddress&);
+    explicit Address(const MacAddress&);
     bool is_manually_configured() const { return m_manually_configured; }
     void is_manually_configured(bool flag) { m_manually_configured = flag; }
     StationType station_type() const { return m_station_type; }
