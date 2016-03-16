@@ -140,11 +140,17 @@ void FlowControl::transmit(const DataRequest& request, std::unique_ptr<ChunkPack
 
     m_scheduler.notify(request.dcc_profile);
     m_access.request(mac_req, std::move(packet));
+    m_packet_transmit_hook(mac_req.access_category);
 }
 
 void FlowControl::set_packet_drop_hook(PacketDropHook::callback_type&& cb)
 {
     m_packet_drop_hook = std::move(cb);
+}
+
+void FlowControl::set_packet_transmit_hook(PacketTransmitHook::callback_type&& cb)
+{
+    m_packet_transmit_hook = std::move(cb);
 }
 
 } // namespace dcc

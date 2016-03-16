@@ -38,6 +38,7 @@ class FlowControl : public RequestInterface
 {
 public:
     using PacketDropHook = Hook<AccessCategory>;
+    using PacketTransmitHook = Hook<AccessCategory>;
 
     /**
      * Create FlowControl instance
@@ -60,6 +61,12 @@ public:
      */
     void set_packet_drop_hook(PacketDropHook::callback_type&&);
 
+    /**
+     * Set callback to be invoked at packet transmission. Replaces any previous callback.
+     * \param cb Callback
+     */
+    void set_packet_transmit_hook(PacketTransmitHook::callback_type&&);
+
 private:
     using Transmission = std::tuple<Clock::time_point, DataRequest, std::unique_ptr<ChunkPacket>>;
     using Queue = std::list<Transmission>;
@@ -79,7 +86,8 @@ private:
     Scheduler& m_scheduler;
     access::Interface& m_access;
     std::map<AccessCategory, Queue, std::greater<AccessCategory>> m_queues;
-    Hook<AccessCategory> m_packet_drop_hook;
+    PacketDropHook m_packet_drop_hook;
+    PacketTransmitHook m_packet_transmit_hook;
 };
 
 } // namespace dcc
