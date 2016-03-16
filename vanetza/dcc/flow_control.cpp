@@ -13,7 +13,7 @@ namespace dcc
 {
 
 FlowControl::FlowControl(Runtime& runtime, Scheduler& scheduler, access::Interface& ifc) :
-    m_runtime(runtime), m_scheduler(scheduler), m_access(ifc)
+    m_runtime(runtime), m_scheduler(scheduler), m_access(ifc), m_queue_length(0)
 {
 }
 
@@ -51,6 +51,10 @@ void FlowControl::enqueue(const DataRequest& request, std::unique_ptr<ChunkPacke
     const bool first_packet = empty();
     const auto ac = map_profile_onto_ac(request.dcc_profile);
     auto expiry = m_runtime.now() + request.lifetime;
+    while (m_queue_length > 0 && m_queues[ac].size() >= m_queue_length) {
+        m_queues[ac].pop_front();
+        m_packet_drop_hook(ac);
+    }
     m_queues[ac].emplace_back(expiry, request, std::move(packet));
 
     if (first_packet) {
@@ -151,6 +155,11 @@ void FlowControl::set_packet_drop_hook(PacketDropHook::callback_type&& cb)
 void FlowControl::set_packet_transmit_hook(PacketTransmitHook::callback_type&& cb)
 {
     m_packet_transmit_hook = std::move(cb);
+}
+
+void FlowControl::queue_length(std::size_t length)
+{
+    m_queue_length = length;
 }
 
 } // namespace dcc

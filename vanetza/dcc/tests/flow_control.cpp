@@ -14,13 +14,15 @@ using namespace std::chrono;
 class FakeAccessInterface : public access::Interface
 {
 public:
-    void request(const access::DataRequest& req, std::unique_ptr<ChunkPacket>) override
+    void request(const access::DataRequest& req, std::unique_ptr<ChunkPacket> packet) override
     {
         last_request = req;
+        last_packet = std::move(packet);
         ++transmissions;
     }
 
     boost::optional<access::DataRequest> last_request;
+    std::unique_ptr<ChunkPacket> last_packet;
     unsigned transmissions = 0;
 };
 
@@ -32,9 +34,11 @@ protected:
         flow_control(runtime, scheduler, access)
     {}
 
-    std::unique_ptr<ChunkPacket> create_packet()
+    std::unique_ptr<ChunkPacket> create_packet(std::size_t length = 0)
     {
-        return std::unique_ptr<ChunkPacket> { new ChunkPacket() };
+        std::unique_ptr<ChunkPacket> packet { new ChunkPacket() };
+        packet->layer(OsiLayer::Application) = ByteBuffer(length);
+        return packet;
     }
 
     MacAddress mac(char x)
@@ -171,3 +175,38 @@ TEST_F(FlowControlTest, drop_expired)
     EXPECT_EQ(2, access.transmissions);
 }
 
+TEST_F(FlowControlTest, queue_length)
+{
+    // set queue length limit (default is unlimited)
+    flow_control.queue_length(2);
+
+    // count drops
+    std::size_t drops = 0;
+    flow_control.set_packet_drop_hook([&drops](AccessCategory) { ++drops; });
+
+    DataRequest request;
+    request.dcc_profile = Profile::DP1;
+    request.lifetime = std::chrono::seconds(5);
+
+    // cause enqueuing of arriving DP1 packets
+    scheduler.notify(Profile::DP1);
+    ASSERT_LT(Clock::duration::zero(), scheduler.delay(Profile::DP1));
+
+    flow_control.request(request, create_packet(1));
+    flow_control.request(request, create_packet(2));
+    EXPECT_EQ(0, access.transmissions);
+    EXPECT_EQ(0, drops);
+
+    flow_control.request(request, create_packet(3));
+    EXPECT_EQ(0, access.transmissions);
+    EXPECT_EQ(1, drops);
+
+    runtime.trigger(scheduler.delay(Profile::DP1));
+    EXPECT_EQ(1, access.transmissions);
+    EXPECT_EQ(2, access.last_packet->size());
+
+    runtime.trigger(scheduler.delay(Profile::DP1));
+    EXPECT_EQ(2, access.transmissions);
+    EXPECT_EQ(3, access.last_packet->size());
+    EXPECT_EQ(1, drops);
+}

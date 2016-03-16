@@ -67,6 +67,14 @@ public:
      */
     void set_packet_transmit_hook(PacketTransmitHook::callback_type&&);
 
+    /**
+     * Set length of each queue
+     *
+     * The first queue element is dropped when the length limit is hit.
+     * \param length Maximum number of queue elements, 0 for unlimited length
+     */
+    void queue_length(std::size_t length);
+
 private:
     using Transmission = std::tuple<Clock::time_point, DataRequest, std::unique_ptr<ChunkPacket>>;
     using Queue = std::list<Transmission>;
@@ -86,6 +94,7 @@ private:
     Scheduler& m_scheduler;
     access::Interface& m_access;
     std::map<AccessCategory, Queue, std::greater<AccessCategory>> m_queues;
+    std::size_t m_queue_length;
     PacketDropHook m_packet_drop_hook;
     PacketTransmitHook m_packet_transmit_hook;
 };
