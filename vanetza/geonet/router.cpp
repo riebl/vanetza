@@ -137,8 +137,17 @@ void Router::update(Clock::duration now)
     m_repeater.trigger(m_time_now);
     m_location_table.expire(m_time_now);
 
+    dcc::DataRequest request;
+    request.destination = cBroadcastMacAddress;
+    request.source = m_local_position_vector.gn_addr.mid();
+    request.dcc_profile = dcc::Profile::DP3;
+    request.ether_type = geonet::ether_type;
+
     for (auto& packet : m_cbf_buffer.packets_to_send(m_time_now)) {
-        pass_down(cBroadcastMacAddress, std::move(packet.pdu), std::move(packet.payload));
+        const auto& pdu = packet.pdu;
+        const auto lifetime = pdu->basic().lifetime.decode();
+        request.lifetime = std::chrono::seconds(lifetime / units::si::seconds);
+        pass_down(request, std::move(packet.pdu), std::move(packet.payload));
     }
 }
 
