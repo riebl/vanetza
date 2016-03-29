@@ -102,14 +102,21 @@ bool FlowControl::empty() const
 
 FlowControl::Queue* FlowControl::next_queue()
 {
-    Queue* queue = nullptr;
+    Queue* next = nullptr;
+    Clock::duration min_delay = Clock::duration::max();
+
     for (auto& kv : m_queues) {
-        if (!kv.second.empty()) {
-            queue = &kv.second;
-            break;
+        Queue& queue = kv.second;
+        if (!queue.empty()) {
+            const auto profile = std::get<1>(queue.front()).dcc_profile;
+            const auto delay = m_scheduler.delay(profile);
+            if (delay < min_delay) {
+                min_delay = delay;
+                next = &queue;
+            }
         }
     }
-    return queue;
+    return next;
 }
 
 FlowControl::Transmission* FlowControl::next_transmission()
