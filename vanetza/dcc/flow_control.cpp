@@ -19,6 +19,7 @@ FlowControl::FlowControl(Runtime& runtime, Scheduler& scheduler, access::Interfa
 
 void FlowControl::request(const DataRequest& request, std::unique_ptr<ChunkPacket> packet)
 {
+    drop_expired();
     if (transmit_immediately(request)) {
         transmit(request, std::move(packet));
     } else {
@@ -28,6 +29,7 @@ void FlowControl::request(const DataRequest& request, std::unique_ptr<ChunkPacke
 
 void FlowControl::trigger()
 {
+    drop_expired();
     auto transmission = dequeue();
     if (transmission) {
         transmit(std::get<1>(*transmission), std::move(std::get<2>(*transmission)));
@@ -64,8 +66,6 @@ void FlowControl::enqueue(const DataRequest& request, std::unique_ptr<ChunkPacke
 
 boost::optional<FlowControl::Transmission> FlowControl::dequeue()
 {
-    drop_expired();
-
     boost::optional<Transmission> transmission;
     Queue* queue = next_queue();
     if (queue) {
