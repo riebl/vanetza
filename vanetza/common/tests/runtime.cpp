@@ -66,7 +66,7 @@ TEST(Runtime, scheduling)
     r.trigger(hours(5));
 
     using tp = Clock::time_point;
-    using namespace std::placeholders;
+    namespace ph = std::placeholders;
     std::string seq;
     auto cb = [&seq, &r](const char* str, tp called) {
         SCOPED_TRACE(testing::Message() << "callback for " << str);
@@ -74,10 +74,10 @@ TEST(Runtime, scheduling)
         seq.append(str);
     };
 
-    r.schedule(hours(10), std::bind<void>(cb, "1", _1));
-    r.schedule(hours(11), std::bind<void>(cb, "2", _1));
-    r.schedule(hours(11), std::bind<void>(cb, "2", _1));
-    r.schedule(hours(5), std::bind<void>(cb, "3", _1));
+    r.schedule(hours(10), std::bind<void>(cb, "1", ph::_1));
+    r.schedule(hours(11), std::bind<void>(cb, "2", ph::_1));
+    r.schedule(hours(11), std::bind<void>(cb, "2", ph::_1));
+    r.schedule(hours(5), std::bind<void>(cb, "3", ph::_1));
 
     r.trigger(hours(4));
     EXPECT_EQ("", seq);
@@ -89,7 +89,7 @@ TEST(Runtime, scheduling)
     EXPECT_EQ("31", seq);
 
     // schedule expired callback (immediate invocation at next trigger)
-    r.schedule(tp { hours(2) }, std::bind<void>(cb, "4", _1));
+    r.schedule(tp { hours(2) }, std::bind<void>(cb, "4", ph::_1));
     r.trigger(hours(0));
     EXPECT_EQ("314", seq);
 

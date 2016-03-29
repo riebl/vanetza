@@ -2,10 +2,12 @@
 #define RUNTIME_HPP_KHDIEMRN
 
 #include <vanetza/common/clock.hpp>
+#include <boost/bimap/bimap.hpp>
+#include <boost/bimap/multiset_of.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/optional/optional.hpp>
 #include <functional>
-#include <queue>
-#include <tuple>
+#include <string>
 
 namespace vanetza
 {
@@ -25,15 +27,17 @@ public:
      * Schedule callback for later invocation
      * \param tp invoke callback at this time point
      * \param cb callback
+     * \param name optional callback name
      */
-    void schedule(Clock::time_point tp, const Callback& cb);
+    void schedule(Clock::time_point tp, const Callback& cb, const std::string& name = "");
 
     /**
      * Schedule callback for later invocation
      * \param d duration from now until callback invocation
      * \param cb callback
+     * \param name optional callback name
      */
-    void schedule(Clock::duration d, const Callback& cb);
+    void schedule(Clock::duration d, const Callback& cb, const std::string& name = "");
 
     /**
      * Get time point of next scheduled event
@@ -64,21 +68,18 @@ public:
      */
     void trigger(Clock::duration d);
 
-private:
-    using ScheduledCallback = std::tuple<Clock::time_point, Callback>;
 
-    struct sort_scheduled_callback
-    {
-        bool operator()(const ScheduledCallback&, const ScheduledCallback&);
-    };
+private:
+    using queue_bimap = boost::bimaps::bimap<
+        boost::bimaps::multiset_of<Clock::time_point>,
+        boost::bimaps::unordered_multiset_of<std::string>,
+        boost::bimaps::with_info<Callback>
+    >;
 
     void trigger();
 
     Clock::time_point m_now;
-    std::priority_queue<ScheduledCallback,
-        std::deque<ScheduledCallback>,
-        sort_scheduled_callback
-    > m_queue;
+    queue_bimap m_queue;
 };
 
 } // namespace vanetza
