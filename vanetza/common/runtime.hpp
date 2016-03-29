@@ -40,6 +40,12 @@ public:
     void schedule(Clock::duration d, const Callback& cb, const std::string& name = "");
 
     /**
+     * Cancel all scheduled invocations of a named callback
+     * \param name Name of callback
+     */
+    void cancel(const std::string& name);
+
+    /**
      * Get time point of next scheduled event
      * \note time point might belong to an expired event, i.e. next() < now()
      * \return time point of next event or time_point::max if none

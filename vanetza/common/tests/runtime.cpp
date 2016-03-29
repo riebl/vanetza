@@ -3,6 +3,7 @@
 #include <chrono>
 #include <functional>
 #include <string>
+#include <vector>
 
 using namespace vanetza;
 using std::chrono::hours;
@@ -123,4 +124,36 @@ TEST(Runtime, reset)
     EXPECT_EQ(2, calls);
     r.trigger(Clock::duration::max());
     EXPECT_EQ(2, calls);
+}
+
+TEST(Runtime, cancel)
+{
+    Runtime r;
+    std::vector<char> calls;
+    auto cb = [&calls](char c, Clock::time_point) { calls.push_back(c); };
+
+    namespace ph = std::placeholders;
+    r.schedule(minutes(3), std::bind<void>(cb, 'a', ph::_1));
+    r.schedule(minutes(4), std::bind<void>(cb, 'b', ph::_1), "foo");
+    r.schedule(minutes(5), std::bind<void>(cb, 'c', ph::_1));
+    r.schedule(minutes(3), std::bind<void>(cb, 'd', ph::_1), "bar");
+    r.schedule(minutes(4), std::bind<void>(cb, 'e', ph::_1));
+    r.schedule(minutes(5), std::bind<void>(cb, 'f', ph::_1), "foo");
+    r.schedule(minutes(6), std::bind<void>(cb, 'g', ph::_1), "doe");
+    r.schedule(minutes(7), std::bind<void>(cb, 'h', ph::_1), "");
+
+    // cancel single callback
+    r.cancel("bar");
+    r.trigger(minutes(8));
+    EXPECT_EQ((std::vector<char> {'a', 'b', 'e', 'c', 'f', 'g', 'h'}), calls);
+
+    // cancel several callbacks
+    calls.clear();
+    r.schedule(minutes(1), std::bind<void>(cb, 'a', ph::_1), "foo");
+    r.schedule(minutes(1), std::bind<void>(cb, 'b', ph::_1), "bar");
+    r.schedule(minutes(1), std::bind<void>(cb, 'c', ph::_1), "bar");
+    r.schedule(minutes(1), std::bind<void>(cb, 'd', ph::_1), "foo");
+    r.cancel("foo");
+    r.trigger(minutes(1));
+    EXPECT_EQ((std::vector<char> {'b', 'c'}), calls);
 }

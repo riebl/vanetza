@@ -14,6 +14,12 @@ void Runtime::schedule(Clock::duration d, const Callback& cb, const std::string&
     schedule(m_now + d, cb, name);
 }
 
+void Runtime::cancel(const std::string& name)
+{
+    auto name_match_range = m_queue.right.equal_range(name);
+    m_queue.right.erase(name_match_range.first, name_match_range.second);
+}
+
 Clock::time_point Runtime::next()
 {
     Clock::time_point next_tp = Clock::time_point::max();
