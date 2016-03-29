@@ -53,15 +53,7 @@ namespace std {
 template<>
 struct hash<vanetza::geonet::Address>
 {
-    size_t operator()(const vanetza::geonet::Address& addr) const
-    {
-        typedef underlying_type<vanetza::geonet::StationType>::type station_type_t;
-
-        return hash<bool>()(addr.is_manually_configured())
-            ^ hash<station_type_t>()(static_cast<station_type_t>(addr.station_type()))
-            ^ hash<unsigned>()(addr.country_code().raw())
-            ^ hash<vanetza::MacAddress>()(addr.mid());
-    }
+    size_t operator()(const vanetza::geonet::Address& addr) const;
 };
 
 } // namespace std

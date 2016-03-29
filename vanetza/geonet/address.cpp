@@ -1,5 +1,6 @@
 #include "address.hpp"
 #include "serialization.hpp"
+#include <boost/functional/hash.hpp>
 
 namespace vanetza
 {
@@ -80,3 +81,18 @@ void deserialize(MacAddress& addr, InputArchive& ar)
 } // namespace geonet
 } // namespace vanetza
 
+namespace std
+{
+
+namespace gn = vanetza::geonet;
+size_t hash<gn::Address>::operator()(const gn::Address& addr) const
+{
+    size_t seed = 0;
+    boost::hash_combine(seed, addr.is_manually_configured());
+    boost::hash_combine(seed, addr.station_type());
+    boost::hash_combine(seed, addr.country_code().raw());
+    boost::hash_range(seed, addr.mid().octets.begin(), addr.mid().octets.end());
+    return seed;
+}
+
+} // namespace std
