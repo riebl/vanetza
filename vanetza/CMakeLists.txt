@@ -10,4 +10,5 @@ add_subdirectory(geonet)
 add_subdirectory(gnss)
 add_subdirectory(net)
 add_subdirectory(security)
+add_subdirectory(units)
 
