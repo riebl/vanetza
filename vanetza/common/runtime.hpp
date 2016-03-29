@@ -68,6 +68,13 @@ public:
      */
     void trigger(Clock::duration d);
 
+    /**
+     * Reset runtime
+     *
+     * Drops all scheduled callbacks and resets internal clock
+     * \param tp new time point
+     */
+    void reset(Clock::time_point tp);
 
 private:
     using queue_bimap = boost::bimaps::bimap<

@@ -7,6 +7,7 @@
 using namespace vanetza;
 using std::chrono::hours;
 using std::chrono::minutes;
+using std::chrono::seconds;
 
 TEST(Runtime, default_construction)
 {
@@ -98,4 +99,28 @@ TEST(Runtime, scheduling)
 
     r.trigger(tp::max());
     EXPECT_EQ("31422", seq);
+}
+
+TEST(Runtime, reset)
+{
+    Runtime r;
+    unsigned calls = 0;
+    auto cb = [&calls](Clock::time_point) { ++calls; };
+
+    r.trigger(hours(23));
+    for (unsigned i = 10; i < 100; ++i) {
+        r.schedule(seconds(i), cb);
+    }
+
+    r.trigger(seconds(9));
+    EXPECT_EQ(0, calls);
+    r.trigger(seconds(2));
+    EXPECT_EQ(2, calls);
+    EXPECT_EQ(Clock::time_point { hours(23) + seconds(11) }, r.now());
+
+    r.reset(Clock::time_point { hours(10) });
+    EXPECT_EQ(Clock::time_point { hours(10) }, r.now());
+    EXPECT_EQ(2, calls);
+    r.trigger(Clock::duration::max());
+    EXPECT_EQ(2, calls);
 }

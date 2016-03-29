@@ -59,4 +59,10 @@ void Runtime::trigger()
     }
 }
 
+void Runtime::reset(Clock::time_point tp)
+{
+    m_now = tp;
+    m_queue.clear();
+}
+
 } // namespace vanetza
