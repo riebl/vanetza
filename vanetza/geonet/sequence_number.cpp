@@ -20,12 +20,12 @@ SequenceNumber SequenceNumber::operator++(int)
 
 void serialize(const SequenceNumber& sn, OutputArchive& ar)
 {
-    serialize(host_cast(static_cast<uint16_t>(sn)), ar);
+    serialize(host_cast(static_cast<SequenceNumber::value_type>(sn)), ar);
 }
 
 void deserialize(SequenceNumber& sn, InputArchive& ar)
 {
-    uint16_t tmp = 0;
+    SequenceNumber::value_type tmp = 0;
     deserialize(tmp, ar);
     sn = SequenceNumber(ntoh(tmp));
 }
