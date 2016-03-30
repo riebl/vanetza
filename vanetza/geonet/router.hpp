@@ -253,8 +253,15 @@ private:
 
     /**
      * \brief Reschedule timer for next BEACON transmission
+     * Timer will be scheduled according to MIB's BEACON timer settings.
      */
     void reset_beacon_timer();
+
+    /**
+     * \brief Reschedule timer for next BEACON transmission
+     * \param next Duration until next transmission
+     */
+    void reset_beacon_timer(Clock::duration next);
 
     /**
      * \brief Process BasicHeader at packet indication.
@@ -499,7 +506,6 @@ private:
     Timestamp m_last_update_lpv;
     Timestamp m_time_now;
     Timestamp m_last_transmission;
-    Timestamp m_next_beacon;
     std::mt19937 m_random_gen;
 };
 

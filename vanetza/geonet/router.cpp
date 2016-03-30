@@ -134,9 +134,6 @@ void Router::update(Clock::duration now)
     m_time_now += static_cast<Timestamp::value_type>(now_ms.count()) * Timestamp::millisecond;
     m_runtime.trigger(now);
 
-    if (m_next_beacon <= m_time_now) {
-        on_beacon_timer_expired();
-    }
     m_repeater.trigger(m_time_now);
     m_location_table.expire(m_time_now);
 }
@@ -170,7 +167,7 @@ void Router::set_time(const Clock::time_point& init)
     m_runtime.reset(init);
     m_time_now = init;
     m_last_update_lpv = m_time_now;
-    m_next_beacon = m_time_now; // send BEACON at start-up
+    reset_beacon_timer(Clock::duration::zero()); // send BEACON at start-up
 }
 
 void Router::set_address(const Address& addr)
@@ -558,18 +555,24 @@ void Router::on_beacon_timer_expired()
 
 void Router::reset_beacon_timer()
 {
-    typedef decltype(m_mib.itsGnBeaconServiceMaxJitter) duration_t;
-    typedef duration_t::value_type real_t;
+    using units::clock_cast;
+    using duration_t = decltype(m_mib.itsGnBeaconServiceRetransmitTimer);
+    using real_t = duration_t::value_type;
 
-    const real_t max_jitter = m_mib.itsGnBeaconServiceMaxJitter.value();
-    std::uniform_real_distribution<real_t> dist_jitter(0.0, max_jitter);
-    const real_t random_jitter = dist_jitter(m_random_gen);
-    const Timestamp::duration_type next_beacon_in {
-        m_mib.itsGnBeaconServiceRetransmitTimer +
-        duration_t::from_value(random_jitter)
-    };
+    std::uniform_real_distribution<real_t> dist_jitter(0.0, 1.0);
+    const auto jitter = dist_jitter(m_random_gen);
+    const duration_t next_beacon = m_mib.itsGnBeaconServiceRetransmitTimer +
+        jitter * m_mib.itsGnBeaconServiceMaxJitter;
+    reset_beacon_timer(clock_cast(next_beacon));
+}
 
-    m_next_beacon = m_time_now + next_beacon_in;
+void Router::reset_beacon_timer(Clock::duration next_beacon)
+{
+    static const std::string beacon_timer_name = "geonet.beacon.timer";
+    m_runtime.cancel(beacon_timer_name);
+    m_runtime.schedule(next_beacon, [this](Clock::time_point) {
+        on_beacon_timer_expired();
+    }, beacon_timer_name);
 }
 
 void Router::dispatch_repetition(const DataRequestVariant& request, std::unique_ptr<DownPacket> payload)
