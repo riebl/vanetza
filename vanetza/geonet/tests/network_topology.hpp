@@ -1,4 +1,5 @@
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/geonet/areas.hpp>
@@ -49,6 +50,7 @@ public:
 
         MacAddress mac_address;
         RequestInterface request_interface;
+        Runtime runtime;
         Router router;
     };
 

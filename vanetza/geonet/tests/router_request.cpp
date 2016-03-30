@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
 #include <vanetza/geonet/pdu_conversion.hpp>
 #include <vanetza/geonet/pdu_variant.hpp>
@@ -11,7 +12,7 @@ using namespace vanetza::geonet;
 class RouterRequest : public ::testing::Test
 {
 public:
-    RouterRequest() : router(mib) {}
+    RouterRequest() : router(runtime, mib) {}
 
 protected:
     virtual void SetUp() override
@@ -29,6 +30,7 @@ protected:
     }
 
     ManagementInformationBase mib;
+    Runtime runtime;
     Router router;
     FakeRequestInterface req_ifc;
     FakeTransportInterface ind_ifc;
@@ -182,7 +184,7 @@ TEST_F(RouterRequest, shb_repetition)
 
     // trigger five repetitions
     for (unsigned i = 0; i < 5; ++i) {
-        router.update(std::chrono::milliseconds(100));
+        runtime.trigger(std::chrono::milliseconds(100));
     }
     EXPECT_EQ(6, req_ifc.m_requests);
     EXPECT_EQ(packet_size, size(*req_ifc.m_last_packet, OsiLayer::Network, OsiLayer::Application));

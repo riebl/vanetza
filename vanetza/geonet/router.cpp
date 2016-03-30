@@ -1,5 +1,6 @@
 #include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/data_request.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/access_control.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/profile.hpp>
@@ -90,6 +91,7 @@ private:
     DummyDccRequestInterface() {};
 };
 
+using units::clock_cast;
 
 template<typename PDU>
 auto create_forwarding_duplicate(const PDU& pdu, const UpPacket& packet) ->
@@ -111,8 +113,9 @@ std::tuple<
 
 const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 
-Router::Router(const MIB& mib) :
+Router::Router(Runtime& rt, const MIB& mib) :
     m_mib(mib),
+    m_runtime(rt),
     m_request_interface(&DummyDccRequestInterface::get()),
     m_security_entity(m_runtime.now()),
     m_location_table(mib),
@@ -124,50 +127,23 @@ Router::Router(const MIB& mib) :
     m_repeater(m_runtime,
             std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2))
 {
+    // send BEACON immediately after start-up at next runtime trigger invocation
+    reset_beacon_timer(Clock::duration::zero());
 }
 
 Router::~Router()
 {
 }
 
-Clock::duration Router::next_update() const
-{
-    const Timestamp::duration_type upper_bound { 1.0 / m_mib.itsGnMinimumUpdateFrequencyLPV };
-    Timestamp next = m_time_now + upper_bound;
-    const auto runtime_event = m_runtime.next();
-    const Timestamp runtime_event_ts = runtime_event;
-    if (runtime_event < Clock::time_point::max() && runtime_event_ts < next) {
-        next = runtime_event_ts;
-    }
-    return std::chrono::milliseconds((next - m_time_now) / Timestamp::millisecond);
-}
-
-void Router::update(Clock::duration now)
-{
-    const auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now);
-    m_time_now += static_cast<Timestamp::value_type>(now_ms.count()) * Timestamp::millisecond;
-    m_runtime.trigger(now);
-
-    m_location_table.expire(m_time_now);
-}
-
 void Router::update(const LongPositionVector& lpv)
 {
-    // Check if LPV update frequency is fulfilled
-    assert(!m_time_now.before(m_last_update_lpv));
-    units::Duration time_since_last_update { m_time_now - m_last_update_lpv };
-    if (time_since_last_update.value() > 0.0) {
-        units::Frequency current_update_frequency =  1.0 / time_since_last_update;
-        if (m_mib.itsGnMinimumUpdateFrequencyLPV > current_update_frequency) {
-            throw std::runtime_error("LPV is not updated frequently enough");
-        }
-    }
+    // TODO soft-state of location table entries depends on frequent LPV updates
+    m_location_table.expire(m_runtime.now());
 
     // Update LPV except for GN address
     Address gn_addr = m_local_position_vector.gn_addr;
     m_local_position_vector = lpv;
     m_local_position_vector.gn_addr = gn_addr;
-    m_last_update_lpv = m_time_now;
 }
 
 void Router::set_transport_handler(UpperProtocol proto, TransportInterface* ifc)
@@ -179,14 +155,6 @@ void Router::set_access_interface(dcc::RequestInterface* ifc)
 {
     m_request_interface = (ifc == nullptr ? &DummyDccRequestInterface::get() : ifc);
     assert(m_request_interface != nullptr);
-}
-
-void Router::set_time(const Clock::time_point& init)
-{
-    m_runtime.reset(init);
-    m_time_now = init;
-    m_last_update_lpv = m_time_now;
-    reset_beacon_timer(Clock::duration::zero()); // send BEACON at start-up
 }
 
 void Router::set_address(const Address& addr)
@@ -217,7 +185,7 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
             std::unique_ptr<BroadcastBufferData> data {
                 new BroadcastBufferData(*this, std::move(pdu), std::move(payload))
             };
-            m_bc_forward_buffer.push(std::move(data), m_time_now);
+            m_bc_forward_buffer.push(std::move(data), m_runtime.now());
         } else {
             if (request.repetition) {
                 // plaintext payload needs to get passed
@@ -572,7 +540,6 @@ void Router::on_beacon_timer_expired()
 
 void Router::reset_beacon_timer()
 {
-    using units::clock_cast;
     using duration_t = decltype(m_mib.itsGnBeaconServiceRetransmitTimer);
     using real_t = duration_t::value_type;
 
@@ -629,7 +596,7 @@ NextHop Router::next_hop_contention_based_forwarding(
         const Area destination_area = gbc.destination(ht);
         if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
             CbfPacket packet(std::move(pdu), std::move(payload));
-            m_cbf_buffer.enqueue(std::move(packet), units::clock_cast(timeout_cbf_gbc(sender)));
+            m_cbf_buffer.enqueue(std::move(packet), clock_cast(timeout_cbf_gbc(sender)));
             nh.state(NextHop::State::BUFFERED);
         } else {
             auto pv_se = m_location_table.get_position(sender);
@@ -656,7 +623,7 @@ NextHop Router::first_hop_gbc_advanced(bool scf, std::unique_ptr<GbcPdu> pdu, Do
     if (inside_or_at_border(destination, m_local_position_vector.position())) {
         units::Duration timeout = m_mib.itsGnGeoBroadcastCbfMaxTime;
         CbfPacket packet(std::unique_ptr<GbcPdu> { pdu->clone() }, duplicate(*payload));
-        m_cbf_buffer.enqueue(std::move(packet), units::clock_cast(timeout));
+        m_cbf_buffer.enqueue(std::move(packet), clock_cast(timeout));
     }
 
     return next_hop_greedy_forwarding(scf, std::move(pdu), std::move(payload));
@@ -684,7 +651,7 @@ NextHop Router::next_hop_gbc_advanced(
                     nh.state(NextHop::State::DISCARDED);
                 } else {
                     ++cbf->counter();
-                    m_cbf_buffer.enqueue(std::move(*cbf), units::clock_cast(timeout_cbf_gbc(sender)));
+                    m_cbf_buffer.enqueue(std::move(*cbf), clock_cast(timeout_cbf_gbc(sender)));
                     nh.state(NextHop::State::BUFFERED);
                 }
             }
@@ -700,7 +667,7 @@ NextHop Router::next_hop_gbc_advanced(
             }
 
             CbfPacket packet(std::move(pdu), std::move(payload));
-            m_cbf_buffer.enqueue(std::move(packet), units::clock_cast(timeout));
+            m_cbf_buffer.enqueue(std::move(packet), clock_cast(timeout));
             nh.state(NextHop::State::BUFFERED);
         }
     } else {
@@ -758,7 +725,7 @@ NextHop Router::next_hop_greedy_forwarding(
             std::unique_ptr<GbcGreedyBufferData> data {
                 new GbcGreedyBufferData(*this, std::move(pdu), std::move(payload))
             };
-            m_uc_forward_buffer.push(std::move(data), m_time_now);
+            m_uc_forward_buffer.push(std::move(data), m_runtime.now());
             nh.state(NextHop::State::BUFFERED);
         } else {
             nh.mac(cBroadcastMacAddress);
@@ -859,7 +826,7 @@ void Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, UpPack
     m_location_table.update(shb.source_position);
     // update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(*packet, OsiLayer::Network, OsiLayer::Application);
-    m_location_table.update_pdr(source_addr, packet_size, m_time_now);
+    m_location_table.update_pdr(source_addr, packet_size, m_runtime.now());
     // set SO LocTE to neighbour
     m_location_table.is_neighbour(source_addr, true);
 
@@ -889,7 +856,7 @@ void Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, UpP
     m_location_table.update(beacon.source_position);
     // update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(*packet, OsiLayer::Network, OsiLayer::Application);
-    m_location_table.update_pdr(source_addr, packet_size, m_time_now);
+    m_location_table.update_pdr(source_addr, packet_size, m_runtime.now());
     // set SO LocTE to neighbour
     m_location_table.is_neighbour(source_addr, true);
 }
@@ -915,7 +882,7 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     const std::size_t packet_size = size(*packet, OsiLayer::Network, OsiLayer::Application);
     bool remove_neighbour_flag = !m_location_table.has_entry(source_addr);
     m_location_table.update(gbc.source_position);
-    m_location_table.update_pdr(source_addr, packet_size, m_time_now);
+    m_location_table.update_pdr(source_addr, packet_size, m_runtime.now());
 
     if (remove_neighbour_flag) {
         m_location_table.is_neighbour(source_addr, false);
@@ -986,7 +953,7 @@ void Router::flush_forwarding_buffer(PacketBuffer& buffer)
     dcc_request.source = m_local_position_vector.gn_addr.mid();
     dcc_request.ether_type = geonet::ether_type;
 
-    auto packets = buffer.flush(m_time_now);
+    auto packets = buffer.flush(m_runtime.now());
     for (auto& packet : packets) {
         std::unique_ptr<Pdu> pdu;
         std::unique_ptr<DownPacket> payload;

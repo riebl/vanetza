@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <boost/optional.hpp>
@@ -16,7 +17,8 @@ TEST(Router, shb_round_trip)
 
     // init router
     ManagementInformationBase mib;
-    Router router(mib);
+    Runtime runtime;
+    Router router(runtime, mib);
     router.set_access_interface(&req_ifc);
     router.set_transport_handler(UpperProtocol::IPv6, &ind_ifc);
 

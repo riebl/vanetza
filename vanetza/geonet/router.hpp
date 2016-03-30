@@ -3,7 +3,6 @@
 
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/hook.hpp>
-#include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/common_header.hpp>
@@ -34,6 +33,8 @@ namespace vanetza
 
 // forward declarations
 class MacAddress;
+class Runtime;
+
 namespace dcc
 {
     struct DataRequest;
@@ -81,7 +82,7 @@ public:
         PAYLOAD_SIZE,
     };
 
-    Router(const MIB&);
+    Router(Runtime&, const MIB&);
     ~Router();
 
     /**
@@ -132,21 +133,6 @@ public:
     Hook<PacketDropReason> packet_dropped;
 
     /**
-     * \brief Get duration until next required update call
-     * \note Duration has an upper bound derived from MIB's itsGnMinimumUpdateFrequencyLPV
-     *
-     * \return duration until next update
-     */
-    Clock::duration next_update() const;
-
-    /**
-     * \brief Update router time stamp by given duration
-     *
-     * \param duration time passed since last update
-     */
-    void update(Clock::duration);
-
-    /**
      * \brief Update router's local position vector
      * \note GN Address of given LongPositionVector is ignored!
      *
@@ -168,15 +154,6 @@ public:
      * \param ifc interface used for passing packets down to access layer
      */
     void set_access_interface(dcc::RequestInterface* ifc);
-
-    /**
-     * \brief Set clocks within router to the given time
-     * This method should only be used at initialisation.
-     * Use Router's update methods during normal operation.
-     *
-     * \param init current time
-     */
-    void set_time(const Clock::time_point&);
 
     /**
      * \brief Set Router's own GeoNetworking address
@@ -499,7 +476,7 @@ private:
     DownPacketPtr encap_packet(security::Profile, Pdu&, DownPacketPtr);
 
     const MIB& m_mib;
-    Runtime m_runtime;
+    Runtime& m_runtime;
     dcc::RequestInterface* m_request_interface;
     security::SecurityEntity m_security_entity;
     transport_map_t m_transport_ifcs;
@@ -510,9 +487,6 @@ private:
     LongPositionVector m_local_position_vector;
     SequenceNumber m_local_sequence_number;
     Repeater m_repeater;
-    Timestamp m_last_update_lpv;
-    Timestamp m_time_now;
-    Timestamp m_last_transmission;
     std::mt19937 m_random_gen;
 };
 

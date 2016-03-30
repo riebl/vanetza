@@ -54,7 +54,8 @@ void NetworkTopology::RequestInterface::request(const dcc::DataRequest& req, std
 
 NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
     request_interface(network, mac_address),
-    router(network.get_mib())
+    runtime(network.now),
+    router(runtime, network.get_mib())
 {
     router.set_access_interface(&request_interface);
 }
@@ -105,7 +106,6 @@ void NetworkTopology::add_router(const MacAddress& addr)
     std::unique_ptr<RouterContext> context { new RouterContext(*this) };
     context->mac_address = addr;
     context->router.set_address(Address(context->mac_address));
-    context->router.set_time(now);
 
     hosts.emplace(addr, std::move(context));
 }
@@ -183,8 +183,9 @@ void NetworkTopology::advance_time(Clock::duration t)
         t -= step;
         // update timestamp for every router
         for (auto& host : hosts) {
+            Runtime& runtime = host.second->runtime;
+            runtime.trigger(now);
             Router& router = host.second->router;
-            router.update(step);
             LongPositionVector lpv = router.get_local_position_vector();
             lpv.timestamp = now;
             router.update(lpv);
