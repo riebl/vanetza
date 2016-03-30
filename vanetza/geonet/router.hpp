@@ -81,7 +81,7 @@ public:
         PAYLOAD_SIZE,
     };
 
-    Router(const MIB&, dcc::RequestInterface&);
+    Router(const MIB&);
     ~Router();
 
     /**
@@ -161,6 +161,13 @@ public:
      * \param ifc use this interface or disable handling if nullptr
      */
     void set_transport_handler(UpperProtocol proto, TransportInterface* ifc);
+
+    /**
+     * \brief Register access layer interface
+     *
+     * \param ifc interface used for passing packets down to access layer
+     */
+    void set_access_interface(dcc::RequestInterface* ifc);
 
     /**
      * \brief Set clocks within router to the given time
@@ -493,7 +500,7 @@ private:
 
     const MIB& m_mib;
     Runtime m_runtime;
-    dcc::RequestInterface& m_request_interface;
+    dcc::RequestInterface* m_request_interface;
     security::SecurityEntity m_security_entity;
     transport_map_t m_transport_ifcs;
     LocationTable m_location_table;

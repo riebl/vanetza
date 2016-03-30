@@ -8,11 +8,12 @@ using namespace vanetza;
 class RouterIndicate : public ::testing::Test
 {
 public:
-    RouterIndicate() : router(mib, req_ifc), packet_drop_occurred(false) {}
+    RouterIndicate() : router(mib), packet_drop_occurred(false) {}
 
 protected:
     virtual void SetUp() override
     {
+        router.set_access_interface(&req_ifc);
         router.set_transport_handler(geonet::UpperProtocol::IPv6, &ind_ifc);
         packet_drop_occurred = false;
         router.packet_dropped = [this](geonet::Router::PacketDropReason r) {

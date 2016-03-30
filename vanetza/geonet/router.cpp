@@ -73,6 +73,24 @@ public:
     }
 };
 
+/**
+ * DCC request interface used when no user supplied interface is available.
+ */
+class DummyDccRequestInterface : public dcc::RequestInterface
+{
+public:
+    void request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>) override {}
+    static dcc::RequestInterface& get()
+    {
+        static DummyDccRequestInterface ifc;
+        return ifc;
+    }
+
+private:
+    DummyDccRequestInterface() {};
+};
+
+
 template<typename PDU>
 auto create_forwarding_duplicate(const PDU& pdu, const UpPacket& packet) ->
 std::tuple<
@@ -93,9 +111,9 @@ std::tuple<
 
 const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 
-Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
+Router::Router(const MIB& mib) :
     m_mib(mib),
-    m_request_interface(ifc),
+    m_request_interface(&DummyDccRequestInterface::get()),
     m_security_entity(m_runtime.now()),
     m_location_table(mib),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
@@ -155,6 +173,12 @@ void Router::update(const LongPositionVector& lpv)
 void Router::set_transport_handler(UpperProtocol proto, TransportInterface* ifc)
 {
     m_transport_ifcs[proto] = ifc;
+}
+
+void Router::set_access_interface(dcc::RequestInterface* ifc)
+{
+    m_request_interface = (ifc == nullptr ? &DummyDccRequestInterface::get() : ifc);
+    assert(m_request_interface != nullptr);
 }
 
 void Router::set_time(const Clock::time_point& init)
@@ -502,7 +526,8 @@ void Router::pass_down(const dcc::DataRequest& request, PduPtr pdu, DownPacketPt
     }
 
     (*payload)[OsiLayer::Network] = ByteBufferConvertible(std::move(pdu));
-    m_request_interface.request(request, std::move(payload));
+    assert(m_request_interface);
+    m_request_interface->request(request, std::move(payload));
 }
 
 void Router::pass_down(const MacAddress& addr, PduPtr pdu, DownPacketPtr payload)

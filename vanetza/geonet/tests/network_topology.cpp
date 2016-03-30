@@ -54,8 +54,9 @@ void NetworkTopology::RequestInterface::request(const dcc::DataRequest& req, std
 
 NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
     request_interface(network, mac_address),
-    router(network.get_mib(), request_interface)
+    router(network.get_mib())
 {
+    router.set_access_interface(&request_interface);
 }
 
 NetworkTopology::NetworkTopology()
