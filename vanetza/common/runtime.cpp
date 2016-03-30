@@ -4,6 +4,10 @@
 namespace vanetza
 {
 
+Runtime::Runtime(Clock::time_point init) : m_now(init)
+{
+}
+
 void Runtime::schedule(Clock::time_point tp, const Callback& cb, const std::string& name)
 {
     m_queue.insert(queue_bimap::value_type { tp, name, cb });

@@ -23,6 +23,14 @@ class Runtime
 public:
     using Callback = std::function<void(Clock::time_point)>;
 
+    Runtime() = default;
+
+    /**
+     * Create runtime
+     * \param init initialization value of internal clock
+     */
+    Runtime(Clock::time_point init);
+
     /**
      * Schedule callback for later invocation
      * \param tp invoke callback at this time point
