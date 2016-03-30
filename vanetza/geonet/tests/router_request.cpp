@@ -17,7 +17,7 @@ protected:
     virtual void SetUp() override
     {
         mib.itsGnSecurity = true;
-        router.set_transport_handler(geonet::UpperProtocol::IPv6, ind_ifc);
+        router.set_transport_handler(geonet::UpperProtocol::IPv6, &ind_ifc);
         test_payload[OsiLayer::Application] = ByteBuffer {47, 11, 1, 4, 42, 85};
     }
 

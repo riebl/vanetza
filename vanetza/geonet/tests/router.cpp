@@ -17,7 +17,7 @@ TEST(Router, shb_round_trip)
     // init router
     ManagementInformationBase mib;
     Router router(mib, req_ifc);
-    router.set_transport_handler(UpperProtocol::IPv6, ind_ifc);
+    router.set_transport_handler(UpperProtocol::IPv6, &ind_ifc);
 
     // initialize shb request
     ShbDataRequest shb_request(mib);

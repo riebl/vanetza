@@ -157,10 +157,10 @@ public:
     /**
      * \brief Register a transport protocol handler.
      *
-     * \param proto
-     * \param ifc pass packet to transport layer via this interface
+     * \param proto register handler for this upper protocol
+     * \param ifc use this interface or disable handling if nullptr
      */
-    void set_transport_handler(UpperProtocol, TransportInterface&);
+    void set_transport_handler(UpperProtocol proto, TransportInterface* ifc);
 
     /**
      * \brief Set clocks within router to the given time

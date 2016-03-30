@@ -152,9 +152,9 @@ void Router::update(const LongPositionVector& lpv)
     m_last_update_lpv = m_time_now;
 }
 
-void Router::set_transport_handler(UpperProtocol proto, TransportInterface& ifc)
+void Router::set_transport_handler(UpperProtocol proto, TransportInterface* ifc)
 {
-    m_transport_ifcs[proto] = &ifc;
+    m_transport_ifcs[proto] = ifc;
 }
 
 void Router::set_time(const Clock::time_point& init)
@@ -521,12 +521,9 @@ void Router::pass_down(const MacAddress& addr, PduPtr pdu, DownPacketPtr payload
 
 void Router::pass_up(DataIndication& ind, UpPacketPtr packet)
 {
-    auto ifc = m_transport_ifcs.find(ind.upper_protocol);
-    if (ifc != m_transport_ifcs.end()) {
-        auto transport = ifc->second;
-        if (transport != nullptr) {
-            transport->indicate(ind, std::move(packet));
-        }
+    TransportInterface* transport = m_transport_ifcs[ind.upper_protocol];
+    if (transport != nullptr) {
+        transport->indicate(ind, std::move(packet));
     }
 }
 
