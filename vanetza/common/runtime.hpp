@@ -50,7 +50,7 @@ public:
      * \note time point might belong to an expired event, i.e. next() < now()
      * \return time point of next event or time_point::max if none
      */
-    Clock::time_point next();
+    Clock::time_point next() const;
 
     /**
      * Get current time

@@ -20,7 +20,7 @@ void Runtime::cancel(const std::string& name)
     m_queue.right.erase(name_match_range.first, name_match_range.second);
 }
 
-Clock::time_point Runtime::next()
+Clock::time_point Runtime::next() const
 {
     Clock::time_point next_tp = Clock::time_point::max();
     if (!m_queue.empty()) {
