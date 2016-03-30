@@ -1,62 +1,72 @@
 #ifndef REPEATER_HPP_AH49FXB1
 #define REPEATER_HPP_AH49FXB1
 
+#include <vanetza/common/clock.hpp>
 #include <vanetza/geonet/data_request.hpp>
 #include <vanetza/geonet/packet.hpp>
-#include <vanetza/geonet/timestamp.hpp>
-#include <boost/heap/priority_queue.hpp>
-#include <boost/optional.hpp>
 #include <functional>
+#include <list>
 #include <memory>
 
 namespace vanetza
 {
+// forward declaration
+class Runtime;
+
 namespace geonet
 {
 
+/**
+ * Repeater eases handling of packet repetitions.
+ * Packet repetitions are repeated requests with same payload.
+ */
 class Repeater
 {
 public:
     using Callback = std::function<void(const DataRequestVariant&, std::unique_ptr<DownPacket>)>;
 
-    template<class REQUEST>
-    void add(const REQUEST& request, const DownPacket& payload, Timestamp now)
-    {
-        if (request.repetition && has_further_repetition(*request.repetition)) {
-            m_repetitions.emplace(request, payload,
-                    now + Timestamp::duration_type(request.repetition->interval));
-        }
-    }
-
-    void set_callback(const Callback&);
-    void trigger(Timestamp now);
+    /**
+     * Create a Repeater instance
+     * \param rt runtime used for scheduling repetitions
+     * \param cb callback to be invoked when repetition is due
+     */
+    Repeater(Runtime& rt, const Callback& cb);
 
     /**
-     * Get time stamp when next repetition should be triggered
-     * \return time stamp of next repetition (if any)
+     * Add another repetition
+     * \param request any kind of GeoNet data request
+     * \param payload request's payload
      */
-    boost::optional<Timestamp> next_trigger() const;
+    template<class REQUEST>
+    void add(const REQUEST& request, const DownPacket& payload)
+    {
+        if (request.repetition) {
+            add(request, *request.repetition, payload);
+        }
+    }
 
 private:
     struct Repetition
     {
-        Repetition(const DataRequestVariant&, const DownPacket&, Timestamp next);
+        Repetition(const DataRequestVariant&, const DownPacket&);
 
         DataRequestVariant m_request;
         std::unique_ptr<DownPacket> m_payload;
-        Timestamp m_next;
     };
 
-    struct compare_repetition
-    {
-        bool operator()(const Repetition& lhs, const Repetition& rhs) const;
-    };
+    /**
+     * Add packet repetition to internal book keeping
+     */
+    void add(const DataRequestVariant&, const DataRequest::Repetition&, const DownPacket&);
 
-    boost::heap::priority_queue<
-            Repetition,
-            boost::heap::compare<compare_repetition>
-        > m_repetitions;
+    /**
+     * Triggered when repetition is due according to runtime
+     */
+    void trigger(std::list<Repetition>::iterator, Clock::time_point);
+
+    std::list<Repetition> m_repetitions;
     Callback m_repeat_fn;
+    Runtime& m_runtime;
 };
 
 } // namespace geonet

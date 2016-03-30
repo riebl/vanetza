@@ -102,10 +102,10 @@ Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
     m_cbf_buffer(m_runtime,
             std::bind(&Router::on_cbf_timer_expiration, this, std::placeholders::_1),
-            mib.itsGnCbfPacketBufferSize * 1024)
+            mib.itsGnCbfPacketBufferSize * 1024),
+    m_repeater(m_runtime,
+            std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2))
 {
-    namespace ph = std::placeholders;
-    m_repeater.set_callback(std::bind(&Router::dispatch_repetition, this, ph::_1, ph::_2));
 }
 
 Router::~Router()
@@ -121,10 +121,6 @@ Clock::duration Router::next_update() const
     if (runtime_event < Clock::time_point::max() && runtime_event_ts < next) {
         next = runtime_event_ts;
     }
-    const auto repeater_timer = m_repeater.next_trigger();
-    if (repeater_timer && *repeater_timer < next) {
-        next = *repeater_timer;
-    }
     return std::chrono::milliseconds((next - m_time_now) / Timestamp::millisecond);
 }
 
@@ -134,7 +130,6 @@ void Router::update(Clock::duration now)
     m_time_now += static_cast<Timestamp::value_type>(now_ms.count()) * Timestamp::millisecond;
     m_runtime.trigger(now);
 
-    m_repeater.trigger(m_time_now);
     m_location_table.expire(m_time_now);
 }
 
@@ -202,7 +197,7 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
         } else {
             if (request.repetition) {
                 // plaintext payload needs to get passed
-                m_repeater.add(request, *payload, m_time_now);
+                m_repeater.add(request, *payload);
             }
             if (m_mib.itsGnSecurity) {
                 payload = encap_packet(request.security_profile, *pdu, std::move(payload));
@@ -231,7 +226,7 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
         // Set up packet repetition (plaintext payload)
         if (request.repetition) {
             assert(payload);
-            m_repeater.add(request, *payload, m_time_now);
+            m_repeater.add(request, *payload);
         }
 
         // Security
