@@ -53,12 +53,12 @@ void Runtime::trigger()
     // process queue elements separately because callback might modify runtime
     while (!m_queue.empty()) {
         auto top = m_queue.left.begin();
-        const auto& deadline = top->first;
+        const auto deadline = top->first;
         if (deadline <= m_now) {
             Callback cb = top->info;
             m_queue.left.erase(top);
             // callback invocation has to be last action because it might modify runtime
-            cb(m_now);
+            cb(deadline);
         } else {
             break;
         }

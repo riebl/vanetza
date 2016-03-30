@@ -67,12 +67,11 @@ TEST(Runtime, scheduling)
     Runtime r;
     r.trigger(hours(5));
 
-    using tp = Clock::time_point;
     namespace ph = std::placeholders;
     std::string seq;
-    auto cb = [&seq, &r](const char* str, tp called) {
-        SCOPED_TRACE(testing::Message() << "callback for " << str);
-        EXPECT_EQ(r.now(), called);
+    std::vector<Clock::time_point> deadlines;
+    auto cb = [&seq, &deadlines](const char* str, Clock::time_point deadline) {
+        deadlines.push_back(deadline);
         seq.append(str);
     };
 
@@ -91,15 +90,24 @@ TEST(Runtime, scheduling)
     EXPECT_EQ("31", seq);
 
     // schedule expired callback (immediate invocation at next trigger)
-    r.schedule(tp { hours(2) }, std::bind<void>(cb, "4", ph::_1));
+    r.schedule(Clock::time_point { hours(2) }, std::bind<void>(cb, "4", ph::_1));
     r.trigger(hours(0));
     EXPECT_EQ("314", seq);
 
     r.trigger(hours(5));
     EXPECT_EQ("31422", seq);
 
-    r.trigger(tp::max());
+    r.trigger(Clock::time_point::max());
     EXPECT_EQ("31422", seq);
+
+    const std::vector<Clock::time_point> expected_deadlines = {
+        Clock::time_point { hours(10) },
+        Clock::time_point { hours(15) },
+        Clock::time_point { hours(2) },
+        Clock::time_point { hours(16) },
+        Clock::time_point { hours(16) },
+    };
+    EXPECT_EQ(expected_deadlines, deadlines);
 }
 
 TEST(Runtime, reset)
