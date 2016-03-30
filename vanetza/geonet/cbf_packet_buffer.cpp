@@ -1,157 +1,230 @@
-#include "cbf_packet_buffer.hpp"
-#include "pdu.hpp"
-#include "packet.hpp"
-#include <vanetza/net/mac_address.hpp>
-#include <algorithm>
+#include <vanetza/common/runtime.hpp>
+#include <vanetza/geonet/address.hpp>
+#include <vanetza/geonet/cbf_packet_buffer.hpp>
+#include <vanetza/geonet/pdu.hpp>
+#include <vanetza/units/time.hpp>
 #include <cassert>
+#include <iterator>
 
 namespace vanetza
 {
 namespace geonet
 {
 
-bool node_match(
-        const MacAddress& mac, SequenceNumber sn,
-        const std::tuple<CbfPacketData, CbfPacketMetaData>& node)
+CbfPacketIdentifier identifier(const CbfPacket& packet)
 {
-    assert(std::get<0>(node).pdu);
-    const GeoBroadcastHeader& gbc = std::get<0>(node).pdu->extended();
-    return (gbc.source_position.gn_addr.mid() == mac && gbc.sequence_number == sn);
+    return identifier(packet.source(), packet.sequence_number());
 }
 
-std::size_t length(const CbfPacketData& packet)
+CbfPacketIdentifier identifier(const Address& source, SequenceNumber sn)
 {
-    return (packet.pdu ? get_length(*packet.pdu) : 0) +
-        (packet.payload ? packet.payload->size(OsiLayer::Transport, max_osi_layer()) : 0);
+    return std::make_tuple(source, sn);
 }
 
 
-CbfPacketMetaData::CbfPacketMetaData(const MacAddress& sender, Timestamp now) :
-    m_sender(sender), m_counter(1), m_buffered_since(now), m_timer_expiry(now)
+CbfPacket::CbfPacket(PduPtr pdu, PayloadPtr payload) :
+    m_pdu(std::move(pdu)), m_payload(std::move(payload)), m_counter(1)
 {
 }
 
-void CbfPacketMetaData::set_timeout(units::Duration timeout, Timestamp now)
+const Address& CbfPacket::source() const
 {
-    assert(!now.before(m_buffered_since));
-    m_timer_expiry = now + Timestamp::duration_type(timeout);
+    assert(m_pdu);
+    return m_pdu->extended().source_position.gn_addr;
+}
+
+SequenceNumber CbfPacket::sequence_number() const
+{
+    assert(m_pdu);
+    return m_pdu->extended().sequence_number;
+}
+
+Lifetime& CbfPacket::lifetime()
+{
+    assert(m_pdu);
+    return m_pdu->basic().lifetime;
+}
+
+std::size_t CbfPacket::length() const
+{
+    const auto pdu_length = m_pdu ? get_length(*m_pdu) : 0;
+    const auto payload_length = m_payload ? m_payload->size(OsiLayer::Transport, max_osi_layer()) : 0;
+    return pdu_length + payload_length;
+}
+
+CbfPacket::Data::Data(CbfPacket&& packet) :
+    pdu(std::move(packet.m_pdu)), payload(std::move(packet.m_payload))
+{
 }
 
 
-CbfPacketBuffer::CbfPacketBuffer(std::size_t bytes) :
-    m_capacity(bytes), m_stored(0)
+CbfPacketBuffer::CbfPacketBuffer(Runtime& rt, TimerCallback cb, std::size_t bytes) :
+    m_runtime(rt), m_capacity_bytes(bytes), m_stored_bytes(0),
+    m_timer_callback(cb)
 {
 }
 
-CbfPacketBuffer::~CbfPacketBuffer()
-{
-}
-
-bool CbfPacketBuffer::try_drop(const MacAddress& mac, SequenceNumber sn)
+bool CbfPacketBuffer::try_drop(const Address& src, SequenceNumber sn)
 {
     bool packet_dropped = false;
 
-    auto found = std::find_if(m_nodes.begin(), m_nodes.end(),
-            std::bind(node_match, mac, sn, std::placeholders::_1));
-    if (found != m_nodes.end()) {
-        m_stored -= length(std::get<0>(*found));
-        m_nodes.erase(found);
+    auto& id_map = m_timers.right;
+    auto found = id_map.find(identifier(src, sn));
+    if (found != id_map.end()) {
+        auto& packet = found->info;
+        m_stored_bytes -= packet->length();
+        m_packets.erase(packet);
+        auto& timer_map = m_timers.left;
+        auto successor = timer_map.erase(m_timers.project_left(found));
+        if (successor == timer_map.begin() && !timer_map.empty()) {
+            // erased timer was scheduled one, reschedule timer trigger
+            schedule_timer();
+        }
         packet_dropped = true;
     }
 
+    assert(m_packets.size() == m_timers.size());
     return packet_dropped;
 }
 
-void CbfPacketBuffer::push(CbfPacketData&& packet, const MacAddress& sender,
-        units::Duration timeout, Timestamp now)
+void CbfPacketBuffer::enqueue(CbfPacket&& packet, Clock::duration timeout)
 {
-    assert(packet.pdu);
-    assert(timeout > 0.0 * units::si::seconds);
-
-    const std::size_t packet_size = length(packet);
+    assert(timeout > Clock::duration::zero());
+    m_stored_bytes += packet.length();
 
     // do head drop if necessary
-    while (packet_size > m_capacity - m_stored && !m_nodes.empty()) {
-        m_stored -= length(std::get<0>(m_nodes.front()));
-        m_nodes.pop_front();
+    while (m_stored_bytes > m_capacity_bytes && !m_packets.empty()) {
+        m_stored_bytes -= m_packets.front().length();
+        m_timers.right.erase(identifier(m_packets.front()));
+        m_packets.pop_front();
     }
 
-    if (packet_size <= m_capacity) {
-        assert(m_capacity - m_stored >= packet_size);
-        m_stored += packet_size;
-        CbfPacketMetaData meta { sender, now };
-        meta.set_timeout(timeout, now);
-        m_nodes.emplace_back(std::move(packet), std::move(meta));
-        assert(std::get<0>(m_nodes.back()).pdu);
+    Timer timer = { m_runtime, timeout };
+    Identifier id = identifier(packet);
+    m_packets.emplace_back(std::move(packet));
+    using timer_value = timer_bimap::value_type;
+    auto insertion = m_timers.insert(timer_value { timer, id, std::prev(m_packets.end()) });
+    if (!insertion.second) {
+        m_stored_bytes -= m_packets.back().length();
+        m_packets.pop_back();
+        assert(m_packets.size() == m_timers.size());
+        throw std::runtime_error("Illegal insertion of duplicate CBF packet");
+    } else if (m_timers.project_left(insertion.first) == m_timers.left.begin()) {
+        // enqueued packet expires first, reschedule timer trigger
+        schedule_timer();
     }
+    assert(m_packets.size() == m_timers.size());
 }
 
-boost::optional<Timestamp> CbfPacketBuffer::next_timer_expiry() const
+boost::optional<CbfPacket> CbfPacketBuffer::fetch(const Address& src, SequenceNumber sn)
 {
-    boost::optional<Timestamp> next_timer;
-
-    for (const auto& node : m_nodes) {
-        if (!next_timer) {
-            next_timer = std::get<1>(node).timer_expiry();
-        } else {
-            next_timer = std::min(next_timer.get(), std::get<1>(node).timer_expiry());
+    boost::optional<CbfPacket> packet;
+    auto& id_map = m_timers.right;
+    auto found = id_map.find(identifier(src, sn));
+    if (found != id_map.end()) {
+        const Timer& timer = found->second;
+        CbfPacket& cbf_packet = *found->info;
+        bool valid_packet = reduce_lifetime(timer, cbf_packet);
+        m_stored_bytes -= cbf_packet.length();
+        if (valid_packet) {
+            packet.emplace(std::move(cbf_packet));
+        }
+        m_packets.erase(found->info);
+        auto& timer_map = m_timers.left;
+        auto successor = timer_map.erase(m_timers.project_left(found));
+        if (successor == timer_map.begin() && !timer_map.empty()) {
+            // erased timer was scheduled one, reschedule timer trigger
+            schedule_timer();
         }
     }
-
-    return next_timer;
+    return packet;
 }
 
-CbfPacketBuffer::packet_list CbfPacketBuffer::packets_to_send(Timestamp now)
+const CbfPacket* CbfPacketBuffer::find(const Address& src, SequenceNumber sn) const
 {
-    packet_list packets;
+    Identifier id = identifier(src, sn);
+    const auto& id_map = m_timers.right;
+    auto found = id_map.find(id);
+    return found != id_map.end() ? &(*found->info) : nullptr;
+}
 
-    // move all packets with expired timeout
-    for (auto it = m_nodes.begin(); it != m_nodes.end();) {
-        packet_type& packet = std::get<0>(*it);
-        CbfPacketMetaData& meta = std::get<1>(*it);
-        assert(packet.pdu);
-        if (!now.before(meta.timer_expiry())) {
-            units::Duration lifetime = packet.pdu->basic().lifetime.decode();
-            units::Duration queuetime { now - meta.buffered_since() };
-            m_stored -= length(packet);
-            if (queuetime < lifetime) {
-                packet.pdu->basic().lifetime.encode(lifetime - queuetime);
-                packets.push_back(std::move(packet));
-            }
-
-            it = m_nodes.erase(it);
-        } else {
-            ++it;
+void CbfPacketBuffer::flush()
+{
+    // fetch all expired timers
+    const Timer now { m_runtime, std::chrono::seconds(0) };
+    auto end = m_timers.left.upper_bound(now);
+    for (auto it = m_timers.left.begin(); it != end;) {
+        // reduce LT by queuing time
+        const Timer& timer = it->first;
+        CbfPacket& packet = *it->info;
+        bool valid_packet = reduce_lifetime(timer, packet);
+        m_stored_bytes -= packet.length();
+        if (valid_packet) {
+            CbfPacket::Data data(std::move(packet));
+            m_timer_callback(std::move(data));
         }
+
+        m_packets.erase(it->info);
+        it = m_timers.left.erase(it);
     }
 
-    return packets;
+    // schedule timer if not empty
+    if (!m_timers.empty()) {
+        schedule_timer();
+    }
 }
 
-boost::optional<CbfPacketMetaData&>
-CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn)
+bool CbfPacketBuffer::reduce_lifetime(const Timer& timer, CbfPacket& packet) const
 {
-    using std::placeholders::_1;
-    boost::optional<CbfPacketMetaData&> result;
-    auto found = std::find_if(m_nodes.begin(), m_nodes.end(), std::bind(node_match, mac, sn, _1));
-    if (found != m_nodes.end()) {
-        result = std::get<1>(*found);
+    const auto queuing_time = m_runtime.now() - timer.start;
+    const auto clock_lifetime = units::clock_cast(packet.lifetime().decode());
+    bool valid_packet = false;
+    if (queuing_time < clock_lifetime) {
+        packet.lifetime().encode(units::clock_cast(clock_lifetime - queuing_time));
+        valid_packet = true;
     }
-    return result;
+    return valid_packet;
 }
 
-boost::optional<const CbfPacketMetaData&>
-CbfPacketBuffer::find(const MacAddress& mac, SequenceNumber sn) const
+void CbfPacketBuffer::schedule_timer()
 {
-    using std::placeholders::_1;
-    boost::optional<const CbfPacketMetaData&> result;
-    auto found = std::find_if(m_nodes.begin(), m_nodes.end(), std::bind(node_match, mac, sn, _1));
-    if (found != m_nodes.end()) {
-        result = std::get<1>(*found);
-    }
-    return result;
+    const static std::string timer_name = "geonet.cbf.timer";
+    assert(!m_timers.empty());
+    m_runtime.cancel(timer_name);
+    Runtime::Callback cb = [this](Clock::time_point) { flush(); };
+    m_runtime.schedule(m_timers.left.begin()->first.expiry, cb, timer_name);
+}
+
+
+CbfPacketBuffer::Timer::Timer(const Runtime& rt, Clock::duration timeout) :
+    expiry(rt.now() + timeout), start(rt.now())
+{
+}
+
+bool CbfPacketBuffer::Timer::operator<(const Timer& other) const
+{
+    return this->expiry < other.expiry;
 }
 
 } // namespace geonet
 } // namespace vanetza
 
+namespace std
+{
+
+using Identifier = vanetza::geonet::CbfPacketIdentifier;
+size_t hash<Identifier>::operator()(const Identifier& id) const
+{
+    using vanetza::geonet::Address;
+    using vanetza::geonet::SequenceNumber;
+    static_assert(tuple_size<Identifier>::value == 2, "Unexpected identifier tuple");
+
+    std::size_t seed = 0;
+    const Address& source = get<0>(id);
+    boost::hash_combine(seed, std::hash<Address>()(source));
+    const SequenceNumber& sn = get<1>(id);
+    boost::hash_combine(seed, static_cast<SequenceNumber::value_type>(sn));
+    return seed;
+}
+
+} // namespace std

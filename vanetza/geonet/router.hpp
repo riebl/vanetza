@@ -3,6 +3,7 @@
 
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/hook.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/common_header.hpp>
@@ -460,6 +461,12 @@ private:
     units::Duration timeout_cbf_gbc(const MacAddress& sender) const;
 
     /**
+     * \brief Handle CBF packet on timer expiration
+     * \param packet CBF packet ready for transmission
+     */
+    void on_cbf_timer_expiration(CbfPacket::Data&& packet);
+
+    /**
      * \brief Callback function for dispatching a packet repetition.
      * Invoked by Repeater when a scheduled repetition is due.
      *
@@ -478,7 +485,7 @@ private:
     DownPacketPtr encap_packet(security::Profile, Pdu&, DownPacketPtr);
 
     const MIB& m_mib;
-    Clock::time_point m_clock;
+    Runtime m_runtime;
     dcc::RequestInterface& m_request_interface;
     security::SecurityEntity m_security_entity;
     transport_map_t m_transport_ifcs;

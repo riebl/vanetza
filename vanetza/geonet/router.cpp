@@ -96,14 +96,16 @@ const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 Router::Router(const MIB& mib, dcc::RequestInterface& ifc) :
     m_mib(mib),
     m_request_interface(ifc),
-    m_security_entity(m_clock),
+    m_security_entity(m_runtime.now()),
     m_location_table(mib),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
-    m_cbf_buffer(mib.itsGnCbfPacketBufferSize * 1024)
+    m_cbf_buffer(m_runtime,
+            std::bind(&Router::on_cbf_timer_expiration, this, std::placeholders::_1),
+            mib.itsGnCbfPacketBufferSize * 1024)
 {
-    using namespace std::placeholders;
-    m_repeater.set_callback(std::bind(&Router::dispatch_repetition, this, _1, _2));
+    namespace ph = std::placeholders;
+    m_repeater.set_callback(std::bind(&Router::dispatch_repetition, this, ph::_1, ph::_2));
 }
 
 Router::~Router()
@@ -114,9 +116,10 @@ Clock::duration Router::next_update() const
 {
     const Timestamp::duration_type upper_bound { 1.0 / m_mib.itsGnMinimumUpdateFrequencyLPV };
     Timestamp next = m_time_now + upper_bound;
-    const auto cbf_timer = m_cbf_buffer.next_timer_expiry();
-    if (cbf_timer && *cbf_timer < next) {
-        next = *cbf_timer;
+    const auto runtime_event = m_runtime.next();
+    const Timestamp runtime_event_ts = runtime_event;
+    if (runtime_event < Clock::time_point::max() && runtime_event_ts < next) {
+        next = runtime_event_ts;
     }
     const auto repeater_timer = m_repeater.next_trigger();
     if (repeater_timer && *repeater_timer < next) {
@@ -129,26 +132,13 @@ void Router::update(Clock::duration now)
 {
     const auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(now);
     m_time_now += static_cast<Timestamp::value_type>(now_ms.count()) * Timestamp::millisecond;
-    m_clock += now;
+    m_runtime.trigger(now);
 
     if (m_next_beacon <= m_time_now) {
         on_beacon_timer_expired();
     }
     m_repeater.trigger(m_time_now);
     m_location_table.expire(m_time_now);
-
-    dcc::DataRequest request;
-    request.destination = cBroadcastMacAddress;
-    request.source = m_local_position_vector.gn_addr.mid();
-    request.dcc_profile = dcc::Profile::DP3;
-    request.ether_type = geonet::ether_type;
-
-    for (auto& packet : m_cbf_buffer.packets_to_send(m_time_now)) {
-        const auto& pdu = packet.pdu;
-        const auto lifetime = pdu->basic().lifetime.decode();
-        request.lifetime = std::chrono::seconds(lifetime / units::si::seconds);
-        pass_down(request, std::move(packet.pdu), std::move(packet.payload));
-    }
 }
 
 void Router::update(const LongPositionVector& lpv)
@@ -177,8 +167,8 @@ void Router::set_transport_handler(UpperProtocol proto, TransportInterface& ifc)
 
 void Router::set_time(const Clock::time_point& init)
 {
-    m_clock = init;
-    m_time_now = m_clock;
+    m_runtime.reset(init);
+    m_time_now = init;
     m_last_update_lpv = m_time_now;
     m_next_beacon = m_time_now; // send BEACON at start-up
 }
@@ -613,13 +603,13 @@ NextHop Router::next_hop_contention_based_forwarding(
     const GeoBroadcastHeader& gbc = pdu->extended();
     const HeaderType ht = pdu->common().header_type;
 
-    if (m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number)) {
+    if (m_cbf_buffer.try_drop(gbc.source_position.gn_addr, gbc.sequence_number)) {
         nh.state(NextHop::State::DISCARDED);
     } else {
         const Area destination_area = gbc.destination(ht);
         if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
-            CbfPacketBuffer::packet_type packet(std::move(pdu), std::move(payload));
-            m_cbf_buffer.push(std::move(packet), sender, timeout_cbf_gbc(sender), m_time_now);
+            CbfPacket packet(std::move(pdu), std::move(payload));
+            m_cbf_buffer.enqueue(std::move(packet), units::clock_cast(timeout_cbf_gbc(sender)));
             nh.state(NextHop::State::BUFFERED);
         } else {
             auto pv_se = m_location_table.get_position(sender);
@@ -645,8 +635,8 @@ NextHop Router::first_hop_gbc_advanced(bool scf, std::unique_ptr<GbcPdu> pdu, Do
     const Area& destination = pdu->extended().destination(pdu->common().header_type);
     if (inside_or_at_border(destination, m_local_position_vector.position())) {
         units::Duration timeout = m_mib.itsGnGeoBroadcastCbfMaxTime;
-        CbfPacketBuffer::packet_type packet(std::unique_ptr<GbcPdu> { pdu->clone() }, duplicate(*payload));
-        m_cbf_buffer.push(std::move(packet), m_local_position_vector.gn_addr.mid(), timeout, m_time_now);
+        CbfPacket packet(std::unique_ptr<GbcPdu> { pdu->clone() }, duplicate(*payload));
+        m_cbf_buffer.enqueue(std::move(packet), units::clock_cast(timeout));
     }
 
     return next_hop_greedy_forwarding(scf, std::move(pdu), std::move(payload));
@@ -661,20 +651,20 @@ NextHop Router::next_hop_gbc_advanced(
     const HeaderType ht = pdu->common().header_type;
     const Area destination_area = gbc.destination(ht);
     static const std::size_t max_counter = 3; // TODO: Where is this constant's definition in GN standard?
-    auto cbf_meta = m_cbf_buffer.find(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+    auto cbf = m_cbf_buffer.fetch(gbc.source_position.gn_addr, gbc.sequence_number);
 
     if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
-        if (cbf_meta) {
-            if (cbf_meta->counter() >= max_counter) {
-                m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+        if (cbf) {
+            if (cbf->counter() >= max_counter) {
+                m_cbf_buffer.try_drop(gbc.source_position.gn_addr, gbc.sequence_number);
                 nh.state(NextHop::State::DISCARDED);
             } else {
-                if (!outside_sectorial_contention_area(cbf_meta->sender(), sender)) {
-                    m_cbf_buffer.try_drop(gbc.source_position.gn_addr.mid(), gbc.sequence_number);
+                if (!outside_sectorial_contention_area(cbf->source().mid(), sender)) {
+                    m_cbf_buffer.try_drop(gbc.source_position.gn_addr, gbc.sequence_number);
                     nh.state(NextHop::State::DISCARDED);
                 } else {
-                    cbf_meta->set_timeout(timeout_cbf_gbc(sender), m_time_now);
-                    cbf_meta->increment();
+                    ++cbf->counter();
+                    m_cbf_buffer.enqueue(std::move(*cbf), units::clock_cast(timeout_cbf_gbc(sender)));
                     nh.state(NextHop::State::BUFFERED);
                 }
             }
@@ -689,8 +679,8 @@ NextHop Router::next_hop_gbc_advanced(
                 nh.state(NextHop::State::BUFFERED);
             }
 
-            CbfPacketBuffer::packet_type packet(std::move(pdu), std::move(payload));
-            m_cbf_buffer.push(std::move(packet), sender, timeout, m_time_now);
+            CbfPacket packet(std::move(pdu), std::move(payload));
+            m_cbf_buffer.enqueue(std::move(packet), units::clock_cast(timeout));
             nh.state(NextHop::State::BUFFERED);
         }
     } else {
@@ -816,6 +806,18 @@ bool Router::outside_sectorial_contention_area(const MacAddress& sender, const M
     } else {
         return true;
     }
+}
+
+void Router::on_cbf_timer_expiration(CbfPacket::Data&& packet)
+{
+    dcc::DataRequest request;
+    request.destination = cBroadcastMacAddress;
+    request.source = m_local_position_vector.gn_addr.mid();
+    request.dcc_profile = dcc::Profile::DP3;
+    request.ether_type = geonet::ether_type;
+    const auto lifetime = packet.pdu->basic().lifetime.decode();
+    request.lifetime = std::chrono::seconds(lifetime / units::si::seconds);
+    pass_down(request, std::move(packet.pdu), std::move(packet.payload));
 }
 
 void Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, UpPacketPtr packet)

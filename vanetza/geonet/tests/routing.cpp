@@ -151,18 +151,21 @@ TEST_P(Routing, advanced_forwarding__in_destarea__buffered__max_counter_exceeded
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(cars[1], net.get_interface(cars[0])->last_request.destination);
     net.dispatch();
-    auto found = net.get_router(cars[1])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
-    ASSERT_TRUE(!!found);
+    auto& car1_cbf = net.get_router(cars[1])->get_cbf_buffer();
+    auto found = car1_cbf.find(Address { cars[0] }, SequenceNumber(0));
+    ASSERT_TRUE(found);
     EXPECT_EQ(1, found->counter());
 
     for (int i = 0; i < maxCounter - 1; i++) {
         net.send(cars[0], cars[1]);
+        auto found = car1_cbf.find(Address { cars[0] }, SequenceNumber(0));
+        ASSERT_TRUE(found);
         EXPECT_EQ(i + 2, found->counter());
     }
 
     net.send(cars[0], cars[1]);
-    found = net.get_router(cars[1])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
-    EXPECT_FALSE(!!found);
+    found = net.get_router(cars[1])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    EXPECT_FALSE(found);
 }
 
 /*
@@ -184,14 +187,14 @@ TEST_P(Routing, advanced_forwarding__in_destarea__buffered__max_counter_below__i
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(cars[5], net.get_interface(cars[2])->last_request.destination);
     net.dispatch();
-    auto found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
-    ASSERT_TRUE(!!found);
+    auto found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[2] }, SequenceNumber(0));
+    ASSERT_TRUE(found);
     EXPECT_EQ(1, found->counter());
 
     net.get_interface(cars[0])->last_packet.reset(new ChunkPacket(*net.get_interface(cars[2])->last_packet));
     net.send(cars[0], cars[5]);
-    found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
-    EXPECT_FALSE(!!found);
+    found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[2] }, SequenceNumber(0));
+    EXPECT_FALSE(found);
 }
 
 /*
@@ -215,14 +218,14 @@ TEST_P(Routing, advanced_forwarding__in_destarea__buffered__max_counter_below__o
     ASSERT_TRUE(confirm.accepted());
     EXPECT_EQ(cars[5], net.get_interface(cars[2])->last_request.destination);
     net.dispatch();
-    auto found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
-    ASSERT_TRUE(!!found);
+    auto found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[2] }, SequenceNumber(0));
+    ASSERT_TRUE(found);
     EXPECT_EQ(1, found->counter());
 
     net.get_interface(cars[0])->last_packet.reset(new ChunkPacket(*net.get_interface(cars[2])->last_packet));
     net.send(cars[0], cars[5]);
-    found = net.get_router(cars[5])->get_cbf_buffer().find(cars[2], SequenceNumber(0));
-    ASSERT_TRUE(!!found);
+    found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[2] }, SequenceNumber(0));
+    ASSERT_TRUE(found);
     EXPECT_EQ(2, found->counter());
 }
 
@@ -285,12 +288,12 @@ TEST_P(Routing, advanced_forwarding__out_destarea__sender_in_destarea)
     net.dispatch();
 
     EXPECT_TRUE(net.get_counter_indications() != 0);
-    auto found = net.get_router(cars[1])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
-    EXPECT_FALSE(!!found);
-    found = net.get_router(cars[2])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
-    EXPECT_FALSE(!!found);
-    found = net.get_router(cars[3])->get_cbf_buffer().find(cars[0], SequenceNumber(0));
-    EXPECT_FALSE(!!found);
+    auto found = net.get_router(cars[1])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    EXPECT_FALSE(found);
+    found = net.get_router(cars[2])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    EXPECT_FALSE(found);
+    found = net.get_router(cars[3])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    EXPECT_FALSE(found);
 }
 
 /*
