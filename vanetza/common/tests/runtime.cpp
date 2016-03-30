@@ -129,9 +129,9 @@ TEST(Runtime, reset)
 
     r.reset(Clock::time_point { hours(10) });
     EXPECT_EQ(Clock::time_point { hours(10) }, r.now());
-    EXPECT_EQ(2, calls);
+    EXPECT_EQ(90, calls);
     r.trigger(Clock::duration::max());
-    EXPECT_EQ(2, calls);
+    EXPECT_EQ(90, calls);
 }
 
 TEST(Runtime, cancel)

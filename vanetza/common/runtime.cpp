@@ -68,7 +68,16 @@ void Runtime::trigger()
 void Runtime::reset(Clock::time_point tp)
 {
     m_now = tp;
-    m_queue.clear();
+    queue_bimap queue;
+    swap(queue, m_queue);
+
+    // invoke all callbacks once so they can re-schedule
+    for (auto& item : queue) {
+        const auto& deadline = item.left;
+        auto& callback = item.info;
+        // callback might modify m_queue
+        callback(deadline);
+    }
 }
 
 } // namespace vanetza
