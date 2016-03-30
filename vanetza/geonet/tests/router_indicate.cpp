@@ -40,7 +40,7 @@ protected:
     {
         // parse the data into UpPacket
         std::unique_ptr<geonet::UpPacket> up_packet(new geonet::UpPacket(CohesivePacket(sec_packet_buffer, OsiLayer::Network)));
-        return std::move(up_packet);
+        return up_packet;
     }
 
     ByteBuffer create_secured_packet()

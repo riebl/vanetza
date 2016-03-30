@@ -181,7 +181,7 @@ public:
 ByteBuffer convert_for_signing(const EccPoint& ecc_point)
 {
     EccPointVisitor visit;
-    return std::move(boost::apply_visitor(visit, ecc_point));
+    return boost::apply_visitor(visit, ecc_point);
 }
 
 } // namespace security
