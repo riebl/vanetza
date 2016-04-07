@@ -42,9 +42,9 @@ public:
         return m_wrapper->size();
     }
 
-    const wrapper_type& wrapper() const
+    const std::shared_ptr<wrapper_type>& wrapper() const
     {
-        return *m_wrapper;
+        return m_wrapper;
     }
 
 private:
