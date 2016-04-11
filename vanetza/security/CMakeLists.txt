@@ -26,6 +26,7 @@ set(CXX_SOURCES
 )
 
 vanetza_module(security ${CXX_SOURCES})
+vanetza_intermodule_dependencies(security common net)
 
 vanetza_module_property(security INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
