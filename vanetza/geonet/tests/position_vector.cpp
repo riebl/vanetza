@@ -13,7 +13,7 @@ TEST(PositionVector, lpv_serialization)
     lpv1.gn_addr.station_type(StationType::MOTORCYCLE);
     lpv1.gn_addr.country_code(0x0333);
     lpv1.gn_addr.mid(MacAddress { 1, 2, 3, 0xa, 0xb, 0xc });
-    lpv1.timestamp += 4321 * Timestamp::millisecond;
+    lpv1.timestamp += 4321 * Timestamp::millisecond();
     lpv1.latitude.from_value(0x1234);
     lpv1.longitude.from_value(0xabcd);
     lpv1.position_accuracy_indicator = false;

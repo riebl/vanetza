@@ -72,22 +72,22 @@ TEST(Timestamp, less) {
 
 TEST(Timestamp, addition) {
     Timestamp a(89 * abs_ms);
-    a += 348 * Timestamp::millisecond;
+    a += 348 * Timestamp::millisecond();
     EXPECT_EQ(a.raw(), 437);
 
-    Timestamp b = a + 3483 * Timestamp::millisecond;
+    Timestamp b = a + 3483 * Timestamp::millisecond();
     EXPECT_EQ(a.raw(), 437);
     EXPECT_EQ(b.raw(), 3920);
 }
 
 TEST(Timestamp, substraction) {
     Timestamp a(3483 * abs_ms);
-    a -= 89 * Timestamp::millisecond;
+    a -= 89 * Timestamp::millisecond();
     EXPECT_EQ(a.raw(), 3394);
-    a -= 5000 * Timestamp::millisecond;
+    a -= 5000 * Timestamp::millisecond();
     EXPECT_EQ(a.raw(), 4294965690);
 
-    Timestamp b = a - 23 * Timestamp::millisecond;
+    Timestamp b = a - 23 * Timestamp::millisecond();
     EXPECT_EQ(a.raw(), 4294965690);
     EXPECT_EQ(b.raw(), 4294965667);
 }

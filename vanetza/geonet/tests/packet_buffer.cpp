@@ -107,11 +107,11 @@ TEST(PacketBuffer, flush_expired)
 
     FakeData::s_counter = 0;
     buffer.push(FakeData::create_valid_lifetime(3.2 * units::si::seconds), now);
-    now += 3000 * Timestamp::millisecond;
+    now += 3000 * Timestamp::millisecond();
     buffer.push(FakeData::create_valid_lifetime(10.3 * units::si::seconds), now);
     buffer.push(FakeData::create_valid_lifetime(1.0 * units::si::seconds), now);
 
-    now += 2000 * Timestamp::millisecond;
+    now += 2000 * Timestamp::millisecond();
     auto data = buffer.flush(now);
     ASSERT_EQ(1, data.size());
     EXPECT_EQ(create_mac_address(2), data.front().mac());
@@ -140,7 +140,7 @@ TEST(PacketBuffer, update_lifetime)
     PacketBuffer buffer(8192);
 
     buffer.push(FakeData::create_valid_lifetime(2.3 * units::si::seconds), now);
-    now += 150 * Timestamp::millisecond;
+    now += 150 * Timestamp::millisecond();
     auto list = buffer.flush(now);
     ASSERT_EQ(1, list.size());
     auto data = list.front().data();

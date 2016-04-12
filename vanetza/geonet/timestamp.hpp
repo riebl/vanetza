@@ -28,8 +28,8 @@ public:
     typedef boost::units::quantity<absolute_unit_type, value_type> time_type;
     typedef boost::units::quantity<unit_type, value_type> duration_type;
 
-    static const unit_type millisecond;
-    static const boost::posix_time::ptime start_time;
+    static unit_type millisecond();
+    static boost::posix_time::ptime start_time();
 
     Timestamp() : m_timestamp(0) {}
     Timestamp(time_type t) : m_timestamp(t) {}

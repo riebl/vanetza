@@ -133,8 +133,8 @@ TEST(LocationTable, expire) {
     Timestamp clock(0 * abs_ms);
     const auto almost_expire =
         Timestamp::duration_type(cMIB.itsGnLifetimeLocTE) -
-        1000 * Timestamp::millisecond;
-    const auto jiffy_expire = 2000 * Timestamp::millisecond;
+        1000 * Timestamp::millisecond();
+    const auto jiffy_expire = 2000 * Timestamp::millisecond();
 
     LongPositionVector pv;
     Address addr;
@@ -166,7 +166,7 @@ TEST(LocationTable, expire) {
     clock += almost_expire;
     lt.expire(clock);
     EXPECT_TRUE(lt.has_entry(addr));
-    pv.timestamp += 20 * Timestamp::millisecond;
+    pv.timestamp += 20 * Timestamp::millisecond();
     lt.update(pv); // refresh with updated PV
     clock += jiffy_expire;
     lt.expire(clock);

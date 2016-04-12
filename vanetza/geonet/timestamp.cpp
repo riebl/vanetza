@@ -10,12 +10,19 @@ namespace vanetza
 namespace geonet
 {
 
-const Timestamp::unit_type Timestamp::millisecond;
+Timestamp::unit_type Timestamp::millisecond()
+{
+    return Timestamp::unit_type();
+}
 
-const boost::posix_time::ptime Timestamp::start_time {
-    boost::gregorian::date(2004, 1, 1),
-    boost::posix_time::milliseconds(0)
-};
+boost::posix_time::ptime Timestamp::start_time()
+{
+    static const boost::posix_time::ptime start {
+        boost::gregorian::date(2004, 1, 1),
+        boost::posix_time::milliseconds(0)
+    };
+    return start;
+}
 
 Timestamp::Timestamp(const Clock::time_point& time)
 {
@@ -27,8 +34,8 @@ Timestamp::Timestamp(const Clock::time_point& time)
 
 Timestamp::Timestamp(const boost::posix_time::ptime& time)
 {
-    assert(time >= start_time);
-    const value_type since_start_ms = (time - start_time).total_milliseconds();
+    assert(time >= start_time());
+    const value_type since_start_ms = (time - start_time()).total_milliseconds();
     m_timestamp = since_start_ms * absolute_unit_type();
 }
 
