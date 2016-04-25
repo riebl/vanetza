@@ -8,6 +8,11 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib/static)
 set(CMAKE_CXX_STANDARD 11)
 include(VanetzaModule)
 
+option(ENABLE_CONAN "Build with conan package manager" OFF)
+if(ENABLE_CONAN)
+    include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup()
+endif()
 
 option(ENABLE_TESTS "Build unit tests" OFF)
 if(ENABLE_TESTS)
