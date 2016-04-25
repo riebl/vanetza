@@ -50,6 +50,9 @@ target_compile_definitions(${GTest_MAIN_LIBRARY}
     PRIVATE ${GTest_DEFINITIONS})
 target_link_libraries(${GTest_MAIN_LIBRARY} LINK_INTERFACE_LIBRARIES ${GTest_LIBRARY})
 
+# force building both targets in sequence because of shared custom command output
+add_dependencies(${GTest_MAIN_LIBRARY} ${GTest_LIBRARY})
+
 if(PTHREAD_LIBRARY)
     target_link_libraries(${GTest_LIBRARY} LINK_PUBLIC ${PTHREAD_LIBRARY})
 endif()
