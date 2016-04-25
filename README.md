@@ -28,6 +28,8 @@ Other CMake generators and build directory can be used as well.
     cmake ..
     make
 
+You might need to add "-std=c++11" to CMAKE_CXX_FLAGS if your CMake version is below 3.1.
+
 # Authors
 
 Development of Vanetza is part of ongoing research work at Technische Hochschule Ingolstadt.
