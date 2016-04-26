@@ -22,6 +22,17 @@ if(NOT ${VANETZA_ASN1_NO_ASN1C})
         DEPENDS ${ASN1C_SOURCES}
         WORKING_DIRECTORY ${ASN1C_GEN_DIR}
         VERBATIM)
+
+    add_custom_target(update_asn1c_bundle
+        COMMAND ${CMAKE_COMMAND} -E remove_directory ${ASN1C_BUNDLED_GEN_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${ASN1C_GEN_DIR} ${ASN1C_BUNDLED_GEN_DIR}
+        DEPENDS ${ASN1C_GEN_DIR}/CAM.h ${ASN1C_GEN_DIR}/DENM.h
+        VERBATIM)
+    add_custom_command(TARGET update_asn1c_bundle PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E remove .gitignore converter-sample.c Makefile.am.sample
+        WORKING_DIRECTORY ${ASN1C_BUNDLED_GEN_DIR}
+        VERBATIM)
+
 else()
     message(STATUS "Using bundled ASN.1 code instead of asn1c")
     set(_bundle_dir ${ASN1C_BUNDLED_GEN_DIR})
