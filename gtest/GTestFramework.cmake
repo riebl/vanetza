@@ -17,11 +17,12 @@ file(DOWNLOAD
     ${GTest_DIR}/${GTest_ARCHIVE}
     EXPECTED_HASH SHA1=${GTest_ARCHIVE_SHA1}
 )
+add_custom_target(download_gtest DEPENDS ${GTest_DIR}/${GTest_ARCHIVE})
 
 add_custom_command(
     OUTPUT ${GTest_LIBRARY_SOURCES} ${GTest_MAIN_LIBRARY_SOURCES}
-    COMMAND ${CMAKE_COMMAND} -E tar xfz ${GTest_ARCHIVE}
-    DEPENDS ${GTest_DIR}/${GTest_ARCHIVE}
+    COMMAND ${CMAKE_COMMAND} -E tar xfz ${GTest_DIR}/${GTest_ARCHIVE}
+    DEPENDS download_gtest
     WORKING_DIRECTORY ${GTest_DIR}
     VERBATIM
 )
