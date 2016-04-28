@@ -7,7 +7,7 @@ namespace vanetza
 namespace geonet
 {
 
-const std::size_t Address::length_bytes;
+constexpr std::size_t Address::length_bytes;
 const uint16_t manually_configured_mask = 0x8000;
 const uint16_t station_type_mask = 0x7c00;
 const uint16_t country_code_mask = 0x03ff;
