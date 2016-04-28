@@ -8,10 +8,14 @@ namespace geonet
 {
 
 constexpr std::size_t Address::length_bytes;
-const uint16_t manually_configured_mask = 0x8000;
-const uint16_t station_type_mask = 0x7c00;
-const uint16_t country_code_mask = 0x03ff;
-const unsigned station_type_shift = 10;
+
+namespace // anonymous namespace for local constants
+{
+constexpr uint16_t manually_configured_mask = 0x8000;
+constexpr uint16_t station_type_mask = 0x7c00;
+constexpr uint16_t country_code_mask = 0x03ff;
+constexpr unsigned station_type_shift = 10;
+} // namespace
 
 Address::Address() :
     m_manually_configured(false),
