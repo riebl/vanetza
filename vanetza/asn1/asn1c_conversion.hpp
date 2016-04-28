@@ -47,13 +47,14 @@ public:
         return m_wrapper;
     }
 
+    std::shared_ptr<wrapper_type> m_wrapper;
+
 private:
     byte_buffer_impl(const std::shared_ptr<wrapper_type>& other) :
         m_wrapper(other)
     {
     }
 
-    std::shared_ptr<wrapper_type> m_wrapper;
 };
 
 } // namespace convertible
