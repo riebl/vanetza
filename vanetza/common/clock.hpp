@@ -23,6 +23,7 @@ public:
 
     static constexpr bool is_steady() { return true; }
     static time_point at(const date_time&);
+    static date_time at(const time_point&);
     static const date_time& epoch();
 };
 

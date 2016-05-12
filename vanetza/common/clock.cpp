@@ -20,4 +20,10 @@ Clock::time_point Clock::at(const boost::posix_time::ptime& t)
     return tp;
 }
 
+Clock::date_time Clock::at(const Clock::time_point& t)
+{
+    std::chrono::microseconds delta = t.time_since_epoch();
+    return Clock::epoch() + boost::posix_time::microseconds(delta.count());
+}
+
 } // namespace vanetza
