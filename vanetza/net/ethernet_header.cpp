@@ -21,5 +21,10 @@ ByteBuffer create_ethernet_header(const MacAddress& dest, const MacAddress& src,
     return buffer;
 }
 
+ByteBuffer create_ethernet_header(const EthernetHeader& hdr)
+{
+    return create_ethernet_header(hdr.destination, hdr.source, hdr.type);
+}
+
 } // namespace vanetza
 
