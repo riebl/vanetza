@@ -43,6 +43,14 @@ public:
 ByteBuffer create_ethernet_header(const MacAddress& dest, const MacAddress& src, uint16be_t proto);
 ByteBuffer create_ethernet_header(const EthernetHeader&);
 
+/**
+ * Parse ethernet header from byte buffer
+ * \param buffer byte buffer (throws exception if too short)
+ * \return ethernet header
+ */
+EthernetHeader decode_ethernet_header(const ByteBuffer&);
+EthernetHeader decode_ethernet_header(ByteBuffer::const_iterator, ByteBuffer::const_iterator);
+
 } // namespace vanetza
 
 #endif // ETHERNET_HEADER_HPP_

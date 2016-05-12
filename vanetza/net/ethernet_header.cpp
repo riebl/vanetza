@@ -25,5 +25,27 @@ ByteBuffer create_ethernet_header(const EthernetHeader& hdr)
     return create_ethernet_header(hdr.destination, hdr.source, hdr.type);
 }
 
+EthernetHeader decode_ethernet_header(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end)
+{
+    EthernetHeader hdr;
+    const std::size_t buflen = std::distance(begin, end);
+    if (buflen < EthernetHeader::length_bytes) {
+        throw std::runtime_error("buffer is too short for EthernetHeader decoding");
+    } else {
+        std::copy_n(begin, MacAddress::length_bytes, hdr.destination.octets.begin());
+        begin += MacAddress::length_bytes;
+        std::copy_n(begin, MacAddress::length_bytes, hdr.source.octets.begin());
+        begin += MacAddress::length_bytes;
+        uint16_t proto = (begin[0] << 8) | begin[1];
+        hdr.type = host_cast(proto);
+    }
+    return hdr;
+}
+
+EthernetHeader decode_ethernet_header(const ByteBuffer& buf)
+{
+    return decode_ethernet_header(buf.begin(), buf.end());
+}
+
 } // namespace vanetza
 
