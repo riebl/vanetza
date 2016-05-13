@@ -414,44 +414,47 @@ void Router::indicate_extended(IndicationContext& ctx, const CommonHeader& commo
 {
     struct extended_header_visitor : public boost::static_visitor<>
     {
-        extended_header_visitor(Router* router, IndicationContext& ctx) :
-            m_router(router),
-            m_context(ctx),
-            m_pdu(ctx.pdu())
+        extended_header_visitor(Router* router, IndicationContext& ctx, UpPacketPtr packet) :
+            m_router(router), m_context(ctx), m_packet(std::move(packet))
         {
         }
 
         void operator()(const ShbHeader& shb)
         {
-            ExtendedPduConstRefs<ShbHeader> pdu(m_pdu.basic(), m_pdu.common(), shb, m_pdu.secured());
-            m_router->process_extended(pdu, m_context.finish());
+            auto& pdu = m_context.pdu();
+            ExtendedPduConstRefs<ShbHeader> shb_pdu(pdu.basic(), pdu.common(), shb, pdu.secured());
+            m_router->process_extended(shb_pdu, std::move(m_packet));
         }
 
         void operator()(const GeoBroadcastHeader& gbc)
         {
-            ExtendedPduConstRefs<GeoBroadcastHeader> pdu(m_pdu.basic(), m_pdu.common(), gbc, m_pdu.secured());
+            auto& pdu = m_context.pdu();
+            ExtendedPduConstRefs<GeoBroadcastHeader> gbc_pdu(pdu.basic(), pdu.common(), gbc, pdu.secured());
             const IndicationContext::LinkLayer& ll = m_context.link_layer();
-            m_router->process_extended(pdu, m_context.finish(), ll.sender, ll.destination);
+            m_router->process_extended(gbc_pdu, std::move(m_packet), ll.sender, ll.destination);
         }
 
         void operator()(const BeaconHeader& beacon)
         {
-            ExtendedPduConstRefs<BeaconHeader> pdu(m_pdu.basic(), m_pdu.common(), beacon, m_pdu.secured());
-            m_router->process_extended(pdu, m_context.finish());
+            auto& pdu = m_context.pdu();
+            ExtendedPduConstRefs<BeaconHeader> beacon_pdu(pdu.basic(), pdu.common(), beacon, pdu.secured());
+            m_router->process_extended(beacon_pdu, std::move(m_packet));
         }
 
         Router* m_router;
         IndicationContext& m_context;
-        const ConstAccessiblePdu& m_pdu;
+        UpPacketPtr m_packet;
     };
 
     auto extended = ctx.parse_extended(common.header_type);
+    UpPacketPtr packet = ctx.finish();
+
     if (!extended) {
         packet_dropped(PacketDropReason::PARSE_EXTENDED_HEADER);
-    } else if (common.payload != ctx.payload_length()) {
+    } else if (common.payload != size(*packet, OsiLayer::Transport, max_osi_layer())) {
         packet_dropped(PacketDropReason::PAYLOAD_SIZE);
     } else {
-        extended_header_visitor visitor(this, ctx);
+        extended_header_visitor visitor(this, ctx, std::move(packet));
         boost::apply_visitor(visitor, *extended);
     }
 }
