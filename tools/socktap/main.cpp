@@ -1,4 +1,5 @@
 #include "ethernet_device.hpp"
+#include "hello_application.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
 #include <boost/asio/io_service.hpp>
@@ -38,6 +39,10 @@ int main(int argc, const char** argv)
 
         TimeTrigger trigger(io_service);
         RouterContext context(raw_socket, device, trigger);
+
+        asio::steady_timer hello_timer(io_service);
+        HelloApplication hello_app(hello_timer);
+        context.enable(&hello_app);
 
         io_service.run();
     } catch (std::exception& e) {
