@@ -28,9 +28,13 @@ macro(add_test_subdirectory DIR)
   endif(ENABLE_TESTS)
 endmacro(add_test_subdirectory)
 
-
 add_subdirectory(vanetza)
 add_subdirectory(tools/cohda_proxy)
 add_subdirectory(tools/proxy_fake_feed)
+
+option(ENABLE_SOCKTAP "Build socktap application" OFF)
+if(ENABLE_SOCKTAP)
+  add_subdirectory(tools/socktap)
+endif()
 vanetza_export_modules()
 
