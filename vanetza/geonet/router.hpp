@@ -163,6 +163,12 @@ public:
     void set_address(const Address&);
 
     /**
+     * \brief Get Management Information Base (MIB)
+     * \return read-only reference to MIB
+     */
+    const MIB& get_mib() const { return m_mib; }
+
+    /**
      * \brief Get the Contention-Based-Forwarding buffer
      *
      * \return read-only reference to CBF packet buffer
