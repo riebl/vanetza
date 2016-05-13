@@ -203,29 +203,6 @@ public:
      */
     void set_random_seed(std::uint_fast32_t seed);
 
-    /**
-     * \brief Create an initialized Single-Hop-Broadcast PDU
-     *
-     * \param request
-     * \return PDU object
-     */
-    std::unique_ptr<ShbPdu> create_shb_pdu(const ShbDataRequest&);
-
-    /**
-     * \brief Create an initialzed BEACON PDU
-     *
-     * \return PDU object
-     */
-    std::unique_ptr<BeaconPdu> create_beacon_pdu();
-
-    /**
-     * \brief Create an initialized GeoBroadcast PDU
-     *
-     * \param request
-     * \return PDU object
-     */
-    std::unique_ptr<GbcPdu> create_gbc_pdu(const GbcDataRequest&);
-
 private:
     typedef std::map<UpperProtocol, TransportInterface*> transport_map_t;
 
@@ -474,6 +451,29 @@ private:
      * \param packet Packet with payload
      */
     DownPacketPtr encap_packet(security::Profile, Pdu&, DownPacketPtr);
+
+    /**
+     * \brief Create an initialized Single-Hop-Broadcast PDU
+     *
+     * \param request
+     * \return PDU object
+     */
+    std::unique_ptr<ShbPdu> create_shb_pdu(const ShbDataRequest&);
+
+    /**
+     * \brief Create an initialzed BEACON PDU
+     *
+     * \return PDU object
+     */
+    std::unique_ptr<BeaconPdu> create_beacon_pdu();
+
+    /**
+     * \brief Create an initialized GeoBroadcast PDU
+     *
+     * \param request
+     * \return PDU object
+     */
+    std::unique_ptr<GbcPdu> create_gbc_pdu(const GbcDataRequest&);
 
     const MIB& m_mib;
     Runtime& m_runtime;
