@@ -69,7 +69,8 @@ std::size_t CohesivePacket::size(OsiLayer from, OsiLayer to) const
 {
     auto begin = m_iterators[layer_index(from) - 1];
     auto end = m_iterators[layer_index(to)];
-    return std::distance(begin, end);
+    auto dist = std::distance(begin, end);
+    return dist < 0 ? 0 : dist;
 }
 
 void CohesivePacket::reset_iterators(OsiLayer ins_layer)

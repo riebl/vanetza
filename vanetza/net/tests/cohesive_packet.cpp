@@ -37,6 +37,7 @@ TEST(CohesivePacket, set_boundary)
     EXPECT_EQ(512, packet.size());
 
     EXPECT_EQ(448, packet.size(OsiLayer::Network, OsiLayer::Application));
+    EXPECT_EQ(0, packet.size(OsiLayer::Application, OsiLayer::Network));
 }
 
 TEST(CohesivePacket, access)
