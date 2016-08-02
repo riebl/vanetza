@@ -17,6 +17,12 @@ You need following tools and libraries on your system for compilation of Vanetza
 * CMake 3.0 or higher
 * Boost 1.58 or higher
 * GeographicLib 1.37 or higher
+* Crypto++ 5.6.1 or higher
+
+If openSSL 1.0.2 is available on your system, an alternative security backend implementation is
+compiled along with the Crypto++ based backend.
+You can switch the employed backend per geonet::Router instance by the vanetzaCryptoBackend option
+located in the Management Information Base (MIB).
 
 ## Compilation
 
