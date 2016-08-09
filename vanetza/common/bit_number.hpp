@@ -20,7 +20,7 @@ public:
     static constexpr std::size_t bits = WIDTH;
     typedef T value_type;
 
-    BitNumber(): mValue(0) {}
+    BitNumber() : mValue(0) {}
     BitNumber(T value) : mValue(value & mask) {}
     BitNumber& operator=(T value) { mValue = value & mask; return *this; }
     T raw() const { return mValue; }
