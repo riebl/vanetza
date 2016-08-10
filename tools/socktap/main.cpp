@@ -1,4 +1,5 @@
 #include "ethernet_device.hpp"
+#include "gps_position_provider.hpp"
 #include "hello_application.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
@@ -38,15 +39,19 @@ int main(int argc, const char** argv)
         signals.async_wait(signal_handler);
 
         TimeTrigger trigger(io_service);
-        RouterContext context(raw_socket, device, trigger);
+        GpsPositionProvider positioning;
+        RouterContext context(raw_socket, device, trigger, positioning);
 
         asio::steady_timer hello_timer(io_service);
         HelloApplication hello_app(hello_timer);
         context.enable(&hello_app);
 
         io_service.run();
+    } catch (GpsPositionProvider::gps_error& e) {
+        std::cerr << "Exit because of GPS error: " << e.what() << std::endl;
+        return 1;
     } catch (std::exception& e) {
-        std::cerr << "Exit with error: " << e.what() << std::endl;
+        std::cerr << "Exit: " << e.what() << std::endl;
         return 1;
     }
 

@@ -1,5 +1,6 @@
 #include "application.hpp"
 #include "ethernet_device.hpp"
+#include "position_provider.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
 #include <vanetza/dcc/data_request.hpp>
@@ -52,9 +53,9 @@ geonet::MIB configure_mib(const EthernetDevice& device)
     return mib;
 }
 
-RouterContext::RouterContext(raw_protocol::socket& socket, const EthernetDevice& device, TimeTrigger& trigger) :
+RouterContext::RouterContext(raw_protocol::socket& socket, const EthernetDevice& device, TimeTrigger& trigger, PositionProvider& positioning) :
     mib_(configure_mib(device)), router_(trigger.runtime(), mib_),
-    socket_(socket), device_(device), trigger_(trigger),
+    socket_(socket), device_(device), trigger_(trigger), positioning_(positioning),
     request_interface_(new DccPassthrough(socket, trigger)),
     receive_buffer_(2048, 0x00), receive_endpoint_(socket_.local_endpoint())
 {
@@ -62,7 +63,7 @@ RouterContext::RouterContext(raw_protocol::socket& socket, const EthernetDevice&
     router_.set_address(mib_.itsGnLocalGnAddr);
     router_.set_access_interface(request_interface_.get());
     router_.set_transport_handler(geonet::UpperProtocol::BTP_B, &dispatcher_);
-    // TODO: update router's local position vector (periodically)
+    update_position_vector();
 
     do_receive();
     trigger_.schedule();
@@ -112,11 +113,19 @@ void RouterContext::pass_up(CohesivePacket&& packet)
             trigger_.schedule();
         }
     }
-
 }
 
 void RouterContext::enable(Application* app)
 {
     app->router_ = &router_;
     dispatcher_.set_non_interactive_handler(app->port(), app);
+}
+
+void RouterContext::update_position_vector()
+{
+    router_.update(positioning_.current_position());
+    vanetza::Runtime::Callback callback = [this](vanetza::Clock::time_point) { this->update_position_vector(); };
+    vanetza::Clock::duration next = std::chrono::seconds(1);
+    trigger_.runtime().schedule(next, callback);
+    trigger_.schedule();
 }

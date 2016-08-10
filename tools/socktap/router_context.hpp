@@ -13,12 +13,13 @@
 
 class Application;
 class EthernetDevice;
+class PositionProvider;
 class TimeTrigger;
 
 class RouterContext
 {
 public:
-    RouterContext(boost::asio::generic::raw_protocol::socket&, const EthernetDevice&, TimeTrigger&);
+    RouterContext(boost::asio::generic::raw_protocol::socket&, const EthernetDevice&, TimeTrigger&, PositionProvider&);
     ~RouterContext();
     void enable(Application*);
 
@@ -27,12 +28,14 @@ private:
     void on_read(const boost::system::error_code&, std::size_t);
     void pass_up(vanetza::CohesivePacket&&);
     void log_packet_drop(vanetza::geonet::Router::PacketDropReason);
+    void update_position_vector();
 
     vanetza::geonet::MIB mib_;
     vanetza::geonet::Router router_;
     boost::asio::generic::raw_protocol::socket& socket_;
     const EthernetDevice& device_;
     TimeTrigger& trigger_;
+    PositionProvider& positioning_;
     vanetza::btp::PortDispatcher dispatcher_;
     std::unique_ptr<vanetza::dcc::RequestInterface> request_interface_;
     vanetza::ByteBuffer receive_buffer_;
