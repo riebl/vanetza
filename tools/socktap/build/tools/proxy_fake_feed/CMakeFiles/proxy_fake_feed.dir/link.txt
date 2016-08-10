@@ -1,1 +1,0 @@
-/usr/bin/c++      CMakeFiles/proxy_fake_feed.dir/fake_feed.cpp.o  -o ../../bin/proxy_fake_feed -rdynamic -lboost_system ../../lib/libvanetza_net.so ../../lib/libvanetza_common.so -lboost_date_time -lboost_serialization -Wl,-rpath,/home/sachin/projects/Socktap_KDevelop/build/lib 
