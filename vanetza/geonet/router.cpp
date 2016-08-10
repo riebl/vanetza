@@ -5,6 +5,7 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/access_control.hpp>
 #include <vanetza/dcc/data_request.hpp>
+#include <vanetza/dcc/interface.hpp>
 #include <vanetza/dcc/profile.hpp>
 #include <vanetza/net/mac_address.hpp>
 #include <vanetza/net/osi_layer.hpp>
@@ -13,6 +14,7 @@
 #include <vanetza/units/time.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/data_confirm.hpp>
+#include <vanetza/geonet/dcc_field_generator.hpp>
 #include <vanetza/geonet/duplicate_packet_list.hpp>
 #include <vanetza/geonet/indication_context.hpp>
 #include <vanetza/geonet/loctex_g5.hpp>
@@ -76,6 +78,12 @@ dcc::RequestInterface* get_default_request_interface()
     return &null;
 }
 
+DccFieldGenerator* get_default_dcc_field_generator()
+{
+    static NullDccFieldGenerator null;
+    return &null;
+}
+
 template<typename PDU>
 auto create_forwarding_duplicate(const PDU& pdu, const UpPacket& packet) ->
 std::tuple<std::unique_ptr<ExtendedPdu<typename PDU::ExtendedHeader>>, std::unique_ptr<DownPacket>>
@@ -110,6 +118,7 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_mib(mib),
     m_runtime(rt),
     m_request_interface(get_default_request_interface()),
+    m_dcc_field_generator(get_default_dcc_field_generator()),
     m_security_entity(nullptr),
     m_location_table(mib, m_runtime),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
@@ -171,6 +180,12 @@ void Router::set_access_interface(dcc::RequestInterface* ifc)
 {
     m_request_interface = (ifc == nullptr ? get_default_request_interface() : ifc);
     assert(m_request_interface != nullptr);
+}
+
+void Router::set_dcc_field_generator(DccFieldGenerator* dcc)
+{
+    m_dcc_field_generator = (dcc == nullptr) ? get_default_dcc_field_generator() : dcc;
+    assert(m_dcc_field_generator != nullptr);
 }
 
 void Router::set_address(const Address& addr)
@@ -1156,6 +1171,7 @@ std::unique_ptr<ShbPdu> Router::create_shb_pdu(const ShbDataRequest& request)
     std::unique_ptr<ShbPdu> pdu { new ShbPdu(request, m_mib) };
     pdu->common().header_type = HeaderType::TSB_SINGLE_HOP;
     pdu->extended().source_position = m_local_position_vector;
+    pdu->extended().dcc = m_dcc_field_generator->generate_dcc_field();
     return pdu;
 }
 
