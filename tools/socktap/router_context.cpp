@@ -8,7 +8,6 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <iostream>
 
-
 namespace asio = boost::asio;
 using boost::asio::generic::raw_protocol;
 using namespace vanetza;
@@ -63,14 +62,8 @@ RouterContext::RouterContext(raw_protocol::socket& socket, const EthernetDevice&
     router_.set_address(mib_.itsGnLocalGnAddr);
     router_.set_access_interface(request_interface_.get());
     router_.set_transport_handler(geonet::UpperProtocol::BTP_B, &dispatcher_);
-    
     // TODO: update router's local position vector (periodically)
 
-    CGpsData gpsFake;
-    gpsFake.readFakeGPSData(router_);
-    
-
-    
     do_receive();
     trigger_.schedule();
 }
@@ -127,4 +120,3 @@ void RouterContext::enable(Application* app)
     app->router_ = &router_;
     dispatcher_.set_non_interactive_handler(app->port(), app);
 }
-

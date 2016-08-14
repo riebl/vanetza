@@ -10,3 +10,5 @@
 #include<iostream>
 
 char* getFirstEthernetDeviceName();
+
+bool NIC(std::string networkInterfaceName) ;

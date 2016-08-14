@@ -10,8 +10,6 @@
 #include <array>
 #include <list>
 #include <memory>
-#include "CGpsData.hpp"
-
 
 class Application;
 class EthernetDevice;
@@ -22,8 +20,7 @@ class RouterContext
 public:
     RouterContext(boost::asio::generic::raw_protocol::socket&, const EthernetDevice&, TimeTrigger&);
     ~RouterContext();
-    void enable(Application*); 
-    void setNMEAFileLocation(std::string filePathFromTerminal);
+    void enable(Application*);
 
 private:
     void do_receive();
@@ -41,8 +38,6 @@ private:
     vanetza::ByteBuffer receive_buffer_;
     boost::asio::generic::raw_protocol::endpoint receive_endpoint_;
     std::list<Application*> applications_;
-     
-    
 };
 
 #endif /* ROUTER_CONTEXT_HPP_KIPUYBY2 */

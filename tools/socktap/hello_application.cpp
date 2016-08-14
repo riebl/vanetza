@@ -22,7 +22,7 @@ void HelloApplication::indicate(const DataIndication& indication, UpPacketPtr pa
 
 void HelloApplication::schedule_timer()
 {
-    timer_.expires_from_now(std::chrono::seconds(5));
+    timer_.expires_from_now(std::chrono::seconds(2));
     timer_.async_wait(std::bind(&HelloApplication::on_timer, this, std::placeholders::_1));
 }
 
