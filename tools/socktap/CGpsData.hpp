@@ -23,11 +23,7 @@
 #include <dirent.h>
 #include <boost/asio/steady_timer.hpp>
 #include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <termios.h>
-#include <errno.h>
-#include <gps.h>
+
 
 // count of fields in NMEA RMC data sentence
 #define FIELD_COUNT 13
@@ -89,11 +85,7 @@ private:
 	//Variable to store location of text file containing GPS data
 	std::string m_filePath;
 	
-	//gps_data_t structure to grant access to GPS data
-	struct gps_data_t gps_data;
 	
-	//variable to type define timestamp for live gps data
-	typedef long double timestamp_t;
 public:	
 	// Constructor of the class	  
   	CGpsData(boost::asio::steady_timer& timer, vanetza::geonet::Router* routerObj, bool liveGPS, std::string filePathFromTerminal);
@@ -104,8 +96,7 @@ public:
 	//Function to create NMEA RMC sentence and time difference databases
 	void createPositionDatabase();	
 	
-	//Function to read live GPS data from a dongle
-	void readLiveGPSData();
+	
 
 	//Function to update the LongPositionVector with values read from the GPS fake data file
 	void updateLPV(double latitude, double longitude, vanetza::geonet::Timestamp timestampObj, double headingFromNMEA, double speedFromNMEA);	
@@ -116,25 +107,11 @@ public:
 	//Function to process GPS data stored in text file
 	void on_Timer_FakeGPSData(const boost::system::error_code& ec);
 	
-	//Function to expire timer and schedule processing of live GPS data from dongle
-	void schedule_LiveGpsData();
-	
-	//Function to process live GPS data from dongle
-	void on_Timer_LiveGPSData(const boost::system::error_code& ec);
-	
 	//Function to switch between live and stored GPS data
 	void selectPositionProviderToUpdateRouter();
 	
 	//Function to process GPS data and update the LPV object
 	void processGPSDataAndUpdateLPV(std::string &input_line);
-	
-	//Function to update LPV and router object with live GPS data from dongle
-	void updateRouterWithLiveGpsData();
-	
-	//Function for converting timestamp_t to Timestamp object
-	vanetza::geonet::Timestamp convert(timestamp_t gpstime) const;
-	
-	//timestamp test 
 	
 	//Destructor of the class
 	virtual ~CGpsData();

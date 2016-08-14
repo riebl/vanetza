@@ -32,7 +32,8 @@ bool LocationTable::has_neighbours() const
     return false;
 }
 
-auto LocationTable::neighbours() -> neighbour_range
+// made const to accomodate access at router_context.cpp in socktap
+auto LocationTable::neighbours() const -> neighbour_range
 {
     auto begin = m_table.begin();
     auto end = m_table.end();

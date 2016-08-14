@@ -20,17 +20,12 @@ CGpsData::CGpsData(boost::asio::steady_timer& timer,
 	m_filePath = filePathFromTerminal;
 	m_connectionStatus = false;
 	
-	// gps_open implementation
-	
-	//gps_open("localhost", "2947", &gps_data);
 }
 
 void CGpsData::selectPositionProviderToUpdateRouter() {
-	if (m_gpsDongleStatus) {
-		readLiveGPSData();
-	} else {
+	
 		readFakeGPSData();
-	}
+	
 }
 
 // Function to read GPS data from file, populate LPV object and update router
@@ -290,11 +285,6 @@ void CGpsData::updateLPV(double latitude, double longitude,
 	//Static cast to convert speed to speed_u15t
 	lpv_.speed = static_cast<vanetza::geonet::LongPositionVector::speed_u15t>(m_speed);
 	
-// 	double latd= static_cast<boost::units::quantity<boost::units::degree::plane_angle>>(lpv_.latitude).value();
-// 	double lngtd= static_cast<boost::units::quantity<boost::units::degree::plane_angle>>(lpv_.longitude).value();
-// 	cout<<"Checking at LPV Data"<<endl;
-// 	cout<<"Latitude"<<latd<<endl;
-// 	cout<<"Longitude"<<lngtd<<endl;
 }
 
 
@@ -326,148 +316,6 @@ void CGpsData::schedule_FakeGpsData() {
 	timer_.async_wait(
 			std::bind(&CGpsData::on_Timer_FakeGPSData, this,
 					std::placeholders::_1));
-}
-
-/**************************************** CODE FOR UPDATING ROUTER USING LIVE GPS DATA ***************************************/
-
-void CGpsData::readLiveGPSData() {
-
-	// constant 1 second scheduling for live gps data
-	m_timeDuration = 1000;
-	
-	//gps_open(GPSD_SHARED_MEMORY, nullptr, &gps_data);
-	
-	//gps_open(GPSD_SHARED_MEMORY, NULL, &gps_data);
-	
-	int rc;
-	if ((rc = gps_open(GPSD_SHARED_MEMORY, NULL, &gps_data) == -1)) {
- 		printf("code: %d, reason: %s\n", rc, gps_errstr(rc));
-  		gps_close(&gps_data);
-		return;
- 	}
-
-	schedule_LiveGpsData();
-
-}
-
-void CGpsData::schedule_LiveGpsData() {
-	timer_.expires_from_now(std::chrono::milliseconds(m_timeDuration));
-	timer_.async_wait(
-			std::bind(&CGpsData::on_Timer_LiveGPSData, this,
-					std::placeholders::_1));
-
-}
-
-void CGpsData::on_Timer_LiveGPSData(const boost::system::error_code& ec) {
-	if (boost::asio::error::operation_aborted != ec) {
-		double latitude, longitude, heading, speed;
-		string date_time;
-
-		updateRouterWithLiveGpsData();
-		
-		schedule_LiveGpsData();
-
-	}
-}
-
-void CGpsData::updateRouterWithLiveGpsData()
-{
-	int rc;
-	struct timeval tv;	
-	struct rtcm3_rtk_hdr t_t;
-	
-	vanetza::geonet::Timestamp gps_Timestamp;
-	
-	//struct gps_data_t gps_data;
-
-	double latitude, longitude, heading, speed;
-	//string date_time;
-	
-	timestamp_t fix_time;
-	
-	cout << "Entered the function" << endl;
-	
-	//gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, NULL);
-	
-	//cout << "gps_read(&gps_data) : " << gps_read(&gps_data) << endl;
-	
-
-		/* read data */
-		if ((gps_read(&gps_data)) == -1) {
-			printf("error occured reading gps data. code: %d, reason: %s\n", rc,
-					gps_errstr(rc));
-			cout << "GPS read error" << endl;
-			lpv_.position_accuracy_indicator = false;
-			
-			return;
-			
-		} else {
-			
-			cout << "If GPS read" << endl;
-			cout << "gps_data.status: " << gps_data.status << endl;
-			
-			//STATUS_FIX is 1  
-			if (gps_data.status == STATUS_FIX) {
-			  
-			  
-				cout << "Second if" << endl;
-			  
-				fix_time = gps_data.fix.time; // UTC time (UNIX time in seconds with fractional part) -> TAI (UTC + 36s = TAI)
-				gps_Timestamp =convert(fix_time);
-				
-				latitude = gps_data.fix.latitude;
-				longitude = gps_data.fix.longitude;
-				speed = gps_data.fix.speed;
-				heading = gps_data.fix.track;
-				
-				cout << "Latitude:" << latitude << ", Longitude:" << longitude << 
-				", Heading:" << heading << ", Speed:" << speed << ", Time:" << fix_time << endl;
-				
-				
-				
-				//update the member variables of long position vector
-			  updateLPV(latitude, longitude, gps_Timestamp,	heading, speed);
-			  
-			  // update router object
-			  m_p_routerObj->update(lpv_);
-			  
-			  gps_data.status = STATUS_NO_FIX;
-			
-			  
-			} 
-			
-				else {
-			
-				cout << "Data not available from the GPS Dongle" << endl; 
-			}
-		}
-	
-	/* When you are done... */
-	 //gps_stream(&gps_data, WATCH_DISABLE, NULL);
-	//gps_close(&gps_data);
-	cout << "Closed" << endl;
-
-}
-
-vanetza::geonet::Timestamp CGpsData::convert(timestamp_t gpstime) const
-{
-  
-  
-    using namespace boost::gregorian;
-    using namespace boost::posix_time;
-
-    // gpsd's timestamp_t is UNIX time (UTC) with fractional seconds
-    static date posix_epoch(1970, Jan, 1);
-    timestamp_t gps_integral;
-    
-    timestamp_t gps_fractional = modf(gpstime, &gps_integral);
-    auto posix_seconds = seconds(gps_integral);
-    auto posix_milliseconds = milliseconds(gps_fractional * 1000.0);
-    ptime posix_time { posix_epoch, posix_seconds + posix_milliseconds };
-
-    // TAI has some seconds bias compared to UTC
-    const auto tai_utc_bias = seconds(36); // 36 seconds since 1st July 2015
-     return vanetza::geonet::Timestamp { posix_time + tai_utc_bias };
 }
 
 /*
@@ -530,10 +378,7 @@ void convertDateAndTime(string date, string time, string &date_time) {
 
 CGpsData::~CGpsData() {
   
-  // Implement gps_close here
-  gps_close(&gps_data);
-  
-  
+   
 // TODO Auto-generated destructor stub
 }
 
