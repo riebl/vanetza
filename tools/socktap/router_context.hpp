@@ -7,9 +7,12 @@
 #include <vanetza/net/cohesive_packet.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
+#include <vanetza/geonet/location_table.hpp>
 #include <array>
 #include <list>
 #include <memory>
+#include "CGpsData.hpp"
+
 
 class Application;
 class EthernetDevice;
@@ -20,7 +23,8 @@ class RouterContext
 public:
     RouterContext(boost::asio::generic::raw_protocol::socket&, const EthernetDevice&, TimeTrigger&);
     ~RouterContext();
-    void enable(Application*);
+    void enable(Application*); 
+    vanetza::geonet::Router* getPointerToRouterObj();
 
 private:
     void do_receive();
@@ -38,6 +42,8 @@ private:
     vanetza::ByteBuffer receive_buffer_;
     boost::asio::generic::raw_protocol::endpoint receive_endpoint_;
     std::list<Application*> applications_;
+     
+    
 };
 
 #endif /* ROUTER_CONTEXT_HPP_KIPUYBY2 */

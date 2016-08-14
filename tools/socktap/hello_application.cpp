@@ -28,7 +28,9 @@ void HelloApplication::schedule_timer()
 
 void HelloApplication::on_timer(const boost::system::error_code& ec)
 {
-    if (ec != boost::asio::error::operation_aborted) {
+    if (ec != boost::asio::error::operation_aborted) 
+    {     
+     
         DownPacketPtr packet { new DownPacket() };
         packet->layer(OsiLayer::Application) = ByteBuffer { 0xC0, 0xFF, 0xEE };
         DataRequest request;
