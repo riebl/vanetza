@@ -105,6 +105,11 @@ void RouterContext::on_read(const boost::system::error_code& ec,
 				receive_buffer_.begin() + read_bytes);
 		pass_up (CohesivePacket(std::move (buffer), OsiLayer::Link));
 
+<<<<<<< HEAD
+=======
+		
+		}
+>>>>>>> origin/master
 		do_receive();
 	}
 }
