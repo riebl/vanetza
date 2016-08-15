@@ -89,7 +89,11 @@ private:
 	//Variable to store location of text file containing GPS data
 	std::string m_filePath;
 	
+	//gps_data_t structure to grant access to GPS data
+	struct gps_data_t gps_data;
 	
+	//variable to type define timestamp for live gps data
+	typedef long double timestamp_t;
 public:	
 	// Constructor of the class	  
   	CGpsData(boost::asio::steady_timer& timer, vanetza::geonet::Router* routerObj, bool liveGPS, std::string filePathFromTerminal);
@@ -111,6 +115,12 @@ public:
 	
 	//Function to process GPS data stored in text file
 	void on_Timer_FakeGPSData(const boost::system::error_code& ec);
+	
+	//Function to expire timer and schedule processing of live GPS data from dongle
+	void schedule_LiveGpsData();
+	
+	//Function to process live GPS data from dongle
+	void on_Timer_LiveGPSData(const boost::system::error_code& ec);
 	
 	//Function to switch between live and stored GPS data
 	void selectPositionProviderToUpdateRouter();

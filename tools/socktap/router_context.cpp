@@ -105,34 +105,6 @@ void RouterContext::on_read(const boost::system::error_code& ec,
 				receive_buffer_.begin() + read_bytes);
 		pass_up (CohesivePacket(std::move (buffer), OsiLayer::Link));
 
-		/* implement location table*/
-
-		//Printing location table
-		using vanetza::geonet::LocationTable;
-		
-		std::cout<< "before for loop" <<std::endl;
-
-		for (const LocationTable::entry_type& entry : router_.get_location_table().neighbours()) {
-		  
-		    std::cout << "inside for loop" << std::endl;
-		    
-			//  access any fields of struct EntryData
-			vanetza::geonet::geo_angle_i32t mlat;
-			vanetza::geonet::geo_angle_i32t mlngtd;
-			vanetza::geonet::Address m_addr;
-
-			mlat = entry.position.latitude;
-			mlngtd = entry.position.longitude;
-			m_addr = entry.position.gn_addr;
-
-			double latd= static_cast<boost::units::quantity<boost::units::degree::plane_angle>>(mlat).value();
-			double lngtd= static_cast<boost::units::quantity<boost::units::degree::plane_angle>>(mlngtd).value();
-			std::cout << "*************************************************************" << std::endl;
-			std::cout << "Latitude\t" << latd << std::endl;
-			std::cout << "Longitude\t" << lngtd << std::endl;
-			std::cout << "Address" << std::endl;
-			std::cout << m_addr << std::endl;
-		}
 		do_receive();
 	}
 }
