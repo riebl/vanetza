@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include<iostream>
 
+// Function to fetch the name of first ethernet device on the computer
 char* getFirstEthernetDeviceName();
 
-bool NIC(std::string networkInterfaceName) ;
+// Function to verify the selected device is present on the computer
+bool NIC(std::string networkInterfaceName);

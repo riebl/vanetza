@@ -12,6 +12,7 @@ CGpsData::CGpsData(boost::asio::steady_timer& timer,
 		string filePathFromTerminal) :
 		timer_(timer) {
 
+	// initialize the members of CGpsData
 	m_p_routerObj = routerObj;
 	m_gpsDongleStatus = liveGPS;
 	m_inputLine = "";
@@ -19,18 +20,22 @@ CGpsData::CGpsData(boost::asio::steady_timer& timer,
 	m_timeDuration = 5000;
 	m_filePath = filePathFromTerminal;
 	m_connectionStatus = false;
-	
+
 }
 
+//Function to switch between live and stored GPS data
 void CGpsData::selectPositionProviderToUpdateRouter() {
-	
+	if (m_gpsDongleStatus) {
+		readLiveGPSData();
+	} else {
 		readFakeGPSData();
-	
+	}
 }
 
 // Function to read GPS data from file, populate LPV object and update router
 void CGpsData::readFakeGPSData() {
 
+	// Create databases of GPRMC lines and Timestamps for the 1st time
 	if (m_lineCount < 1) {
 		cout << "Created database." << endl;
 		createPositionDatabase();
@@ -39,6 +44,7 @@ void CGpsData::readFakeGPSData() {
 	schedule_FakeGpsData();
 }
 
+//Function to create NMEA RMC sentence and time difference databases
 void CGpsData::createPositionDatabase() {
 	// variable to store ifstream obj of GPS data file
 	ifstream gpsFakeDataFile;
@@ -157,10 +163,10 @@ void CGpsData::createPositionDatabase() {
 		//close the file containing fake data
 		gpsFakeDataFile.close();
 	} else
-		cout << "failed to open file from location : " << m_filePath
-				<< endl;
+		cout << "failed to open file from location : " << m_filePath << endl;
 }
 
+//Function to process GPS data and update the LPV object
 void CGpsData::processGPSDataAndUpdateLPV(string &input_line) {
 	unsigned int delimCount = 0;
 	unsigned int fieldCount = 0;
@@ -233,7 +239,7 @@ void CGpsData::processGPSDataAndUpdateLPV(string &input_line) {
 
 	//Construct Timestamp object using posix time object
 	vanetza::geonet::Timestamp timestampObj(ptimeObj);
-	
+
 	convertAngleValues(latitudeFROMNMEA, longitudeFROMNMEA);
 
 	//update the member variables of long position vector
@@ -241,33 +247,31 @@ void CGpsData::processGPSDataAndUpdateLPV(string &input_line) {
 			headingFromNMEA, speedFromNMEA);
 }
 
-/**
- * Function to set delimiter for the current line
- * @param lineFromFile - current line read from the file
- * @param c			   - character to hold delimiter
- */
+
 
 void CGpsData::updateLPV(double latitude, double longitude,
 		vanetza::geonet::Timestamp timestampObj, double headingFromNMEA,
 		double speedFromNMEA) {
-	
+
 	//latitude converted to degrees
 	m_latitude = latitude * vanetza::units::degree;
-	
+
 	//latitude in degrees assgined to variable of geodetic position object
 	m_pos.latitude = m_latitude;
 
 	//longitude converted to degrees
 	m_longitude = longitude * vanetza::units::degree;
-	
+
 	//latitude in degrees assgined to variable of geodetic position object
 	m_pos.longitude = m_longitude;
 
 	// static cast to convert to type geo_angle_i32t
-	lpv_.latitude = static_cast<vanetza::geonet::geo_angle_i32t>(m_pos.latitude);
-	lpv_.longitude = static_cast<vanetza::geonet::geo_angle_i32t>(m_pos.longitude);
-	
-	 // update position_accuracy_indicator as true as long as there is data to be read from file/GPS reciever
+	lpv_.latitude =
+			static_cast<vanetza::geonet::geo_angle_i32t>(m_pos.latitude);
+	lpv_.longitude =
+			static_cast<vanetza::geonet::geo_angle_i32t>(m_pos.longitude);
+
+	// update position_accuracy_indicator as true as long as there is data to be read from file/GPS reciever
 	lpv_.position_accuracy_indicator = true;
 
 	// update the timestamp of the longPositionVector
@@ -283,17 +287,20 @@ void CGpsData::updateLPV(double latitude, double longitude,
 	m_speed = speedFromNMEA * vanetza::units::si::meter_per_second;
 
 	//Static cast to convert speed to speed_u15t
-	lpv_.speed = static_cast<vanetza::geonet::LongPositionVector::speed_u15t>(m_speed);
-	
+	lpv_.speed =
+			static_cast<vanetza::geonet::LongPositionVector::speed_u15t>(m_speed);
+
 }
 
-
+//Function to process GPS data stored in text file and update router
 void CGpsData::on_Timer_FakeGPSData(const boost::system::error_code& ec) {
 	if (boost::asio::error::operation_aborted != ec) {
 
 		if (m_lineCount < m_database.size()) {
+			// extract data required and update LPV object
 			processGPSDataAndUpdateLPV (m_database[m_lineCount]);
 			m_p_routerObj->update(lpv_);
+			// expiration of timer after broadcasting values from one NMEA GPRMC line
 			timer_.expires_from_now(std::chrono::milliseconds(m_timeDuration));
 
 			m_lineCount++;
@@ -306,16 +313,133 @@ void CGpsData::on_Timer_FakeGPSData(const boost::system::error_code& ec) {
 		schedule_FakeGpsData();
 	}
 }
-
+//Function to expire timer and schedule processing of GPS data from text file
 void CGpsData::schedule_FakeGpsData() {
 	if (m_lineCount < m_timeDifference.size()) {
 		m_timeDuration = m_timeDifference[m_lineCount];
 	}
-
-	//timer_.expires_from_now(std::chrono::milliseconds(m_timeDuration));
 	timer_.async_wait(
 			std::bind(&CGpsData::on_Timer_FakeGPSData, this,
 					std::placeholders::_1));
+}
+
+//Function to read live GPS data from a dongle
+void CGpsData::readLiveGPSData() {
+
+	// constant 1 second scheduling for live gps data
+	m_timeDuration = 1000;
+
+	int gps_RetVal;
+
+	// initializes a GPS-data structure to hold the data 
+	if ((gps_RetVal = gps_open(GPSD_SHARED_MEMORY, NULL, &gps_data) == -1)) {
+		printf("code: %d, reason: %s\n", gps_RetVal, gps_errstr(gps_RetVal));
+		gps_close (&gps_data);
+		return;
+	}
+
+	schedule_LiveGpsData();
+
+}
+
+//Function to expire timer and schedule processing of live GPS data from dongle
+void CGpsData::schedule_LiveGpsData() {
+	timer_.expires_from_now(std::chrono::milliseconds(m_timeDuration));
+	timer_.async_wait(
+			std::bind(&CGpsData::on_Timer_LiveGPSData, this,
+					std::placeholders::_1));
+
+}
+
+//Function to process live GPS data from dongle and update router
+void CGpsData::on_Timer_LiveGPSData(const boost::system::error_code& ec) {
+	if (boost::asio::error::operation_aborted != ec) {
+		updateRouterWithLiveGpsData();
+		schedule_LiveGpsData();
+	}
+}
+
+//Function to update LPV and router object with live GPS data from dongle
+void CGpsData::updateRouterWithLiveGpsData() {
+	
+	int gps_RetVal;
+	vanetza::geonet::Timestamp gps_Timestamp;
+	double latitude, longitude, heading, speed;
+	timestamp_t fix_time;
+
+	// Check if gps_read is returning GPS data
+
+	if ((gps_RetVal = gps_read(&gps_data)) == -1) {
+		printf("error occured reading gps data. code: %d, reason: %s\n",
+				gps_RetVal, gps_errstr(gps_RetVal));
+		cout << "GPS read error" << endl;
+		lpv_.position_accuracy_indicator = false;
+
+		return;
+
+	} else {
+
+		// If GPS Daemon gets a fix 
+		if (gps_data.status == STATUS_FIX) {
+
+			// Fetch time when GPS gets a position fix
+			fix_time = gps_data.fix.time;
+
+			// Creating Timestamp object from fix_time
+			gps_Timestamp = convert(fix_time);
+
+			// Fetch latitude when GPS gets a position fix
+			latitude = gps_data.fix.latitude;
+
+			// Fetch longitude when GPS gets a position fix
+			longitude = gps_data.fix.longitude;
+
+			// Fetch speed when GPS gets a position fix
+			speed = gps_data.fix.speed;
+
+			// Fetch heading when GPS gets a position fix
+			heading = gps_data.fix.track;
+
+			cout << "Latitude:" << latitude << ", Longitude:" << longitude
+					<< ", Heading:" << heading << ", Speed:" << speed
+					<< ", Time:" << fix_time << endl;
+
+			//update the member variables of long position vector
+			updateLPV(latitude, longitude, gps_Timestamp, heading, speed);
+
+			// update router object
+			m_p_routerObj->update(lpv_);
+
+			// To ensure exit if connection to GPS Daemon is left
+			gps_data.status = STATUS_NO_FIX;
+
+		}
+
+		else {
+
+			cout << "GPS Daemon could not fix onto a position" << endl;
+		}
+	}
+}
+
+//Function for converting timestamp_t to Timestamp object
+vanetza::geonet::Timestamp CGpsData::convert(timestamp_t gpstime) const {
+
+	using namespace boost::gregorian;
+	using namespace boost::posix_time;
+
+	// gpsd's timestamp_t is UNIX time (UTC) with fractional seconds
+	static date posix_epoch(1970, Jan, 1);
+	timestamp_t gps_integral;
+
+	timestamp_t gps_fractional = modf(gpstime, &gps_integral);
+	auto posix_seconds = seconds(gps_integral);
+	auto posix_milliseconds = milliseconds(gps_fractional * 1000.0);
+	ptime posix_time { posix_epoch, posix_seconds + posix_milliseconds };
+
+	// TAI has some seconds bias compared to UTC
+	const auto tai_utc_bias = seconds(36); // 36 seconds since 1st July 2015
+	return vanetza::geonet::Timestamp { posix_time + tai_utc_bias };
 }
 
 /*
@@ -375,10 +499,11 @@ void convertDateAndTime(string date, string time, string &date_time) {
 	date_time = yyyy + mm + dd + "T" + time;
 }
 
-
 CGpsData::~CGpsData() {
-  
-   
+
+	// Close gps Daemon
+	gps_close (&gps_data);
+
 // TODO Auto-generated destructor stub
 }
 

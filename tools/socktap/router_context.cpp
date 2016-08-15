@@ -162,6 +162,8 @@ void RouterContext::enable(Application* app) {
 	dispatcher_.set_non_interactive_handler(app->port(), app);
 }
 
+// Function added to return a pointer to router_context object
 vanetza::geonet::Router* RouterContext::getPointerToRouterObj() {
+	// return pointer
 	return &router_;
 }

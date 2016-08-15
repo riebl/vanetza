@@ -1,5 +1,6 @@
 #include "NetworkInterface.hpp"
 
+// Function to fetch the name of first ethernet device on the computer
 char* getFirstEthernetDeviceName() 
 {
 	struct ifaddrs *ifaddr, *ifa;
@@ -16,10 +17,11 @@ char* getFirstEthernetDeviceName()
 	  exit(0);
 	}
 	    
+	// return the name of first ethernet device
 	return ifa->ifa_name;
 }
 
-
+// Function to verify the selected device is present on the computer
 bool NIC(std::string networkInterfaceName) 
 {
 	struct ifaddrs *addrs, *tmp;
@@ -32,6 +34,7 @@ bool NIC(std::string networkInterfaceName)
 	getifaddrs(&addrs);
 	tmp = addrs;
 
+	// check if the selected ethernet device is present in the list of devices of this computer
 	while (tmp) 
 	{
 		if (tmp->ifa_addr && tmp->ifa_addr->sa_family == AF_PACKET)

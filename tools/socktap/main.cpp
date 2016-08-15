@@ -30,12 +30,15 @@ int main(int argc, const char** argv) {
 				<< " and live GPS data" << std::endl;
 		break;
 
+	// If terminal command involves an interface type -I or -F
 	case 3:
 		interfaceType = argv[1];
 
+			// If user has selected live GPS and an ethernet device
 			if (interfaceType == "-I") {
 			device_name = argv[2];
 			bool status;
+			// verify if the selected ethernet device exists on the computer
 			status = NIC(device_name);
 			if (!status) {
 				std::cout << "Network Interface : " << device_name
@@ -44,12 +47,16 @@ int main(int argc, const char** argv) {
 			} else
 				std::cout << "Will use ethernet device:" << device_name
 						<< " and live GPS data" << std::endl;
-		} else if (interfaceType == "-F") {
+		} 
+		// If user has selected to use GPS data stored in a text file
+		else if (interfaceType == "-F") {
 			filePathFromTerminal = argv[2];
 			liveGPS = false;
+			// Obtain first ethernet device name
 			device_name = getFirstEthernetDeviceName();
 			//device_name = "enp3s0";
 			std::fstream file(filePathFromTerminal);
+			// verify if the file exists 
 			if (!file.good()) {
 				std::cout << "The file specified in the location : "
 						<< filePathFromTerminal << " does not exist."
@@ -72,6 +79,8 @@ int main(int argc, const char** argv) {
 			exit(0);
 		}
 		break;
+		
+	// default condition to display error message and exit	
 	default:
 		std::cout << std::endl
 				<< "Wrong usage of parameters for running socktap." << std::endl
@@ -119,7 +128,8 @@ int main(int argc, const char** argv) {
 		 * Position provider for updating router 
 		 */
 			
- 		CGpsData positionProvider(gps_timer, p_router, liveGPS, filePathFromTerminal);				 
+ 		CGpsData positionProvider(gps_timer, p_router, liveGPS, filePathFromTerminal);		
+		// switch between live GPS data from dongle or Fake GPS data stored in text file
  		positionProvider.selectPositionProviderToUpdateRouter();
 				
 		

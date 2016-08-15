@@ -24,6 +24,8 @@ public:
     RouterContext(boost::asio::generic::raw_protocol::socket&, const EthernetDevice&, TimeTrigger&);
     ~RouterContext();
     void enable(Application*); 
+    
+    // Function added to return a pointer to router_context object
     vanetza::geonet::Router* getPointerToRouterObj();
 
 private:
