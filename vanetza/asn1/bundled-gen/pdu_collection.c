@@ -4,7 +4,6 @@
 
 struct asn_TYPE_descriptor_s;	/* Forward declaration */
 
-extern struct asn_TYPE_descriptor_s asn_DEF_DENM;
 extern struct asn_TYPE_descriptor_s asn_DEF_CAM;
 extern struct asn_TYPE_descriptor_s asn_DEF_TrafficConditionSubCauseCode;
 extern struct asn_TYPE_descriptor_s asn_DEF_AccidentSubCauseCode;
@@ -29,15 +28,14 @@ extern struct asn_TYPE_descriptor_s asn_DEF_DangerousEndOfQueueSubCauseCode;
 extern struct asn_TYPE_descriptor_s asn_DEF_DangerousSituationSubCauseCode;
 extern struct asn_TYPE_descriptor_s asn_DEF_VehicleBreakdownSubCauseCode;
 extern struct asn_TYPE_descriptor_s asn_DEF_PostCrashSubCauseCode;
+extern struct asn_TYPE_descriptor_s asn_DEF_DENM;
 extern struct asn_TYPE_descriptor_s asn_DEF_VanetzaTest;
 
 
 struct asn_TYPE_descriptor_s *asn_pdu_collection[] = {
-	/* From module DENM-PDU-Descriptions in /home/rieblr/work/car2x/vanetza/vanetza/asn1/denm_en302637-3v1.2.0.asn1 */
-	&asn_DEF_DENM,	
-	/* From module CAM-PDU-Descriptions in /home/rieblr/work/car2x/vanetza/vanetza/asn1/cam_en302637-2v1.3.0.asn1 */
+	/* From module CAM-PDU-Descriptions in /home/rieblr/work/car2x/vanetza/vanetza/asn1/cam_en302637-2v1.3.2.asn1 */
 	&asn_DEF_CAM,	
-	/* From module ITS-Container in /home/rieblr/work/car2x/vanetza/vanetza/asn1/cdd_ts102894-2v1.1.1.asn1 */
+	/* From module ITS-Container in /home/rieblr/work/car2x/vanetza/vanetza/asn1/cdd_ts102894-2v1.2.1.asn1 */
 	&asn_DEF_TrafficConditionSubCauseCode,	
 	&asn_DEF_AccidentSubCauseCode,	
 	&asn_DEF_HumanPresenceOnTheRoadSubCauseCode,	
@@ -61,6 +59,8 @@ struct asn_TYPE_descriptor_s *asn_pdu_collection[] = {
 	&asn_DEF_DangerousSituationSubCauseCode,	
 	&asn_DEF_VehicleBreakdownSubCauseCode,	
 	&asn_DEF_PostCrashSubCauseCode,	
+	/* From module DENM-PDU-Descriptions in /home/rieblr/work/car2x/vanetza/vanetza/asn1/denm_en302637-3v1.2.2.asn1 */
+	&asn_DEF_DENM,	
 	/* From module Test-Descriptions in /home/rieblr/work/car2x/vanetza/vanetza/asn1/test.asn1 */
 	&asn_DEF_VanetzaTest,	
 	0
