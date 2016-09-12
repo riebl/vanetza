@@ -55,9 +55,17 @@ else()
     endforeach()
 
     # synchronize bundled files into gen directory
-    execute_process(COMMAND ${CMAKE_COMMAND} -E
-        copy_if_different ${_bundle_files} ${_gen_dir}
-        WORKING_DIRECTORY ${_bundle_dir})
+    if(${CMAKE_VERSION} VERSION_LESS 3.5)
+        foreach(_bundle_file IN LISTS _bundle_files)
+            execute_process(COMMAND ${CMAKE_COMMAND} -E
+                copy_if_different ${_bundle_file} ${_gen_dir}
+                WORKING_DIRECTORY ${_bundle_dir})
+        endforeach()
+    else()
+        execute_process(COMMAND ${CMAKE_COMMAND} -E
+            copy_if_different ${_bundle_files} ${_gen_dir}
+            WORKING_DIRECTORY ${_bundle_dir})
+    endif()
 endif()
 
 add_custom_target(asn1_gen DEPENDS ${ASN1C_GEN_DIR}/CAM.h ${ASN1C_GEN_DIR}/DENM.h)
