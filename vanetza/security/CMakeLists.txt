@@ -44,6 +44,9 @@ endif()
 vanetza_module(security ${CXX_SOURCES})
 vanetza_intermodule_dependencies(security common net)
 
+vanetza_module_property(security INTERFACE_INCLUDE_DIRECTORIES
+    ${CryptoPP_INCLUDE_DIR} # because of NaivCertificateManager
+)
 vanetza_module_property(security INCLUDE_DIRECTORIES
     ${Boost_INCLUDE_DIRS}
     ${VANETZA_BACKEND_INCLUDE_DIRS}
