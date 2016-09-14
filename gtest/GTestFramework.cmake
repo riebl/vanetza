@@ -11,6 +11,36 @@ set(GTest_LIBRARY gtest)
 set(GTest_LIBRARY_SOURCES ${GTest_SOURCE_DIR}/gtest-all.cc)
 set(GTest_MAIN_LIBRARY gtest_main)
 set(GTest_MAIN_LIBRARY_SOURCES ${GTest_SOURCE_DIR}/gtest_main.cc)
+set(GTest_HEADERS
+    gtest.h
+    gtest-spi.h
+    gtest-death-test.h
+    gtest-test-part.h
+    gtest-param-test.h
+    gtest-typed-test.h
+    gtest_prod.h
+    gtest-message.h
+    gtest-printers.h
+    gtest_pred_impl.h
+    internal/gtest-linked_ptr.h
+    internal/gtest-string.h
+    internal/gtest-type-util.h
+    internal/gtest-port-arch.h
+    internal/gtest-filepath.h
+    internal/gtest-param-util.h
+    internal/gtest-tuple.h
+    internal/gtest-internal.h
+    internal/gtest-death-test-internal.h
+    internal/gtest-port.h
+    internal/gtest-param-util-generated.h
+    internal/custom/gtest-printers.h
+    internal/custom/gtest-port.h
+    internal/custom/gtest.h
+)
+foreach(_header IN LISTS GTest_HEADERS)
+    list(APPEND GTest_HEADERS ${GTest_INCLUDE_DIR}/gtest/${_header})
+    list(REMOVE_ITEM GTest_HEADERS ${_header})
+endforeach()
 
 file(DOWNLOAD
     https://github.com/google/googletest/archive/${GTest_ARCHIVE}
@@ -20,7 +50,7 @@ file(DOWNLOAD
 add_custom_target(download_gtest DEPENDS ${GTest_DIR}/${GTest_ARCHIVE})
 
 add_custom_command(
-    OUTPUT ${GTest_LIBRARY_SOURCES} ${GTest_MAIN_LIBRARY_SOURCES}
+    OUTPUT ${GTest_LIBRARY_SOURCES} ${GTest_MAIN_LIBRARY_SOURCES} ${GTest_HEADERS}
     COMMAND ${CMAKE_COMMAND} -E tar xfz ${GTest_DIR}/${GTest_ARCHIVE}
     DEPENDS download_gtest
     WORKING_DIRECTORY ${GTest_DIR}
@@ -35,7 +65,7 @@ else()
 endif()
 
 # GTest library for tests with own main function
-add_library(${GTest_LIBRARY} ${GTest_LIBRARY_SOURCES})
+add_library(${GTest_LIBRARY} ${GTest_LIBRARY_SOURCES} ${GTest_HEADERS})
 target_include_directories(${GTest_LIBRARY}
     PRIVATE ${GTest_ARCHIVE_DIR})
 target_include_directories(${GTest_LIBRARY} SYSTEM
