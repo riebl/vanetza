@@ -22,7 +22,10 @@ if(VANETZA_ASN1_WITH_ASN1C)
     endif()
 
     add_custom_command(
-        OUTPUT ${ASN1C_GEN_DIR}/CAM.h ${ASN1C_GEN_DIR}/DENM.h
+        OUTPUT
+            ${ASN1C_GEN_DIR}/CAM.h
+            ${ASN1C_GEN_DIR}/DENM.h
+            ${ASN1C_GEN_DIR}/VanetzaTest.h
         COMMAND ${ASN1C} ${ASN1C_ARGS} ${ASN1_SOURCES}
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c.cmake
         DEPENDS ${ASN1C_SOURCES}
