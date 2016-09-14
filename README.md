@@ -36,6 +36,11 @@ Other CMake generators and build directory can be used as well.
 
 You might need to add "-std=c++11" to CMAKE_CXX_FLAGS if your CMake version is below 3.1.
 
+## Continuous Integration
+
+We strive for quality in our code base. Latest commits are built using [Travis CI](https://travis-ci.org) as part of this effort.
+[![Build Status](https://travis-ci.org/riebl/vanetza.svg?branch=master)](https://travis-ci.org/riebl/vanetza)
+
 # Authors
 
 Development of Vanetza is part of ongoing research work at Technische Hochschule Ingolstadt.
