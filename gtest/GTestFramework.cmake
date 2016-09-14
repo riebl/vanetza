@@ -54,6 +54,7 @@ add_custom_command(
     OUTPUT ${GTest_LIBRARY_SOURCES} ${GTest_MAIN_LIBRARY_SOURCES} ${GTest_HEADERS}
     COMMAND ${CMAKE_COMMAND} -E tar xfz ${GTest_DIR}/${GTest_ARCHIVE}
     DEPENDS download_gtest
+    COMMENT "Extracting ${GTest_ARCHIVE} in ${GTest_DIR}"
     WORKING_DIRECTORY ${GTest_DIR}
     VERBATIM
 )
