@@ -1,9 +1,10 @@
-set(GTest_VERSION d945d8c000a0ade73585d143532266968339bbb3)
-set(GTest_ARCHIVE ${GTest_VERSION}.zip)
-set(GTest_ARCHIVE_SHA1 e60441b3b02f0de37a7b1afc3e83ba83aac00f52)
+set(GTest_VERSION 1.8.0)
+set(GTest_ARCHIVE_NAME release-${GTest_VERSION})
+set(GTest_ARCHIVE ${GTest_ARCHIVE_NAME}.tar.gz)
+set(GTest_ARCHIVE_SHA1 e7e646a6204638fe8e87e165292b8dd9cd4c36ed)
 
 set(GTest_DIR ${PROJECT_SOURCE_DIR}/gtest)
-set(GTest_ARCHIVE_DIR ${GTest_DIR}/googletest-${GTest_VERSION}/googletest)
+set(GTest_ARCHIVE_DIR ${GTest_DIR}/googletest-${GTest_ARCHIVE_NAME}/googletest)
 set(GTest_SOURCE_DIR ${GTest_ARCHIVE_DIR}/src)
 set(GTest_INCLUDE_DIR ${GTest_ARCHIVE_DIR}/include)
 
