@@ -111,7 +111,8 @@ public:
     boost::optional<const LongPositionVector&> get_position(const Address&) const;
     boost::optional<const LongPositionVector&> get_position(const MacAddress&) const;
     bool has_neighbours() const;
-    neighbour_range neighbours();
+	// const addded by H_DA students to provide access in router_context.cpp
+    neighbour_range neighbours() const;
     void is_neighbour(const Address&, bool flag);
     bool is_duplicate_packet(const Address& source, SequenceNumber, Timestamp);
     bool is_duplicate_packet(const Address& source, Timestamp);

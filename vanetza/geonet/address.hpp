@@ -31,21 +31,30 @@ public:
 
     bool operator==(const Address& other) const;
     bool operator!=(const Address& other) const;
-
+    //Overloaded operator to print the address in location table
+    friend std::ostream& operator<<(std::ostream& os, const Address& addr);
 private:
     bool m_manually_configured; // 1 bit
     StationType m_station_type; // 5 bit
     BitNumber<unsigned, 10> m_country_code; // 10 bit
     MacAddress m_mid; // 48 bit
+    
 };
+ 
 
 void serialize(const Address&, OutputArchive&);
 void serialize(const MacAddress&, OutputArchive&);
 void deserialize(Address&, InputArchive&);
 void deserialize(MacAddress&, InputArchive&);
 
+
+
 } // namespace geonet
+
+
 } // namespace vanetza
+
+
 
 
 namespace std {

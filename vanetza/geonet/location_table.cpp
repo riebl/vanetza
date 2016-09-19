@@ -31,8 +31,8 @@ bool LocationTable::has_neighbours() const
 
     return false;
 }
-
-auto LocationTable::neighbours() -> neighbour_range
+// const addded by H_DA students to provide access in router_context.cpp
+auto LocationTable::neighbours() const -> neighbour_range
 {
     auto begin = m_table.begin();
     auto end = m_table.end();
