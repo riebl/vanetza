@@ -118,7 +118,7 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_runtime(rt),
     m_request_interface(&DummyDccRequestInterface::get()),
     m_security_entity(m_runtime.now(), m_mib.vanetzaCryptoBackend),
-    m_location_table(mib),
+    m_location_table(mib, m_runtime),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
     m_cbf_buffer(m_runtime,
@@ -137,9 +137,6 @@ Router::~Router()
 
 void Router::update(const LongPositionVector& lpv)
 {
-    // TODO soft-state of location table entries depends on frequent LPV updates
-    m_location_table.expire(m_runtime.now());
-
     // Update LPV except for GN address
     Address gn_addr = m_local_position_vector.gn_addr;
     m_local_position_vector = lpv;
@@ -336,6 +333,8 @@ void Router::indicate_common(IndicationContext& ctx, const BasicHeader& basic)
     } else if (common->maximum_hop_limit < basic.hop_limit) {
         packet_dropped(PacketDropReason::HOP_LIMIT);
     } else {
+        // clean up location table at packet indication (nothing else creates entries)
+        m_location_table.drop_expired();
         flush_broadcast_forwarding_buffer();
         indicate_extended(ctx, *common);
     }
@@ -702,9 +701,9 @@ NextHop Router::next_hop_greedy_forwarding(
     units::Length mfr = own;
 
     for (auto& neighbour : m_location_table.neighbours()) {
-        const units::Length dist = distance(dest, neighbour.position.position());
+        const units::Length dist = distance(dest, neighbour.position_vector.position());
         if (dist < mfr) {
-            nh.mac(neighbour.position.gn_addr.mid());
+            nh.mac(neighbour.link_layer_address());
             mfr = dist;
         }
     }
@@ -827,11 +826,14 @@ void Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, UpPack
 
     // update location table with SO.PV (see C.2)
     m_location_table.update(shb.source_position);
+    auto& source_entry = m_location_table.get_entry(source_addr);
+
     // update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(*packet, OsiLayer::Network, OsiLayer::Application);
-    m_location_table.update_pdr(source_addr, packet_size, m_runtime.now());
+    source_entry.update_pdr(packet_size);
+
     // set SO LocTE to neighbour
-    m_location_table.is_neighbour(source_addr, true);
+    source_entry.is_neighbour = true;
 
     // pass packet to transport interface
     DataIndication ind(pdu.basic(), pdu.common());
@@ -857,11 +859,14 @@ void Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, UpP
 
     // update location table with SO.PV (see C.2)
     m_location_table.update(beacon.source_position);
+    auto& source_entry = m_location_table.get_entry(source_addr);
+
     // update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(*packet, OsiLayer::Network, OsiLayer::Application);
-    m_location_table.update_pdr(source_addr, packet_size, m_runtime.now());
+    source_entry.update_pdr(packet_size);
+
     // set SO LocTE to neighbour
-    m_location_table.is_neighbour(source_addr, true);
+    source_entry.is_neighbour = true;
 }
 
 void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pdu,
@@ -871,6 +876,8 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     const GeoBroadcastHeader& gbc = pdu.extended();
     const Address& source_addr = gbc.source_position.gn_addr;
 
+    // store flag before is_duplicate_packet check (creates entry if not existing)
+    const bool remove_neighbour_flag = !m_location_table.has_entry(source_addr);
     if (m_mib.itsGnGeoBroadcastForwardingAlgorithm == BroadcastForwarding::UNSPECIFIED ||
         m_mib.itsGnGeoBroadcastForwardingAlgorithm == BroadcastForwarding::SIMPLE) {
         const Timestamp& source_time = gbc.source_position.timestamp;
@@ -883,12 +890,11 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     detect_duplicate_address(source_addr);
 
     const std::size_t packet_size = size(*packet, OsiLayer::Network, OsiLayer::Application);
-    bool remove_neighbour_flag = !m_location_table.has_entry(source_addr);
     m_location_table.update(gbc.source_position);
-    m_location_table.update_pdr(source_addr, packet_size, m_runtime.now());
-
+    auto& source_entry = m_location_table.get_entry(source_addr);
+    source_entry.update_pdr(packet_size);
     if (remove_neighbour_flag) {
-        m_location_table.is_neighbour(source_addr, false);
+        source_entry.is_neighbour = false;
     }
 
     auto fwd_dup = create_forwarding_duplicate(pdu, *packet);
