@@ -7,6 +7,7 @@ set(CXX_SOURCES
     byte_view.cpp
     clock.cpp
     runtime.cpp
+    unit_interval.cpp
 )
 add_vanetza_component(common ${CXX_SOURCES})
 target_link_libraries(common PUBLIC Boost::date_time)

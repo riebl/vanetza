@@ -11,4 +11,5 @@ add_gtest(Hook hook.cpp)
 add_gtest(LruCache lru_cache.cpp)
 add_gtest(ObjectContainer object_container.cpp)
 add_gtest(Runtime runtime.cpp)
+add_gtest(UnitInterval unit_interval.cpp)
 
