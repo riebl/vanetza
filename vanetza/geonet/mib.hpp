@@ -89,6 +89,7 @@ struct ManagementInformationBase
     unsigned itsGnCbfPacketBufferSize; // kbyte
     TrafficClass itsGnDefaultTrafficClass;
     std::string vanetzaCryptoBackend; /*< choose preferred crypto backend implementation */
+    bool vanetzaDeferSigning; /*< calculate signatures on-demand, i.e. defer calculation (experimental option) */
 };
 
 // This name is too clumsy to write it out every time

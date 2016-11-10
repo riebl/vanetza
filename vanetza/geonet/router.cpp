@@ -129,6 +129,8 @@ Router::Router(Runtime& rt, const MIB& mib) :
 {
     // send BEACON immediately after start-up at next runtime trigger invocation
     reset_beacon_timer(Clock::duration::zero());
+
+    m_security_entity.enable_deferred_signing(m_mib.vanetzaDeferSigning);
 }
 
 Router::~Router()
