@@ -51,7 +51,8 @@ ManagementInformationBase::ManagementInformationBase() :
     vanetzaDefaultSeed(0xc0114c2c),
     vanetzaCbfMaxCounter(3),
     vanetzaDeferInitialBeacon(false),
-    vanetzaDisableBeaconing(false)
+    vanetzaDisableBeaconing(false),
+    vanetzaFadingCbfCounter(false)
 {
 }
 

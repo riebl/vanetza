@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/manual_runtime.hpp>
+#include <vanetza/geonet/cbf_counter.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <functional>
@@ -30,6 +31,7 @@ protected:
     CbfPacket create_packet(const MacAddress&, SequenceNumber::value_type, std::size_t length = GbcPduLength) const;
     CbfPacket create_packet(std::size_t length = GbcPduLength) const;
     CbfPacketBuffer::TimerCallback callback();
+    std::unique_ptr<CbfCounter> counter();
 
     MIB mib;
     ManualRuntime runtime;
@@ -66,6 +68,11 @@ CbfPacketBuffer::TimerCallback CbfPacketBufferTest::callback()
     };
 }
 
+std::unique_ptr<CbfCounter> CbfPacketBufferTest::counter()
+{
+    return std::unique_ptr<CbfCounter> { new CbfCounterImmortal() };
+}
+
 
 TEST_F(CbfPacketBufferTest, identifier_hash)
 {
@@ -90,17 +97,6 @@ TEST_F(CbfPacketBufferTest, packet_identifier)
     EXPECT_EQ(SequenceNumber { 8 }, packet.sequence_number());
 }
 
-TEST_F(CbfPacketBufferTest, packet_counter)
-{
-    CbfPacket packet = create_packet({}, 1);
-
-    // check correct initialization
-    EXPECT_EQ(1, packet.counter());
-
-    // counter should be modifiable
-    ++packet.counter();
-    EXPECT_EQ(2, packet.counter());
-}
 
 TEST_F(CbfPacketBufferTest, packet_lifetime)
 {
@@ -130,50 +126,74 @@ TEST_F(CbfPacketBufferTest, packet_length)
 
 TEST_F(CbfPacketBufferTest, find)
 {
-    CbfPacketBuffer buffer(runtime, callback(), 8192);
-    auto found1 = buffer.find(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3));
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
+    auto found1 = buffer.find(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3)));
     EXPECT_FALSE(found1);
 
     auto packet1 = create_packet({1, 2, 3, 4, 5, 6}, 3);
-    buffer.enqueue(std::move(packet1), seconds(5));
+    buffer.add(std::move(packet1), seconds(5));
 
-    auto found2 = buffer.find(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(4));
+    auto found2 = buffer.find(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(4)));
     EXPECT_FALSE(found2);
-    auto found3 = buffer.find(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3));
+    auto found3 = buffer.find(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3)));
     ASSERT_TRUE(found3);
-    EXPECT_EQ(1, found3->counter());
+    EXPECT_EQ(1, buffer.counter(identifier(*found3)));
     EXPECT_EQ((MacAddress {1, 2, 3, 4, 5, 6}), found3->source().mid());
+}
+
+TEST_F(CbfPacketBufferTest, counter)
+{
+    CbfPacket packet1 = create_packet({3, 8, 3, 8, 3, 8}, 10);
+    CbfPacketIdentifier id1 = identifier(packet1);
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
+    EXPECT_EQ(0, buffer.counter(id1));
+
+    buffer.add(std::move(packet1), milliseconds(30));
+    EXPECT_EQ(1, buffer.counter(id1));
+
+    buffer.remove(id1);
+    EXPECT_EQ(1, buffer.counter(id1));
+
+    CbfPacket packet2 = create_packet({3, 8, 3, 8, 3, 8}, 11);
+    CbfPacketIdentifier id2 = identifier(packet2);
+    buffer.update(id2, milliseconds(30));
+    EXPECT_EQ(0, buffer.counter(id2));
+
+    buffer.add(std::move(packet2), milliseconds(30));
+    EXPECT_EQ(1, buffer.counter(id2));
+
+    buffer.update(id2, milliseconds(30));
+    EXPECT_EQ(2, buffer.counter(id2));
+
+    EXPECT_EQ(1, buffer.counter(id1));
 }
 
 TEST_F(CbfPacketBufferTest, fetch)
 {
-    CbfPacketBuffer buffer(runtime, callback(), 8192);
-    auto found1 = buffer.fetch(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3));
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
+    auto found1 = buffer.fetch(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3)));
     EXPECT_FALSE(!!found1);
 
     auto packet1 = create_packet({1, 2, 3, 4, 5, 6}, 3);
-    packet1.counter() = 3;
-    buffer.enqueue(std::move(packet1), milliseconds(500));
+    buffer.add(std::move(packet1), milliseconds(500));
 
-    auto found2 = buffer.fetch(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(4));
+    auto found2 = buffer.fetch(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(4)));
     EXPECT_FALSE(!!found2);
-    auto found3 = buffer.fetch(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3));
+    auto found3 = buffer.fetch(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3)));
     ASSERT_TRUE(!!found3);
-
-    EXPECT_EQ(3, found3->counter());
     EXPECT_EQ((MacAddress {1, 2, 3, 4, 5, 6}), found3->source().mid());
 
-    auto found4 = buffer.fetch(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3));
+    auto found4 = buffer.fetch(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(3)));
     EXPECT_FALSE(!!found4);
 }
 
 TEST_F(CbfPacketBufferTest, fetch_reduce_lifetime)
 {
-    CbfPacketBuffer buffer(runtime, callback(), 8192);
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
     auto packet = create_packet({1, 2, 3, 4, 5, 6}, 1);
-    buffer.enqueue(std::move(packet), milliseconds(500));
+    buffer.add(std::move(packet), milliseconds(500));
     runtime.trigger(milliseconds(200));
-    auto found = buffer.fetch(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(1));
+    auto found = buffer.fetch(identifier(Address {{1, 2, 3, 4, 5, 6}}, SequenceNumber(1)));
     ASSERT_TRUE(!!found);
     EXPECT_EQ(milliseconds(2800), found->reduce_lifetime(Clock::duration::zero()));
 }
@@ -182,84 +202,84 @@ TEST_F(CbfPacketBufferTest, next_timer_expiry)
 {
     const Address addr {{1, 2, 3, 4, 5, 6}};
 
-    CbfPacketBuffer buffer(runtime, callback(), 8192);
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
     EXPECT_EQ(Clock::time_point::max(), runtime.next());
 
-    buffer.enqueue(create_packet(), seconds(3));
+    buffer.add(create_packet(), seconds(3));
     EXPECT_EQ(seconds(3), runtime.next() - runtime.now());
 
     runtime.trigger(seconds(1));
-    buffer.enqueue(create_packet(addr.mid(), 3), seconds(1));
+    buffer.add(create_packet(addr.mid(), 3), seconds(1));
     EXPECT_EQ(seconds(1), runtime.next() - runtime.now());
 
-    buffer.enqueue(create_packet(addr.mid(), 2), milliseconds(200));
+    buffer.add(create_packet(addr.mid(), 2), milliseconds(200));
     EXPECT_EQ(milliseconds(200), runtime.next() - runtime.now());
 
     runtime.trigger(milliseconds(100));
-    auto fetch = buffer.fetch(addr, SequenceNumber(2));
+    auto fetch = buffer.fetch(identifier(addr, SequenceNumber(2)));
     EXPECT_TRUE(!!fetch);
     EXPECT_EQ(milliseconds(900), runtime.next() - runtime.now());
 
-    bool dropped = buffer.try_drop(addr, SequenceNumber(3));
+    bool dropped = buffer.remove(identifier(addr, SequenceNumber(3)));
     EXPECT_TRUE(dropped);
     EXPECT_EQ(milliseconds(1900), runtime.next() - runtime.now());
 }
 
-TEST_F(CbfPacketBufferTest, try_drop_sequence_number)
+TEST_F(CbfPacketBufferTest, remove_sequence_number)
 {
-    CbfPacketBuffer buffer(runtime, callback(), 8192);
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
     const auto addr = Address {{1, 1, 1, 1, 1, 1}};
-    EXPECT_FALSE(buffer.try_drop(addr, SequenceNumber(3)));
+    EXPECT_FALSE(buffer.remove(identifier(addr, SequenceNumber(3))));
 
     auto packet = create_packet(addr.mid(), 8);
-    buffer.enqueue(std::move(packet), milliseconds(400));
-    EXPECT_FALSE(buffer.try_drop(addr, SequenceNumber(7)));
-    EXPECT_FALSE(buffer.try_drop(addr, SequenceNumber(9)));
-    EXPECT_TRUE(buffer.try_drop(addr, SequenceNumber(8)));
-    EXPECT_FALSE(buffer.try_drop(addr, SequenceNumber(8)));
+    buffer.add(std::move(packet), milliseconds(400));
+    EXPECT_FALSE(buffer.remove(identifier(addr, SequenceNumber(7))));
+    EXPECT_FALSE(buffer.remove(identifier(addr, SequenceNumber(9))));
+    EXPECT_TRUE(buffer.remove(identifier(addr, SequenceNumber(8))));
+    EXPECT_FALSE(buffer.remove(identifier(addr, SequenceNumber(8))));
 }
 
-TEST_F(CbfPacketBufferTest, try_drop_addr)
+TEST_F(CbfPacketBufferTest, remove_drop_addr)
 {
-    CbfPacketBuffer buffer(runtime, callback(), 8192);
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
     const auto addr1 = Address {{1, 1, 1, 1, 1, 1}};
     const auto addr2 = Address {{ 2, 2, 2, 2, 2, 2}};
 
     auto packet = create_packet(addr1.mid(), 8);
-    buffer.enqueue(std::move(packet), milliseconds(400));
-    EXPECT_FALSE(buffer.try_drop(addr2, SequenceNumber(8)));
-    EXPECT_TRUE(buffer.try_drop(addr1, SequenceNumber(8)));
-    EXPECT_FALSE(buffer.try_drop(addr1, SequenceNumber(8)));
+    buffer.add(std::move(packet), milliseconds(400));
+    EXPECT_FALSE(buffer.remove(identifier(addr2, SequenceNumber(8))));
+    EXPECT_TRUE(buffer.remove(identifier(addr1, SequenceNumber(8))));
+    EXPECT_FALSE(buffer.remove(identifier(addr1, SequenceNumber(8))));
 }
 
-TEST_F(CbfPacketBufferTest, try_drop_multiple_packets)
+TEST_F(CbfPacketBufferTest, remove_multiple_packets)
 {
-    CbfPacketBuffer buffer(runtime, callback(), 8192);
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
     const auto addr = Address {{1, 1, 1, 1, 1, 1}};
     const auto timeout = milliseconds(400);
 
     auto packet1 = create_packet(addr.mid(), 8);
-    buffer.enqueue(std::move(packet1), timeout);
+    buffer.add(std::move(packet1), timeout);
 
     auto packet2 = create_packet(addr.mid(), 10);
-    buffer.enqueue(std::move(packet2), timeout);
+    buffer.add(std::move(packet2), timeout);
 
-    EXPECT_FALSE(buffer.try_drop(addr, SequenceNumber(9)));
-    EXPECT_TRUE(buffer.try_drop(addr, SequenceNumber(10)));
-    EXPECT_TRUE(buffer.try_drop(addr, SequenceNumber(8)));
+    EXPECT_FALSE(buffer.remove(identifier(addr, SequenceNumber(9))));
+    EXPECT_TRUE(buffer.remove(identifier(addr, SequenceNumber(10))));
+    EXPECT_TRUE(buffer.remove(identifier(addr, SequenceNumber(8))));
 }
 
 TEST_F(CbfPacketBufferTest, capacity)
 {
-    CbfPacketBuffer buffer(runtime, callback(), 256);
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 256);
 
-    buffer.enqueue(create_packet(128), seconds(1));
-    buffer.enqueue(create_packet(128), seconds(1));
+    buffer.add(create_packet(128), seconds(1));
+    buffer.add(create_packet(128), seconds(1));
     runtime.trigger(milliseconds(1010));
     EXPECT_EQ(2, calls);
 
-    buffer.enqueue(create_packet(157), seconds(1));
-    buffer.enqueue(create_packet(100), seconds(1));
+    buffer.add(create_packet(157), seconds(1));
+    buffer.add(create_packet(100), seconds(1));
     runtime.trigger(seconds(2));
     EXPECT_EQ(3, calls);
     EXPECT_EQ(100, last_call_length);
@@ -269,16 +289,16 @@ TEST_F(CbfPacketBufferTest, packets_to_send)
 {
     std::vector<PendingPacketCbf> packets;
     auto cb = [&packets](PendingPacketCbf&& data) { packets.emplace_back(std::move(data)); };
-    CbfPacketBuffer buffer(runtime, cb, 8192);
+    CbfPacketBuffer buffer(runtime, cb, counter(), 8192);
 
     runtime.trigger(minutes(42));
     EXPECT_EQ(0, packets.size());
 
-    buffer.enqueue(create_packet(110), milliseconds(2500));
+    buffer.add(create_packet(110), milliseconds(2500));
     runtime.trigger(seconds(1));
     EXPECT_EQ(0, packets.size());
 
-    buffer.enqueue(create_packet(120), seconds(1));
+    buffer.add(create_packet(120), seconds(1));
     runtime.trigger(seconds(1));
     ASSERT_EQ(1, packets.size());
     EXPECT_EQ(120, packets[0].length());
@@ -286,8 +306,8 @@ TEST_F(CbfPacketBufferTest, packets_to_send)
     runtime.trigger(milliseconds(500));
     EXPECT_EQ(2, packets.size());
 
-    buffer.enqueue(create_packet(130), seconds(1));
-    buffer.enqueue(create_packet(140), milliseconds(1500));
+    buffer.add(create_packet(130), seconds(1));
+    buffer.add(create_packet(140), milliseconds(1500));
     runtime.trigger(seconds(2));
     ASSERT_EQ(4, packets.size());
     EXPECT_EQ(130, packets[2].length());
@@ -295,7 +315,9 @@ TEST_F(CbfPacketBufferTest, packets_to_send)
 
     // check if lifetime is reduced by queuing time
     auto packet = create_packet(150);
-    buffer.enqueue(std::move(packet), milliseconds(2072));
+
+    EXPECT_EQ(milliseconds(1000), packet.reduce_lifetime(milliseconds(2000)));
+    buffer.add(std::move(packet), milliseconds(72));
     runtime.trigger(runtime.next());
     ASSERT_EQ(5, packets.size());
     // Lifetime can only be encoded in 50ms steps (in best case): 950 ms remaining lifetime

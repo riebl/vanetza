@@ -1,5 +1,6 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/address.hpp>
+#include <vanetza/geonet/cbf_counter.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/units/time.hpp>
@@ -12,13 +13,12 @@ namespace geonet
 {
 
 CbfPacket::CbfPacket(PendingPacket<GbcPdu>&& packet, const MacAddress& sender) :
-    m_packet(std::move(packet)), m_sender(sender), m_counter(1)
+    m_packet(std::move(packet)), m_sender(sender)
 {
 }
 
 CbfPacket::CbfPacket(PendingPacket<GbcPdu, const MacAddress&>&& packet, const MacAddress& sender) :
-    m_packet(PendingPacket<GbcPdu>(std::move(packet), cBroadcastMacAddress)),
-    m_sender(sender), m_counter(1)
+    m_packet(PendingPacket<GbcPdu>(std::move(packet), cBroadcastMacAddress)), m_sender(sender)
 {
 }
 
@@ -48,8 +48,9 @@ std::size_t CbfPacket::length() const
 }
 
 
-CbfPacketBuffer::CbfPacketBuffer(Runtime& rt, TimerCallback cb, std::size_t bytes) :
-    m_runtime(rt), m_capacity_bytes(bytes), m_stored_bytes(0),
+CbfPacketBuffer::CbfPacketBuffer(Runtime& rt, TimerCallback cb, std::unique_ptr<CbfCounter> cnt, std::size_t bytes) :
+    m_runtime(rt), m_counter(std::move(cnt)),
+    m_capacity_bytes(bytes), m_stored_bytes(0),
     m_timer_callback(cb)
 {
 }
@@ -59,15 +60,16 @@ CbfPacketBuffer::~CbfPacketBuffer()
     m_runtime.cancel(this);
 }
 
-bool CbfPacketBuffer::try_drop(const Address& src, SequenceNumber sn)
+bool CbfPacketBuffer::remove(const Identifier& id)
 {
     bool packet_dropped = false;
 
     auto& id_map = m_timers.right;
-    auto found = id_map.find(identifier(src, sn));
+    auto found = id_map.find(id);
     if (found != id_map.end()) {
         auto& packet = found->info;
         m_stored_bytes -= packet->length();
+        m_counter->remove(id);
         m_packets.erase(packet);
         auto& timer_map = m_timers.left;
         auto successor = timer_map.erase(m_timers.project_left(found));
@@ -82,7 +84,7 @@ bool CbfPacketBuffer::try_drop(const Address& src, SequenceNumber sn)
     return packet_dropped;
 }
 
-void CbfPacketBuffer::enqueue(CbfPacket&& packet, Clock::duration timeout)
+void CbfPacketBuffer::add(CbfPacket&& packet, Clock::duration timeout)
 {
     if(timeout <= Clock::duration::zero()) return;
     m_stored_bytes += packet.length();
@@ -90,12 +92,15 @@ void CbfPacketBuffer::enqueue(CbfPacket&& packet, Clock::duration timeout)
     // do head drop if necessary
     while (m_stored_bytes > m_capacity_bytes && !m_packets.empty()) {
         m_stored_bytes -= m_packets.front().length();
-        m_timers.right.erase(identifier(m_packets.front()));
+        const auto id = identifier(m_packets.front());
+        m_timers.right.erase(id);
+        m_counter->remove(id);
         m_packets.pop_front();
     }
 
     Timer timer = { m_runtime, timeout };
-    Identifier id = identifier(packet);
+    const Identifier id = identifier(packet);
+    m_counter->add(id);
     m_packets.emplace_back(std::move(packet));
     using timer_value = timer_bimap::value_type;
     auto insertion = m_timers.insert(timer_value { timer, id, std::prev(m_packets.end()) });
@@ -111,11 +116,25 @@ void CbfPacketBuffer::enqueue(CbfPacket&& packet, Clock::duration timeout)
     assert(m_packets.size() == m_timers.size());
 }
 
-boost::optional<CbfPacket> CbfPacketBuffer::fetch(const Address& src, SequenceNumber sn)
+void CbfPacketBuffer::update(const Identifier& id, Clock::duration timeout)
+{
+    auto& id_map = m_timers.right;
+    auto found = id_map.find(id);
+    if (found != id_map.end()) {
+        const Timer& timer = found->second;
+        CbfPacket& cbf_packet = *found->info;
+        reduce_lifetime(timer, cbf_packet);
+        id_map.replace_data(found, Timer { m_runtime, timeout});
+        m_counter->increment(id);
+    }
+}
+
+boost::optional<CbfPacket> CbfPacketBuffer::fetch(const Identifier& id)
 {
     boost::optional<CbfPacket> packet;
+
     auto& id_map = m_timers.right;
-    auto found = id_map.find(identifier(src, sn));
+    auto found = id_map.find(id);
     if (found != id_map.end()) {
         const Timer& timer = found->second;
         CbfPacket& cbf_packet = *found->info;
@@ -124,6 +143,7 @@ boost::optional<CbfPacket> CbfPacketBuffer::fetch(const Address& src, SequenceNu
         if (valid_packet) {
             packet.emplace(std::move(cbf_packet));
         }
+        m_counter->remove(id);
         m_packets.erase(found->info);
         auto& timer_map = m_timers.left;
         auto successor = timer_map.erase(m_timers.project_left(found));
@@ -132,15 +152,20 @@ boost::optional<CbfPacket> CbfPacketBuffer::fetch(const Address& src, SequenceNu
             schedule_timer();
         }
     }
+
     return packet;
 }
 
-const CbfPacket* CbfPacketBuffer::find(const Address& src, SequenceNumber sn) const
+const CbfPacket* CbfPacketBuffer::find(const Identifier& id) const
 {
-    Identifier id = identifier(src, sn);
     const auto& id_map = m_timers.right;
     auto found = id_map.find(id);
     return found != id_map.end() ? &(*found->info) : nullptr;
+}
+
+std::size_t CbfPacketBuffer::counter(const Identifier& id) const
+{
+    return m_counter->counter(id);
 }
 
 void CbfPacketBuffer::flush()
@@ -158,6 +183,7 @@ void CbfPacketBuffer::flush()
             m_timer_callback(std::move(packet).packet());
         }
 
+        m_counter->remove(it->second);
         m_packets.erase(it->info);
         it = m_timers.left.erase(it);
     }

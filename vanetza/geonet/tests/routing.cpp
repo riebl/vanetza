@@ -199,20 +199,20 @@ TEST_P(Routing, advanced_forwarding_max_counter_exceeded)
     net.dispatch();
 
     auto& car1_cbf = net.get_router(cars[1])->get_cbf_buffer();
-    auto found = car1_cbf.find(Address { cars[0] }, SequenceNumber(0));
+    auto found = car1_cbf.find(identifier(Address { cars[0] }, SequenceNumber(0)));
     ASSERT_TRUE(found);
-    EXPECT_EQ(1, found->counter());
+    EXPECT_EQ(1, car1_cbf.counter(identifier(*found)));
 
     const int max_counter = net.get_mib().vanetzaCbfMaxCounter;
     for (int i = 1; i < max_counter; ++i) {
         net.repeat(cars[0], cars[1]);
-        auto found = car1_cbf.find(Address { cars[0] }, SequenceNumber(0));
+        auto found = car1_cbf.find(identifier(Address { cars[0] }, SequenceNumber(0)));
         ASSERT_TRUE(found);
-        EXPECT_EQ(i + 1, found->counter());
+        EXPECT_EQ(i + 1, car1_cbf.counter(identifier(*found)));
     }
 
     net.repeat(cars[0], cars[1]);
-    found = net.get_router(cars[1])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    found = net.get_router(cars[1])->get_cbf_buffer().find(identifier(Address { cars[0] }, SequenceNumber(0)));
     EXPECT_FALSE(found);
 }
 
@@ -232,7 +232,7 @@ TEST_P(Routing, advanced_forwarding_avoid_double_broadcast)
     auto& car1_ifc = net.get_interface(cars[1]).get();
 
     ASSERT_EQ(0, car1_ifc.counter);
-    ASSERT_FALSE(car1_cbf.find(Address { cars[0] }, SequenceNumber(0)));
+    ASSERT_FALSE(car1_cbf.find(identifier(Address { cars[0] }, SequenceNumber(0))));
 
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 0.0_m);
@@ -245,14 +245,14 @@ TEST_P(Routing, advanced_forwarding_avoid_double_broadcast)
     EXPECT_EQ(cars[1], net.get_interface(cars[0])->last_request.destination);
 
     // receiver has enqueued packet in its CBF buffer
-    ASSERT_TRUE(car1_cbf.find(Address { cars[0] }, SequenceNumber(0)));
+    ASSERT_TRUE(car1_cbf.find(identifier(Address { cars[0] }, SequenceNumber(0))));
 
     // receiver forwarded packet immediately
     EXPECT_EQ(1, car1_ifc.counter);
 
     // no further forwarding by receiver
     net.advance_time(units::clock_cast(net.get_mib().itsGnCbfMaxTime));
-    EXPECT_FALSE(car1_cbf.find(Address { cars[0] }, SequenceNumber(0)));
+    EXPECT_FALSE(car1_cbf.find(identifier(Address { cars[0] }, SequenceNumber(0))));
     EXPECT_EQ(1, car1_ifc.counter);
 }
 
@@ -277,9 +277,10 @@ TEST_P(Routing, advanced_forwarding_inside_sectorial_area)
     net.dispatch();
 
     // receiver contends on first packet reception (precondition)
-    auto found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    auto& cbf5 = net.get_router(cars[5])->get_cbf_buffer();
+    auto found = cbf5.find(identifier(Address { cars[0] }, SequenceNumber(0)));
     ASSERT_TRUE(found);
-    EXPECT_EQ(1, found->counter());
+    EXPECT_EQ(1, cbf5.counter(identifier(*found)));
 
     // forwarder's timer expires after ~99.4 ms
     ASSERT_EQ(0, net.get_interface(cars[2])->counter);
@@ -287,7 +288,7 @@ TEST_P(Routing, advanced_forwarding_inside_sectorial_area)
     EXPECT_EQ(1, net.get_interface(cars[2])->counter);
 
     // receiver is inside sectorial area and stops contending
-    found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    found = net.get_router(cars[5])->get_cbf_buffer().find(identifier(Address { cars[0] }, SequenceNumber(0)));
     EXPECT_FALSE(found);
 }
 
@@ -315,9 +316,10 @@ TEST_P(Routing, advanced_forwarding_outside_sectorial_area)
     net.dispatch();
 
     // receiver contends on first packet reception (precondition)
-    auto found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    auto& cbf5 = net.get_router(cars[5])->get_cbf_buffer();
+    auto found = cbf5.find(identifier(Address { cars[0] }, SequenceNumber(0)));
     ASSERT_TRUE(found);
-    EXPECT_EQ(1, found->counter());
+    EXPECT_EQ(1, cbf5.counter(identifier(*found)));
 
     // forwarder's timer expires after ~99.4 ms
     ASSERT_EQ(0, net.get_interface(cars[2])->counter);
@@ -325,9 +327,9 @@ TEST_P(Routing, advanced_forwarding_outside_sectorial_area)
     EXPECT_EQ(1, net.get_interface(cars[2])->counter);
 
     // receiver is outside sectorial area and increments counter
-    found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    found = cbf5.find(identifier(Address { cars[0] }, SequenceNumber(0)));
     ASSERT_TRUE(found);
-    EXPECT_EQ(2, found->counter());
+    EXPECT_EQ(2, cbf5.counter(identifier(*found)));
 }
 
 /*
@@ -355,9 +357,9 @@ TEST_P(Routing, advanced_routing_distinct_sender_sectorial_area)
     net.advance_time(std::chrono::microseconds(99650));
     EXPECT_EQ(1, net.get_interface(cars[2])->counter);
     EXPECT_EQ(0, net.get_interface(cars[0])->counter);
-    auto found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[1] }, SequenceNumber(0));
+    auto found = net.get_router(cars[5])->get_cbf_buffer().find(identifier(Address { cars[1] }, SequenceNumber(0)));
     ASSERT_TRUE(found);
-    EXPECT_EQ(1, found->counter());
+    EXPECT_EQ(1, net.get_router(cars[5])->get_cbf_buffer().counter(identifier(*found)));
 
     // forwarder's timer expires after ~99.4 ms
     EXPECT_EQ(0, net.get_interface(cars[0])->counter);
@@ -365,7 +367,7 @@ TEST_P(Routing, advanced_routing_distinct_sender_sectorial_area)
     EXPECT_EQ(1, net.get_interface(cars[0])->counter);
 
     // receiver stopped contending
-    found = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[1] }, SequenceNumber(0));
+    found = net.get_router(cars[5])->get_cbf_buffer().find(identifier(Address { cars[1] }, SequenceNumber(0)));
     EXPECT_FALSE(found);
 }
 
@@ -481,16 +483,16 @@ TEST_P(Routing, forwarding_selection_discard)
     // all four neighbours of car0 received the GBC packet
     EXPECT_EQ(4, net.get_counter_indications());
     // but only 1 and 5 buffer the packet (i.e. they are inside target area)
-    auto found1 = net.get_router(cars[1])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    auto found1 = net.get_router(cars[1])->get_cbf_buffer().find(identifier(Address { cars[0] }, SequenceNumber(0)));
     EXPECT_TRUE(found1);
-    auto found5 = net.get_router(cars[5])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    auto found5 = net.get_router(cars[5])->get_cbf_buffer().find(identifier(Address { cars[0] }, SequenceNumber(0)));
     EXPECT_TRUE(found5);
 
     // nodes 2 and 3 have not buffered packet and did no non-area forwarding either
-    auto found2 = net.get_router(cars[2])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    auto found2 = net.get_router(cars[2])->get_cbf_buffer().find(identifier(Address { cars[0] }, SequenceNumber(0)));
     EXPECT_FALSE(found2);
     EXPECT_EQ(0, net.get_interface(cars[2])->counter);
-    auto found3 = net.get_router(cars[3])->get_cbf_buffer().find(Address { cars[0] }, SequenceNumber(0));
+    auto found3 = net.get_router(cars[3])->get_cbf_buffer().find(identifier(Address { cars[0] }, SequenceNumber(0)));
     EXPECT_FALSE(found3);
     EXPECT_EQ(0, net.get_interface(cars[3])->counter);
 }

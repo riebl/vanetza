@@ -12,6 +12,7 @@
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
 #include <vanetza/geonet/router.hpp>
+#include <vanetza/geonet/cbf_counter.hpp>
 #include <vanetza/geonet/data_confirm.hpp>
 #include <vanetza/geonet/dcc_field_generator.hpp>
 #include <vanetza/geonet/duplicate_packet_list.hpp>
@@ -106,6 +107,18 @@ PDU& get_pdu(const std::tuple<std::unique_ptr<PDU>, std::unique_ptr<DownPacket>>
     return *pdu;
 }
 
+std::unique_ptr<CbfCounter> create_cbf_counter(Runtime& rt, const MIB& mib)
+{
+    std::unique_ptr<CbfCounter> counter;
+    if (mib.vanetzaFadingCbfCounter) {
+        counter.reset(new CbfCounterFading(rt, units::clock_cast(2.0 * mib.itsGnCbfMaxTime)));
+    } else {
+        counter.reset(new CbfCounterContending());
+    }
+    assert(counter);
+    return counter;
+}
+
 } // namespace
 
 using units::clock_cast;
@@ -124,6 +137,7 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
     m_cbf_buffer(m_runtime,
             [](PendingPacketGbc&& packet) { packet.process(); },
+            create_cbf_counter(rt, mib),
             mib.itsGnCbfPacketBufferSize * 1024),
     m_local_sequence_number(0),
     m_repeater(m_runtime,
@@ -790,10 +804,12 @@ NextHop Router::non_area_contention_based_forwarding(PendingPacketForwarding&& p
 {
     NextHop nh;
     const GeoBroadcastHeader& gbc = packet.pdu().extended();
+    const auto cbf_id = identifier(gbc.source_position.gn_addr, gbc.sequence_number);
+
     // immediately broadcast packet if it is originating from local router
     if (!sender) {
         nh.transmit(std::move(packet), cBroadcastMacAddress);
-    } else if (m_cbf_buffer.try_drop(gbc.source_position.gn_addr, gbc.sequence_number)) {
+    } else if (m_cbf_buffer.remove(cbf_id)) {
         // packet has been in CBF buffer (and is now dropped)
         nh.discard();
     } else {
@@ -809,7 +825,7 @@ NextHop Router::non_area_contention_based_forwarding(PendingPacketForwarding&& p
             if (dist_sender > dist_local) {
                 CbfPacket cbf { std::move(packet), *sender };
                 const auto progress = dist_sender - dist_local;
-                m_cbf_buffer.enqueue(std::move(cbf), clock_cast(timeout_cbf(progress)));
+                m_cbf_buffer.add(std::move(cbf), clock_cast(timeout_cbf(progress)));
                 nh.buffer();
 
             } else {
@@ -818,7 +834,7 @@ NextHop Router::non_area_contention_based_forwarding(PendingPacketForwarding&& p
         } else {
             CbfPacket cbf { std::move(packet), *sender };
             const auto to_cbf_max = m_mib.itsGnCbfMaxTime;
-            m_cbf_buffer.enqueue(std::move(cbf), clock_cast(to_cbf_max));
+            m_cbf_buffer.add(std::move(cbf), clock_cast(to_cbf_max));
             nh.buffer();
         }
     }
@@ -829,14 +845,15 @@ NextHop Router::area_contention_based_forwarding(PendingPacketForwarding&& packe
 {
     NextHop nh;
     const GeoBroadcastHeader& gbc = packet.pdu().extended();
+    const auto cbf_id = identifier(gbc.source_position.gn_addr, gbc.sequence_number);
 
     if (!sender) {
         nh.transmit(std::move(packet), cBroadcastMacAddress);
-    } else if (m_cbf_buffer.try_drop(gbc.source_position.gn_addr, gbc.sequence_number)) {
+    } else if (m_cbf_buffer.remove(cbf_id)) {
         nh.discard();
     } else {
         const units::Duration timeout = timeout_cbf(*sender);
-        m_cbf_buffer.enqueue(CbfPacket { std::move(packet), *sender }, clock_cast(timeout));
+        m_cbf_buffer.add(CbfPacket { std::move(packet), *sender }, clock_cast(timeout));
         nh.buffer();
     }
     return nh;
@@ -881,23 +898,23 @@ NextHop Router::area_advanced_forwarding(PendingPacketForwarding&& packet, const
         const HeaderType ht = packet.pdu().common().header_type;
         const Area destination_area = gbc.destination(ht);
         const std::size_t max_counter = m_mib.vanetzaCbfMaxCounter;
-        auto cbf = m_cbf_buffer.fetch(gbc.source_position.gn_addr, gbc.sequence_number);
+        const auto cbf_id = identifier(gbc.source_position.gn_addr, gbc.sequence_number);
+        const CbfPacket* cbf_packet = m_cbf_buffer.find(cbf_id);
 
-        if (cbf) {
+        if (cbf_packet) {
             // packet is already buffered
-            if (cbf->counter() >= max_counter) {
+            if (m_cbf_buffer.counter(cbf_id) >= max_counter) {
                 // stop contending if counter is exceeded
-                m_cbf_buffer.try_drop(gbc.source_position.gn_addr, gbc.sequence_number);
+                m_cbf_buffer.remove(cbf_id);
                 nh.discard();
-            } else if (!outside_sectorial_contention_area(cbf->sender(), ll->sender)) {
+            } else if (!outside_sectorial_contention_area(cbf_packet->sender(), ll->sender)) {
                 // within sectorial area
                 // - sender S = sender of buffered packet
                 // - forwarder F = sender of now received packet
-                m_cbf_buffer.try_drop(gbc.source_position.gn_addr, gbc.sequence_number);
+                m_cbf_buffer.remove(cbf_id);
                 nh.discard();
             } else {
-                ++cbf->counter();
-                m_cbf_buffer.enqueue(std::move(*cbf), clock_cast(timeout_cbf(ll->sender)));
+                m_cbf_buffer.update(cbf_id, clock_cast(timeout_cbf(ll->sender)));
                 nh.buffer();
             }
         } else {
@@ -911,18 +928,18 @@ NextHop Router::area_advanced_forwarding(PendingPacketForwarding&& packet, const
                         [](PendingPacketForwarding::Packet&&, const MacAddress&) {};
                     PendingPacketForwarding noop { std::move(packet).packet(), noop_fn };
                     CbfPacket cbf { std::move(noop), ll->sender };
-                    m_cbf_buffer.enqueue(std::move(cbf), clock_cast(m_mib.itsGnCbfMaxTime));
+                    m_cbf_buffer.add(std::move(cbf), clock_cast(m_mib.itsGnCbfMaxTime));
                 } else {
                     // no immediate broadcast by greedy forwarding
                     CbfPacket cbf { std::move(packet), ll->sender };
-                    m_cbf_buffer.enqueue(std::move(cbf), clock_cast(m_mib.itsGnCbfMaxTime));
+                    m_cbf_buffer.add(std::move(cbf), clock_cast(m_mib.itsGnCbfMaxTime));
                 }
                 // next hop (nh) conveys result of greedy forwarding algorithm
             } else {
                 // classical CBF (timeout_cbf_gbc looks up sender's position)
                 nh.buffer();
                 CbfPacket cbf { std::move(packet), ll->sender };
-                m_cbf_buffer.enqueue(std::move(cbf), clock_cast(timeout_cbf(ll->sender)));
+                m_cbf_buffer.add(std::move(cbf), clock_cast(timeout_cbf(ll->sender)));
             }
         }
     }

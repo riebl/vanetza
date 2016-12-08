@@ -95,6 +95,7 @@ struct ManagementInformationBase
     std::size_t vanetzaCbfMaxCounter; /*< maximum counter value used for Advanced routing */
     bool vanetzaDeferInitialBeacon; /*< defer first beacon up to itsGnBeaconServiceRetransmitTimer */
     bool vanetzaDisableBeaconing; /*< disable transmission of beacons entirely */
+    bool vanetzaFadingCbfCounter; /*< use fading counters for CBF packet buffer */
 };
 
 // This name is too clumsy to write it out every time
