@@ -4,6 +4,7 @@ set(CXX_SOURCES
     basic_header.cpp
     beacon_header.cpp
     cbf_packet_buffer.cpp
+    cbf_packet_identifier.cpp
     cbr_aggregator.cpp
     common_header.cpp
     data_confirm.cpp

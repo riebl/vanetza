@@ -2,6 +2,7 @@
 #define CBF_PACKET_BUFFER_HPP_MU3RK5V1
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/geonet/cbf_packet_identifier.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/pending_packet.hpp>
 #include <vanetza/geonet/pdu_variant.hpp>
@@ -13,7 +14,6 @@
 #include <cstddef>
 #include <list>
 #include <memory>
-#include <tuple>
 
 // forward declarations
 namespace vanetza
@@ -25,29 +25,6 @@ namespace geonet
 class Address;
 class CbfPacket;
 class Lifetime;
-
-using CbfPacketIdentifier = std::tuple<Address, SequenceNumber>;
-CbfPacketIdentifier identifier(const CbfPacket&);
-CbfPacketIdentifier identifier(const Address&, SequenceNumber);
-
-} // namespace geonet
-} // namespace vanetza
-
-
-namespace std
-{
-/// std::hash specialization for CbfPacketIdentifier
-template<> struct hash<vanetza::geonet::CbfPacketIdentifier>
-{
-    size_t operator()(const vanetza::geonet::CbfPacketIdentifier&) const;
-};
-} // namespace std
-
-
-namespace vanetza
-{
-namespace geonet
-{
 
 /**
  * CbfPacket enables handling of conventional packets in a CBF packet buffer.
