@@ -149,6 +149,11 @@ LocationTableEntry& LocationTable::get_entry(const Address& addr)
     return m_table.get_value(addr.mid());
 }
 
+const LocationTableEntry* LocationTable::get_entry(const Address& addr) const
+{
+    return m_table.get_value_ptr(addr.mid());
+}
+
 boost::optional<const LongPositionVector&>
 LocationTable::get_position(const Address& addr) const
 {
