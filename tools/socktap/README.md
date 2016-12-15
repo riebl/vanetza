@@ -18,3 +18,8 @@ You can locate *socktap* in your build directory at **bin/socktap**.
 It requires the network device name as startup argument on which *socktap* should send and receive packets.
 Usually, such devices are named *eth0* or *wlan0*.
 You can look up the available devices on your machine with the `ip link` command.
+
+# Acknowledgement
+
+This demo application has been initially developed as part of a student's project at Hochschule Darmstadt in summer term 2016.
+Participating students were in alphabetical order: Sachin Kashyap Bukkambudhi Satyanarayana, Alvita Marina Menezes, Mrunmayi Parchure, Subashini Rajan and Deeksha Venkadari Yogendra.
