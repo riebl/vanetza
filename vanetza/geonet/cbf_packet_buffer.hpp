@@ -169,6 +169,11 @@ private:
     void flush();
 
     /**
+     * Remove timer from map and reschedule timer event if necessary
+     */
+    void remove_timer(typename timer_bimap::left_map::iterator);
+
+    /**
      * Schedule next timer event at runtime
      */
     void schedule_timer();

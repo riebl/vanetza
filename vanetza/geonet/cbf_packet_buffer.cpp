@@ -71,17 +71,22 @@ bool CbfPacketBuffer::remove(const Identifier& id)
         m_stored_bytes -= packet->length();
         m_counter->remove(id);
         m_packets.erase(packet);
-        auto& timer_map = m_timers.left;
-        auto successor = timer_map.erase(m_timers.project_left(found));
-        if (successor == timer_map.begin() && !timer_map.empty()) {
-            // erased timer was scheduled one, reschedule timer trigger
-            schedule_timer();
-        }
+        remove_timer(m_timers.project_left(found));
         packet_dropped = true;
     }
 
     assert(m_packets.size() == m_timers.size());
     return packet_dropped;
+}
+
+void CbfPacketBuffer::remove_timer(typename timer_bimap::left_map::iterator timer_it)
+{
+    auto& timer_map = m_timers.left;
+    auto successor = timer_map.erase(timer_it);
+    if (successor == timer_map.begin() && !timer_map.empty()) {
+        // erased timer was scheduled one, reschedule timer trigger
+        schedule_timer();
+    }
 }
 
 void CbfPacketBuffer::add(CbfPacket&& packet, Clock::duration timeout)
@@ -145,12 +150,7 @@ boost::optional<CbfPacket> CbfPacketBuffer::fetch(const Identifier& id)
         }
         m_counter->remove(id);
         m_packets.erase(found->info);
-        auto& timer_map = m_timers.left;
-        auto successor = timer_map.erase(m_timers.project_left(found));
-        if (successor == timer_map.begin() && !timer_map.empty()) {
-            // erased timer was scheduled one, reschedule timer trigger
-            schedule_timer();
-        }
+        remove_timer(m_timers.project_left(found));
     }
 
     return packet;
