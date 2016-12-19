@@ -93,6 +93,7 @@ void CbfPacketBuffer::add(CbfPacket&& packet, Clock::duration timeout)
 {
     if(timeout <= Clock::duration::zero()) return;
     m_stored_bytes += packet.length();
+    const auto first_timer = m_timers.left.begin();
 
     // do head drop if necessary
     while (m_stored_bytes > m_capacity_bytes && !m_packets.empty()) {
@@ -105,17 +106,18 @@ void CbfPacketBuffer::add(CbfPacket&& packet, Clock::duration timeout)
 
     Timer timer = { m_runtime, timeout };
     const Identifier id = identifier(packet);
-    m_counter->add(id);
     m_packets.emplace_back(std::move(packet));
     using timer_value = timer_bimap::value_type;
     auto insertion = m_timers.insert(timer_value { timer, id, std::prev(m_packets.end()) });
     if (!insertion.second) {
         m_stored_bytes -= m_packets.back().length();
         m_packets.pop_back();
-        assert(m_packets.size() == m_timers.size());
-        throw std::runtime_error("Illegal insertion of duplicate CBF packet");
-    } else if (m_timers.project_left(insertion.first) == m_timers.left.begin()) {
-        // enqueued packet expires first, reschedule timer trigger
+    } else {
+        m_counter->add(id);
+    }
+
+    // first expirying timer has changed (head drop or added packet)
+    if (m_timers.left.begin() != first_timer) {
         schedule_timer();
     }
     assert(m_packets.size() == m_timers.size());
