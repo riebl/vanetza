@@ -11,3 +11,12 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(GeographicLib
     REQUIRED_VARS GeographicLib_INCLUDE_DIR GeographicLib_LIBRARY
     VERSION_VAR GeographicLib_VERSION)
+
+if(GeographicLib_FOUND AND NOT TARGET GeographicLib::GeographicLib)
+    add_library(GeographicLib::GeographicLib UNKNOWN IMPORTED GLOBAL)
+    set_target_properties(GeographicLib::GeographicLib PROPERTIES
+        IMPORTED_LOCATION "${GeographicLib_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GeographicLib_INCLUDE_DIR}")
+endif()
+
+mark_as_advanced(GeographicLib_INCLUDE_DIR GeographicLib_LIBRARY)
