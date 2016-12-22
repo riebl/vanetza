@@ -14,7 +14,7 @@ the build host.
 You need following tools and libraries on your system for compilation of Vanetza:
 
 * C++11 compatible compiler, e.g. GNU GCC or Clang
-* CMake 3.0 or higher
+* CMake 3.1 or higher
 * Boost 1.58 or higher
 * GeographicLib 1.37 or higher
 * Crypto++ 5.6.1 or higher

@@ -15,6 +15,7 @@ prepare_gtest(security
     check_validity_restriction.cpp
     serialization.cpp
 )
+target_include_directories(security_test_objs PUBLIC ${Boost_INCLUDE_DIRS})
 target_link_libraries(security_test INTERFACE common geonet)
 
 add_gtest(Certificate certificate.cpp)

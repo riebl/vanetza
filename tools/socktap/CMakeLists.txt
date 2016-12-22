@@ -1,4 +1,8 @@
-find_package(Boost COMPONENTS system REQUIRED)
+if(NOT TARGET Boost::system)
+    message(STATUS "Skip build of socktap because of missing Boost::system dependency")
+    return()
+endif()
+
 find_package(Threads REQUIRED)
 find_package(GPS REQUIRED)
 
@@ -11,5 +15,4 @@ add_executable(socktap
     router_context.cpp
     time_trigger.cpp
 )
-target_include_directories(socktap PRIVATE ${Boost_INCLUDE_DIRS})
-target_link_libraries(socktap ${Boost_SYSTEM_LIBRARY} Threads::Threads GPS::GPS geonet btp net)
+target_link_libraries(socktap Boost::system Threads::Threads GPS::GPS vanetza)
