@@ -31,5 +31,18 @@ if(OPENSSL_FOUND)
                 IMPORTED_LOCATION ${OPENSSL_CRYPTO_LIBRARY}
                 INTERFACE_INCLUDE_DIRECTORIES ${OPENSSL_INCLUDE_DIR})
         endif()
+        if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+            if(LIB_dl)
+                # Conan's FindOpenSSL provides LIB_DL
+                set(DYNAMIC_LOADING_LIBRARY ${LIB_dl})
+            else()
+                find_library(DYNAMIC_LOADING_LIBRARY NAME dl DOC "Dynamic loading library")
+                mark_as_advanced(DYNAMIC_LOADING_LIBRARY)
+            endif()
+            if(DYNAMIC_LOADING_LIBRARY)
+                set_property(TARGET OpenSSL::Crypto APPEND PROPERTY
+                    INTERFACE_LINK_LIBRARIES ${DYNAMIC_LOADING_LIBRARY})
+            endif()
+        endif()
     endif()
 endif()
