@@ -44,7 +44,7 @@ We strive for quality in our code base. Latest commits are built using [Travis C
 ## Demo
 
 Vanetza ships with a simple demo application called *socktap*.
-You can enable the build process for this application by the *ENABLE_SOCKTAP* CMake option.
+You can enable the build process for this application by the *BUILD_SOCKTAP* CMake option.
 See [tools/socktap](tools/socktap/README.md) for details.
 
 # Authors

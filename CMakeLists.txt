@@ -53,8 +53,8 @@ add_subdirectory(vanetza/units)
 add_subdirectory(tools/cohda_proxy)
 add_subdirectory(tools/proxy_fake_feed)
 
-option(ENABLE_SOCKTAP "Build socktap application" OFF)
-if(ENABLE_SOCKTAP)
+option(BUILD_SOCKTAP "Build socktap application" OFF)
+if(BUILD_SOCKTAP)
   add_subdirectory(tools/socktap)
 endif()
 
