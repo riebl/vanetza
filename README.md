@@ -1,17 +1,15 @@
 # Vanetza
 
-Vanetza is an open-source implementation of the ETSI ITS-G5 protocol stack. It covers GeoNetworking
-(GN) and Basic Transport (BTP) protocols as well as Decentralized Congestion Control (DCC) and
-aspects of the Facilities layer.
+Vanetza is an open-source implementation of the ETSI ITS-G5 protocol stack.
+It covers GeoNetworking (GN) and Basic Transport (BTP) protocols as well as Decentralized Congestion Control (DCC) and aspects of the Facilities layer.
 
 # How to build
 
-Building Vanetza is accomplished by the CMake build system. Hence, CMake needs to be available on
-the build host.
+Building Vanetza is accomplished by the CMake build system. Hence, CMake needs to be available on the build host.
 
 ## Prerequisites
 
-You need following tools and libraries on your system for compilation of Vanetza:
+You need following tools and libraries on your system for compiling Vanetza:
 
 * C++11 compatible compiler, e.g. GNU GCC or Clang
 * CMake 3.1 or higher
@@ -19,15 +17,13 @@ You need following tools and libraries on your system for compilation of Vanetza
 * GeographicLib 1.37 or higher
 * Crypto++ 5.6.1 or higher
 
-If openSSL 1.1.0 is available on your system, an alternative security backend implementation is
-compiled along with the Crypto++ based backend.
-You can switch the employed backend per geonet::Router instance by the vanetzaCryptoBackend option
-located in the Management Information Base (MIB).
+If openSSL 1.1.0 is available on your system, an alternative security backend implementation is compiled along with the Crypto++ based backend.
+You can switch the employed backend per `geonet::Router` instance through the `vanetzaCryptoBackend` option located in the Management Information Base (MIB).
 
 ## Compilation
 
 Following command line snippet demonstrates the build process using a generated Makefile.
-Other CMake generators and build directory can be used as well.
+Other CMake generators and build directory setups can be used as well.
 
     cd vanetza
     mkdir build && cd build
