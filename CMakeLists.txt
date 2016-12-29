@@ -13,6 +13,8 @@ if(ENABLE_CONAN)
     conan_basic_setup()
 endif()
 
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
+
 option(BUILD_TESTS "Build unit tests" OFF)
 if(BUILD_TESTS)
     enable_testing()
