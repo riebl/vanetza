@@ -34,8 +34,6 @@ Other CMake generators and build directory can be used as well.
     cmake ..
     make
 
-You might need to add "-std=c++11" to CMAKE_CXX_FLAGS if your CMake version is below 3.1.
-
 ## Continuous Integration
 
 We strive for quality in our code base. Latest commits are built using [Travis CI](https://travis-ci.org) as part of this effort.
