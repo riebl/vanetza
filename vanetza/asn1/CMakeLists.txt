@@ -3,7 +3,7 @@ set(ASN1C_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/gen")
 set(ASN1C_BUNDLED_GEN_DIR "${CMAKE_CURRENT_SOURCE_DIR}/bundled-gen")
 file(GLOB ASN1_SOURCES *.asn1)
 
-if(ASN1C)
+if(ASN1C_EXECUTABLE)
     set(_with_asn1c ON)
 else()
     set(_with_asn1c OFF)
@@ -11,7 +11,7 @@ endif()
 option(VANETZA_ASN1_WITH_ASN1C "Generate ASN.1 code using asn1c (instead of using bundled code)" ${_with_asn1c})
 
 if(VANETZA_ASN1_WITH_ASN1C)
-    if(NOT ASN1C)
+    if(NOT ASN1C_EXECUTABLE)
         message(SEND_ERROR "asn1c not found, cannot generate ASN.1 code from sources")
     endif()
 
@@ -26,7 +26,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
             ${ASN1C_GEN_DIR}/CAM.h
             ${ASN1C_GEN_DIR}/DENM.h
             ${ASN1C_GEN_DIR}/VanetzaTest.h
-        COMMAND ${ASN1C} ${ASN1C_ARGS} ${ASN1_SOURCES}
+        COMMAND ${ASN1C_EXECUTABLE} ${ASN1C_ARGS} ${ASN1_SOURCES}
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c.cmake
         DEPENDS ${ASN1C_SOURCES}
         WORKING_DIRECTORY ${ASN1C_GEN_DIR}
