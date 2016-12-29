@@ -75,7 +75,7 @@ install:
 script:
 - mkdir -p "${HOME}/build"
 - pushd "${HOME}/build"
-- cmake -DENABLE_TESTS=ON ${CMAKE_GEOGRAPHICLIB_FLAGS} ${CMAKE_CRYPTOPP_FLAGS} ${TRAVIS_BUILD_DIR}
+- cmake -DBUILD_TESTS=ON ${CMAKE_GEOGRAPHICLIB_FLAGS} ${CMAKE_CRYPTOPP_FLAGS} ${TRAVIS_BUILD_DIR}
 - cmake --build .
 - ctest
 - popd

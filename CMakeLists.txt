@@ -13,10 +13,10 @@ if(ENABLE_CONAN)
     conan_basic_setup()
 endif()
 
-option(ENABLE_TESTS "Build unit tests" OFF)
-if(ENABLE_TESTS)
+option(BUILD_TESTS "Build unit tests" OFF)
+if(BUILD_TESTS)
     enable_testing()
-    include(gtest/GTestFramework.cmake)
+    add_subdirectory(gtest)
 endif()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
@@ -37,14 +37,6 @@ find_package(GeographicLib 1.37 REQUIRED)
 find_package(OpenSSL 1.1.0)
 include(CompatBoostTargets)
 include(CompatOpenSSLTargets)
-
-# Add subdirectory only when tests are enabled
-## DIR subdirectory name
-macro(add_test_subdirectory DIR)
-  if(ENABLE_TESTS)
-    add_subdirectory(${DIR})
-  endif(ENABLE_TESTS)
-endmacro(add_test_subdirectory)
 
 add_subdirectory(vanetza/asn1)
 add_subdirectory(vanetza/btp)
