@@ -11,11 +11,11 @@ Building Vanetza is accomplished by the CMake build system. Hence, CMake needs t
 
 You need following tools and libraries on your system for compiling Vanetza:
 
-* C++11 compatible compiler, e.g. GNU GCC or Clang
-* CMake 3.1 or higher
-* Boost 1.58 or higher
-* GeographicLib 1.37 or higher
-* Crypto++ 5.6.1 or higher
+* C++11 compatible compiler, e.g. [GNU GCC](https://gcc.gnu.org) or [Clang](http://clang.llvm.org)
+* [CMake](https://cmake.org) 3.1 or higher
+* [Boost](https://www.boost.org) 1.58 or higher
+* [GeographicLib](http://geographiclib.sourceforge.net) 1.37 or higher
+* [Crypto++](https://www.cryptopp.com) 5.6.1 or higher
 
 If openSSL 1.1.0 is available on your system, an alternative security backend implementation is compiled along with the Crypto++ based backend.
 You can switch the employed backend per `geonet::Router` instance through the `vanetzaCryptoBackend` option located in the Management Information Base (MIB).
@@ -43,9 +43,9 @@ See [tools/socktap](tools/socktap/README.md) for details.
 
 # Authors
 
-Development of Vanetza is part of ongoing research work at Technische Hochschule Ingolstadt.
+Development of Vanetza is part of ongoing research work at [Technische Hochschule Ingolstadt](https://www.thi.de/forschung/carissma/labore/car2x-testlabor/).
 Maintenance is coordinated by Raphael Riebl. Contributions are happily accepted.
 
 # License
 
-Vanetza is licensed under LGPLv3, see LICENSE.md for details.
+Vanetza is licensed under LGPLv3, see [license file](LICENSE.md) for details.
