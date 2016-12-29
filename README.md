@@ -41,6 +41,11 @@ Vanetza ships with a simple demo application called *socktap*.
 You can enable the build process for this application by the *BUILD_SOCKTAP* CMake option.
 See [tools/socktap](tools/socktap/README.md) for details.
 
+# Integrating Vanetza
+
+Vanetza is primarily a library project intended for integration by other projects, e.g. V2X simulation tools such as [Artery](https://github.com/riebl/artery).
+Projects using CMake can integrate Vanetza most easily by calling `find_package(Vanetza)` and then refer to the imported Vanetza targets, such as `Vanetza::vanetza`.
+
 # Authors
 
 Development of Vanetza is part of ongoing research work at [Technische Hochschule Ingolstadt](https://www.thi.de/forschung/carissma/labore/car2x-testlabor/).
