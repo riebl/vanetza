@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Build configuration
-option(ENABLE_CONAN "Build with conan package manager" OFF)
-if(ENABLE_CONAN)
+option(BUILD_USING_CONAN "Build with conan package manager" OFF)
+if(BUILD_USING_CONAN)
     include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup()
 endif()

@@ -15,11 +15,11 @@ class VanetzaConan(ConanFile):
 
     def build(self):
         cmake = CMake(self.settings)
-        build = "-DENABLE_CONAN=ON -DVANETZA_BUILD_SHARED=%s -DVANETZA_BUILD_STATIC=%s"
+        build = "-DBUILD_USING_CONAN=ON -DBUILD_SHARED_LIBS=%s"
         if self.options.static:
-            build = build % ('OFF', 'ON')
+            build = build % ('OFF')
         else:
-            build = build % ('ON', 'OFF')
+            build = build % ('ON')
         self.run('cmake "%s" %s %s' % (self.conanfile_directory, cmake.command_line, build))
         self.run('cmake --build . %s' % cmake.build_config)
 
