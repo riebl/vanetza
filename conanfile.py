@@ -7,11 +7,11 @@ class VanetzaConan(ConanFile):
     url = "https://github.com/riebl/vanetza"
     license = "GNU Lesser General Public License (LGPL) v3"
     settings = "os", "compiler", "build_type", "arch"
-    requires = "Boost/1.60.0@lasote/stable", "cryptopp/5.6.5@riebl/testing", "GeographicLib/1.46@riebl/testing"
+    requires = "Boost/1.60.0@lasote/stable", "OpenSSL/1.0.2j@lasote/stable", "cryptopp/5.6.5@riebl/testing", "GeographicLib/1.46@riebl/testing"
     generators = "cmake"
     exports = "cmake/*", "tools/*", "vanetza/*", "CMakeLists.txt"
     options = {"static": [True, False]}
-    default_options = "static=False"
+    default_options = "static=False", "OpenSSL:no_electric_fence=True", "OpenSSL:no_zlib=True"
 
     def build(self):
         cmake = CMake(self.settings)
