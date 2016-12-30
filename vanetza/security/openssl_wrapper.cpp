@@ -80,10 +80,16 @@ Signature::Signature(ECDSA_SIG* sig) : signature(sig)
 Signature::Signature(const EcdsaSignature& ecdsa) : signature(ECDSA_SIG_new())
 {
     check(signature);
+#if OPENSSL_API_COMPAT < 0x10100000L
+    const ByteBuffer r = convert_for_signing(ecdsa.R);
+    BN_bin2bn(r.data(), r.size(), signature->r);
+    BN_bin2bn(ecdsa.s.data(), ecdsa.s.size(), signature->s);
+#else
     BigNumber bn_r { convert_for_signing(ecdsa.R) };
     BigNumber bn_s { ecdsa.s };
     // ownership of big numbers is transfered by calling ECDSA_SIG_set0!
     ECDSA_SIG_set0(signature, bn_r.move(), bn_s.move());
+#endif
 }
 
 Signature::~Signature()

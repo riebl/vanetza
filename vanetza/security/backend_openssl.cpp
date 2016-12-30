@@ -15,7 +15,11 @@ namespace security
 
 BackendOpenSsl::BackendOpenSsl()
 {
+#if OPENSSL_API_COMPAT < 0x10100000L
     ERR_load_crypto_strings();
+#else
+    OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, nullptr);
+#endif
 }
 
 EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const ByteBuffer& data)
@@ -25,9 +29,14 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
 
     // sign message data represented by the digest
     openssl::Signature signature { ECDSA_do_sign(digest.data(), digest.size(), priv_key) };
+#if OPENSSL_API_COMPAT < 0x10100000L
+    const BIGNUM* sig_r = signature->r;
+    const BIGNUM* sig_s = signature->s;
+#else
     const BIGNUM* sig_r = nullptr;
     const BIGNUM* sig_s = nullptr;
     ECDSA_SIG_get0(signature, &sig_r, &sig_s);
+#endif
 
     EcdsaSignature ecdsa_signature;
     X_Coordinate_Only coordinate;

@@ -36,7 +36,7 @@ find_package(Boost 1.58 REQUIRED
   OPTIONAL_COMPONENTS ${Boost_OPTIONAL_COMPONENTS})
 find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
-find_package(OpenSSL 1.1.0)
+find_package(OpenSSL 1.0.1)
 include(CompatBoostTargets)
 include(CompatOpenSSLTargets)
 
