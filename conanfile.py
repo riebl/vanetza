@@ -7,7 +7,7 @@ class VanetzaConan(ConanFile):
     url = "https://github.com/riebl/vanetza"
     license = "GNU Lesser General Public License (LGPL) v3"
     settings = "os", "compiler", "build_type", "arch"
-    requires = "Boost/1.60.0@lasote/stable", "cryptopp/5.6.3@riebl/testing", "GeographicLib/1.46@riebl/testing"
+    requires = "Boost/1.60.0@lasote/stable", "cryptopp/5.6.5@riebl/testing", "GeographicLib/1.46@riebl/testing"
     generators = "cmake"
     exports = "cmake/*", "tools/*", "vanetza/*", "CMakeLists.txt"
     options = {"static": [True, False]}
