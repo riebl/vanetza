@@ -51,6 +51,7 @@ function(add_gtest name)
   add_executable(${target} ${sources})
   set_target_properties(${target} PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tests
+    FOLDER "GTest"
     LINK_LIBRARIES "${link_libraries}"
     INCLUDE_DIRECTORIES "${include_directories}"
     COMPILE_DEFINITIONS "${compile_definitions}")

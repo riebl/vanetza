@@ -51,3 +51,6 @@ else()
     message(STATUS "Build GTest without threading")
     target_compile_definitions(${GTest_LIBRARY} PUBLIC "GTEST_HAS_PTHREAD=0")
 endif()
+
+set_target_properties(download_gtest extract_gtest ${GTest_LIBRARY} ${GTest_MAIN_LIBRARY}
+    PROPERTIES FOLDER "GTest")

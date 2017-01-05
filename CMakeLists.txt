@@ -28,6 +28,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib/static)
 include(GNUInstallDirs)
 include(UseVanetza)
 
+# Enable usage of targets' folder property (good for Visual Studio)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # Mandatory and optional project dependencies
 set(Boost_COMPONENTS date_time serialization)
 set(Boost_OPTIONAL_COMPONENTS system)
