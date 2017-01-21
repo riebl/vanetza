@@ -102,7 +102,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vanetza
 export(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaExports.cmake)
 file(COPY ${CMAKECONFIG_BUILD_DIR}/VanetzaConfigVersion.cmake
   DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/VanetzaConfig.cmake
-  "include(\"\${CMAKE_CURRENT_LIST_DIR}/VanetzaExports.cmake\")")
+configure_file(cmake/VanetzaExportsConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/VanetzaConfig.cmake @ONLY)
 export(PACKAGE ${PROJECT_NAME})
 
