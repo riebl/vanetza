@@ -15,6 +15,13 @@ endif()
 
 if(@OPENSSL_FOUND@)
     string(REGEX REPLACE "[a-z]+" "" OPENSSL_VERSION_WITHOUT_PATCH @OPENSSL_VERSION@)
+    # workaround for old CMake versions before 3.3
+    if("${CMAKE_VERSION}" VERSION_LESS 3.3)
+        if(NOT DEFINED OPENSSL_FOUND)
+            find_package(OpenSSL ${OPENSSL_VERSION_WITHOUT_PATCH} QUIET)
+        endif()
+        set(OpenSSL_FOUND ${OPENSSL_FOUND})
+    endif()
     find_dependency(OpenSSL ${OPENSSL_VERSION_WITHOUT_PATCH})
 endif()
 
