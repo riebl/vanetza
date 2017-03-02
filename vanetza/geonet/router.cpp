@@ -641,7 +641,7 @@ NextHop Router::next_hop_gbc_advanced(
     const GeoBroadcastHeader& gbc = pdu->extended();
     const HeaderType ht = pdu->common().header_type;
     const Area destination_area = gbc.destination(ht);
-    static const std::size_t max_counter = 3; // TODO: Where is this constant's definition in GN standard?
+    const std::size_t max_counter = m_mib.vanetzaCbfMaxCounter;
     auto cbf = m_cbf_buffer.fetch(gbc.source_position.gn_addr, gbc.sequence_number);
 
     if (inside_or_at_border(destination_area, m_local_position_vector.position())) {
