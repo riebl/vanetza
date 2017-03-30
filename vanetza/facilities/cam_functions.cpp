@@ -9,6 +9,8 @@
 #include <vanetza/facilities/cam_functions.hpp>
 #include <vanetza/facilities/path_history.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/math/constants/constants.hpp>
+#include <boost/units/cmath.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
 #include <algorithm>
 #undef min
@@ -17,6 +19,8 @@ namespace vanetza
 {
 namespace facilities
 {
+
+using vanetza::units::Angle;
 
 // TODO:  C2C-CC BSP allows up to 500m history for CAMs, we provide just minimal required history
 void copy(const facilities::PathHistory& ph, BasicVehicleContainerLowFrequency& container)
@@ -51,6 +55,42 @@ void copy(const facilities::PathHistory& ph, BasicVehicleContainerLowFrequency& 
             ++path_points;
         }
     }
+}
+
+bool similar_heading(const Heading& a, const Heading& b, Angle limit)
+{
+    // HeadingValues are tenth of degree (900 equals 90 degree east)
+    static_assert(HeadingValue_wgs84East == 900, "HeadingValue interpretation fails");
+
+    bool result = false;
+    if (a.headingValue != HeadingValue_unavailable && b.headingValue != HeadingValue_unavailable) {
+        using vanetza::units::degree;
+        const Angle angle_a { a.headingValue / 10.0 * degree };
+        const Angle angle_b { b.headingValue / 10.0 * degree };
+        result = similar_heading(angle_a, angle_b, limit);
+    }
+
+    return result;
+}
+
+bool similar_heading(const Heading& a, Angle b, Angle limit)
+{
+    bool result = false;
+    if (a.headingValue != HeadingValue_unavailable) {
+        using vanetza::units::degree;
+        result = similar_heading(Angle { a.headingValue / 10.0 * degree}, b, limit);
+    }
+    return result;
+}
+
+bool similar_heading(Angle a, Angle b, Angle limit)
+{
+    using namespace boost::units;
+    using boost::math::double_constants::pi;
+
+    static const Angle full_circle = 2.0 * pi * si::radian;
+    const Angle abs_diff = fmod(abs(a - b), full_circle);
+    return abs_diff <= limit || abs_diff >= full_circle - limit;
 }
 
 } // namespace facilities
