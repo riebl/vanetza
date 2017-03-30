@@ -2,7 +2,9 @@
 #define CAM_FUNCTIONS_HPP_PUFKBEM8
 
 #include <vanetza/asn1/gen/Heading.h>
+#include <vanetza/asn1/gen/ReferencePosition.h>
 #include <vanetza/units/angle.hpp>
+#include <vanetza/units/length.hpp>
 
 // forward declaration of asn1c generated struct
 struct BasicVehicleContainerLowFrequency;
@@ -31,6 +33,15 @@ void copy(const PathHistory&, BasicVehicleContainerLowFrequency&);
 bool similar_heading(const Heading& a, const Heading& b, units::Angle limit);
 bool similar_heading(const Heading& a, units::Angle b, units::Angle limit);
 bool similar_heading(units::Angle a, units::Angle b, units::Angle limit);
+
+/**
+ * Calculate distance between positions
+ * \param a one position
+ * \param b another position
+ * \return distance between given positions
+ */
+units::Length distance(const ReferencePosition_t& a, const ReferencePosition_t& b);
+units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units::GeoAngle lon);
 
 } // namespace facilities
 } // namespace vanetza

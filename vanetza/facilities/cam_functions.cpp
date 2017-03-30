@@ -8,10 +8,12 @@
 #include <vanetza/asn1/gen/PathDeltaTime.h>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <vanetza/facilities/path_history.hpp>
+#include <vanetza/geonet/areas.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
+#include <boost/units/systems/angle/degrees.hpp>
 #include <algorithm>
 #undef min
 
@@ -91,6 +93,41 @@ bool similar_heading(Angle a, Angle b, Angle limit)
     static const Angle full_circle = 2.0 * pi * si::radian;
     const Angle abs_diff = fmod(abs(a - b), full_circle);
     return abs_diff <= limit || abs_diff >= full_circle - limit;
+}
+
+units::Length distance(const ReferencePosition_t& a, const ReferencePosition_t& b)
+{
+    using geonet::GeodeticPosition;
+    using units::GeoAngle;
+    using boost::units::si::micro;
+    using boost::units::degree::degree;
+
+    GeodeticPosition geo_a {
+        GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
+        GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * micro * degree }
+    };
+    GeodeticPosition geo_b {
+        GeoAngle { b.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
+        GeoAngle { b.longitude / Longitude_oneMicrodegreeEast * micro * degree }
+    };
+
+    return geonet::distance(geo_a, geo_b);
+}
+
+units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units::GeoAngle lon)
+{
+    using geonet::GeodeticPosition;
+    using units::GeoAngle;
+    using boost::units::si::micro;
+    using boost::units::degree::degree;
+
+    GeodeticPosition geo_a {
+        GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
+        GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * micro * degree }
+    };
+    GeodeticPosition geo_b { lat, lon };
+
+    return geonet::distance(geo_a, geo_b);
 }
 
 } // namespace facilities
