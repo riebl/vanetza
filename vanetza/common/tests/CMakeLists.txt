@@ -9,5 +9,6 @@ add_gtest(ByteOrder byte_order.cpp)
 add_gtest(ByteView byte_view.cpp)
 add_gtest(Hook hook.cpp)
 add_gtest(LruCache lru_cache.cpp)
+add_gtest(ObjectContainer object_container.cpp)
 add_gtest(Runtime runtime.cpp)
 
