@@ -8,20 +8,20 @@ namespace geonet
 
 constexpr std::size_t ShbHeader::length_bytes;
 
-ShbHeader::ShbHeader() : reserved(0)
+ShbHeader::ShbHeader() : dcc(0u)
 {
 }
 
 void serialize(const ShbHeader& hdr, OutputArchive& ar)
 {
     serialize(hdr.source_position, ar);
-    serialize(host_cast(hdr.reserved), ar);
+    serialize(hdr.dcc, ar);
 }
 
 void deserialize(ShbHeader& hdr, InputArchive& ar)
 {
     deserialize(hdr.source_position, ar);
-    deserialize(hdr.reserved, ar);
+    deserialize(hdr.dcc, ar);
 }
 
 } // namespace geonet

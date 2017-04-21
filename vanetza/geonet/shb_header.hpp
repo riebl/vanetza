@@ -1,6 +1,7 @@
 #ifndef SHB_HEADER_HPP_MRLDRPNK
 #define SHB_HEADER_HPP_MRLDRPNK
 
+#include <vanetza/geonet/dcc_field.hpp>
 #include <vanetza/geonet/position_vector.hpp>
 #include <cstdint>
 
@@ -16,7 +17,7 @@ struct ShbHeader
     static constexpr std::size_t length_bytes = 4 + LongPositionVector::length_bytes;
 
     LongPositionVector source_position;
-    uint32_t reserved; // ITS-G5 uses it for DCC related information
+    DccField dcc; /* < this field is "reserved" in 102 636-4-1 */
 };
 
 void serialize(const ShbHeader&, OutputArchive&);
