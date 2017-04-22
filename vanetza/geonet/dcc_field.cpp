@@ -1,10 +1,37 @@
 #include <vanetza/geonet/dcc_field.hpp>
+#include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 namespace vanetza
 {
 namespace geonet
 {
+
+struct dcc_mco_extractor : boost::static_visitor< boost::optional<DccMcoField> >
+{
+    using return_type = boost::optional<DccMcoField>;
+
+    return_type operator()(const DccMcoField& mco) const
+    {
+        return mco;
+    }
+
+    return_type operator()(uint32_t raw) const
+    {
+        return DccMcoField { raw };
+    }
+
+    template<typename T>
+    return_type operator()(const T&)
+    {
+        return boost::none;
+    }
+};
+
+boost::optional<DccMcoField> get_dcc_mco(const DccField& field)
+{
+    return boost::apply_visitor(dcc_mco_extractor {}, field);
+}
 
 void serialize(const DccField& field, OutputArchive& ar)
 {
