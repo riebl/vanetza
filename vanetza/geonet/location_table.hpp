@@ -1,6 +1,7 @@
 #ifndef LOCATION_TABLE_HPP_EMPVZSHQ
 #define LOCATION_TABLE_HPP_EMPVZSHQ
 
+#include <vanetza/common/object_container.hpp>
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/position_vector.hpp>
@@ -88,6 +89,8 @@ public:
      * \param flag true if entry represents a direct neighbour
      */
     void set_neighbour(bool flag);
+
+    ObjectContainer extensions;
 
 private:
     /**
