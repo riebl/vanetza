@@ -85,6 +85,22 @@ public:
         return m_container.emplace(std::type_index(typeid(T)), std::move(obj)).second;
     }
 
+    template<typename T>
+    T& get()
+    {
+        static_assert(std::is_default_constructible<T>(),
+                "Only default constructible types are accessible through ObjectContainer::get");
+        T* result = find<T>();
+        if (!result) {
+            std::unique_ptr<T> obj { new T() };
+            result = obj.get();
+            if (!insert(std::move(obj)))
+                result = nullptr;
+        }
+        assert(result);
+        return *result;
+    }
+
 private:
     container_type m_container;
 };

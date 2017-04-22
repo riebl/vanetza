@@ -107,3 +107,11 @@ TEST(ObjectContainer, move)
     EXPECT_EQ(pc, c2.find<ObjectC>());
 }
 
+TEST(ObjectContainer, get)
+{
+    ObjectContainer c;
+    EXPECT_EQ(nullptr, c.find<ObjectA>());
+    ObjectA& a = c.get<ObjectA>();
+    EXPECT_EQ(1, a.a);
+}
+
