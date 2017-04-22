@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <chrono>
 #include <memory>
+#include <unordered_set>
 
 using namespace vanetza::geonet;
 using vanetza::Clock;
@@ -205,4 +206,28 @@ TEST_F(LocationTableTest, update_after_duplicate_check) {
     const LongPositionVector* pv_loct = loct->get_position(pv.gn_addr);
     ASSERT_TRUE(pv_loct);
     EXPECT_EQ(pv, *pv_loct);
+}
+
+TEST_F(LocationTableTest, visit) {
+    using vanetza::MacAddress;
+    std::unordered_set<Address> addresses = {
+        Address { MacAddress {0, 0, 0, 0, 0, 1}},
+        Address { MacAddress {0, 0, 0, 0, 0, 2}},
+        Address { MacAddress {0, 0, 0, 0, 0, 3}},
+        Address { MacAddress {0, 0, 0, 0, 0, 4}},
+        Address { MacAddress {0, 0, 0, 0, 0, 5}}
+    };
+
+    for (auto& addr : addresses) {
+        LongPositionVector pv;
+        pv.gn_addr = addr;
+        loct->update(pv);
+    }
+
+    std::unordered_set<Address> visited_addresses;
+    loct->visit([&visited_addresses](const MacAddress& mac, const LocationTableEntry& entry) {
+            visited_addresses.insert(entry.geonet_address());
+    });
+
+    EXPECT_EQ(addresses.size(), visited_addresses.size());
 }

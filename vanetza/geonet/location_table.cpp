@@ -143,6 +143,13 @@ auto LocationTable::neighbours() const -> neighbour_range
     return m_table.map() | filtered(filter_fn) | map_values;
 }
 
+void LocationTable::visit(const entry_visitor& visitor) const
+{
+    for (const auto& entry : m_table.map()) {
+        visitor(entry.first, entry.second);
+    }
+}
+
 bool LocationTable::is_duplicate_packet(const Address& addr, SequenceNumber sn, Timestamp t)
 {
     return m_table.get_value(addr.mid()).is_duplicate_packet(sn, t);

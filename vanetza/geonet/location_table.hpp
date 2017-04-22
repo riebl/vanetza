@@ -127,6 +127,7 @@ class LocationTable
 {
 public:
     using table_type = SoftStateMap<MacAddress, LocationTableEntry, LocationTableEntryCreator>;
+    using entry_visitor = std::function<void(const MacAddress&, const LocationTableEntry&)>;
     using neighbour_range =
         boost::select_second_const_range<
             boost::filtered_range<
@@ -142,6 +143,7 @@ public:
     const LongPositionVector* get_position(const MacAddress&) const;
     bool has_neighbours() const;
     neighbour_range neighbours() const;
+    void visit(const entry_visitor&) const;
     bool is_duplicate_packet(const Address& source, SequenceNumber, Timestamp);
     bool is_duplicate_packet(const Address& source, Timestamp);
     void drop_expired() { m_table.drop_expired(); }
