@@ -15,6 +15,7 @@
 #include <vanetza/geonet/data_confirm.hpp>
 #include <vanetza/geonet/duplicate_packet_list.hpp>
 #include <vanetza/geonet/indication_context.hpp>
+#include <vanetza/geonet/loctex_g5.hpp>
 #include <vanetza/geonet/next_hop.hpp>
 #include <vanetza/geonet/pdu_conversion.hpp>
 #include <vanetza/geonet/repetition_dispatcher.hpp>
@@ -962,6 +963,17 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
 
     // step 6: set SO LocTE to neighbour
     source_entry.set_neighbour(true);
+
+    // media-dependent update of LocTEX_G5 (see TS 102 636-4-2 V1.1.1, section 6.1.2)
+    if (m_mib.itsGnIfType == InterfaceType::ITS_G5) {
+        boost::optional<DccMcoField> dcc_mco = get_dcc_mco(shb.dcc);
+        if (dcc_mco) {
+            auto& loctex = source_entry.extensions.get<LocTEX_G5>();
+            loctex.local_update = m_runtime.now();
+            loctex.source_update = shb.source_position.timestamp;
+            loctex.dcc_mco = *dcc_mco;
+        }
+    }
 
     // step 7: pass up SHB packet anyways
     return true;
