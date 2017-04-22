@@ -144,7 +144,7 @@ TEST_F(LocationTableTest, update_pdr) {
     pv.gn_addr = addr;
 
     using std::chrono::milliseconds;
-    auto entry = loct->update(pv);
+    auto& entry = loct->update(pv);
     EXPECT_TRUE(isnan(entry.get_pdr()));
     runtime->trigger(milliseconds(100));
     entry.update_pdr(30);
