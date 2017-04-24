@@ -137,9 +137,20 @@ bool LocationTable::has_neighbours() const
 
 auto LocationTable::neighbours() const -> neighbour_range
 {
+    const entry_predicate neighbour_predicate =
+        [](const MacAddress&, const LocationTableEntry& entry) {
+            return entry.is_neighbour();
+        };
+    return filter(neighbour_predicate);
+}
+
+auto LocationTable::filter(const entry_predicate& predicate) const -> entry_range
+{
     using namespace boost::adaptors;
     std::function<bool(const typename table_type::value_type&)> filter_fn =
-        [](const typename table_type::value_type& v) { return v.second.is_neighbour(); };
+        [predicate](const typename table_type::value_type& v) {
+            return predicate(v.first, v.second);
+        };
     return m_table.map() | filtered(filter_fn) | map_values;
 }
 

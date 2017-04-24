@@ -128,11 +128,13 @@ class LocationTable
 public:
     using table_type = SoftStateMap<MacAddress, LocationTableEntry, LocationTableEntryCreator>;
     using entry_visitor = std::function<void(const MacAddress&, const LocationTableEntry&)>;
-    using neighbour_range =
+    using entry_predicate = std::function<bool(const MacAddress&, const LocationTableEntry&)>;
+    using entry_range =
         boost::select_second_const_range<
             boost::filtered_range<
                 std::function<bool(const typename table_type::value_type&)>,
                 const typename table_type::map_range>>;
+    using neighbour_range = entry_range;
 
     LocationTable(const MIB&, Runtime&);
     bool has_entry(const Address&) const;
@@ -143,6 +145,7 @@ public:
     const LongPositionVector* get_position(const MacAddress&) const;
     bool has_neighbours() const;
     neighbour_range neighbours() const;
+    entry_range filter(const entry_predicate&) const;
     void visit(const entry_visitor&) const;
     bool is_duplicate_packet(const Address& source, SequenceNumber, Timestamp);
     bool is_duplicate_packet(const Address& source, Timestamp);
