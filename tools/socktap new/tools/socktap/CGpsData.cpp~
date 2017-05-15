@@ -1,0 +1,233 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+#include "CGpsData.hpp"
+
+CGpsData::CGpsData() {
+	// TODO Auto-generated constructor stub
+
+}
+
+void CGpsData::setFileName() {
+	cout
+			<< "Enter the full path of the fake data file along with .txt extension"
+			<< endl;
+	if (!(cin >> m_filePath)) {
+		cout << "Wrong data type entered. Expected string. Terminating program."
+				<< endl;
+		exit(0);
+	}
+}
+
+void CGpsData::readFakeGPSData(vanetza::geonet::Router &routerObj) {
+	ifstream gpsFakeDataFile;
+	string input_line, date, time, date_time, temp_lat, temp_long, heading, speed;
+	double headingFromNMEA, speedFromNMEA;
+
+	unsigned int line_number = 1;
+	unsigned int delimCount, values;
+	lpv_.position_accuracy_indicator = false;	
+	
+	// open the file for reading GPS fake data
+	gpsFakeDataFile.open(m_filePath);
+	
+	if ((gpsFakeDataFile.is_open()) && (!gpsFakeDataFile.eof())) {
+
+		while (getline(gpsFakeDataFile, input_line)) {
+			delimCount = 0;
+
+			istringstream is_wp(input_line);  //stream for splitting
+
+			for (unsigned int i = 0; i < input_line.size(); i++) {
+				if (input_line[i] == ',')
+					delimCount++;
+			}
+
+			stringstream sstream[++delimCount];
+			values = 0;
+
+			while (getline(is_wp, input_line, ',')) // To seperate the line using the seperator
+			{
+
+				sstream[values] << input_line;
+				values++;
+
+			}
+
+			if (values < fieldlength)
+				cout
+						<< "ERROR: Too few fields in the GPS Data File on the line "
+						<< line_number << endl;
+
+			if (values > fieldlength)
+				cout
+						<< "ERROR: Too many fields in the GPS Data File on the line "
+						<< line_number << endl;
+
+			if (sstream[0].str() == "$GPRMC") {
+				temp_lat = sstream[3].str();
+				temp_long = sstream[5].str();
+				time = sstream[1].str();
+				date = sstream[9].str();
+
+				string temp_val_lat, temp_val_long;
+				temp_val_lat = sstream[4].str();
+				temp_val_long = sstream[6].str();
+
+				double latitude = stod(temp_lat.c_str());
+				double longitude = stod(temp_long.c_str());
+
+				if (temp_val_lat == "S")
+					latitude = latitude * (-1);
+
+				if (temp_val_long == "W")
+					longitude = longitude * (-1);
+
+				cout << " Latitude : " << latitude << " ; Longitude : "
+						<< longitude << "  ; TimeStamp : " << time
+						<< "  ; DateStamp : " << date << endl;
+				line_number++;
+
+				convertDateAndTime(date, time, date_time);
+				
+				heading =  sstream[10].str();
+				if(heading.length() == 0)
+				  heading = "0";
+				headingFromNMEA = stod(heading.c_str());
+				
+				speed = sstream[8].str();
+				speedFromNMEA = stod(speed.c_str());
+
+				boost::posix_time::ptime ptimeObj;
+				ptimeObj = boost::posix_time::from_iso_string(date_time);
+
+				vanetza::geonet::Timestamp timestampObj(ptimeObj);
+
+				updateLPV(latitude, longitude, timestampObj, headingFromNMEA, speedFromNMEA);
+				routerObj.update(lpv_);
+			}
+		}
+
+		// set position_accuracy_indicator as false when no more data is there to be read or GPS reciever connection is down.
+		lpv_.position_accuracy_indicator = false;
+
+		//close the file containing fake data
+		gpsFakeDataFile.close();
+
+	} else
+		cout << "failed to open" << endl;
+
+}
+
+/**
+ * Function to set delimiter for the current line
+ * @param lineFromFile - current line read from the file
+ * @param c			   - character to hold delimiter
+ */
+
+void CGpsData::updateLPV(double latitude, double longitude,
+		vanetza::geonet::Timestamp timestampObj, double headingFromNMEA, double speedFromNMEA) 
+{
+
+	/*
+	 *	please note the change in function parameters. 
+	 * 	lat and long no longer passed as reference. pos is passed as reference 
+	 */
+	convertAngleValues(latitude, longitude, pos);
+
+	// static cast to convert to type geo_angle_i32t
+	lpv_.latitude = static_cast<vanetza::geonet::geo_angle_i32t>(pos.latitude);
+	lpv_.longitude =
+			static_cast<vanetza::geonet::geo_angle_i32t>(pos.longitude);
+
+	// update position_accuracy_indicator as true as long as there is data to be read from file/GPS reciever
+	lpv_.position_accuracy_indicator = true;
+
+	// update the timestamp of the longPositionVector
+	lpv_.timestamp = timestampObj;
+	
+	
+	// Converted to degrees as it specifies the direction
+	m_heading = headingFromNMEA * vanetza::units::degree;
+
+	//Static cast to convert the degrees to heading_u16t
+	lpv_.heading = static_cast<vanetza::geonet::heading_u16t>(m_heading);
+	
+	
+		
+//Code for updating speed
+m_speed=speedFromNMEA* vanetza::units::si::meter_per_second;
+
+//Static cast to convert speed to speed_u15t
+lpv_.speed=static_cast<vanetza::geonet::LongPositionVector::speed_u15t>(m_speed);
+	
+}
+
+void CGpsData::convertAngleValues(double latitude, double longitude,
+		vanetza::geonet::GeodeticPosition& position) {
+	double deg, mins, sec;
+	double integral = 100.00;
+	mins = modf(latitude, &integral);
+	deg = int(latitude);
+	double deg1 = deg / 100;
+	deg = int(deg1);
+	double difference = (deg1 - deg) * 100;
+	mins = mins + difference;
+	longitude = deg + (mins / 60);
+	integral = 1000.00;
+	mins = modf(longitude, &integral);
+	deg = int(longitude);
+	deg1 = deg / 100;
+	deg = int(deg1);
+	difference = (deg1 - deg) * 100;
+	mins = mins + difference;
+	longitude = deg + (mins / 60);
+
+	//latitude converted to degrees 
+	m_latitude = latitude * vanetza::units::degree;
+	//latitude in degrees assgined to variable of geodetic position object
+	position.latitude = m_latitude;
+
+	//longitude converted to degrees 
+	m_longitude = longitude * vanetza::units::degree;
+	//latitude in degrees assgined to variable of geodetic position object
+	position.longitude = m_longitude;
+}
+
+/*
+ *	 Function to format date and time read from NMEA RMC format to construct a posix_time object 
+ */
+void convertDateAndTime(string date, string time, string &date_time) {
+
+	string dd, mm, yyyy, hh, mins, ss;
+	int intDate, intMonths, intYear, intMonthAndYear, intHour;
+	double minutes, seconds, minsAndSeconds, timeValue;
+
+	cout << " Date : " << date << endl;
+
+	intDate = stoi(date);
+	intMonthAndYear = intDate % 10000;
+	intDate = intDate / 10000;
+	intMonths = intMonthAndYear / 100;
+
+	intYear = intMonthAndYear % 100;
+	intYear = 2000 + intYear;
+
+	dd = to_string(intDate);
+	mm = to_string(intMonths);
+	yyyy = to_string(intYear);
+
+	// if month 
+	if (mm.length() == 1)
+		mm = "0" + mm;
+
+	if (dd.length() == 1)
+		dd = "0" + dd;
+
+	date_time = yyyy + mm + dd + "T" + time;
+}
+
+CGpsData::~CGpsData() {
+// TODO Auto-generated destructor stub
+}
