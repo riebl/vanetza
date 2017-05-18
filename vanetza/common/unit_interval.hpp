@@ -13,6 +13,7 @@ namespace vanetza
  * Mantissa (positive fractional part of a real number) behaves differently, thus:
  * - Mantissa(42.1234) = 0.1234
  * - UnitInterval(42.1234) = 1.0
+ * UnitInterval is also related to "(proper) decimal fraction" but latter does not include 1.0.
  */
 class UnitInterval :
     boost::arithmetic<UnitInterval>,

@@ -42,11 +42,11 @@ TEST_F(RegularBudgetTest, restrictive)
     const auto restrictive_tx_interval = restrictive.transmission_interval();
 
     // bring smoothed channel load above 59 %
-    fsm.update(ChannelLoad(100, 100)); // 50 %
-    fsm.update(ChannelLoad(70, 100)); // 60 %
+    fsm.update(ChannelLoad(1.0)); // 50 %
+    fsm.update(ChannelLoad(0.7)); // 60 %
     for (unsigned i = 0; i < 9; ++i) {
         EXPECT_GT(restrictive_tx_interval, fsm.transmission_interval());
-        fsm.update(ChannelLoad(60, 100)); // 60 %
+        fsm.update(ChannelLoad(0.6)); // 60 %
     }
 
     // by now we should have enough high load samples for restrictive state

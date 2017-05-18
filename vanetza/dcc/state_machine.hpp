@@ -11,9 +11,6 @@ namespace vanetza
 namespace dcc
 {
 
-// forward declarations
-struct ChannelLoad;
-
 // constants
 static constexpr Clock::duration NDL_minDccSampling = std::chrono::milliseconds(100);
 

@@ -104,7 +104,7 @@ void StateMachine::update(const ChannelLoad& cl)
 {
     m_current_cl = cl;
     m_cl_smoothing.update(cl);
-    m_channel_loads.push_front(m_cl_smoothing.channel_load());
+    m_channel_loads.push_front(m_cl_smoothing.channel_load().value());
 
     if (m_state == &m_relaxed) {
         if (min_channel_load() >= NDL_minChannelLoad) {
@@ -131,7 +131,7 @@ void StateMachine::update(const ChannelLoad& cl)
 boost::optional<double> StateMachine::getChannelLoad() const
 {
     if (m_current_cl) {
-        return m_current_cl->fraction();
+        return m_current_cl->value();
     } else {
         return boost::optional<double>();
     }

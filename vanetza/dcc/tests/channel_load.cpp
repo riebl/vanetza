@@ -3,20 +3,20 @@
 
 using namespace vanetza::dcc;
 
-TEST(ChannelLoad, ctor)
+TEST(ChannelLoadRational, ctor)
 {
-    ChannelLoad cl1;
+    ChannelLoadRational cl1;
     EXPECT_EQ(0, cl1.probes_above);
     EXPECT_EQ(0, cl1.probes_total);
 
-    ChannelLoad cl2(30, 250);
+    ChannelLoadRational cl2(30, 250);
     EXPECT_EQ(30, cl2.probes_above);
     EXPECT_EQ(250, cl2.probes_total);
 }
 
- TEST(ChannelLoad, less)
+ TEST(ChannelLoadRational, less)
 {
-    EXPECT_LT(ChannelLoad(30, 100), ChannelLoad(31, 100));
-    EXPECT_LT(ChannelLoad(30, 100), ChannelLoad(8, 25));
-    EXPECT_LT(ChannelLoad(0,10), ChannelLoad(1, 2));
+    EXPECT_LT(ChannelLoadRational(30, 100), ChannelLoadRational(31, 100));
+    EXPECT_LT(ChannelLoadRational(30, 100), ChannelLoadRational(8, 25));
+    EXPECT_LT(ChannelLoadRational(0,10), ChannelLoadRational(1, 2));
 }

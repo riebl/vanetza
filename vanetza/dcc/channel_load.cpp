@@ -5,17 +5,17 @@ namespace vanetza
 namespace dcc
 {
 
-double ChannelLoad::fraction() const
+ChannelLoad ChannelLoadRational::fraction() const
 {
     double fraction = 0.0;
     if (probes_total != 0) {
         fraction = probes_above;
         fraction /= probes_total;
     }
-    return fraction;
+    return ChannelLoad(fraction);
 }
 
-bool ChannelLoad::operator<(const ChannelLoad& other) const
+bool ChannelLoadRational::operator<(const ChannelLoadRational& other) const
 {
     return fraction() < other.fraction();
 }
