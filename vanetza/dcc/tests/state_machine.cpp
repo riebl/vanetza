@@ -18,27 +18,27 @@ TEST(StateMachine, ramp_up)
     StateMachine sm;
 
     // keep below minChannelLoad at first: relaxed
-    sm.update(ChannelLoad(0.3)); // smoothed: 0.15
-    sm.update(ChannelLoad(0.17)); // smoothed: 0.16
+    sm.update(ChannelLoad(0.16));
     EXPECT_STREQ("Relaxed", sm.state().name());
 
     // now exceed minChannelLoad for 10 samples: active 1
-    sm.update(ChannelLoad(0.29)); // smoothed: 0.225
-    for (unsigned i = 0; i < 8; ++i) {
+    for (unsigned i = 0; i < 9; ++i) {
         sm.update(ChannelLoad(0.2));
         EXPECT_STREQ("Relaxed", sm.state().name());
     }
-    sm.update(ChannelLoad(0.2)); // smoothed: > 0.20
+    sm.update(ChannelLoad(0.2));
     EXPECT_STREQ("Active 1", sm.state().name());
 
     // now let's jump to active 3 directly
-    sm.update(ChannelLoad(0.54)); // smoothed: 0.37
+    sm.update(ChannelLoad(0.4));
     EXPECT_STREQ("Active 3", sm.state().name());
 
-    // go to restrictive state (over active 5)
-    sm.update(ChannelLoad(0.83)); // smoothed: 0.60
+    // jump to active 5
+    sm.update(ChannelLoad(0.55));
     EXPECT_STREQ("Active 5", sm.state().name());
-    for (unsigned i = 0; i < 8; ++i) {
+
+    // ramp up to restrictive
+    for (unsigned i = 0; i < 9; ++i) {
         sm.update(ChannelLoad(0.6));
         EXPECT_STREQ("Active 5", sm.state().name());
     }
@@ -50,29 +50,25 @@ TEST(StateMachine, ramp_down)
 {
     StateMachine sm;
 
-    // fill up CL ring buffer first and go to restrictive state
-    for (unsigned i = 0; i < 100; ++i) {
+    // fill up CL ring buffer for restrictive
+    for (unsigned i = 0; i < 10; ++i) {
         sm.update(ChannelLoad(0.7));
     }
     ASSERT_STREQ("Restrictive", sm.state().name());
 
-    // cool down to CL = 50%
-    // ring buffer: 60.0, 55.0, 52.5, 51.25, 50.625...
-    for (unsigned i = 0; i < 50; ++i) {
+    // insert 55 % CL for active 5 state (later on)
+    sm.update(ChannelLoad(0.55));
+    // cool down 48 of 50 samples to CL = 50% (active 4)
+    for (unsigned i = 0; i < 48; ++i) {
         sm.update(ChannelLoad(0.5));
     }
     EXPECT_STREQ("Restrictive", sm.state().name());
 
-    // ring buffer: 55.0, 52.5... -> active 5
+    // -> active 5 (one last 55 % CL sample)
     sm.update(ChannelLoad(0.5));
     EXPECT_STREQ("Active 5", sm.state().name());
 
-    // ring buffer: 51.25, 50.625... -> active 5
-    sm.update(ChannelLoad(0.5));
-    sm.update(ChannelLoad(0.5));
-    EXPECT_STREQ("Active 5", sm.state().name());
-
-    // ring buffer: 50.625... -> active 4
+    // -> active 4
     sm.update(ChannelLoad(0.5));
     EXPECT_STREQ("Active 4", sm.state().name());
 }

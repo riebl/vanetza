@@ -2,7 +2,7 @@
 #define STATE_MACHINE_HPP_YPE958OH
 
 #include <vanetza/common/clock.hpp>
-#include <vanetza/dcc/channel_load_smoothing.hpp>
+#include <vanetza/dcc/channel_load.hpp>
 #include <boost/circular_buffer.hpp>
 #include <boost/optional.hpp>
 
@@ -62,7 +62,7 @@ public:
      * This method expects to be called in regular intervals
      * of NDL_minDccSampling length.
      */
-    void update(const ChannelLoad&);
+    void update(ChannelLoad channel_load);
 
     /**
      * Get currently allowed maximum message rate depending on state
@@ -81,29 +81,15 @@ public:
      */
     const State& state() const;
 
-    /**
-     * Get current channel load (non-smoothed)
-     * \return non-smoothed channel load if measurement exists
-     */
-    boost::optional<double> getChannelLoad() const;
-
-    /**
-     * Get current channel load (smoothed)
-     * \return smoothed channel load if measurement exists
-     */
-    boost::optional<double> getSmoothedChannelLoad() const;
-
 private:
     double max_channel_load() const;
     double min_channel_load() const;
 
-    boost::optional<ChannelLoad> m_current_cl;
     Relaxed m_relaxed;
     Active m_active;
     Restrictive m_restrictive;
     State* m_state;
-    ChannelLoadSmoothing m_cl_smoothing;
-    boost::circular_buffer<double> m_channel_loads;
+    boost::circular_buffer<ChannelLoad> m_channel_loads;
 };
 
 } // namespace dcc

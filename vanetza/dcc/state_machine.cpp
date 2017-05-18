@@ -100,11 +100,9 @@ StateMachine::~StateMachine()
 {
 }
 
-void StateMachine::update(const ChannelLoad& cl)
+void StateMachine::update(ChannelLoad cl)
 {
-    m_current_cl = cl;
-    m_cl_smoothing.update(cl);
-    m_channel_loads.push_front(m_cl_smoothing.channel_load().value());
+    m_channel_loads.push_front(cl);
 
     if (m_state == &m_relaxed) {
         if (min_channel_load() >= NDL_minChannelLoad) {
@@ -125,24 +123,6 @@ void StateMachine::update(const ChannelLoad& cl)
             m_state = &m_active;
             m_active.update(min_channel_load(), max_channel_load());
         }
-    }
-}
-
-boost::optional<double> StateMachine::getChannelLoad() const
-{
-    if (m_current_cl) {
-        return m_current_cl->value();
-    } else {
-        return boost::optional<double>();
-    }
-}
-
-boost::optional<double> StateMachine::getSmoothedChannelLoad() const
-{
-    if (!m_channel_loads.empty()) {
-        return m_channel_loads.front();
-    } else {
-        return boost::optional<double>();
     }
 }
 
@@ -171,8 +151,8 @@ double StateMachine::min_channel_load() const
     for (auto sample : m_channel_loads) {
         if (sample_cnt >= N_samples_up) {
             break;
-        } else if (sample < min_cl) {
-            min_cl = sample;
+        } else if (sample.value() < min_cl) {
+            min_cl = sample.value();
         }
         ++sample_cnt;
     }
@@ -188,8 +168,8 @@ double StateMachine::max_channel_load() const
     for (auto sample : m_channel_loads) {
         if (sample_cnt >= N_samples_down) {
             break;
-        } else if (sample > max_cl) {
-            max_cl = sample;
+        } else if (sample.value() > max_cl) {
+            max_cl = sample.value();
         }
         ++sample_cnt;
     }
