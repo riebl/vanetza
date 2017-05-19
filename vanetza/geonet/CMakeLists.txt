@@ -9,6 +9,7 @@ set(CXX_SOURCES
     data_confirm.cpp
     data_request.cpp
     dcc_field.cpp
+    dcc_information_sharing.cpp
     dcc_mco_field.cpp
     duplicate_packet_list.cpp
     gbc_gac_header.cpp
