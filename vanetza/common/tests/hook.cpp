@@ -46,3 +46,12 @@ TEST(Hook, invocation) {
     EXPECT_EQ(-384.34f, f);
 }
 
+TEST(HookRegistry, registration) {
+    Hook<double> hook;
+    HookRegistry<double> registry(hook);
+
+    double d = 42.0;
+    registry = [&d](double _d) { d = _d; };
+    hook(21.0);
+    EXPECT_EQ(21.0, d);
+}

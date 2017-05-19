@@ -46,6 +46,35 @@ private:
     callback_type m_function;
 };
 
+/**
+ * Hook registry (non-callable view of a hook)
+ *
+ * Callbacks can be assigned to a hook via the corresponding registry,
+ * but the callback cannot be invoked through the registry.
+ */
+template<typename... Args>
+class HookRegistry
+{
+public:
+    using hook_type = Hook<Args...>;
+    using callback_type = typename hook_type::callback_type;
+
+    HookRegistry(hook_type& hook) : m_hook(hook) {}
+
+    void operator=(callback_type&& cb)
+    {
+        m_hook = std::move(cb);
+    }
+
+    void reset()
+    {
+        m_hook.reset();
+    }
+
+private:
+    hook_type& m_hook;
+};
+
 } // namespace vanetza
 
 #endif /* HOOK_HPP_RNAM6XF4 */
