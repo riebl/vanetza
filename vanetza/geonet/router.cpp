@@ -70,22 +70,11 @@ protected:
     PendingPacket<PDU> m_packet;
 };
 
-/**
- * DCC request interface used when no user supplied interface is available.
- */
-class DummyDccRequestInterface : public dcc::RequestInterface
+dcc::RequestInterface* get_default_request_interface()
 {
-public:
-    void request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>) override {}
-    static dcc::RequestInterface& get()
-    {
-        static DummyDccRequestInterface ifc;
-        return ifc;
-    }
-
-private:
-    DummyDccRequestInterface() {};
-};
+    static dcc::NullRequestInterface null;
+    return &null;
+}
 
 template<typename PDU>
 auto create_forwarding_duplicate(const PDU& pdu, const UpPacket& packet) ->
@@ -120,7 +109,7 @@ const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 Router::Router(Runtime& rt, const MIB& mib) :
     m_mib(mib),
     m_runtime(rt),
-    m_request_interface(&DummyDccRequestInterface::get()),
+    m_request_interface(get_default_request_interface()),
     m_security_entity(nullptr),
     m_location_table(mib, m_runtime),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
@@ -180,7 +169,7 @@ void Router::set_security_entity(security::SecurityEntity* entity)
 
 void Router::set_access_interface(dcc::RequestInterface* ifc)
 {
-    m_request_interface = (ifc == nullptr ? &DummyDccRequestInterface::get() : ifc);
+    m_request_interface = (ifc == nullptr ? get_default_request_interface() : ifc);
     assert(m_request_interface != nullptr);
 }
 
