@@ -15,10 +15,22 @@ namespace dcc
 // forward declarations
 struct DataRequest;
 
+/**
+ * DCC_access interface for data request from upper layers
+ */
 class RequestInterface
 {
 public:
     virtual void request(const DataRequest&, std::unique_ptr<ChunkPacket>) = 0;
+};
+
+/**
+ * Null implemenation of DCC data request interface
+ */
+class NullRequestInterface : public RequestInterface
+{
+public:
+    void request(const DataRequest&, std::unique_ptr<ChunkPacket>) override {}
 };
 
 } // namespace dcc
