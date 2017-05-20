@@ -37,10 +37,19 @@ public:
         }
     }
 
-    void clear()
+    /**
+     * Reset previously assigned callback.
+     * No callback will be invoked when triggering hook after reset.
+     */
+    void reset()
     {
         m_function = nullptr;
     }
+
+    /**
+     * \deprecated previous name of reset
+     */
+    void clear() { reset(); }
 
 private:
     callback_type m_function;

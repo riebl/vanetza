@@ -39,8 +39,8 @@ TEST(Hook, invocation) {
     EXPECT_EQ(23.1, d);
     EXPECT_EQ(-384.34f, f);
 
-    // clear hook and it should do nothing again
-    hook.clear();
+    // reset hook and it should do nothing again
+    hook.reset();
     hook(0.0, 3.33f);
     EXPECT_EQ(23.1, d);
     EXPECT_EQ(-384.34f, f);
