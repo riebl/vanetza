@@ -874,6 +874,7 @@ void Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, UpP
 void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pdu,
         UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
 {
+    // GBC forwarder and receiver operations (section 9.3.11.3 in EN 302 636-4-1 V1.2.1)
     assert(packet);
     const GeoBroadcastHeader& gbc = pdu.extended();
     const Address& source_addr = gbc.source_position.gn_addr;
@@ -900,6 +901,8 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     }
 
     auto fwd_dup = create_forwarding_duplicate(pdu, *packet);
+    auto& fwd_pdu = std::get<0>(fwd_dup);
+    auto& fwd_packet = std::get<1>(fwd_dup);
 
     const Area dest_area = gbc.destination(pdu.common().header_type);
     if (inside_or_at_border(dest_area, m_local_position_vector.position())) {
@@ -913,14 +916,11 @@ void Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     // TODO: flush SO LS packet buffer if LS_pending, reset LS_pending
     flush_unicast_forwarding_buffer();
 
-    if (pdu.basic().hop_limit == 0) {
-        return; // discard packet
+    if (pdu.basic().hop_limit <= 1) {
+        return; // discard packet (step 9a)
     }
-
-    auto& fwd_pdu = std::get<0>(fwd_dup);
-    assert(fwd_pdu->basic().hop_limit > 0);
-    fwd_pdu->basic().hop_limit--;
-    auto& fwd_packet = std::get<1>(fwd_dup);
+    --fwd_pdu->basic().hop_limit; // step 9b
+    assert(fwd_pdu->basic().hop_limit + 1 == pdu.basic().hop_limit);
 
     const bool scf = pdu.common().traffic_class.store_carry_forward();
     NextHop next_hop;
