@@ -55,9 +55,11 @@ TEST(CamFunctions, similar_heading_unavailable1)
     a.headingValue = HeadingValue_unavailable;
     Angle b = 2.0 * si::radian;
     Angle limit = 10 * si::radian;
+    EXPECT_FALSE(is_available(a));
     EXPECT_FALSE(similar_heading(a, b, limit));
 
     a.headingValue = 2 * HeadingValue_wgs84East;
+    EXPECT_TRUE(is_available(a));
     EXPECT_TRUE(similar_heading(a, b, limit));
 
     b = 0.0 * si::radian;
@@ -75,13 +77,17 @@ TEST(CamFunctions, similar_heading_unavailable2)
     Heading b;
     b.headingValue = HeadingValue_unavailable;
     Angle limit = 10 * si::radian;
+    EXPECT_FALSE(is_available(a));
+    EXPECT_FALSE(is_available(b));
     EXPECT_FALSE(similar_heading(a, b, limit));
 
     b.headingValue = 200;
+    EXPECT_TRUE(is_available(b));
     EXPECT_FALSE(similar_heading(a, b, limit));
     EXPECT_FALSE(similar_heading(b, a, limit));
 
     a.headingValue = 300;
+    EXPECT_TRUE(is_available(a));
     EXPECT_TRUE(similar_heading(a, b, limit));
     EXPECT_TRUE(similar_heading(b, a, limit));
 }

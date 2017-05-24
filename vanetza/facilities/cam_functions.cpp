@@ -65,7 +65,7 @@ bool similar_heading(const Heading& a, const Heading& b, Angle limit)
     static_assert(HeadingValue_wgs84East == 900, "HeadingValue interpretation fails");
 
     bool result = false;
-    if (a.headingValue != HeadingValue_unavailable && b.headingValue != HeadingValue_unavailable) {
+    if (is_available(a) && is_available(b)) {
         using vanetza::units::degree;
         const Angle angle_a { a.headingValue / 10.0 * degree };
         const Angle angle_b { b.headingValue / 10.0 * degree };
@@ -78,7 +78,7 @@ bool similar_heading(const Heading& a, const Heading& b, Angle limit)
 bool similar_heading(const Heading& a, Angle b, Angle limit)
 {
     bool result = false;
-    if (a.headingValue != HeadingValue_unavailable) {
+    if (is_available(a)) {
         using vanetza::units::degree;
         result = similar_heading(Angle { a.headingValue / 10.0 * degree}, b, limit);
     }
@@ -128,6 +128,16 @@ units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units:
     GeodeticPosition geo_b { lat, lon };
 
     return geonet::distance(geo_a, geo_b);
+}
+
+bool is_available(const Heading& hd)
+{
+    return hd.headingValue != HeadingValue_unavailable;
+}
+
+bool is_available(const ReferencePosition& pos)
+{
+    return pos.latitude != Latitude_unavailable && pos.longitude != Longitude_unavailable;
 }
 
 } // namespace facilities

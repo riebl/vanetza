@@ -43,6 +43,13 @@ bool similar_heading(units::Angle a, units::Angle b, units::Angle limit);
 units::Length distance(const ReferencePosition_t& a, const ReferencePosition_t& b);
 units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units::GeoAngle lon);
 
+/**
+ * Check if ASN.1 data element indicates unavailable value
+ * \return true if value is available
+ */
+bool is_available(const Heading&);
+bool is_available(const ReferencePosition_t&);
+
 } // namespace facilities
 } // namespace vanetza
 
