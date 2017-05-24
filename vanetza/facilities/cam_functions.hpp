@@ -38,7 +38,7 @@ bool similar_heading(units::Angle a, units::Angle b, units::Angle limit);
  * Calculate distance between positions
  * \param a one position
  * \param b another position
- * \return distance between given positions
+ * \return distance between given positions (or NaN if some position is unavailable)
  */
 units::Length distance(const ReferencePosition_t& a, const ReferencePosition_t& b);
 units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units::GeoAngle lon);

@@ -15,6 +15,7 @@
 #include <boost/units/systems/si/prefixes.hpp>
 #include <boost/units/systems/angle/degrees.hpp>
 #include <algorithm>
+#include <limits>
 #undef min
 
 namespace vanetza
@@ -102,16 +103,19 @@ units::Length distance(const ReferencePosition_t& a, const ReferencePosition_t& 
     using boost::units::si::micro;
     using boost::units::degree::degree;
 
-    GeodeticPosition geo_a {
-        GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
-        GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * micro * degree }
-    };
-    GeodeticPosition geo_b {
-        GeoAngle { b.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
-        GeoAngle { b.longitude / Longitude_oneMicrodegreeEast * micro * degree }
-    };
-
-    return geonet::distance(geo_a, geo_b);
+    auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
+    if (is_available(a) && is_available(b)) {
+        GeodeticPosition geo_a {
+            GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
+            GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * micro * degree }
+        };
+        GeodeticPosition geo_b {
+            GeoAngle { b.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
+            GeoAngle { b.longitude / Longitude_oneMicrodegreeEast * micro * degree }
+        };
+        length = geonet::distance(geo_a, geo_b);
+    }
+    return length;
 }
 
 units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units::GeoAngle lon)
@@ -121,13 +125,16 @@ units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units:
     using boost::units::si::micro;
     using boost::units::degree::degree;
 
-    GeodeticPosition geo_a {
-        GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
-        GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * micro * degree }
-    };
-    GeodeticPosition geo_b { lat, lon };
-
-    return geonet::distance(geo_a, geo_b);
+    auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
+    if (is_available(a)) {
+        GeodeticPosition geo_a {
+            GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * micro * degree },
+            GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * micro * degree }
+        };
+        GeodeticPosition geo_b { lat, lon };
+        length = geonet::distance(geo_a, geo_b);
+    }
+    return length;
 }
 
 bool is_available(const Heading& hd)

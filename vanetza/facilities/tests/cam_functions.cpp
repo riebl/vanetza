@@ -2,6 +2,7 @@
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/io.hpp>
+#include <cmath>
 
 using namespace vanetza;
 using namespace vanetza::facilities;
@@ -135,4 +136,24 @@ TEST(CamFunctions, distance_refpos_latlon)
     GeoAngle lat = -(6 + (22.48 / 60.0)) * degree;
     GeoAngle lon = -(33 + (22.55 / 60.0)) * degree;
     EXPECT_TRUE(NearDistance(distance(refpos, lat, lon), 2440.0 * si::meter , 10.0 * si::meter));
+}
+
+TEST(CamFunctions, distance_unavailable)
+{
+    ReferencePosition_t pos1 {};
+    ReferencePosition_t pos2 {};
+    EXPECT_TRUE(is_available(pos1));
+    EXPECT_TRUE(is_available(pos2));
+    EXPECT_FALSE(std::isnan(distance(pos1, pos2).value()));
+
+    pos1.latitude = Latitude_unavailable;
+    EXPECT_FALSE(is_available(pos1));
+    EXPECT_TRUE(std::isnan(distance(pos1, pos2).value()));
+    EXPECT_TRUE(std::isnan(distance(pos2, pos1).value()));
+
+    pos1.latitude = 0;
+    pos1.longitude = Longitude_unavailable;
+    EXPECT_FALSE(is_available(pos1));
+    EXPECT_TRUE(std::isnan(distance(pos1, pos2).value()));
+    EXPECT_TRUE(std::isnan(distance(pos2, pos1).value()));
 }
