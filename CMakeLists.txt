@@ -41,7 +41,7 @@ include(CompatBoostTargets)
 find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
 
-find_package(OpenSSl 1.0.1 QUIET)
+find_package(OpenSSL 1.0.1 QUIET)
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" "${OPENSSL_FOUND}")
 if (VANETZA_WITH_OPENSSL)
   find_package(OpenSSL 1.0.1 REQUIRED)
