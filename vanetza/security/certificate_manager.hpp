@@ -1,12 +1,17 @@
 #ifndef CERTIFICATE_MANAGER_HPP
 #define CERTIFICATE_MANAGER_HPP
 
+#include <vanetza/common/factory.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/ecdsa256.hpp>
 
 namespace vanetza
 {
+
+// forward declaration
+class Runtime;
+
 namespace security
 {
 
@@ -33,6 +38,12 @@ public:
     virtual const ecdsa256::PrivateKey& own_private_key() = 0;
 };
 
+
+/**
+ * Get factory containing builtin certificate managers
+ * \return factory
+ */
+const Factory<CertificateManager, Runtime&>& builtin_certificate_managers();
 
 } // namespace security
 } // namespace vanetza
