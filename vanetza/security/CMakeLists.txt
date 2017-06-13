@@ -3,15 +3,17 @@ add_vanetza_component(security
     backend_null.cpp
     basic_elements.cpp
     certificate.cpp
-    certificate_manager.cpp
     ecc_point.cpp
     ecdsa256.cpp
     encryption_parameter.cpp
     header_field.cpp
+    int_x.cpp
+    length_coding.cpp
+    naive_certificate_manager.cpp
     payload.cpp
     public_key.cpp
-    length_coding.cpp
-    int_x.cpp
+    recipient_info.cpp
+    region.cpp
     secured_message.cpp
     security_entity.cpp
     serialization.cpp
@@ -19,8 +21,6 @@ add_vanetza_component(security
     signer_info.cpp
     subject_attribute.cpp
     subject_info.cpp
-    recipient_info.cpp
-    region.cpp
     trailer_field.cpp
     validity_restriction.cpp
 )

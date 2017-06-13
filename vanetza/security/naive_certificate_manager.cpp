@@ -1,6 +1,6 @@
 #include <vanetza/security/basic_elements.hpp>
-#include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/naive_certificate_manager.hpp>
 #include <vanetza/security/payload.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signature.hpp>

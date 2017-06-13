@@ -2,7 +2,7 @@
 #define SECURITY_ENTITY_HPP
 
 #include <vanetza/common/clock.hpp>
-#include <vanetza/security/certificate_manager.hpp>
+#include <vanetza/security/naive_certificate_manager.hpp>
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_confirm.hpp>
