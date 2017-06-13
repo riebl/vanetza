@@ -10,6 +10,7 @@ add_vanetza_component(security
     int_x.cpp
     length_coding.cpp
     naive_certificate_manager.cpp
+    null_certificate_manager.cpp
     payload.cpp
     public_key.cpp
     recipient_info.cpp
