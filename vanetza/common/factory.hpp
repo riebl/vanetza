@@ -4,6 +4,7 @@
 #include <functional>
 #include <map>
 #include <memory>
+#include <utility>
 
 namespace vanetza
 {
@@ -11,12 +12,12 @@ namespace vanetza
 /**
  * Factory for a group of classes implementing T
  */
-template<typename T>
+template<typename T, typename... Args>
 class Factory
 {
 public:
     using Result = std::unique_ptr<T>;
-    using Function = std::function<Result()>;
+    using Function = std::function<Result(Args...)>;
 
     Factory() : m_default(m_functions.end())
     {
@@ -27,12 +28,12 @@ public:
      * \param name of wanted implementation
      * \return created instance or nullptr if not found
      */
-    Result create(const std::string& name) const
+    Result create(const std::string& name, Args... args) const
     {
         std::unique_ptr<T> obj;
         auto found = m_functions.find(name);
         if (found != m_functions.end()) {
-            obj = found->second();
+            obj = found->second(std::forward<Args>(args)...);
         }
         return obj;
     }
@@ -41,11 +42,11 @@ public:
      * Create object using default implementation
      * \return created instance or nullptr if no default is configured
      */
-    Result create() const
+    Result create(Args... args) const
     {
         std::unique_ptr<T> obj;
         if (m_default != m_functions.end()) {
-            obj = m_default->second();
+            obj = m_default->second(std::forward<Args>(args)...);
         }
         return obj;
     }
