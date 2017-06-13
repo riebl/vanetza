@@ -117,7 +117,7 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_mib(mib),
     m_runtime(rt),
     m_request_interface(&DummyDccRequestInterface::get()),
-    m_security_entity(m_runtime.now(), m_mib.vanetzaCryptoBackend),
+    m_security_entity(nullptr),
     m_location_table(mib, m_runtime),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
@@ -129,8 +129,6 @@ Router::Router(Runtime& rt, const MIB& mib) :
 {
     // send BEACON immediately after start-up at next runtime trigger invocation
     reset_beacon_timer(Clock::duration::zero());
-
-    m_security_entity.enable_deferred_signing(m_mib.vanetzaDeferSigning);
 }
 
 Router::~Router()
@@ -148,6 +146,11 @@ void Router::update(const LongPositionVector& lpv)
 void Router::set_transport_handler(UpperProtocol proto, TransportInterface* ifc)
 {
     m_transport_ifcs[proto] = ifc;
+}
+
+void Router::set_security_entity(security::SecurityEntity* entity)
+{
+    m_security_entity = entity;
 }
 
 void Router::set_access_interface(dcc::RequestInterface* ifc)
@@ -371,10 +374,10 @@ void Router::indicate_secured(IndicationContext& ctx, const BasicHeader& basic)
     auto secured_message = ctx.parse_secured();
     if (!secured_message) {
         packet_dropped(PacketDropReason::PARSE_SECURED_HEADER);
-    } else {
+    } else if (m_security_entity) {
         // Decap packet
         security::DecapRequest decap_request(*secured_message);
-        security::DecapConfirm decap_confirm = m_security_entity.decapsulate_packet(decap_request);
+        security::DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(decap_request);
         secured_payload_visitor visitor(*this, ctx, basic);
 
         // check whether the received packet is valid
@@ -408,6 +411,8 @@ void Router::indicate_secured(IndicationContext& ctx, const BasicHeader& basic)
             // discard packet
             packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
         }
+    } else {
+        packet_dropped(PacketDropReason::SECURITY_ENTITY_MISSING);
     }
 }
 
@@ -1044,8 +1049,12 @@ Router::DownPacketPtr Router::encap_packet(security::Profile profile, Pdu& pdu, 
     encap_request.plaintext_payload = std::move(sec_payload);
     encap_request.security_profile = profile;
 
-    security::EncapConfirm confirm = m_security_entity.encapsulate_packet(encap_request);
-    pdu.secured(std::move(confirm.sec_packet));
+    if (m_security_entity) {
+        security::EncapConfirm confirm = m_security_entity->encapsulate_packet(encap_request);
+        pdu.secured(std::move(confirm.sec_packet));
+    } else {
+        throw std::runtime_error("security entity unavailable");
+    }
 
     assert(size(*packet, OsiLayer::Transport, max_osi_layer()) == 0);
     assert(pdu.basic().next_header == NextHeaderBasic::SECURED);

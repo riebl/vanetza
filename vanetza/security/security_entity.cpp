@@ -12,15 +12,11 @@ namespace vanetza
 namespace security
 {
 
-SecurityEntity::SecurityEntity(const Clock::time_point& time_now, const std::string& backend) :
+SecurityEntity::SecurityEntity(const Clock::time_point& time_now, Backend& backend, CertificateManager& manager) :
     m_time_now(time_now), m_sign_deferred(false),
-    m_certificate_manager(time_now),
-    m_crypto_backend(create_backend(backend))
+    m_certificate_manager(manager),
+    m_crypto_backend(backend)
 {
-    if (!m_crypto_backend) {
-        std::string msg = "No crypto backend available with name \"" + backend + "\"";
-        throw std::runtime_error(msg);
-    }
 }
 
 SecurityEntity::~SecurityEntity()
@@ -58,13 +54,13 @@ EncapConfirm SecurityEntity::sign(const EncapRequest& request)
     if (m_sign_deferred) {
         auto future = std::async(std::launch::deferred, [=]() {
             ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_size);
-            return m_crypto_backend->sign_data(private_key, data);
+            return m_crypto_backend.sign_data(private_key, data);
         });
         EcdsaSignatureFuture signature(future.share(), signature_size);
         encap_confirm.sec_packet.trailer_fields.push_back(signature);
     } else {
         ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_size);
-        TrailerField trailer_field = m_crypto_backend->sign_data(private_key, data_buffer);
+        TrailerField trailer_field = m_crypto_backend.sign_data(private_key, data_buffer);
         assert(get_size(trailer_field) == trailer_size);
         encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
     }
@@ -186,7 +182,7 @@ DecapConfirm SecurityEntity::verify(const DecapRequest& request)
     ByteBuffer payload = convert_for_signing(secured_message, get_size(TrailerField(signature.get())));
 
     // result of verify function
-    bool result = m_crypto_backend->verify_data(public_key.get(), payload, ecdsa.get());
+    bool result = m_crypto_backend.verify_data(public_key.get(), payload, ecdsa.get());
 
     if (result) {
         decap_confirm.report = ReportType::Success;
