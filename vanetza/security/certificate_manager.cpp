@@ -2,6 +2,7 @@
 #include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/naive_certificate_manager.hpp>
 #include <vanetza/security/null_certificate_manager.hpp>
+#include <cassert>
 
 namespace vanetza
 {
@@ -18,6 +19,13 @@ Factory<CertificateManager, Runtime&> setup_factory()
     });
     factory.add("Null", [](Runtime&) {
             return std::unique_ptr<CertificateManager> { new NullCertificateManager() };
+    });
+    factory.add("NullOk", [](Runtime&) {
+            static const CertificateValidity ok {};
+            assert(ok);
+            std::unique_ptr<NullCertificateManager> manager { new NullCertificateManager() };
+            manager->certificate_check_result(ok);
+            return std::unique_ptr<CertificateManager> { std::move(manager) };
     });
     return factory;
 }
