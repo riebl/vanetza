@@ -15,7 +15,7 @@ public:
     SecurityContext(Runtime& rt) :
         backend(security::create_backend("default")),
         certificates(new security::NaiveCertificateManager(rt.now())),
-        security(rt.now(), *backend, *certificates)
+        security(rt, *backend, *certificates)
     {
     }
 

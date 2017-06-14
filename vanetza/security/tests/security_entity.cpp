@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <vanetza/common/clock.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/naive_certificate_manager.hpp>
 #include <vanetza/security/security_entity.hpp>
@@ -14,14 +14,14 @@ class SecurityEntityTest : public ::testing::Test
 protected:
     SecurityEntityTest() :
         crypto_backend(create_backend("default")),
-        certificate_manager(new NaiveCertificateManager(time_now)),
-        security(time_now, *crypto_backend, *certificate_manager)
+        certificate_manager(new NaiveCertificateManager(runtime.now())),
+        security(runtime, *crypto_backend, *certificate_manager)
     {
     }
 
     void SetUp() override
     {
-        time_now = Clock::at("2016-03-7 08:23");
+        runtime.reset(Clock::at("2016-03-7 08:23"));
         expected_payload[OsiLayer::Transport] = ByteBuffer {89, 27, 1, 4, 18, 85};
     }
 
@@ -39,7 +39,7 @@ protected:
         return confirm.sec_packet;
     }
 
-    Clock::time_point time_now;
+    Runtime runtime;
     std::unique_ptr<Backend> crypto_backend;
     std::unique_ptr<CertificateManager> certificate_manager;
     SecurityEntity security;
@@ -48,7 +48,7 @@ protected:
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    SecurityEntity other_security(time_now, *crypto_backend, *certificate_manager);
+    SecurityEntity other_security(runtime, *crypto_backend, *certificate_manager);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     EXPECT_EQ(ReportType::Success, decap_confirm.report);
@@ -57,13 +57,13 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
 #if defined(VANETZA_WITH_CRYPTOPP) && defined(VANETZA_WITH_OPENSSL)
 TEST_F(SecurityEntityTest, mutual_acceptance_impl)
 {
-    NaiveCertificateManager cryptopp_certs(time_now), openssl_certs(time_now);
+    NaiveCertificateManager cryptopp_certs(runtime.now()), openssl_certs(runtime.now());
     auto cryptopp_backend = create_backend("CryptoPP");
     auto openssl_backend = create_backend("OpenSSL");
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
-    SecurityEntity cryptopp_security(time_now, *cryptopp_backend, cryptopp_certs);
-    SecurityEntity openssl_security(time_now,  *openssl_backend, openssl_certs);
+    SecurityEntity cryptopp_security(runtime, *cryptopp_backend, cryptopp_certs);
+    SecurityEntity openssl_security(runtime,  *openssl_backend, openssl_certs);
 
     // OpenSSL to Crypto++
     EncapConfirm encap_confirm = openssl_security.encapsulate_packet(create_encap_request());
@@ -271,8 +271,8 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
 
     // forge certificate with outdatet validity
     StartAndEndValidity outdated_validity;
-    outdated_validity.start_validity = convert_time32(time_now - std::chrono::hours(1));
-    outdated_validity.end_validity = convert_time32(time_now - std::chrono::minutes(1));
+    outdated_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
+    outdated_validity.end_validity = convert_time32(runtime.now() - std::chrono::minutes(1));
     auto signer_info_field = secured_message.header_field(HeaderFieldType::Signer_Info);
     ASSERT_TRUE(signer_info_field);
     auto certificate = boost::get<Certificate>(&boost::get<SignerInfo>(*signer_info_field));
@@ -294,8 +294,8 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
 
     // forge certificate with premature validity
     StartAndEndValidity premature_validity;
-    premature_validity.start_validity = convert_time32(time_now + std::chrono::hours(1));
-    premature_validity.end_validity = convert_time32(time_now + std::chrono::hours(25));
+    premature_validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(1));
+    premature_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(25));
     auto signer_info_field = secured_message.header_field(HeaderFieldType::Signer_Info);
     ASSERT_TRUE(signer_info_field);
     auto certificate = boost::get<Certificate>(&boost::get<SignerInfo>(*signer_info_field));
@@ -425,14 +425,14 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload)
 TEST_F(SecurityEntityTest, verify_message_modified_generation_time_before_current_time)
 {
     // change the time, so the generation time of SecuredMessage is before current time
-    time_now += std::chrono::hours(12);
+    runtime.trigger(std::chrono::hours(12));
 
     // prepare decap request
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
     // change the time, so the current time is before generation time of SecuredMessage
-    time_now -= std::chrono::hours(12);
+    runtime.reset(runtime.now() - std::chrono::hours(12));
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);

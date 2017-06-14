@@ -10,27 +10,13 @@ namespace vanetza
 {
 namespace security
 {
-namespace
-{
 
-Signature create_null_signature()
-{
-    const auto size = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
-    EcdsaSignature ecdsa;
-    ecdsa.s.resize(size, 0x00);
-    X_Coordinate_Only coordinate;
-    coordinate.x.resize(size, 0x00);
-    ecdsa.R = std::move(coordinate);
-    return Signature { std::move(ecdsa) };
-}
-
-} // namespace
-
-SecurityEntity::SecurityEntity(const Clock::time_point& time_now, Backend& backend, CertificateManager& manager) :
-    m_time_now(time_now), m_sign_deferred(false),
+SecurityEntity::SecurityEntity(Runtime& rt, Backend& backend, CertificateManager& manager) :
+    m_runtime(rt),
     m_certificate_manager(manager),
     m_crypto_backend(backend)
 {
+    enable_deferred_signing(false);
 }
 
 SecurityEntity::~SecurityEntity()
@@ -40,46 +26,19 @@ SecurityEntity::~SecurityEntity()
 
 EncapConfirm SecurityEntity::encapsulate_packet(const EncapRequest& encap_request)
 {
-    return sign(encap_request);
+    SignRequest sign_request;
+    sign_request.plain_message = encap_request.plaintext_payload;
+    sign_request.its_aid = itsAidCa; // TODO add ITS-AID to EncapRequest
+
+    SignConfirm sign_confirm = m_sign_service(std::move(sign_request));
+    EncapConfirm encap_confirm;
+    encap_confirm.sec_packet = std::move(sign_confirm.secured_message);
+    return encap_confirm;
 }
 
 DecapConfirm SecurityEntity::decapsulate_packet(const DecapRequest& decap_request)
 {
     return verify(decap_request);
-}
-
-EncapConfirm SecurityEntity::sign(const EncapRequest& request)
-{
-    EncapConfirm encap_confirm;
-    // set secured message data
-    encap_confirm.sec_packet.payload.type = PayloadType::Signed;
-    encap_confirm.sec_packet.payload.data = std::move(request.plaintext_payload);
-    // set header field data
-    encap_confirm.sec_packet.header_fields.push_back(convert_time64(m_time_now));
-    encap_confirm.sec_packet.header_fields.push_back(itsAidCa);
-
-    SignerInfo signer_info = m_certificate_manager.own_certificate();
-    encap_confirm.sec_packet.header_fields.push_back(signer_info);
-
-    const size_t signature_size = get_size(signature_placeholder());
-    const size_t trailer_size = get_size(TrailerField { signature_placeholder() });
-    const auto& private_key = m_certificate_manager.own_private_key();
-
-    if (m_sign_deferred) {
-        auto future = std::async(std::launch::deferred, [=]() {
-            ByteBuffer data = convert_for_signing(encap_confirm.sec_packet, trailer_size);
-            return m_crypto_backend.sign_data(private_key, data);
-        });
-        EcdsaSignatureFuture signature(future.share(), signature_size);
-        encap_confirm.sec_packet.trailer_fields.push_back(signature);
-    } else {
-        ByteBuffer data_buffer = convert_for_signing(encap_confirm.sec_packet, trailer_size);
-        TrailerField trailer_field = m_crypto_backend.sign_data(private_key, data_buffer);
-        assert(get_size(trailer_field) == trailer_size);
-        encap_confirm.sec_packet.trailer_fields.push_back(trailer_field);
-    }
-
-    return encap_confirm;
 }
 
 DecapConfirm SecurityEntity::verify(const DecapRequest& request)
@@ -209,13 +168,12 @@ DecapConfirm SecurityEntity::verify(const DecapRequest& request)
 
 void SecurityEntity::enable_deferred_signing(bool flag)
 {
-    m_sign_deferred = flag;
-}
-
-const Signature& SecurityEntity::signature_placeholder() const
-{
-    static Signature signature = create_null_signature();
-    return signature;
+    if (flag) {
+        m_sign_service = deferred_sign_service(m_runtime, m_certificate_manager, m_crypto_backend);
+    } else {
+        m_sign_service = straight_sign_service(m_runtime, m_certificate_manager, m_crypto_backend);
+    }
+    assert(m_sign_service);
 }
 
 bool SecurityEntity::check_generation_time(Time64 generation_time) const
@@ -226,9 +184,9 @@ bool SecurityEntity::check_generation_time(Time64 generation_time) const
     // TODO generation_time_past for CAMs is only 2 seconds
 
     bool valid = true;
-    if (generation_time > convert_time64(m_time_now + generation_time_future)) {
+    if (generation_time > convert_time64(m_runtime.now() + generation_time_future)) {
         valid = false;
-    } else if (generation_time < convert_time64(m_time_now - generation_time_past)) {
+    } else if (generation_time < convert_time64(m_runtime.now() - generation_time_past)) {
         valid = false;
     }
 

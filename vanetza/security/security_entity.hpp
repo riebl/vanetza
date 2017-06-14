@@ -1,13 +1,12 @@
 #ifndef SECURITY_ENTITY_HPP
 #define SECURITY_ENTITY_HPP
 
-#include <vanetza/common/clock.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_confirm.hpp>
 #include <vanetza/security/encap_request.hpp>
-#include <memory>
-#include <string>
+#include <vanetza/security/sign_service.hpp>
 
 namespace vanetza
 {
@@ -22,11 +21,11 @@ class SecurityEntity
 {
 public:
     /**
-     * \param time_now timestamp referring to current time
+     * \param rt runtime providing current time among others
      * \param backend for cryptographic operations
      * \param manager certificate manager
      */
-    SecurityEntity(const Clock::time_point& time_now, Backend& backend, CertificateManager& manager);
+    SecurityEntity(Runtime& rt, Backend& backend, CertificateManager& manager);
     ~SecurityEntity();
 
     /**
@@ -68,13 +67,6 @@ public:
     void enable_deferred_signing(bool flag);
 
 private:
-    /** \brief sign the packet
-    *
-    * \param encap request that was handed over
-    * \return signed packet
-    */
-    EncapConfirm sign(const EncapRequest& encap_request);
-
     /** \brief verify the packet
     *
     * \param signed packet
@@ -83,22 +75,16 @@ private:
     DecapConfirm verify(const DecapRequest& decap_request);
 
     /**
-     * \brief signature used as placeholder until final signature is calculated
-     * \return placeholder containing dummy data
-     */
-    const Signature& signature_placeholder() const;
-
-    /**
      * \brief check if generation time is within validity range
      * \param gt generation time
      * \return true if valid
      */
     bool check_generation_time(Time64 gt) const;
 
-    const Clock::time_point& m_time_now;
-    bool m_sign_deferred; /*< controls if EcdsaSignatureFuture is used */
+    Runtime& m_runtime;
     CertificateManager& m_certificate_manager;
     Backend& m_crypto_backend;
+    SignService m_sign_service;
 };
 
 } // namespace security

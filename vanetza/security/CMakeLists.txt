@@ -20,6 +20,7 @@ add_vanetza_component(security
     security_entity.cpp
     serialization.cpp
     signature.cpp
+    sign_service.cpp
     signer_info.cpp
     subject_attribute.cpp
     subject_info.cpp
