@@ -3,7 +3,6 @@
 #include <vanetza/security/certificate_manager.hpp>
 #include <vanetza/security/its_aid.hpp>
 #include <future>
-#include <mutex>
 #include <stdexcept>
 #include <string>
 
@@ -11,6 +10,21 @@ namespace vanetza
 {
 namespace security
 {
+namespace
+{
+
+Signature create_null_signature()
+{
+    const auto size = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    EcdsaSignature ecdsa;
+    ecdsa.s.resize(size, 0x00);
+    X_Coordinate_Only coordinate;
+    coordinate.x.resize(size, 0x00);
+    ecdsa.R = std::move(coordinate);
+    return Signature { std::move(ecdsa) };
+}
+
+} // namespace
 
 SecurityEntity::SecurityEntity(const Clock::time_point& time_now, Backend& backend, CertificateManager& manager) :
     m_time_now(time_now), m_sign_deferred(false),
@@ -200,17 +214,7 @@ void SecurityEntity::enable_deferred_signing(bool flag)
 
 const Signature& SecurityEntity::signature_placeholder() const
 {
-    static std::once_flag once_flag;
-    static Signature signature;
-    std::call_once(once_flag, [](Signature& signature) {
-        const auto size = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
-        EcdsaSignature ecdsa;
-        ecdsa.s.resize(size, 0x00);
-        X_Coordinate_Only coordinate;
-        coordinate.x.resize(size, 0x00);
-        ecdsa.R = coordinate;
-        signature = ecdsa;
-    }, std::ref(signature));
+    static Signature signature = create_null_signature();
     return signature;
 }
 
