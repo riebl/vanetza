@@ -42,6 +42,13 @@ struct SecuredMessageV2
      * \return matching TrailerField
      */
     boost::optional<TrailerField&> trailer_field(TrailerFieldType);
+
+    /**
+     * Fetch read-only pointer of first matching trailer field
+     * \param type request trailer field type
+     * \return matching trailer field or nullptr
+     */
+    const TrailerField* trailer_field(TrailerFieldType type) const;
 };
 
 using SecuredMessage = SecuredMessageV2;
