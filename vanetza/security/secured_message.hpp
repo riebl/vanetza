@@ -30,6 +30,13 @@ struct SecuredMessageV2
     boost::optional<HeaderField&> header_field(HeaderFieldType);
 
     /**
+     * Fetch read-only pointer to first machting header field
+     * \param type requested header field type
+     * \return matching header field or nullptr
+     */
+    const HeaderField* header_field(HeaderFieldType type) const;
+
+    /**
      * Fetch reference of first matching trailer field
      * \param type TrailerField has to match given type
      * \return matching TrailerField

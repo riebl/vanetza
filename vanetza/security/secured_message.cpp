@@ -22,6 +22,18 @@ boost::optional<HeaderField&> SecuredMessage::header_field(HeaderFieldType type)
     return match;
 }
 
+const HeaderField* SecuredMessage::header_field(HeaderFieldType type) const
+{
+    const HeaderField* match = nullptr;
+    for (auto& field : header_fields) {
+        if (get_type(field) == type) {
+            match = &field;
+            break;
+        }
+    }
+    return match;
+}
+
 boost::optional<TrailerField&> SecuredMessage::trailer_field(TrailerFieldType type)
 {
     boost::optional<TrailerField&> match;
