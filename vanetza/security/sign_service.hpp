@@ -5,6 +5,7 @@
 #include <vanetza/net/packet.hpp>
 #include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/secured_message.hpp>
+#include <vanetza/security/signer_info.hpp>
 #include <functional>
 
 namespace vanetza
@@ -56,6 +57,14 @@ SignService straight_sign_service(Runtime&, CertificateManager&, Backend&);
  * \return callable sign service
  */
 SignService deferred_sign_service(Runtime&, CertificateManager&, Backend&);
+
+/**
+ * SignService without real cryptography but dummy signature
+ * \param rt runtime for appropriate generation time
+ * \param si signer info attached to header fields of secured message
+ * \return callable sign service
+ */
+SignService dummy_sign_service(const Runtime& rt, const SignerInfo& si);
 
 } // namespace security
 } // namespace vanetza

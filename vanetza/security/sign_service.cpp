@@ -77,5 +77,20 @@ SignService deferred_sign_service(Runtime& rt, CertificateManager& certificates,
     };
 }
 
+SignService dummy_sign_service(const Runtime& rt, const SignerInfo& signer_info)
+{
+    return [&rt, signer_info](SignRequest&& request) -> SignConfirm {
+        static const Signature null_signature = signature_placeholder();
+        SignConfirm confirm;
+        confirm.secured_message.payload.type = PayloadType::Signed;
+        confirm.secured_message.payload.data = std::move(request.plain_message);
+        confirm.secured_message.header_fields.push_back(convert_time64(rt.now()));
+        confirm.secured_message.header_fields.push_back(request.its_aid);
+        confirm.secured_message.header_fields.push_back(signer_info);
+        confirm.secured_message.trailer_fields.push_back(null_signature);
+        return confirm;
+    };
+}
+
 } // namespace security
 } // namespace vanetza
