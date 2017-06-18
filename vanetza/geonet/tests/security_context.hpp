@@ -15,7 +15,9 @@ public:
     SecurityContext(Runtime& rt) :
         backend(security::create_backend("default")),
         certificates(new security::NaiveCertificateManager(rt.now())),
-        security(rt, *backend, *certificates)
+        security(
+            straight_sign_service(rt, *certificates, *backend),
+            straight_verify_service(rt, *certificates, *backend))
     {
     }
 

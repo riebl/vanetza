@@ -1,23 +1,20 @@
 #include <vanetza/security/security_entity.hpp>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/certificate_manager.hpp>
-#include <vanetza/security/its_aid.hpp>
-#include <future>
 #include <stdexcept>
-#include <string>
 
 namespace vanetza
 {
 namespace security
 {
 
-SecurityEntity::SecurityEntity(Runtime& rt, Backend& backend, CertificateManager& manager) :
-    m_runtime(rt),
-    m_certificate_manager(manager),
-    m_crypto_backend(backend),
-    m_verify_service(straight_verify_service(rt, manager, backend))
+SecurityEntity::SecurityEntity(SignService sign, VerifyService verify) :
+    m_sign_service(std::move(sign)),
+    m_verify_service(std::move(verify))
 {
-    enable_deferred_signing(false);
+    if (!m_sign_service) {
+        throw std::invalid_argument("SN-SIGN service is not callable");
+    } else if (!m_verify_service) {
+        throw std::invalid_argument("SN-VERIFY service is not callable");
+    }
 }
 
 SecurityEntity::~SecurityEntity()
@@ -45,16 +42,6 @@ DecapConfirm SecurityEntity::decapsulate_packet(const DecapRequest& decap_reques
     decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
     decap_confirm.certificate_validity = verify_confirm.certificate_validity;
     return decap_confirm;
-}
-
-void SecurityEntity::enable_deferred_signing(bool flag)
-{
-    if (flag) {
-        m_sign_service = deferred_sign_service(m_runtime, m_certificate_manager, m_crypto_backend);
-    } else {
-        m_sign_service = straight_sign_service(m_runtime, m_certificate_manager, m_crypto_backend);
-    }
-    assert(m_sign_service);
 }
 
 } // namespace security

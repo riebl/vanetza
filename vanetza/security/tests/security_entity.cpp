@@ -15,7 +15,9 @@ protected:
     SecurityEntityTest() :
         crypto_backend(create_backend("default")),
         certificate_manager(new NaiveCertificateManager(runtime.now())),
-        security(runtime, *crypto_backend, *certificate_manager)
+        sign_service(straight_sign_service(runtime, *certificate_manager, *crypto_backend)),
+        verify_service(straight_verify_service(runtime, *certificate_manager, *crypto_backend)),
+        security(sign_service, verify_service)
     {
     }
 
@@ -42,13 +44,17 @@ protected:
     Runtime runtime;
     std::unique_ptr<Backend> crypto_backend;
     std::unique_ptr<CertificateManager> certificate_manager;
+    SignService sign_service;
+    VerifyService verify_service;
     SecurityEntity security;
     ChunkPacket expected_payload;
 };
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    SecurityEntity other_security(runtime, *crypto_backend, *certificate_manager);
+    SignService sign = straight_sign_service(runtime, *certificate_manager, *crypto_backend);
+    VerifyService verify = straight_verify_service(runtime, *certificate_manager, *crypto_backend);
+    SecurityEntity other_security(sign, verify);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
@@ -62,8 +68,12 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     auto openssl_backend = create_backend("OpenSSL");
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
-    SecurityEntity cryptopp_security(runtime, *cryptopp_backend, cryptopp_certs);
-    SecurityEntity openssl_security(runtime,  *openssl_backend, openssl_certs);
+    SecurityEntity cryptopp_security {
+            straight_sign_service(runtime, cryptopp_certs, *cryptopp_backend),
+            straight_verify_service(runtime, cryptopp_certs, *cryptopp_backend) };
+    SecurityEntity openssl_security {
+            straight_sign_service(runtime, openssl_certs, *openssl_backend),
+            straight_verify_service(runtime, openssl_certs, *openssl_backend) };
 
     // OpenSSL to Crypto++
     EncapConfirm encap_confirm = openssl_security.encapsulate_packet(create_encap_request());

@@ -1,7 +1,6 @@
 #ifndef SECURITY_ENTITY_HPP
 #define SECURITY_ENTITY_HPP
 
-#include <vanetza/common/runtime.hpp>
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_confirm.hpp>
@@ -14,19 +13,20 @@ namespace vanetza
 namespace security
 {
 
-// forward declaration
-class Backend;
-class CertificateManager;
-
 class SecurityEntity
 {
 public:
     /**
-     * \param rt runtime providing current time among others
-     * \param backend for cryptographic operations
-     * \param manager certificate manager
+     * \brief Create security entity from primitive services.
+     *
+     * A std::invalid_argument exception is thrown at construction
+     * if any given service is not callable.
+     *
+     * \param sign SN-SIGN service
+     * \param verify SN-VERIFY service
      */
-    SecurityEntity(Runtime& rt, Backend& backend, CertificateManager& manager);
+    SecurityEntity(SignService sign, VerifyService verify);
+
     ~SecurityEntity();
 
     /**
@@ -41,12 +41,6 @@ public:
      */
     EncapConfirm encapsulate_packet(const EncapRequest& encap_request);
 
-    /** \brief decapsulates packet
-     *
-     * \param packet that should be decapsulated
-     * \return decapsulated packet
-     */
-
     /**
      * \brief Decapsulates the payload within a SecuredMessage
      *
@@ -57,20 +51,7 @@ public:
      */
     DecapConfirm decapsulate_packet(const DecapRequest& decap_request);
 
-    /**
-     * \brief enable deferred signature creation
-     *
-     * SecuredMessages contain EcdsaSignatureFuture instead of EcdsaSignature
-     * when this feature is enabled.
-     *
-     * \param flag true for enabling deferred signature calculation
-     */
-    void enable_deferred_signing(bool flag);
-
 private:
-    Runtime& m_runtime;
-    CertificateManager& m_certificate_manager;
-    Backend& m_crypto_backend;
     SignService m_sign_service;
     VerifyService m_verify_service;
 };
