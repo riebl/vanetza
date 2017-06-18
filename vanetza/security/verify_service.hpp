@@ -66,6 +66,14 @@ using VerifyService = std::function<VerifyConfirm(VerifyRequest&&)>;
  */
 VerifyService straight_verify_service(Runtime&, CertificateManager&, Backend&);
 
+/**
+ * Get insecure dummy verify service without any checks
+ * \param report confirm report result
+ * \param validity certificate validity result
+ * \return callable verify service
+ */
+VerifyService dummy_verify_service(VerificationReport report, CertificateValidity validity);
+
 } // namespace security
 } // namespace vanetza
 

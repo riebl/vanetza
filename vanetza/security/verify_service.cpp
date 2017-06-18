@@ -147,5 +147,18 @@ VerifyService straight_verify_service(Runtime& rt, CertificateManager& certs, Ba
     };
 }
 
+VerifyService dummy_verify_service(VerificationReport report, CertificateValidity validity)
+{
+    return [=](VerifyRequest&& request) -> VerifyConfirm {
+        VerifyConfirm confirm;
+        confirm.report = report;
+        confirm.certificate_validity = validity;
+        const HeaderField* its_aid_field = request.secured_message.header_field(HeaderFieldType::Its_Aid);
+        const IntX* its_aid = boost::get<IntX>(its_aid_field);
+        confirm.its_aid = its_aid ? *its_aid : IntX(0);
+        return confirm;
+    };
+}
+
 } // namespace security
 } // namespace vanetza
