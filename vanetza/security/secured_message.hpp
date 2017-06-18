@@ -4,7 +4,6 @@
 #include <vanetza/security/header_field.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/payload.hpp>
-#include <boost/optional/optional.hpp>
 #include <cstdint>
 #include <list>
 
@@ -23,11 +22,11 @@ struct SecuredMessageV2
     unsigned protocol_version() const { return 2; }
 
     /**
-     * Fetch reference of first matching header field
+     * Fetch pointer to first matching header field
      * \param type HeaderField has to match given type
-     * \return matching HeaderField
+     * \return matching HeaderField or nullptr
      */
-    boost::optional<HeaderField&> header_field(HeaderFieldType);
+    HeaderField* header_field(HeaderFieldType);
 
     /**
      * Fetch read-only pointer to first machting header field
@@ -37,11 +36,11 @@ struct SecuredMessageV2
     const HeaderField* header_field(HeaderFieldType type) const;
 
     /**
-     * Fetch reference of first matching trailer field
+     * Fetch pointer to first matching trailer field
      * \param type TrailerField has to match given type
-     * \return matching TrailerField
+     * \return matching TrailerField or nullptr
      */
-    boost::optional<TrailerField&> trailer_field(TrailerFieldType);
+    TrailerField* trailer_field(TrailerFieldType);
 
     /**
      * Fetch read-only pointer of first matching trailer field
