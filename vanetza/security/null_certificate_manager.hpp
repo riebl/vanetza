@@ -23,6 +23,12 @@ public:
      */
     void certificate_check_result(const CertificateValidity& result);
 
+    /**
+     * Get static dummy certificate
+     * \return certificate filled with dummy values
+     */
+    static const Certificate& null_certificate();
+
 private:
     CertificateValidity m_check_result;
 };

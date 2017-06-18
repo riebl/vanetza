@@ -51,8 +51,7 @@ CertificateValidity NullCertificateManager::check_certificate(const Certificate&
 
 const Certificate& NullCertificateManager::own_certificate()
 {
-    static const Certificate null_certificate = create_null_certificate();
-    return null_certificate;
+    return null_certificate();
 }
 
 const ecdsa256::PrivateKey& NullCertificateManager::own_private_key()
@@ -64,6 +63,12 @@ const ecdsa256::PrivateKey& NullCertificateManager::own_private_key()
 void NullCertificateManager::certificate_check_result(const CertificateValidity& result)
 {
     m_check_result = result;
+}
+
+const Certificate& NullCertificateManager::null_certificate()
+{
+    static const Certificate null_certificate = create_null_certificate();
+    return null_certificate;
 }
 
 } // namespace security
