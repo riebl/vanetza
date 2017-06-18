@@ -63,12 +63,10 @@ VerifyService straight_verify_service(Runtime& rt, CertificateManager& certs, Ba
             return confirm;
         }
 
-        const HeaderField* its_aid_field = secured_message.header_field(HeaderFieldType::Its_Aid);
-        const IntX* its_aid = boost::get<IntX>(its_aid_field);
+        const IntX* its_aid = secured_message.header_field<HeaderFieldType::Its_Aid>();
         confirm.its_aid = its_aid ? *its_aid : IntX(0);
 
-        const HeaderField* signer_info_field = secured_message.header_field(HeaderFieldType::Signer_Info);
-        const SignerInfo* signer_info = boost::get<SignerInfo>(signer_info_field);
+        const SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         boost::optional<const Certificate&> certificate;
         if (signer_info) {
             switch (get_type(*signer_info)) {
@@ -153,8 +151,7 @@ VerifyService dummy_verify_service(VerificationReport report, CertificateValidit
         VerifyConfirm confirm;
         confirm.report = report;
         confirm.certificate_validity = validity;
-        const HeaderField* its_aid_field = request.secured_message.header_field(HeaderFieldType::Its_Aid);
-        const IntX* its_aid = boost::get<IntX>(its_aid_field);
+        const IntX* its_aid = request.secured_message.header_field<HeaderFieldType::Its_Aid>();
         confirm.its_aid = its_aid ? *its_aid : IntX(0);
         return confirm;
     };

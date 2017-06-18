@@ -148,14 +148,9 @@ TEST_F(SecurityEntityTest, verify_message_modified_message_type)
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all header_fields
-    auto& header_fields = secured_message.header_fields;
-    for (auto& field : header_fields) {
-        // modify message type
-        if (HeaderFieldType::Its_Aid == get_type(field)) {
-            boost::get<IntX>(field).set(42);
-        }
-    }
+    IntX* its_aid = secured_message.header_field<HeaderFieldType::Its_Aid>();
+    ASSERT_TRUE(its_aid);
+    its_aid->set(42);
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
@@ -169,18 +164,11 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all header_fields
-    auto& header_fields = secured_message.header_fields;
-    for (auto& field : header_fields) {
-        // modify certificate
-        if (HeaderFieldType::Signer_Info == get_type(field)) {
-            SignerInfo& signer_info = boost::get<SignerInfo>(field);
-            Certificate& certificate = boost::get<Certificate>(signer_info);
-
-            // change the subject name
-            certificate.subject_info.subject_name = {42};
-        }
-    }
+    // change the subject name
+    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_TRUE(signer_info);
+    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    certificate.subject_info.subject_name = {42};
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
@@ -194,19 +182,12 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all header_fields
-    auto& header_fields = secured_message.header_fields;
-    for (auto& field : header_fields) {
-        // modify certificate
-        if (HeaderFieldType::Signer_Info == get_type(field)) {
-            SignerInfo& signer_info = boost::get<SignerInfo>(field);
-            Certificate& certificate = boost::get<Certificate>(signer_info);
-
-            // change the subject info
-            HashedId8 faulty_hash {{ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }};
-            certificate.signer_info = faulty_hash;
-        }
-    }
+    // change the subject info
+    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_TRUE(signer_info);
+    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    HashedId8 faulty_hash {{ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }};
+    certificate.signer_info = faulty_hash;
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
@@ -220,18 +201,11 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all header_fields
-    auto& header_fields = secured_message.header_fields;
-    for (auto& field : header_fields) {
-        // modify certificate
-        if (HeaderFieldType::Signer_Info == get_type(field)) {
-            SignerInfo& signer_info = boost::get<SignerInfo>(field);
-            Certificate& certificate = boost::get<Certificate>(signer_info);
-
-            // change the subject info
-            certificate.subject_info.subject_type = SubjectType::Root_Ca;
-        }
-    }
+    // change the subject info
+    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_TRUE(signer_info);
+    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    certificate.subject_info.subject_type = SubjectType::Root_Ca;
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
@@ -245,26 +219,14 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all header_fields
-    auto& header_fields = secured_message.header_fields;
-    for (auto& field : header_fields) {
-        // modify certificate
-        if (HeaderFieldType::Signer_Info == get_type(field)) {
-            SignerInfo& signer_info = boost::get<SignerInfo>(field);
-            Certificate& certificate = boost::get<Certificate>(signer_info);
-
-            std::list<SubjectAttribute>& subject_attributes_list = certificate.subject_attributes;
-
-            // iterate over subject_attribute list
-            for (auto& subject_attribute : subject_attributes_list) {
-
-                if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
-                    SubjectAssurance& subject_assurance = boost::get<SubjectAssurance>(subject_attribute);
-
-                    // change raw in subject assurance to random value
-                    subject_assurance.raw = 0x47;
-                }
-            }
+    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_TRUE(signer_info);
+    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    for (auto& subject_attribute : certificate.subject_attributes) {
+        if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
+            SubjectAssurance& subject_assurance = boost::get<SubjectAssurance>(subject_attribute);
+            // change raw in subject assurance
+            subject_assurance.raw = 0x47;
         }
     }
 
@@ -326,28 +288,17 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restrict
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all header_fields
-    auto& header_fields = secured_message.header_fields;
-    for (auto& field : header_fields) {
-        // modify certificate
-        if (HeaderFieldType::Signer_Info == get_type(field)) {
-            SignerInfo& signer_info = boost::get<SignerInfo>(field);
-            Certificate& certificate = boost::get<Certificate>(signer_info);
+    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_TRUE(signer_info);
+    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    for (auto& validity_restriction : certificate.validity_restriction) {
+        ValidityRestrictionType type = get_type(validity_restriction);
+        ASSERT_EQ(type, ValidityRestrictionType::Time_Start_And_End);
 
-            std::list<ValidityRestriction>& restriction_list = certificate.validity_restriction;
-
-            // iterate over validity_restriction list
-            for (auto& validity_restriction : restriction_list) {
-
-                ValidityRestrictionType type = get_type(validity_restriction);
-                ASSERT_EQ(type, ValidityRestrictionType::Time_Start_And_End);
-
-                // change start and end time of certificate validity
-                StartAndEndValidity& start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
-                start_and_end.start_validity = 500;
-                start_and_end.end_validity = 373;
-            }
-        }
+        // change start and end time of certificate validity
+        StartAndEndValidity& start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
+        start_and_end.start_validity = 500;
+        start_and_end.end_validity = 373;
     }
 
     // verify message
@@ -362,16 +313,10 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all header_fields
-    auto& header_fields = secured_message.header_fields;
-    for (auto& field : header_fields) {
-        // modify certificate
-        if (HeaderFieldType::Signer_Info == get_type(field)) {
-            SignerInfo& signer_info = boost::get<SignerInfo>(field);
-            Certificate& certificate = boost::get<Certificate>(signer_info);
-            certificate.signature = create_random_ecdsa_signature(0);
-        }
-    }
+    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_TRUE(signer_info);
+    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    certificate.signature = create_random_ecdsa_signature(0);
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
@@ -385,16 +330,11 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
 
-    // iterate through all trailer_fields
-    auto& trailer_fields = secured_message.trailer_fields;
-    for (auto& field : trailer_fields) {
-        // modify signature
-        if (TrailerFieldType::Signature == get_type(field)) {
-            ASSERT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(boost::get<Signature>(field)));
-            EcdsaSignature& signature = boost::get<EcdsaSignature>(boost::get<Signature>(field));
-            signature.s = {8, 15, 23};
-        }
-    }
+    Signature* signature = secured_message.trailer_field<TrailerFieldType::Signature>();
+    ASSERT_TRUE(signature);
+    ASSERT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(*signature));
+    EcdsaSignature& ecdsa_signature = boost::get<EcdsaSignature>(*signature);
+    ecdsa_signature.s = {8, 15, 23};
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));

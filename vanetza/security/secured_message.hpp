@@ -48,6 +48,38 @@ struct SecuredMessageV2
      * \return matching trailer field or nullptr
      */
     const TrailerField* trailer_field(TrailerFieldType type) const;
+
+    template<HeaderFieldType T>
+    typename header_field_type<T>::type* header_field()
+    {
+        using field_type = typename header_field_type<T>::type;
+        HeaderField* field = header_field(T);
+        return boost::get<field_type>(field);
+    }
+
+    template<HeaderFieldType T>
+    const typename header_field_type<T>::type* header_field() const
+    {
+        using field_type = typename header_field_type<T>::type;
+        const HeaderField* field = header_field(T);
+        return boost::get<field_type>(field);
+    }
+
+    template<TrailerFieldType T>
+    typename trailer_field_type<T>::type* trailer_field()
+    {
+        using field_type = typename trailer_field_type<T>::type;
+        TrailerField* field = trailer_field(T);
+        return boost::get<field_type>(field);
+    }
+
+    template<TrailerFieldType T>
+    const typename trailer_field_type<T>::type* trailer_field() const
+    {
+        using field_type = typename trailer_field_type<T>::type;
+        const TrailerField* field = trailer_field(T);
+        return boost::get<field_type>(field);
+    }
 };
 
 using SecuredMessage = SecuredMessageV2;
