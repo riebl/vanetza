@@ -42,7 +42,7 @@ DecapConfirm SecurityEntity::decapsulate_packet(const DecapRequest& decap_reques
     VerifyConfirm verify_confirm = m_verify_service(VerifyRequest { decap_request.sec_packet });
     DecapConfirm decap_confirm;
     decap_confirm.plaintext_payload = decap_request.sec_packet.payload.data;
-    decap_confirm.report = static_cast<ReportType>(verify_confirm.report);
+    decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
     decap_confirm.certificate_validity = verify_confirm.certificate_validity;
     return decap_confirm;
 }

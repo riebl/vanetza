@@ -109,7 +109,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateManager& certs, Ba
             return confirm;
         }
 
-        // if certificate could not be verified return correct ReportType
+        // if certificate could not be verified return correct DecapReport
         CertificateValidity cert_validity = certs.check_certificate(*certificate);
         if (!cert_validity) {
             confirm.report = VerificationReport::Invalid_Certificate;
