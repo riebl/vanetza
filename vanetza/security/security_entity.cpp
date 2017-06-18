@@ -22,10 +22,10 @@ SecurityEntity::~SecurityEntity()
     // only defined here so unique_ptr members can be used with incomplete types
 }
 
-EncapConfirm SecurityEntity::encapsulate_packet(const EncapRequest& encap_request)
+EncapConfirm SecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
 {
     SignRequest sign_request;
-    sign_request.plain_message = encap_request.plaintext_payload;
+    sign_request.plain_message = std::move(encap_request.plaintext_payload);
     sign_request.its_aid = itsAidCa; // TODO add ITS-AID to EncapRequest
 
     SignConfirm sign_confirm = m_sign_service(std::move(sign_request));
@@ -34,11 +34,11 @@ EncapConfirm SecurityEntity::encapsulate_packet(const EncapRequest& encap_reques
     return encap_confirm;
 }
 
-DecapConfirm SecurityEntity::decapsulate_packet(const DecapRequest& decap_request)
+DecapConfirm SecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
 {
     VerifyConfirm verify_confirm = m_verify_service(VerifyRequest { decap_request.sec_packet });
     DecapConfirm decap_confirm;
-    decap_confirm.plaintext_payload = decap_request.sec_packet.payload.data;
+    decap_confirm.plaintext_payload = std::move(decap_request.sec_packet.payload.data);
     decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
     decap_confirm.certificate_validity = verify_confirm.certificate_validity;
     return decap_confirm;

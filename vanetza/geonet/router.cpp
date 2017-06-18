@@ -376,33 +376,33 @@ void Router::indicate_secured(IndicationContext& ctx, const BasicHeader& basic)
         packet_dropped(PacketDropReason::PARSE_SECURED_HEADER);
     } else if (m_security_entity) {
         // Decap packet
-        security::DecapRequest decap_request(*secured_message);
-        security::DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(decap_request);
+        using namespace vanetza::security;
+        DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(DecapRequest(*secured_message));
         secured_payload_visitor visitor(*this, ctx, basic);
 
         // check whether the received packet is valid
-        if (security::DecapReport::Success == decap_confirm.report) {
+        if (DecapReport::Success == decap_confirm.report) {
             boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
         } else if (SecurityDecapHandling::NON_STRICT == m_mib.itsGnSnDecapResultHandling) {
             // according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
             // handle the packet anyway, when itsGnDecapResultHandling is set to NON-STRICT (1)
             switch (decap_confirm.report) {
-                case security::DecapReport::False_Signature:
-                case security::DecapReport::Invalid_Certificate:
-                case security::DecapReport::Revoked_Certificate:
-                case security::DecapReport::Inconsistant_Chain:
-                case security::DecapReport::Invalid_Timestamp:
-                case security::DecapReport::Invalid_Mobility_Data:
-                case security::DecapReport::Unsigned_Message:
-                case security::DecapReport::Signer_Certificate_Not_Found:
-                case security::DecapReport::Unsupported_Signer_Identifier_Type:
-                case security::DecapReport::Unencrypted_Message:
+                case DecapReport::False_Signature:
+                case DecapReport::Invalid_Certificate:
+                case DecapReport::Revoked_Certificate:
+                case DecapReport::Inconsistant_Chain:
+                case DecapReport::Invalid_Timestamp:
+                case DecapReport::Invalid_Mobility_Data:
+                case DecapReport::Unsigned_Message:
+                case DecapReport::Signer_Certificate_Not_Found:
+                case DecapReport::Unsupported_Signer_Identifier_Type:
+                case DecapReport::Unencrypted_Message:
                     // ok, continue
                     boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
                     break;
-                case security::DecapReport::Duplicate_Message:
-                case security::DecapReport::Incompatible_Protocol:
-                case security::DecapReport::Decryption_Error:
+                case DecapReport::Duplicate_Message:
+                case DecapReport::Incompatible_Protocol:
+                case DecapReport::Decryption_Error:
                 default:
                     packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT);
                     break;
@@ -1050,7 +1050,7 @@ Router::DownPacketPtr Router::encap_packet(security::Profile profile, Pdu& pdu, 
     encap_request.security_profile = profile;
 
     if (m_security_entity) {
-        security::EncapConfirm confirm = m_security_entity->encapsulate_packet(encap_request);
+        security::EncapConfirm confirm = m_security_entity->encapsulate_packet(std::move(encap_request));
         pdu.secured(std::move(confirm.sec_packet));
     } else {
         throw std::runtime_error("security entity unavailable");

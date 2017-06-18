@@ -39,7 +39,7 @@ public:
      * \param request containing payload to sign
      * \return confirmation containing signed SecuredMessage
      */
-    EncapConfirm encapsulate_packet(const EncapRequest& encap_request);
+    EncapConfirm encapsulate_packet(EncapRequest&& encap_request);
 
     /**
      * \brief Decapsulates the payload within a SecuredMessage
@@ -49,7 +49,7 @@ public:
      * \param request containing a SecuredMessage
      * \return decapsulation confirmation including plaintext payload
      */
-    DecapConfirm decapsulate_packet(const DecapRequest& decap_request);
+    DecapConfirm decapsulate_packet(DecapRequest&& decap_request);
 
 private:
     SignService m_sign_service;

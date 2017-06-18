@@ -132,7 +132,7 @@ TEST_F(SecurityEntityTest, verify_message)
     DecapRequest decap_request(secured_message);
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
 
     // check if verify was successful
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
@@ -158,7 +158,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_message_type)
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
 }
@@ -183,7 +183,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::INVALID_NAME, decap_confirm.certificate_validity.reason());
 }
@@ -209,7 +209,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
 }
@@ -234,7 +234,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
 }
@@ -269,7 +269,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
 }
@@ -351,7 +351,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restrict
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, decap_confirm.certificate_validity.reason());
 }
@@ -374,7 +374,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
 }
@@ -397,7 +397,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
 }
@@ -412,7 +412,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload_type)
     secured_message.payload.type = PayloadType::Unsecured;
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::Unsigned_Message, decap_confirm.report);
 }
@@ -427,7 +427,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload)
     secured_message.payload.data = CohesivePacket({42, 42, 42}, OsiLayer::Session);
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
 }
@@ -445,7 +445,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_generation_time_before_curren
     runtime.reset(runtime.now() - std::chrono::hours(12));
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::Invalid_Timestamp, decap_confirm.report);
 }
@@ -467,7 +467,7 @@ TEST_F(SecurityEntityTest, verify_message_without_signer_info)
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(decap_request);
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
 }
