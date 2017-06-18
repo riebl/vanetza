@@ -7,6 +7,7 @@
 #include <vanetza/security/encap_confirm.hpp>
 #include <vanetza/security/encap_request.hpp>
 #include <vanetza/security/sign_service.hpp>
+#include <vanetza/security/verify_service.hpp>
 
 namespace vanetza
 {
@@ -67,24 +68,11 @@ public:
     void enable_deferred_signing(bool flag);
 
 private:
-    /** \brief verify the packet
-    *
-    * \param signed packet
-    * \return verified packet
-    */
-    DecapConfirm verify(const DecapRequest& decap_request);
-
-    /**
-     * \brief check if generation time is within validity range
-     * \param gt generation time
-     * \return true if valid
-     */
-    bool check_generation_time(Time64 gt) const;
-
     Runtime& m_runtime;
     CertificateManager& m_certificate_manager;
     Backend& m_crypto_backend;
     SignService m_sign_service;
+    VerifyService m_verify_service;
 };
 
 } // namespace security

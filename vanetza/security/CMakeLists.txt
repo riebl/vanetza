@@ -26,6 +26,7 @@ add_vanetza_component(security
     subject_info.cpp
     trailer_field.cpp
     validity_restriction.cpp
+    verify_service.cpp
 )
 target_link_libraries(security PUBLIC Boost::serialization common net)
 
