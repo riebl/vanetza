@@ -37,6 +37,14 @@ TEST(asn1c_wrapper, copy) {
     EXPECT_EQ(wrapper_orig->field, 5);
 }
 
+TEST(asn1c_wrapper, self_assignment) {
+    test_wrapper wrapper(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&wrapper->string, "1234");
+    ASSERT_EQ(wrapper.size(), 5);
+    wrapper = wrapper;
+    EXPECT_EQ(wrapper.size(), 5);
+}
+
 TEST(asn1c_wrapper, validate) {
     test_wrapper wrapper(asn_DEF_VanetzaTest);
     OCTET_STRING_fromString(&wrapper->string, "1234");
