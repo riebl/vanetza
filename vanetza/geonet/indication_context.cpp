@@ -58,34 +58,32 @@ std::size_t IndicationContextDeserializer::parse_secured(IndicationContext::Secu
     return bytes;
 }
 
+template<typename EXTENDED>
+std::size_t deserialize_extended(InputArchive& archive, HeaderVariant& extended)
+{
+    EXTENDED header;
+    deserialize(header, archive);
+    extended = std::move(header);
+    return EXTENDED::length_bytes;
+}
+
 std::size_t IndicationContextDeserializer::parse_extended(HeaderVariant& extended, HeaderType ht)
 {
     std::size_t bytes = 0;
 
+
     try {
         switch (ht) {
-            case HeaderType::TSB_SINGLE_HOP: {
-                    ShbHeader shb;
-                    deserialize(shb, m_archive);
-                    extended = std::move(shb);
-                    bytes = ShbHeader::length_bytes;
-                }
+            case HeaderType::TSB_SINGLE_HOP:
+                bytes = deserialize_extended<ShbHeader>(m_archive, extended);
                 break;
             case HeaderType::GEOBROADCAST_CIRCLE:
             case HeaderType::GEOBROADCAST_RECT:
-            case HeaderType::GEOBROADCAST_ELIP: {
-                    GeoBroadcastHeader gbc;
-                    deserialize(gbc, m_archive);
-                    extended = std::move(gbc);
-                    bytes = GeoBroadcastHeader::length_bytes;
-                }
+            case HeaderType::GEOBROADCAST_ELIP:
+                bytes = deserialize_extended<GeoBroadcastHeader>(m_archive, extended);
                 break;
-            case HeaderType::BEACON: {
-                    BeaconHeader beacon;
-                    deserialize(beacon, m_archive);
-                    extended = std::move(beacon);
-                    bytes = BeaconHeader::length_bytes;
-                }
+            case HeaderType::BEACON:
+                bytes = deserialize_extended<BeaconHeader>(m_archive, extended);
                 break;
             case HeaderType::ANY:
             case HeaderType::GEOUNICAST:
