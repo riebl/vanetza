@@ -1,142 +1,35 @@
 #include <vanetza/geonet/indication_context.hpp>
 #include <vanetza/geonet/pdu_conversion.hpp>
 #include <vanetza/geonet/secured_pdu.hpp>
-#include <vanetza/security/exception.hpp>
 
 namespace vanetza
 {
 namespace geonet
 {
 
-namespace detail
-{
-
-IndicationContextDeserializer::IndicationContextDeserializer(const CohesivePacket& packet) :
-    m_byte_buffer_source(packet[OsiLayer::Network]),
-    m_stream(m_byte_buffer_source),
-    m_archive(m_stream, boost::archive::no_header),
-    m_read_bytes(0)
-{
-}
-
-std::size_t IndicationContextDeserializer::parse_basic(BasicHeader& basic)
-{
-    std::size_t bytes = 0;
-    try {
-        deserialize(basic, m_archive);
-        bytes = BasicHeader::length_bytes;
-    } catch (boost::archive::archive_exception&) {
-    }
-
-    m_read_bytes += bytes;
-    return bytes;
-}
-
-std::size_t IndicationContextDeserializer::parse_common(CommonHeader& common)
-{
-    std::size_t bytes = 0;
-    try {
-        deserialize(common, m_archive);
-        bytes = CommonHeader::length_bytes;
-    } catch (boost::archive::archive_exception&) {
-    }
-
-    m_read_bytes += bytes;
-    return bytes;
-}
-
-std::size_t IndicationContextDeserializer::parse_secured(IndicationContext::SecuredMessage& secured)
-{
-    std::size_t bytes = 0;
-    try {
-        bytes = deserialize(m_archive, secured);
-    } catch (boost::archive::archive_exception&) {
-    } catch (security::deserialization_error&) {
-    }
-
-    m_read_bytes += bytes;
-    return bytes;
-}
-
-template<typename EXTENDED>
-std::size_t deserialize_extended(InputArchive& archive, HeaderVariant& extended)
-{
-    EXTENDED header;
-    deserialize(header, archive);
-    extended = std::move(header);
-    return EXTENDED::length_bytes;
-}
-
-std::size_t IndicationContextDeserializer::parse_extended(HeaderVariant& extended, HeaderType ht)
-{
-    std::size_t bytes = 0;
-
-
-    try {
-        switch (ht) {
-            case HeaderType::TSB_SINGLE_HOP:
-                bytes = deserialize_extended<ShbHeader>(m_archive, extended);
-                break;
-            case HeaderType::GEOBROADCAST_CIRCLE:
-            case HeaderType::GEOBROADCAST_RECT:
-            case HeaderType::GEOBROADCAST_ELIP:
-                bytes = deserialize_extended<GeoBroadcastHeader>(m_archive, extended);
-                break;
-            case HeaderType::BEACON:
-                bytes = deserialize_extended<BeaconHeader>(m_archive, extended);
-                break;
-            case HeaderType::ANY:
-            case HeaderType::GEOUNICAST:
-            case HeaderType::GEOANYCAST_CIRCLE:
-            case HeaderType::GEOANYCAST_RECT:
-            case HeaderType::GEOANYCAST_ELIP:
-            case HeaderType::TSB_MULTI_HOP:
-            case HeaderType::LS_REQUEST:
-            case HeaderType::LS_REPLY:
-                // unimplemented types
-                break;
-            default:
-                // invalid types
-                break;
-        }
-    } catch (boost::archive::archive_exception&) {
-    }
-
-    m_read_bytes += bytes;
-    return bytes;
-}
-
-std::size_t IndicationContextDeserializer::parsed_bytes() const
-{
-    return m_read_bytes;
-}
-
-} // namespace detail
-
-
 IndicationContextDeserialize::IndicationContextDeserialize(UpPacketPtr packet, CohesivePacket& cohesive, const LinkLayer& ll) :
     detail::IndicationContextParent(ll),
-    detail::IndicationContextDeserializer(cohesive),
-    m_packet(std::move(packet)), m_cohesive_packet(cohesive)
+    m_packet(std::move(packet)), m_cohesive_packet(cohesive),
+    m_parser(cohesive[OsiLayer::Network])
 {
 }
 
 BasicHeader* IndicationContextDeserialize::parse_basic()
 {
-    auto bytes = detail::IndicationContextDeserializer::parse_basic(pdu().basic());
+    auto bytes = m_parser.parse_basic(pdu().basic());
     return bytes > 0 ? &pdu().basic() : nullptr;
 }
 
 CommonHeader* IndicationContextDeserialize::parse_common()
 {
-    auto bytes = detail::IndicationContextDeserializer::parse_common(pdu().common());
+    auto bytes = m_parser.parse_common(pdu().common());
     return bytes > 0 ? &pdu().common() : nullptr;
 }
 
 IndicationContext::SecuredMessage* IndicationContextDeserialize::parse_secured()
 {
     IndicationContext::SecuredMessage tmp;
-    auto bytes = detail::IndicationContextDeserializer::parse_secured(tmp);
+    auto bytes = m_parser.parse_secured(tmp);
     if (bytes > 0) {
         pdu().secured(std::move(tmp));
         return pdu().secured();
@@ -147,13 +40,13 @@ IndicationContext::SecuredMessage* IndicationContextDeserialize::parse_secured()
 
 boost::optional<HeaderConstRefVariant> IndicationContextDeserialize::parse_extended(HeaderType ht)
 {
-    auto bytes = detail::IndicationContextDeserializer::parse_extended(pdu().extended_variant(), ht);
+    auto bytes = m_parser.parse_extended(pdu().extended_variant(), ht);
     return boost::optional<HeaderConstRefVariant>(bytes > 0, pdu().extended_variant());
 }
 
 IndicationContext::UpPacketPtr IndicationContextDeserialize::finish()
 {
-    m_cohesive_packet.set_boundary(OsiLayer::Network, parsed_bytes());
+    m_cohesive_packet.set_boundary(OsiLayer::Network, m_parser.parsed_bytes());
     m_cohesive_packet.trim(OsiLayer::Transport, pdu().common().payload);
     return std::move(m_packet);
 }
@@ -203,26 +96,26 @@ IndicationContext::UpPacketPtr IndicationContextCast::finish()
 
 IndicationContextSecuredDeserialize::IndicationContextSecuredDeserialize(IndicationContext& parent, CohesivePacket& payload) :
     detail::IndicationContextChild(parent),
-    detail::IndicationContextDeserializer(payload),
-    m_packet(payload)
+    m_packet(payload),
+    m_parser(payload[OsiLayer::Network])
 {
 }
 
 CommonHeader* IndicationContextSecuredDeserialize::parse_common()
 {
-    auto bytes = detail::IndicationContextDeserializer::parse_common(pdu().common());
+    auto bytes = m_parser.parse_common(pdu().common());
     return bytes > 0 ? &pdu().common() : nullptr;
 }
 
 boost::optional<HeaderConstRefVariant> IndicationContextSecuredDeserialize::parse_extended(HeaderType ht)
 {
-    auto bytes = detail::IndicationContextDeserializer::parse_extended(pdu().extended_variant(), ht);
+    auto bytes = m_parser.parse_extended(pdu().extended_variant(), ht);
     return boost::optional<HeaderConstRefVariant>(bytes > 0, pdu().extended_variant());
 }
 
 IndicationContext::UpPacketPtr IndicationContextSecuredDeserialize::finish()
 {
-    m_packet.set_boundary(OsiLayer::Network, parsed_bytes());
+    m_packet.set_boundary(OsiLayer::Network, m_parser.parsed_bytes());
     auto packet = m_parent.finish();
     (*packet) = m_packet;
     return packet;

@@ -1,11 +1,10 @@
 #ifndef INDICATION_CONTEXT_HPP_UWOD2BSQ
 #define INDICATION_CONTEXT_HPP_UWOD2BSQ
 
-#include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/geonet/packet.hpp>
+#include <vanetza/geonet/parser.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/geonet/variant_pdu.hpp>
-#include <boost/iostreams/stream.hpp>
 #include <boost/optional/optional.hpp>
 
 namespace vanetza
@@ -44,23 +43,6 @@ public:
 namespace detail
 {
 
-class IndicationContextDeserializer
-{
-public:
-    IndicationContextDeserializer(const CohesivePacket&);
-    std::size_t parse_basic(BasicHeader&);
-    std::size_t parse_common(CommonHeader&);
-    std::size_t parse_secured(IndicationContext::SecuredMessage&);
-    std::size_t parse_extended(HeaderVariant&, HeaderType);
-    std::size_t parsed_bytes() const;
-
-private:
-    byte_buffer_source m_byte_buffer_source;
-    boost::iostreams::stream_buffer<byte_buffer_source> m_stream;
-    InputArchive m_archive;
-    std::size_t m_read_bytes;
-};
-
 class IndicationContextParent : public virtual IndicationContext
 {
 public:
@@ -90,8 +72,7 @@ protected:
 
 
 class IndicationContextDeserialize : public virtual IndicationContext,
-    private detail::IndicationContextParent,
-    private detail::IndicationContextDeserializer
+    private detail::IndicationContextParent
 {
 public:
     IndicationContextDeserialize(UpPacketPtr, CohesivePacket&, const LinkLayer&);
@@ -104,6 +85,7 @@ public:
 private:
     UpPacketPtr m_packet;
     CohesivePacket& m_cohesive_packet;
+    Parser m_parser;
 };
 
 class IndicationContextCast : public virtual IndicationContext,
@@ -122,8 +104,7 @@ private:
 };
 
 class IndicationContextSecuredDeserialize : public virtual IndicationContext,
-    private detail::IndicationContextChild,
-    private detail::IndicationContextDeserializer
+    private detail::IndicationContextChild
 {
 public:
     IndicationContextSecuredDeserialize(IndicationContext&, CohesivePacket&);
@@ -135,6 +116,7 @@ public:
 
 private:
     CohesivePacket& m_packet;
+    Parser m_parser;
 };
 
 class IndicationContextSecuredCast : public virtual IndicationContext,
