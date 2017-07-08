@@ -354,7 +354,7 @@ private:
      * \param ind containing network information
      * \param packet payload to be passed up to the next layer
      */
-    void pass_up(DataIndication&, UpPacketPtr);
+    void pass_up(const DataIndication&, UpPacketPtr);
 
     /**
      * \brief Helper method to handle duplicate addresses.

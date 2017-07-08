@@ -521,7 +521,7 @@ void Router::pass_down(const MacAddress& addr, PduPtr pdu, DownPacketPtr payload
     pass_down(request, std::move(pdu), std::move(payload));
 }
 
-void Router::pass_up(DataIndication& ind, UpPacketPtr packet)
+void Router::pass_up(const DataIndication& ind, UpPacketPtr packet)
 {
     TransportInterface* transport = m_transport_ifcs[ind.upper_protocol];
     if (transport != nullptr) {
