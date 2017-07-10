@@ -95,13 +95,10 @@ using units::clock_cast;
 
 template<typename PDU>
 auto create_forwarding_duplicate(const PDU& pdu, const UpPacket& packet) ->
-std::tuple<
-    std::unique_ptr<typename std::remove_pointer<decltype(pdu.clone())>::type>,
-    std::unique_ptr<DownPacket>
->
+std::tuple<std::unique_ptr<ExtendedPdu<typename PDU::ExtendedHeader>>, std::unique_ptr<DownPacket>>
 {
-    using PduCloneType = typename std::remove_pointer<decltype(pdu.clone())>::type;
-    std::unique_ptr<PduCloneType> pdu_dup { pdu.clone() };
+    using pdu_type = ExtendedPdu<typename PDU::ExtendedHeader>;
+    std::unique_ptr<pdu_type> pdu_dup { new pdu_type { pdu }};
     std::unique_ptr<DownPacket> packet_dup;
     if (pdu.secured()) {
         packet_dup.reset(new DownPacket());
@@ -631,7 +628,7 @@ NextHop Router::first_hop_gbc_advanced(bool scf, std::unique_ptr<GbcPdu> pdu, Do
     const Area& destination = pdu->extended().destination(pdu->common().header_type);
     if (inside_or_at_border(destination, m_local_position_vector.position())) {
         units::Duration timeout = m_mib.itsGnGeoBroadcastCbfMaxTime;
-        CbfPacket packet(std::unique_ptr<GbcPdu> { pdu->clone() }, duplicate(*payload));
+        CbfPacket packet(std::unique_ptr<GbcPdu> { new GbcPdu(*pdu) }, duplicate(*payload));
         m_cbf_buffer.enqueue(std::move(packet), clock_cast(timeout));
     }
 
@@ -669,7 +666,7 @@ NextHop Router::next_hop_gbc_advanced(
             if (destination == m_local_position_vector.gn_addr.mid()) {
                 timeout = m_mib.itsGnGeoUnicastCbfMaxTime;
                 nh = next_hop_greedy_forwarding(scf,
-                        std::unique_ptr<GbcPdu> { pdu->clone() }, duplicate(*payload));
+                        std::unique_ptr<GbcPdu> { new GbcPdu(*pdu) }, duplicate(*payload));
             } else {
                 timeout = timeout_cbf_gbc(sender);
                 nh.state(NextHop::State::BUFFERED);
