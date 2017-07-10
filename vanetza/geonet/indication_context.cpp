@@ -125,12 +125,10 @@ IndicationContextSecuredCast::IndicationContextSecuredCast(IndicationContextBasi
     IndicationContextSecured(parent),
     m_packet(parent.finish())
 {
-    using convertible_pdu_t = convertible::byte_buffer_impl<SecuredPdu>;
-    auto convertible = packet.layer(OsiLayer::Network).ptr();
-    auto pdu_rx = dynamic_cast<convertible_pdu_t*>(convertible);
-    if (pdu_rx) {
-        pdu().common() = pdu_rx->pdu.common;
-        pdu().extended_variant() = pdu_rx->pdu.extended;
+    SecuredPdu* secured_pdu = secured_pdu_cast(packet.layer(OsiLayer::Network));
+    if (secured_pdu) {
+        pdu().common() = secured_pdu->common;
+        pdu().extended_variant() = secured_pdu->extended;
     } else {
         throw std::runtime_error("Casting to SecuredPdu failed");
     }
