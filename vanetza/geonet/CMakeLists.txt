@@ -6,7 +6,6 @@ set(CXX_SOURCES
     cbf_packet_buffer.cpp
     common_header.cpp
     data_confirm.cpp
-    data_indication.cpp
     data_request.cpp
     gbc_gac_header.cpp
     gbc_header.cpp

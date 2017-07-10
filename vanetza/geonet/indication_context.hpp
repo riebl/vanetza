@@ -1,6 +1,7 @@
 #ifndef INDICATION_CONTEXT_HPP_UWOD2BSQ
 #define INDICATION_CONTEXT_HPP_UWOD2BSQ
 
+#include <vanetza/geonet/data_indication.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/parser.hpp>
 #include <vanetza/geonet/pdu.hpp>
@@ -38,6 +39,7 @@ public:
     virtual const VariantPdu& pdu() const = 0;
     virtual VariantPdu& pdu() = 0;
     virtual const LinkLayer& link_layer() const = 0;
+    virtual DataIndication& service_primitive() = 0;
 
     /**
      * Finish usage of IndicationContext and release owned packet
@@ -58,11 +60,13 @@ class IndicationContextBasic : public IndicationContext
 public:
     IndicationContextBasic(const LinkLayer& ll) : m_link_layer(ll) {}
     const LinkLayer& link_layer() const override { return m_link_layer; }
+    DataIndication& service_primitive() override { return m_service_primitive; }
     VariantPdu& pdu() override { return m_pdu; }
     const VariantPdu& pdu() const override { return m_pdu; }
 
 protected:
     LinkLayer m_link_layer;
+    DataIndication m_service_primitive;
     VariantPdu m_pdu;
 };
 
@@ -106,6 +110,7 @@ class IndicationContextSecured : public IndicationContext
 public:
     IndicationContextSecured(IndicationContextBasic& parent) : m_parent(parent) {}
     const LinkLayer& link_layer() const override { return m_parent.link_layer(); }
+    DataIndication& service_primitive() override { return m_parent.service_primitive(); }
     VariantPdu& pdu() override { return m_parent.pdu(); }
     const VariantPdu& pdu() const override { return m_parent.pdu(); }
     const BasicHeader* parse_basic() override { return nullptr; }

@@ -272,8 +272,9 @@ private:
      *
      * \param pdu containing the ExtendedHeader
      * \param packet received packet
+     * \return pass up decision (always false for BEACONs)
      */
-    void process_extended(const ExtendedPduConstRefs<BeaconHeader>&, UpPacketPtr);
+    bool process_extended(const ExtendedPduConstRefs<BeaconHeader>&, const UpPacket&);
 
     /**
      * \brief Process ExtendedHeader information.
@@ -282,8 +283,9 @@ private:
      *
      * \param pdu containing the ExtendedHeader
      * \param packet received packet
+     * \return pass up decision (true for all non-duplicate SHBs)
      */
-    void process_extended(const ExtendedPduConstRefs<ShbHeader>&, UpPacketPtr);
+    bool process_extended(const ExtendedPduConstRefs<ShbHeader>&, const UpPacket&);
 
     /**
      * \brief Process ExtendedHeader information.
@@ -295,8 +297,9 @@ private:
      * \param packet received packet
      * \param sender
      * \param destination
+     * \return pass up decision (depends on addressed area and router position)
      */
-    void process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>&, UpPacketPtr,
+    bool process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>&, const UpPacket&,
             const MacAddress& sender, const MacAddress& destination);
 
     /**
