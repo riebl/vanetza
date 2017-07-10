@@ -29,9 +29,9 @@ public:
     };
 
     // parser commands
-    virtual BasicHeader* parse_basic() = 0;
-    virtual CommonHeader* parse_common() = 0;
-    virtual security::SecuredMessage* parse_secured() = 0;
+    virtual const BasicHeader* parse_basic() = 0;
+    virtual const CommonHeader* parse_common() = 0;
+    virtual const SecuredMessage* parse_secured() = 0;
     virtual boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) = 0;
 
     // access to data structures related to indication
@@ -70,9 +70,9 @@ class IndicationContextDeserialize : public IndicationContextBasic
 {
 public:
     IndicationContextDeserialize(UpPacketPtr, CohesivePacket&, const LinkLayer&);
-    BasicHeader* parse_basic() override;
-    CommonHeader* parse_common() override;
-    SecuredMessage* parse_secured() override;
+    const BasicHeader* parse_basic() override;
+    const CommonHeader* parse_common() override;
+    const SecuredMessage* parse_secured() override;
     boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) override;
     UpPacketPtr finish() override;
 
@@ -86,9 +86,9 @@ class IndicationContextCast : public IndicationContextBasic
 {
 public:
     IndicationContextCast(UpPacketPtr, ChunkPacket&, const LinkLayer&);
-    BasicHeader* parse_basic() override;
-    CommonHeader* parse_common() override;
-    SecuredMessage* parse_secured() override;
+    const BasicHeader* parse_basic() override;
+    const CommonHeader* parse_common() override;
+    const SecuredMessage* parse_secured() override;
     boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) override;
     UpPacketPtr finish() override;
 
@@ -108,8 +108,8 @@ public:
     const LinkLayer& link_layer() const override { return m_parent.link_layer(); }
     VariantPdu& pdu() override { return m_parent.pdu(); }
     const VariantPdu& pdu() const override { return m_parent.pdu(); }
-    BasicHeader* parse_basic() override { return nullptr; }
-    SecuredMessage* parse_secured() override { return nullptr; }
+    const BasicHeader* parse_basic() override { return nullptr; }
+    const SecuredMessage* parse_secured() override { return nullptr; }
 
 protected:
     IndicationContextBasic& m_parent;
@@ -119,7 +119,7 @@ class IndicationContextSecuredDeserialize : public IndicationContextSecured
 {
 public:
     IndicationContextSecuredDeserialize(IndicationContextBasic&, CohesivePacket&);
-    CommonHeader* parse_common() override;
+    const CommonHeader* parse_common() override;
     boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) override;
     UpPacketPtr finish() override;
 
@@ -132,7 +132,7 @@ class IndicationContextSecuredCast : public IndicationContextSecured
 {
 public:
     IndicationContextSecuredCast(IndicationContextBasic&, ChunkPacket&);
-    CommonHeader* parse_common() override;
+    const CommonHeader* parse_common() override;
     boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) override;
     UpPacketPtr finish() override;
 

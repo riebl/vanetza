@@ -14,19 +14,19 @@ IndicationContextDeserialize::IndicationContextDeserialize(UpPacketPtr packet, C
 {
 }
 
-BasicHeader* IndicationContextDeserialize::parse_basic()
+const BasicHeader* IndicationContextDeserialize::parse_basic()
 {
     auto bytes = m_parser.parse_basic(pdu().basic());
     return bytes > 0 ? &pdu().basic() : nullptr;
 }
 
-CommonHeader* IndicationContextDeserialize::parse_common()
+const CommonHeader* IndicationContextDeserialize::parse_common()
 {
     auto bytes = m_parser.parse_common(pdu().common());
     return bytes > 0 ? &pdu().common() : nullptr;
 }
 
-IndicationContext::SecuredMessage* IndicationContextDeserialize::parse_secured()
+const IndicationContext::SecuredMessage* IndicationContextDeserialize::parse_secured()
 {
     IndicationContext::SecuredMessage tmp;
     auto bytes = m_parser.parse_secured(tmp);
@@ -63,17 +63,17 @@ IndicationContextCast::IndicationContextCast(UpPacketPtr packet, ChunkPacket& ch
     }
 }
 
-BasicHeader* IndicationContextCast::parse_basic()
+const BasicHeader* IndicationContextCast::parse_basic()
 {
     return &pdu().basic();
 }
 
-CommonHeader* IndicationContextCast::parse_common()
+const CommonHeader* IndicationContextCast::parse_common()
 {
     return &pdu().common();
 }
 
-IndicationContext::SecuredMessage* IndicationContextCast::parse_secured()
+const IndicationContext::SecuredMessage* IndicationContextCast::parse_secured()
 {
     return pdu().secured();
 }
@@ -100,7 +100,7 @@ IndicationContextSecuredDeserialize::IndicationContextSecuredDeserialize(Indicat
 {
 }
 
-CommonHeader* IndicationContextSecuredDeserialize::parse_common()
+const CommonHeader* IndicationContextSecuredDeserialize::parse_common()
 {
     auto bytes = m_parser.parse_common(pdu().common());
     return bytes > 0 ? &pdu().common() : nullptr;
@@ -161,7 +161,7 @@ IndicationContextSecuredCast::IndicationContextSecuredCast(IndicationContextBasi
     boost::apply_visitor(visitor, *m_packet);
 }
 
-CommonHeader* IndicationContextSecuredCast::parse_common()
+const CommonHeader* IndicationContextSecuredCast::parse_common()
 {
     return &pdu().common();
 }

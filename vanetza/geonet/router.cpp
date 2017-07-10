@@ -318,7 +318,7 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
 
 void Router::indicate_basic(IndicationContextBasic& ctx)
 {
-    BasicHeader* basic = ctx.parse_basic();
+    const BasicHeader* basic = ctx.parse_basic();
     if (!basic) {
         packet_dropped(PacketDropReason::PARSE_BASIC_HEADER);
     } else if (basic->version.raw() != m_mib.itsGnProtocolVersion) {
@@ -332,7 +332,7 @@ void Router::indicate_basic(IndicationContextBasic& ctx)
 
 void Router::indicate_common(IndicationContext& ctx, const BasicHeader& basic)
 {
-    CommonHeader* common = ctx.parse_common();
+    const CommonHeader* common = ctx.parse_common();
     if (!common) {
         packet_dropped(PacketDropReason::PARSE_COMMON_HEADER);
     } else if (common->maximum_hop_limit < basic.hop_limit) {
