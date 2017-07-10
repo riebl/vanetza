@@ -55,11 +55,9 @@ IndicationContext::UpPacketPtr IndicationContextDeserialize::finish()
 IndicationContextCast::IndicationContextCast(UpPacketPtr packet, ChunkPacket& chunk, const LinkLayer& ll) :
     IndicationContextBasic(ll), m_packet(std::move(packet))
 {
-    using convertible_pdu_t = convertible::byte_buffer_impl<std::unique_ptr<Pdu>>;
-    auto convertible = chunk.layer(OsiLayer::Network).ptr();
-    auto pdu_rx = dynamic_cast<convertible_pdu_t*>(convertible);
-    if (pdu_rx) {
-        pdu() = *pdu_rx->m_pdu;
+    Pdu* casted_pdu = pdu_cast(chunk.layer(OsiLayer::Network));
+    if (casted_pdu) {
+        pdu() = *casted_pdu;
     } else {
         throw std::runtime_error("Casting to Pdu failed");
     }
