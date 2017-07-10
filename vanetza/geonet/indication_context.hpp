@@ -28,25 +28,35 @@ public:
         MacAddress destination;
     };
 
+    // parser commands
     virtual BasicHeader* parse_basic() = 0;
     virtual CommonHeader* parse_common() = 0;
     virtual security::SecuredMessage* parse_secured() = 0;
     virtual boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) = 0;
+
+    // access to data structures related to indication
     virtual const VariantPdu& pdu() const = 0;
     virtual VariantPdu& pdu() = 0;
-    virtual UpPacketPtr finish() = 0;
     virtual const LinkLayer& link_layer() const = 0;
+
+    /**
+     * Finish usage of IndicationContext and release owned packet
+     * \return owned packet
+     */
+    virtual UpPacketPtr finish() = 0;
+
     virtual ~IndicationContext() = default;
 };
 
 
-namespace detail
-{
-
-class IndicationContextParent : public virtual IndicationContext
+/**
+ * IndicationContextBasic represents the first phase of packet reception,
+ * i.e. it is the context for unsecured headers
+ */
+class IndicationContextBasic : public IndicationContext
 {
 public:
-    IndicationContextParent(const LinkLayer& ll) : m_link_layer(ll) {}
+    IndicationContextBasic(const LinkLayer& ll) : m_link_layer(ll) {}
     const LinkLayer& link_layer() const override { return m_link_layer; }
     VariantPdu& pdu() override { return m_pdu; }
     const VariantPdu& pdu() const override { return m_pdu; }
@@ -56,23 +66,7 @@ protected:
     VariantPdu m_pdu;
 };
 
-class IndicationContextChild : public virtual IndicationContext
-{
-public:
-    IndicationContextChild(IndicationContext& parent) : m_parent(parent) {}
-    const LinkLayer& link_layer() const override { return m_parent.link_layer(); }
-    VariantPdu& pdu() override { return m_parent.pdu(); }
-    const VariantPdu& pdu() const override { return m_parent.pdu(); }
-
-protected:
-    IndicationContext& m_parent;
-};
-
-} // namespace detail
-
-
-class IndicationContextDeserialize : public virtual IndicationContext,
-    private detail::IndicationContextParent
+class IndicationContextDeserialize : public IndicationContextBasic
 {
 public:
     IndicationContextDeserialize(UpPacketPtr, CohesivePacket&, const LinkLayer&);
@@ -88,8 +82,7 @@ private:
     Parser m_parser;
 };
 
-class IndicationContextCast : public virtual IndicationContext,
-    private detail::IndicationContextParent
+class IndicationContextCast : public IndicationContextBasic
 {
 public:
     IndicationContextCast(UpPacketPtr, ChunkPacket&, const LinkLayer&);
@@ -103,14 +96,30 @@ private:
     UpPacketPtr m_packet;
 };
 
-class IndicationContextSecuredDeserialize : public virtual IndicationContext,
-    private detail::IndicationContextChild
+
+/**
+ * IndicationContextSecured is used for the (optional) second phase of packet reception,
+ * i.e. handling the payload contained in a secured message's payload
+ */
+class IndicationContextSecured : public IndicationContext
 {
 public:
-    IndicationContextSecuredDeserialize(IndicationContext&, CohesivePacket&);
+    IndicationContextSecured(IndicationContextBasic& parent) : m_parent(parent) {}
+    const LinkLayer& link_layer() const override { return m_parent.link_layer(); }
+    VariantPdu& pdu() override { return m_parent.pdu(); }
+    const VariantPdu& pdu() const override { return m_parent.pdu(); }
     BasicHeader* parse_basic() override { return nullptr; }
-    CommonHeader* parse_common() override;
     SecuredMessage* parse_secured() override { return nullptr; }
+
+protected:
+    IndicationContextBasic& m_parent;
+};
+
+class IndicationContextSecuredDeserialize : public IndicationContextSecured
+{
+public:
+    IndicationContextSecuredDeserialize(IndicationContextBasic&, CohesivePacket&);
+    CommonHeader* parse_common() override;
     boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) override;
     UpPacketPtr finish() override;
 
@@ -119,14 +128,11 @@ private:
     Parser m_parser;
 };
 
-class IndicationContextSecuredCast : public virtual IndicationContext,
-    private detail::IndicationContextChild
+class IndicationContextSecuredCast : public IndicationContextSecured
 {
 public:
-    IndicationContextSecuredCast(IndicationContext&, ChunkPacket&);
-    BasicHeader* parse_basic() override { return nullptr; }
+    IndicationContextSecuredCast(IndicationContextBasic&, ChunkPacket&);
     CommonHeader* parse_common() override;
-    SecuredMessage* parse_secured() override { return nullptr; }
     boost::optional<HeaderConstRefVariant> parse_extended(HeaderType) override;
     UpPacketPtr finish() override;
 

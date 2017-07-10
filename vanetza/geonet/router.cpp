@@ -316,7 +316,7 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
     boost::apply_visitor(visitor, *packet_tmp);
 }
 
-void Router::indicate_basic(IndicationContext& ctx)
+void Router::indicate_basic(IndicationContextBasic& ctx)
 {
     BasicHeader* basic = ctx.parse_basic();
     if (!basic) {
@@ -345,11 +345,11 @@ void Router::indicate_common(IndicationContext& ctx, const BasicHeader& basic)
     }
 }
 
-void Router::indicate_secured(IndicationContext& ctx, const BasicHeader& basic)
+void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& basic)
 {
     struct secured_payload_visitor : public boost::static_visitor<>
     {
-        secured_payload_visitor(Router& router, IndicationContext& ctx, const BasicHeader& basic) :
+        secured_payload_visitor(Router& router, IndicationContextBasic& ctx, const BasicHeader& basic) :
             m_router(router), m_parent_ctx(ctx), m_basic(basic)
         {
         }
@@ -367,7 +367,7 @@ void Router::indicate_secured(IndicationContext& ctx, const BasicHeader& basic)
         }
 
         Router& m_router;
-        IndicationContext& m_parent_ctx;
+        IndicationContextBasic& m_parent_ctx;
         const BasicHeader& m_basic;
     };
 

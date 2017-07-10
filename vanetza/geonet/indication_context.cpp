@@ -8,7 +8,7 @@ namespace geonet
 {
 
 IndicationContextDeserialize::IndicationContextDeserialize(UpPacketPtr packet, CohesivePacket& cohesive, const LinkLayer& ll) :
-    detail::IndicationContextParent(ll),
+    IndicationContextBasic(ll),
     m_packet(std::move(packet)), m_cohesive_packet(cohesive),
     m_parser(cohesive[OsiLayer::Network])
 {
@@ -53,7 +53,7 @@ IndicationContext::UpPacketPtr IndicationContextDeserialize::finish()
 
 
 IndicationContextCast::IndicationContextCast(UpPacketPtr packet, ChunkPacket& chunk, const LinkLayer& ll) :
-    detail::IndicationContextParent(ll), m_packet(std::move(packet))
+    IndicationContextBasic(ll), m_packet(std::move(packet))
 {
     using convertible_pdu_t = convertible::byte_buffer_impl<std::unique_ptr<Pdu>>;
     auto convertible = chunk.layer(OsiLayer::Network).ptr();
@@ -94,8 +94,9 @@ IndicationContext::UpPacketPtr IndicationContextCast::finish()
     return std::move(m_packet);
 }
 
-IndicationContextSecuredDeserialize::IndicationContextSecuredDeserialize(IndicationContext& parent, CohesivePacket& payload) :
-    detail::IndicationContextChild(parent),
+
+IndicationContextSecuredDeserialize::IndicationContextSecuredDeserialize(IndicationContextBasic& parent, CohesivePacket& payload) :
+    IndicationContextSecured(parent),
     m_packet(payload),
     m_parser(payload[OsiLayer::Network])
 {
@@ -121,8 +122,9 @@ IndicationContext::UpPacketPtr IndicationContextSecuredDeserialize::finish()
     return packet;
 }
 
-IndicationContextSecuredCast::IndicationContextSecuredCast(IndicationContext& parent, ChunkPacket& packet) :
-    detail::IndicationContextChild(parent),
+
+IndicationContextSecuredCast::IndicationContextSecuredCast(IndicationContextBasic& parent, ChunkPacket& packet) :
+    IndicationContextSecured(parent),
     m_packet(parent.finish())
 {
     using convertible_pdu_t = convertible::byte_buffer_impl<SecuredPdu>;

@@ -47,6 +47,7 @@ namespace geonet
 extern const uint16be_t ether_type;
 
 class IndicationContext;
+class IndicationContextBasic;
 class TransportInterface;
 class NextHop;
 struct ShbDataRequest;
@@ -242,7 +243,7 @@ private:
      * \brief Process BasicHeader at packet indication.
      * \param ctx Context holding data for further parsing
      */
-    void indicate_basic(IndicationContext&);
+    void indicate_basic(IndicationContextBasic&);
 
     /**
      * \brief Process CommonHeader at packet indication.
@@ -263,7 +264,7 @@ private:
      * \param ctx Context holding data for further parsing
      * \param basic Previously decoded BasicHeader
      */
-    void indicate_secured(IndicationContext&, const BasicHeader&);
+    void indicate_secured(IndicationContextBasic&, const BasicHeader&);
 
     /**
      * \brief Process ExtendedHeader information.
