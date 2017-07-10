@@ -80,10 +80,7 @@ const IndicationContext::SecuredMessage* IndicationContextCast::parse_secured()
 
 boost::optional<HeaderConstRefVariant> IndicationContextCast::parse_extended(HeaderType)
 {
-    boost::optional<HeaderConstRefVariant> extended;
-    HeaderConstRefVariant variant = pdu().extended_variant();
-    extended.emplace(variant);
-    return extended;
+    return boost::optional<HeaderConstRefVariant> { pdu().extended_variant() };
 }
 
 IndicationContext::UpPacketPtr IndicationContextCast::finish()
@@ -168,10 +165,7 @@ const CommonHeader* IndicationContextSecuredCast::parse_common()
 
 boost::optional<HeaderConstRefVariant> IndicationContextSecuredCast::parse_extended(HeaderType)
 {
-    boost::optional<HeaderConstRefVariant> extended;
-    HeaderConstRefVariant variant = pdu().extended_variant();
-    extended.emplace(variant);
-    return extended;
+    return boost::optional<HeaderConstRefVariant> { pdu().extended_variant() };
 }
 
 IndicationContext::UpPacketPtr IndicationContextSecuredCast::finish()
