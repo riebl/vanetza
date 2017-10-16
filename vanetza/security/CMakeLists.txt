@@ -19,6 +19,7 @@ add_vanetza_component(security
     secured_message.cpp
     security_entity.cpp
     serialization.cpp
+    sha.cpp
     signature.cpp
     sign_service.cpp
     signer_info.cpp
