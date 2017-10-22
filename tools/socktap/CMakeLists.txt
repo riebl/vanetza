@@ -8,6 +8,7 @@ find_package(GPS REQUIRED)
 
 add_executable(socktap
     application.cpp
+    dcc_passthrough.cpp
     ethernet_device.cpp
     gps_position_provider.cpp
     hello_application.cpp

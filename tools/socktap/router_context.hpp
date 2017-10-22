@@ -1,6 +1,7 @@
 #ifndef ROUTER_CONTEXT_HPP_KIPUYBY2
 #define ROUTER_CONTEXT_HPP_KIPUYBY2
 
+#include "dcc_passthrough.hpp"
 #include <vanetza/btp/port_dispatcher.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/router.hpp>
@@ -37,11 +38,10 @@ private:
     TimeTrigger& trigger_;
     PositionProvider& positioning_;
     vanetza::btp::PortDispatcher dispatcher_;
-    std::unique_ptr<vanetza::dcc::RequestInterface> request_interface_;
+    std::unique_ptr<DccPassthrough> request_interface_;
     vanetza::ByteBuffer receive_buffer_;
     boost::asio::generic::raw_protocol::endpoint receive_endpoint_;
     std::list<Application*> applications_;
 };
 
 #endif /* ROUTER_CONTEXT_HPP_KIPUYBY2 */
-
