@@ -7,7 +7,7 @@ static_assert(GPSD_API_MAJOR_VERSION == 6, "libgps has incompatible API");
 
 GpsPositionProvider::GpsPositionProvider()
 {
-    if (gps_open(GPSD_SHARED_MEMORY, nullptr, &gps_data)) {
+    if (gps_open("127.0.0.1", "2947", &gps_data)) {
         throw gps_error(errno);
     }
     gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, nullptr);
