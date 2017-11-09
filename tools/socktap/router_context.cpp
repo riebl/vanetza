@@ -1,5 +1,6 @@
 #include "application.hpp"
-#include "ethernet_device.hpp"
+#include "dcc_passthrough.hpp"
+#include "network_device.hpp"
 #include "position_provider.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
@@ -13,47 +14,17 @@ namespace asio = boost::asio;
 using boost::asio::generic::raw_protocol;
 using namespace vanetza;
 
-class DccPassthrough : public dcc::RequestInterface
-{
-public:
-    DccPassthrough(raw_protocol::socket& socket, TimeTrigger& trigger) :
-        socket_(socket), trigger_(trigger) {}
-
-    void request(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket> packet)
-    {
-        buffers_[0] = create_ethernet_header(request.destination, request.source, request.ether_type);
-        for (auto& layer : osi_layer_range<OsiLayer::Network, OsiLayer::Application>()) {
-            const auto index = distance(OsiLayer::Link, layer);
-            packet->layer(layer).convert(buffers_[index]);
-        }
-
-        trigger_.schedule();
-
-        std::array<asio::const_buffer, layers_> const_buffers;
-        for (unsigned i = 0; i < const_buffers.size(); ++i) {
-            const_buffers[i] = asio::buffer(buffers_[i]);
-        }
-        auto bytes_sent = socket_.send(const_buffers);
-        std::cout << "sent packet to " << request.destination << " (" << bytes_sent << " bytes)\n";
-    }
-
-private:
-    static constexpr std::size_t layers_ = num_osi_layers(OsiLayer::Link, OsiLayer::Application);
-    raw_protocol::socket& socket_;
-    std::array<ByteBuffer, layers_> buffers_;
-    TimeTrigger& trigger_;
-};
-
-geonet::MIB configure_mib(const EthernetDevice& device)
+geonet::MIB configure_mib(const NetworkDevice& device)
 {
     geonet::MIB mib;
     mib.itsGnLocalGnAddr.mid(device.address());
+    mib.itsGnLocalGnAddr.is_manually_configured(true);
     mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
     mib.itsGnSecurity = false;
     return mib;
 }
 
-RouterContext::RouterContext(raw_protocol::socket& socket, const EthernetDevice& device, TimeTrigger& trigger, PositionProvider& positioning) :
+RouterContext::RouterContext(raw_protocol::socket& socket, const NetworkDevice& device, TimeTrigger& trigger, PositionProvider& positioning) :
     mib_(configure_mib(device)), router_(trigger.runtime(), mib_),
     socket_(socket), device_(device), trigger_(trigger), positioning_(positioning),
     request_interface_(new DccPassthrough(socket, trigger)),
@@ -123,9 +94,14 @@ void RouterContext::enable(Application* app)
 
 void RouterContext::update_position_vector()
 {
-    router_.update(positioning_.current_position());
+    auto position = positioning_.current_position();
+
+    router_.update(position);
     vanetza::Runtime::Callback callback = [this](vanetza::Clock::time_point) { this->update_position_vector(); };
     vanetza::Clock::duration next = std::chrono::seconds(1);
     trigger_.runtime().schedule(next, callback);
     trigger_.schedule();
+
+    // Skip all requests until a valid GPS position is available
+    request_interface_.get()->allow_packet_flow(position.position_accuracy_indicator);
 }
