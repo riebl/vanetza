@@ -9,25 +9,21 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <iostream>
 
-namespace asio = boost::asio;
-using boost::asio::generic::raw_protocol;
-using namespace vanetza;
-
-class DccPassthrough : public dcc::RequestInterface
+class DccPassthrough : public vanetza::dcc::RequestInterface
 {
 public:
-    DccPassthrough(raw_protocol::socket& socket, TimeTrigger& trigger);
+    DccPassthrough(boost::asio::generic::raw_protocol::socket& socket, TimeTrigger& trigger);
 
-    void request(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket> packet);
+    void request(const vanetza::dcc::DataRequest& request, std::unique_ptr<vanetza::ChunkPacket> packet);
 
     void allow_packet_flow(bool allow);
 
     bool allow_packet_flow();
 
 private:
-    static constexpr std::size_t layers_ = num_osi_layers(OsiLayer::Link, OsiLayer::Application);
-    raw_protocol::socket& socket_;
-    std::array<ByteBuffer, layers_> buffers_;
+    static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Link, vanetza::OsiLayer::Application);
+    boost::asio::generic::raw_protocol::socket& socket_;
+    std::array<vanetza::ByteBuffer, layers_> buffers_;
     TimeTrigger& trigger_;
     bool allow_packet_flow_ = true;
 };
