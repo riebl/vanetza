@@ -2,6 +2,7 @@
 #define ROUTER_CONTEXT_HPP_KIPUYBY2
 
 #include "dcc_passthrough.hpp"
+#include "network_device.hpp"
 #include <vanetza/btp/port_dispatcher.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/router.hpp>
@@ -13,14 +14,13 @@
 #include <memory>
 
 class Application;
-class EthernetDevice;
 class PositionProvider;
 class TimeTrigger;
 
 class RouterContext
 {
 public:
-    RouterContext(boost::asio::generic::raw_protocol::socket&, const EthernetDevice&, TimeTrigger&, PositionProvider&);
+    RouterContext(boost::asio::generic::raw_protocol::socket&, const NetworkDevice&, TimeTrigger&, PositionProvider&);
     ~RouterContext();
     void enable(Application*);
 
@@ -34,7 +34,7 @@ private:
     vanetza::geonet::MIB mib_;
     vanetza::geonet::Router router_;
     boost::asio::generic::raw_protocol::socket& socket_;
-    const EthernetDevice& device_;
+    const NetworkDevice& device_;
     TimeTrigger& trigger_;
     PositionProvider& positioning_;
     vanetza::btp::PortDispatcher dispatcher_;

@@ -1,11 +1,13 @@
 #ifndef ETHERNET_DEVICE_HPP_NEVC5DAY
 #define ETHERNET_DEVICE_HPP_NEVC5DAY
 
+#include "network_device.hpp"
 #include <vanetza/net/mac_address.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
+#include <memory>
 #include <string>
 
-class EthernetDevice
+class EthernetDevice : public NetworkDevice
 {
 public:
     using protocol = boost::asio::generic::raw_protocol;
@@ -26,4 +28,3 @@ private:
 };
 
 #endif /* ETHERNET_DEVICE_HPP_NEVC5DAY */
-

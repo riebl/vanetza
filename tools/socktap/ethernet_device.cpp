@@ -6,6 +6,8 @@
 #include <net/if.h>
 #include <sys/ioctl.h>
 
+using boost::asio::generic::raw_protocol;
+
 void initialize(ifreq& request, const char* interface_name)
 {
     std::memset(&request, 0, sizeof(ifreq));
@@ -28,7 +30,7 @@ EthernetDevice::~EthernetDevice()
         ::close(local_socket_);
 }
 
-EthernetDevice::protocol::endpoint EthernetDevice::endpoint(int family) const
+raw_protocol::endpoint EthernetDevice::endpoint(int family) const
 {
     sockaddr_ll socket_address = {0};
     socket_address.sll_family = family;
@@ -46,11 +48,13 @@ int EthernetDevice::index() const
 
 vanetza::MacAddress EthernetDevice::address() const
 {
+    vanetza::MacAddress addr;
+
     ifreq data;
     initialize(data, interface_name_.c_str());
     ::ioctl(local_socket_, SIOCGIFHWADDR, &data);
 
-    vanetza::MacAddress addr;
     std::copy_n(data.ifr_hwaddr.sa_data, addr.octets.size(), addr.octets.data());
+
     return addr;
 }

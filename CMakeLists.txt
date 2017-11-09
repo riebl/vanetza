@@ -33,7 +33,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Mandatory and optional project dependencies
 set(Boost_COMPONENTS date_time serialization)
-set(Boost_OPTIONAL_COMPONENTS system)
+set(Boost_OPTIONAL_COMPONENTS system program_options)
 find_package(Boost 1.58 REQUIRED
   COMPONENTS ${Boost_COMPONENTS}
   OPTIONAL_COMPONENTS ${Boost_OPTIONAL_COMPONENTS})
@@ -109,4 +109,3 @@ file(COPY ${CMAKECONFIG_BUILD_DIR}/VanetzaConfigVersion.cmake
 configure_file(cmake/VanetzaExportsConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/VanetzaConfig.cmake @ONLY)
 export(PACKAGE ${PROJECT_NAME})
-

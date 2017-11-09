@@ -1,6 +1,6 @@
 #include "application.hpp"
 #include "dcc_passthrough.hpp"
-#include "ethernet_device.hpp"
+#include "network_device.hpp"
 #include "position_provider.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
@@ -14,7 +14,7 @@ namespace asio = boost::asio;
 using boost::asio::generic::raw_protocol;
 using namespace vanetza;
 
-geonet::MIB configure_mib(const EthernetDevice& device)
+geonet::MIB configure_mib(const NetworkDevice& device)
 {
     geonet::MIB mib;
     mib.itsGnLocalGnAddr.mid(device.address());
@@ -24,7 +24,7 @@ geonet::MIB configure_mib(const EthernetDevice& device)
     return mib;
 }
 
-RouterContext::RouterContext(raw_protocol::socket& socket, const EthernetDevice& device, TimeTrigger& trigger, PositionProvider& positioning) :
+RouterContext::RouterContext(raw_protocol::socket& socket, const NetworkDevice& device, TimeTrigger& trigger, PositionProvider& positioning) :
     mib_(configure_mib(device)), router_(trigger.runtime(), mib_),
     socket_(socket), device_(device), trigger_(trigger), positioning_(positioning),
     request_interface_(new DccPassthrough(socket, trigger)),
