@@ -33,7 +33,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Mandatory and optional project dependencies
 set(Boost_COMPONENTS date_time serialization)
-set(Boost_OPTIONAL_COMPONENTS system)
+set(Boost_OPTIONAL_COMPONENTS system program_options)
 find_package(Boost 1.58 REQUIRED
   COMPONENTS ${Boost_COMPONENTS}
   OPTIONAL_COMPONENTS ${Boost_OPTIONAL_COMPONENTS})

@@ -6,24 +6,50 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
+#include <boost/program_options.hpp>
 #include <iostream>
 
 namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
+namespace po = boost::program_options;
 using namespace vanetza;
 
 int main(int argc, const char** argv)
 {
-    const char* device_name = "lo";
-    if (argc != 2) {
-        std::cout << "usage: " << argv[0] << " <device_name>\n";
-        return 0;
-    } else {
-        device_name = argv[1];
+    po::options_description options("Allowed options");
+    options.add_options()
+        ("help", "Print out available options.")
+        ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
+    ;
+
+    po::positional_options_description positional_options;
+    positional_options.add("interface", 1);
+
+    po::variables_map vm;
+
+    try {
+        po::store(
+            po::command_line_parser(argc, argv)
+                .options(options)
+                .positional(positional_options)
+                .run(),
+            vm
+        );
+        po::notify(vm);
+    } catch (po::error& e) {
+        std::cerr << "ERROR: " << e.what() << "\n\n";
+        std::cerr << options << "\n";
+        return 1;
+    }
+
+    if (vm.count("help")) {
+        std::cout << options << "\n";
+        return 1;
     }
 
     try {
         asio::io_service io_service;
+        const char* device_name = vm["interface"].as<std::string>().c_str();
         EthernetDevice device(device_name);
         asio::generic::raw_protocol raw_protocol(AF_PACKET, gn::ether_type.net());
         asio::generic::raw_protocol::socket raw_socket(io_service, raw_protocol);

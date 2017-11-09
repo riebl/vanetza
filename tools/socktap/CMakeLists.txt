@@ -3,6 +3,11 @@ if(NOT TARGET Boost::system)
     return()
 endif()
 
+if(NOT TARGET Boost::program_options)
+    message(STATUS "Skip build of socktap because of missing Boost::program_options dependency")
+    return()
+endif()
+
 find_package(Threads REQUIRED)
 find_package(GPS REQUIRED)
 
@@ -16,4 +21,4 @@ add_executable(socktap
     router_context.cpp
     time_trigger.cpp
 )
-target_link_libraries(socktap Boost::system Threads::Threads GPS::GPS vanetza)
+target_link_libraries(socktap Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
