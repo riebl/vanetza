@@ -63,8 +63,7 @@ private:
     Certificate m_own_certificate;
 };
 
-} // namespace securityurity
+} // namespace security
 } // namespace vanetza
 
 #endif /* NAIVE_CERTIFICATE_MANAGER_HPP_MTULFLKX */
-

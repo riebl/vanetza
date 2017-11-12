@@ -18,7 +18,7 @@ NaiveCertificateManager::NaiveCertificateManager(const Clock::time_point& time_n
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_certificate(m_own_key_pair))
 {
-    // TODO: root certifiate hash is arbitrarily chosen for now (no root certificate exists)
+    // TODO: root certificate hash is arbitrarily chosen for now (no root certificate exists)
 }
 
 const Certificate& NaiveCertificateManager::own_certificate()
