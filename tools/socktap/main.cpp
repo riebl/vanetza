@@ -8,6 +8,8 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <vanetza/security/naive_certificate_manager.hpp>
+#include <vanetza/security/security_entity.hpp>
 
 namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
@@ -21,6 +23,7 @@ int main(int argc, const char** argv)
         ("help", "Print out available options.")
         ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
         ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
+        ("security", po::value<std::string>()->default_value("off"), "Security profile to use.")
         ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
         ("require-gnss-fix", "suppress transmissions while GNSS position fix is missing")
@@ -53,6 +56,8 @@ int main(int argc, const char** argv)
 
     try {
         asio::io_service io_service;
+        TimeTrigger trigger(io_service);
+
         const char* device_name = vm["interface"].as<std::string>().c_str();
         EthernetDevice device(device_name);
         vanetza::MacAddress mac_address = device.address();
@@ -85,11 +90,28 @@ int main(int argc, const char** argv)
         mib.itsGnLocalGnAddr.mid(mac_address);
         mib.itsGnLocalGnAddr.is_manually_configured(true);
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
-        mib.itsGnSecurity = false;
 
-        TimeTrigger trigger(io_service);
+        // We always use the same ceritificate manager and crypto services for now.
+        // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
+        auto certificate_manager_factory = security::builtin_certificate_managers();
+        auto certificate_manager = certificate_manager_factory.create("Naive", trigger.runtime());
+        auto crypto_backend = security::create_backend("default");
+        security::SignService sign_service = straight_sign_service(trigger.runtime(), *certificate_manager, *crypto_backend);
+        security::VerifyService verify_service = dummy_verify_service(security::VerificationReport::Success, security::CertificateValidity::valid());
+
+        const std::string& security_option = vm["security"].as<std::string>();
+        if (security_option == "off") {
+            mib.itsGnSecurity = false;
+        } else if (security_option == "naive") {
+            mib.itsGnSecurity = true;
+        } else {
+            std::cerr << "Invalid security option '" << security_option << "', falling back to 'off'." << "\n";
+            mib.itsGnSecurity = false;
+        }
+
         GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
-        RouterContext context(raw_socket, mib, trigger, positioning);
+        security::SecurityEntity security_entity(sign_service, verify_service);
+        RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
         asio::steady_timer hello_timer(io_service);
