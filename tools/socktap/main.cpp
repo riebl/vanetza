@@ -23,6 +23,7 @@ int main(int argc, const char** argv)
         ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
         ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
+        ("require-gnss-fix", "suppress transmissions while GNSS position fix is missing")
     ;
 
     po::positional_options_description positional_options;
@@ -89,6 +90,7 @@ int main(int argc, const char** argv)
         TimeTrigger trigger(io_service);
         GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
         RouterContext context(raw_socket, mib, trigger, positioning);
+        context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
         asio::steady_timer hello_timer(io_service);
         HelloApplication hello_app(hello_timer);

@@ -82,6 +82,12 @@ void RouterContext::enable(Application* app)
     dispatcher_.set_non_interactive_handler(app->port(), app);
 }
 
+void RouterContext::require_position_fix(bool flag)
+{
+    require_position_fix_ = flag;
+    update_packet_flow(router_.get_local_position_vector());
+}
+
 void RouterContext::update_position_vector()
 {
     auto position = positioning_.current_position();
@@ -91,6 +97,16 @@ void RouterContext::update_position_vector()
     trigger_.runtime().schedule(next, callback);
     trigger_.schedule();
 
-    // Skip all requests until a valid GPS position is available
-    request_interface_.get()->allow_packet_flow(position.position_accuracy_indicator);
+    update_packet_flow(position);
 }
+
+void RouterContext::update_packet_flow(const geonet::LongPositionVector& lpv)
+{
+    if (require_position_fix_) {
+        // Skip all requests until a valid GPS position is available
+        request_interface_->allow_packet_flow(lpv.position_accuracy_indicator);
+    } else {
+        request_interface_->allow_packet_flow(true);
+    }
+}
+

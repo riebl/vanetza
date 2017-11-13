@@ -23,12 +23,20 @@ public:
     ~RouterContext();
     void enable(Application*);
 
+    /**
+     * Allow/disallow transmissions without GNSS position fix
+     *
+     * \param flag true if transmissions shall be dropped when no GNSS position fix is available
+     */
+    void require_position_fix(bool flag);
+
 private:
     void do_receive();
     void on_read(const boost::system::error_code&, std::size_t);
     void pass_up(vanetza::CohesivePacket&&);
     void log_packet_drop(vanetza::geonet::Router::PacketDropReason);
     void update_position_vector();
+    void update_packet_flow(const vanetza::geonet::LongPositionVector&);
 
     vanetza::geonet::MIB mib_;
     vanetza::geonet::Router router_;
@@ -40,6 +48,7 @@ private:
     vanetza::ByteBuffer receive_buffer_;
     boost::asio::generic::raw_protocol::endpoint receive_endpoint_;
     std::list<Application*> applications_;
+    bool require_position_fix_ = false;
 };
 
 #endif /* ROUTER_CONTEXT_HPP_KIPUYBY2 */
