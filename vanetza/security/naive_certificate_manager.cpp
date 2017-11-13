@@ -111,6 +111,8 @@ CertificateValidity NaiveCertificateManager::check_certificate(const Certificate
 
             certificate_has_time_constraint = true;
         }
+
+        // TODO: Support time_start_and_duration and time_end
     }
 
     // if no time constraint is given, we fail instead of considering it valid
