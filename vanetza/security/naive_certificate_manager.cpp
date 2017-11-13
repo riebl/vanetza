@@ -85,24 +85,37 @@ Certificate NaiveCertificateManager::generate_certificate(const ecdsa256::KeyPai
 
 CertificateValidity NaiveCertificateManager::check_certificate(const Certificate& certificate)
 {
+    // ensure at least one time validity constraint is present
+    // section 6.7 in TS 103 097 v1.2.1
+    bool certificate_has_time_constraint = false;
+
     // check validity restriction
     for (auto& restriction : certificate.validity_restriction) {
         ValidityRestriction validity_restriction = restriction;
-
         ValidityRestrictionType type = get_type(validity_restriction);
+
         if (type == ValidityRestrictionType::Time_Start_And_End) {
             // change start and end time of certificate validity
             StartAndEndValidity start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
+
             // check if certificate validity restriction timestamps are logically correct
             if (start_and_end.start_validity >= start_and_end.end_validity) {
                 return CertificateInvalidReason::BROKEN_TIME_PERIOD;
             }
+
             // check if certificate is premature or outdated
             auto now = convert_time32(m_time_now);
             if (now < start_and_end.start_validity || now > start_and_end.end_validity) {
                 return CertificateInvalidReason::OFF_TIME_PERIOD;
             }
+
+            certificate_has_time_constraint = true;
         }
+    }
+
+    // if no time constraint is given, we fail instead of considering it valid
+    if (!certificate_has_time_constraint) {
+        return CertificateInvalidReason::BROKEN_TIME_PERIOD;
     }
 
     // check if subject_name is empty
