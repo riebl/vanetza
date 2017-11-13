@@ -744,7 +744,7 @@ NextHop Router::next_hop_greedy_forwarding(
     units::Length mfr = own;
 
     for (auto& neighbour : m_location_table.neighbours()) {
-        const units::Length dist = distance(dest, neighbour.position_vector.position());
+        const units::Length dist = distance(dest, neighbour.get_position_vector().position());
         if (dist < mfr) {
             nh.mac(neighbour.link_layer_address());
             mfr = dist;
@@ -870,14 +870,14 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
     // update location table with SO.PV (see C.2)
     m_location_table.update(shb.source_position);
     auto& source_entry = m_location_table.get_entry(source_addr);
-    assert(!is_empty(source_entry.position_vector));
+    assert(source_entry.has_position_vector());
 
     // update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
     source_entry.update_pdr(packet_size);
 
     // set SO LocTE to neighbour
-    source_entry.is_neighbour = true;
+    source_entry.set_neighbour(true);
 
     // SHB packets are always passed up (except duplicates)
     return true;
@@ -908,7 +908,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, con
     source_entry.update_pdr(packet_size);
 
     // set SO LocTE to neighbour
-    source_entry.is_neighbour = true;
+    source_entry.set_neighbour(true);
 
     return pass_up_decision;
 }
@@ -940,7 +940,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     auto& source_entry = m_location_table.get_entry(source_addr);
     source_entry.update_pdr(packet_size);
     if (remove_neighbour_flag) {
-        source_entry.is_neighbour = false;
+        source_entry.set_neighbour(false);
     }
 
     const Area dest_area = gbc.destination(pdu.common().header_type);
