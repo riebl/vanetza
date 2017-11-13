@@ -21,6 +21,8 @@ int main(int argc, const char** argv)
         ("help", "Print out available options.")
         ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
         ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
+        ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
+        ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
     ;
 
     po::positional_options_description positional_options;
@@ -85,7 +87,7 @@ int main(int argc, const char** argv)
         mib.itsGnSecurity = false;
 
         TimeTrigger trigger(io_service);
-        GpsPositionProvider positioning;
+        GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
         RouterContext context(raw_socket, mib, trigger, positioning);
 
         asio::steady_timer hello_timer(io_service);

@@ -5,9 +5,14 @@
 
 static_assert(GPSD_API_MAJOR_VERSION == 6, "libgps has incompatible API");
 
-GpsPositionProvider::GpsPositionProvider()
+GpsPositionProvider::GpsPositionProvider() :
+    GpsPositionProvider(gpsd::shared_memory, nullptr)
 {
-    if (gps_open("127.0.0.1", "2947", &gps_data)) {
+}
+
+GpsPositionProvider::GpsPositionProvider(const std::string& hostname, const std::string& port)
+{
+    if (gps_open(hostname.c_str(), port.c_str(), &gps_data)) {
         throw gps_error(errno);
     }
     gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, nullptr);
