@@ -3,7 +3,7 @@
 #include <vanetza/units/velocity.hpp>
 #include <cmath>
 
-static_assert(GPSD_API_MAJOR_VERSION == 6, "libgps has incompatible API");
+static_assert(GPSD_API_MAJOR_VERSION == 5 || GPSD_API_MAJOR_VERSION == 6, "libgps has incompatible API");
 
 GpsPositionProvider::GpsPositionProvider() :
     GpsPositionProvider(gpsd::shared_memory, nullptr)
