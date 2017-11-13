@@ -13,14 +13,13 @@
 #include <memory>
 
 class Application;
-class EthernetDevice;
 class PositionProvider;
 class TimeTrigger;
 
 class RouterContext
 {
 public:
-    RouterContext(boost::asio::generic::raw_protocol::socket&, const EthernetDevice&, TimeTrigger&, PositionProvider&);
+    RouterContext(boost::asio::generic::raw_protocol::socket&, const vanetza::geonet::MIB&, TimeTrigger&, PositionProvider&);
     ~RouterContext();
     void enable(Application*);
 
@@ -34,7 +33,6 @@ private:
     vanetza::geonet::MIB mib_;
     vanetza::geonet::Router router_;
     boost::asio::generic::raw_protocol::socket& socket_;
-    const EthernetDevice& device_;
     TimeTrigger& trigger_;
     PositionProvider& positioning_;
     vanetza::btp::PortDispatcher dispatcher_;

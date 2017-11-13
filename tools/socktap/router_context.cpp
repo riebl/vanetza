@@ -14,19 +14,9 @@ namespace asio = boost::asio;
 using boost::asio::generic::raw_protocol;
 using namespace vanetza;
 
-geonet::MIB configure_mib(const EthernetDevice& device)
-{
-    geonet::MIB mib;
-    mib.itsGnLocalGnAddr.mid(device.address());
-    mib.itsGnLocalGnAddr.is_manually_configured(true);
-    mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
-    mib.itsGnSecurity = false;
-    return mib;
-}
-
-RouterContext::RouterContext(raw_protocol::socket& socket, const EthernetDevice& device, TimeTrigger& trigger, PositionProvider& positioning) :
-    mib_(configure_mib(device)), router_(trigger.runtime(), mib_),
-    socket_(socket), device_(device), trigger_(trigger), positioning_(positioning),
+RouterContext::RouterContext(raw_protocol::socket& socket, const geonet::MIB& mib, TimeTrigger& trigger, PositionProvider& positioning) :
+    mib_(mib), router_(trigger.runtime(), mib_),
+    socket_(socket), trigger_(trigger), positioning_(positioning),
     request_interface_(new DccPassthrough(socket, trigger)),
     receive_buffer_(2048, 0x00), receive_endpoint_(socket_.local_endpoint())
 {

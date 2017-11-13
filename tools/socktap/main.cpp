@@ -20,6 +20,7 @@ int main(int argc, const char** argv)
     options.add_options()
         ("help", "Print out available options.")
         ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
+        ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
     ;
 
     po::positional_options_description positional_options;
@@ -51,6 +52,17 @@ int main(int argc, const char** argv)
         asio::io_service io_service;
         const char* device_name = vm["interface"].as<std::string>().c_str();
         EthernetDevice device(device_name);
+        vanetza::MacAddress mac_address = device.address();
+
+        if (vm.count("mac-address")) {
+            std::cout << "Using MAC address: " << vm["mac-address"].as<std::string>() << ".\n";
+
+            if (!parse_mac_address(vm["mac-address"].as<std::string>().c_str(), mac_address)) {
+                std::cerr << "The specified MAC address is invalid." << "\n";
+                return 1;
+            }
+        }
+
         asio::generic::raw_protocol raw_protocol(AF_PACKET, gn::ether_type.net());
         asio::generic::raw_protocol::socket raw_socket(io_service, raw_protocol);
         raw_socket.bind(device.endpoint(AF_PACKET));
@@ -64,9 +76,17 @@ int main(int argc, const char** argv)
         asio::signal_set signals(io_service, SIGINT, SIGTERM);
         signals.async_wait(signal_handler);
 
+        // configure management information base
+        // TODO: make more MIB options configurable by command line flags
+        gn::MIB mib;
+        mib.itsGnLocalGnAddr.mid(mac_address);
+        mib.itsGnLocalGnAddr.is_manually_configured(true);
+        mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
+        mib.itsGnSecurity = false;
+
         TimeTrigger trigger(io_service);
         GpsPositionProvider positioning;
-        RouterContext context(raw_socket, device, trigger, positioning);
+        RouterContext context(raw_socket, mib, trigger, positioning);
 
         asio::steady_timer hello_timer(io_service);
         HelloApplication hello_app(hello_timer);
