@@ -34,9 +34,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Mandatory and optional project dependencies
 set(Boost_COMPONENTS date_time serialization)
 set(Boost_OPTIONAL_COMPONENTS system program_options)
-find_package(Boost 1.58 REQUIRED
-  COMPONENTS ${Boost_COMPONENTS}
-  OPTIONAL_COMPONENTS ${Boost_OPTIONAL_COMPONENTS})
+find_package(Boost 1.58 REQUIRED COMPONENTS ${Boost_COMPONENTS})
+# optional components need to be queried seperately (FindBoost bails out when one is missing)
+find_package(Boost 1.58 OPTIONAL_COMPONENTS ${Boost_OPTIONAL_COMPONENTS})
 include(CompatBoostTargets)
 find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
