@@ -18,7 +18,7 @@ You need following tools and libraries on your system for compiling Vanetza:
 * [Crypto++](https://www.cryptopp.com) 5.6.1 or higher
 
 If OpenSSL (1.0 or 1.1) or LibreSSL is available on your system, an alternative security backend implementation is compiled along with the Crypto++ based backend.
-You can switch the employed backend per `geonet::Router` instance through the `vanetzaCryptoBackend` option located in the Management Information Base (MIB).
+See `security::Backend` and `security::create_backend` for more details.
 
 ## Compilation
 
