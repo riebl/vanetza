@@ -69,3 +69,28 @@ TEST_F(CertificateManagerTest, own_certificate)
     EXPECT_LT(start_time, end_time);
 }
 
+TEST_F(CertificateManagerTest, time_constraint)
+{
+    Certificate cert = cert_manager.own_certificate();
+    EXPECT_TRUE(cert_manager.check_certificate(cert));
+
+    // remove any time constraint from certificate
+    for (auto it = cert.validity_restriction.begin(); it != cert.validity_restriction.end(); ++it) {
+        const ValidityRestriction& restriction = *it;
+        ValidityRestrictionType type = get_type(restriction);
+        switch (type) {
+            case ValidityRestrictionType::Time_End:
+            case ValidityRestrictionType::Time_Start_And_End:
+            case ValidityRestrictionType::Time_Start_And_Duration:
+                it = cert.validity_restriction.erase(it);
+                break;
+            default:
+                break;
+        }
+    }
+
+    CertificateValidity validity = cert_manager.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    // TODO: check that presence of exactly one time constraint is considered valid
+}
