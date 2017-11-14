@@ -36,7 +36,7 @@ const Factory<CertificateManager, Runtime&>& builtin_certificate_managers()
 {
     static const auto factory = setup_factory();
     return factory;
-};
+}
 
 } // namespace security
 } // namespace vanetza
