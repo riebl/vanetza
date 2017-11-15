@@ -110,9 +110,19 @@ CertificateValidity NaiveCertificateManager::check_certificate(const Certificate
             }
 
             certificate_has_time_constraint = true;
+        } else if (type == ValidityRestrictionType::Time_End) {
+            EndValidity end = boost::get<EndValidity>(validity_restriction);
+
+            // check if certificate is outdated
+            auto now = convert_time32(m_time_now);
+            if (now > end) {
+                return CertificateInvalidReason::OFF_TIME_PERIOD;
+            }
+
+            certificate_has_time_constraint = true;
         }
 
-        // TODO: Support time_start_and_duration and time_end
+        // TODO: Support time_start_and_duration
     }
 
     // if no time constraint is given, we fail instead of considering it valid
