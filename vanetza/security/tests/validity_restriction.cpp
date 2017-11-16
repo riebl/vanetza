@@ -6,7 +6,7 @@
 
 using namespace vanetza::security;
 
-TEST(Duration, Duration)
+TEST(Duration, Raw)
 {
     uint16_t a = 0x8007;
     uint16_t b = 7;
@@ -16,6 +16,34 @@ TEST(Duration, Duration)
 
     EXPECT_EQ(dur1.raw(), a);
     EXPECT_EQ(dur2.raw(), a);
+}
+
+TEST(Duration, Unit)
+{
+    const uint16_t raw = 0x8007;
+    Duration duration(raw);
+
+    EXPECT_EQ(duration.raw(), raw);
+    EXPECT_EQ(duration.unit(), Duration::Units::Years);
+}
+
+TEST(Duration, Value)
+{
+    const uint16_t raw = 0x8007;
+    Duration duration(raw);
+
+    EXPECT_EQ(duration.raw(), raw);
+    EXPECT_EQ(duration.value(), 7);
+}
+
+TEST(Duration, ToSeconds)
+{
+    const uint16_t raw = 0x2007;
+    Duration duration(raw);
+
+    EXPECT_EQ(duration.raw(), raw);
+    EXPECT_EQ(duration.value(), 7);
+    EXPECT_EQ(duration.to_seconds(), std::chrono::seconds(7 * 60));
 }
 
 TEST(ValidityRestriction, Serialization)
