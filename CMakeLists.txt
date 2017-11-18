@@ -66,6 +66,11 @@ if(BUILD_SOCKTAP)
   add_subdirectory(tools/socktap)
 endif()
 
+option(BUILD_CERTIFY "Build certify application" OFF)
+if(BUILD_CERTIFY)
+  add_subdirectory(tools/certify)
+endif()
+
 # interface library for convenience
 get_property(_components GLOBAL PROPERTY VANETZA_COMPONENTS)
 add_library(vanetza INTERFACE)
@@ -110,4 +115,3 @@ file(COPY ${CMAKECONFIG_BUILD_DIR}/VanetzaConfigVersion.cmake
 configure_file(cmake/VanetzaExportsConfig.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/VanetzaConfig.cmake @ONLY)
 export(PACKAGE ${PROJECT_NAME})
-
