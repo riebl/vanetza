@@ -508,6 +508,13 @@ private:
     std::mt19937 m_random_gen;
 };
 
+/**
+ * Get string representation of packet drop reason
+ * \param pdr packet drop reason code
+ * \return string representation
+ */
+std::string stringify(Router::PacketDropReason pdr);
+
 } // namespace geonet
 } // namespace vanetza
 

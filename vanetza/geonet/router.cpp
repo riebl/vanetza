@@ -1097,5 +1097,49 @@ Router::DownPacketPtr Router::encap_packet(security::Profile profile, Pdu& pdu, 
     return packet;
 }
 
+std::string stringify(Router::PacketDropReason pdr)
+{
+    std::string reason_string;
+
+    // TODO replace this by something more elegant, e.g. https://github.com/aantron/better-enums
+    switch (pdr) {
+        case Router::PacketDropReason::PARSE_BASIC_HEADER:
+            reason_string = "PARSE_BASIC_HEADER";
+            break;
+        case Router::PacketDropReason::PARSE_COMMON_HEADER:
+            reason_string = "PARSE_COMMON_HEADER";
+            break;
+        case Router::PacketDropReason::PARSE_SECURED_HEADER:
+            reason_string = "PARSE_SECURED_HEADER";
+            break;
+        case Router::PacketDropReason::PARSE_EXTENDED_HEADER:
+            reason_string = "PARSE_EXTENDED_HEADER";
+            break;
+        case Router::PacketDropReason::ITS_PROTOCOL_VERSION:
+            reason_string = "ITS_PROTOCOL_VERSION";
+            break;
+        case Router::PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT:
+            reason_string = "DECAP_UNSUCCESSFUL_NON_STRICT";
+            break;
+        case Router::PacketDropReason::DECAP_UNSUCCESSFUL_STRICT:
+            reason_string = "DECAP_UNSUCCESSFUL_STRICT";
+            break;
+        case Router::PacketDropReason::HOP_LIMIT:
+            reason_string = "HOP_LIMIT";
+            break;
+        case Router::PacketDropReason::PAYLOAD_SIZE:
+            reason_string = "PAYLOAD_SIZE";
+            break;
+        case Router::PacketDropReason::SECURITY_ENTITY_MISSING:
+            reason_string = "SECURITY_ENTITY_MISSING";
+            break;
+        default:
+            reason_string = "UNKNOWN";
+            break;
+    }
+
+    return reason_string;
+}
+
 } // namespace geonet
 } // namespace vanetza

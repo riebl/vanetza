@@ -40,44 +40,7 @@ RouterContext::~RouterContext()
 
 void RouterContext::log_packet_drop(geonet::Router::PacketDropReason reason)
 {
-    std::string reason_string;
-
-    switch (reason) {
-        case geonet::Router::PacketDropReason::PARSE_BASIC_HEADER:
-            reason_string = "PARSE_BASIC_HEADER";
-            break;
-        case geonet::Router::PacketDropReason::PARSE_COMMON_HEADER:
-            reason_string = "PARSE_COMMON_HEADER";
-            break;
-        case geonet::Router::PacketDropReason::PARSE_SECURED_HEADER:
-            reason_string = "PARSE_SECURED_HEADER";
-            break;
-        case geonet::Router::PacketDropReason::PARSE_EXTENDED_HEADER:
-            reason_string = "PARSE_EXTENDED_HEADER";
-            break;
-        case geonet::Router::PacketDropReason::ITS_PROTOCOL_VERSION:
-            reason_string = "ITS_PROTOCOL_VERSION";
-            break;
-        case geonet::Router::PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT:
-            reason_string = "DECAP_UNSUCCESSFUL_NON_STRICT";
-            break;
-        case geonet::Router::PacketDropReason::DECAP_UNSUCCESSFUL_STRICT:
-            reason_string = "DECAP_UNSUCCESSFUL_STRICT";
-            break;
-        case geonet::Router::PacketDropReason::HOP_LIMIT:
-            reason_string = "HOP_LIMIT";
-            break;
-        case geonet::Router::PacketDropReason::PAYLOAD_SIZE:
-            reason_string = "PAYLOAD_SIZE";
-            break;
-        case geonet::Router::PacketDropReason::SECURITY_ENTITY_MISSING:
-            reason_string = "SECURITY_ENTITY_MISSING";
-            break;
-        default:
-            reason_string = "UNKNOWN";
-            break;
-    }
-
+    auto reason_string = stringify(reason);
     std::cout << "Router dropped packet because of " << reason_string << " (" << static_cast<int>(reason) << ")\n";
 }
 
