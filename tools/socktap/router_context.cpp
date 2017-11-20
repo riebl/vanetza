@@ -72,8 +72,9 @@ void RouterContext::pass_up(CohesivePacket&& packet)
         if (hdr.source != mib_.itsGnLocalGnAddr.mid()) {
             std::cout << "received packet from " << hdr.source << " (" << packet.size() << " bytes)\n";
             std::unique_ptr<PacketVariant> up { new PacketVariant(std::move(packet)) };
+            trigger_.schedule(); // ensure the clock is up-to-date for the security entity
             router_.indicate(std::move(up), hdr.source, hdr.destination);
-            trigger_.schedule();
+            trigger_.schedule(); // schedule packet forwarding
         }
     }
 }
