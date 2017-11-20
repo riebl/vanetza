@@ -1,6 +1,7 @@
 add_vanetza_component(security
     backend.cpp
     backend_null.cpp
+    basic_certificate_manager.cpp
     basic_elements.cpp
     certificate.cpp
     certificate_manager.cpp
