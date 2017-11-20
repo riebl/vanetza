@@ -85,9 +85,9 @@ Certificate NaiveCertificateManager::generate_certificate(const ecdsa256::KeyPai
 
 CertificateValidity NaiveCertificateManager::check_certificate(const Certificate& certificate)
 {
-    // ensure at least one time validity constraint is present
+    // ensure exactly one time validity constraint is present
     // section 6.7 in TS 103 097 v1.2.1
-    bool certificate_has_time_constraint = false;
+    unsigned certificate_time_constraints = 0;
 
     // check validity restriction
     for (auto& restriction : certificate.validity_restriction) {
@@ -109,7 +109,7 @@ CertificateValidity NaiveCertificateManager::check_certificate(const Certificate
                 return CertificateInvalidReason::OFF_TIME_PERIOD;
             }
 
-            certificate_has_time_constraint = true;
+            ++certificate_time_constraints;
         } else if (type == ValidityRestrictionType::Time_End) {
             EndValidity end = boost::get<EndValidity>(validity_restriction);
 
@@ -119,23 +119,24 @@ CertificateValidity NaiveCertificateManager::check_certificate(const Certificate
                 return CertificateInvalidReason::OFF_TIME_PERIOD;
             }
 
-            certificate_has_time_constraint = true;
+            ++certificate_time_constraints;
         } else if (type == ValidityRestrictionType::Time_Start_And_Duration) {
             StartAndDurationValidity start_and_duration = boost::get<StartAndDurationValidity>(validity_restriction);
 
             // check if certificate is premature or outdated
             auto now = convert_time32(m_time_now);
-            auto end = start_and_duration.start_validity + std::chrono::duration_cast<std::chrono::seconds>(start_and_duration.duration.to_seconds()).count();
+            std::chrono::seconds duration = start_and_duration.duration.to_seconds();
+            auto end = start_and_duration.start_validity + duration.count();
             if (now < start_and_duration.start_validity || now > end) {
                 return CertificateInvalidReason::OFF_TIME_PERIOD;
             }
 
-            certificate_has_time_constraint = true;
+            ++certificate_time_constraints;
         }
     }
 
-    // if no time constraint is given, we fail instead of considering it valid
-    if (!certificate_has_time_constraint) {
+    // if not exactly one time constraint is given, we fail instead of considering it valid
+    if (1 != certificate_time_constraints) {
         return CertificateInvalidReason::BROKEN_TIME_PERIOD;
     }
 
