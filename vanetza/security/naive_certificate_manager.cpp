@@ -125,7 +125,7 @@ CertificateValidity NaiveCertificateManager::check_certificate(const Certificate
 
             // check if certificate is premature or outdated
             auto now = convert_time32(m_time_now);
-            auto end = start_and_duration.start_validity + std::chrono::duration_cast<std::chrono::milliseconds>(start_and_duration.duration.to_seconds()).count();
+            auto end = start_and_duration.start_validity + std::chrono::duration_cast<std::chrono::seconds>(start_and_duration.duration.to_seconds()).count();
             if (now < start_and_duration.start_validity || now > end) {
                 return CertificateInvalidReason::OFF_TIME_PERIOD;
             }

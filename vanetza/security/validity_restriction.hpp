@@ -46,7 +46,7 @@ public:
 
     uint16_t value() const
     {
-        return m_raw & 0xCFFF; // mask upper 3 bit
+        return m_raw & 0x1FFF; // mask upper 3 bit
     }
 
     /**
