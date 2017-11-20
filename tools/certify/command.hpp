@@ -1,7 +1,8 @@
 #ifndef CERTIFY_COMMAND_HPP
 #define CERTIFY_COMMAND_HPP
 
-#include <boost/program_options.hpp>
+#include <string>
+#include <vector>
 
 class Command
 {

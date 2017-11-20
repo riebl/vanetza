@@ -11,6 +11,8 @@ endif()
 find_package(Threads REQUIRED)
 find_package(GPS REQUIRED)
 
+include_directories(.)
+
 add_executable(certify
     commands/auth-ca.cpp
     commands/genkey.cpp

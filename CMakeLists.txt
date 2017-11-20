@@ -67,7 +67,7 @@ if(BUILD_SOCKTAP)
 endif()
 
 option(BUILD_CERTIFY "Build certify application" OFF)
-if(BUILD_SOCKTAP)
+if(BUILD_CERTIFY)
   add_subdirectory(tools/certify)
 endif()
 
