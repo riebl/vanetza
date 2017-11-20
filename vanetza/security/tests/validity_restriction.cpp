@@ -46,6 +46,20 @@ TEST(Duration, ToSeconds)
     EXPECT_EQ(duration.to_seconds(), std::chrono::seconds(7 * 60));
 }
 
+TEST(Duration, ToSecondsMax)
+{
+    Duration duration(0xffff, Duration::Units::Years);
+    EXPECT_EQ(duration.value(), 0x1fff);
+    EXPECT_EQ(duration.unit(), Duration::Units::Years);
+    EXPECT_EQ(duration.to_seconds(), std::chrono::seconds(static_cast<int64_t>(31556925) * 0x1fff));
+}
+
+TEST(Duration, ToSecondsInvalidUnit)
+{
+    Duration duration(0xffff);
+    EXPECT_EQ(duration.to_seconds(), std::chrono::seconds::min());
+}
+
 TEST(ValidityRestriction, Serialization)
 {
     std::list<ValidityRestriction> list;
