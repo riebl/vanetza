@@ -3,7 +3,8 @@
 
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
-#include <vanetza/security/naive_certificate_manager.hpp>
+#include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
 
 namespace vanetza
@@ -14,10 +15,11 @@ class SecurityContext
 public:
     SecurityContext(Runtime& rt) :
         backend(security::create_backend("default")),
-        certificates(new security::NaiveCertificateManager(rt.now())),
+        certificate_provider(new security::NaiveCertificateProvider(rt.now())),
+        certificate_validator(new security::DefaultCertificateValidator(rt.now(), certificate_provider->root_certificate())),
         security(
-            straight_sign_service(rt, *certificates, *backend),
-            straight_verify_service(rt, *certificates, *backend))
+            straight_sign_service(rt, *certificate_provider, *backend),
+            straight_verify_service(rt, *certificate_validator, *backend))
     {
     }
 
@@ -28,11 +30,11 @@ public:
 
 private:
     std::unique_ptr<security::Backend> backend;
-    std::unique_ptr<security::CertificateManager> certificates;
+    std::unique_ptr<security::NaiveCertificateProvider> certificate_provider;
+    std::unique_ptr<security::CertificateValidator> certificate_validator;
     security::SecurityEntity security;
 };
 
 } // namespace vanetza
 
 #endif /* SECURITY_CONTEXT_HPP_FEYZW1RS */
-

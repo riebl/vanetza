@@ -8,7 +8,7 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <vanetza/security/naive_certificate_manager.hpp>
+#include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
 
 namespace asio = boost::asio;
@@ -93,10 +93,9 @@ int main(int argc, const char** argv)
 
         // We always use the same ceritificate manager and crypto services for now.
         // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
-        auto certificate_manager_factory = security::builtin_certificate_managers();
-        auto certificate_manager = certificate_manager_factory.create("Naive", trigger.runtime());
+        security::NaiveCertificateProvider naive_cert_provider(trigger.runtime().now());
         auto crypto_backend = security::create_backend("default");
-        security::SignService sign_service = straight_sign_service(trigger.runtime(), *certificate_manager, *crypto_backend);
+        security::SignService sign_service = straight_sign_service(trigger.runtime(), naive_cert_provider, *crypto_backend);
         security::VerifyService verify_service = dummy_verify_service(security::VerificationReport::Success, security::CertificateValidity::valid());
 
         const std::string& security_option = vm["security"].as<std::string>();

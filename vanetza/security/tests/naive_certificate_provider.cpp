@@ -1,5 +1,6 @@
 #include <vanetza/common/clock.hpp>
-#include <vanetza/security/naive_certificate_manager.hpp>
+#include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/naive_certificate_provider.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 
@@ -7,21 +8,21 @@ using namespace vanetza;
 using namespace vanetza::security;
 using boost::get;
 
-class CertificateManagerTest : public ::testing::Test
+class NaiveCertificateProviderTest : public ::testing::Test
 {
 public:
-    CertificateManagerTest() : time_now(Clock::at("2016-08-01 00:00")), cert_manager(time_now)
+    NaiveCertificateProviderTest() : time_now(Clock::at("2016-08-01 00:00")), cert_provider(time_now)
     {
     }
 
 protected:
     Clock::time_point time_now;
-    NaiveCertificateManager cert_manager;
+    NaiveCertificateProvider cert_provider;
 };
 
-TEST_F(CertificateManagerTest, own_certificate)
+TEST_F(NaiveCertificateProviderTest, own_certificate)
 {
-    Certificate signed_certificate = cert_manager.own_certificate();
+    Certificate signed_certificate = cert_provider.own_certificate();
 
     // Check signature
     EXPECT_EQ(2 * field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256),
@@ -67,30 +68,4 @@ TEST_F(CertificateManagerTest, own_certificate)
         }
     }
     EXPECT_LT(start_time, end_time);
-}
-
-TEST_F(CertificateManagerTest, time_constraint)
-{
-    Certificate cert = cert_manager.own_certificate();
-    EXPECT_TRUE(cert_manager.check_certificate(cert));
-
-    // remove any time constraint from certificate
-    for (auto it = cert.validity_restriction.begin(); it != cert.validity_restriction.end(); ++it) {
-        const ValidityRestriction& restriction = *it;
-        ValidityRestrictionType type = get_type(restriction);
-        switch (type) {
-            case ValidityRestrictionType::Time_End:
-            case ValidityRestrictionType::Time_Start_And_End:
-            case ValidityRestrictionType::Time_Start_And_Duration:
-                it = cert.validity_restriction.erase(it);
-                break;
-            default:
-                break;
-        }
-    }
-
-    CertificateValidity validity = cert_manager.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
-    // TODO: check that presence of exactly one time constraint is considered valid
 }

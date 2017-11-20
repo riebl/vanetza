@@ -3,15 +3,16 @@ add_vanetza_component(security
     backend_null.cpp
     basic_elements.cpp
     certificate.cpp
-    certificate_manager.cpp
+    default_certificate_validator.cpp
     ecc_point.cpp
     ecdsa256.cpp
     encryption_parameter.cpp
     header_field.cpp
     int_x.cpp
     length_coding.cpp
-    naive_certificate_manager.cpp
-    null_certificate_manager.cpp
+    naive_certificate_provider.cpp
+    null_certificate_provider.cpp
+    null_certificate_validator.cpp
     payload.cpp
     public_key.cpp
     recipient_info.cpp
