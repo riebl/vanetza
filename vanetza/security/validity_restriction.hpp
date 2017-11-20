@@ -5,6 +5,7 @@
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <boost/variant/variant.hpp>
+#include <chrono>
 
 namespace vanetza
 {
@@ -34,6 +35,24 @@ public:
     {
         return m_raw;
     }
+
+    /**
+     * Returns the duration unit.
+     */
+    Units unit() const
+    {
+        return static_cast<Units>(m_raw >> 13);
+    }
+
+    uint16_t value() const
+    {
+        return m_raw & 0x1FFF; // mask upper 3 bit
+    }
+
+    /**
+     * Returns the duration in seconds.
+     */
+    std::chrono::seconds to_seconds() const;
 
 private:
     uint16_t m_raw;
@@ -108,4 +127,3 @@ void serialize(OutputArchive&, const ValidityRestriction&);
 } // namespace vanetza
 
 #endif /* VALIDITY_RESTRICTION_HPP_LMCUHYLJ */
-
