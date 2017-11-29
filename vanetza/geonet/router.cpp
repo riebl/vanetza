@@ -1013,6 +1013,15 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     // step 9: discard packet (no forwarding) if hop limit is reached
     if (pdu.basic().hop_limit <= 1) {
         return within_destination; // discard packet (step 9a)
+    } else if (m_mib.itsGnMaxPacketDataRate < std::numeric_limits<decltype(m_mib.itsGnMaxPacketDataRate)>::max()) {
+        // do packet data rate checks (annex B.2) if set maximum rate is not "infinity" (i.e. max unsigned value)
+        if (source_entry.get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
+            return within_destination; // omit forwarding, source exceeds PDR limit
+        } else if (const auto* sender_entry = m_location_table.get_entry(ll.sender)) {
+            if (sender_entry->get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
+                return within_destination; // omit forwarding, sender exceeds PDR limit
+            }
+        }
     }
 
     // step 9b: update hop limit in basic header
