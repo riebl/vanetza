@@ -90,6 +90,14 @@ public:
         SECURITY_ENTITY_MISSING
     };
 
+    // Reason for stopping packet forwarding
+    enum class ForwardingStopReason
+    {
+        HOP_LIMIT,
+        SOURCE_PDR,
+        SENDER_PDR
+    };
+
     Router(Runtime&, const MIB&);
     ~Router();
 
@@ -139,6 +147,12 @@ public:
      * \tparam PacketDropReason why Router decided to drop packet
      */
     Hook<PacketDropReason> packet_dropped;
+
+    /**
+     * \brief When packet forwarding is stopped, this Hook is invoked
+     * \tparam ForwardingStopReason why Router decided not to forward packet
+     */
+    Hook<ForwardingStopReason> forwarding_stopped;
 
     /**
      * \brief Update router's local position vector
