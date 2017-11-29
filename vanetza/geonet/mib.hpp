@@ -77,6 +77,7 @@ struct ManagementInformationBase
     Lifetime itsGnMaxPacketLifetime;
     Lifetime itsGnDefaultPacketLifetime;
     unsigned itsGnMaxPacketDataRate; // kbyte/s
+    double itsGnMaxPacketDataRateEmaBeta; // percentage ]0; 1[
     units::Area itsGnMaxGeoAreaSize;
     units::Duration itsGnMinPacketRepetitionInterval;
     UnicastForwarding itsGnNonAreaForwardingAlgorithm;

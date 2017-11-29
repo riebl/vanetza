@@ -35,6 +35,7 @@ ManagementInformationBase::ManagementInformationBase() :
     itsGnMaxPacketLifetime(Lifetime::Base::_100_S, 6),
     itsGnDefaultPacketLifetime(Lifetime::Base::_10_S, 6),
     itsGnMaxPacketDataRate(100),
+    itsGnMaxPacketDataRateEmaBeta(0.9),
     itsGnMaxGeoAreaSize(10 * kilo * kilo * square_meters),
     itsGnMinPacketRepetitionInterval(100 * milliseconds),
     itsGnNonAreaForwardingAlgorithm(UnicastForwarding::GREEDY),

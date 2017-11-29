@@ -929,7 +929,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
 
     // step 5: update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
-    source_entry.update_pdr(packet_size);
+    source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
 
     // step 6: set SO LocTE to neighbour
     source_entry.set_neighbour(true);
@@ -951,7 +951,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, con
 
     // step 5: update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
-    source_entry.update_pdr(packet_size);
+    source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
 
     // step 6: set SO LocTE to neighbour
     source_entry.set_neighbour(true);
@@ -998,7 +998,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     // step 5 & step 6 (make sure IS_NEIGHBOUR is false for new location table entry)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
     auto& source_entry = m_location_table.update(gbc.source_position);
-    source_entry.update_pdr(packet_size);
+    source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
     if (!locte_exists) {
         // step 5b only
         source_entry.set_neighbour(false);
