@@ -172,6 +172,11 @@ const LocationTableEntry* LocationTable::get_entry(const Address& addr) const
     return m_table.get_value_ptr(addr.mid());
 }
 
+const LocationTableEntry* LocationTable::get_entry(const MacAddress& mac) const
+{
+    return m_table.get_value_ptr(mac);
+}
+
 const LongPositionVector* LocationTable::get_position(const Address& addr) const
 {
     return get_position(addr.mid());

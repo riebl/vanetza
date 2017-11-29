@@ -134,6 +134,7 @@ public:
     bool has_entry(const Address&) const;
     LocationTableEntry& update(const LongPositionVector&);
     const LocationTableEntry* get_entry(const Address&) const;
+    const LocationTableEntry* get_entry(const MacAddress&) const;
     const LongPositionVector* get_position(const Address&) const;
     const LongPositionVector* get_position(const MacAddress&) const;
     bool has_neighbours() const;
