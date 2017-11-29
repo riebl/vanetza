@@ -53,8 +53,9 @@ public:
      * Update packet data rate.
      * See Annex B of EN 302 636-4-1 for details.
      * \param packet_size received number of bytes
+     * \param beta weight factor for exponential moving average ]0; 1[
      */
-    void update_pdr(std::size_t packet_size);
+    void update_pdr(std::size_t packet_size, double beta = 0.5);
 
     /**
      * Check if position vector has been set before
@@ -101,7 +102,7 @@ private:
     LongPositionVector m_position_vector;
     boost::optional<Timestamp> m_timestamp;
     boost::optional<SequenceNumber> m_sequence_number;
-    double m_pdr;
+    double m_pdr; /*< packet data rate in bytes per second */
     Clock::time_point m_pdr_update;
 };
 

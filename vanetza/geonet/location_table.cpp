@@ -67,19 +67,19 @@ bool LocationTableEntry::is_duplicate_packet(Timestamp time)
     return is_duplicate;
 }
 
-void LocationTableEntry::update_pdr(std::size_t packet_size)
+void LocationTableEntry::update_pdr(std::size_t packet_size, double beta)
 {
     using namespace vanetza::units;
 
     if (std::isnan(m_pdr)) {
         m_pdr = 0.0;
         m_pdr_update = m_runtime.now();
-    } else {
+    } else if (beta > 0.0 && beta < 1.0) {
         const std::chrono::duration<double> time_period = m_runtime.now() - m_pdr_update;
         if (time_period.count() > 0.0) {
             double instant_pdr = packet_size / time_period.count();
-            m_pdr *= 0.5;
-            m_pdr += 0.5 * instant_pdr;
+            m_pdr *= beta;
+            m_pdr += (1.0 - beta) * instant_pdr;
             m_pdr_update = m_runtime.now();
         }
     }
