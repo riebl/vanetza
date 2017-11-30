@@ -26,6 +26,7 @@ add_vanetza_component(security
     subject_attribute.cpp
     subject_info.cpp
     trailer_field.cpp
+    trust_store.cpp
     validity_restriction.cpp
     verify_service.cpp
 )
