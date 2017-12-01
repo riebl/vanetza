@@ -19,7 +19,7 @@ namespace security
 
 // forward declarations
 class Backend;
-class CertificateManager;
+class CertificateProvider;
 
 // mandatory SN-SIGN.request parameters
 struct SignRequest
@@ -47,7 +47,7 @@ using SignService = std::function<SignConfirm(SignRequest&&)>;
  * \param backend cryptographic backend
  * \return callable sign service
  */
-SignService straight_sign_service(Runtime&, CertificateManager&, Backend&);
+SignService straight_sign_service(Runtime&, CertificateProvider&, Backend&);
 
 /**
  * SignService deferring actually signature calculation using EcdsaSignatureFuture
@@ -56,7 +56,7 @@ SignService straight_sign_service(Runtime&, CertificateManager&, Backend&);
  * \param backend cryptographic backend
  * \return callable sign service
  */
-SignService deferred_sign_service(Runtime&, CertificateManager&, Backend&);
+SignService deferred_sign_service(Runtime&, CertificateProvider&, Backend&);
 
 /**
  * SignService without real cryptography but dummy signature
@@ -70,4 +70,3 @@ SignService dummy_sign_service(const Runtime& rt, const SignerInfo& si);
 } // namespace vanetza
 
 #endif /* SIGN_SERVICE_HPP_4MDQBSEF */
-

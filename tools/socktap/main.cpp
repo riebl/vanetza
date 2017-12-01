@@ -12,8 +12,11 @@
 #include <cryptopp/oids.h>
 #include <fstream>
 #include <iostream>
-#include <vanetza/security/basic_certificate_manager.hpp>
-#include <vanetza/security/naive_certificate_manager.hpp>
+#include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/naive_certificate_provider.hpp>
+#include <vanetza/security/null_certificate_provider.hpp>
+#include <vanetza/security/null_certificate_validator.hpp>
+#include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
 
 namespace asio = boost::asio;
@@ -115,8 +118,8 @@ int main(int argc, const char** argv)
 
         // We always use the same ceritificate manager and crypto services for now.
         // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
-        auto certificate_manager_factory = security::builtin_certificate_managers();
-        auto certificate_manager = certificate_manager_factory.create("Naive", trigger.runtime());
+        auto certificate_provider = std::unique_ptr<vanetza::security::CertificateProvider> { new vanetza::security::NaiveCertificateProvider(trigger.runtime().now()) };
+        auto certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> { new vanetza::security::NullCertificateValidator() };
         auto crypto_backend = security::create_backend("default");
 
         const std::string& security_option = vm["security"].as<std::string>();
@@ -126,9 +129,9 @@ int main(int argc, const char** argv)
             mib.itsGnSecurity = true;
         } else if (security_option == "null") {
             mib.itsGnSecurity = true;
-            certificate_manager = certificate_manager_factory.create("NullOk", trigger.runtime());
+            certificate_provider = std::unique_ptr<vanetza::security::CertificateProvider> { new vanetza::security::NullCertificateProvider() };
             crypto_backend = security::create_backend("Null");
-        } else if (security_option == "basic") {
+        } else if (security_option == "default") {
             CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey ticket_key;
             CryptoPP::FileSource ticket_key_file("ticket.key", true);
             ticket_key.Load(ticket_key_file);
@@ -152,14 +155,15 @@ int main(int argc, const char** argv)
             vanetza::security::deserialize(authorization_ticket_archive, authorization_ticket);
 
             mib.itsGnSecurity = true;
-            certificate_manager = std::unique_ptr<vanetza::security::CertificateManager> { new vanetza::security::BasicCertificateManager(trigger.runtime().now(), authorization_ticket, authorization_ticket_key, sign_cert) };
+            certificate_provider = std::unique_ptr<vanetza::security::CertificateProvider> { new vanetza::security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key) };
+            certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> { new vanetza::security::DefaultCertificateValidator(trigger.runtime().now(), sign_cert) };
         } else {
             std::cerr << "Invalid security option '" << security_option << "', falling back to 'off'." << "\n";
             mib.itsGnSecurity = false;
         }
 
-        security::SignService sign_service = straight_sign_service(trigger.runtime(), *certificate_manager, *crypto_backend);
-        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_manager, *crypto_backend);
+        security::SignService sign_service = straight_sign_service(trigger.runtime(), *certificate_provider, *crypto_backend);
+        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_validator, *crypto_backend);
 
         GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
         security::SecurityEntity security_entity(sign_service, verify_service);

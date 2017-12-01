@@ -1,5 +1,5 @@
-#include <vanetza/security/basic_certificate_manager.hpp>
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/payload.hpp>
 #include <vanetza/security/secured_message.hpp>
@@ -11,27 +11,15 @@ namespace vanetza
 namespace security
 {
 
-BasicCertificateManager::BasicCertificateManager(const Clock::time_point& time_now, const Certificate& authorization_ticket, const ecdsa256::KeyPair& authorization_ticket_key, const Certificate& sign_cert) :
+DefaultCertificateValidator::DefaultCertificateValidator(const Clock::time_point& time_now, const Certificate& sign_cert) :
     time_now(time_now),
-    authorization_ticket(authorization_ticket),
-    authorization_ticket_key(authorization_ticket_key),
     sign_cert(sign_cert) { }
 
-const Certificate& BasicCertificateManager::own_certificate()
+CertificateValidity DefaultCertificateValidator::check_certificate(const Certificate& certificate)
 {
-    return authorization_ticket;
-}
-
-const ecdsa256::PrivateKey& BasicCertificateManager::own_private_key()
-{
-    return authorization_ticket_key.private_key;
-}
-
-CertificateValidity BasicCertificateManager::check_certificate(const Certificate& certificate)
-{
-    // ensure at least one time validity constraint is present
+    // ensure exactly one time validity constraint is present
     // section 6.7 in TS 103 097 v1.2.1
-    bool certificate_has_time_constraint = false;
+    unsigned certificate_time_constraints = 0;
 
     // check validity restriction
     for (auto& restriction : certificate.validity_restriction) {
@@ -53,14 +41,34 @@ CertificateValidity BasicCertificateManager::check_certificate(const Certificate
                 return CertificateInvalidReason::OFF_TIME_PERIOD;
             }
 
-            certificate_has_time_constraint = true;
-        }
+            ++certificate_time_constraints;
+        } else if (type == ValidityRestrictionType::Time_End) {
+            EndValidity end = boost::get<EndValidity>(validity_restriction);
 
-        // TODO: Support time_start_and_duration and time_end
+            // check if certificate is outdated
+            auto now = convert_time32(time_now);
+            if (now > end) {
+                return CertificateInvalidReason::OFF_TIME_PERIOD;
+            }
+
+            ++certificate_time_constraints;
+        } else if (type == ValidityRestrictionType::Time_Start_And_Duration) {
+            StartAndDurationValidity start_and_duration = boost::get<StartAndDurationValidity>(validity_restriction);
+
+            // check if certificate is premature or outdated
+            auto now = convert_time32(time_now);
+            std::chrono::seconds duration = start_and_duration.duration.to_seconds();
+            auto end = start_and_duration.start_validity + duration.count();
+            if (now < start_and_duration.start_validity || now > end) {
+                return CertificateInvalidReason::OFF_TIME_PERIOD;
+            }
+
+            ++certificate_time_constraints;
+        }
     }
 
-    // if no time constraint is given, we fail instead of considering it valid
-    if (!certificate_has_time_constraint) {
+    // if not exactly one time constraint is given, we fail instead of considering it valid
+    if (1 != certificate_time_constraints) {
         return CertificateInvalidReason::BROKEN_TIME_PERIOD;
     }
 
@@ -70,7 +78,7 @@ CertificateValidity BasicCertificateManager::check_certificate(const Certificate
     }
 
     // check signer info
-    if(get_type(certificate.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
+    if (get_type(certificate.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
         HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
         if(signer_hash != calculate_hash(sign_cert)) {
             return CertificateInvalidReason::INVALID_ROOT_HASH;

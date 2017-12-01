@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
-#include <vanetza/security/naive_certificate_manager.hpp>
+#include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
@@ -14,9 +15,10 @@ class SecurityEntityTest : public ::testing::Test
 protected:
     SecurityEntityTest() :
         crypto_backend(create_backend("default")),
-        certificate_manager(new NaiveCertificateManager(runtime.now())),
-        sign_service(straight_sign_service(runtime, *certificate_manager, *crypto_backend)),
-        verify_service(straight_verify_service(runtime, *certificate_manager, *crypto_backend)),
+        certificate_provider(new NaiveCertificateProvider(runtime.now())),
+        certificate_validator(new DefaultCertificateValidator(runtime.now(), certificate_provider.get()->own_certificate())),
+        sign_service(straight_sign_service(runtime, *certificate_provider, *crypto_backend)),
+        verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend)),
         security(sign_service, verify_service)
     {
     }
@@ -43,7 +45,8 @@ protected:
 
     Runtime runtime;
     std::unique_ptr<Backend> crypto_backend;
-    std::unique_ptr<CertificateManager> certificate_manager;
+    std::unique_ptr<CertificateProvider> certificate_provider;
+    std::unique_ptr<CertificateValidator> certificate_validator;
     SignService sign_service;
     VerifyService verify_service;
     SecurityEntity security;
@@ -52,8 +55,8 @@ protected:
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    SignService sign = straight_sign_service(runtime, *certificate_manager, *crypto_backend);
-    VerifyService verify = straight_verify_service(runtime, *certificate_manager, *crypto_backend);
+    SignService sign = straight_sign_service(runtime, *certificate_provider, *crypto_backend);
+    VerifyService verify = straight_verify_service(runtime, *certificate_validator, *crypto_backend);
     SecurityEntity other_security(sign, verify);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });

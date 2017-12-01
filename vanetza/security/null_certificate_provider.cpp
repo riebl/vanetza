@@ -1,4 +1,4 @@
-#include <vanetza/security/null_certificate_manager.hpp>
+#include <vanetza/security/null_certificate_provider.hpp>
 
 namespace vanetza
 {
@@ -40,32 +40,20 @@ Certificate create_null_certificate()
     return cert;
 }
 
-NullCertificateManager::NullCertificateManager() : m_check_result(CertificateInvalidReason::INVALID_SIGNATURE)
-{
-}
+NullCertificateProvider::NullCertificateProvider() { }
 
-CertificateValidity NullCertificateManager::check_certificate(const Certificate&)
-{
-    return m_check_result;
-}
-
-const Certificate& NullCertificateManager::own_certificate()
+const Certificate& NullCertificateProvider::own_certificate()
 {
     return null_certificate();
 }
 
-const ecdsa256::PrivateKey& NullCertificateManager::own_private_key()
+const ecdsa256::PrivateKey& NullCertificateProvider::own_private_key()
 {
     static const ecdsa256::PrivateKey null_key {};
     return null_key;
 }
 
-void NullCertificateManager::certificate_check_result(const CertificateValidity& result)
-{
-    m_check_result = result;
-}
-
-const Certificate& NullCertificateManager::null_certificate()
+const Certificate& NullCertificateProvider::null_certificate()
 {
     static const Certificate null_certificate = create_null_certificate();
     return null_certificate;

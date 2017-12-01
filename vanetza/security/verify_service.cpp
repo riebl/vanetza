@@ -1,6 +1,6 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
-#include <vanetza/security/certificate_manager.hpp>
+#include <vanetza/security/certificate_validator.hpp>
 #include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <boost/optional.hpp>
@@ -47,7 +47,7 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
 
 } // namespace
 
-VerifyService straight_verify_service(Runtime& rt, CertificateManager& certs, Backend& backend)
+VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, Backend& backend)
 {
     return [&](VerifyRequest&& request) -> VerifyConfirm {
         VerifyConfirm confirm;
