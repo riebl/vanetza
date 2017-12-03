@@ -13,10 +13,8 @@ namespace security
 
 NaiveCertificateProvider::NaiveCertificateProvider(const Clock::time_point& time_now) :
     m_time_now(time_now),
-    m_root_key_pair(root_key_pair()),
     m_root_certificate_subject("Naive Root CA"),
-    m_root_certificate(generate_root_certificate()),
-    m_root_certificate_hash(calculate_hash(m_root_certificate)),
+    m_root_certificate_hash(calculate_hash(root_certificate())),
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_authorization_ticket()) { }
 
@@ -42,7 +40,8 @@ const ecdsa256::PrivateKey& NaiveCertificateProvider::own_private_key()
 
 const Certificate& NaiveCertificateProvider::root_certificate()
 {
-    return m_root_certificate;
+    static Certificate root_certificate = generate_root_certificate();
+    return root_certificate;
 }
 
 Certificate NaiveCertificateProvider::generate_authorization_ticket()
@@ -82,7 +81,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = m_crypto_backend.sign_data(m_root_key_pair.private_key, data_buffer);
+    certificate.signature = m_crypto_backend.sign_data(root_key_pair().private_key, data_buffer);
 
     return certificate;
 }
@@ -99,7 +98,7 @@ Certificate NaiveCertificateProvider::generate_root_certificate()
     certificate.subject_info.subject_type = SubjectType::Root_Ca;
 
     // section 7.4.2 in TS 103 097 v1.2.1
-    std::vector<unsigned char> subject(m_root_certificate_subject.c_str(), m_root_certificate_subject.c_str() + m_root_certificate_subject.size() + 1);
+    std::vector<unsigned char> subject(m_root_certificate_subject.begin(), m_root_certificate_subject.end());
     certificate.subject_info.subject_name = subject;
 
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
@@ -109,8 +108,8 @@ Certificate NaiveCertificateProvider::generate_root_certificate()
     // set subject attributes
     // set the verification_key
     Uncompressed coordinates;
-    coordinates.x.assign(m_root_key_pair.public_key.x.begin(), m_root_key_pair.public_key.x.end());
-    coordinates.y.assign(m_root_key_pair.public_key.y.begin(), m_root_key_pair.public_key.y.end());
+    coordinates.x.assign(root_key_pair().public_key.x.begin(), root_key_pair().public_key.x.end());
+    coordinates.y.assign(root_key_pair().public_key.y.begin(), root_key_pair().public_key.y.end());
     EccPoint ecc_point = coordinates;
     ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = ecc_point;
@@ -127,7 +126,7 @@ Certificate NaiveCertificateProvider::generate_root_certificate()
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = m_crypto_backend.sign_data(m_root_key_pair.private_key, data_buffer);
+    certificate.signature = m_crypto_backend.sign_data(root_key_pair().private_key, data_buffer);
 
     return certificate;
 }

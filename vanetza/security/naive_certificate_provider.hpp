@@ -66,9 +66,7 @@ private:
     BackendCryptoPP m_crypto_backend; /*< key generation is not a generic backend feature */
     const Clock::time_point& m_time_now;
     const std::string m_root_certificate_subject;
-    const Certificate m_root_certificate;
     const HashedId8 m_root_certificate_hash;
-    const ecdsa256::KeyPair& m_root_key_pair;
     const ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;
 };

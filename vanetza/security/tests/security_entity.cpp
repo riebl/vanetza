@@ -16,7 +16,7 @@ protected:
     SecurityEntityTest() :
         crypto_backend(create_backend("default")),
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
-        certificate_validator(new DefaultCertificateValidator(runtime.now(), certificate_provider.get()->own_certificate())),
+        certificate_validator(new DefaultCertificateValidator(runtime.now(), certificate_provider.get()->root_certificate())),
         sign_service(straight_sign_service(runtime, *certificate_provider, *crypto_backend)),
         verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend)),
         security(sign_service, verify_service)
@@ -45,7 +45,7 @@ protected:
 
     Runtime runtime;
     std::unique_ptr<Backend> crypto_backend;
-    std::unique_ptr<CertificateProvider> certificate_provider;
+    std::unique_ptr<NaiveCertificateProvider> certificate_provider;
     std::unique_ptr<CertificateValidator> certificate_validator;
     SignService sign_service;
     VerifyService verify_service;
