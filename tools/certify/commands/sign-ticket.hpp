@@ -3,9 +3,10 @@
 
 #include "command.hpp"
 
-class SignTicketCommand : public Command {
+class SignTicketCommand : public Command
+{
 public:
-    void parse(std::vector<std::string>&) override;
+    void parse(const std::vector<std::string>&) override;
     int execute() override;
 
 private:

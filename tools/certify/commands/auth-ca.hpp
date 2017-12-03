@@ -3,9 +3,10 @@
 
 #include "command.hpp"
 
-class AuthCaCommand : public Command {
+class AuthCaCommand : public Command
+{
 public:
-    void parse(std::vector<std::string>&) override;
+    void parse(const std::vector<std::string>&) override;
     int execute() override;
 
 private:

@@ -1,17 +1,7 @@
-if(NOT TARGET Boost::system)
-    message(STATUS "Skip build of certify because of missing Boost::system dependency")
-    return()
-endif()
-
 if(NOT TARGET Boost::program_options)
     message(STATUS "Skip build of certify because of missing Boost::program_options dependency")
     return()
 endif()
-
-find_package(Threads REQUIRED)
-find_package(GPS REQUIRED)
-
-include_directories(.)
 
 add_executable(certify
     commands/auth-ca.cpp
@@ -23,4 +13,5 @@ add_executable(certify
     options.cpp
 )
 
-target_link_libraries(certify Boost::system Boost::program_options Threads::Threads vanetza)
+set_target_properties(certify PROPERTIES INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(certify Boost::program_options vanetza)

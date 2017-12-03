@@ -4,6 +4,6 @@
 #include "command.hpp"
 #include <memory>
 
-std::unique_ptr<Command> parse_options(int argc, const char *argv[]);
+std::unique_ptr<Command> parse_options(int argc, const char* argv[]);
 
 #endif /* CERTIFY_OPTIONS_HPP */

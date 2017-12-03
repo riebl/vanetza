@@ -1,6 +1,5 @@
 #include "keyio.hpp"
 #include "root-ca.hpp"
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <cryptopp/eccrypto.h>
@@ -22,7 +21,7 @@ namespace po = boost::program_options;
 namespace vs = vanetza::security;
 using namespace CryptoPP;
 
-void RootCaCommand::parse(std::vector<std::string>& opts)
+void RootCaCommand::parse(const std::vector<std::string>& opts)
 {
     po::options_description desc("root-ca options");
     desc.add_options()
@@ -71,7 +70,7 @@ int RootCaCommand::execute()
     certificate.subject_info.subject_type = vs::SubjectType::Root_Ca;
 
     // section 7.4.2 in TS 103 097 v1.2.1
-    std::vector<unsigned char> subject(subject_name.c_str(), subject_name.c_str() + subject_name.size() + 1);
+    std::vector<unsigned char> subject(subject_name.begin(), subject_name.end());
     certificate.subject_info.subject_name = subject;
 
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined

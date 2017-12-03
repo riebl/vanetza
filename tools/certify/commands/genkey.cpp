@@ -2,19 +2,17 @@
 #include "keyio.hpp"
 #include <boost/program_options.hpp>
 #include <cryptopp/eccrypto.h>
-#include <cryptopp/files.h>
 #include <cryptopp/oids.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/queue.h>
 #include <cryptopp/sha.h>
 #include <iostream>
 #include <stdexcept>
-#include <vanetza/security/backend_cryptopp.hpp>
 
 namespace po = boost::program_options;
 using namespace CryptoPP;
 
-void GenkeyCommand::parse(std::vector<std::string>& opts)
+void GenkeyCommand::parse(const std::vector<std::string>& opts)
 {
     po::options_description desc("genkey options");
     desc.add_options()

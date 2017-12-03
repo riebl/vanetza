@@ -1,6 +1,5 @@
 #include "auth-ca.hpp"
 #include "keyio.hpp"
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <cryptopp/eccrypto.h>
@@ -22,7 +21,7 @@ namespace po = boost::program_options;
 namespace vs = vanetza::security;
 using namespace CryptoPP;
 
-void AuthCaCommand::parse(std::vector<std::string>& opts)
+void AuthCaCommand::parse(const std::vector<std::string>& opts)
 {
     po::options_description desc("auth-ca options");
     desc.add_options()
@@ -86,7 +85,7 @@ int AuthCaCommand::execute()
 
     certificate.signer_info = vs::calculate_hash(loaded_sign_cert);
 
-    std::vector<unsigned char> subject(subject_name.c_str(), subject_name.c_str() + subject_name.size() + 1);
+    std::vector<unsigned char> subject(subject_name.begin(), subject_name.end());
     certificate.subject_info.subject_name = subject;
     certificate.subject_info.subject_type = vs::SubjectType::Authorization_Authority;
 

@@ -33,7 +33,7 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     po::notify(vm);
 
     if (!vm.count("command")) {
-        std::cout << "Available commands: genkey" << std::endl;
+        std::cout << "Available commands: genkey | root-ca | auth-ca | sign-ticket" << std::endl;
 
         throw po::invalid_option_value("");
     }

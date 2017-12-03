@@ -8,7 +8,7 @@ class Command
 {
 public:
     virtual int execute() = 0;
-    virtual void parse(std::vector<std::string>&) = 0;
+    virtual void parse(const std::vector<std::string>&) = 0;
 };
 
 #endif /* CERTIFY_COMMAND_HPP */

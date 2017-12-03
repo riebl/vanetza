@@ -1,6 +1,5 @@
 #include "keyio.hpp"
 #include "sign-ticket.hpp"
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <cryptopp/eccrypto.h>
@@ -22,7 +21,7 @@ namespace po = boost::program_options;
 namespace vs = vanetza::security;
 using namespace CryptoPP;
 
-void SignTicketCommand::parse(std::vector<std::string>& opts)
+void SignTicketCommand::parse(const std::vector<std::string>& opts)
 {
     po::options_description desc("auth-ca options");
     desc.add_options()

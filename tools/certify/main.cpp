@@ -1,8 +1,5 @@
 #include "options.hpp"
-#include <boost/program_options.hpp>
 #include <iostream>
-
-// using namespace vanetza;
 
 int main(int argc, const char** argv)
 {
