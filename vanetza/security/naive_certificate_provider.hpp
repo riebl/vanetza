@@ -37,12 +37,18 @@ public:
     const ecdsa256::PrivateKey& own_private_key() override;
 
     /**
-     * \brief get signer certificate
+     * \brief get signer certificate (same for all instances)
      * \return signing root certificate
      */
     const Certificate& root_certificate();
 
 private:
+    /**
+     * \brief get root key (same for all instances)
+     * \return root key
+     */
+    const ecdsa256::KeyPair& root_key_pair();
+
     /**
      * \brief generate a authorization ticket
      *
@@ -55,18 +61,10 @@ private:
      *
      * \return generated certificate
      */
-    Certificate generate_root_certificate();
-
-    /**
-     * \brief retrieve common root key pair (for all instances)
-     * \return root key pair
-     */
-    const ecdsa256::KeyPair& root_key_pair();
+    Certificate generate_root_certificate(const std::string& root_subject);
 
     BackendCryptoPP m_crypto_backend; /*< key generation is not a generic backend feature */
     const Clock::time_point& m_time_now;
-    const std::string m_root_certificate_subject;
-    const HashedId8 m_root_certificate_hash;
     const ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;
 };

@@ -4,6 +4,7 @@
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/trust_store.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 
@@ -16,7 +17,9 @@ protected:
     SecurityEntityTest() :
         crypto_backend(create_backend("default")),
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
-        certificate_validator(new DefaultCertificateValidator(runtime.now(), certificate_provider->root_certificate())),
+        roots({ certificate_provider->root_certificate() }),
+        trust_store(roots),
+        certificate_validator(new DefaultCertificateValidator(runtime.now(), trust_store)),
         sign_service(straight_sign_service(runtime, *certificate_provider, *crypto_backend)),
         verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend)),
         security(sign_service, verify_service)
@@ -46,6 +49,8 @@ protected:
     Runtime runtime;
     std::unique_ptr<Backend> crypto_backend;
     std::unique_ptr<NaiveCertificateProvider> certificate_provider;
+    std::vector<Certificate> roots;
+    TrustStore trust_store;
     std::unique_ptr<CertificateValidator> certificate_validator;
     SignService sign_service;
     VerifyService verify_service;
@@ -212,7 +217,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)
@@ -235,7 +240,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
@@ -323,7 +328,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNATURE, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_signature)

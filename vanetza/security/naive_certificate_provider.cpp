@@ -13,8 +13,6 @@ namespace security
 
 NaiveCertificateProvider::NaiveCertificateProvider(const Clock::time_point& time_now) :
     m_time_now(time_now),
-    m_root_certificate_subject("Naive Root CA"),
-    m_root_certificate_hash(calculate_hash(root_certificate())),
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_authorization_ticket()) { }
 
@@ -38,9 +36,18 @@ const ecdsa256::PrivateKey& NaiveCertificateProvider::own_private_key()
     return m_own_key_pair.private_key;
 }
 
+const ecdsa256::KeyPair& NaiveCertificateProvider::root_key_pair()
+{
+    static const ecdsa256::KeyPair root_key_pair = m_crypto_backend.generate_key_pair();
+
+    return root_key_pair;
+}
+
 const Certificate& NaiveCertificateProvider::root_certificate()
 {
-    static Certificate root_certificate = generate_root_certificate();
+    static const std::string root_subject("Naive Root CA");
+    static const Certificate root_certificate = generate_root_certificate(root_subject);
+
     return root_certificate;
 }
 
@@ -50,7 +57,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     Certificate certificate;
 
     // section 6.1 in TS 103 097 v1.2.1
-    certificate.signer_info = m_root_certificate_hash;
+    certificate.signer_info = calculate_hash(root_certificate());
 
     // section 6.3 in TS 103 097 v1.2.1
     certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
@@ -86,7 +93,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     return certificate;
 }
 
-Certificate NaiveCertificateProvider::generate_root_certificate()
+Certificate NaiveCertificateProvider::generate_root_certificate(const std::string& root_subject)
 {
     // create certificate
     Certificate certificate;
@@ -98,7 +105,7 @@ Certificate NaiveCertificateProvider::generate_root_certificate()
     certificate.subject_info.subject_type = SubjectType::Root_Ca;
 
     // section 7.4.2 in TS 103 097 v1.2.1
-    std::vector<unsigned char> subject(m_root_certificate_subject.begin(), m_root_certificate_subject.end());
+    std::vector<unsigned char> subject(root_subject.begin(), root_subject.end());
     certificate.subject_info.subject_name = subject;
 
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
@@ -129,12 +136,6 @@ Certificate NaiveCertificateProvider::generate_root_certificate()
     certificate.signature = m_crypto_backend.sign_data(root_key_pair().private_key, data_buffer);
 
     return certificate;
-}
-
-const ecdsa256::KeyPair& NaiveCertificateProvider::root_key_pair()
-{
-    static ecdsa256::KeyPair root = m_crypto_backend.generate_key_pair();
-    return root;
 }
 
 } // namespace security

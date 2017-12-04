@@ -10,6 +10,9 @@ namespace vanetza
 namespace security
 {
 
+// forward declaration
+class TrustStore;
+
 /**
  * \brief A simplistic certificate validator
  *
@@ -18,7 +21,7 @@ namespace security
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
-    DefaultCertificateValidator(const Clock::time_point& time_now, const Certificate& sign_cert);
+    DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store);
 
     /**
      * \brief check certificate
@@ -30,7 +33,7 @@ public:
 private:
     std::unique_ptr<Backend> m_crypto_backend;
     const Clock::time_point& m_time_now;
-    Certificate m_sign_cert;
+    const TrustStore& m_trust_store;
 };
 
 } // namespace security

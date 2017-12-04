@@ -4,6 +4,7 @@
 #include <vanetza/security/payload.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signature.hpp>
+#include <vanetza/security/trust_store.hpp>
 #include <chrono>
 
 namespace vanetza
@@ -11,10 +12,10 @@ namespace vanetza
 namespace security
 {
 
-DefaultCertificateValidator::DefaultCertificateValidator(const Clock::time_point& time_now, const Certificate& sign_cert) :
+DefaultCertificateValidator::DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store) :
     m_crypto_backend(create_backend("default")),
     m_time_now(time_now),
-    m_sign_cert(sign_cert)
+    m_trust_store(trust_store)
 {
 }
 
@@ -81,12 +82,12 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     }
 
     // check signer info
-    if (get_type(certificate.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
-        HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
-        if(signer_hash != calculate_hash(m_sign_cert)) {
-            return CertificateInvalidReason::INVALID_ROOT_HASH;
-        }
+    if (get_type(certificate.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
+        return CertificateInvalidReason::INVALID_ROOT_HASH;
     }
+
+    HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
+    std::vector<Certificate> possible_signers = m_trust_store.find_by_id(signer_hash);
 
     // try to extract ECDSA signature
     boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.signature);
@@ -96,15 +97,25 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
     // create buffer of certificate
     ByteBuffer cert = convert_for_signing(certificate);
-    auto verification_key = get_public_key(m_sign_cert);
 
-    // this should never happen, as the verify service already ensures a key is present
-    if (!verification_key) {
-        return CertificateInvalidReason::INVALID_SIGNATURE;
+    bool valid_signature = false;
+    for (Certificate& possible_signer : possible_signers) {
+        auto verification_key = get_public_key(possible_signer);
+
+        // this should never happen, as the verify service already ensures a key is present
+        if (!verification_key) {
+            continue;
+        }
+
+        if (m_crypto_backend->verify_data(verification_key.get(), cert, sig.get())) {
+            valid_signature = true;
+            break;
+        }
     }
 
-    if (!m_crypto_backend->verify_data(verification_key.get(), cert, sig.get())) {
-        return CertificateInvalidReason::INVALID_SIGNATURE;
+    if (!valid_signature) {
+        // might be a unknown certificate that just collides with its HashedId8
+        return CertificateInvalidReason::INVALID_ROOT_HASH;
     }
 
     return CertificateValidity::valid();
