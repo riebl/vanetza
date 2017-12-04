@@ -83,7 +83,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
     // check signer info
     if (get_type(certificate.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
-        return CertificateInvalidReason::INVALID_ROOT_HASH;
+        return CertificateInvalidReason::INVALID_SIGNER;
     }
 
     HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
@@ -115,7 +115,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
     if (!valid_signature) {
         // might be a unknown certificate that just collides with its HashedId8
-        return CertificateInvalidReason::INVALID_ROOT_HASH;
+        return CertificateInvalidReason::UNKNOWN_SIGNER;
     }
 
     return CertificateValidity::valid();

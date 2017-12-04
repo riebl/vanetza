@@ -199,7 +199,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
@@ -217,7 +217,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)
@@ -240,7 +240,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
@@ -328,7 +328,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_ROOT_HASH, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_signature)
