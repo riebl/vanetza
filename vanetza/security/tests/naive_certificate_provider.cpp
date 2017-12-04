@@ -8,10 +8,10 @@ using namespace vanetza;
 using namespace vanetza::security;
 using boost::get;
 
-class NativeCertificateProviderTest : public ::testing::Test
+class NaiveCertificateProviderTest : public ::testing::Test
 {
 public:
-    NativeCertificateProviderTest() : time_now(Clock::at("2016-08-01 00:00")), cert_provider(time_now)
+    NaiveCertificateProviderTest() : time_now(Clock::at("2016-08-01 00:00")), cert_provider(time_now)
     { }
 
 protected:
@@ -19,7 +19,7 @@ protected:
     NaiveCertificateProvider cert_provider;
 };
 
-TEST_F(NativeCertificateProviderTest, own_certificate)
+TEST_F(NaiveCertificateProviderTest, own_certificate)
 {
     Certificate signed_certificate = cert_provider.own_certificate();
 

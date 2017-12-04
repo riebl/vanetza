@@ -122,6 +122,9 @@ int main(int argc, const char** argv)
         auto certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> { new vanetza::security::NullCertificateValidator() };
         auto crypto_backend = security::create_backend("default");
 
+        std::vector<vanetza::security::Certificate> trusted_roots;
+        vanetza::security::TrustStore* trust_store;
+
         const std::string& security_option = vm["security"].as<std::string>();
         if (security_option == "off") {
             mib.itsGnSecurity = false;
@@ -154,9 +157,12 @@ int main(int argc, const char** argv)
             vanetza::InputArchive authorization_ticket_archive(authorization_ticket_src);
             vanetza::security::deserialize(authorization_ticket_archive, authorization_ticket);
 
+            trusted_roots.push_back(sign_cert);
+            trust_store = new vanetza::security::TrustStore(trusted_roots);
+
             mib.itsGnSecurity = true;
             certificate_provider = std::unique_ptr<vanetza::security::CertificateProvider> { new vanetza::security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key) };
-            certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> { new vanetza::security::DefaultCertificateValidator(trigger.runtime().now(), sign_cert) };
+            certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> { new vanetza::security::DefaultCertificateValidator(trigger.runtime().now(), *trust_store) };
         } else {
             std::cerr << "Invalid security option '" << security_option << "', falling back to 'off'." << "\n";
             mib.itsGnSecurity = false;

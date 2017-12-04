@@ -4,6 +4,7 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/certificate_validator.hpp>
+#include <vanetza/security/trust_store.hpp>
 
 namespace vanetza
 {
@@ -18,7 +19,7 @@ namespace security
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
-    DefaultCertificateValidator(const Clock::time_point& time_now, const Certificate& sign_cert);
+    DefaultCertificateValidator(const Clock::time_point& time_now, TrustStore& trust_store);
 
     /**
      * \brief check certificate
@@ -30,9 +31,7 @@ public:
 private:
     BackendCryptoPP crypto_backend;
     const Clock::time_point& time_now;
-    ecdsa256::KeyPair authorization_ticket_key;
-    Certificate authorization_ticket;
-    Certificate sign_cert;
+    TrustStore& trust_store;
 };
 
 } // namespace security
