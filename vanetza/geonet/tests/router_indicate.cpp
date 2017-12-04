@@ -316,4 +316,3 @@ TEST_F(RouterIndicate, shb_secured_hook_hop_limit)
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
-
