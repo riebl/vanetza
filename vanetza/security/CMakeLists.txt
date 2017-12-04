@@ -24,6 +24,7 @@ add_vanetza_component(security
     signature.cpp
     sign_service.cpp
     signer_info.cpp
+    static_certificate_provider.cpp
     subject_attribute.cpp
     subject_info.cpp
     trailer_field.cpp
