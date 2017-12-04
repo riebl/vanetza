@@ -5,7 +5,7 @@ namespace vanetza
 namespace security
 {
 
-NullCertificateValidator::NullCertificateValidator() : m_check_result(CertificateInvalidReason::INVALID_SIGNATURE)
+NullCertificateValidator::NullCertificateValidator() : m_check_result(CertificateInvalidReason::UNKNOWN_SIGNER)
 {
 }
 
