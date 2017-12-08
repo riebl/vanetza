@@ -18,8 +18,9 @@
 #include <vanetza/security/subject_info.hpp>
 
 namespace po = boost::program_options;
-namespace vs = vanetza::security;
 using namespace CryptoPP;
+using namespace vanetza;
+using namespace security;
 
 void SignTicketCommand::parse(const std::vector<std::string>& opts)
 {
@@ -45,7 +46,7 @@ int SignTicketCommand::execute()
     std::cout << "Loading keys... ";
 
     AutoSeededRandomPool rng;
-    vs::BackendCryptoPP crypto_backend;
+    BackendCryptoPP crypto_backend;
 
     ECDSA<ECP, SHA256>::PrivateKey loaded_sign_key;
     ECDSA<ECP, SHA256>::PrivateKey loaded_subject_key;
@@ -68,42 +69,42 @@ int SignTicketCommand::execute()
 
     std::cout << "OK" << std::endl;
 
-    vs::Certificate loaded_sign_cert;
+    Certificate loaded_sign_cert;
 
     std::ifstream src;
     src.open(sign_cert.c_str(), std::ios::in | std::ios::binary);
 
-    vanetza::InputArchive iarchive(src);
-    vs::deserialize(iarchive, loaded_sign_cert);
+    InputArchive iarchive(src);
+    deserialize(iarchive, loaded_sign_cert);
 
     auto sign_key_pair = to_keypair(loaded_sign_key);
     auto subject_key_pair = to_keypair(loaded_subject_key);
-    auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
+    auto time_now = Clock::at(boost::posix_time::microsec_clock::universal_time());
 
-    vs::Certificate certificate;
+    Certificate certificate;
 
-    certificate.signer_info = vs::calculate_hash(loaded_sign_cert);
-    certificate.subject_info.subject_type = vs::SubjectType::Authorization_Ticket;
-    certificate.subject_attributes.push_back(vs::SubjectAssurance(0x00));
+    certificate.signer_info = calculate_hash(loaded_sign_cert);
+    certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
+    certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
-    vs::Uncompressed coordinates;
+    Uncompressed coordinates;
     coordinates.x.assign(subject_key_pair.public_key.x.begin(), subject_key_pair.public_key.x.end());
     coordinates.y.assign(subject_key_pair.public_key.y.begin(), subject_key_pair.public_key.y.end());
-    vs::EccPoint ecc_point = coordinates;
-    vs::ecdsa_nistp256_with_sha256 ecdsa;
+    EccPoint ecc_point = coordinates;
+    ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = ecc_point;
-    vs::VerificationKey verification_key;
+    VerificationKey verification_key;
     verification_key.key = ecdsa;
     certificate.subject_attributes.push_back(verification_key);
 
-    vs::StartAndEndValidity start_and_end;
-    start_and_end.start_validity = vs::convert_time32(time_now - std::chrono::hours(1));
-    start_and_end.end_validity = vs::convert_time32(time_now + std::chrono::hours(24 * validity_days));
+    StartAndEndValidity start_and_end;
+    start_and_end.start_validity = convert_time32(time_now - std::chrono::hours(1));
+    start_and_end.end_validity = convert_time32(time_now + std::chrono::hours(24 * validity_days));
     certificate.validity_restriction.push_back(start_and_end);
 
     std::cout << "Signing certificate... ";
 
-    vanetza::ByteBuffer data_buffer = vs::convert_for_signing(certificate);
+    ByteBuffer data_buffer = convert_for_signing(certificate);
     certificate.signature = crypto_backend.sign_data(sign_key_pair.private_key, data_buffer);
 
     std::cout << "OK" << std::endl;
@@ -113,8 +114,8 @@ int SignTicketCommand::execute()
     std::ofstream dest;
     dest.open(output.c_str(), std::ios::out | std::ios::binary);
 
-    vanetza::OutputArchive archive(dest);
-    vs::serialize(archive, certificate);
+    OutputArchive archive(dest);
+    serialize(archive, certificate);
 
     std::cout << "OK" << std::endl;
 
