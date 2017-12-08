@@ -7,6 +7,7 @@ add_executable(certify
     commands/auth-ca.cpp
     commands/genkey.cpp
     commands/root-ca.cpp
+    commands/show-cert.cpp
     commands/sign-ticket.cpp
     keyio.cpp
     main.cpp

@@ -1,6 +1,7 @@
 #include "commands/genkey.hpp"
 #include "commands/root-ca.hpp"
 #include "commands/auth-ca.hpp"
+#include "commands/show-cert.hpp"
 #include "commands/sign-ticket.hpp"
 #include "options.hpp"
 #include <boost/program_options.hpp>
@@ -33,7 +34,7 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     po::notify(vm);
 
     if (!vm.count("command")) {
-        std::cout << "Available commands: genkey | root-ca | auth-ca | sign-ticket" << std::endl;
+        std::cout << "Available commands: genkey | root-ca | auth-ca | sign-ticket | show-cert" << std::endl;
 
         throw po::invalid_option_value("");
     }
@@ -53,6 +54,8 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
         command.reset(new AuthCaCommand());
     } else if (cmd == "sign-ticket") {
         command.reset(new SignTicketCommand());
+    } else if (cmd == "show-cert") {
+        command.reset(new ShowCertCommand());
     }
 
     if (command) {
