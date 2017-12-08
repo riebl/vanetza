@@ -44,13 +44,12 @@ std::list<Certificate> CertificateCache::lookup(HashedId8 id)
     for (auto item = range.first; item != range.second; ++item) {
         matches.push_back(item->second.certificate);
 
+        // renew cache entry, see CertificateCache::put()
         auto subject_type = item->second.certificate.subject_info.subject_type;
 
         if (subject_type == SubjectType::Authorization_Ticket) {
-            // see CertificateCache::put()
             item->second.evict_time = time_now + std::chrono::seconds(2);
         } else if (subject_type == SubjectType::Authorization_Authority) {
-            // see CertificateCache::put()
             item->second.evict_time = time_now + std::chrono::seconds(3600);
         }
     }
