@@ -158,7 +158,7 @@ TEST_F(RouterIndicate, shb_secured_equal_payload)
     router.indicate(std::move(packet_up), mac_address_sender, mac_address_destination);
 
     // check hook, it shouldn't have been called
-    EXPECT_FALSE(test_and_reset_packet_drop());
+    EXPECT_FALSE(test_and_reset_packet_drop()) << "Packet drop reason: " << static_cast<int>(drop_reason);
 
     // check if packet was not discarded
     ASSERT_NE(nullptr, ind_ifc.m_last_packet.get());
@@ -316,4 +316,3 @@ TEST_F(RouterIndicate, shb_secured_hook_hop_limit)
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
 }
-
