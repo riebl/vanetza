@@ -18,6 +18,7 @@ namespace security
 
 // forward declarations
 class Backend;
+class CertificateCache;
 class CertificateValidator;
 
 enum class VerificationReport
@@ -62,9 +63,10 @@ using VerifyService = std::function<VerifyConfirm(VerifyRequest&&)>;
  * \param rt runtime
  * \param certs certificate validator
  * \param backend crypto backend
+ * \param certificate_cache certificate cache
  * \return callable verify service
  */
-VerifyService straight_verify_service(Runtime&, CertificateValidator&, Backend&);
+VerifyService straight_verify_service(Runtime&, CertificateValidator&, Backend&, CertificateCache&);
 
 /**
  * Get insecure dummy verify service without any checks

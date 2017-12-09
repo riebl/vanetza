@@ -1,9 +1,11 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/certificate_validator.hpp>
 #include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <boost/optional.hpp>
+#include <iostream>
 #include <chrono>
 
 namespace vanetza
@@ -47,7 +49,7 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
 
 } // namespace
 
-VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, Backend& backend)
+VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache)
 {
     return [&](VerifyRequest&& request) -> VerifyConfirm {
         VerifyConfirm confirm;
@@ -67,18 +69,25 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
         confirm.its_aid = its_aid ? *its_aid : IntX(0);
 
         const SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-        boost::optional<const Certificate&> certificate;
+        std::list<Certificate> possible_certificates;
         if (signer_info) {
             switch (get_type(*signer_info)) {
                 case SignerInfoType::Certificate:
-                    certificate = boost::get<Certificate>(*signer_info);
+                    possible_certificates.push_back(boost::get<Certificate>(*signer_info));
+                    break;
+                case SignerInfoType::Certificate_Digest_With_SHA256:
+                    possible_certificates.splice(possible_certificates.end(), cert_cache.lookup(boost::get<HashedId8>(*signer_info)));
                     break;
                 case SignerInfoType::Self:
-                case SignerInfoType::Certificate_Digest_With_SHA256:
                 case SignerInfoType::Certificate_Digest_With_Other_Algorithm:
                     break;
                 case SignerInfoType::Certificate_Chain:
-                    // TODO check if Certificate_Chain is inconsistant
+                    {
+                        std::list<Certificate> chain = boost::get<std::list<Certificate>>(*signer_info);
+                        if (chain.size() > 0) {
+                            possible_certificates.push_back(chain.front());
+                        }
+                    }
                     break;
                 default:
                     confirm.report = VerificationReport::Unsupported_Signer_Identifier_Type;
@@ -87,7 +96,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
             }
         }
 
-        if (!certificate) {
+        if (possible_certificates.size() == 0) {
             confirm.report = VerificationReport::Signer_Certificate_Not_Found;
             return confirm;
         }
@@ -99,16 +108,58 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
 
         // TODO check Duplicate_Message, Invalid_Mobility_Data, Unencrypted_Message, Decryption_Error
 
-        boost::optional<ecdsa256::PublicKey> public_key = get_public_key(certificate.get());
+        // check signature
+        const TrailerField* signature_field = secured_message.trailer_field(TrailerFieldType::Signature);
+        const Signature* signature = boost::get<Signature>(signature_field);
 
-        // public key could not be extracted
-        if (!public_key) {
-            confirm.report = VerificationReport::Invalid_Certificate;
+        if (!signature) {
+            confirm.report = VerificationReport::Unsigned_Message;
             return confirm;
         }
 
+        if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 != get_type(*signature)) {
+            confirm.report = VerificationReport::False_Signature;
+            return confirm;
+        }
+
+        // check the size of signature.R and siganture.s
+        auto ecdsa = extract_ecdsa_signature(*signature);
+        const auto field_len = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+        if (!ecdsa || ecdsa->s.size() != field_len) {
+            confirm.report = VerificationReport::False_Signature;
+            return confirm;
+        }
+
+        // verify payload signature with given signature
+        ByteBuffer payload = convert_for_signing(secured_message, get_size(*signature_field));
+        boost::optional<Certificate> signer;
+
+        for (auto& cert : possible_certificates) {
+            boost::optional<ecdsa256::PublicKey> public_key = get_public_key(cert);
+
+            // public key could not be extracted
+            if (!public_key) {
+                confirm.report = VerificationReport::Invalid_Certificate;
+                return confirm;
+            }
+
+            if (backend.verify_data(public_key.get(), payload, *ecdsa)) {
+                signer = cert;
+                break;
+            }
+        }
+
+        if (!signer) {
+            // could also be a colliding HashedId8, but the probability is pretty low
+            confirm.report = VerificationReport::False_Signature;
+            confirm.certificate_validity = CertificateInvalidReason::UNKNOWN_SIGNER;
+            return confirm;
+        }
+
+        // TODO check if Certificate_Chain is inconsistant
+        CertificateValidity cert_validity = certs.check_certificate(signer.get());
+
         // if certificate could not be verified return correct DecapReport
-        CertificateValidity cert_validity = certs.check_certificate(*certificate);
         if (!cert_validity) {
             confirm.report = VerificationReport::Invalid_Certificate;
             confirm.certificate_validity = cert_validity;
@@ -117,29 +168,9 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
 
         // TODO check if Revoked_Certificate
 
-        // check Signature
-        const TrailerField* signature_field = secured_message.trailer_field(TrailerFieldType::Signature);
-        const Signature* signature = boost::get<Signature>(signature_field);
-        if (!signature) {
-            confirm.report = VerificationReport::Unsigned_Message;
-        } else if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 != get_type(*signature)) {
-            confirm.report = VerificationReport::False_Signature;
-        } else {
-            // check the size of signature.R and siganture.s
-            auto ecdsa = extract_ecdsa_signature(*signature);
-            const auto field_len = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
-            if (!ecdsa || ecdsa->s.size() != field_len) {
-                confirm.report = VerificationReport::False_Signature;
-            } else {
-                // verify payload signature with given signature
-                ByteBuffer payload = convert_for_signing(secured_message, get_size(*signature_field));
-                if (backend.verify_data(public_key.get(), payload, *ecdsa)) {
-                    confirm.report = VerificationReport::Success;
-                } else {
-                    confirm.report = VerificationReport::False_Signature;
-                }
-            }
-        }
+        cert_cache.put(signer.get());
+
+        confirm.report = VerificationReport::Success;
 
         return confirm;
     };

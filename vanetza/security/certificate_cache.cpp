@@ -13,6 +13,12 @@ void CertificateCache::put(Certificate certificate)
 
     HashedId8 id = calculate_hash(certificate);
 
+    std::list<Certificate> certs = lookup(id);
+
+    if (certs.size()) {
+        return; // TODO: only ignore if exact duplicate
+    }
+
     CacheEntry entry;
     entry.certificate = certificate;
 
@@ -63,17 +69,11 @@ std::list<Certificate> CertificateCache::lookup(HashedId8 id)
 void CertificateCache::evict_entries()
 {
     // TODO: Optimize performance. Currently it scans all entries on each access.
-
-    using iterator = std::multimap<HashedId8, CacheEntry>::const_iterator;
-    std::pair<iterator, iterator> range;
-
-    for (auto i = certificates.begin(); i != certificates.end(); i++) {
-        range = certificates.equal_range(i->first);
-
-        for (auto x = range.first; x != range.second; ++x) {
-            if (x->second.evict_time < time_now) {
-                certificates.erase(x);
-            }
+    for (auto i = certificates.begin(); i != certificates.end();) {
+        if (i->second.evict_time < time_now) {
+            i = certificates.erase(i);
+        } else {
+            ++i;
         }
     }
 }

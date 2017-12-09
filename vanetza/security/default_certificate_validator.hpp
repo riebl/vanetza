@@ -12,6 +12,7 @@ namespace security
 
 // forward declaration
 class TrustStore;
+class CertificateCache;
 
 /**
  * \brief A simplistic certificate validator
@@ -21,7 +22,7 @@ class TrustStore;
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
-    DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store);
+    DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store, CertificateCache& cert_cache);
 
     /**
      * Check validity of given certificate.
@@ -35,6 +36,7 @@ private:
     std::unique_ptr<Backend> m_crypto_backend;
     const Clock::time_point& m_time_now;
     const TrustStore& m_trust_store;
+    CertificateCache& m_cert_cache;
 };
 
 } // namespace security

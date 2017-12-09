@@ -12,6 +12,7 @@
 #include <cryptopp/oids.h>
 #include <fstream>
 #include <iostream>
+#include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/null_certificate_provider.hpp>
@@ -124,6 +125,7 @@ int main(int argc, const char** argv)
         auto crypto_backend = security::create_backend("default");
 
         std::vector<vanetza::security::Certificate> trusted_roots;
+        vanetza::security::CertificateCache cert_cache(trigger.runtime().now());
         vanetza::security::TrustStore* trust_store;
 
         const std::string& security_option = vm["security"].as<std::string>();
@@ -162,15 +164,15 @@ int main(int argc, const char** argv)
             trust_store = new vanetza::security::TrustStore(trusted_roots);
 
             mib.itsGnSecurity = true;
-            certificate_provider = std::unique_ptr<vanetza::security::CertificateProvider> { new vanetza::security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key) };
-            certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> { new vanetza::security::DefaultCertificateValidator(trigger.runtime().now(), *trust_store) };
+            certificate_provider = std::unique_ptr<vanetza::security::CertificateProvider> { new vanetza::security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key) };
+            certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> { new vanetza::security::DefaultCertificateValidator(trigger.runtime().now(), *trust_store, cert_cache) };
         } else {
             std::cerr << "Invalid security option '" << security_option << "', falling back to 'off'." << "\n";
             mib.itsGnSecurity = false;
         }
 
         security::SignService sign_service = straight_sign_service(trigger.runtime(), *certificate_provider, *crypto_backend);
-        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_validator, *crypto_backend);
+        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_validator, *crypto_backend, cert_cache);
 
         GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
         security::SecurityEntity security_entity(sign_service, verify_service);

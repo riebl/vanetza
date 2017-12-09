@@ -3,6 +3,7 @@
 
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
@@ -19,10 +20,11 @@ public:
         certificate_provider(new security::NaiveCertificateProvider(rt.now())),
         roots({ certificate_provider->root_certificate() }),
         trust_store(roots),
-        certificate_validator(new security::DefaultCertificateValidator(rt.now(), trust_store)),
+        cert_cache(rt.now()),
+        certificate_validator(new security::DefaultCertificateValidator(rt.now(), trust_store, cert_cache)),
         security(
             straight_sign_service(rt, *certificate_provider, *backend),
-            straight_verify_service(rt, *certificate_validator, *backend))
+            straight_verify_service(rt, *certificate_validator, *backend, cert_cache))
     {
     }
 
@@ -36,6 +38,7 @@ private:
     std::unique_ptr<security::NaiveCertificateProvider> certificate_provider;
     std::vector<security::Certificate> roots;
     security::TrustStore trust_store;
+    security::CertificateCache cert_cache;
     std::unique_ptr<security::CertificateValidator> certificate_validator;
     security::SecurityEntity security;
 };

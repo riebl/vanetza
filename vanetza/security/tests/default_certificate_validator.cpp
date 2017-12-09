@@ -1,4 +1,5 @@
 #include <vanetza/common/clock.hpp>
+#include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
@@ -16,7 +17,8 @@ public:
         cert_provider(time_now),
         roots({ cert_provider.root_certificate() }),
         trust_store(roots),
-        cert_validator(time_now, trust_store)
+        cert_cache(time_now),
+        cert_validator(time_now, trust_store, cert_cache)
     {
     }
 
@@ -25,6 +27,7 @@ protected:
     NaiveCertificateProvider cert_provider;
     std::vector<Certificate> roots;
     TrustStore trust_store;
+    CertificateCache cert_cache;
     DefaultCertificateValidator cert_validator;
 };
 

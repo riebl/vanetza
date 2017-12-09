@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
@@ -19,9 +21,10 @@ protected:
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
         roots({ certificate_provider->root_certificate() }),
         trust_store(roots),
-        certificate_validator(new DefaultCertificateValidator(runtime.now(), trust_store)),
+        cert_cache(runtime.now()),
+        certificate_validator(new DefaultCertificateValidator(runtime.now(), trust_store, cert_cache)),
         sign_service(straight_sign_service(runtime, *certificate_provider, *crypto_backend)),
-        verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend)),
+        verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend, cert_cache)),
         security(sign_service, verify_service)
     {
     }
@@ -46,11 +49,25 @@ protected:
         return confirm.sec_packet;
     }
 
+    SecuredMessage create_secured_message(Certificate& modified_certificate)
+    {
+        // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
+        StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider.get()->own_private_key());
+        SignService local_sign_service(straight_sign_service(runtime, local_cert_provider, *crypto_backend));
+        SecurityEntity local_security(local_sign_service, verify_service);
+
+        EncapConfirm confirm = local_security.encapsulate_packet(create_encap_request());
+        auto secured_message = confirm.sec_packet;
+
+        return secured_message;
+    }
+
     Runtime runtime;
     std::unique_ptr<Backend> crypto_backend;
     std::unique_ptr<NaiveCertificateProvider> certificate_provider;
     std::vector<Certificate> roots;
     TrustStore trust_store;
+    CertificateCache cert_cache;
     std::unique_ptr<CertificateValidator> certificate_validator;
     SignService sign_service;
     VerifyService verify_service;
@@ -61,7 +78,7 @@ protected:
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
     SignService sign = straight_sign_service(runtime, *certificate_provider, *crypto_backend);
-    VerifyService verify = straight_verify_service(runtime, *certificate_validator, *crypto_backend);
+    VerifyService verify = straight_verify_service(runtime, *certificate_validator, *crypto_backend, cert_cache);
     SecurityEntity other_security(sign, verify);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
@@ -167,68 +184,44 @@ TEST_F(SecurityEntityTest, verify_message_modified_message_type)
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
 {
-    // create decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
     // change the subject name
-    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-    ASSERT_TRUE(signer_info);
-    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    Certificate certificate = certificate_provider.get()->own_certificate();
     certificate.subject_info.subject_name = {42};
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::INVALID_NAME, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
 {
-    // create decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
     // change the subject info
-    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-    ASSERT_TRUE(signer_info);
-    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    Certificate certificate = certificate_provider.get()->own_certificate();
     HashedId8 faulty_hash {{ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }};
     certificate.signer_info = faulty_hash;
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
 {
-    // create decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
     // change the subject info
-    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-    ASSERT_TRUE(signer_info);
-    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    Certificate certificate = certificate_provider.get()->own_certificate();
     certificate.subject_info.subject_type = SubjectType::Root_Ca;
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)
 {
-    // create decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
-    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-    ASSERT_TRUE(signer_info);
-    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    Certificate certificate = certificate_provider.get()->own_certificate();
     for (auto& subject_attribute : certificate.subject_attributes) {
         if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
             SubjectAssurance& subject_assurance = boost::get<SubjectAssurance>(subject_attribute);
@@ -238,29 +231,24 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
 {
-    // prepare decap request
-    auto secured_message = create_secured_message();
-
     // forge certificate with outdatet validity
     StartAndEndValidity outdated_validity;
     outdated_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
     outdated_validity.end_validity = convert_time32(runtime.now() - std::chrono::minutes(1));
-    auto signer_info_field = secured_message.header_field(HeaderFieldType::Signer_Info);
-    ASSERT_TRUE(signer_info_field);
-    auto certificate = boost::get<Certificate>(&boost::get<SignerInfo>(*signer_info_field));
-    ASSERT_TRUE(certificate);
-    certificate->validity_restriction.clear();
-    certificate->validity_restriction.push_back(outdated_validity);
+
+    Certificate certificate = certificate_provider.get()->own_certificate();
+    certificate.validity_restriction.clear();
+    certificate.validity_restriction.push_back(outdated_validity);
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { secured_message });
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
@@ -268,22 +256,17 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
 
 TEST_F(SecurityEntityTest, verify_message_premature_certificate)
 {
-    // prepare decap request
-    auto secured_message = create_secured_message();
-
     // forge certificate with premature validity
     StartAndEndValidity premature_validity;
     premature_validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(1));
     premature_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(25));
-    auto signer_info_field = secured_message.header_field(HeaderFieldType::Signer_Info);
-    ASSERT_TRUE(signer_info_field);
-    auto certificate = boost::get<Certificate>(&boost::get<SignerInfo>(*signer_info_field));
-    ASSERT_TRUE(certificate);
-    certificate->validity_restriction.clear();
-    certificate->validity_restriction.push_back(premature_validity);
+
+    Certificate certificate = certificate_provider.get()->own_certificate();
+    certificate.validity_restriction.clear();
+    certificate.validity_restriction.push_back(premature_validity);
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { secured_message });
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
@@ -291,13 +274,7 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restriction)
 {
-    // prepare decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
-    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-    ASSERT_TRUE(signer_info);
-    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    Certificate certificate = certificate_provider.get()->own_certificate();
     for (auto& validity_restriction : certificate.validity_restriction) {
         ValidityRestrictionType type = get_type(validity_restriction);
         ASSERT_EQ(type, ValidityRestrictionType::Time_Start_And_End);
@@ -309,24 +286,18 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restrict
     }
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
 {
-    // prepare decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
-    SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-    ASSERT_TRUE(signer_info);
-    Certificate& certificate = boost::get<Certificate>(*signer_info);
+    Certificate certificate = certificate_provider.get()->own_certificate();
     certificate.signature = create_random_ecdsa_signature(0);
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
 }

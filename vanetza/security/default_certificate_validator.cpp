@@ -1,4 +1,5 @@
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/payload.hpp>
@@ -12,10 +13,11 @@ namespace vanetza
 namespace security
 {
 
-DefaultCertificateValidator::DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store) :
+DefaultCertificateValidator::DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store, CertificateCache& cert_cache) :
     m_crypto_backend(create_backend("default")),
     m_time_now(time_now),
-    m_trust_store(trust_store)
+    m_trust_store(trust_store),
+    m_cert_cache(cert_cache)
 {
 }
 
@@ -76,8 +78,10 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         return CertificateInvalidReason::BROKEN_TIME_PERIOD;
     }
 
-    // check if subject_name is empty
-    if (0 != certificate.subject_info.subject_name.size()) {
+    SubjectType subject_type = certificate.subject_info.subject_type;
+
+    // check if subject_name is empty if certificate is authorization ticket
+    if (subject_type == SubjectType::Authorization_Ticket && 0 != certificate.subject_info.subject_name.size()) {
         return CertificateInvalidReason::INVALID_NAME;
     }
 
@@ -87,7 +91,6 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     }
 
     HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
-    std::list<Certificate> possible_signers = m_trust_store.lookup(signer_hash);
 
     // try to extract ECDSA signature
     boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.signature);
@@ -98,8 +101,9 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     // create buffer of certificate
     ByteBuffer cert = convert_for_signing(certificate);
 
-    bool valid_signature = false;
-    for (Certificate& possible_signer : possible_signers) {
+    std::list<Certificate> possible_signers = m_trust_store.lookup(signer_hash);
+
+    for (auto& possible_signer : possible_signers) {
         auto verification_key = get_public_key(possible_signer);
 
         // this should never happen, as the verify service already ensures a key is present
@@ -108,17 +112,33 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         }
 
         if (m_crypto_backend->verify_data(verification_key.get(), cert, sig.get())) {
-            valid_signature = true;
-            break;
+            return CertificateValidity::valid();
         }
     }
 
-    if (!valid_signature) {
-        // might be a unknown certificate that just collides with its HashedId8
-        return CertificateInvalidReason::UNKNOWN_SIGNER;
+    possible_signers = m_cert_cache.lookup(signer_hash);
+
+    for (auto& possible_signer : possible_signers) {
+        auto verification_key = get_public_key(possible_signer);
+
+        // this should never happen, as the verify service already ensures a key is present
+        if (!verification_key) {
+            continue;
+        }
+
+        if (m_crypto_backend->verify_data(verification_key.get(), cert, sig.get())) {
+            // TODO: Add max depth limitation
+            CertificateValidity validity = check_certificate(possible_signer);
+
+            if (validity) {
+                m_cert_cache.put(possible_signer);
+            }
+
+            return validity;
+        }
     }
 
-    return CertificateValidity::valid();
+    return CertificateInvalidReason::UNKNOWN_SIGNER;
 }
 
 } // namespace security

@@ -2,6 +2,7 @@
 #define DECAP_CONFIRM_HPP
 
 #include <vanetza/security/certificate.hpp>
+#include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/payload.hpp>
 #include <boost/optional.hpp>
 #include <cstdint>
