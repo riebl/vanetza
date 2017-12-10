@@ -15,8 +15,17 @@ void CertificateCache::put(Certificate certificate)
 
     std::list<Certificate> certs = lookup(id);
 
+    // TODO: This is probably horribly inefficient, find most efficient but still correct comparison
     if (certs.size()) {
-        return; // TODO: only ignore if exact duplicate
+        auto binary_cert = convert_for_signing(certificate);
+
+        for (auto& cert : certs) {
+            auto binary = convert_for_signing(cert);
+
+            if (binary == binary_cert) {
+                return;
+            }
+        }
     }
 
     CacheEntry entry;
