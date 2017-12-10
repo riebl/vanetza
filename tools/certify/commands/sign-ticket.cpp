@@ -14,6 +14,7 @@
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
+#include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 
@@ -83,9 +84,22 @@ int SignTicketCommand::execute()
 
     Certificate certificate;
 
+    std::list<IntX> certificate_aids;
+    certificate_aids.push_back(itsAidCa);
+    certificate_aids.push_back(itsAidDen);
+
+    std::list<ItsAidSsp> certificate_ssp;
+    // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
+    ItsAidSsp certificate_ssp_ca;
+    certificate_ssp_ca.its_aid = itsAidCa;
+    certificate_ssp_ca.service_specific_permissions = ByteBuffer({ 1, 0, 0 }); // no special permissions
+    certificate_ssp.push_back(certificate_ssp_ca);
+
     certificate.signer_info = calculate_hash(loaded_sign_cert);
     certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
+    certificate.subject_attributes.push_back(certificate_ssp);
+    certificate.subject_attributes.push_back(certificate_aids);
 
     Uncompressed coordinates;
     coordinates.x.assign(subject_key_pair.public_key.x.begin(), subject_key_pair.public_key.x.end());
