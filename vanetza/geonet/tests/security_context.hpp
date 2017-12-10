@@ -22,8 +22,9 @@ public:
         trust_store(roots),
         cert_cache(rt.now()),
         certificate_validator(new security::DefaultCertificateValidator(rt.now(), trust_store, cert_cache)),
+        sign_preparer(rt.now()),
         security(
-            straight_sign_service(rt, *certificate_provider, *backend),
+            straight_sign_service(rt, *certificate_provider, *backend, sign_preparer),
             straight_verify_service(rt, *certificate_validator, *backend, cert_cache))
     {
     }
@@ -40,6 +41,7 @@ private:
     security::TrustStore trust_store;
     security::CertificateCache cert_cache;
     std::unique_ptr<security::CertificateValidator> certificate_validator;
+    security::SignPreparer sign_preparer;
     security::SecurityEntity security;
 };
 

@@ -35,6 +35,17 @@ struct SignConfirm
     SecuredMessage secured_message;
 };
 
+class SignPreparer
+{
+public:
+    SignPreparer(const Clock::time_point& time_now);
+
+    SignConfirm prepare_sign_confirm(SignRequest& request, const Certificate& certificate, Clock::time_point now);
+
+private:
+    Clock::time_point m_time_next_certificate;
+};
+
 /**
  * Equivalant of SN-SIGN service in TS 102 723-8 v1.1.1
  */
@@ -45,18 +56,20 @@ using SignService = std::function<SignConfirm(SignRequest&&)>;
  * \param rt runtime
  * \param cert certificate provider
  * \param backend cryptographic backend
+ * \param sign_preparer sign preparer
  * \return callable sign service
  */
-SignService straight_sign_service(Runtime&, CertificateProvider&, Backend&);
+SignService straight_sign_service(Runtime&, CertificateProvider&, Backend&, SignPreparer&);
 
 /**
  * SignService deferring actually signature calculation using EcdsaSignatureFuture
  * \param rt runtime
  * \param cert certificate provider
  * \param backend cryptographic backend
+ * \param sign_preparer sign preparer
  * \return callable sign service
  */
-SignService deferred_sign_service(Runtime&, CertificateProvider&, Backend&);
+SignService deferred_sign_service(Runtime&, CertificateProvider&, Backend&, SignPreparer&);
 
 /**
  * SignService without real cryptography but dummy signature

@@ -171,7 +171,8 @@ int main(int argc, const char** argv)
             mib.itsGnSecurity = false;
         }
 
-        security::SignService sign_service = straight_sign_service(trigger.runtime(), *certificate_provider, *crypto_backend);
+        security::SignPreparer sign_preparer(trigger.runtime().now());
+        security::SignService sign_service = straight_sign_service(trigger.runtime(), *certificate_provider, *crypto_backend, sign_preparer);
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_validator, *crypto_backend, cert_cache);
 
         GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());

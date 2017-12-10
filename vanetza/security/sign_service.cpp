@@ -27,24 +27,42 @@ Signature signature_placeholder()
     return Signature { std::move(ecdsa) };
 }
 
-SignConfirm prepare_sign_confirm(SignRequest& request, const Certificate& certificate, Clock::time_point now)
+} // namespace
+
+
+SignPreparer::SignPreparer(const Clock::time_point& time_now) : m_time_next_certificate(time_now) {}
+
+SignConfirm SignPreparer::prepare_sign_confirm(SignRequest& request, const Certificate& certificate, Clock::time_point now)
 {
     SignConfirm confirm;
     confirm.secured_message.payload.type = PayloadType::Signed;
     confirm.secured_message.payload.data = std::move(request.plain_message);
     confirm.secured_message.header_fields.push_back(convert_time64(now));
     confirm.secured_message.header_fields.push_back(request.its_aid);
-    confirm.secured_message.header_fields.push_back(SignerInfo { certificate });
+
+    // See security profiles in section 7 of TS 103 097 v1.2.1
+    if (request.its_aid == itsAidCa) {
+        if (now < m_time_next_certificate) {
+            confirm.secured_message.header_fields.push_back(SignerInfo { calculate_hash(certificate) });
+        } else {
+            confirm.secured_message.header_fields.push_back(SignerInfo { certificate });
+            m_time_next_certificate = now + std::chrono::seconds(1);
+        }
+    } else if (request.its_aid == itsAidDen) {
+        // TODO: Add generation_location
+        confirm.secured_message.header_fields.push_back(SignerInfo { certificate });
+    } else {
+        // TODO: Add generation_location
+        confirm.secured_message.header_fields.push_back(SignerInfo { certificate });
+    }
+
     return confirm;
 }
 
-} // namespace
-
-
-SignService straight_sign_service(Runtime& rt, CertificateProvider& certificates, Backend& backend)
+SignService straight_sign_service(Runtime& rt, CertificateProvider& certificates, Backend& backend, SignPreparer& sign_preparer)
 {
     return [&](SignRequest&& request) -> SignConfirm {
-        SignConfirm confirm = prepare_sign_confirm(request, certificates.own_certificate(), rt.now());
+        SignConfirm confirm = sign_preparer.prepare_sign_confirm(request, certificates.own_certificate(), rt.now());
         const auto& private_key = certificates.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const size_t trailer_size = get_size(TrailerField { placeholder });
@@ -57,10 +75,10 @@ SignService straight_sign_service(Runtime& rt, CertificateProvider& certificates
     };
 }
 
-SignService deferred_sign_service(Runtime& rt, CertificateProvider& certificates, Backend& backend)
+SignService deferred_sign_service(Runtime& rt, CertificateProvider& certificates, Backend& backend, SignPreparer& sign_preparer)
 {
     return [&](SignRequest&& request) -> SignConfirm {
-        SignConfirm confirm = prepare_sign_confirm(request, certificates.own_certificate(), rt.now());
+        SignConfirm confirm = sign_preparer.prepare_sign_confirm(request, certificates.own_certificate(), rt.now());
         const auto& private_key = certificates.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const size_t signature_size = get_size(placeholder);
