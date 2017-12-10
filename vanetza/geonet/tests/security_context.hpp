@@ -20,8 +20,9 @@ public:
         certificate_provider(new security::NaiveCertificateProvider(rt.now())),
         cert_cache(rt.now()),
         certificate_validator(new security::DefaultCertificateValidator(*backend, rt.now(), trust_store, cert_cache)),
+        sign_header_policy(rt.now()),
         security(
-            straight_sign_service(rt, *certificate_provider, *backend),
+            straight_sign_service(*certificate_provider, *backend, sign_header_policy),
             straight_verify_service(rt, *certificate_validator, *backend, cert_cache))
     {
         trust_store.insert(certificate_provider->root_certificate());
@@ -39,6 +40,7 @@ private:
     security::TrustStore trust_store;
     security::CertificateCache cert_cache;
     std::unique_ptr<security::CertificateValidator> certificate_validator;
+    security::SignHeaderPolicy sign_header_policy;
     security::SecurityEntity security;
 };
 

@@ -21,7 +21,8 @@ protected:
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
         cert_cache(runtime.now()),
         certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), trust_store, cert_cache)),
-        sign_service(straight_sign_service(runtime, *certificate_provider, *crypto_backend)),
+        sign_header_policy(runtime.now()),
+        sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),
         verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend, cert_cache)),
         security(sign_service, verify_service)
     {
@@ -52,7 +53,8 @@ protected:
     {
         // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider.get()->own_private_key());
-        SignService local_sign_service(straight_sign_service(runtime, local_cert_provider, *crypto_backend));
+        SignHeaderPolicy sign_header_policy(runtime.now());
+        SignService local_sign_service(straight_sign_service(local_cert_provider, *crypto_backend, sign_header_policy));
         SecurityEntity local_security(local_sign_service, verify_service);
 
         EncapConfirm confirm = local_security.encapsulate_packet(create_encap_request());
@@ -66,6 +68,7 @@ protected:
     TrustStore trust_store;
     CertificateCache cert_cache;
     std::unique_ptr<CertificateValidator> certificate_validator;
+    SignHeaderPolicy sign_header_policy;
     SignService sign_service;
     VerifyService verify_service;
     SecurityEntity security;
@@ -74,7 +77,8 @@ protected:
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    SignService sign = straight_sign_service(runtime, *certificate_provider, *crypto_backend);
+    SignHeaderPolicy sign_header_policy(runtime.now());
+    SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
     VerifyService verify = straight_verify_service(runtime, *certificate_validator, *crypto_backend, cert_cache);
     SecurityEntity other_security(sign, verify);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
@@ -89,11 +93,13 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     auto openssl_backend = create_backend("OpenSSL");
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
+    security::SignHeaderPolicy sign_header_policy_openssl(runtime.now());
+    security::SignHeaderPolicy sign_header_policy_cryptopp(runtime.now());
     SecurityEntity cryptopp_security {
-            straight_sign_service(runtime, *certificate_provider, *cryptopp_backend),
+            straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
             straight_verify_service(runtime, *certificate_validator, *cryptopp_backend, cert_cache) };
     SecurityEntity openssl_security {
-            straight_sign_service(runtime, *certificate_provider, *openssl_backend),
+            straight_sign_service(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp),
             straight_verify_service(runtime, *certificate_validator, *openssl_backend, cert_cache) };
 
     // OpenSSL to Crypto++
