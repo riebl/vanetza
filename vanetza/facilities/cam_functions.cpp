@@ -1,11 +1,7 @@
 #ifndef CAM_FUNCTIONS_CPP_JQXFKSJP
 #define CAM_FUNCTIONS_CPP_JQXFKSJP
 
-#include <vanetza/asn1/asn1c_wrapper.hpp>
-#include <vanetza/asn1/its/asn_SEQUENCE_OF.h>
-#include <vanetza/asn1/its/BasicVehicleContainerLowFrequency.h>
-#include <vanetza/asn1/its/DeltaReferencePosition.h>
-#include <vanetza/asn1/its/PathDeltaTime.h>
+#include <vanetza/asn1/cam.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <vanetza/facilities/path_history.hpp>
 #include <vanetza/geonet/areas.hpp>
@@ -145,6 +141,93 @@ bool is_available(const Heading& hd)
 bool is_available(const ReferencePosition& pos)
 {
     return pos.latitude != Latitude_unavailable && pos.longitude != Longitude_unavailable;
+}
+
+bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermissions ssp)
+{
+    using security::CamPermission;
+    using security::CamPermissions;
+
+    CamPermissions required_permissions;
+    const CamParameters_t& params = cam->cam.camParameters;
+
+    if (params.highFrequencyContainer.present == HighFrequencyContainer_PR_rsuContainerHighFrequency) {
+        const RSUContainerHighFrequency_t& rsu = params.highFrequencyContainer.choice.rsuContainerHighFrequency;
+        if (rsu.protectedCommunicationZonesRSU) {
+            required_permissions.add(CamPermission::CenDsrcTollingZone);
+        }
+    }
+
+    if (const SpecialVehicleContainer_t* special = params.specialVehicleContainer) {
+        const EmergencyContainer_t* emergency = nullptr;
+        const SafetyCarContainer_t* safety = nullptr;
+        const RoadWorksContainerBasic_t* roadworks = nullptr;
+
+        switch (special->present) {
+            case SpecialVehicleContainer_PR_publicTransportContainer:
+                required_permissions.add(CamPermission::PublicTransport);
+                break;
+            case SpecialVehicleContainer_PR_specialTransportContainer:
+                required_permissions.add(CamPermission::SpecialTransport);
+                break;
+            case SpecialVehicleContainer_PR_dangerousGoodsContainer:
+                required_permissions.add(CamPermission::DangerousGoods);
+                break;
+            case SpecialVehicleContainer_PR_roadWorksContainerBasic:
+                required_permissions.add(CamPermission::Roadwork);
+                roadworks = &special->choice.roadWorksContainerBasic;
+                break;
+            case SpecialVehicleContainer_PR_rescueContainer:
+                required_permissions.add(CamPermission::Rescue);
+                break;
+            case SpecialVehicleContainer_PR_emergencyContainer:
+                required_permissions.add(CamPermission::Emergency);
+                emergency = &special->choice.emergencyContainer;
+                break;
+            case SpecialVehicleContainer_PR_safetyCarContainer:
+                required_permissions.add(CamPermission::SafetyCar);
+                safety = &special->choice.safetyCarContainer;
+                break;
+            case SpecialVehicleContainer_PR_NOTHING:
+            default:
+                break;
+        }
+
+        if (emergency && emergency->emergencyPriority && emergency->emergencyPriority->size == 1) {
+            // testing bit strings from asn1c is such a mess...
+            assert(emergency->emergencyPriority->buf);
+            uint8_t bits = *emergency->emergencyPriority->buf;
+            if (bits & (1 << (7 - EmergencyPriority_requestForRightOfWay))) {
+                required_permissions.add(CamPermission::RequestForRightOfWay);
+            }
+            if (bits & (1 << (7 - EmergencyPriority_requestForFreeCrossingAtATrafficLight))) {
+                required_permissions.add(CamPermission::RequestForFreeCrossingAtTrafficLight);
+            }
+        }
+
+        if (roadworks && roadworks->closedLanes) {
+            required_permissions.add(CamPermission::ClosedLanes);
+        }
+
+        if (safety && safety->trafficRule) {
+            switch (*safety->trafficRule) {
+                case TrafficRule_noPassing:
+                    required_permissions.add(CamPermission::NoPassing);
+                    break;
+                case TrafficRule_noPassingForTrucks:
+                    required_permissions.add(CamPermission::NoPassingForTrucks);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        if (safety && safety->speedLimit) {
+            required_permissions.add(CamPermission::SpeedLimit);
+        }
+    }
+
+    return ssp.has(required_permissions);
 }
 
 } // namespace facilities

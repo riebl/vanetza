@@ -3,6 +3,7 @@
 
 #include <vanetza/asn1/its/Heading.h>
 #include <vanetza/asn1/its/ReferencePosition.h>
+#include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
 
@@ -11,6 +12,10 @@ struct BasicVehicleContainerLowFrequency;
 
 namespace vanetza
 {
+
+// forward declaration of CAM message wrapper
+namespace asn1 { class Cam; }
+
 namespace facilities
 {
 
@@ -49,6 +54,14 @@ units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units:
  */
 bool is_available(const Heading&);
 bool is_available(const ReferencePosition_t&);
+
+/**
+ * Check if a CAM contains only allowed data elements
+ * \param cam CA message
+ * \param ssp CA service specific permissions
+ * \return true if no forbidden data elements are included
+ */
+bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermissions ssp);
 
 } // namespace facilities
 } // namespace vanetza
