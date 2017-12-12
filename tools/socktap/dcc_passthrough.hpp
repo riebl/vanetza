@@ -21,7 +21,7 @@ public:
     bool allow_packet_flow();
 
 private:
-    static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Link, vanetza::OsiLayer::Application);
+    static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Physical, vanetza::OsiLayer::Application);
     boost::asio::generic::raw_protocol::socket& socket_;
     std::array<vanetza::ByteBuffer, layers_> buffers_;
     TimeTrigger& trigger_;

@@ -23,3 +23,9 @@ add_executable(socktap
 )
 target_link_libraries(socktap Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
 install(TARGETS socktap EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+if(TARGET Cohda::headers)
+    set_property(TARGET socktap APPEND PROPERTY COMPILE_DEFINITIONS "SOCKTAP_WITH_COHDA_SDK")
+    set_property(TARGET socktap APPEND PROPERTY INCLUDE_DIRECTORIES "${COHDA_INCLUDE_DIRS}")
+    set_property(TARGET socktap APPEND PROPERTY SOURCES cohda.cpp)
+endif()

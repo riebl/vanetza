@@ -7,6 +7,10 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <iostream>
 
+#ifdef SOCKTAP_WITH_COHDA_SDK
+#include "cohda.hpp"
+#endif
+
 namespace asio = boost::asio;
 using boost::asio::generic::raw_protocol;
 using namespace vanetza;
@@ -22,9 +26,12 @@ void DccPassthrough::request(const dcc::DataRequest& request, std::unique_ptr<Ch
         return;
     }
 
-    buffers_[0] = create_ethernet_header(request.destination, request.source, request.ether_type);
+    #ifdef SOCKTAP_WITH_COHDA_SDK
+    buffers_[0] = create_cohda_tx_header(request);
+    #endif
+    buffers_[1] = create_ethernet_header(request.destination, request.source, request.ether_type);
     for (auto& layer : osi_layer_range<OsiLayer::Network, OsiLayer::Application>()) {
-        const auto index = distance(OsiLayer::Link, layer);
+        const auto index = distance(OsiLayer::Physical, layer);
         packet->layer(layer).convert(buffers_[index]);
     }
 
