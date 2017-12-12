@@ -26,6 +26,9 @@ public:
             straight_verify_service(rt, *certificate_validator, *backend, cert_cache))
     {
         trust_store.insert(certificate_provider->root_certificate());
+        for (auto cert : certificate_provider->own_chain()) {
+            cert_cache.insert(cert);
+        }
     }
 
     security::SecurityEntity& entity()

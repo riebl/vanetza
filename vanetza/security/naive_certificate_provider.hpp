@@ -43,7 +43,7 @@ public:
     const ecdsa256::PrivateKey& own_private_key() override;
 
     /**
-     * \brief get signer certificate (same for all instances)
+     * \brief get root certificate (same for all instances)
      * \return signing root certificate
      */
     const Certificate& root_certificate();
@@ -53,7 +53,19 @@ private:
      * \brief get root key (same for all instances)
      * \return root key
      */
+    const ecdsa256::KeyPair& aa_key_pair();
+
+    /**
+     * \brief get root key (same for all instances)
+     * \return root key
+     */
     const ecdsa256::KeyPair& root_key_pair();
+
+    /**
+     * \brief get ticket signer certificate (same for all instances)
+     * \return signing authorization authoirity certificate
+     */
+    const Certificate& aa_certificate();
 
     /**
      * \brief generate a authorization ticket
@@ -63,11 +75,18 @@ private:
     Certificate generate_authorization_ticket();
 
     /**
+     * \brief generate a authorization authority certificate
+     *
+     * \return generated certificate
+     */
+    Certificate generate_aa_certificate(const std::string& subject_name);
+
+    /**
      * \brief generate a root certificate
      *
      * \return generated certificate
      */
-    Certificate generate_root_certificate(const std::string& root_subject);
+    Certificate generate_root_certificate(const std::string& subject_name);
 
     BackendCryptoPP m_crypto_backend; /*< key generation is not a generic backend feature */
     const Clock::time_point& m_time_now;
