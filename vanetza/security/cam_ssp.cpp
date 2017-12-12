@@ -35,6 +35,11 @@ bool CamPermissions::has(const std::initializer_list<CamPermission>& cps) const
     return true;
 }
 
+bool CamPermissions::has(const CamPermissions& required) const
+{
+    return (m_bits & required.m_bits) == required.m_bits;
+}
+
 bool CamPermissions::none() const
 {
     return m_bits == 0;

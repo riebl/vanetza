@@ -55,6 +55,7 @@ public:
     // check for permission
     bool has(CamPermission) const;
     bool has(const std::initializer_list<CamPermission>&) const;
+    bool has(const CamPermissions&) const;
     bool none() const;
 
     // permission manipulation (with chaining)
