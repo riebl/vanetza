@@ -16,13 +16,33 @@ namespace security
 class StaticCertificateProvider : public CertificateProvider
 {
 public:
-    StaticCertificateProvider(const Certificate& authorization_ticket, const ecdsa256::PrivateKey& authorization_ticket_key);
+    /**
+     * Create static certificate provider with empty chain
+     * \param authorization_ticket
+     * \param ticket_key private key of given authorization ticket
+     */
+    StaticCertificateProvider(const Certificate& authorization_ticket, const ecdsa256::PrivateKey& ticket_key);
+
+    /**
+     * Create static certificate provider with given chain
+     * \param authorization_ticket
+     * \param ticket_key private key of given authorization ticket
+     * \param chain own certificate chain
+     */
+    StaticCertificateProvider(const Certificate& authorization_ticket, const ecdsa256::PrivateKey& ticket_key,
+            const std::list<Certificate>& chain);
 
     /**
      * Get own certificate to use for signing
      * \return own certificate
      */
     virtual const Certificate& own_certificate() override;
+
+    /**
+     * Get own certificate chain, excluding the leaf certificate and root CA
+     * \return own certificate chain
+     */
+    virtual std::list<Certificate> own_chain() override;
 
     /**
      * Get private key associated with own certificate
@@ -33,6 +53,7 @@ public:
 private:
     Certificate authorization_ticket;
     ecdsa256::PrivateKey authorization_ticket_key;
+    std::list<Certificate> chain;
 };
 
 } // namespace security
