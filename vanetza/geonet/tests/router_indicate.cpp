@@ -11,7 +11,7 @@ class RouterIndicate : public ::testing::Test
 {
 public:
     RouterIndicate() :
-        security(runtime), router(runtime, mib), packet_drop_occurred(false) {}
+        runtime(Clock::at("2010-12-23 18:29")), security(runtime), router(runtime, mib), packet_drop_occurred(false) {}
 
 protected:
     virtual void SetUp() override

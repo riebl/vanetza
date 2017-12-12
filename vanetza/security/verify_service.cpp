@@ -5,7 +5,6 @@
 #include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <boost/optional.hpp>
-#include <iostream>
 #include <chrono>
 
 namespace vanetza

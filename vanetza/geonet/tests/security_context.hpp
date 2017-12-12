@@ -27,6 +27,9 @@ public:
             straight_sign_service(rt, *certificate_provider, *backend, sign_preparer),
             straight_verify_service(rt, *certificate_validator, *backend, cert_cache))
     {
+        for (auto cert : certificate_provider->own_chain()) {
+            cert_cache.put(cert);
+        }
     }
 
     security::SecurityEntity& entity()

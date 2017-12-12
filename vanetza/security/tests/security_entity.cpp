@@ -17,6 +17,7 @@ class SecurityEntityTest : public ::testing::Test
 {
 protected:
     SecurityEntityTest() :
+        runtime(Clock::at("2016-03-7 08:23")),
         crypto_backend(create_backend("default")),
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
         roots({ certificate_provider->root_certificate() }),
@@ -27,13 +28,15 @@ protected:
         sign_service(straight_sign_service(runtime, *certificate_provider, *crypto_backend, sign_preparer)),
         verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend, cert_cache)),
         security(sign_service, verify_service)
-    {
-    }
+    { }
 
     void SetUp() override
     {
-        runtime.reset(Clock::at("2016-03-7 08:23"));
         expected_payload[OsiLayer::Transport] = ByteBuffer {89, 27, 1, 4, 18, 85};
+
+        for (auto cert : certificate_provider->own_chain()) {
+            cert_cache.put(cert);
+        }
     }
 
     EncapRequest create_encap_request()
