@@ -184,12 +184,13 @@ TEST_F(RouterRequest, shb_repetition)
     EXPECT_EQ(DataConfirm::ResultCode::ACCEPTED, confirm.result_code);
     EXPECT_EQ(1, req_ifc.m_requests);
     ASSERT_TRUE(!!req_ifc.m_last_packet);
-    const auto packet_size = size(*req_ifc.m_last_packet, OsiLayer::Network, OsiLayer::Application);
+    // length of network layer is excluded because of varying secured message header fields
+    const auto payload_size = size(*req_ifc.m_last_packet, OsiLayer::Transport, OsiLayer::Application);
 
     // trigger five repetitions
     for (unsigned i = 0; i < 5; ++i) {
         runtime.trigger(std::chrono::milliseconds(100));
     }
     EXPECT_EQ(6, req_ifc.m_requests);
-    EXPECT_EQ(packet_size, size(*req_ifc.m_last_packet, OsiLayer::Network, OsiLayer::Application));
+    EXPECT_EQ(payload_size, size(*req_ifc.m_last_packet, OsiLayer::Transport, OsiLayer::Application));
 }
