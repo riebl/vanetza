@@ -19,6 +19,12 @@ public:
     virtual const Certificate& own_certificate() = 0;
 
     /**
+     * Get own certificate chain, excluding the leaf certificate and root CA
+     * \return own certificate chain
+     */
+    virtual const std::list<Certificate> own_chain() = 0;
+
+    /**
      * Get private key associated with own certificate
      * \return private key
      */

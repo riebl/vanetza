@@ -31,6 +31,11 @@ const Certificate& NaiveCertificateProvider::own_certificate()
     return m_own_certificate;
 }
 
+const std::list<Certificate> NaiveCertificateProvider::own_chain()
+{
+    return std::list<Certificate>();
+}
+
 const ecdsa256::PrivateKey& NaiveCertificateProvider::own_private_key()
 {
     return m_own_key_pair.private_key;
