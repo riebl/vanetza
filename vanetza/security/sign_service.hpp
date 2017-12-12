@@ -35,15 +35,16 @@ struct SignConfirm
     SecuredMessage secured_message;
 };
 
-class SignPreparer
+class SignHeaderPolicy
 {
 public:
-    SignPreparer(const Clock::time_point& time_now);
+    SignHeaderPolicy(const Clock::time_point& time_now);
 
-    SignConfirm prepare_sign_confirm(SignRequest& request, const Certificate& certificate, Clock::time_point now);
+    std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
 
 private:
-    Clock::time_point m_time_next_certificate;
+    const Clock::time_point& m_time_now;
+    Clock::time_point m_cam_next_certificate;
 };
 
 /**
@@ -56,20 +57,20 @@ using SignService = std::function<SignConfirm(SignRequest&&)>;
  * \param rt runtime
  * \param cert certificate provider
  * \param backend cryptographic backend
- * \param sign_preparer sign preparer
+ * \param sign_header_policy sign header policy
  * \return callable sign service
  */
-SignService straight_sign_service(Runtime&, CertificateProvider&, Backend&, SignPreparer&);
+SignService straight_sign_service(CertificateProvider&, Backend&, SignHeaderPolicy&);
 
 /**
  * SignService deferring actually signature calculation using EcdsaSignatureFuture
  * \param rt runtime
  * \param cert certificate provider
  * \param backend cryptographic backend
- * \param sign_preparer sign preparer
+ * \param sign_header_policy sign header policy
  * \return callable sign service
  */
-SignService deferred_sign_service(Runtime&, CertificateProvider&, Backend&, SignPreparer&);
+SignService deferred_sign_service(CertificateProvider&, Backend&, SignHeaderPolicy&);
 
 /**
  * SignService without real cryptography but dummy signature

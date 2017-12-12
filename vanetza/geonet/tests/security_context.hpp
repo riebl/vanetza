@@ -22,9 +22,9 @@ public:
         trust_store(roots),
         cert_cache(rt.now()),
         certificate_validator(new security::DefaultCertificateValidator(rt.now(), trust_store, cert_cache)),
-        sign_preparer(rt.now()),
+        sign_header_policy(rt.now()),
         security(
-            straight_sign_service(rt, *certificate_provider, *backend, sign_preparer),
+            straight_sign_service(*certificate_provider, *backend, sign_header_policy),
             straight_verify_service(rt, *certificate_validator, *backend, cert_cache))
     {
         for (auto cert : certificate_provider->own_chain()) {
@@ -44,7 +44,7 @@ private:
     security::TrustStore trust_store;
     security::CertificateCache cert_cache;
     std::unique_ptr<security::CertificateValidator> certificate_validator;
-    security::SignPreparer sign_preparer;
+    security::SignHeaderPolicy sign_header_policy;
     security::SecurityEntity security;
 };
 

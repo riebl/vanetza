@@ -30,40 +30,45 @@ Signature signature_placeholder()
 } // namespace
 
 
-SignPreparer::SignPreparer(const Clock::time_point& time_now) : m_time_next_certificate(time_now) {}
+SignHeaderPolicy::SignHeaderPolicy(const Clock::time_point& time_now) :
+    m_time_now(time_now), m_cam_next_certificate(time_now) { }
 
-SignConfirm SignPreparer::prepare_sign_confirm(SignRequest& request, const Certificate& certificate, Clock::time_point now)
+std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& request, CertificateProvider& certificate_provider)
 {
-    SignConfirm confirm;
-    confirm.secured_message.payload.type = PayloadType::Signed;
-    confirm.secured_message.payload.data = std::move(request.plain_message);
-    confirm.secured_message.header_fields.push_back(convert_time64(now));
-    confirm.secured_message.header_fields.push_back(request.its_aid);
+    std::list<HeaderField> header_fields;
 
-    // See security profiles in section 7 of TS 103 097 v1.2.1
+    header_fields.push_back(convert_time64(m_time_now));
+    header_fields.push_back(request.its_aid);
+
     if (request.its_aid == itsAidCa) {
-        if (now < m_time_next_certificate) {
-            confirm.secured_message.header_fields.push_back(SignerInfo { calculate_hash(certificate) });
+        // section 7.1 in TS 103 097 v1.2.1
+        if (m_time_now < m_cam_next_certificate) {
+            header_fields.push_back(SignerInfo { calculate_hash(certificate_provider.own_certificate()) });
         } else {
-            confirm.secured_message.header_fields.push_back(SignerInfo { certificate });
-            m_time_next_certificate = now + std::chrono::seconds(1);
+            header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
+            m_cam_next_certificate = m_time_now + std::chrono::seconds(1);
         }
-    } else if (request.its_aid == itsAidDen) {
-        // TODO: Add generation_location
-        confirm.secured_message.header_fields.push_back(SignerInfo { certificate });
     } else {
-        // TODO: Add generation_location
-        confirm.secured_message.header_fields.push_back(SignerInfo { certificate });
+        // TODO: Add generation location
+        header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
     }
 
-    return confirm;
+    return header_fields;
 }
 
-SignService straight_sign_service(Runtime& rt, CertificateProvider& certificates, Backend& backend, SignPreparer& sign_preparer)
+SignService straight_sign_service(CertificateProvider& certificate_provider, Backend& backend, SignHeaderPolicy& sign_header_policy)
 {
     return [&](SignRequest&& request) -> SignConfirm {
-        SignConfirm confirm = sign_preparer.prepare_sign_confirm(request, certificates.own_certificate(), rt.now());
-        const auto& private_key = certificates.own_private_key();
+        SignConfirm confirm;
+        confirm.secured_message.payload.type = PayloadType::Signed;
+        confirm.secured_message.payload.data = std::move(request.plain_message);
+
+        std::list<HeaderField> header_fields = sign_header_policy.prepare_header(request, certificate_provider);
+        for (auto& header_field : header_fields) {
+            confirm.secured_message.header_fields.push_back(header_field);
+        }
+
+        const auto& private_key = certificate_provider.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const size_t trailer_size = get_size(TrailerField { placeholder });
 
@@ -75,11 +80,19 @@ SignService straight_sign_service(Runtime& rt, CertificateProvider& certificates
     };
 }
 
-SignService deferred_sign_service(Runtime& rt, CertificateProvider& certificates, Backend& backend, SignPreparer& sign_preparer)
+SignService deferred_sign_service(CertificateProvider& certificate_provider, Backend& backend, SignHeaderPolicy& sign_header_policy)
 {
     return [&](SignRequest&& request) -> SignConfirm {
-        SignConfirm confirm = sign_preparer.prepare_sign_confirm(request, certificates.own_certificate(), rt.now());
-        const auto& private_key = certificates.own_private_key();
+        SignConfirm confirm;
+        confirm.secured_message.payload.type = PayloadType::Signed;
+        confirm.secured_message.payload.data = std::move(request.plain_message);
+
+        std::list<HeaderField> header_fields = sign_header_policy.prepare_header(request, certificate_provider);
+        for (auto& header_field : header_fields) {
+            confirm.secured_message.header_fields.push_back(header_field);
+        }
+
+        const auto& private_key = certificate_provider.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const size_t signature_size = get_size(placeholder);
         static const size_t trailer_size = get_size(TrailerField { placeholder });
