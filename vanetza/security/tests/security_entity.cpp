@@ -103,10 +103,10 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     security::SignHeaderPolicy sign_header_policy_cryptopp(runtime.now());
     SecurityEntity cryptopp_security {
             straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
-            straight_verify_service(runtime, *certificate_validator, *cryptopp_backend, sign_header_policy_cryptopp) };
+            straight_verify_service(runtime, *certificate_validator, *cryptopp_backend, cert_cache) };
     SecurityEntity openssl_security {
-            straight_sign_service(*certificate_provider, *openssl_backend),
-            straight_verify_service(runtime, *certificate_validator, *openssl_backend) };
+            straight_sign_service(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp),
+            straight_verify_service(runtime, *certificate_validator, *openssl_backend, cert_cache) };
 
     // OpenSSL to Crypto++
     EncapConfirm encap_confirm = openssl_security.encapsulate_packet(create_encap_request());
