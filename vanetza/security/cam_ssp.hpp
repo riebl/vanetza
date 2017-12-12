@@ -3,6 +3,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <cstdint>
+#include <string>
 
 namespace vanetza
 {
@@ -68,6 +69,13 @@ private:
     using value_type = std::underlying_type<CamPermission>::type;
     value_type m_bits;
 };
+
+/**
+ * Get string representation of CAM permission flag
+ * \param cp CAM permission flag
+ * \return string representation (empty for unknown flags)
+ */
+std::string stringify(CamPermission);
 
 } // namespace security
 } // namespace vanetza

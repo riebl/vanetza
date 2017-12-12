@@ -111,3 +111,9 @@ TEST(CamSsp, serialization)
                 [decoded_reserved](CamPermission cp) { return decoded_reserved.has(cp); }));
     EXPECT_FALSE(decoded_reserved.none());
 }
+
+TEST(CamSsp, stringify)
+{
+    EXPECT_EQ("Safety Car", stringify(CamPermission::SafetyCar));
+    EXPECT_EQ("Reserved (0x0200)", stringify(static_cast<CamPermission>(0x0200)));
+}
