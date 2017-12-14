@@ -38,13 +38,13 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
             // check if certificate validity restriction timestamps are logically correct
             if (start_and_end.start_validity >= start_and_end.end_validity) {
-                return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                return CertificateValidity(CertificateInvalidReason::BROKEN_TIME_PERIOD, certificate);
             }
 
             // check if certificate is premature or outdated
             auto now = convert_time32(m_time_now);
             if (now < start_and_end.start_validity || now > start_and_end.end_validity) {
-                return CertificateInvalidReason::OFF_TIME_PERIOD;
+                return CertificateValidity(CertificateInvalidReason::OFF_TIME_PERIOD, certificate);
             }
 
             ++certificate_time_constraints;
@@ -54,7 +54,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             // check if certificate is outdated
             auto now = convert_time32(m_time_now);
             if (now > end) {
-                return CertificateInvalidReason::OFF_TIME_PERIOD;
+                return CertificateValidity(CertificateInvalidReason::OFF_TIME_PERIOD, certificate);
             }
 
             ++certificate_time_constraints;
@@ -66,7 +66,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             std::chrono::seconds duration = start_and_duration.duration.to_seconds();
             auto end = start_and_duration.start_validity + duration.count();
             if (now < start_and_duration.start_validity || now > end) {
-                return CertificateInvalidReason::OFF_TIME_PERIOD;
+                return CertificateValidity(CertificateInvalidReason::OFF_TIME_PERIOD, certificate);
             }
 
             ++certificate_time_constraints;
@@ -75,19 +75,19 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
     // if not exactly one time constraint is given, we fail instead of considering it valid
     if (1 != certificate_time_constraints) {
-        return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+        return CertificateValidity(CertificateInvalidReason::BROKEN_TIME_PERIOD, certificate);
     }
 
     SubjectType subject_type = certificate.subject_info.subject_type;
 
     // check if subject_name is empty if certificate is authorization ticket
     if (subject_type == SubjectType::Authorization_Ticket && 0 != certificate.subject_info.subject_name.size()) {
-        return CertificateInvalidReason::INVALID_NAME;
+        return CertificateValidity(CertificateInvalidReason::INVALID_NAME, certificate);
     }
 
     // check signer info
     if (get_type(certificate.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
-        return CertificateInvalidReason::INVALID_SIGNER;
+        return CertificateValidity(CertificateInvalidReason::INVALID_SIGNER, certificate);
     }
 
     HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
@@ -95,7 +95,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     // try to extract ECDSA signature
     boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.signature);
     if (!sig) {
-        return CertificateInvalidReason::MISSING_SIGNATURE;
+        return CertificateValidity(CertificateInvalidReason::MISSING_SIGNATURE, certificate);
     }
 
     // create buffer of certificate
@@ -138,7 +138,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         }
     }
 
-    return CertificateInvalidReason::UNKNOWN_SIGNER;
+    return CertificateValidity(CertificateInvalidReason::UNKNOWN_SIGNER, certificate);
 }
 
 } // namespace security

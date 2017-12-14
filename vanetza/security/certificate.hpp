@@ -49,7 +49,7 @@ public:
      * Create CertificateValidity signalling an invalid certificate
      * \param reason Reason for invalidity
      */
-    CertificateValidity(CertificateInvalidReason reason) : m_reason(reason) {}
+    CertificateValidity(CertificateInvalidReason reason, Certificate invalid_certificate) : m_reason(reason), m_invalid_certificate(invalid_certificate) {}
 
     /**
      * \brief Create CertificateValidity signalling a valid certificate
@@ -72,8 +72,17 @@ public:
      */
     CertificateInvalidReason reason() const { return *m_reason; }
 
+    /**
+     * \brief Get certificate that failed the validation
+     * This call is only safe if the certificate is available, i.e. check validity before!
+     *
+     * \return invalid certificate
+     */
+    Certificate invalid_certificate() const { return *m_invalid_certificate; }
+
 private:
     boost::optional<CertificateInvalidReason> m_reason;
+    boost::optional<Certificate> m_invalid_certificate;
 };
 
 /**

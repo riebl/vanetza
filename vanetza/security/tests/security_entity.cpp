@@ -188,7 +188,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_message_type)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
-    EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
+    EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
@@ -356,7 +356,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
-    EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
+    EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_generation_time_before_current_time)

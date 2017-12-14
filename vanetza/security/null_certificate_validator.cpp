@@ -5,18 +5,18 @@ namespace vanetza
 namespace security
 {
 
-NullCertificateValidator::NullCertificateValidator() : m_check_result(CertificateInvalidReason::UNKNOWN_SIGNER)
+NullCertificateValidator::NullCertificateValidator() : m_reason(CertificateInvalidReason::UNKNOWN_SIGNER)
 {
 }
 
-CertificateValidity NullCertificateValidator::check_certificate(const Certificate&)
+CertificateValidity NullCertificateValidator::check_certificate(const Certificate& certificate)
 {
-    return m_check_result;
+    return CertificateValidity(m_reason, certificate);
 }
 
-void NullCertificateValidator::certificate_check_result(const CertificateValidity& result)
+void NullCertificateValidator::certificate_check_result(const CertificateInvalidReason reason)
 {
-    m_check_result = result;
+    m_reason = reason;
 }
 
 } // namespace security
