@@ -44,7 +44,7 @@ struct DecapConfirm
     PacketVariant plaintext_payload; // mandatory
     DecapReport report; // mandatory
     CertificateValidity certificate_validity; // non-standard extension
-    boost::optional<uint64_t> certificate_id; // optional
+    boost::optional<HashedId8> certificate_id; // optional
     // member field 'permissions' currently not used; optional
 };
 
