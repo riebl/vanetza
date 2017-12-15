@@ -31,16 +31,19 @@ EncapConfirm SecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
     SignConfirm sign_confirm = m_sign_service(std::move(sign_request));
     EncapConfirm encap_confirm;
     encap_confirm.sec_packet = std::move(sign_confirm.secured_message);
+
     return encap_confirm;
 }
 
 DecapConfirm SecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
 {
     VerifyConfirm verify_confirm = m_verify_service(VerifyRequest { decap_request.sec_packet });
+
     DecapConfirm decap_confirm;
     decap_confirm.plaintext_payload = std::move(decap_request.sec_packet.payload.data);
     decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
     decap_confirm.certificate_validity = verify_confirm.certificate_validity;
+
     return decap_confirm;
 }
 

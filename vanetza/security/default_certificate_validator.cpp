@@ -7,6 +7,7 @@
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/trust_store.hpp>
 #include <chrono>
+#include <iostream>
 
 namespace vanetza
 {
@@ -101,9 +102,9 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     // create buffer of certificate
     ByteBuffer cert = convert_for_signing(certificate);
 
-    std::list<Certificate> possible_signers = m_trust_store.lookup(signer_hash);
+    const std::list<Certificate> possible_trusted_signers = m_trust_store.lookup(signer_hash);
 
-    for (auto& possible_signer : possible_signers) {
+    for (auto& possible_signer : possible_trusted_signers) {
         auto verification_key = get_public_key(possible_signer);
 
         // this should never happen, as the verify service already ensures a key is present
@@ -116,7 +117,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         }
     }
 
-    possible_signers = m_cert_cache.lookup(signer_hash);
+    const std::list<Certificate> possible_signers = m_cert_cache.lookup(signer_hash);
 
     for (auto& possible_signer : possible_signers) {
         auto verification_key = get_public_key(possible_signer);
