@@ -42,9 +42,18 @@ public:
 
     std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
 
+    void report_unknown_certificate(HashedId8 id);
+
+    void report_requested_certificate();
+
+    void report_requested_certificate_chain();
+
 private:
     const Clock::time_point& m_time_now;
     Clock::time_point m_cam_next_certificate;
+    std::list<HashedId3> m_unknown_certificates;
+    bool m_cert_requested;
+    bool m_chain_requested;
 };
 
 /**

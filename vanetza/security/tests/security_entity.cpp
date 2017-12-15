@@ -24,7 +24,7 @@ protected:
         certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), trust_store, cert_cache)),
         sign_header_policy(runtime.now()),
         sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),
-        verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend, cert_cache)),
+        verify_service(straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy)),
         security(sign_service, verify_service)
     {
         trust_store.insert(certificate_provider->root_certificate());
@@ -83,7 +83,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
 {
     SignHeaderPolicy sign_header_policy(runtime.now());
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
-    VerifyService verify = straight_verify_service(runtime, *certificate_validator, *crypto_backend, cert_cache);
+    VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
     SecurityEntity other_security(sign, verify);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
@@ -101,10 +101,10 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     security::SignHeaderPolicy sign_header_policy_cryptopp(runtime.now());
     SecurityEntity cryptopp_security {
             straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
-            straight_verify_service(runtime, *certificate_validator, *cryptopp_backend, cert_cache) };
+            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl) };
     SecurityEntity openssl_security {
             straight_sign_service(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp),
-            straight_verify_service(runtime, *certificate_validator, *openssl_backend, cert_cache) };
+            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *openssl_backend, cert_cache, sign_header_policy_cryptopp) };
 
     // OpenSSL to Crypto++
     EncapConfirm encap_confirm = openssl_security.encapsulate_packet(create_encap_request());

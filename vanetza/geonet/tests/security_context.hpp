@@ -23,7 +23,7 @@ public:
         sign_header_policy(rt.now()),
         security(
             straight_sign_service(*certificate_provider, *backend, sign_header_policy),
-            straight_verify_service(rt, *certificate_validator, *backend, cert_cache))
+            straight_verify_service(rt, *certificate_provider, *certificate_validator, *backend, cert_cache, sign_header_policy))
     {
         trust_store.insert(certificate_provider->root_certificate());
         for (auto cert : certificate_provider->own_chain()) {

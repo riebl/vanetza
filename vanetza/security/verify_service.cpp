@@ -1,10 +1,13 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
+#include <vanetza/security/certificate_provider.hpp>
 #include <vanetza/security/certificate_validator.hpp>
 #include <vanetza/security/its_aid.hpp>
+#include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/adaptor/reversed.hpp>
 #include <chrono>
 
 namespace vanetza
@@ -48,7 +51,7 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
 
 } // namespace
 
-VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache)
+VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy)
 {
     return [&](VerifyRequest&& request) -> VerifyConfirm {
         VerifyConfirm confirm;
@@ -62,6 +65,21 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
         if (2 != secured_message.protocol_version()) {
             confirm.report = VerificationReport::Incompatible_Protocol;
             return confirm;
+        }
+
+        const std::list<HashedId3>* requested_certs = secured_message.header_field<HeaderFieldType::Request_Unrecognized_Certificate>();
+        if (requested_certs) {
+            for (auto& requested_cert : *requested_certs) {
+                if (truncate(calculate_hash(cert_provider.own_certificate())) == requested_cert) {
+                    sign_policy.report_requested_certificate();
+                }
+
+                for (auto& cert : cert_provider.own_chain()) {
+                    if (truncate(calculate_hash(cert)) == requested_cert) {
+                        sign_policy.report_requested_certificate_chain();
+                    }
+                }
+            }
         }
 
         const IntX* its_aid = secured_message.header_field<HeaderFieldType::Its_Aid>();
@@ -87,15 +105,24 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
                 case SignerInfoType::Certificate_Digest_With_Other_Algorithm:
                     break;
                 case SignerInfoType::Certificate_Chain:
-                    {
-                        std::list<Certificate> chain = boost::get<std::list<Certificate>>(*signer_info);
-                        if (chain.size() == 0) {
-                            confirm.report = VerificationReport::Signer_Certificate_Not_Found;
-                            return confirm;
-                        }
-                        signer_hash = calculate_hash(chain.front());
-                        possible_certificates.push_back(chain.front());
+                {
+                    std::list<Certificate> chain = boost::get<std::list<Certificate>>(*signer_info);
+                    if (chain.size() == 0) {
+                        confirm.report = VerificationReport::Signer_Certificate_Not_Found;
+                        return confirm;
                     }
+                    // pre-check chain certificates in reverse order, otherwise they're not available for the ticket check
+                    for (auto& cert : boost::adaptors::reverse(chain)) {
+                        if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
+                            CertificateValidity validity = certs.check_certificate(cert);
+                            if (validity) {
+                                cert_cache.insert(cert);
+                            }
+                        }
+                    }
+                    signer_hash = calculate_hash(chain.front());
+                    possible_certificates.push_back(chain.front());
+                }
                     break;
                 default:
                     confirm.report = VerificationReport::Unsupported_Signer_Identifier_Type;
@@ -107,6 +134,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
         if (possible_certificates.size() == 0) {
             confirm.report = VerificationReport::Signer_Certificate_Not_Found;
             confirm.certificate_id = signer_hash;
+            sign_policy.report_unknown_certificate(signer_hash);
             return confirm;
         }
 
@@ -162,6 +190,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
             // could be a colliding HashedId8, but the probability is pretty low
             confirm.report = VerificationReport::False_Signature;
             confirm.certificate_id = signer_hash;
+            sign_policy.report_unknown_certificate(signer_hash);
             return confirm;
         }
 
@@ -174,7 +203,13 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
             confirm.certificate_validity = cert_validity;
 
             if (cert_validity.reason() == CertificateInvalidReason::UNKNOWN_SIGNER) {
-                confirm.certificate_id = calculate_hash(signer.get());
+                const Certificate& invalid_cert = signer.get();
+                if (get_type(invalid_cert.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
+                    HashedId8 signer_hash = boost::get<HashedId8>(invalid_cert.signer_info);
+
+                    confirm.certificate_id = signer_hash;
+                    sign_policy.report_unknown_certificate(*confirm.certificate_id);
+                }
             }
 
             return confirm;

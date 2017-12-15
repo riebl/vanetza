@@ -31,7 +31,7 @@ Signature signature_placeholder()
 
 
 SignHeaderPolicy::SignHeaderPolicy(const Clock::time_point& time_now) :
-    m_time_now(time_now), m_cam_next_certificate(time_now)
+    m_time_now(time_now), m_cam_next_certificate(time_now), m_cert_requested(false), m_chain_requested(false)
 {
 }
 
@@ -44,18 +44,46 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
 
     if (request.its_aid == itsAidCa) {
         // section 7.1 in TS 103 097 v1.2.1
-        if (m_time_now < m_cam_next_certificate) {
+        if (m_chain_requested) {
+            std::list<Certificate> full_chain;
+            full_chain.push_back(certificate_provider.own_certificate());
+            full_chain.splice(full_chain.end(), certificate_provider.own_chain());
+            header_fields.push_back(SignerInfo { std::move(full_chain) });
+            m_cam_next_certificate = m_time_now + std::chrono::seconds(1);
+        } else if (m_time_now < m_cam_next_certificate && !m_cert_requested) {
             header_fields.push_back(SignerInfo { calculate_hash(certificate_provider.own_certificate()) });
         } else {
             header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
             m_cam_next_certificate = m_time_now + std::chrono::seconds(1);
         }
+
+        if (m_unknown_certificates.size() > 0) {
+            header_fields.push_back(m_unknown_certificates);
+        }
+
+        m_cert_requested = false;
+        m_chain_requested = false;
     } else {
         // TODO: Add generation location
         header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
     }
 
     return header_fields;
+}
+
+void SignHeaderPolicy::report_unknown_certificate(HashedId8 id)
+{
+    m_unknown_certificates.push_back(truncate(id));
+}
+
+void SignHeaderPolicy::report_requested_certificate()
+{
+    m_cert_requested = true;
+}
+
+void SignHeaderPolicy::report_requested_certificate_chain()
+{
+    m_chain_requested = true;
 }
 
 SignService straight_sign_service(CertificateProvider& certificate_provider, Backend& backend, SignHeaderPolicy& sign_header_policy)

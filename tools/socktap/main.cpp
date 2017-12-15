@@ -133,6 +133,8 @@ int main(int argc, const char** argv)
             mib.itsGnSecurity = false;
         } else if (security_option == "naive") {
             mib.itsGnSecurity = true;
+            certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> {
+                new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), trust_store, cert_cache) };
         } else if (security_option == "null") {
             mib.itsGnSecurity = true;
             certificate_provider = std::unique_ptr<security::CertificateProvider> {
@@ -169,7 +171,7 @@ int main(int argc, const char** argv)
 
         security::SignHeaderPolicy sign_header_policy(trigger.runtime().now());
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
-        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_validator, *crypto_backend, cert_cache);
+        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
 
         GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
         security::SecurityEntity security_entity(sign_service, verify_service);
