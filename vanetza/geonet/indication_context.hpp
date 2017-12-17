@@ -2,6 +2,7 @@
 #define INDICATION_CONTEXT_HPP_UWOD2BSQ
 
 #include <vanetza/geonet/data_indication.hpp>
+#include <vanetza/geonet/link_layer.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/parser.hpp>
 #include <vanetza/geonet/pdu.hpp>
@@ -22,12 +23,7 @@ class IndicationContext
 public:
     using UpPacketPtr = std::unique_ptr<UpPacket>;
     using SecuredMessage = security::SecuredMessageV2;
-
-    struct LinkLayer
-    {
-        MacAddress sender;
-        MacAddress destination;
-    };
+    using LinkLayer = geonet::LinkLayer;
 
     // parser commands
     virtual const BasicHeader* parse_basic() = 0;
