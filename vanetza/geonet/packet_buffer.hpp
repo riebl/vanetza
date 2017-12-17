@@ -1,8 +1,7 @@
 #ifndef PACKET_BUFFER_HPP_U97KIBQC
 #define PACKET_BUFFER_HPP_U97KIBQC
 
-#include <vanetza/geonet/lifetime.hpp>
-#include <vanetza/geonet/next_hop.hpp>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/geonet/timestamp.hpp>
@@ -21,14 +20,14 @@ namespace packet_buffer
 class Expiry
 {
 public:
-    Expiry(Timestamp now, Lifetime lifetime);
-    bool is_expired(Timestamp now) const;
-    Timestamp buffered_since() const { return m_buffered_since; }
-    Timestamp expires_at() const { return m_expires_at; }
+    Expiry(Clock::time_point now, Clock::duration lifetime);
+    bool is_expired(Clock::time_point now) const;
+    Clock::time_point buffered_since() const { return m_buffered_since; }
+    Clock::time_point expires_at() const { return m_expires_at; }
 
 private:
-    Timestamp m_buffered_since;
-    Timestamp m_expires_at;
+    Clock::time_point m_buffered_since;
+    Clock::time_point m_expires_at;
 };
 
 class Data
@@ -41,17 +40,17 @@ public:
     virtual std::size_t length() const = 0;
 
     /**
-     * Lifetime associated with data
-     * \return Lifetime reference
+     * Reduce lifetime associated with data
+     * \param d reduce lifetime by given duration
+     * \return remaining lifetime (never negative)
      */
-    virtual Lifetime& lifetime() = 0;
+    virtual Clock::duration reduce_lifetime(Clock::duration d) = 0;
 
     /**
      * Flush data
      * \note length() and lifetime() should not be called afterwards!
-     * \return next hop data
      */
-    virtual NextHop flush() = 0;
+    virtual void flush() = 0;
 
     virtual ~Data() {}
 };
@@ -79,15 +78,14 @@ public:
      * \param t Current time
      * \return true if packet has been pushed successfully
      */
-    bool push(data_ptr packet, Timestamp t);
+    bool push(data_ptr packet, Clock::time_point t);
 
     /**
      * Flush packets from buffer. Expired packets are dropped.
-     * \note Some packets might remain in buffer
+     * \note Some packets might remain in buffer (re-added during flushing)
      * \param t Current time
-     * \return list of ready-to-send packets
      */
-    std::list<NextHop> flush(Timestamp t);
+    void flush(Clock::time_point t);
 
 private:
     typedef packet_buffer::Expiry expiry_type;
@@ -114,7 +112,7 @@ private:
      * Drop all packets with expired timestamp
      * \param t current time
      */
-    void drop_expired(Timestamp t);
+    void drop_expired(Clock::time_point t);
 
     /**
      * Drop as many packets as required to store given number of bytes.

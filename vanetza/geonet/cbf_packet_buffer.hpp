@@ -3,6 +3,7 @@
 
 #include <vanetza/common/clock.hpp>
 #include <vanetza/geonet/packet.hpp>
+#include <vanetza/geonet/pending_packet.hpp>
 #include <vanetza/geonet/pdu_variant.hpp>
 #include <vanetza/geonet/sequence_number.hpp>
 #include <boost/bimap/bimap.hpp>
@@ -55,23 +56,17 @@ namespace geonet
 class CbfPacket
 {
 public:
-    using PduPtr = std::unique_ptr<GbcPdu>;
-    using PayloadPtr = std::unique_ptr<DownPacket>;
+    CbfPacket(PendingPacket<GbcPdu>&&, const MacAddress& sender);
+    CbfPacket(PendingPacket<GbcPdu, const MacAddress&>&&, const MacAddress& sender);
 
-    /**
-     * Helper data structure for extracting bare packet data after CBF timer expiration
-     */
-    struct Data
-    {
-        Data(CbfPacket&& packet);
-
-        PduPtr pdu;
-        PayloadPtr payload;
-    };
-
-    CbfPacket(PduPtr pdu, PayloadPtr payload);
     CbfPacket(CbfPacket&&) = default;
     CbfPacket& operator=(CbfPacket&&) = default;
+
+    /**
+     * Get sender of buffered packet
+     * \return sender's link-layer address
+     */
+    const MacAddress& sender() const;
 
     /**
      * Get source address of buffered packet
@@ -98,10 +93,11 @@ public:
     unsigned counter() const { return m_counter; }
 
     /**
-     * Get lifetime of buffered packet
-     * \return reference to lifetime stored in basic header
+     * Reduce lifetime of buffered packet
+     * \param d reduce lifetime by this duration
+     * \return remaining lifetime
      */
-    Lifetime& lifetime();
+    Clock::duration reduce_lifetime(Clock::duration d);
 
     /**
      * Length of packet data in bytes (PDU including payload)
@@ -109,9 +105,11 @@ public:
      */
     std::size_t length() const;
 
+    PendingPacket<GbcPdu> packet() && { return std::move(m_packet); }
+
 private:
-    PduPtr m_pdu;
-    PayloadPtr m_payload;
+    PendingPacket<GbcPdu> m_packet;
+    const MacAddress m_sender;
     unsigned m_counter;
 };
 
@@ -122,7 +120,7 @@ private:
 class CbfPacketBuffer
 {
 public:
-    using TimerCallback = std::function<void(CbfPacket::Data&&)>;
+    using TimerCallback = std::function<void(PendingPacket<GbcPdu>&&)>;
 
     /**
      * Create CBF packet buffer with bounded capacity

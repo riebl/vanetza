@@ -13,6 +13,7 @@
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/packet_buffer.hpp>
+#include <vanetza/geonet/pending_packet.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/geonet/pdu_variant.hpp>
 #include <vanetza/geonet/repeater.hpp>
@@ -48,18 +49,21 @@ extern const uint16be_t ether_type;
 
 class IndicationContext;
 class IndicationContextBasic;
-class TransportInterface;
 class NextHop;
+class TransportInterface;
 struct ShbDataRequest;
 struct GbcDataRequest;
 struct DataConfirm;
 struct DataIndication;
+struct LinkLayer;
 
 /**
  * Router is the central entity for GeoNet communication
  *
  * Incoming and outgoing GeoNet packets are handled by the router.
  * It may even dispatch own packets (beacons) if necessary.
+ *
+ * This implementation follows EN 302 636-4-1 v1.3.1
  */
 class Router
 {
@@ -68,6 +72,8 @@ public:
     typedef std::unique_ptr<Pdu> PduPtr;
     typedef std::unique_ptr<DownPacket> DownPacketPtr;
     typedef std::unique_ptr<UpPacket> UpPacketPtr;
+
+    using PendingPacketForwarding = PendingPacket<GbcPdu, const MacAddress&>;
 
     /// Reason for packet drop used by drop hook
     enum class PacketDropReason
@@ -218,6 +224,15 @@ public:
      */
     void set_random_seed(std::uint_fast32_t seed);
 
+    /**
+     * Forwarding algorithm selection procedure as given by Annex D
+     * \param pdu GeoNetworking PDU
+     * \param payload packet payload
+     * \param ll link-layer control info (unavailable for source operations)
+     * \return routing decision (next hop's address, buffered, or discarded)
+     */
+    NextHop forwarding_algorithm_selection(PendingPacketForwarding&&, const LinkLayer* ll = nullptr);
+
 private:
     typedef std::map<UpperProtocol, TransportInterface*> transport_map_t;
 
@@ -272,9 +287,10 @@ private:
      *
      * \param pdu containing the ExtendedHeader
      * \param packet received packet
+     * \param ll link-layer control info
      * \return pass up decision (always false for BEACONs)
      */
-    bool process_extended(const ExtendedPduConstRefs<BeaconHeader>&, const UpPacket&);
+    bool process_extended(const ExtendedPduConstRefs<BeaconHeader>&, const UpPacket&, const LinkLayer& ll);
 
     /**
      * \brief Process ExtendedHeader information.
@@ -283,9 +299,10 @@ private:
      *
      * \param pdu containing the ExtendedHeader
      * \param packet received packet
+     * \param ll link-layer control info
      * \return pass up decision (true for all non-duplicate SHBs)
      */
-    bool process_extended(const ExtendedPduConstRefs<ShbHeader>&, const UpPacket&);
+    bool process_extended(const ExtendedPduConstRefs<ShbHeader>&, const UpPacket&, const LinkLayer& ll);
 
     /**
      * \brief Process ExtendedHeader information.
@@ -295,19 +312,10 @@ private:
      *
      * \param pdu containing the ExtendedHeader
      * \param packet received packet
-     * \param sender
-     * \param destination
+     * \param ll link-layer control info
      * \return pass up decision (depends on addressed area and router position)
      */
-    bool process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>&, const UpPacket&,
-            const MacAddress& sender, const MacAddress& destination);
-
-    /**
-     * \brief Send all buffered packet whose waiting time expired.
-     *
-     * \param buffer
-     */
-    void flush_forwarding_buffer(PacketBuffer&);
+    bool process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>&, const UpPacket&, const LinkLayer& ll);
 
     /**
      * \brief Send all packets in the broadcast forwarding buffer with expired waiting time.
@@ -315,9 +323,10 @@ private:
     void flush_broadcast_forwarding_buffer();
 
     /**
-     * \brief Send all packets in the unicast forwarding buffer with expired waiting time.
+     * \brief Send all matching packets in the unicast forwarding buffer with expired waiting time.
+     * \param addr unicast packets for this address
      */
-    void flush_unicast_forwarding_buffer();
+    void flush_unicast_forwarding_buffer(const Address& addr);
 
     /**
      * \brief Executes media specific functionalities
@@ -366,91 +375,85 @@ private:
      * Router's address is set to a new random address.
      * \note Behaviour depends on MIB's itsGnLocalAddrConfMethod.
      *
-     * \param addr_so address to be examined
+     * \param source address of source (from packet header)
+     * \param sender address of sender (link layer)
      */
-    void detect_duplicate_address(const Address&);
+    void detect_duplicate_address(const Address& source, const MacAddress& sender);
 
     /**
-     * \brief Determine next hop for GBC Advanced forwarding.
-     * See TS 102 636-4 v1.2.3 E.4
+     * \brief Detect duplicate packets
+     * See EN 302 636-4-1 v1.3.1 Annex A.2
      *
-     * \param scf Store & Carry Forwarding
-     * \param sender
-     * \param destination
-     * \param pdu
-     * \param payload
-     * \return next hop
+     * \param source source address
+     * \param sn sequence number
+     * \return true if packet is detected as a duplicate
      */
-    NextHop next_hop_gbc_advanced(bool scf, const MacAddress& sender, const MacAddress& destination,
-            std::unique_ptr<GbcPdu>, DownPacketPtr);
-
-    /**
-     * \brief Determine first hop for GBC Advanced forwarding.
-     *
-     * \param scf Store & Carry Forwarding
-     * \param pdu
-     * \param payload
-     * \return first hop
-     */
-    NextHop first_hop_gbc_advanced(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
-
-    /**
-     * \brief Determine next hop for contention-based forwarding.
-     * See TS 102 636-4 v1.2.3 E.3
-     *
-     * \param scf Store & Carry Forwarding
-     * \param sender
-     * \param pdu
-     * \param payload
-     * \return next hop
-     */
-    NextHop next_hop_contention_based_forwarding(bool scf, const MacAddress& sender,
-            std::unique_ptr<GbcPdu>, DownPacketPtr);
+    bool detect_duplicate_packet(const Address& source, SequenceNumber sn);
 
     /**
      * \brief Determine next hop for greedy forwarding.
-     * See TS 102 636-4 v1.2.3 D.2
+     * See EN 302 636-4-1 v1.3.1 Annex E.2
      *
-     * \param scf Store & Carry Forwarding
      * \param pdu
      * \param payload
      * \return next hop
      */
-    NextHop next_hop_greedy_forwarding(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
+    NextHop greedy_forwarding(PendingPacketForwarding&&);
 
     /**
-     * \brief Determine first hop for contention-based forwarding.
+     * \brief Determine next hop for non-area contention-based forwarding
+     * See EN 302 636-4-1 v1.3.1 Annex E.3
      *
-     * \param scf Store & Carry Forwarding
      * \param pdu
      * \param payload
-     * \return first hop
+     * \param sender optional sender MAC address (if not first hop)
+     * \return next hop
      */
-    NextHop first_hop_contention_based_forwarding(bool scf, std::unique_ptr<GbcPdu>, DownPacketPtr);
+    NextHop non_area_contention_based_forwarding(PendingPacketForwarding&&, const MacAddress* sender);
 
     /**
-     * \brief Determine CBF buffering time for a GBC packet.
-     * See TS 102 636-4 v1.2.3 E.3
+     * \brief Determine next hop for area contention-based forwarding
+     * See EN 302 636-4-1 v1.3.1 Annex F.3
      *
-     * \param dist Distance between local router and sender
+     * \param pdu
+     * \param payload
+     * \param sender optional sender MAC address (if not first hop)
+     * \return next hop
+     */
+    NextHop area_contention_based_forwarding(PendingPacketForwarding&&, const MacAddress* sender);
+
+    /**
+     * \brief Determine CBF buffering time for a packet.
+     * Complies to EN 302 636-4-1 v1.3.1 Annex E.3 (non-area CBF, eq. E.1) and F.3 (area CBF, eq. F.1)
+     *
+     * \param dist distance or progress (interpretation depends on non-area vs. area CBF)
      * \return CBF time-out
      */
-    units::Duration timeout_cbf_gbc(units::Length distance) const;
+    units::Duration timeout_cbf(units::Length distance) const;
 
     /**
-     * \brief Determine CBF buffering time for a GBC packet.
-     * See TS 102 636-4 v1.2.3 E.3
+     * \brief Determine (area) CBF buffering time for a packet from a sender
+     *
+     * This is a shortcut for a re-curring pattern in Annex F.3 and F.4:
+     * 1) sender position is looked up in location table
+     * 2) position accuracy of sender is validated (if it is found)
+     * 3) progress is then distance between sender and local router
      *
      * \param sender MAC address of sender
      * \return CBF time-out
      */
-    units::Duration timeout_cbf_gbc(const MacAddress& sender) const;
+    units::Duration timeout_cbf(const MacAddress& sender) const;
 
     /**
-     * \brief Handle CBF packet on timer expiration
-     * \param packet CBF packet ready for transmission
+     * \brief Determine next hop for area advnaced forwarding
+     * See EN 302 636-4-1 v1.3.1 Annex F.4
+     *
+     * \param pdu
+     * \param payload
+     * \param ll optional link-layer control info (if not source operations)
+     * \return next hop
      */
-    void on_cbf_timer_expiration(CbfPacket::Data&& packet);
+    NextHop area_advanced_forwarding(PendingPacketForwarding&&, const LinkLayer* sender);
 
     /**
      * \brief Callback function for dispatching a packet repetition.

@@ -3,9 +3,11 @@
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/geonet/areas.hpp>
+#include <vanetza/geonet/data_indication.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/packet.hpp>
 #include <vanetza/geonet/router.hpp>
+#include <vanetza/geonet/transport_interface.hpp>
 #include <vanetza/geonet/tests/security_context.hpp>
 #include <vanetza/net/mac_address.hpp>
 #include <vanetza/units/length.hpp>
@@ -35,7 +37,9 @@ public:
     public:
         RequestInterface(NetworkTopology&, const MacAddress&);
         void request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>) override;
+        void reset();
 
+        unsigned counter = 0;
         dcc::DataRequest last_request;
         std::unique_ptr<ChunkPacket> last_packet;
 
@@ -44,13 +48,26 @@ public:
         const MacAddress& address;
     };
 
+    class TransportHandler : public TransportInterface
+    {
+    public:
+        void indicate(const DataIndication&, std::unique_ptr<UpPacket>) override;
+        void reset();
+
+        unsigned counter = 0;
+        DataIndication last_indication;
+        std::unique_ptr<UpPacket> last_packet;
+    };
+
     class RouterContext
     {
     public:
         RouterContext(NetworkTopology&);
+        void set_position_accuracy_indicator(bool flag);
 
         MacAddress mac_address;
         RequestInterface request_interface;
+        TransportHandler transport_interface;
         Runtime runtime;
         SecurityContext security;
         Router router;
@@ -60,6 +77,7 @@ public:
     boost::optional<RouterContext&> get_host(const MacAddress&);
     boost::optional<Router&> get_router(const MacAddress&);
     boost::optional<RequestInterface&> get_interface(const MacAddress&);
+    boost::optional<TransportHandler&> get_transport(const MacAddress&);
     const unsigned& get_counter_requests(const MacAddress&);
     const unsigned& get_counter_indications() const { return counter_indications; }
     ManagementInformationBase& get_mib() { return mib; }
@@ -67,7 +85,8 @@ public:
     void add_reachability(const MacAddress&, std::initializer_list<MacAddress>);
     void save_request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>);
     void dispatch();
-    void send(const MacAddress&, const MacAddress&);
+    void send(Router&, const MacAddress&, const MacAddress&);
+    void repeat(const MacAddress&, const MacAddress&);
     void set_position(const MacAddress&, CartesianPosition);
     void advance_time(Clock::duration);
     void reset_counters();

@@ -22,39 +22,40 @@ CbfPacketIdentifier identifier(const Address& source, SequenceNumber sn)
 }
 
 
-CbfPacket::CbfPacket(PduPtr pdu, PayloadPtr payload) :
-    m_pdu(std::move(pdu)), m_payload(std::move(payload)), m_counter(1)
+CbfPacket::CbfPacket(PendingPacket<GbcPdu>&& packet, const MacAddress& sender) :
+    m_packet(std::move(packet)), m_sender(sender), m_counter(1)
 {
+}
+
+CbfPacket::CbfPacket(PendingPacket<GbcPdu, const MacAddress&>&& packet, const MacAddress& sender) :
+    m_packet(PendingPacket<GbcPdu>(std::move(packet), cBroadcastMacAddress)),
+    m_sender(sender), m_counter(1)
+{
+}
+
+const MacAddress& CbfPacket::sender() const
+{
+    return m_sender;
 }
 
 const Address& CbfPacket::source() const
 {
-    assert(m_pdu);
-    return m_pdu->extended().source_position.gn_addr;
+    return m_packet.pdu().extended().source_position.gn_addr;
 }
 
 SequenceNumber CbfPacket::sequence_number() const
 {
-    assert(m_pdu);
-    return m_pdu->extended().sequence_number;
+    return m_packet.pdu().extended().sequence_number;
 }
 
-Lifetime& CbfPacket::lifetime()
+Clock::duration CbfPacket::reduce_lifetime(Clock::duration d)
 {
-    assert(m_pdu);
-    return m_pdu->basic().lifetime;
+    return m_packet.reduce_lifetime(d);
 }
 
 std::size_t CbfPacket::length() const
 {
-    const auto pdu_length = m_pdu ? get_length(*m_pdu) : 0;
-    const auto payload_length = m_payload ? m_payload->size(OsiLayer::Transport, max_osi_layer()) : 0;
-    return pdu_length + payload_length;
-}
-
-CbfPacket::Data::Data(CbfPacket&& packet) :
-    pdu(std::move(packet.m_pdu)), payload(std::move(packet.m_payload))
-{
+    return m_packet.length();
 }
 
 
@@ -165,8 +166,8 @@ void CbfPacketBuffer::flush()
         bool valid_packet = reduce_lifetime(timer, packet);
         m_stored_bytes -= packet.length();
         if (valid_packet) {
-            CbfPacket::Data data(std::move(packet));
-            m_timer_callback(std::move(data));
+            //CbfPacket::Data data(std::move(packet));
+            m_timer_callback(std::move(packet).packet());
         }
 
         m_packets.erase(it->info);
@@ -182,13 +183,7 @@ void CbfPacketBuffer::flush()
 bool CbfPacketBuffer::reduce_lifetime(const Timer& timer, CbfPacket& packet) const
 {
     const auto queuing_time = m_runtime.now() - timer.start;
-    const auto clock_lifetime = units::clock_cast(packet.lifetime().decode());
-    bool valid_packet = false;
-    if (queuing_time < clock_lifetime) {
-        packet.lifetime().encode(units::clock_cast(clock_lifetime - queuing_time));
-        valid_packet = true;
-    }
-    return valid_packet;
+    return packet.reduce_lifetime(queuing_time) > Clock::duration::zero();
 }
 
 void CbfPacketBuffer::schedule_timer()

@@ -46,6 +46,11 @@ enum class SecurityDecapHandling {
     NON_STRICT = 1
 };
 
+/**
+ * The Management Information Base (MIB) defines the GeoNetworking protocol constants.
+ *
+ * \see EN 302 636-4-1 v1.3.1 Annex H
+ */
 struct ManagementInformationBase
 {
     ManagementInformationBase();
@@ -53,7 +58,6 @@ struct ManagementInformationBase
     Address itsGnLocalGnAddr;
     AddrConfMethod itsGnLocalAddrConfMethod;
     unsigned itsGnProtocolVersion;
-    StationType itsGnStationType;
     bool itsGnIsMobile;
     InterfaceType itsGnIfType;
     units::Frequency itsGnMinimumUpdateFrequencyLPV;
@@ -69,21 +73,18 @@ struct ManagementInformationBase
     units::Duration itsGnBeaconServiceRetransmitTimer;
     units::Duration itsGnBeaconServiceMaxJitter;
     unsigned itsGnDefaultHopLimit;
+    unsigned itsGnDPLLength;
     Lifetime itsGnMaxPacketLifetime;
     Lifetime itsGnDefaultPacketLifetime;
     unsigned itsGnMaxPacketDataRate; // kbyte/s
     units::Area itsGnMaxGeoAreaSize;
     units::Duration itsGnMinPacketRepetitionInterval;
-    UnicastForwarding itsGnGeoUnicastForwardingAlgorithm;
-    BroadcastForwarding itsGnGeoBroadcastForwardingAlgorithm;
-    units::Duration itsGnGeoUnicastCbfMinTime;
-    units::Duration itsGnGeoUnicastCbfMaxTime;
-    units::Duration itsGnGeoBroadcastCbfMinTime;
-    units::Duration itsGnGeoBroadcastCbfMaxTime;
+    UnicastForwarding itsGnNonAreaForwardingAlgorithm;
+    BroadcastForwarding itsGnAreaForwardingAlgorithm;
+    units::Duration itsGnCbfMinTime;
+    units::Duration itsGnCbfMaxTime;
     units::Length itsGnDefaultMaxCommunicationRange;
     units::Angle itsGnBroadcastCBFDefSectorAngle;
-    units::Angle itsGnUnicastCBFDefSectorAngle;
-    bool itsGnGeoAreaLineForwarding;
     unsigned itsGnUcForwardingPacketBufferSize; // kbyte
     unsigned itsGnBcForwardingPacketBufferSize; // kbyte
     unsigned itsGnCbfPacketBufferSize; // kbyte

@@ -1,5 +1,4 @@
 #include "next_hop.hpp"
-#include <cassert>
 
 namespace vanetza
 {
@@ -25,34 +24,37 @@ bool NextHop::valid() const
     return m_state == State::VALID;
 }
 
-void NextHop::state(State s)
-{
-    m_state = s;
-}
-
 const MacAddress& NextHop::mac() const
 {
     return m_destination;
 }
 
-void NextHop::mac(const MacAddress& addr)
+bool NextHop::process() &&
 {
-    m_destination = addr;
+    if (valid()) {
+        PendingPacket<GbcPdu>(std::move(m_packet), m_destination).process();
+        m_state = State::DISCARDED;
+        return true;
+    } else {
+        return false;
+    }
 }
 
-std::tuple<std::unique_ptr<Pdu>, std::unique_ptr<DownPacket>>
-NextHop::data()
+void NextHop::transmit(Packet&& packet, const MacAddress& destination)
 {
-    assert(m_pdu && m_payload);
-    // set state to DISCARDED, so further valid() calls fail
-    state(NextHop::State::DISCARDED);
-    return std::make_tuple(std::move(m_pdu), std::move(m_payload));
+    m_state = NextHop::State::VALID;
+    m_packet = std::move(packet);
+    m_destination = destination;
 }
 
-void NextHop::data(std::unique_ptr<Pdu> pdu, std::unique_ptr<DownPacket> payload)
+void NextHop::discard()
 {
-    m_pdu = std::move(pdu);
-    m_payload = std::move(payload);
+    m_state = NextHop::State::DISCARDED;
+}
+
+void NextHop::buffer()
+{
+    m_state = NextHop::State::BUFFERED;
 }
 
 } // namespace geonet

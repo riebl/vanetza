@@ -47,10 +47,32 @@ NetworkTopology::RequestInterface::RequestInterface(NetworkTopology& network, co
 
 void NetworkTopology::RequestInterface::request(const dcc::DataRequest& req, std::unique_ptr<ChunkPacket> packet)
 {
+    ++counter;
     last_request = req;
     last_packet.reset(new ChunkPacket(*packet));
     last_request.source = address;
     network.save_request(last_request, std::move(packet));
+}
+
+void NetworkTopology::RequestInterface::reset()
+{
+    counter = 0;
+    last_request = dcc::DataRequest {};
+    last_packet.reset();
+}
+
+void NetworkTopology::TransportHandler::indicate(const DataIndication& ind, std::unique_ptr<UpPacket> packet)
+{
+    ++counter;
+    last_indication = ind;
+    last_packet = std::move(packet);
+}
+
+void NetworkTopology::TransportHandler::reset()
+{
+    counter = 0;
+    last_indication = DataIndication {};
+    last_packet.reset();
 }
 
 NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
@@ -61,10 +83,19 @@ NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
 {
     router.set_access_interface(&request_interface);
     router.set_security_entity(&security.entity());
+    router.set_transport_handler(UpperProtocol::IPv6, &transport_interface);
+    set_position_accuracy_indicator(true);
 
     router.packet_dropped = [](Router::PacketDropReason pdr) {
         throw std::runtime_error("packet dropped unexpectedly: " + stringify(pdr));
     };
+}
+
+void NetworkTopology::RouterContext::set_position_accuracy_indicator(bool flag)
+{
+    LongPositionVector lpv = router.get_local_position_vector();
+    lpv.position_accuracy_indicator = flag;
+    router.update(lpv);
 }
 
 NetworkTopology::NetworkTopology() : now(Clock::at("2016-02-29 23:59"))
@@ -101,6 +132,15 @@ boost::optional<NetworkTopology::RequestInterface&> NetworkTopology::get_interfa
         interface = context->request_interface;
 
     return interface;
+}
+
+boost::optional<NetworkTopology::TransportHandler&> NetworkTopology::get_transport(const MacAddress& addr)
+{
+    boost::optional<NetworkTopology::TransportHandler&> transport;
+    auto context = get_host(addr);
+    if (context)
+        transport = context->transport_interface;
+    return transport;
 }
 
 const unsigned& NetworkTopology::get_counter_requests(const MacAddress& addr)
@@ -148,23 +188,38 @@ void NetworkTopology::dispatch()
         auto neighbours = reachability[req.source];
         // broadcast packet to all reachable routers
         if (req.destination == cBroadcastMacAddress) {
-            for (auto& mac_addy: neighbours) {
-                send(req.source, mac_addy);
+            for (auto& mac: neighbours) {
+                auto router = get_router(mac);
+                if (router) {
+                    send(*router, req.source, req.destination);
+                }
             }
         }
         // send packet only to specific destination router
         else if (neighbours.find(req.destination) != neighbours.end()) {
-            send(req.source, req.destination);
+            auto router = get_router(req.destination);
+            if (router) {
+                send(*router, req.source, req.destination);
+            }
         }
     }
 }
 
-void NetworkTopology::send(const MacAddress& sender, const MacAddress& destination)
+void NetworkTopology::send(Router& receiver, const MacAddress& sender, const MacAddress& destination)
 {
+    assert(sender != destination);
     counter_indications++;
     std::unique_ptr<UpPacket> packet_up = fn_duplicate(*get_interface(sender)->last_packet);
-    auto router = get_router(destination);
-    if (router) router->indicate(std::move(packet_up), sender, destination);
+    receiver.indicate(std::move(packet_up), sender, destination);
+}
+
+void NetworkTopology::repeat(const MacAddress& sender, const MacAddress& destination)
+{
+    assert(destination != cBroadcastMacAddress);
+    auto receiver = get_router(destination);
+    if (receiver) {
+        send(*receiver, sender, destination);
+    }
 }
 
 void NetworkTopology::set_position(const MacAddress& addr, CartesianPosition c)
@@ -205,6 +260,13 @@ void NetworkTopology::reset_counters()
 {
     counter_indications = 0;
     counter_requests.clear();
+
+    requests.clear();
+    for (auto& host : hosts) {
+        RouterContext* ctx = std::get<1>(host).get();
+        ctx->request_interface.reset();
+        ctx->transport_interface.reset();
+    }
 }
 
 void NetworkTopology::set_duplication_mode(PacketDuplicationMode mode)
