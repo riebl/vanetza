@@ -76,7 +76,7 @@ TEST_F(LocationTableTest, neighbourhood) {
     loct->update(pv_a);
     EXPECT_FALSE(loct->has_neighbours());
 
-    loct->get_entry(addr_a).set_neighbour(true);
+    loct->update(pv_a).set_neighbour(true);
     EXPECT_TRUE(loct->has_neighbours());
 
     Address addr_b;
@@ -85,11 +85,11 @@ TEST_F(LocationTableTest, neighbourhood) {
     pv_b.gn_addr = addr_b;
     loct->update(pv_b);
 
-    loct->get_entry(addr_a).set_neighbour(false);
+    loct->update(pv_a).set_neighbour(false);
     EXPECT_FALSE(loct->has_neighbours());
 
-    loct->get_entry(addr_a).set_neighbour(true);
-    loct->get_entry(addr_b).set_neighbour(true);
+    loct->update(pv_a).set_neighbour(true);
+    loct->update(pv_b).set_neighbour(true);
     auto neighbours = loct->neighbours();
     EXPECT_EQ(2, std::distance(neighbours.begin(), neighbours.end()));
     EXPECT_TRUE(std::any_of(neighbours.begin(), neighbours.end(),
@@ -101,7 +101,7 @@ TEST_F(LocationTableTest, neighbourhood) {
                     return e.get_position_vector() == pv_b;
                 }));
 
-    loct->get_entry(addr_a).set_neighbour(false);
+    loct->update(pv_a).set_neighbour(false);
     neighbours = loct->neighbours();
     EXPECT_EQ(1, std::distance(neighbours.begin(), neighbours.end()));
     EXPECT_EQ(pv_b, neighbours.begin()->get_position_vector());
@@ -140,9 +140,11 @@ TEST_F(LocationTableTest, is_duplicate_packet_sequence) {
 TEST_F(LocationTableTest, update_pdr) {
     Address addr;
     addr.mid({1, 0, 1, 0, 1, 0});
+    LongPositionVector pv;
+    pv.gn_addr = addr;
 
     using std::chrono::milliseconds;
-    auto entry = loct->get_entry(addr);
+    auto entry = loct->update(pv);
     EXPECT_TRUE(isnan(entry.get_pdr()));
     runtime->trigger(milliseconds(100));
     entry.update_pdr(30);

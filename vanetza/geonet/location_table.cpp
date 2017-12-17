@@ -91,6 +91,21 @@ void LocationTableEntry::set_position_vector(const LongPositionVector& pv)
     m_position_vector = pv;
 }
 
+bool LocationTableEntry::update_position_vector(const LongPositionVector& lpv)
+{
+    if (has_position_vector()) {
+        if (get_position_vector().timestamp < lpv.timestamp) {
+            set_position_vector(lpv);
+            return true;
+        }
+    } else {
+        set_position_vector(lpv);
+        return true;
+    }
+
+    return false;
+}
+
 void LocationTableEntry::set_neighbour(bool flag)
 {
     m_is_neighbour = flag;
@@ -138,22 +153,18 @@ bool LocationTable::is_duplicate_packet(const Address& addr, Timestamp t)
     return m_table.get_value(addr.mid()).is_duplicate_packet(t);
 }
 
-void LocationTable::update(const LongPositionVector& lpv)
+LocationTableEntry& LocationTable::update(const LongPositionVector& lpv)
 {
     LocationTableEntry* entry = m_table.get_value_ptr(lpv.gn_addr.mid());
     if (entry && entry->has_position_vector()) {
-        if (entry->get_position_vector().timestamp < lpv.timestamp) {
-            entry->set_position_vector(lpv);
+        if (entry->update_position_vector(lpv)) {
             m_table.refresh(lpv.gn_addr.mid());
         }
     } else {
-        m_table.refresh(lpv.gn_addr.mid()).set_position_vector(lpv);
+        entry = &m_table.refresh(lpv.gn_addr.mid());
+        entry->update_position_vector(lpv);
     }
-}
-
-LocationTableEntry& LocationTable::get_entry(const Address& addr)
-{
-    return m_table.get_value(addr.mid());
+    return *entry;
 }
 
 const LocationTableEntry* LocationTable::get_entry(const Address& addr) const

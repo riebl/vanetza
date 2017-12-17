@@ -70,10 +70,11 @@ public:
     const LongPositionVector& get_position_vector() const { return m_position_vector; }
 
     /**
-     * Update stored position vector
+     * Update stored position vector (only after time stamp check)
      * \param pv source position vector
+     * \return true if position vector passed time stamp check
      */
-    void set_position_vector(const LongPositionVector& pv);
+    bool update_position_vector(const LongPositionVector& pv);
 
     /**
      * Check if this entry belongs to a direct neighbour
@@ -88,6 +89,12 @@ public:
     void set_neighbour(bool flag);
 
 private:
+    /**
+     * Set stored position vector (without timestamp check)
+     * \param pv source position vector
+     */
+    void set_position_vector(const LongPositionVector& pv);
+
     const Runtime& m_runtime;
     bool m_is_neighbour;
     bool m_has_position_vector;
@@ -124,7 +131,7 @@ public:
 
     LocationTable(const MIB&, Runtime&);
     bool has_entry(const Address&) const;
-    LocationTableEntry& get_entry(const Address&);
+    LocationTableEntry& update(const LongPositionVector&);
     const LocationTableEntry* get_entry(const Address&) const;
     const LongPositionVector* get_position(const Address&) const;
     const LongPositionVector* get_position(const MacAddress&) const;
@@ -132,7 +139,6 @@ public:
     neighbour_range neighbours() const;
     bool is_duplicate_packet(const Address& source, SequenceNumber, Timestamp);
     bool is_duplicate_packet(const Address& source, Timestamp);
-    void update(const LongPositionVector&);
     void drop_expired() { m_table.drop_expired(); }
 
 private:

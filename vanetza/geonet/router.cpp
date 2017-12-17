@@ -868,8 +868,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
     detect_duplicate_address(source_addr);
 
     // update location table with SO.PV (see C.2)
-    m_location_table.update(shb.source_position);
-    auto& source_entry = m_location_table.get_entry(source_addr);
+    auto& source_entry = m_location_table.update(shb.source_position);
     assert(source_entry.has_position_vector());
 
     // update SO.PDR in location table (see B.2)
@@ -900,8 +899,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, con
     detect_duplicate_address(source_addr);
 
     // update location table with SO.PV (see C.2)
-    m_location_table.update(beacon.source_position);
-    auto& source_entry = m_location_table.get_entry(source_addr);
+    auto& source_entry = m_location_table.update(beacon.source_position);
 
     // update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
@@ -936,8 +934,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     detect_duplicate_address(source_addr);
 
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
-    m_location_table.update(gbc.source_position);
-    auto& source_entry = m_location_table.get_entry(source_addr);
+    auto& source_entry = m_location_table.update(gbc.source_position);
     source_entry.update_pdr(packet_size);
     if (remove_neighbour_flag) {
         source_entry.set_neighbour(false);
