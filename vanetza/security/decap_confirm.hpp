@@ -2,6 +2,7 @@
 #define DECAP_CONFIRM_HPP
 
 #include <vanetza/security/certificate.hpp>
+#include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/payload.hpp>
 #include <boost/optional.hpp>
 #include <cstdint>
@@ -44,7 +45,7 @@ struct DecapConfirm
     PacketVariant plaintext_payload; // mandatory
     DecapReport report; // mandatory
     CertificateValidity certificate_validity; // non-standard extension
-    boost::optional<uint64_t> certificate_id; // optional
+    boost::optional<HashedId8> certificate_id; // optional
     // member field 'permissions' currently not used; optional
 };
 

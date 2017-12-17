@@ -21,6 +21,7 @@ target_include_directories(security_test
 configure_gtest_directory(SOURCES $<TARGET_OBJECTS:security_test> LINK_LIBRARIES Boost::boost security)
 
 add_gtest(Certificate certificate.cpp)
+add_gtest(CertificateCache certificate_cache.cpp)
 add_gtest(DefaultCertificateValidator default_certificate_validator.cpp)
 add_gtest(EccPoint ecc_point.cpp)
 add_gtest(EncryptionParameter encryption_parameter.cpp)

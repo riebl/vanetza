@@ -35,6 +35,27 @@ struct SignConfirm
     SecuredMessage secured_message;
 };
 
+class SignHeaderPolicy
+{
+public:
+    SignHeaderPolicy(const Clock::time_point& time_now);
+
+    std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
+
+    void report_unknown_certificate(HashedId8 id);
+
+    void report_requested_certificate();
+
+    void report_requested_certificate_chain();
+
+private:
+    const Clock::time_point& m_time_now;
+    Clock::time_point m_cam_next_certificate;
+    std::list<HashedId3> m_unknown_certificates;
+    bool m_cert_requested;
+    bool m_chain_requested;
+};
+
 /**
  * Equivalant of SN-SIGN service in TS 102 723-8 v1.1.1
  */
@@ -45,18 +66,20 @@ using SignService = std::function<SignConfirm(SignRequest&&)>;
  * \param rt runtime
  * \param cert certificate provider
  * \param backend cryptographic backend
+ * \param sign_header_policy sign header policy
  * \return callable sign service
  */
-SignService straight_sign_service(Runtime&, CertificateProvider&, Backend&);
+SignService straight_sign_service(CertificateProvider&, Backend&, SignHeaderPolicy&);
 
 /**
  * SignService deferring actually signature calculation using EcdsaSignatureFuture
  * \param rt runtime
  * \param cert certificate provider
  * \param backend cryptographic backend
+ * \param sign_header_policy sign header policy
  * \return callable sign service
  */
-SignService deferred_sign_service(Runtime&, CertificateProvider&, Backend&);
+SignService deferred_sign_service(CertificateProvider&, Backend&, SignHeaderPolicy&);
 
 /**
  * SignService without real cryptography but dummy signature

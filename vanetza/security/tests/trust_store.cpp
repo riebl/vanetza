@@ -5,7 +5,7 @@
 
 using namespace vanetza::security;
 
-TEST(TrustStoreTest, find_by_id)
+TEST(TrustStoreTest, lookup)
 {
     const char str[] =
             "0200040C547275737465645F526F6F74808D000004F1817DD05116B855A853F80DB171A3A470D431"
@@ -24,13 +24,13 @@ TEST(TrustStoreTest, find_by_id)
     TrustStore trust_store(trusted_certificates);
 
     HashedId8 id;
-    std::vector<Certificate> matched_certificates;
+    std::list<Certificate> matches;
 
     id = HashedId8 { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-    matched_certificates = trust_store.find_by_id(id);
-    EXPECT_EQ(0, matched_certificates.size());
+    matches = trust_store.lookup(id);
+    EXPECT_EQ(0, matches.size());
 
     id = calculate_hash(c);
-    matched_certificates = trust_store.find_by_id(id);
-    EXPECT_EQ(1, matched_certificates.size());
+    matches = trust_store.lookup(id);
+    EXPECT_EQ(1, matches.size());
 }
