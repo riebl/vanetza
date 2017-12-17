@@ -94,7 +94,7 @@ bool CbfPacketBuffer::try_drop(const Address& src, SequenceNumber sn)
 
 void CbfPacketBuffer::enqueue(CbfPacket&& packet, Clock::duration timeout)
 {
-    assert(timeout > Clock::duration::zero());
+    if(timeout <= Clock::duration::zero()) return;
     m_stored_bytes += packet.length();
 
     // do head drop if necessary
