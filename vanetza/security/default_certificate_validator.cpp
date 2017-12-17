@@ -7,7 +7,6 @@
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/trust_store.hpp>
 #include <chrono>
-#include <iostream>
 
 namespace vanetza
 {
