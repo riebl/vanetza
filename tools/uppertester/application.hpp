@@ -1,5 +1,5 @@
-#ifndef APPLICATION_HPP_PSIGPUTG
-#define APPLICATION_HPP_PSIGPUTG
+#ifndef UPPERTESTER_APPLICATION_HPP
+#define UPPERTESTER_APPLICATION_HPP
 
 #include <vanetza/btp/data_interface.hpp>
 #include <vanetza/btp/data_indication.hpp>
@@ -25,13 +25,9 @@ public:
     virtual PortType port() = 0;
 
 protected:
-    DataConfirm request(const DataRequest&, DownPacketPtr);
-
-private:
-    friend class RouterContext;
-    vanetza::geonet::GbcDataRequest request_gbc(const DataRequest&);
-    vanetza::geonet::ShbDataRequest request_shb(const DataRequest&);
-    vanetza::geonet::Router* router_;
+    DataConfirm request(const vanetza::btp::DataRequestA& request, DownPacketPtr packet);
+    DataConfirm request(const vanetza::btp::DataRequestB& request, DownPacketPtr packet);
+    vanetza::geonet::Router* router;
 };
 
-#endif /* APPLICATION_HPP_PSIGPUTG */
+#endif /* UPPERTESTER_APPLICATION_HPP */

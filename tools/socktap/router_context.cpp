@@ -129,4 +129,3 @@ void RouterContext::update_packet_flow(const geonet::LongPositionVector& lpv)
         request_interface_->allow_packet_flow(true);
     }
 }
-
