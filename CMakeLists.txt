@@ -110,7 +110,7 @@ install(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaTargets.cmake DES
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vanetza
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-  FILES_MATCHING PATTERN "*.hpp" PATTERN "asn1/gen/*.h" PATTERN "/tests/*.hpp" EXCLUDE)
+  FILES_MATCHING PATTERN "*.hpp" PATTERN "asn1/its/*.h" PATTERN "/tests/*.hpp" EXCLUDE)
 
 # export build tree (allows import by outside projects)
 export(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaExports.cmake)

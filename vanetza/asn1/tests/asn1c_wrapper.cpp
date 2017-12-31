@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
-#include <vanetza/asn1/gen/VanetzaTest.h>
+#include <vanetza/asn1/its/VanetzaTest.h>
 
 using namespace vanetza::asn1;
 typedef vanetza::asn1::asn1c_wrapper<VanetzaTest_t> test_wrapper;

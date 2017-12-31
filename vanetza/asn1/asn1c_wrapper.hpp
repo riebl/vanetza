@@ -1,8 +1,8 @@
 #ifndef ASN1C_WRAPPER_HPP_ZCNDO8E5
 #define ASN1C_WRAPPER_HPP_ZCNDO8E5
 
-#include <vanetza/asn1/gen/asn_system.h>
-#include <vanetza/asn1/gen/constr_TYPE.h>
+#include <vanetza/asn1/its/asn_system.h>
+#include <vanetza/asn1/its/constr_TYPE.h>
 #include <vanetza/common/byte_buffer.hpp>
 #include <cstddef>
 #include <string>
