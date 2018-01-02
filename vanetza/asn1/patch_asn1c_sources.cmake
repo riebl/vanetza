@@ -1,11 +1,5 @@
-# remove superfluous example code
-file(REMOVE converter-example.c converter-example.mk)
-
-# remove generated makefiles
-file(GLOB _files Makefile.am.*)
-if(_files)
-    file(REMOVE ${_files})
-endif()
+# remove generated makefile
+file(REMOVE Makefile.am.libasncodec)
 
 # change #include brackets to quotes in asn1c support code
 file(GLOB _files *.c *.h)

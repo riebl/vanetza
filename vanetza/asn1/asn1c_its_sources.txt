@@ -464,7 +464,6 @@ its/der_encoder.c
 its/oer_decoder.c
 its/oer_encoder.c
 its/oer_support.c
-its/pdu_collection.c
 its/per_decoder.c
 its/per_encoder.c
 its/per_opentype.c
