@@ -12,8 +12,8 @@ namespace vanetza
 namespace security
 {
 
-DefaultCertificateValidator::DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store) :
-    m_crypto_backend(create_backend("default")),
+DefaultCertificateValidator::DefaultCertificateValidator(Backend& backend, const Clock::time_point& time_now, const TrustStore& trust_store) :
+    m_crypto_backend(backend),
     m_time_now(time_now),
     m_trust_store(trust_store)
 {
@@ -107,7 +107,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             continue;
         }
 
-        if (m_crypto_backend->verify_data(verification_key.get(), cert, sig.get())) {
+        if (m_crypto_backend.verify_data(verification_key.get(), cert, sig.get())) {
             valid_signature = true;
             break;
         }

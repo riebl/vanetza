@@ -19,7 +19,7 @@ protected:
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
         roots({ certificate_provider->root_certificate() }),
         trust_store(roots),
-        certificate_validator(new DefaultCertificateValidator(runtime.now(), trust_store)),
+        certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), trust_store)),
         sign_service(straight_sign_service(runtime, *certificate_provider, *crypto_backend)),
         verify_service(straight_verify_service(runtime, *certificate_validator, *crypto_backend)),
         security(sign_service, verify_service)

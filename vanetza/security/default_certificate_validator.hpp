@@ -21,7 +21,7 @@ class TrustStore;
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
-    DefaultCertificateValidator(const Clock::time_point& time_now, const TrustStore& trust_store);
+    DefaultCertificateValidator(Backend&, const Clock::time_point& time_now, const TrustStore& trust_store);
 
     /**
      * \brief check certificate
@@ -31,7 +31,7 @@ public:
     CertificateValidity check_certificate(const Certificate& certificate) override;
 
 private:
-    std::unique_ptr<Backend> m_crypto_backend;
+    Backend& m_crypto_backend;
     const Clock::time_point& m_time_now;
     const TrustStore& m_trust_store;
 };

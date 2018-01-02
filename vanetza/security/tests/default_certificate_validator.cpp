@@ -13,15 +13,17 @@ class DefaultCertificateValidatorTest : public ::testing::Test
 public:
     DefaultCertificateValidatorTest() :
         time_now(Clock::at("2016-08-01 00:00")),
+        backend(create_backend("default")),
         cert_provider(time_now),
         roots({ cert_provider.root_certificate() }),
         trust_store(roots),
-        cert_validator(time_now, trust_store)
+        cert_validator(*backend, time_now, trust_store)
     {
     }
 
 protected:
     Clock::time_point time_now;
+    std::unique_ptr<Backend> backend;
     NaiveCertificateProvider cert_provider;
     std::vector<Certificate> roots;
     TrustStore trust_store;
