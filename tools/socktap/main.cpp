@@ -124,6 +124,7 @@ int main(int argc, const char** argv)
         auto certificate_validator = std::unique_ptr<security::CertificateValidator> {
             new security::NullCertificateValidator() };
         auto crypto_backend = security::create_backend("default");
+        security::TrustStore trust_store;
 
         const std::string& security_option = vm["security"].as<std::string>();
         if (security_option == "off") {
@@ -139,34 +140,26 @@ int main(int argc, const char** argv)
             CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey ticket_key;
             CryptoPP::FileSource ticket_key_file("ticket.key", true);
             ticket_key.Load(ticket_key_file);
-
             auto authorization_ticket_key = to_keypair(ticket_key);
 
             security::Certificate sign_cert;
-
             std::ifstream sign_cert_src;
             sign_cert_src.open("aa.cert", std::ios::in | std::ios::binary);
-
             vanetza::InputArchive sign_cert_archive(sign_cert_src);
             security::deserialize(sign_cert_archive, sign_cert);
+            trust_store.insert(sign_cert);
 
             security::Certificate authorization_ticket;
-
             std::ifstream authorization_ticket_src;
             authorization_ticket_src.open("ticket.cert", std::ios::in | std::ios::binary);
-
             vanetza::InputArchive authorization_ticket_archive(authorization_ticket_src);
             security::deserialize(authorization_ticket_archive, authorization_ticket);
-
-            std::vector<security::Certificate> trusted_roots;
-            trusted_roots.push_back(sign_cert);
-            std::unique_ptr<security::TrustStore> trust_store { new security::TrustStore(trusted_roots) };
 
             mib.itsGnSecurity = true;
             certificate_provider = std::unique_ptr<security::CertificateProvider> {
                 new security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key) };
             certificate_validator = std::unique_ptr<security::CertificateValidator> {
-                new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), *trust_store) };
+                new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), trust_store) };
         } else {
             std::cerr << "Invalid security option '" << security_option << "', falling back to 'off'." << "\n";
             mib.itsGnSecurity = false;

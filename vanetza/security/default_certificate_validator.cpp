@@ -87,7 +87,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     }
 
     HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
-    std::vector<Certificate> possible_signers = m_trust_store.find_by_id(signer_hash);
+    std::list<Certificate> possible_signers = m_trust_store.lookup(signer_hash);
 
     // try to extract ECDSA signature
     boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.signature);

@@ -2,8 +2,8 @@
 #define VANETZA_TRUST_STORE_HPP
 
 #include <vanetza/security/certificate.hpp>
+#include <list>
 #include <map>
-#include <vector>
 
 namespace vanetza
 {
@@ -13,21 +13,24 @@ namespace security
 class TrustStore
 {
 public:
-    /**
-     * Create trust store with given trusted certificates
-     * \param trusted_certificates these certificates are copied into trust store
-     */
-    TrustStore(const std::vector<Certificate>& trusted_certificates);
+    TrustStore() = default;
 
     /**
-     * Look up certificates by hash id
-     * \param id hash identifier of certificate
-     * \return all stored certificates matching hash id
+     * Lookup certificates based on the passed HashedId8.
+     *
+     * \param id hash identifier of the certificate
+     * \return all stored certificates matching the passed identifier
      */
-    std::vector<Certificate> find_by_id(HashedId8 id) const;
+    std::list<Certificate> lookup(HashedId8 id) const;
+
+    /**
+     * Insert a certificate into store, i.e. consider it as trustworthy.
+     * \param trusted_certificate a trustworthy certificate copied into TrustStore
+     */
+    void insert(const Certificate& trusted_certificate);
 
 private:
-    std::multimap<HashedId8, Certificate> certificates;
+    std::multimap<HashedId8, Certificate> m_certificates;
 };
 
 } // namespace security

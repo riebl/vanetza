@@ -17,13 +17,12 @@ public:
     SecurityContext(Runtime& rt) :
         backend(security::create_backend("default")),
         certificate_provider(new security::NaiveCertificateProvider(rt.now())),
-        roots({ certificate_provider->root_certificate() }),
-        trust_store(roots),
         certificate_validator(new security::DefaultCertificateValidator(*backend, rt.now(), trust_store)),
         security(
             straight_sign_service(rt, *certificate_provider, *backend),
             straight_verify_service(rt, *certificate_validator, *backend))
     {
+        trust_store.insert(certificate_provider->root_certificate());
     }
 
     security::SecurityEntity& entity()

@@ -5,26 +5,22 @@ namespace vanetza
 namespace security
 {
 
-TrustStore::TrustStore(const std::vector<Certificate>& trusted_certificates)
+void TrustStore::insert(const Certificate& certificate)
 {
-    for (const auto& certificate : trusted_certificates) {
-        HashedId8 id = calculate_hash(certificate);
-        certificates.insert(std::make_pair(id, certificate));
-    }
+    HashedId8 id = calculate_hash(certificate);
+    m_certificates.insert(std::make_pair(id, certificate));
 }
 
-std::vector<Certificate> TrustStore::find_by_id(HashedId8 id) const
+std::list<Certificate> TrustStore::lookup(HashedId8 id) const
 {
     using iterator = std::multimap<HashedId8, Certificate>::const_iterator;
-    std::pair<iterator, iterator> range = certificates.equal_range(id);
+    std::pair<iterator, iterator> range = m_certificates.equal_range(id);
 
-    std::vector<Certificate> matching_certificates;
-
+    std::list<Certificate> matches;
     for (auto item = range.first; item != range.second; ++item) {
-        matching_certificates.push_back(item->second);
+        matches.push_back(item->second);
     }
-
-    return matching_certificates;
+    return matches;
 }
 
 } // namespace security

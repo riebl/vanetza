@@ -15,10 +15,9 @@ public:
         time_now(Clock::at("2016-08-01 00:00")),
         backend(create_backend("default")),
         cert_provider(time_now),
-        roots({ cert_provider.root_certificate() }),
-        trust_store(roots),
         cert_validator(*backend, time_now, trust_store)
     {
+        trust_store.insert(cert_provider.root_certificate());
     }
 
 protected:
