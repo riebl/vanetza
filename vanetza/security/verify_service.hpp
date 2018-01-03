@@ -1,6 +1,7 @@
 #ifndef VERIFY_SERVICE_HPP_BR4ISDBH
 #define VERIFY_SERVICE_HPP_BR4ISDBH
 
+#include <boost/optional.hpp>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/its_aid.hpp>
@@ -51,6 +52,7 @@ struct VerifyConfirm
     IntX its_aid; // mandatory
     ByteBuffer permissions; // mandatory
     CertificateValidity certificate_validity; // non-standard extension
+    boost::optional<HashedId8> certificate_id; // optional
 };
 
 /**

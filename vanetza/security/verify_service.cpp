@@ -69,13 +69,19 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
 
         const SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         std::list<Certificate> possible_certificates;
+
+        // use a dummy hash for initialization
+        HashedId8 signer_hash({ 0, 0, 0, 0, 0, 0, 0, 0 });
+
         if (signer_info) {
             switch (get_type(*signer_info)) {
                 case SignerInfoType::Certificate:
                     possible_certificates.push_back(boost::get<Certificate>(*signer_info));
+                    signer_hash = calculate_hash(boost::get<Certificate>(*signer_info));
                     break;
                 case SignerInfoType::Certificate_Digest_With_SHA256:
-                    possible_certificates.splice(possible_certificates.end(), cert_cache.lookup(boost::get<HashedId8>(*signer_info)));
+                    signer_hash = boost::get<HashedId8>(*signer_info);
+                    possible_certificates.splice(possible_certificates.end(), cert_cache.lookup(signer_hash));
                     break;
                 case SignerInfoType::Self:
                 case SignerInfoType::Certificate_Digest_With_Other_Algorithm:
@@ -83,9 +89,12 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
                 case SignerInfoType::Certificate_Chain:
                     {
                         std::list<Certificate> chain = boost::get<std::list<Certificate>>(*signer_info);
-                        if (chain.size() > 0) {
-                            possible_certificates.push_back(chain.front());
+                        if (chain.size() == 0) {
+                            confirm.report = VerificationReport::Signer_Certificate_Not_Found;
+                            return confirm;
                         }
+                        signer_hash = calculate_hash(chain.front());
+                        possible_certificates.push_back(chain.front());
                     }
                     break;
                 default:
@@ -97,6 +106,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
 
         if (possible_certificates.size() == 0) {
             confirm.report = VerificationReport::Signer_Certificate_Not_Found;
+            confirm.certificate_id = signer_hash;
             return confirm;
         }
 
@@ -149,9 +159,9 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
         }
 
         if (!signer) {
-            // could also be a colliding HashedId8, but the probability is pretty low
+            // could be a colliding HashedId8, but the probability is pretty low
             confirm.report = VerificationReport::False_Signature;
-            confirm.certificate_validity = CertificateInvalidReason::UNKNOWN_SIGNER;
+            confirm.certificate_id = signer_hash;
             return confirm;
         }
 
@@ -162,6 +172,11 @@ VerifyService straight_verify_service(Runtime& rt, CertificateValidator& certs, 
         if (!cert_validity) {
             confirm.report = VerificationReport::Invalid_Certificate;
             confirm.certificate_validity = cert_validity;
+
+            if (cert_validity.reason() == CertificateInvalidReason::UNKNOWN_SIGNER) {
+                confirm.certificate_id = calculate_hash(signer.get());
+            }
+
             return confirm;
         }
 
