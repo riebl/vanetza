@@ -24,10 +24,9 @@ public:
     DefaultCertificateValidator(Backend&, const Clock::time_point& time_now, const TrustStore& trust_store);
 
     /**
-     * Check validity of given certificate.
-     *
-     * \param certificate given certificate
-     * \return validity result
+     * \brief check certificate
+     * \param certificate to verify
+     * \return certificate status
      */
     CertificateValidity check_certificate(const Certificate& certificate) override;
 

@@ -157,7 +157,7 @@ int main(int argc, const char** argv)
 
             mib.itsGnSecurity = true;
             certificate_provider = std::unique_ptr<security::CertificateProvider> {
-                new security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key) };
+                new security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key) };
             certificate_validator = std::unique_ptr<security::CertificateValidator> {
                 new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), trust_store) };
         } else {

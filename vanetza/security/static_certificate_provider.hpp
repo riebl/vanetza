@@ -16,7 +16,7 @@ namespace security
 class StaticCertificateProvider : public CertificateProvider
 {
 public:
-    StaticCertificateProvider(const Certificate& authorization_ticket, const ecdsa256::KeyPair& authorization_ticket_key);
+    StaticCertificateProvider(const Certificate& authorization_ticket, const ecdsa256::PrivateKey& authorization_ticket_key);
 
     /**
      * Get own certificate to use for signing
@@ -32,7 +32,7 @@ public:
 
 private:
     Certificate authorization_ticket;
-    ecdsa256::KeyPair authorization_ticket_key;
+    ecdsa256::PrivateKey authorization_ticket_key;
 };
 
 } // namespace security
