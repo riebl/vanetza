@@ -151,7 +151,7 @@ public:
     {
         auto* data = get_data_ptr(key);
         if (data) {
-            refresh(*data->handle);
+            refresh(data->handle);
         } else {
             data = &get_data(key);
             assert(data != nullptr);
@@ -205,7 +205,7 @@ private:
             data->handle = m_heap.push(ExpiryWithKey {key, m_runtime.now() + m_lifetime});
         } else if (is_expired(*data->handle)) {
             // resurrect this data element, i.e. pretend it has just been created
-            refresh(*data->handle);
+            refresh(data->handle);
         }
         return *data;
     }
@@ -227,9 +227,11 @@ private:
         return m_runtime.now() > expiry;
     }
 
-    void refresh(ExpiryWithKey& expiry)
+    void refresh(typename heap_type::handle_type& handle)
     {
+        ExpiryWithKey& expiry = *handle;
         static_cast<Clock::time_point&>(expiry) = m_runtime.now() + m_lifetime;
+        m_heap.update(handle);
     }
 
     const Runtime& m_runtime;
