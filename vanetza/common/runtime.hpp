@@ -29,7 +29,7 @@ public:
      * Create runtime
      * \param init initialization value of internal clock
      */
-    Runtime(Clock::time_point init);
+    explicit Runtime(Clock::time_point init);
 
     /**
      * Schedule callback for later invocation
