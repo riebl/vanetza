@@ -1,4 +1,5 @@
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
@@ -13,17 +14,17 @@ class DefaultCertificateValidatorTest : public ::testing::Test
 {
 public:
     DefaultCertificateValidatorTest() :
-        time_now(Clock::at("2016-08-01 00:00")),
+        runtime(Clock::at("2016-08-01 00:00")),
         backend(create_backend("default")),
-        cert_provider(time_now),
-        cert_cache(time_now),
-        cert_validator(*backend, time_now, trust_store, cert_cache)
+        cert_provider(runtime.now()),
+        cert_cache(runtime),
+        cert_validator(*backend, runtime.now(), trust_store, cert_cache)
     {
         trust_store.insert(cert_provider.root_certificate());
     }
 
 protected:
-    Clock::time_point time_now;
+    Runtime runtime;
     std::unique_ptr<Backend> backend;
     NaiveCertificateProvider cert_provider;
     std::vector<Certificate> roots;

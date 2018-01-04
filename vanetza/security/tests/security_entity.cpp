@@ -20,7 +20,7 @@ protected:
         runtime(Clock::at("2016-03-7 08:23")),
         crypto_backend(create_backend("default")),
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
-        cert_cache(runtime.now()),
+        cert_cache(runtime),
         certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), trust_store, cert_cache)),
         sign_header_policy(runtime.now()),
         sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),

@@ -1,86 +1,99 @@
 #include <vanetza/security/certificate_cache.hpp>
+#include <chrono>
 
 namespace vanetza
 {
 namespace security
 {
 
-CertificateCache::CertificateCache(const Clock::time_point& time_now): time_now(time_now) { }
+CertificateCache::CertificateCache(const Runtime& rt) : m_runtime(rt)
+{
+}
 
 void CertificateCache::insert(const Certificate& certificate)
 {
-    evict_entries();
+    const HashedId8 id = calculate_hash(certificate);
+    std::list<Certificate> certs = lookup(id); /*< this may drop expired entries and extend some's lifetime */
 
-    HashedId8 id = calculate_hash(certificate);
-    std::list<Certificate> certs = lookup(id);
-
-    // TODO: This is probably horribly inefficient, find most efficient but still correct comparison
+    // TODO: implement equality comparison for Certificate
     if (certs.size()) {
-        const auto binary_cert_put = convert_for_signing(certificate);
-
+        const auto binary_insert = convert_for_signing(certificate);
         for (auto& cert : certs) {
-            const auto binary_cert_found = convert_for_signing(cert);
-            if (binary_cert_put == binary_cert_found) {
+            const auto binary_found = convert_for_signing(cert);
+            if (binary_insert == binary_found) {
                 return;
             }
         }
     }
 
-    CacheEntry entry;
-    entry.certificate = certificate;
-
+    Clock::duration lifetime = Clock::duration::zero();
     if (certificate.subject_info.subject_type == SubjectType::Authorization_Ticket) {
         // section 7.1 in ETSI TS 103 097 v1.2.1
         // there must be a CAM with the authorization ticket every one second
         // we choose two seconds here to account for one missed message
-        entry.evict_time = time_now + std::chrono::seconds(2);
+        lifetime = std::chrono::seconds(2);
     } else if (certificate.subject_info.subject_type == SubjectType::Authorization_Authority) {
         // section 7.1 in ETSI TS 103 097 v1.2.1
         // chains are only sent upon request, there will probably only be a few authoritation authorities in use
         // one hour is an arbitrarily choosen cache period for now
-        entry.evict_time = time_now + std::chrono::seconds(3600);
-    } else {
-        // shouldn't happen, we ignore other certificates
-        return;
+        lifetime = std::chrono::seconds(3600);
     }
 
-    certificates.insert(std::make_pair(id, entry));
+    if (lifetime > Clock::duration::zero()) {
+        CachedCertificate entry;
+        entry.certificate = certificate;
+        map_type::iterator stored = m_certificates.emplace(id, entry);
+        heap_type::handle_type& handle = stored->second.handle;
+        handle = m_expiries.push(Expiry { m_runtime.now() + lifetime, stored });
+    }
 }
 
-std::list<Certificate> CertificateCache::lookup(HashedId8 id)
+std::list<Certificate> CertificateCache::lookup(const HashedId8& id)
 {
-    using iterator = std::multimap<HashedId8, CacheEntry>::iterator;
-    std::pair<iterator, iterator> range = certificates.equal_range(id);
+    drop_expired();
+
+    using iterator = std::multimap<HashedId8, CachedCertificate>::iterator;
+    std::pair<iterator, iterator> range = m_certificates.equal_range(id);
 
     std::list<Certificate> matches;
     for (auto item = range.first; item != range.second; ++item) {
-        matches.push_back(item->second.certificate);
+        const Certificate& cert = item->second.certificate;
+        matches.push_back(cert);
 
-        // renew cache entry, see CertificateCache::insert()
-        auto subject_type = item->second.certificate.subject_info.subject_type;
+        // renew cached certificate
+        auto subject_type = cert.subject_info.subject_type;
         if (subject_type == SubjectType::Authorization_Ticket) {
-            item->second.evict_time = time_now + std::chrono::seconds(2);
+            refresh(item->second.handle, std::chrono::seconds(2));
         } else if (subject_type == SubjectType::Authorization_Authority) {
-            item->second.evict_time = time_now + std::chrono::seconds(3600);
+            refresh(item->second.handle, std::chrono::seconds(3600));
         }
     }
-
-    // evict after lookup, so we don't evict items we need just now
-    evict_entries();
 
     return matches;
 }
 
-void CertificateCache::evict_entries()
+void CertificateCache::drop_expired()
 {
-    // TODO: Optimize performance. Currently it scans all entries on each access.
-    for (auto i = certificates.begin(); i != certificates.end();) {
-        if (i->second.evict_time < time_now) {
-            i = certificates.erase(i);
-        } else {
-            ++i;
-        }
+    while (!m_expiries.empty() && is_expired(m_expiries.top())) {
+        m_certificates.erase(m_expiries.top().certificate);
+        m_expiries.pop();
     }
+}
+
+bool CertificateCache::is_expired(const Expiry& expiry) const
+{
+    return m_runtime.now() > expiry;
+}
+
+void CertificateCache::refresh(heap_type::handle_type& handle, Clock::duration lifetime)
+{
+    static_cast<Clock::time_point&>(*handle) = m_runtime.now() + lifetime;
+    m_expiries.update(handle);
+}
+
+CertificateCache::Expiry::Expiry(Clock::time_point expiry, map_type::iterator it) :
+    Clock::time_point(expiry), certificate(it)
+{
 }
 
 } // namespace security

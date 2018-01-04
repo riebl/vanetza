@@ -18,7 +18,7 @@ public:
     SecurityContext(Runtime& rt) :
         backend(security::create_backend("default")),
         certificate_provider(new security::NaiveCertificateProvider(rt.now())),
-        cert_cache(rt.now()),
+        cert_cache(rt),
         certificate_validator(new security::DefaultCertificateValidator(*backend, rt.now(), trust_store, cert_cache)),
         sign_header_policy(rt.now()),
         security(

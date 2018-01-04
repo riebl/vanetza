@@ -2,7 +2,9 @@
 #define VANETZA_CERTIFICATE_CACHE_HPP
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/security/certificate.hpp>
+#include <boost/heap/binomial_heap.hpp>
 #include <list>
 #include <map>
 
@@ -11,13 +13,18 @@ namespace vanetza
 namespace security
 {
 
+
+/**
+ * CertificateCache remembers validated certificates for some time.
+ * This is necessary for certificate lookup when only its digest is known.
+ */
 class CertificateCache
 {
 public:
-    CertificateCache(const Clock::time_point& time_now);
+    CertificateCache(const Runtime& rt);
 
     /**
-     * Puts a certificate into the cache.
+     * Puts a (validated) certificate into the cache.
      *
      * \param certificate certificate to add to the cache
      */
@@ -29,19 +36,39 @@ public:
      * \param id hash identifier of the certificate
      * \return all stored certificates matching the passed identifier
      */
-    std::list<Certificate> lookup(HashedId8 id);
+    std::list<Certificate> lookup(const HashedId8& id);
+
+    /**
+     * Number of currently stored certificates
+     * \return cache size
+     */
+    std::size_t size() const { return m_certificates.size(); }
 
 private:
-    struct CacheEntry
+    struct CachedCertificate;
+    using map_type = std::multimap<HashedId8, CachedCertificate>;
+
+    struct Expiry : public Clock::time_point
     {
-        Certificate certificate;
-        Clock::time_point evict_time;
+        Expiry(Clock::time_point, map_type::iterator);
+        const map_type::iterator certificate;
     };
 
-    const Clock::time_point& time_now;
-    std::multimap<HashedId8, CacheEntry> certificates;
+    using heap_type = boost::heap::binomial_heap<Expiry, boost::heap::compare<std::greater<Expiry>>>;
 
-    void evict_entries();
+    struct CachedCertificate
+    {
+        Certificate certificate;
+        heap_type::handle_type handle;
+    };
+
+    const Runtime& m_runtime;
+    heap_type m_expiries;
+    map_type m_certificates;
+
+    void drop_expired();
+    bool is_expired(const Expiry&) const;
+    void refresh(heap_type::handle_type&, Clock::duration);
 };
 
 } // namespace security

@@ -126,7 +126,7 @@ int main(int argc, const char** argv)
             new security::NullCertificateValidator() };
         auto crypto_backend = security::create_backend("default");
         security::TrustStore trust_store;
-        security::CertificateCache cert_cache(trigger.runtime().now());
+        security::CertificateCache cert_cache(trigger.runtime());
 
         const std::string& security_option = vm["security"].as<std::string>();
         if (security_option == "off") {

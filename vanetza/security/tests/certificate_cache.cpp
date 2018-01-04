@@ -6,35 +6,126 @@
 using namespace vanetza;
 using namespace vanetza::security;
 
-TEST(CertificateCacheTest, lookup)
+class CertificateCacheTest : public ::testing::Test
 {
-    const char str[] =
-        "02015388DEC640C6E19E010052000004B27D4D442F58E065F8D500478929BC843940F3C34D46C547"
-        "5803C03594E35BD7E0132FD01634E86D4F50F7F2366988E12525232D00D03E98FC21CA8E5D0AF370"
-        "02E0210B24030100002504010000000B0114E9DB83154CBC0203000000553C8D2B8A4E53F3D84A88"
-        "37BEEBE83D5C7F68484AC5EFCEEFCC7B0BC5E9531754AAF58BF90790A10F2FD11796A85E13DFFAAC"
-        "6073D2068465DA733994CD0C71";
+public:
+    CertificateCacheTest() :
+        runtime(Clock::at("2018-01-03 17:15")),
+        cache(runtime)
+    {
+    }
 
-    Clock::time_point now = Clock::at("2016-08-01 00:00");
-    CertificateCache cache(now);
-    Certificate cert;
+    Certificate build_certificate(SubjectType subject_type, uint8_t id = 0)
+    {
+        Certificate cert;
+        cert.subject_info.subject_type = subject_type;
+        cert.signer_info = HashedId8 {{ id, id, id, id, id, id, id, id }};
+        EcdsaSignature signature;
+        X_Coordinate_Only x_only;;
+        x_only.x.insert(x_only.x.end(), 32, 0x22);
+        signature.R = std::move(x_only);
+        signature.s.insert(signature.s.end(), 32, 0x11);
+        cert.signature = std::move(signature);
+        return cert;
+    }
 
-    deserialize_from_hexstring(str, cert);
+protected:
+    Runtime runtime;
+    CertificateCache cache;
+};
+
+static const HashedId8 zero_id = {{ 0, 0, 0, 0, 0, 0, 0, 0 }};
+
+TEST_F(CertificateCacheTest, lookup)
+{
+    const Certificate cert = build_certificate(SubjectType::Authorization_Ticket);
+    const HashedId8 cert_id = calculate_hash(cert);
 
     // empty cache
-    EXPECT_EQ(0, cache.lookup(calculate_hash(cert)).size());
+    EXPECT_EQ(0, cache.lookup(cert_id).size());
 
     cache.insert(cert);
 
     // cache only contains 'cert' and must be able to find it
-    EXPECT_EQ(1, cache.lookup(calculate_hash(cert)).size());
+    EXPECT_EQ(1, cache.lookup(cert_id).size());
 
-    // expiration time is two seconds
-    now += std::chrono::seconds(3);
-
-    // required, as eviction happens after lookup
-    EXPECT_EQ(0, cache.lookup(HashedId8({ 0, 0, 0, 0, 0, 0, 0, 0 })).size());
-
-    // previous lookup should have cleared 'cert'
-    EXPECT_EQ(0, cache.lookup(calculate_hash(cert)).size());
+    // but nothing else
+    HashedId8 other_id = cert_id;
+    other_id[3] = cert_id[3] + 1;
+    EXPECT_EQ(0, cache.lookup(other_id).size());
 }
+
+TEST_F(CertificateCacheTest, insert_only_some_subject_type)
+{
+    cache.insert(build_certificate(SubjectType::Enrollment_Credential));
+    EXPECT_EQ(0, cache.size());
+    cache.insert(build_certificate(SubjectType::Authorization_Ticket));
+    EXPECT_EQ(1, cache.size());
+    cache.insert(build_certificate(SubjectType::Authorization_Authority));
+    EXPECT_EQ(2, cache.size());
+    cache.insert(build_certificate(SubjectType::Enrollment_Authority));
+    EXPECT_EQ(2, cache.size());
+    cache.insert(build_certificate(SubjectType::Root_Ca));
+    EXPECT_EQ(2, cache.size());
+    cache.insert(build_certificate(SubjectType::Crl_Signer));
+    EXPECT_EQ(2, cache.size());
+}
+
+TEST_F(CertificateCacheTest, drop_expired)
+{
+    const Certificate cert1 = build_certificate(SubjectType::Authorization_Ticket); // 2 seconds
+    const Certificate cert2 = build_certificate(SubjectType::Authorization_Authority); // 1 hour
+    ASSERT_NE(calculate_hash(cert1), calculate_hash(cert2));
+    cache.insert(cert1);
+    cache.insert(cert2);
+    ASSERT_EQ(2, cache.size());
+
+    runtime.trigger(std::chrono::seconds(3));
+    EXPECT_EQ(2, cache.size());
+    cache.lookup(zero_id); // any lookup drops expired cache entries
+    EXPECT_EQ(1, cache.size());
+
+    runtime.trigger(std::chrono::minutes(60));
+    cache.lookup(zero_id);
+    EXPECT_EQ(0, cache.size());
+}
+
+TEST_F(CertificateCacheTest, lookup_match_extends_lifetime)
+{
+    const Certificate cert1 = build_certificate(SubjectType::Authorization_Ticket);
+    const Certificate cert2 = build_certificate(SubjectType::Authorization_Authority);
+    const HashedId8 id_cert1 = calculate_hash(cert1);
+
+    cache.insert(cert1);
+    cache.insert(cert2);
+    EXPECT_EQ(2, cache.size());
+
+    for (unsigned i = 0; i < 3601; ++i) {
+        runtime.trigger(std::chrono::seconds(1));
+        cache.lookup(id_cert1);
+    }
+    EXPECT_EQ(1, cache.size());
+    EXPECT_EQ(1, cache.lookup(id_cert1).size());
+}
+
+TEST_F(CertificateCacheTest, insert_extends_lifetime)
+{
+    const Certificate cert = build_certificate(SubjectType::Authorization_Ticket);
+    const HashedId8 id = calculate_hash(cert);
+    EXPECT_NE(zero_id, id);
+
+    cache.insert(cert);
+    EXPECT_EQ(1, cache.size());
+
+    runtime.trigger(std::chrono::seconds(1));
+    cache.insert(cert);
+    EXPECT_EQ(1, cache.size());
+
+    cache.lookup(zero_id);
+    EXPECT_EQ(1, cache.size());
+
+    runtime.trigger(std::chrono::seconds(2));
+    cache.lookup(id);
+    EXPECT_EQ(1, cache.size());
+}
+
