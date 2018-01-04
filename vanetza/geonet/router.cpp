@@ -130,6 +130,7 @@ Router::Router(Runtime& rt, const MIB& mib) :
 
 Router::~Router()
 {
+    m_runtime.cancel(this);
 }
 
 void Router::update(const LongPositionVector& lpv)
@@ -597,11 +598,10 @@ void Router::reset_beacon_timer()
 
 void Router::reset_beacon_timer(Clock::duration next_beacon)
 {
-    static const std::string beacon_timer_name = "geonet.beacon.timer";
-    m_runtime.cancel(beacon_timer_name);
+    m_runtime.cancel(this);
     m_runtime.schedule(next_beacon, [this](Clock::time_point) {
         on_beacon_timer_expired();
-    }, beacon_timer_name);
+    }, this);
 }
 
 void Router::dispatch_repetition(const DataRequestVariant& request, std::unique_ptr<DownPacket> payload)

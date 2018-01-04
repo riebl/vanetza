@@ -31,6 +31,7 @@ public:
      * \param cb callback to be invoked when repetition is due
      */
     Repeater(Runtime& rt, const Callback& cb);
+    ~Repeater();
 
     /**
      * Add another repetition

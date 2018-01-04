@@ -47,6 +47,7 @@ public:
      * \param access Interface to access layer
      */
     FlowControl(Runtime&, Scheduler&, access::Interface&);
+    ~FlowControl();
 
     /**
      * Request packet transmission

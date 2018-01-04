@@ -131,6 +131,7 @@ public:
      * \param bytes Buffer can hold at most this number of bytes
      */
     CbfPacketBuffer(Runtime& rt, TimerCallback timer_cb, std::size_t bytes);
+    ~CbfPacketBuffer();
 
     /**
      * Try to drop a packet from buffer identified by source address and sequence number.

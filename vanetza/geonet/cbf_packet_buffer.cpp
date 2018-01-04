@@ -64,6 +64,11 @@ CbfPacketBuffer::CbfPacketBuffer(Runtime& rt, TimerCallback cb, std::size_t byte
 {
 }
 
+CbfPacketBuffer::~CbfPacketBuffer()
+{
+    m_runtime.cancel(this);
+}
+
 bool CbfPacketBuffer::try_drop(const Address& src, SequenceNumber sn)
 {
     bool packet_dropped = false;
@@ -188,11 +193,10 @@ bool CbfPacketBuffer::reduce_lifetime(const Timer& timer, CbfPacket& packet) con
 
 void CbfPacketBuffer::schedule_timer()
 {
-    const static std::string timer_name = "geonet.cbf.timer";
     assert(!m_timers.empty());
-    m_runtime.cancel(timer_name);
+    m_runtime.cancel(this);
     Runtime::Callback cb = [this](Clock::time_point) { flush(); };
-    m_runtime.schedule(m_timers.left.begin()->first.expiry, cb, timer_name);
+    m_runtime.schedule(m_timers.left.begin()->first.expiry, cb, this);
 }
 
 

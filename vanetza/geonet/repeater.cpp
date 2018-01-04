@@ -18,6 +18,11 @@ Repeater::Repeater(Runtime& rt, const Callback& cb) :  m_repeat_fn(cb), m_runtim
     assert(m_repeat_fn);
 }
 
+Repeater::~Repeater()
+{
+    m_runtime.cancel(this);
+}
+
 void Repeater::add(const DataRequestVariant& request,
         const DataRequest::Repetition& repetition, const DownPacket& payload)
 {
@@ -26,7 +31,7 @@ void Repeater::add(const DataRequestVariant& request,
         m_repetitions.emplace_front(request, payload);
         auto added = m_repetitions.begin();
         auto then = std::placeholders::_1;
-        m_runtime.schedule(next_repetition, std::bind<void>(&Repeater::trigger, this, added, then));
+        m_runtime.schedule(next_repetition, std::bind<void>(&Repeater::trigger, this, added, then), this);
     }
 }
 

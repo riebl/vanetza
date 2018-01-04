@@ -17,6 +17,11 @@ FlowControl::FlowControl(Runtime& runtime, Scheduler& scheduler, access::Interfa
 {
 }
 
+FlowControl::~FlowControl()
+{
+    m_runtime.cancel(this);
+}
+
 void FlowControl::request(const DataRequest& request, std::unique_ptr<ChunkPacket> packet)
 {
     drop_expired();
@@ -45,7 +50,7 @@ void FlowControl::trigger()
 void FlowControl::schedule_trigger(Profile dcc_profile)
 {
     auto callback_delay = m_scheduler.delay(dcc_profile);
-    m_runtime.schedule(callback_delay, std::bind(&FlowControl::trigger, this));
+    m_runtime.schedule(callback_delay, std::bind(&FlowControl::trigger, this), this);
 }
 
 void FlowControl::enqueue(const DataRequest& request, std::unique_ptr<ChunkPacket> packet)
