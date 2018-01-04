@@ -2,10 +2,10 @@
 #define RUNTIME_HPP_KHDIEMRN
 
 #include <vanetza/common/clock.hpp>
-#include <boost/bimap/bimap.hpp>
-#include <boost/bimap/multiset_of.hpp>
-#include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/optional/optional.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
+#include <boost/multi_index/ordered_index.hpp>
 #include <functional>
 #include <string>
 
@@ -91,16 +91,37 @@ public:
     void reset(Clock::time_point tp);
 
 private:
-    using queue_bimap = boost::bimaps::bimap<
-        boost::bimaps::multiset_of<Clock::time_point>,
-        boost::bimaps::unordered_multiset_of<std::string>,
-        boost::bimaps::with_info<Callback>
-    >;
+    struct ScheduledCallback
+    {
+        ScheduledCallback(Clock::time_point tp, const Callback& cb, const std::string& name) :
+            deadline(tp), callback(cb), name(name), scope(nullptr) {}
+
+        ScheduledCallback(const ScheduledCallback&) = delete;
+        ScheduledCallback& operator=(const ScheduledCallback&) = delete;
+
+        ScheduledCallback(ScheduledCallback&&) = default;
+        ScheduledCallback& operator=(ScheduledCallback&&) = default;
+
+        Clock::time_point deadline;
+        Callback callback;
+        std::string name;
+    };
+
+    struct by_deadline {};
+    using time_index = boost::multi_index::ordered_non_unique<
+        boost::multi_index::tag<by_deadline>,
+        boost::multi_index::member<ScheduledCallback, Clock::time_point, &ScheduledCallback::deadline>>;
+    struct by_name {};
+    using name_index = boost::multi_index::hashed_non_unique<
+        boost::multi_index::tag<by_name>,
+        boost::multi_index::member<ScheduledCallback, std::string, &ScheduledCallback::name>>;
+    using queue_type = boost::multi_index_container<ScheduledCallback,
+          boost::multi_index::indexed_by<time_index, name_index>>;
 
     void trigger();
 
     Clock::time_point m_now;
-    queue_bimap m_queue;
+    queue_type m_queue;
 };
 
 } // namespace vanetza
