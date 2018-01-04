@@ -48,10 +48,32 @@ public:
     void schedule(Clock::duration d, const Callback& cb, const std::string& name = "");
 
     /**
+     * Schedule callback for later invocation
+     * \param tp invoke callback at this time point
+     * \param cb callback
+     * \param scope associated scope pointer (used only for identification)
+     */
+    void schedule(Clock::time_point tp, const Callback& cb, const void* scope);
+
+    /**
+     * Schedule callback for later invocation
+     * \param d duration from now until callback invocation
+     * \param cb callback
+     * \param scope associated scope pointer (used only for identification)
+     */
+    void schedule(Clock::duration d, const Callback& cb, const void* scope);
+
+    /**
      * Cancel all scheduled invocations of a named callback
      * \param name Name of callback
      */
     void cancel(const std::string& name);
+
+    /**
+     * Cancel all scheduled invocations assigned to certain scope
+     * \param scope any pointer used as scope at scheduling (nullptr has no effect)
+     */
+    void cancel(const void* scope);
 
     /**
      * Get time point of next scheduled event
@@ -95,6 +117,8 @@ private:
     {
         ScheduledCallback(Clock::time_point tp, const Callback& cb, const std::string& name) :
             deadline(tp), callback(cb), name(name), scope(nullptr) {}
+        ScheduledCallback(Clock::time_point tp, const Callback& cb, const void* scope) :
+            deadline(tp), callback(cb), scope(scope) {}
 
         ScheduledCallback(const ScheduledCallback&) = delete;
         ScheduledCallback& operator=(const ScheduledCallback&) = delete;
@@ -105,6 +129,7 @@ private:
         Clock::time_point deadline;
         Callback callback;
         std::string name;
+        const void* scope;
     };
 
     struct by_deadline {};
@@ -115,8 +140,12 @@ private:
     using name_index = boost::multi_index::hashed_non_unique<
         boost::multi_index::tag<by_name>,
         boost::multi_index::member<ScheduledCallback, std::string, &ScheduledCallback::name>>;
+    struct by_scope {};
+    using scope_index = boost::multi_index::hashed_non_unique<
+        boost::multi_index::tag<by_scope>,
+        boost::multi_index::member<ScheduledCallback, const void*, &ScheduledCallback::scope>>;
     using queue_type = boost::multi_index_container<ScheduledCallback,
-          boost::multi_index::indexed_by<time_index, name_index>>;
+          boost::multi_index::indexed_by<time_index, name_index, scope_index>>;
 
     void trigger();
 

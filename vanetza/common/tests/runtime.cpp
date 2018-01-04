@@ -165,3 +165,30 @@ TEST(Runtime, cancel)
     r.trigger(minutes(1));
     EXPECT_EQ((std::vector<char> {'b', 'c'}), calls);
 }
+
+TEST(Runtime, scope)
+{
+    Runtime r;
+    std::vector<char> calls;
+    auto cb = [&calls](char c, Clock::time_point) { calls.push_back(c); };
+    int scope1, scope2;
+
+    namespace ph = std::placeholders;
+    r.schedule(minutes(3), std::bind<void>(cb, 'a', ph::_1), &scope1);
+    r.schedule(minutes(1), std::bind<void>(cb, 'b', ph::_1), &scope2);
+    r.schedule(minutes(2), std::bind<void>(cb, 'c', ph::_1));
+    r.schedule(minutes(5), std::bind<void>(cb, 'd', ph::_1), &scope1);
+    r.schedule(minutes(4), std::bind<void>(cb, 'e', ph::_1), &scope2);
+    r.schedule(minutes(6), std::bind<void>(cb, 'f', ph::_1), "");
+
+    // cancel scope 1 and trigger all callbacks within 3 minutes
+    r.cancel(&scope1);
+    r.trigger(minutes(3));
+    EXPECT_EQ((std::vector<char> {'b', 'c'}), calls);
+    calls.clear();
+
+    // canceling nullptr scope has no effect
+    r.cancel(nullptr);
+    r.trigger(minutes(10));
+    EXPECT_EQ((std::vector<char> {'e', 'f'}), calls);
+}

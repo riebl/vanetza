@@ -18,10 +18,28 @@ void Runtime::schedule(Clock::duration d, const Callback& cb, const std::string&
     schedule(m_now + d, cb, name);
 }
 
+void Runtime::schedule(Clock::time_point tp, const Callback& cb, const void* scope)
+{
+    m_queue.emplace(queue_type::value_type { tp, cb, scope });
+}
+
+void Runtime::schedule(Clock::duration d, const Callback& cb, const void* scope)
+{
+    schedule(m_now + d, cb, scope);
+}
+
 void Runtime::cancel(const std::string& name)
 {
     auto name_match_range = m_queue.get<by_name>().equal_range(name);
     m_queue.get<by_name>().erase(name_match_range.first, name_match_range.second);
+}
+
+void Runtime::cancel(const void* scope)
+{
+    if (scope) {
+        auto scope_match_range = m_queue.get<by_scope>().equal_range(scope);
+        m_queue.get<by_scope>().erase(scope_match_range.first, scope_match_range.second);
+    }
 }
 
 Clock::time_point Runtime::next() const
