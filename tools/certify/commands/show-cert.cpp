@@ -6,6 +6,7 @@
 #include <boost/variant.hpp>
 #include <fstream>
 #include <iostream>
+#include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/its_aid.hpp>
 
@@ -139,61 +140,17 @@ int ShowCertCommand::execute()
                     // See final draft ETSI EN 302 637-2 V1.3.1 (2014-09)
                     if (ssp[0] == 0) {
                         if (ssp.size() != 1) {
-                            std::cout << " - Warning: ssp.size() is expected to be 1, but was " << ssp.size() << std::endl;
+                            std::cout << " - Warning: Length of SSP is expected to be 1, but was " << ssp.size() << std::endl;
                         } else {
                             std::cout << " - No version, shall be used only for testing." << std::endl;
                         }
                     } else if (ssp[0] == 1) {
                         if (ssp.size() != 3) {
-                            std::cout << " - Warning: ssp.size() is expected to be 3, but was " << ssp.size() << std::endl;
+                            std::cout << " - Warning: Length of SSP is expected to be 3, but was " << ssp.size() << std::endl;
                         } else {
-                            if (ssp[1] & (1 << 7)) {
-                                std::cout << " - CenDsrcTollingZone/ProtectedCommunicationZonesRSU" << std::endl;
-                            }
-                            if (ssp[1] & (1 << 6)) {
-                                std::cout << " - publicTransport/publicTransportContainer" << std::endl;
-                            }
-                            if (ssp[1] & (1 << 5)) {
-                                std::cout << " - specialTransport/specialTransportContainer" << std::endl;
-                            }
-                            if (ssp[1] & (1 << 4)) {
-                                std::cout << " - dangerousGoods/dangerousGoodsContainer" << std::endl;
-                            }
-                            if (ssp[1] & (1 << 3)) {
-                                std::cout << " - roadwork/roadWorksContainerBasic" << std::endl;
-                            }
-                            if (ssp[1] & (1 << 2)) {
-                                std::cout << " - rescue/rescueContainer" << std::endl;
-                            }
-                            if (ssp[1] & (1 << 1)) {
-                                std::cout << " - emergency/emergencyContainer" << std::endl;
-                            }
-                            if (ssp[1] & (1 << 0)) {
-                                std::cout << " - safetyCar/safetyCarContainer" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 7)) {
-                                std::cout << " - closedLanges/RoadworksContainerBasic" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 6)) {
-                                std::cout << " - requestForRightOfWay/EmergencyContainer: EmergencyPriority" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 5)) {
-                                std::cout << " - requestForFreeCrossingAtATrafficLight/EmergencyContainer: EmergencyPriority" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 4)) {
-                                std::cout << " - noPassing/SafetyCarContainer: TrafficRule" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 3)) {
-                                std::cout << " - noPassingForTrucks/SafetyCarContainer: TrafficRule" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 2)) {
-                                std::cout << " - speedLimit/SafetyCarContainer" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 1)) {
-                                std::cout << " - reserved (02h)" << std::endl;
-                            }
-                            if (ssp[2] & (1 << 0)) {
-                                std::cout << " - reserved (01h)" << std::endl;
+                            CamPermissions ssp_decoded = CamPermissions::decode(ssp);
+                            for (auto permission : ssp_decoded.permissions()) {
+                                std::cout << " - " << stringify(permission) << "\n";
                             }
                         }
                     } else {
