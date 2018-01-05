@@ -112,6 +112,20 @@ TEST(CamSsp, serialization)
     EXPECT_FALSE(decoded_reserved.none());
 }
 
+TEST(CamSsp, permissions)
+{
+    CamPermissions ssp { CamPermission::NoPassing, CamPermission::SpeedLimit };
+    std::set<CamPermission> expected { CamPermission::NoPassing, CamPermission::SpeedLimit };
+    EXPECT_EQ(expected, ssp.permissions());
+
+    // works also for reserved bits
+    const CamPermission reserved = static_cast<CamPermission>(0x0100);
+    ssp.add(reserved);
+    expected.insert(reserved);
+    ASSERT_EQ(3, expected.size());
+    EXPECT_EQ(expected, ssp.permissions());
+}
+
 TEST(CamSsp, stringify)
 {
     EXPECT_EQ("Safety Car", stringify(CamPermission::SafetyCar));

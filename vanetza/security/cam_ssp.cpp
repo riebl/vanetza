@@ -45,6 +45,22 @@ bool CamPermissions::none() const
     return m_bits == 0;
 }
 
+std::set<CamPermission> CamPermissions::permissions() const
+{
+    std::set<CamPermission> perms;
+
+    std::underlying_type<CamPermission>::type bit = 1;
+    for (unsigned i = 1; i < sizeof(bit) * 8; ++i) {
+        CamPermission permission = static_cast<CamPermission>(bit);
+        if (has(permission)) {
+            perms.insert(permission);
+        }
+        bit <<= 1;
+    }
+
+    return perms;
+}
+
 CamPermissions& CamPermissions::add(CamPermission cp)
 {
     m_bits |= static_cast<value_type>(cp);

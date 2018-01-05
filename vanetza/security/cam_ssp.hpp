@@ -3,6 +3,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <cstdint>
+#include <set>
 #include <string>
 
 namespace vanetza
@@ -57,6 +58,12 @@ public:
     bool has(const std::initializer_list<CamPermission>&) const;
     bool has(const CamPermissions&) const;
     bool none() const;
+
+    /**
+     * Get set of all included permissions
+     * \return permission set
+     */
+    std::set<CamPermission> permissions() const;
 
     // permission manipulation (with chaining)
     CamPermissions& add(CamPermission);
