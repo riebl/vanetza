@@ -19,6 +19,7 @@ namespace btp
 struct DataIndication
 {
     DataIndication();
+    DataIndication(const geonet::DataIndication&, const HeaderA&);
     DataIndication(const geonet::DataIndication&, const HeaderB&);
 
     boost::optional<port_type> source_port;
@@ -34,4 +35,3 @@ struct DataIndication
 } // namespace vanetza
 
 #endif /* DATA_INDICATION_HPP_5YZM172D */
-

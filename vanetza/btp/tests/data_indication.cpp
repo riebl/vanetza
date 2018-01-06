@@ -32,4 +32,3 @@ TEST(BtpDataIndication, construct_from_header_b) {
     EXPECT_EQ(gn_ind.remaining_packet_lifetime->raw(),
             btp_ind.remaining_packet_lifetime->raw());
 }
-
