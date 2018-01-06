@@ -6,6 +6,22 @@ using namespace vanetza;
 
 const ByteBuffer ref = { 0x38, 0x84, 0x01, 0x40 };
 
+TEST(BtpHeaderA, serialize) {
+    btp::HeaderA header;
+    header.destination_port = host_cast<uint16_t>(0x3884);
+    header.source_port = host_cast<uint16_t>(0x0140);
+    ByteBuffer buf;
+    serialize_into_buffer(header, buf);
+    EXPECT_EQ(ref, buf);
+}
+
+TEST(BtpHeaderA, deserialize) {
+    btp::HeaderA header;
+    deserialize_from_buffer(header, ref);
+    EXPECT_EQ(host_cast<uint16_t>(0x3884), header.destination_port);
+    EXPECT_EQ(host_cast<uint16_t>(0x0140), header.source_port);
+}
+
 TEST(BtpHeaderB, serialize) {
     btp::HeaderB header;
     header.destination_port = host_cast<uint16_t>(0x3884);
@@ -21,4 +37,3 @@ TEST(BtpHeaderB, deserialize) {
     EXPECT_EQ(host_cast<uint16_t>(0x3884), header.destination_port);
     EXPECT_EQ(host_cast<uint16_t>(0x0140), header.destination_port_info);
 }
-

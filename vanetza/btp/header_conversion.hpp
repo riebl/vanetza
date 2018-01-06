@@ -11,6 +11,20 @@ namespace convertible
 {
 
 template<>
+struct byte_buffer_impl<btp::HeaderA> : public byte_buffer
+{
+    byte_buffer_impl(const btp::HeaderA& header) : m_header(header) {}
+    void convert(ByteBuffer& buffer) const override
+    {
+        buffer.clear();
+        serialize_into_buffer(m_header, buffer);
+    }
+    std::size_t size() const override { return btp::HeaderA::length_bytes; }
+
+    const btp::HeaderA m_header;
+};
+
+template<>
 struct byte_buffer_impl<btp::HeaderB> : public byte_buffer
 {
     byte_buffer_impl(const btp::HeaderB& header) : m_header(header) {}
@@ -28,4 +42,3 @@ struct byte_buffer_impl<btp::HeaderB> : public byte_buffer
 } // namespace vanetza
 
 #endif /* HEADER_CONVERSION_HPP_SQVEUMFE */
-

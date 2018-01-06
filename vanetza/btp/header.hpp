@@ -23,6 +23,9 @@ struct HeaderA
 
 static_assert(sizeof(HeaderA) == HeaderA::length_bytes, "Wrong size");
 
+void serialize(OutputArchive&, const HeaderA&);
+void deserialize(InputArchive&, HeaderA&);
+
 // non-interactive packet transport
 struct HeaderB
 {
@@ -41,4 +44,3 @@ void deserialize(InputArchive&, HeaderB&);
 } // namespace vanetza
 
 #endif /* HEADER_HPP_FNKGEM7C */
-

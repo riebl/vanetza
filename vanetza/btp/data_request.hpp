@@ -26,6 +26,15 @@ struct DataRequestGeoNetParams
     geonet::TrafficClass traffic_class;
 };
 
+struct DataRequestA
+{
+    DataRequestA();
+
+    decltype(HeaderA::destination_port) destination_port;
+    decltype(HeaderA::source_port) source_port;
+    DataRequestGeoNetParams gn;
+};
+
 struct DataRequestB
 {
     DataRequestB();
@@ -39,4 +48,3 @@ struct DataRequestB
 } // namespace vanetza
 
 #endif /* DATA_REQUEST_HPP_BSJC1VFV */
-
