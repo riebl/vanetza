@@ -121,6 +121,7 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_cbf_buffer(m_runtime,
             std::bind(&Router::on_cbf_timer_expiration, this, std::placeholders::_1),
             mib.itsGnCbfPacketBufferSize * 1024),
+    m_local_sequence_number(0),
     m_repeater(m_runtime,
             std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2))
 {
