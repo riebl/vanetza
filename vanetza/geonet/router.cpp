@@ -342,6 +342,7 @@ void Router::indicate_common(IndicationContext& ctx, const BasicHeader& basic)
     if (!common) {
         packet_dropped(PacketDropReason::PARSE_COMMON_HEADER);
     } else if (common->maximum_hop_limit < basic.hop_limit) {
+        // step 1) check the MHL field
         packet_dropped(PacketDropReason::HOP_LIMIT);
     } else {
         DataIndication& indication = ctx.service_primitive();
@@ -364,8 +365,17 @@ void Router::indicate_common(IndicationContext& ctx, const BasicHeader& basic)
 
         // clean up location table at packet indication (nothing else creates entries)
         m_location_table.drop_expired();
+
+        // step 2) process BC forwarding packet buffer
         flush_broadcast_forwarding_buffer();
+
+        // step 3) execute steps depending on extended header type
         indicate_extended(ctx, *common);
+
+        // NOTE: There is a good chance that processing of extended header updated the location table.
+        // Thus, a routing decision may be possible for some packets in the BC packet forwarding buffer now, e.g.
+        // those buffered due to greedy forwarding's SCF behaviour. However, flushing twice would induce additional
+        // processing overhead. For now, we stick quite conservatively to the standard.
     }
 }
 
