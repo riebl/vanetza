@@ -107,6 +107,13 @@ void PortDispatcher::add_promiscuous_hook(PromiscuousHook* hook)
     }
 }
 
+void PortDispatcher::set_interactive_handler(
+        port_type port,
+        IndicationInterface* handler)
+{
+    m_interactive_handlers[port] = handler;
+}
+
 void PortDispatcher::set_non_interactive_handler(
         port_type port,
         IndicationInterface* handler)
@@ -123,7 +130,9 @@ void PortDispatcher::indicate(
     IndicationInterface* handler = nullptr;
 
     if (btp_ind) {
-        if (!btp_ind->source_port) {
+        if (btp_ind->source_port) {
+            handler = m_interactive_handlers[btp_ind->destination_port];
+        } else {
             handler = m_non_interactive_handlers[btp_ind->destination_port];
         }
 
@@ -131,10 +140,10 @@ void PortDispatcher::indicate(
             hook->tap_packet(*btp_ind, *packet);
         }
 
-        if (nullptr == handler) {
-            hook_undispatched(gn_ind, &btp_ind.get());
-        } else {
+        if (handler) {
             handler->indicate(*btp_ind, std::move(packet));
+        } else {
+            hook_undispatched(gn_ind, &btp_ind.get());
         }
     } else {
         hook_undispatched(gn_ind, nullptr);

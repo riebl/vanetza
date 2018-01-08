@@ -46,6 +46,7 @@ protected:
     }
 
     std::unique_ptr<UpPacket> create_btp_packet(port_type destination);
+    std::unique_ptr<UpPacket> create_btp_packet(port_type destination, port_type source);
     geonet::DataIndication create_gn_indication(UpperProtocol protocol);
 
     using port_native = port_type::value_type;
@@ -81,6 +82,18 @@ TEST_F(BtpPortDispatcherTest, empty) {
         );
         EXPECT_EQ(undispatched_counter, ++indication_counter);
     }
+}
+
+TEST_F(BtpPortDispatcherTest, interactive) {
+    ASSERT_EQ(undispatched_counter, 0);
+    CounterIndicationInterface handler;
+    const port_type dst_port { host_cast<uint16_t>(0x1234) };
+    const port_type src_port { host_cast<uint16_t>(0x1337) };
+    dispatcher.set_interactive_handler(dst_port, &handler);
+    dispatcher.indicate(create_gn_indication(UpperProtocol::BTP_A), create_btp_packet(dst_port, src_port));
+    EXPECT_EQ(1, handler.counter);
+    dispatcher.indicate(create_gn_indication(UpperProtocol::BTP_B), create_btp_packet(dst_port));
+    EXPECT_EQ(1, handler.counter);
 }
 
 TEST_F(BtpPortDispatcherTest, non_interactive) {
@@ -166,6 +179,16 @@ std::unique_ptr<UpPacket> BtpPortDispatcherTest::create_btp_packet(port_type des
     ChunkPacket packet;
     HeaderB header;
     header.destination_port = destination;
+    packet[OsiLayer::Transport] = header;
+    return std::unique_ptr<UpPacket> { new UpPacket(packet) };
+}
+
+std::unique_ptr<UpPacket> BtpPortDispatcherTest::create_btp_packet(port_type destination, port_type source)
+{
+    ChunkPacket packet;
+    HeaderA header;
+    header.destination_port = destination;
+    header.source_port = source;
     packet[OsiLayer::Transport] = header;
     return std::unique_ptr<UpPacket> { new UpPacket(packet) };
 }
