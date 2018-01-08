@@ -130,6 +130,7 @@ units::Length distance(const GeodeticPosition& lhs, const GeodeticPosition& rhs)
     geod.Inverse(lhs.latitude / units::degree, lhs.longitude / units::degree,
             rhs.latitude / units::degree, rhs.longitude / units::degree,
             distance_m);
+    assert(distance_m >= 0.0);
     return distance_m * units::si::meters;
 }
 
