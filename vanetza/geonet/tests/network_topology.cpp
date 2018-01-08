@@ -14,6 +14,7 @@
 #include <GeographicLib/Geodesic.hpp>
 #include <GeographicLib/LocalCartesian.hpp>
 #include <list>
+#include <stdexcept>
 #include <unordered_map>
 
 namespace vanetza
@@ -60,6 +61,10 @@ NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
 {
     router.set_access_interface(&request_interface);
     router.set_security_entity(&security.entity());
+
+    router.packet_dropped = [](Router::PacketDropReason pdr) {
+        throw std::runtime_error("packet dropped unexpectedly: " + stringify(pdr));
+    };
 }
 
 NetworkTopology::NetworkTopology() : now(Clock::at("2016-02-29 23:59"))
