@@ -9,6 +9,11 @@ namespace vanetza
 namespace geonet
 {
 
+const Lifetime Lifetime::zero()
+{
+    return Lifetime();
+}
+
 Lifetime::Lifetime()
 {
     set(Base::_50_MS, 0);

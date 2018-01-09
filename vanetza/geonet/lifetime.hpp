@@ -25,6 +25,8 @@ public:
         _100_S = 3
     };
 
+    static const Lifetime zero();
+
     Lifetime();
     Lifetime(Base base, BitNumber<uint8_t, 6> multiplier);
     void set(Base base, BitNumber<uint8_t, 6> multiplier);

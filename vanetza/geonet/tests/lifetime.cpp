@@ -81,3 +81,7 @@ TEST(Lifetime, encode) {
     }
 }
 
+TEST(Lifetime, zero) {
+    const Lifetime a = Lifetime::zero();
+    EXPECT_EQ(0.0 * seconds, a.decode());
+}
