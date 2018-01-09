@@ -7,6 +7,7 @@ set(CXX_SOURCES
     common_header.cpp
     data_confirm.cpp
     data_request.cpp
+    duplicate_packet_list.cpp
     gbc_gac_header.cpp
     gbc_header.cpp
     header_type.cpp

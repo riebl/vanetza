@@ -11,6 +11,7 @@
 #include <vanetza/units/time.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/data_confirm.hpp>
+#include <vanetza/geonet/duplicate_packet_list.hpp>
 #include <vanetza/geonet/indication_context.hpp>
 #include <vanetza/geonet/next_hop.hpp>
 #include <vanetza/geonet/pdu_conversion.hpp>
@@ -1108,8 +1109,17 @@ void Router::detect_duplicate_address(const Address& source, const MacAddress& s
 
 bool Router::detect_duplicate_packet(const Address& addr_so, SequenceNumber sn)
 {
-    // TODO implement DPL
-    return false;
+    bool is_duplicate = false;
+    ObjectContainer& so_ext = m_location_table.get_or_create_entry(addr_so).extensions;
+    DuplicatePacketList* dpl = so_ext.find<DuplicatePacketList>();
+    if (dpl) {
+        is_duplicate = dpl->check(sn);
+    } else {
+        std::unique_ptr<DuplicatePacketList> dpl { new DuplicatePacketList(m_mib.itsGnDPLLength) };
+        is_duplicate = dpl->check(sn);
+        so_ext.insert(std::move(dpl));
+    }
+    return is_duplicate;
 }
 
 std::unique_ptr<ShbPdu> Router::create_shb_pdu(const ShbDataRequest& request)
