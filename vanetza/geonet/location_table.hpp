@@ -139,6 +139,8 @@ public:
     LocationTable(const MIB&, Runtime&);
     bool has_entry(const Address&) const;
     LocationTableEntry& update(const LongPositionVector&);
+    LocationTableEntry& get_or_create_entry(const Address&);
+    LocationTableEntry& get_or_create_entry(const MacAddress&);
     const LocationTableEntry* get_entry(const Address&) const;
     const LocationTableEntry* get_entry(const MacAddress&) const;
     const LongPositionVector* get_position(const Address&) const;
