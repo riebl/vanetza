@@ -30,43 +30,6 @@ const MacAddress& LocationTableEntry::link_layer_address() const
     return geonet_address().mid();
 }
 
-bool LocationTableEntry::is_duplicate_packet(SequenceNumber sn, Timestamp time)
-{
-    bool is_duplicate = false;
-
-    if (m_timestamp) {
-        if (m_timestamp.get() > time) {
-            is_duplicate = true;
-        } else if (m_timestamp.get() == time) {
-            if (!m_sequence_number) {
-                is_duplicate = true;
-            } else if (m_sequence_number.get() >= sn) {
-                is_duplicate = true;
-            }
-        }
-    }
-
-    if (!is_duplicate) {
-        m_timestamp = time;
-        m_sequence_number = sn;
-    }
-
-    return is_duplicate;
-}
-
-bool LocationTableEntry::is_duplicate_packet(Timestamp time)
-{
-    bool is_duplicate = false;
-
-    if (!m_timestamp || m_timestamp.get() <= time) {
-        m_timestamp = time;
-    } else {
-        is_duplicate = true;
-    }
-
-    return is_duplicate;
-}
-
 void LocationTableEntry::update_pdr(std::size_t packet_size, double beta)
 {
     using namespace vanetza::units;
@@ -159,16 +122,6 @@ void LocationTable::visit(const entry_visitor& visitor) const
     for (const auto& entry : m_table.map()) {
         visitor(entry.first, entry.second);
     }
-}
-
-bool LocationTable::is_duplicate_packet(const Address& addr, SequenceNumber sn, Timestamp t)
-{
-    return m_table.get_value(addr.mid()).is_duplicate_packet(sn, t);
-}
-
-bool LocationTable::is_duplicate_packet(const Address& addr, Timestamp t)
-{
-    return m_table.get_value(addr.mid()).is_duplicate_packet(t);
 }
 
 LocationTableEntry& LocationTable::update(const LongPositionVector& lpv)

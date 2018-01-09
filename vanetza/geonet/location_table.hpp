@@ -5,11 +5,8 @@
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/position_vector.hpp>
-#include <vanetza/geonet/sequence_number.hpp>
 #include <vanetza/geonet/soft_state_map.hpp>
 #include <vanetza/geonet/station_type.hpp>
-#include <vanetza/geonet/timestamp.hpp>
-#include <boost/optional.hpp>
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 
@@ -26,23 +23,6 @@ public:
     const Address& geonet_address() const;
     const MacAddress& link_layer_address() const;
     StationType station_type() const;
-
-    /**
-     * Check if packet is a duplicate based on its sequence number and time stamp.
-     * This implements algorithm A.2 in EN 302 636-4-1.
-     * \param sn sequence number
-     * \param t time stamp
-     * \return true if duplicate
-     */
-    bool is_duplicate_packet(SequenceNumber, Timestamp);
-
-    /**
-     * Check if packet is a duplicate based on its time stamp.
-     * This implements algorithm A.3 in EN 302 636-4-1.
-     * \param t time stamp
-     * \return true if duplicate
-     */
-    bool is_duplicate_packet(Timestamp);
 
     /**
      * Get packed data rate (PDR) of corresponding source.
@@ -103,8 +83,6 @@ private:
     bool m_is_neighbour;
     bool m_has_position_vector;
     LongPositionVector m_position_vector;
-    boost::optional<Timestamp> m_timestamp;
-    boost::optional<SequenceNumber> m_sequence_number;
     double m_pdr; /*< packet data rate in bytes per second */
     Clock::time_point m_pdr_update;
 };
@@ -149,8 +127,6 @@ public:
     neighbour_range neighbours() const;
     entry_range filter(const entry_predicate&) const;
     void visit(const entry_visitor&) const;
-    bool is_duplicate_packet(const Address& source, SequenceNumber, Timestamp);
-    bool is_duplicate_packet(const Address& source, Timestamp);
     void drop_expired() { m_table.drop_expired(); }
 
 private:

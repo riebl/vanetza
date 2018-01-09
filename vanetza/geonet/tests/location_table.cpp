@@ -108,36 +108,6 @@ TEST_F(LocationTableTest, neighbourhood) {
     EXPECT_EQ(pv_b, neighbours.begin()->get_position_vector());
 }
 
-TEST_F(LocationTableTest, is_duplicate_packet_timestamp) {
-    using std::chrono::milliseconds;
-    Address a;
-    a.mid({1, 1, 1, 1, 1, 1});
-    runtime->trigger(milliseconds(3));
-    EXPECT_FALSE(loct->is_duplicate_packet(a, runtime->now()));
-    EXPECT_FALSE(loct->is_duplicate_packet(a, runtime->now()));
-    EXPECT_TRUE(loct->is_duplicate_packet(a, runtime->now() - milliseconds(1)));
-    EXPECT_FALSE(loct->is_duplicate_packet(a, runtime->now()));
-    runtime->trigger(milliseconds(1));
-    EXPECT_FALSE(loct->is_duplicate_packet(a, runtime->now()));
-    EXPECT_TRUE(loct->is_duplicate_packet(a, runtime->now() - milliseconds(1)));
-
-    Address b;
-    b.mid({2, 2, 2, 2, 2, 2});
-    EXPECT_FALSE(loct->is_duplicate_packet(b, runtime->now() - milliseconds(2)));
-}
-
-TEST_F(LocationTableTest, is_duplicate_packet_sequence) {
-    Address a;
-    a.mid({1, 1, 1, 1, 1, 1});
-    runtime->trigger(std::chrono::milliseconds(8));
-    EXPECT_FALSE(loct->is_duplicate_packet(a, SequenceNumber(3), runtime->now()));
-    EXPECT_TRUE(loct->is_duplicate_packet(a, SequenceNumber(3), runtime->now()));
-    runtime->trigger(std::chrono::milliseconds(1));
-    EXPECT_FALSE(loct->is_duplicate_packet(a, SequenceNumber(3), runtime->now()));
-    EXPECT_TRUE(loct->is_duplicate_packet(a, SequenceNumber(3), runtime->now()));
-    EXPECT_FALSE(loct->is_duplicate_packet(a, SequenceNumber(4), runtime->now()));
-}
-
 TEST_F(LocationTableTest, update_pdr) {
     Address addr;
     addr.mid({1, 0, 1, 0, 1, 0});
@@ -194,18 +164,16 @@ TEST_F(LocationTableTest, expire) {
     EXPECT_TRUE(loct->has_entry(addr));
 }
 
-TEST_F(LocationTableTest, update_after_duplicate_check) {
+TEST_F(LocationTableTest, update_creates_entry) {
     LongPositionVector pv;
     pv.gn_addr.mid({ 0, 0, 0, 0, 0, 1 });
 
     EXPECT_FALSE(loct->has_entry(pv.gn_addr));
-    loct->is_duplicate_packet(pv.gn_addr, runtime->now());
-    EXPECT_TRUE(loct->has_entry(pv.gn_addr));
-
     loct->update(pv);
     const LongPositionVector* pv_loct = loct->get_position(pv.gn_addr);
     ASSERT_TRUE(pv_loct);
     EXPECT_EQ(pv, *pv_loct);
+    EXPECT_TRUE(loct->has_entry(pv.gn_addr));
 }
 
 TEST_F(LocationTableTest, visit) {
