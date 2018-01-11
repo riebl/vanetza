@@ -1,5 +1,5 @@
-#ifndef UPPERTESTER_TRIGGER_COMMON_CHANGE_PSEUDONYM
-#define UPPERTESTER_TRIGGER_COMMON_CHANGE_PSEUDONYM
+#ifndef UPPERTESTER_TRIGGER_COMMON_CHANGE_PSEUDONYM_HPP
+#define UPPERTESTER_TRIGGER_COMMON_CHANGE_PSEUDONYM_HPP
 
 #include "serialization.hpp"
 #include "trigger.hpp"
@@ -10,10 +10,12 @@ struct ChangePseudonymTrigger : Trigger
 {
     const static uint8_t message_type = 0x04;
 
-    bool deserialize(vanetza::ByteBuffer& buffer)
+    bool deserialize(const vanetza::ByteBuffer& buffer) override
     {
         return buffer.size() == 1;
     }
+
+    void process(UpperTester& tester, Socket& socket) override;
 };
 
 struct ChangePseudonymResult
@@ -22,10 +24,6 @@ struct ChangePseudonymResult
     uint8_t result;
 };
 
-void serialize(OutputArchive& ar, const ChangePseudonymResult& result)
-{
-    ar << result.message_type;
-    ar << result.result;
-}
+void serialize(OutputArchive& ar, const ChangePseudonymResult& result);
 
-#endif /* UPPERTESTER_TRIGGER_COMMON_CHANGE_PSEUDONYM */
+#endif /* UPPERTESTER_TRIGGER_COMMON_CHANGE_PSEUDONYM_HPP */

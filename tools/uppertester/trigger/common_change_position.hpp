@@ -1,5 +1,5 @@
-#ifndef UPPERTESTER_TRIGGER_COMMON_CHANGE_POSITON
-#define UPPERTESTER_TRIGGER_COMMON_CHANGE_POSITON
+#ifndef UPPERTESTER_TRIGGER_COMMON_CHANGE_POSITON_HPP
+#define UPPERTESTER_TRIGGER_COMMON_CHANGE_POSITON_HPP
 
 #include "serialization.hpp"
 #include "trigger.hpp"
@@ -13,7 +13,7 @@ struct ChangePositionTrigger : Trigger
     int32_t delta_longitude;
     uint8_t delta_elevation;
 
-    bool deserialize(vanetza::ByteBuffer& buffer)
+    bool deserialize(const vanetza::ByteBuffer& buffer) override
     {
         if (buffer.size() != 10) {
             return false;
@@ -25,6 +25,8 @@ struct ChangePositionTrigger : Trigger
 
         return true;
     }
+
+    void process(UpperTester& tester, Socket& socket) override;
 };
 
 struct ChangePositionResult
@@ -33,10 +35,6 @@ struct ChangePositionResult
     uint8_t result;
 };
 
-void serialize(OutputArchive& ar, const ChangePositionResult& result)
-{
-    ar << result.message_type;
-    ar << result.result;
-}
+void serialize(OutputArchive& ar, const ChangePositionResult& result);
 
-#endif /* UPPERTESTER_TRIGGER_COMMON_CHANGE_POSITON */
+#endif /* UPPERTESTER_TRIGGER_COMMON_CHANGE_POSITON_HPP */

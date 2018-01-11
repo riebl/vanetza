@@ -1,14 +1,13 @@
+#include "serialization.hpp"
+#include "trigger/btp.hpp"
 #include "trigger/btp_a.hpp"
 #include "trigger/btp_b.hpp"
 #include "trigger/common_ut_initialize.hpp"
 #include "trigger/common_change_position.hpp"
 #include "trigger/common_change_pseudonym.hpp"
-#include "serialization.hpp"
 #include "uppertester.hpp"
 #include <boost/algorithm/hex.hpp>
 #include <boost/optional.hpp>
-#include <vanetza/btp/header.hpp>
-#include <vanetza/btp/header_conversion.hpp>
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/net/ethernet_header.hpp>
 #include <cassert>
@@ -26,6 +25,20 @@ UpperTester::UpperTester(boost::asio::generic::raw_protocol::socket& raw_socket,
 
     do_receive();
     trigger.schedule();
+}
+
+void UpperTester::reset()
+{
+    if (router) {
+        delete router;
+    }
+
+    router = new geonet::Router(m_trigger.runtime(), mib);
+    router->set_address(mib.itsGnLocalGnAddr);
+    router->set_access_interface(request_interface.get());
+    router->set_transport_handler(geonet::UpperProtocol::BTP_A, &dispatcher);
+    router->set_transport_handler(geonet::UpperProtocol::BTP_B, &dispatcher);
+    router->packet_dropped = std::bind(&UpperTester::log_packet_drop, this, std::placeholders::_1);
 }
 
 void UpperTester::do_receive()
@@ -130,84 +143,5 @@ void UpperTester::process_udp_trigger(ByteBuffer& packet)
         return;
     }
 
-    if (type == 0x00) {
-        UtInitializeTrigger *input = (UtInitializeTrigger*) trigger;
-        std::cout << "Processing initialize trigger..." << std::endl;
-
-        if (router) {
-            delete router;
-        }
-
-        router = new geonet::Router(m_trigger.runtime(), mib);
-        router->set_address(mib.itsGnLocalGnAddr);
-        router->set_access_interface(request_interface.get());
-        router->set_transport_handler(geonet::UpperProtocol::BTP_A, &dispatcher);
-        router->set_transport_handler(geonet::UpperProtocol::BTP_B, &dispatcher);
-        router->packet_dropped = std::bind(&UpperTester::log_packet_drop, this, std::placeholders::_1);
-
-        UtInitializeResult result;
-        result.result = 1; // Success
-
-        ByteBuffer buffer;
-        serialize_into_buffer(result, buffer);
-        socket->send(buffer);
-    } else if (type == 0x70) {
-        BtpATrigger *input = (BtpATrigger*) trigger;
-        BtpTriggerResult result;
-        result.result = 0;
-
-        if (router) {
-            DownPacketPtr packet { new DownPacket() };
-            packet->layer(OsiLayer::Application) = ByteBuffer { };
-
-            DataRequest gn_request;
-            gn_request.transport_type = geonet::TransportType::SHB;
-            gn_request.communication_profile = geonet::CommunicationProfile::ITS_G5;
-
-            btp::DataRequestA btp_request;
-            btp_request.destination_port = host_cast<uint16_t>(input->destination_port);
-            btp_request.source_port = host_cast<uint16_t>(input->source_port);
-            btp_request.gn = gn_request;
-
-            auto confirm = request(btp_request, std::move(packet));
-
-            if (confirm.accepted()) {
-                result.result = 1;
-            }
-        }
-
-        ByteBuffer buffer;
-        serialize_into_buffer(result, buffer);
-        socket->send(buffer);
-    } else if (type == 0x71) {
-        BtpBTrigger *input = (BtpBTrigger*) trigger;
-        BtpTriggerResult result;
-        result.result = 0;
-
-        if (router) {
-            DownPacketPtr packet { new DownPacket() };
-            packet->layer(OsiLayer::Application) = ByteBuffer { };
-
-            DataRequest gn_request;
-            gn_request.transport_type = geonet::TransportType::SHB;
-            gn_request.communication_profile = geonet::CommunicationProfile::ITS_G5;
-
-            btp::DataRequestB btp_request;
-            btp_request.destination_port = host_cast<uint16_t>(input->destination_port);
-            btp_request.destination_port_info = host_cast<uint16_t>(input->destination_port_info);
-            btp_request.gn = gn_request;
-
-            auto confirm = request(btp_request, std::move(packet));
-
-            if (confirm.accepted()) {
-                result.result = 1;
-            }
-        }
-
-        ByteBuffer buffer;
-        serialize_into_buffer(result, buffer);
-        socket->send(buffer);
-    } else {
-        std::cerr << "Packet handling not implemented!" << std::endl;
-    }
+    trigger->process(*this, *socket);
 }

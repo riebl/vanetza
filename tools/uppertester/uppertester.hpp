@@ -1,5 +1,5 @@
-#ifndef UPPERTESTER_UPPERTESTER
-#define UPPERTESTER_UPPERTESTER
+#ifndef UPPERTESTER_UPPERTESTER_HPP
+#define UPPERTESTER_UPPERTESTER_HPP
 
 #include "application.hpp"
 #include "passthrough.hpp"
@@ -20,6 +20,8 @@ public:
 
     PortType port();
 
+    void reset();
+
     void indicate(const DataIndication&, UpPacketPtr) override;
 
     void process_udp_trigger(vanetza::ByteBuffer& packet);
@@ -32,6 +34,7 @@ private:
     void log_packet_drop(vanetza::geonet::Router::PacketDropReason);
 
     friend class Socket;
+
     TimeTrigger& m_trigger;
     const vanetza::geonet::MIB& mib;
     std::unique_ptr<Passthrough> request_interface;
@@ -43,4 +46,4 @@ private:
     vanetza::ByteBuffer receive_buffer;
 };
 
-#endif /* UPPERTESTER_UPPERTESTER */
+#endif /* UPPERTESTER_UPPERTESTER_HPP */

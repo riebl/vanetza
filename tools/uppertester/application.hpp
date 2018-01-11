@@ -24,9 +24,10 @@ public:
 
     virtual PortType port() = 0;
 
-protected:
     DataConfirm request(const vanetza::btp::DataRequestA& request, DownPacketPtr packet);
     DataConfirm request(const vanetza::btp::DataRequestB& request, DownPacketPtr packet);
+
+protected:
     vanetza::geonet::Router* router;
 };
 

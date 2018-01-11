@@ -1,5 +1,5 @@
-#ifndef UPPERTESTER_SERIALIZATION
-#define UPPERTESTER_SERIALIZATION
+#ifndef UPPERTESTER_SERIALIZATION_HPP
+#define UPPERTESTER_SERIALIZATION_HPP
 
 #include <vanetza/common/serialization.hpp>
 
@@ -13,4 +13,4 @@ void serialize(OutputArchive& oa, T&& t)
     serialize(oa, std::forward<T>(t));
 }
 
-#endif /* UPPERTESTER_SERIALIZATION */
+#endif /* UPPERTESTER_SERIALIZATION_HPP */

@@ -1,7 +1,6 @@
-#ifndef UPPERTESTER_TRIGGER_BTP_A
-#define UPPERTESTER_TRIGGER_BTP_A
+#ifndef UPPERTESTER_TRIGGER_BTP_A_HPP
+#define UPPERTESTER_TRIGGER_BTP_A_HPP
 
-#include "btp.hpp"
 #include "trigger.hpp"
 #include <cstdint>
 
@@ -12,7 +11,7 @@ struct BtpATrigger : Trigger
     uint16_t destination_port;
     uint16_t source_port;
 
-    bool deserialize(vanetza::ByteBuffer& buffer)
+    bool deserialize(const vanetza::ByteBuffer& buffer) override
     {
         if (buffer.size() != 5) {
             return false;
@@ -23,6 +22,8 @@ struct BtpATrigger : Trigger
 
         return true;
     }
+
+    void process(UpperTester& tester, Socket& socket) override;
 };
 
-#endif /* UPPERTESTER_TRIGGER_BTP_A */
+#endif /* UPPERTESTER_TRIGGER_BTP_A_HPP */

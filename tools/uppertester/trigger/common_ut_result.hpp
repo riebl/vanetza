@@ -1,5 +1,5 @@
-#ifndef UPPERTESTER_TRIGGER_COMMON_UT_RESULT
-#define UPPERTESTER_TRIGGER_COMMON_UT_RESULT
+#ifndef UPPERTESTER_TRIGGER_COMMON_UT_RESULT_HPP
+#define UPPERTESTER_TRIGGER_COMMON_UT_RESULT_HPP
 
 #include "serialization.hpp"
 #include <cstdint>
@@ -11,10 +11,6 @@ struct UtResult
     uint8_t result;
 };
 
-void serialize(OutputArchive& ar, const UtResult& result)
-{
-    ar << result.message_type;
-    ar << result.result;
-}
+void serialize(OutputArchive& ar, const UtResult& result);
 
-#endif /* UPPERTESTER_TRIGGER_COMMON_UT_RESULT */
+#endif /* UPPERTESTER_TRIGGER_COMMON_UT_RESULT_HPP */
