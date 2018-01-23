@@ -40,9 +40,12 @@ target_link_libraries(${GTest_MAIN_LIBRARY} PUBLIC ${GTest_LIBRARY})
 add_dependencies(${GTest_MAIN_LIBRARY} extract_gtest)
 
 # Look for threading library and configure GTest accordingly
-set(CMAKE_THREAD_PREFER_PTHREAD True)
-set(THREADS_PREFER_PTHREAD_FLAG True)
-find_package(Threads QUIET)
+if(NOT DEFINED CMAKE_USE_PTHREADS_INIT)
+    set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    find_package(Threads MODULE)
+endif()
+
 if(CMAKE_USE_PTHREADS_INIT)
     message(STATUS "Build GTest with pthread support")
     target_compile_definitions(${GTest_LIBRARY} PUBLIC "GTEST_HAS_PTHREAD=1")

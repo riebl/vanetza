@@ -8,6 +8,7 @@ find_dependency_components(Boost VERSION @Boost_MAJOR_VERSION@.@Boost_MINOR_VERS
 include(CompatBoostTargets)
 
 find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
+find_dependency(Threads)
 
 if(@CryptoPP_FOUND@)
     find_dependency(CryptoPP @CryptoPP_VERSION_STRING@)

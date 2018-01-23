@@ -12,5 +12,9 @@ target_link_libraries(common
     PUBLIC Boost::date_time
     INTERFACE Boost::serialization)
 
+if(TARGET Threads::Threads)
+    target_link_libraries(common INTERFACE Threads::Threads)
+endif()
+
 add_test_subdirectory(tests)
 

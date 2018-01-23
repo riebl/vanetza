@@ -6,6 +6,11 @@ set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Look up threading library (usually pthread)
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+set(THREADS_PREFER_PTHREAD_FLAG TRUE)
+find_package(Threads MODULE)
+
 # Build configuration
 option(BUILD_USING_CONAN "Build with conan package manager" OFF)
 if(BUILD_USING_CONAN)
