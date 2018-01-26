@@ -36,6 +36,8 @@ private:
     const Clock::time_point& m_time_now;
     const TrustStore& m_trust_store;
     CertificateCache& m_cert_cache;
+
+    CertificateValidity check_certificate(const Certificate& certificate, uint8_t max_depth);
 };
 
 } // namespace security

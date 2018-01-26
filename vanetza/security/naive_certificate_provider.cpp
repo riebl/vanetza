@@ -14,7 +14,7 @@ namespace security
 NaiveCertificateProvider::NaiveCertificateProvider(const Clock::time_point& time_now) :
     m_time_now(time_now),
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
-    m_own_certificate(generate_authorization_ticket()) { }
+    m_own_certificate(generate_authorization_ticket([](Certificate& certificate) { return certificate; })) { }
 
 const Certificate& NaiveCertificateProvider::own_certificate()
 {
@@ -23,7 +23,9 @@ const Certificate& NaiveCertificateProvider::own_certificate()
         auto start_and_end = boost::get<StartAndEndValidity>(&validity_restriction);
         auto renewal_deadline = convert_time32(m_time_now + std::chrono::hours(1));
         if (start_and_end && start_and_end->end_validity < renewal_deadline) {
-            m_own_certificate = generate_authorization_ticket();
+            m_own_certificate = generate_authorization_ticket([](Certificate& certificate) {
+                return certificate;
+            });
             break;
         }
     }
@@ -73,7 +75,7 @@ const Certificate& NaiveCertificateProvider::root_certificate()
     return root_certificate;
 }
 
-Certificate NaiveCertificateProvider::generate_authorization_ticket()
+Certificate NaiveCertificateProvider::generate_authorization_ticket(std::function<void(Certificate&)> mutator)
 {
     // create certificate
     Certificate certificate;
@@ -107,6 +109,8 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     start_and_end.start_validity = convert_time32(m_time_now - std::chrono::hours(1));
     start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(23));
     certificate.validity_restriction.push_back(start_and_end);
+
+    mutator(certificate);
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);

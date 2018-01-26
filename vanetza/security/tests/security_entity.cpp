@@ -223,7 +223,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNER, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)

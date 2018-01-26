@@ -35,22 +35,22 @@ protected:
 
 TEST_F(DefaultCertificateValidatorTest, validity_time)
 {
-    Certificate cert = cert_provider.own_certificate();
-
-    // remove any time constraint from certificate
-    for (auto it = cert.validity_restriction.begin(); it != cert.validity_restriction.end(); ++it) {
-        const ValidityRestriction& restriction = *it;
-        ValidityRestrictionType type = get_type(restriction);
-        switch (type) {
-            case ValidityRestrictionType::Time_End:
-            case ValidityRestrictionType::Time_Start_And_End:
-            case ValidityRestrictionType::Time_Start_And_Duration:
-                it = cert.validity_restriction.erase(it);
-                break;
-            default:
-                break;
+    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
+        // remove any time constraint from certificate
+        for (auto it = cert.validity_restriction.begin(); it != cert.validity_restriction.end(); ++it) {
+            const ValidityRestriction& restriction = *it;
+            ValidityRestrictionType type = get_type(restriction);
+            switch (type) {
+                case ValidityRestrictionType::Time_End:
+                case ValidityRestrictionType::Time_Start_And_End:
+                case ValidityRestrictionType::Time_Start_And_Duration:
+                    it = cert.validity_restriction.erase(it);
+                    break;
+                default:
+                    break;
+            }
         }
-    }
+    });
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
