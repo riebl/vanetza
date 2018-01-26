@@ -38,6 +38,7 @@ enum class CertificateInvalidReason
     MISSING_SIGNATURE,
     INVALID_SIGNER,
     INVALID_NAME,
+    EXCESSIVE_CHAIN_LENGTH,
 };
 
 class CertificateValidity
