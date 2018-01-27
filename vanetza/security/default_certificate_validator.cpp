@@ -37,8 +37,7 @@ bool extract_validity_time(const Certificate& certificate, boost::optional<Time3
 
             ++certificate_time_constraints;
         } else if (type == ValidityRestrictionType::Time_End) {
-            EndValidity time_end = boost::get<EndValidity>(validity_restriction);
-            end = time_end;
+            end = boost::get<EndValidity>(validity_restriction);
 
             ++certificate_time_constraints;
         } else if (type == ValidityRestrictionType::Time_Start_And_Duration) {
@@ -70,12 +69,24 @@ bool check_time_consistent(const Certificate& certificate, const Certificate& si
         return false;
     }
 
-    if (signer_time_start && *signer_time_start > *certificate_time_start) {
-        return false;
+    if (signer_time_start) {
+        if (!certificate_time_start) {
+            return false;
+        }
+
+        if (*signer_time_start > *certificate_time_start) {
+            return false;
+        }
     }
 
-    if (signer_time_end && *signer_time_end < *certificate_time_end) {
-        return false;
+    if (signer_time_end) {
+        if (!certificate_time_end) {
+            return false;
+        }
+
+        if (*signer_time_end < *certificate_time_end) {
+            return false;
+        }
     }
 
     return true;
