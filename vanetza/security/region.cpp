@@ -35,6 +35,14 @@ RegionType get_type(const GeographicRegion& reg)
     return boost::apply_visitor(visit, reg);
 }
 
+vanetza::geonet::GeodeticPosition convert_geodetic_position(const TwoDLocation& position)
+{
+    return vanetza::geonet::GeodeticPosition(
+        static_cast<boost::units::quantity<boost::units::degree::plane_angle> >(position.latitude),
+        static_cast<boost::units::quantity<boost::units::degree::plane_angle> >(position.longitude)
+    );
+}
+
 size_t get_size(const TwoDLocation& loc)
 {
     size_t size = 0;

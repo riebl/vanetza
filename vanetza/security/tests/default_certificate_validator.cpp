@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 using namespace vanetza;
+using namespace vanetza::geonet;
 using namespace vanetza::security;
 
 class DefaultCertificateValidatorTest : public ::testing::Test
@@ -182,4 +183,145 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
+        TwoDLocation center {
+            static_cast<geo_angle_i32t>(10 * units::degree),
+            static_cast<geo_angle_i32t>(20 * units::degree)
+        };
+
+        CircularRegion region {
+            center,
+            static_cast<distance_u16t>(10 * units::si::meter)
+        };
+
+        cert.validity_restriction.push_back(region);
+    });
+
+    cert_cache.insert(cert_provider.aa_certificate());
+    cert_cache.insert(cert_provider.root_certificate());
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
+        TwoDLocation center {
+            static_cast<geo_angle_i32t>(10 * units::degree),
+            static_cast<geo_angle_i32t>(20 * units::degree)
+        };
+
+        CircularRegion region {
+            center,
+            static_cast<distance_u16t>(10 * units::si::meter)
+        };
+
+        cert.validity_restriction.push_back(region);
+    });
+
+    cert_cache.insert(cert_provider.aa_certificate());
+    cert_cache.insert(cert_provider.root_certificate());
+
+    CertificateValidity validity;
+    LongPositionVector lpv;
+    lpv.position_accuracy_indicator = true;
+
+    // inside
+    lpv.latitude = static_cast<geo_angle_i32t>(10.000001 * units::degree);
+    lpv.longitude = static_cast<geo_angle_i32t>(20 * units::degree);
+
+    cert_validator.update(lpv);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // outside
+    lpv.latitude = static_cast<geo_angle_i32t>(10.1 * units::degree);
+    lpv.longitude = static_cast<geo_angle_i32t>(20 * units::degree);
+
+    cert_validator.update(lpv);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
+        TwoDLocation northwest {
+            static_cast<geo_angle_i32t>(10 * units::degree),
+            static_cast<geo_angle_i32t>(10 * units::degree)
+        };
+
+        TwoDLocation southeast {
+            static_cast<geo_angle_i32t>(20 * units::degree),
+            static_cast<geo_angle_i32t>(20 * units::degree)
+        };
+
+        RectangularRegion region {
+            northwest,
+            southeast
+        };
+
+        std::list<RectangularRegion> regions;
+        regions.push_back(region);
+
+        cert.validity_restriction.push_back(regions);
+    });
+
+    cert_cache.insert(cert_provider.aa_certificate());
+    cert_cache.insert(cert_provider.root_certificate());
+
+    CertificateValidity validity;
+    LongPositionVector lpv;
+    lpv.position_accuracy_indicator = true;
+
+    // inside
+    lpv.latitude = static_cast<geo_angle_i32t>(15 * units::degree);
+    lpv.longitude = static_cast<geo_angle_i32t>(15 * units::degree);
+
+    cert_validator.update(lpv);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // outside - left
+    lpv.latitude = static_cast<geo_angle_i32t>(9 * units::degree);
+    lpv.longitude = static_cast<geo_angle_i32t>(15 * units::degree);
+
+    cert_validator.update(lpv);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    // outside - right
+    lpv.latitude = static_cast<geo_angle_i32t>(20.0001 * units::degree);
+    lpv.longitude = static_cast<geo_angle_i32t>(15 * units::degree);
+
+    cert_validator.update(lpv);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    // outside - top
+    lpv.latitude = static_cast<geo_angle_i32t>(15 * units::degree);
+    lpv.longitude = static_cast<geo_angle_i32t>(9 * units::degree);
+
+    cert_validator.update(lpv);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    // outside - down
+    lpv.latitude = static_cast<geo_angle_i32t>(15 * units::degree);
+    lpv.longitude = static_cast<geo_angle_i32t>(21 * units::degree);
+
+    cert_validator.update(lpv);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 }

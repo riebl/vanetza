@@ -34,7 +34,7 @@ add_vanetza_component(security
     validity_restriction.cpp
     verify_service.cpp
 )
-target_link_libraries(security PUBLIC Boost::serialization common net)
+target_link_libraries(security PUBLIC Boost::serialization common net geonet)
 
 # crypto++ is a public mandatory dependency because of "NaiveCertificateManager"
 if(TARGET CryptoPP::CryptoPP)
