@@ -3,6 +3,8 @@
 
 #include <vanetza/geonet/units.hpp>
 #include <vanetza/security/int_x.hpp>
+#include <vanetza/units/angle.hpp>
+#include <vanetza/units/length.hpp>
 #include <boost/variant/variant.hpp>
 #include <list>
 
@@ -14,6 +16,12 @@ namespace security
 /// TwoDLocation specified in TS 103 097 v1.2.1, section 4.2.18
 struct TwoDLocation
 {
+    TwoDLocation() = default;
+    TwoDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude) :
+        latitude(latitude), longitude(longitude) {}
+    TwoDLocation(units::GeoAngle latitude, units::GeoAngle longitude) :
+        latitude(latitude), longitude(longitude) {}
+
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longitude;
 };
@@ -29,6 +37,12 @@ struct ThreeDLocation
 /// CircularRegion specified in TS 103 097 v1.2.1, section 4.2.22
 struct CircularRegion
 {
+    CircularRegion() = default;
+    CircularRegion(const TwoDLocation& center, geonet::distance_u16t radius) :
+        center(center), radius(radius) {}
+    CircularRegion(const TwoDLocation& center, units::Length radius) :
+        center(center), radius(radius) {}
+
     TwoDLocation center;
     geonet::distance_u16t radius;
 };

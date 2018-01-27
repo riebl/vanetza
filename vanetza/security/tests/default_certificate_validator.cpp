@@ -4,6 +4,7 @@
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
+#include <vanetza/units/angle.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 
@@ -185,4 +186,99 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    TwoDLocation center { 10 * units::degree, 20 * units::degree };
+    CircularRegion region { center, 10 * units::si::meter };
+    cert.validity_restriction.push_back(region);
+    cert_provider.sign_authorization_ticket(cert);
+
+    cert_cache.insert(cert_provider.aa_certificate());
+    cert_cache.insert(cert_provider.root_certificate());
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    TwoDLocation center { 10 * units::degree, 20 * units::degree };
+    CircularRegion region { center, 10 * units::si::meter };
+    cert.validity_restriction.push_back(region);
+    cert_provider.sign_authorization_ticket(cert);
+
+    cert_cache.insert(cert_provider.aa_certificate());
+    cert_cache.insert(cert_provider.root_certificate());
+
+    CertificateValidity validity;
+    TwoDLocation ego_pos;
+    // inside
+    ego_pos = TwoDLocation { 10.000001 * units::degree,  20 * units::degree };
+    cert_validator.set_ego_position(ego_pos);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // outside
+    ego_pos = TwoDLocation { 10.1 * units::degree, 20 * units::degree };
+    cert_validator.set_ego_position(ego_pos);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    TwoDLocation northwest { 20 * units::degree, 10 * units::degree };
+    TwoDLocation southeast { 10 * units::degree, 20 * units::degree };
+    RectangularRegion region { northwest, southeast };
+    std::list<RectangularRegion> regions;
+    regions.push_back(region);
+    cert.validity_restriction.push_back(regions);
+    cert_provider.sign_authorization_ticket(cert);
+
+    cert_cache.insert(cert_provider.aa_certificate());
+    cert_cache.insert(cert_provider.root_certificate());
+
+    CertificateValidity validity;
+    TwoDLocation ego_pos;
+
+    // inside
+    ego_pos = TwoDLocation { 15 * units::degree, 15 * units::degree };
+    cert_validator.set_ego_position(ego_pos);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // outside - left
+    ego_pos = TwoDLocation { 15 * units::degree, 9 * units::degree };
+    cert_validator.set_ego_position(ego_pos);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    // outside - right
+    ego_pos = TwoDLocation { 15 * units::degree, 21 * units::degree };
+    cert_validator.set_ego_position(ego_pos);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    // outside - top
+    ego_pos = TwoDLocation { 21 * units::degree, 15 * units::degree };
+    cert_validator.set_ego_position(ego_pos);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    // outside - down
+    ego_pos = TwoDLocation { 9 * units::degree, 15 * units::degree };
+    cert_validator.set_ego_position(ego_pos);
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 }
