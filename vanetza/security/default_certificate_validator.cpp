@@ -53,7 +53,7 @@ bool extract_validity_time(const Certificate& certificate, boost::optional<Time3
     return certificate_time_constraints == 1;
 }
 
-bool check_time_consistent(const Certificate& certificate, const Certificate& signer)
+bool check_time_consistency(const Certificate& certificate, const Certificate& signer)
 {
     boost::optional<Time32> certificate_time_start;
     boost::optional<Time32> certificate_time_end;
@@ -105,105 +105,113 @@ DefaultCertificateValidator::DefaultCertificateValidator(Backend& backend, const
 
 CertificateValidity DefaultCertificateValidator::check_certificate(const Certificate& certificate)
 {
-    return check_certificate(certificate, 10);
-}
+    uint8_t depth = 0;
+    bool in_trust_store = false;
 
-CertificateValidity DefaultCertificateValidator::check_certificate(const Certificate& certificate, uint8_t max_depth)
-{
-    if (max_depth == 0) {
-        return CertificateInvalidReason::TOO_LONG_CHAIN;
-    }
+    Time32 now = convert_time32(m_time_now);
+    Certificate current_cert = certificate;
 
-    boost::optional<Time32> certificate_time_start;
-    boost::optional<Time32> certificate_time_end;
+    while (++depth < 10) {
+        boost::optional<Time32> cert_time_start;
+        boost::optional<Time32> cert_time_end;
 
-    // ensure exactly one time validity constraint is present
-    // section 6.7 in TS 103 097 v1.2.1
-    if (!extract_validity_time(certificate, certificate_time_start, certificate_time_end)) {
-        return CertificateInvalidReason::BROKEN_TIME_PERIOD;
-    }
-
-    // check if certificate is premature or outdated
-    auto now = convert_time32(m_time_now);
-    if (certificate_time_start && certificate_time_end) {
-        if (*certificate_time_start >= certificate_time_end) {
+        // ensure exactly one time validity constraint is present
+        // section 6.7 in TS 103 097 v1.2.1
+        if (!extract_validity_time(current_cert, cert_time_start, cert_time_end)) {
             return CertificateInvalidReason::BROKEN_TIME_PERIOD;
         }
-    }
 
-    if (certificate_time_start && now < *certificate_time_start) {
-        return CertificateInvalidReason::OFF_TIME_PERIOD;
-    }
-
-    if (certificate_time_end && now > *certificate_time_end) {
-        return CertificateInvalidReason::OFF_TIME_PERIOD;
-    }
-
-    SubjectType subject_type = certificate.subject_info.subject_type;
-
-    // check if subject_name is empty if certificate is authorization ticket
-    if (subject_type == SubjectType::Authorization_Ticket && 0 != certificate.subject_info.subject_name.size()) {
-        return CertificateInvalidReason::INVALID_NAME;
-    }
-
-    // check signer info
-    if (get_type(certificate.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
-        return CertificateInvalidReason::INVALID_SIGNER;
-    }
-
-    HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
-
-    // try to extract ECDSA signature
-    boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.signature);
-    if (!sig) {
-        return CertificateInvalidReason::MISSING_SIGNATURE;
-    }
-
-    // create buffer of certificate
-    ByteBuffer cert = convert_for_signing(certificate);
-
-    const std::list<Certificate> possible_trusted_signers = m_trust_store.lookup(signer_hash);
-    for (auto& possible_signer : possible_trusted_signers) {
-        auto verification_key = get_public_key(possible_signer);
-        // this should never happen, as the verify service already ensures a key is present
-        if (!verification_key) {
-            continue;
-        }
-
-        if (m_crypto_backend.verify_data(verification_key.get(), cert, sig.get())) {
-            if (!check_time_consistent(certificate, possible_signer)) {
+        // check if certificate is premature or outdated
+        if (cert_time_start && cert_time_end) {
+            if (*cert_time_start >= *cert_time_end) {
                 return CertificateInvalidReason::BROKEN_TIME_PERIOD;
             }
+        }
 
+        if (cert_time_start && now < *cert_time_start) {
+            return CertificateInvalidReason::OFF_TIME_PERIOD;
+        }
+
+        if (cert_time_end && now > *cert_time_end) {
+            return CertificateInvalidReason::OFF_TIME_PERIOD;
+        }
+
+        SubjectType subject_type = current_cert.subject_info.subject_type;
+
+        // check if subject_name is empty if certificate is authorization ticket
+        if (subject_type == SubjectType::Authorization_Ticket && 0 != current_cert.subject_info.subject_name.size()) {
+            return CertificateInvalidReason::INVALID_NAME;
+        }
+
+        // check signer info
+        if (in_trust_store) {
+            // we only need to validate validity restrictions for trusted certificates, no signature, so abort here
             return CertificateValidity::valid();
+        } else if (get_type(current_cert.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
+            return CertificateInvalidReason::INVALID_SIGNER;
         }
-    }
 
-    const std::list<Certificate> possible_signers = m_cert_cache.lookup(signer_hash);
-    for (auto& possible_signer : possible_signers) {
-        auto verification_key = get_public_key(possible_signer);
-        // this should never happen, as the verify service already ensures a key is present
-        if (!verification_key) {
+        HashedId8 signer_hash = boost::get<HashedId8>(current_cert.signer_info);
+
+        // try to extract ECDSA signature
+        boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(current_cert.signature);
+        if (!sig) {
+            return CertificateInvalidReason::MISSING_SIGNATURE;
+        }
+
+        // create buffer of certificate
+        ByteBuffer binary_cert = convert_for_signing(current_cert);
+        bool signer_found = false;
+
+        for (auto& possible_signer : m_trust_store.lookup(signer_hash)) {
+            auto verification_key = get_public_key(possible_signer);
+            if (!verification_key) {
+                continue;
+            }
+
+            if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
+                if (!check_time_consistency(current_cert, possible_signer)) {
+                    return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                }
+
+                current_cert = possible_signer;
+                in_trust_store = true;
+                signer_found = true;
+
+                break;
+            }
+        }
+
+        if (signer_found) {
             continue;
         }
 
-        if (m_crypto_backend.verify_data(verification_key.get(), cert, sig.get())) {
-            if (!check_time_consistent(certificate, possible_signer)) {
-                return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+        for (auto& possible_signer : m_cert_cache.lookup(signer_hash)) {
+            auto verification_key = get_public_key(possible_signer);
+            if (!verification_key) {
+                continue;
             }
 
-            CertificateValidity validity = check_certificate(possible_signer, max_depth - 1);
+            if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
+                if (!check_time_consistency(current_cert, possible_signer)) {
+                    return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                }
 
-            if (validity) {
-                // Renews certificate in cache
-                m_cert_cache.insert(possible_signer);
+                current_cert = possible_signer;
+                signer_found = true;
+
+                break;
             }
-
-            return validity;
         }
+
+        if (signer_found) {
+            continue;
+        }
+
+        return CertificateInvalidReason::UNKNOWN_SIGNER;
     }
 
-    return CertificateInvalidReason::UNKNOWN_SIGNER;
+    return CertificateInvalidReason::TOO_LONG_CHAIN;
 }
 
 } // namespace security
