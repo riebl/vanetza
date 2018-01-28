@@ -3,8 +3,10 @@
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
@@ -245,7 +247,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
 
 TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
 {
-    // forge certificate with outdatet validity
+    // forge certificate with outdated validity
     StartAndEndValidity outdated_validity;
     outdated_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
     outdated_validity.end_validity = convert_time32(runtime.now() - std::chrono::minutes(1));
@@ -395,6 +397,81 @@ TEST_F(SecurityEntityTest, verify_message_without_signer_info)
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
+}
+
+// See TS 103 096-2 v1.3.1, section 5.2.1
+TEST_F(SecurityEntityTest, verify_message_protocol_version)
+{
+    auto secured_message = create_secured_message();
+    ASSERT_EQ(secured_message.protocol_version(), 2);
+}
+
+// See TS 103 096-2 v1.3.1, section 5.2.4.1
+TEST_F(SecurityEntityTest, verify_message_its_aid)
+{
+    auto secured_message = create_secured_message();
+    auto aid_header = secured_message.header_field(HeaderFieldType::Its_Aid);
+    ASSERT_EQ(boost::get<IntX>(*aid_header), itsAidCa);
+}
+
+// See TS 103 096-2 v1.3.1, section 5.2.4.3 + 5.2.4.5 + 5.2.4.6 + 5.2.4.7
+TEST_F(SecurityEntityTest, verify_message_signer_info)
+{
+    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+        auto signer_info = secured_message.header_field(HeaderFieldType::Signer_Info);
+        return boost::get<SignerInfo>(*signer_info);
+    };
+
+    // first message must be signed with certificate
+    auto secured_message = create_secured_message();
+    ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
+
+    // next messages must be signed with certificate digest, until one second is over or certificate has been requested
+    for (int i = 0; i < 5; i++) {
+        secured_message = create_secured_message();
+        ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
+
+        // See TS 103 096-2 v1.3.1, section 5.2.2
+        ASSERT_EQ(
+            boost::get<HashedId8>(signer_info(secured_message)),
+            calculate_hash(certificate_provider->own_certificate())
+        );
+    }
+
+    // certificate has been requested by another party, send certificate
+    sign_header_policy.report_requested_certificate();
+    secured_message = create_secured_message();
+    ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
+
+    // next messages must be signed with certificate digest, until one second is over or certificate has been requested
+    for (int i = 0; i < 5; i++) {
+        secured_message = create_secured_message();
+        ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
+    }
+
+    // certificate chain has been requested by another party, send certificate chain
+    sign_header_policy.report_requested_certificate_chain();
+    secured_message = create_secured_message();
+    ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Chain);
+
+    // next messages must be signed with certificate digest, until one second is over or certificate has been requested
+    for (int i = 0; i < 5; i++) {
+        secured_message = create_secured_message();
+        ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
+    }
+
+    runtime.trigger(std::chrono::seconds(1));
+
+    // one second has passed, send certificate
+    sign_header_policy.report_requested_certificate();
+    secured_message = create_secured_message();
+    ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
+
+    // next messages must be signed with certificate digest, until one second is over or certificate has been requested
+    for (int i = 0; i < 5; i++) {
+        secured_message = create_secured_message();
+        ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
+    }
 }
 
 // TODO add tests for Unsupported_Signer_Identifier_Type, Incompatible_Protocol
