@@ -96,6 +96,13 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                 case SignerInfoType::Certificate:
                     possible_certificates.push_back(boost::get<Certificate>(*signer_info));
                     signer_hash = calculate_hash(boost::get<Certificate>(*signer_info));
+
+                    if (confirm.its_aid == itsAidCa && cert_cache.lookup(signer_hash).size() == 0) {
+                        // Previously unknown certificate, send own certificate in next CAM
+                        // See TS 103 097 v1.2.1, section 7.1, 1st bullet, 3rd dash
+                        sign_policy.report_requested_certificate();
+                    }
+
                     break;
                 case SignerInfoType::Certificate_Digest_With_SHA256:
                     signer_hash = boost::get<HashedId8>(*signer_info);
@@ -202,7 +209,6 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             return confirm;
         }
 
-        // TODO check if Certificate_Chain is inconsistent
         CertificateValidity cert_validity = certs.check_certificate(signer.get());
 
         // if certificate could not be verified return correct DecapReport
