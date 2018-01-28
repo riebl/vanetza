@@ -485,7 +485,7 @@ private:
      * \param pdu PDU
      * \param packet Packet with payload
      */
-    DownPacketPtr encap_packet(security::Profile, Pdu&, DownPacketPtr);
+    DownPacketPtr encap_packet(security::IntX, Pdu&, DownPacketPtr);
 
     /**
      * \brief Create an initialized Single-Hop-Broadcast PDU
