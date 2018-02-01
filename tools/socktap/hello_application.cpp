@@ -3,9 +3,11 @@
 #include <functional>
 #include <iostream>
 
+// This is a very simple application that sends BTP-B messages with the content 0xc0ffee.
+
 using namespace vanetza;
 
-HelloApplication::HelloApplication(boost::asio::steady_timer& timer) : timer_(timer)
+HelloApplication::HelloApplication(boost::asio::steady_timer& timer, std::chrono::milliseconds interval) : timer_(timer), interval_(interval)
 {
     schedule_timer();
 }
@@ -17,12 +19,12 @@ HelloApplication::PortType HelloApplication::port()
 
 void HelloApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
 {
-    std::cout << "HelloApplication received a packet\n";
+    std::cout << "Hello application received a packet" << std::endl;
 }
 
 void HelloApplication::schedule_timer()
 {
-    timer_.expires_from_now(std::chrono::milliseconds(800));
+    timer_.expires_from_now(interval_);
     timer_.async_wait(std::bind(&HelloApplication::on_timer, this, std::placeholders::_1));
 }
 
@@ -37,7 +39,7 @@ void HelloApplication::on_timer(const boost::system::error_code& ec)
         request.its_aid = aid::CA;
         auto confirm = Application::request(request, std::move(packet));
         if (!confirm.accepted()) {
-            std::cerr << "HelloApplication data request failed\n";
+            throw std::runtime_error("Hello application data request failed");
         }
 
         schedule_timer();
