@@ -108,11 +108,15 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(23));
     certificate.validity_restriction.push_back(start_and_end);
 
-    // set signature
-    ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer);
+    sign_authorization_ticket(certificate);
 
     return certificate;
+}
+
+void NaiveCertificateProvider::sign_authorization_ticket(Certificate& certificate)
+{
+    ByteBuffer data_buffer = convert_for_signing(certificate);
+    certificate.signature = m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer);
 }
 
 Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string& subject_name)

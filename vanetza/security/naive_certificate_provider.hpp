@@ -48,6 +48,12 @@ public:
      */
     const Certificate& root_certificate();
 
+    /**
+     * \brief sign an authorization ticket
+     * \param certificate certificate to sign
+     */
+    void sign_authorization_ticket(Certificate& certificate);
+
 private:
     /**
      * \brief get root key (same for all instances)
