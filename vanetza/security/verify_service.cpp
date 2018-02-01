@@ -172,6 +172,13 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         boost::optional<Certificate> signer;
 
         for (auto& cert : possible_certificates) {
+            SubjectType subject_type = cert.subject_info.subject_type;
+            if (subject_type != SubjectType::Authorization_Ticket) {
+                confirm.report = VerificationReport::Invalid_Certificate;
+                confirm.certificate_validity = CertificateInvalidReason::INVALID_SIGNER;
+                return confirm;
+            }
+
             boost::optional<ecdsa256::PublicKey> public_key = get_public_key(cert);
 
             // public key could not be extracted
@@ -194,7 +201,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             return confirm;
         }
 
-        // TODO check if Certificate_Chain is inconsistant
+        // TODO check if Certificate_Chain is inconsistent
         CertificateValidity cert_validity = certs.check_certificate(signer.get());
 
         // if certificate could not be verified return correct DecapReport
