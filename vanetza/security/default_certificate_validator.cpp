@@ -184,6 +184,12 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
                 continue;
             }
 
+            const auto signer_type = possible_signer.subject_info.subject_type;
+
+            if (signer_type != SubjectType::Authorization_Authority && signer_type != SubjectType::Root_Ca) {
+                continue;
+            }
+
             if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
                 if (!check_time_consistency(current_cert, possible_signer)) {
                     return CertificateInvalidReason::BROKEN_TIME_PERIOD;
@@ -204,6 +210,12 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         for (auto& possible_signer : m_cert_cache.lookup(signer_hash)) {
             auto verification_key = get_public_key(possible_signer);
             if (!verification_key) {
+                continue;
+            }
+
+            const auto signer_type = possible_signer.subject_info.subject_type;
+
+            if (signer_type != SubjectType::Authorization_Authority && signer_type != SubjectType::Root_Ca) {
                 continue;
             }
 
