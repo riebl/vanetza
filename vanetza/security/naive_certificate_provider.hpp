@@ -55,13 +55,16 @@ public:
     const Certificate& root_certificate();
 
     /**
-     * \brief generate a authorization ticket
-     *
-     * \param mutator allows mutating the certificate directly before signing, useful in tests
-     *
+     * \brief generate an authorization ticket
      * \return generated certificate
      */
-    Certificate generate_authorization_ticket(std::function<void(Certificate&)> mutator);
+    Certificate generate_authorization_ticket();
+
+    /**
+     * \brief sign an authorization ticket
+     * \param certificate certificate to sign
+     */
+    void sign_authorization_ticket(Certificate& certificate);
 
 private:
     /**

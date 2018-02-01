@@ -14,7 +14,7 @@ namespace security
 NaiveCertificateProvider::NaiveCertificateProvider(const Clock::time_point& time_now) :
     m_time_now(time_now),
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
-    m_own_certificate(generate_authorization_ticket([](Certificate& certificate) { return certificate; })) { }
+    m_own_certificate(generate_authorization_ticket()) { }
 
 const Certificate& NaiveCertificateProvider::own_certificate()
 {
@@ -23,9 +23,7 @@ const Certificate& NaiveCertificateProvider::own_certificate()
         auto start_and_end = boost::get<StartAndEndValidity>(&validity_restriction);
         auto renewal_deadline = convert_time32(m_time_now + std::chrono::hours(1));
         if (start_and_end && start_and_end->end_validity < renewal_deadline) {
-            m_own_certificate = generate_authorization_ticket([](Certificate& certificate) {
-                return certificate;
-            });
+            m_own_certificate = generate_authorization_ticket();
             break;
         }
     }
@@ -75,7 +73,7 @@ const Certificate& NaiveCertificateProvider::root_certificate()
     return root_certificate;
 }
 
-Certificate NaiveCertificateProvider::generate_authorization_ticket(std::function<void(Certificate&)> mutator)
+Certificate NaiveCertificateProvider::generate_authorization_ticket()
 {
     // create certificate
     Certificate certificate;
@@ -110,13 +108,15 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket(std::functio
     start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(23));
     certificate.validity_restriction.push_back(start_and_end);
 
-    mutator(certificate);
-
-    // set signature
-    ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer);
+    sign_authorization_ticket(certificate);
 
     return certificate;
+}
+
+void NaiveCertificateProvider::sign_authorization_ticket(Certificate& certificate)
+{
+    ByteBuffer data_buffer = convert_for_signing(certificate);
+    certificate.signature = m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer);
 }
 
 Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string& subject_name)

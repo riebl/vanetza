@@ -53,9 +53,9 @@ void certificate_remove_time_constraints(Certificate& cert)
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
-        certificate_remove_time_constraints(cert);
-    });
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    certificate_remove_time_constraints(cert);
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -67,14 +67,15 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([this](Certificate& cert) {
-        certificate_remove_time_constraints(cert);
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    certificate_remove_time_constraints(cert);
 
-        StartAndEndValidity validity;
-        validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-        validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
-        cert.validity_restriction.push_back(validity);
-    });
+    StartAndEndValidity validity;
+    validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
+    validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
+    cert.validity_restriction.push_back(validity);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -85,14 +86,15 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([this](Certificate& cert) {
-        certificate_remove_time_constraints(cert);
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    certificate_remove_time_constraints(cert);
 
-        StartAndDurationValidity validity;
-        validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-        validity.duration = Duration(23, Duration::Units::Hours);
-        cert.validity_restriction.push_back(validity);
-    });
+    StartAndDurationValidity validity;
+    validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
+    validity.duration = Duration(23, Duration::Units::Hours);
+    cert.validity_restriction.push_back(validity);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -103,12 +105,13 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_end)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([this](Certificate& cert) {
-        certificate_remove_time_constraints(cert);
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    certificate_remove_time_constraints(cert);
 
-        EndValidity validity = convert_time32(runtime.now() + std::chrono::hours(23));
-        cert.validity_restriction.push_back(validity);
-    });
+    EndValidity validity = convert_time32(runtime.now() + std::chrono::hours(23));
+    cert.validity_restriction.push_back(validity);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -123,19 +126,20 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([this](Certificate& cert) {
-        certificate_remove_time_constraints(cert);
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    certificate_remove_time_constraints(cert);
 
-        StartAndEndValidity start_and_end_validity;
-        start_and_end_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-        start_and_end_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
-        cert.validity_restriction.push_back(start_and_end_validity);
+    StartAndEndValidity start_and_end_validity;
+    start_and_end_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
+    start_and_end_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
+    cert.validity_restriction.push_back(start_and_end_validity);
 
-        StartAndDurationValidity start_and_duration_validity;
-        start_and_duration_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-        start_and_duration_validity.duration = Duration(23, Duration::Units::Hours);
-        cert.validity_restriction.push_back(start_and_duration_validity);
-    });
+    StartAndDurationValidity start_and_duration_validity;
+    start_and_duration_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
+    start_and_duration_validity.duration = Duration(23, Duration::Units::Hours);
+    cert.validity_restriction.push_back(start_and_duration_validity);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -148,14 +152,15 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
 {
     // The generated authorization ticket's start time is prior to the AA certificate's start time
-    Certificate cert = cert_provider.generate_authorization_ticket([this](Certificate& cert) {
-        certificate_remove_time_constraints(cert);
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    certificate_remove_time_constraints(cert);
 
-        StartAndEndValidity validity;
-        validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(3));
-        validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
-        cert.validity_restriction.push_back(validity);
-    });
+    StartAndEndValidity validity;
+    validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(3));
+    validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
+    cert.validity_restriction.push_back(validity);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -168,14 +173,15 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
 {
     // The generated authorization ticket's start time is prior to the AA certificate's start time
-    Certificate cert = cert_provider.generate_authorization_ticket([this](Certificate& cert) {
-        certificate_remove_time_constraints(cert);
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    certificate_remove_time_constraints(cert);
 
-        StartAndEndValidity validity;
-        validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(3));
-        validity.end_validity = convert_time32(runtime.now() - std::chrono::hours(23));
-        cert.validity_restriction.push_back(validity);
-    });
+    StartAndEndValidity validity;
+    validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(3));
+    validity.end_validity = convert_time32(runtime.now() - std::chrono::hours(23));
+    cert.validity_restriction.push_back(validity);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -187,19 +193,21 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
 
 TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
-        TwoDLocation center {
-            static_cast<geo_angle_i32t>(10 * units::degree),
-            static_cast<geo_angle_i32t>(20 * units::degree)
-        };
+    Certificate cert = cert_provider.generate_authorization_ticket();
 
-        CircularRegion region {
-            center,
-            static_cast<distance_u16t>(10 * units::si::meter)
-        };
+    TwoDLocation center {
+        static_cast<geo_angle_i32t>(10 * units::degree),
+        static_cast<geo_angle_i32t>(20 * units::degree)
+    };
 
-        cert.validity_restriction.push_back(region);
-    });
+    CircularRegion region {
+        center,
+        static_cast<distance_u16t>(10 * units::si::meter)
+    };
+
+    cert.validity_restriction.push_back(region);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -211,19 +219,21 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
 
 TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
-        TwoDLocation center {
-            static_cast<geo_angle_i32t>(10 * units::degree),
-            static_cast<geo_angle_i32t>(20 * units::degree)
-        };
+    Certificate cert = cert_provider.generate_authorization_ticket();
 
-        CircularRegion region {
-            center,
-            static_cast<distance_u16t>(10 * units::si::meter)
-        };
+    TwoDLocation center {
+        static_cast<geo_angle_i32t>(10 * units::degree),
+        static_cast<geo_angle_i32t>(20 * units::degree)
+    };
 
-        cert.validity_restriction.push_back(region);
-    });
+    CircularRegion region {
+        center,
+        static_cast<distance_u16t>(10 * units::si::meter)
+    };
+
+    cert.validity_restriction.push_back(region);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
@@ -252,27 +262,29 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
 
 TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
 {
-    Certificate cert = cert_provider.generate_authorization_ticket([](Certificate& cert) {
-        TwoDLocation northwest {
-            static_cast<geo_angle_i32t>(10 * units::degree),
-            static_cast<geo_angle_i32t>(10 * units::degree)
-        };
+    Certificate cert = cert_provider.generate_authorization_ticket();
 
-        TwoDLocation southeast {
-            static_cast<geo_angle_i32t>(20 * units::degree),
-            static_cast<geo_angle_i32t>(20 * units::degree)
-        };
+    TwoDLocation northwest {
+        static_cast<geo_angle_i32t>(10 * units::degree),
+        static_cast<geo_angle_i32t>(10 * units::degree)
+    };
 
-        RectangularRegion region {
-            northwest,
-            southeast
-        };
+    TwoDLocation southeast {
+        static_cast<geo_angle_i32t>(20 * units::degree),
+        static_cast<geo_angle_i32t>(20 * units::degree)
+    };
 
-        std::list<RectangularRegion> regions;
-        regions.push_back(region);
+    RectangularRegion region {
+        northwest,
+        southeast
+    };
 
-        cert.validity_restriction.push_back(regions);
-    });
+    std::list<RectangularRegion> regions;
+    regions.push_back(region);
+
+    cert.validity_restriction.push_back(regions);
+
+    cert_provider.sign_authorization_ticket(cert);
 
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
