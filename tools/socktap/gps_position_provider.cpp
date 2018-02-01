@@ -5,17 +5,19 @@
 
 static_assert(GPSD_API_MAJOR_VERSION == 5 || GPSD_API_MAJOR_VERSION == 6, "libgps has incompatible API");
 
-GpsPositionProvider::GpsPositionProvider() :
-    GpsPositionProvider(gpsd::shared_memory, nullptr)
+GpsPositionProvider::GpsPositionProvider(boost::asio::steady_timer& timer) :
+    GpsPositionProvider(timer, gpsd::shared_memory, nullptr)
 {
 }
 
-GpsPositionProvider::GpsPositionProvider(const std::string& hostname, const std::string& port)
+GpsPositionProvider::GpsPositionProvider(boost::asio::steady_timer& timer, const std::string& hostname, const std::string& port) :
+    timer_(timer)
 {
     if (gps_open(hostname.c_str(), port.c_str(), &gps_data)) {
         throw gps_error(errno);
     }
     gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, nullptr);
+    schedule_timer();
 }
 
 GpsPositionProvider::~GpsPositionProvider()
@@ -32,6 +34,22 @@ GpsPositionProvider::gps_error::gps_error(int err) :
 const vanetza::PositionFix& GpsPositionProvider::position_fix()
 {
     return fetched_position_fix;
+}
+
+void GpsPositionProvider::schedule_timer()
+{
+    timer_.expires_from_now(std::chrono::milliseconds(500));
+    timer_.async_wait(std::bind(&GpsPositionProvider::on_timer, this, std::placeholders::_1));
+}
+
+void GpsPositionProvider::on_timer(const boost::system::error_code& ec)
+{
+    if (ec == boost::asio::error::operation_aborted) {
+        return;
+    }
+
+    fetch_position_fix();
+    schedule_timer();
 }
 
 void GpsPositionProvider::fetch_position_fix()

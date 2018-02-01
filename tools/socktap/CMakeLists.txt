@@ -11,21 +11,39 @@ endif()
 find_package(Threads REQUIRED)
 find_package(GPS REQUIRED)
 
-add_executable(socktap
+add_executable(socktap-hello
     application.cpp
     dcc_passthrough.cpp
     ethernet_device.cpp
     gps_position_provider.cpp
     hello_application.cpp
-    main.cpp
+    main_hello.cpp
     router_context.cpp
     time_trigger.cpp
 )
-target_link_libraries(socktap Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
-install(TARGETS socktap EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+add_executable(socktap-cam
+    application.cpp
+    dcc_passthrough.cpp
+    ethernet_device.cpp
+    gps_position_provider.cpp
+    cam_application.cpp
+    main_cam.cpp
+    router_context.cpp
+    time_trigger.cpp
+)
+
+target_link_libraries(socktap-hello Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
+target_link_libraries(socktap-cam Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
+install(TARGETS socktap-hello EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS socktap-cam EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 if(TARGET Cohda::headers)
-    set_property(TARGET socktap APPEND PROPERTY COMPILE_DEFINITIONS "SOCKTAP_WITH_COHDA_SDK")
-    set_property(TARGET socktap APPEND PROPERTY INCLUDE_DIRECTORIES "${COHDA_INCLUDE_DIRS}")
-    set_property(TARGET socktap APPEND PROPERTY SOURCES cohda.cpp)
+    set_property(TARGET socktap-hello APPEND PROPERTY COMPILE_DEFINITIONS "SOCKTAP_WITH_COHDA_SDK")
+    set_property(TARGET socktap-hello APPEND PROPERTY INCLUDE_DIRECTORIES "${COHDA_INCLUDE_DIRS}")
+    set_property(TARGET socktap-hello APPEND PROPERTY SOURCES cohda.cpp)
+
+    set_property(TARGET socktap-cam APPEND PROPERTY COMPILE_DEFINITIONS "SOCKTAP_WITH_COHDA_SDK")
+    set_property(TARGET socktap-cam APPEND PROPERTY INCLUDE_DIRECTORIES "${COHDA_INCLUDE_DIRS}")
+    set_property(TARGET socktap-cam APPEND PROPERTY SOURCES cohda.cpp)
 endif()
