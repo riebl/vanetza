@@ -70,10 +70,10 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
     Certificate cert = cert_provider.generate_authorization_ticket();
     certificate_remove_time_constraints(cert);
 
-    StartAndEndValidity validity;
-    validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-    validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
-    cert.validity_restriction.push_back(validity);
+    StartAndEndValidity restriction;
+    restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
+    restriction.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
+    cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
 
@@ -89,10 +89,10 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
     Certificate cert = cert_provider.generate_authorization_ticket();
     certificate_remove_time_constraints(cert);
 
-    StartAndDurationValidity validity;
-    validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-    validity.duration = Duration(23, Duration::Units::Hours);
-    cert.validity_restriction.push_back(validity);
+    StartAndDurationValidity restriction;
+    restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
+    restriction.duration = Duration(23, Duration::Units::Hours);
+    cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
 
@@ -108,8 +108,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
     Certificate cert = cert_provider.generate_authorization_ticket();
     certificate_remove_time_constraints(cert);
 
-    EndValidity validity = convert_time32(runtime.now() + std::chrono::hours(23));
-    cert.validity_restriction.push_back(validity);
+    EndValidity restriction = convert_time32(runtime.now() + std::chrono::hours(23));
+    cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
 
@@ -155,10 +155,10 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
     Certificate cert = cert_provider.generate_authorization_ticket();
     certificate_remove_time_constraints(cert);
 
-    StartAndEndValidity validity;
-    validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(3));
-    validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
-    cert.validity_restriction.push_back(validity);
+    StartAndEndValidity restriction;
+    restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(3));
+    restriction.end_validity = convert_time32(runtime.now() + std::chrono::hours(23));
+    cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
 
@@ -176,10 +176,10 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
     Certificate cert = cert_provider.generate_authorization_ticket();
     certificate_remove_time_constraints(cert);
 
-    StartAndEndValidity validity;
-    validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(3));
-    validity.end_validity = convert_time32(runtime.now() - std::chrono::hours(23));
-    cert.validity_restriction.push_back(validity);
+    StartAndEndValidity restriction;
+    restriction.start_validity = convert_time32(runtime.now() + std::chrono::hours(3));
+    restriction.end_validity = convert_time32(runtime.now() - std::chrono::hours(23));
+    cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
 
