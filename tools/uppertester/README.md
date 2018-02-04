@@ -2,9 +2,18 @@
 
 This directory contains an upper tester implementation for ETSI's TTCN-3 test suite. A TTCN-3 compiler is required to execute these tests.
 
-## How to run
+## Running
 
-This guide will provide instructions how to run these tests using the open source TTCN-3 compiler [TITAN](https://github.com/eclipse/titan.core).
+A script is provided that works on Ubuntu, which does the following steps automatically.
+You're encouraged to read through the script and the following instructions.
+If you use the script, you have to setup TITAN manually, everything else is covered by the script.
+
+```bash
+# With $PWD being the current directory
+./run.sh
+```
+
+This guide will provide instructions how to run these tests manually using the open source TTCN-3 compiler [TITAN](https://github.com/eclipse/titan.core).
 
 The TITAN TRI Mapper requires a network interface with a MAC address where it injects and captures packets. The easiest way to have a local virtual interface is to create two `peer` virtual interfaces.
 
