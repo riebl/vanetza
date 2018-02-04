@@ -20,6 +20,15 @@ addons:
     packages:
       - gcc-4.8
       - g++-4.8
+      - expect
+      - libssl-dev
+      - libxml2-dev
+      - libncurses5-dev
+      - flex
+      - bison
+      - xutils-dev
+      - ant
+      - xsltproc
 
 install:
   - mkdir -p "$HOME/deps"
