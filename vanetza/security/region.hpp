@@ -1,6 +1,7 @@
 #ifndef REGION_HPP_NUISLPMU
 #define REGION_HPP_NUISLPMU
 
+#include <vanetza/geonet/areas.hpp>
 #include <vanetza/geonet/units.hpp>
 #include <vanetza/security/int_x.hpp>
 #include <boost/variant/variant.hpp>
@@ -82,6 +83,13 @@ using GeographicRegion = boost::variant<
  * \return RegionType
  */
 RegionType get_type(const GeographicRegion&);
+
+/**
+ * \brief Convert TwoDLocation to GeodeticPosition
+ * \param position
+ * \return GeodeticPosition
+ */
+vanetza::geonet::GeodeticPosition convert_geodetic_position(const TwoDLocation& position);
 
 /**
  * \brief Calculates size of a TwoDLocation

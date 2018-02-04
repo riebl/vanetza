@@ -134,4 +134,3 @@ void serialize(OutputArchive&, const ValidityRestriction&);
 } // namespace vanetza
 
 #endif /* VALIDITY_RESTRICTION_HPP_LMCUHYLJ */
-

@@ -13,16 +13,16 @@ class NullCertificateValidator : public CertificateValidator
 public:
     NullCertificateValidator();
 
-    CertificateValidity check_certificate(const Certificate&) override;
+    DecapConfirm check_certificate(const Certificate&) override;
 
     /**
      * Set predefined result of check_certificate() calls
      * \param result predefined result
      */
-    void certificate_check_result(const CertificateValidity& result);
+    void certificate_check_result(const DecapConfirm& result);
 
 private:
-    CertificateValidity m_check_result;
+    DecapConfirm m_check_result;
 };
 
 } // namespace security

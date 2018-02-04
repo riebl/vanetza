@@ -35,7 +35,7 @@ enum class DecapReport
 
 /** \brief contains output of the verify process
 *   described in
-*   TS 102 723-8 v1.0.0 (2013-07)
+*   TS 102 723-8 v1.1.1 (2016-04)
 *   TS 102 636-4-1 v1.2.3 (2015-01)
 */
 struct DecapConfirm
@@ -43,9 +43,10 @@ struct DecapConfirm
     // plaintext_packet_length is gathered via ByteBuffer::size(); valid range 0 ... 2^16-1; mandatory
     PacketVariant plaintext_payload; // mandatory
     DecapReport report; // mandatory
-    CertificateValidity certificate_validity; // non-standard extension
-    boost::optional<HashedId8> certificate_id; // optional
-    // member field 'permissions' currently not used; optional
+    std::list<Certificate> certificate_chain; // non-standard extension
+    boost::optional<HashedId8> unknown_certificate; // non-standard extension
+    IntX its_aid;
+    // 'permissions' can be extracted from the certificate(s) in 'certificate_chain'
 };
 
 } // namespace security

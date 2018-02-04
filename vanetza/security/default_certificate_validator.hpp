@@ -2,6 +2,7 @@
 #define DEFAULT_CERTIFICATE_VALIDATOR_HPP_MTULFLKX
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/geonet/position_vector.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_validator.hpp>
 
@@ -29,13 +30,24 @@ public:
      * \param certificate to verify
      * \return certificate status
      */
-    CertificateValidity check_certificate(const Certificate& certificate) override;
+    DecapConfirm check_certificate(const Certificate& certificate) override;
+
+    /**
+     * \brief Update local position vector
+     * \note GN Address of given LongPositionVector is ignored!
+     *
+     * \param lpv Set positional data according to this argument
+     */
+    void update(const vanetza::geonet::LongPositionVector&);
 
 private:
     Backend& m_crypto_backend;
     const Clock::time_point& m_time_now;
     const TrustStore& m_trust_store;
     CertificateCache& m_cert_cache;
+    vanetza::geonet::LongPositionVector m_local_position_vector;
+
+    bool check_region(const Certificate& certificate);
 };
 
 } // namespace security
