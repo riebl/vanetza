@@ -1,0 +1,6 @@
+TTCN3_DIR := /home/travis/titan.core/Install
+OPENSSL_DIR := /usr
+#JDKDIR := /usr/lib/jvm/java-7-openjdk-amd64
+XMLDIR := /usr
+JNI := no
+GEN_PDF := no
