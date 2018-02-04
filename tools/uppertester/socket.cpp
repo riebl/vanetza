@@ -11,7 +11,6 @@ Socket::Socket(UpperTester& tester, boost::asio::io_service& io_service, uint16_
     : tester(tester), io_service(io_service), socket(io_service, udp::endpoint(udp::v4(), port))
 {
     tester.socket = this;
-    dispatcher.set_non_interactive_handler(tester.port(), &tester);
 
     socket.async_receive_from(
         boost::asio::buffer(buffer, MAX_LENGTH),

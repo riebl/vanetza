@@ -22,7 +22,7 @@ public:
 
     void reset();
 
-    void indicate(const DataIndication&, UpPacketPtr) override;
+    void tap_packet(const DataIndication&, const vanetza::UpPacket&) override;
 
     void process_udp_trigger(vanetza::ByteBuffer& packet);
 

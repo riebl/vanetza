@@ -2,12 +2,12 @@
 #define UPPERTESTER_APPLICATION_HPP
 
 #include <vanetza/btp/data_interface.hpp>
-#include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/data_request.hpp>
+#include <vanetza/btp/port_dispatcher.hpp>
 #include <vanetza/geonet/data_confirm.hpp>
 #include <vanetza/geonet/router.hpp>
 
-class Application : public vanetza::btp::IndicationInterface
+class Application : public vanetza::btp::PortDispatcher::PromiscuousHook
 {
 public:
     using DataConfirm = vanetza::geonet::DataConfirm;
@@ -21,8 +21,6 @@ public:
     Application(const Application&) = delete;
     Application& operator=(const Application&) = delete;
     virtual ~Application() = default;
-
-    virtual PortType port() = 0;
 
     DataConfirm request(const vanetza::btp::DataRequestA& request, DownPacketPtr packet);
     DataConfirm request(const vanetza::btp::DataRequestB& request, DownPacketPtr packet);

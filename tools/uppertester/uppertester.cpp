@@ -25,8 +25,7 @@ using boost::asio::generic::raw_protocol;
 UpperTester::UpperTester(boost::asio::generic::raw_protocol::socket& raw_socket, TimeTrigger& trigger, const vanetza::geonet::MIB& mib)
     : raw_socket(raw_socket), m_trigger(trigger), mib(mib), request_interface(new Passthrough(raw_socket)), receive_buffer(2048, 0x00)
 {
-    dispatcher.set_interactive_handler(this->port(), this);
-    dispatcher.set_non_interactive_handler(this->port(), this);
+    dispatcher.add_promiscuous_hook(this);
 
     do_receive();
     trigger.schedule();
@@ -94,16 +93,11 @@ void UpperTester::log_packet_drop(geonet::Router::PacketDropReason reason)
     std::cout << "Router dropped packet because of " << reason_string << " (" << static_cast<int>(reason) << ")" << std::endl;
 }
 
-UpperTester::PortType UpperTester::port()
-{
-    return host_cast<uint16_t>(4000); // port used by tests
-}
-
-void UpperTester::indicate(const DataIndication& indication, UpPacketPtr packet)
+void UpperTester::tap_packet(const DataIndication& indication, const UpPacket& packet)
 {
     BtpEventIndication btp_event;
 
-    auto byte_range = boost::create_byte_view(*packet, OsiLayer::Session);
+    auto byte_range = boost::create_byte_view(packet, OsiLayer::Session);
     ByteBuffer payload_buffer(byte_range.begin(), byte_range.end());
     btp_event.packet = payload_buffer;
 
