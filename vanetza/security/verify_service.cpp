@@ -53,17 +53,17 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
 
 VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy)
 {
-    return [&](VerifyRequest&& request) -> VerifyConfirm {
-        VerifyConfirm confirm;
-        const SecuredMessage& secured_message = request.secured_message;
+    return [&](DecapRequest& request) -> DecapConfirm {
+        DecapConfirm confirm;
+        const SecuredMessage& secured_message = request.sec_packet;
 
         if (PayloadType::Signed != secured_message.payload.type) {
-            confirm.report = VerificationReport::Unsigned_Message;
+            confirm.report = DecapReport::Unsigned_Message;
             return confirm;
         }
 
         if (2 != secured_message.protocol_version()) {
-            confirm.report = VerificationReport::Incompatible_Protocol;
+            confirm.report = DecapReport::Incompatible_Protocol;
             return confirm;
         }
 
@@ -115,14 +115,14 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                 {
                     std::list<Certificate> chain = boost::get<std::list<Certificate>>(*signer_info);
                     if (chain.size() == 0) {
-                        confirm.report = VerificationReport::Signer_Certificate_Not_Found;
+                        confirm.report = DecapReport::Signer_Certificate_Not_Found;
                         return confirm;
                     }
                     // pre-check chain certificates in reverse order, otherwise they're not available for the ticket check
                     for (auto& cert : boost::adaptors::reverse(chain)) {
                         if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
-                            CertificateValidity validity = certs.check_certificate(cert);
-                            if (validity) {
+                            auto validity_confirm = certs.check_certificate(cert);
+                            if (validity_confirm.report == DecapReport::Success) {
                                 cert_cache.insert(cert);
                             }
                         }
@@ -132,21 +132,21 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                 }
                     break;
                 default:
-                    confirm.report = VerificationReport::Unsupported_Signer_Identifier_Type;
+                    confirm.report = DecapReport::Unsupported_Signer_Identifier_Type;
                     return confirm;
                     break;
             }
         }
 
         if (possible_certificates.size() == 0) {
-            confirm.report = VerificationReport::Signer_Certificate_Not_Found;
-            confirm.certificate_id = signer_hash;
+            confirm.report = DecapReport::Signer_Certificate_Not_Found;
+            confirm.unknown_certificate = signer_hash;
             sign_policy.report_unknown_certificate(signer_hash);
             return confirm;
         }
 
         if (!check_generation_time(rt.now(), secured_message)) {
-            confirm.report = VerificationReport::Invalid_Timestamp;
+            confirm.report = DecapReport::Invalid_Timestamp;
             return confirm;
         }
 
@@ -157,12 +157,12 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         const Signature* signature = boost::get<Signature>(signature_field);
 
         if (!signature) {
-            confirm.report = VerificationReport::Unsigned_Message;
+            confirm.report = DecapReport::Unsigned_Message;
             return confirm;
         }
 
         if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 != get_type(*signature)) {
-            confirm.report = VerificationReport::False_Signature;
+            confirm.report = DecapReport::False_Signature;
             return confirm;
         }
 
@@ -170,7 +170,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         auto ecdsa = extract_ecdsa_signature(*signature);
         const auto field_len = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
         if (!ecdsa || ecdsa->s.size() != field_len) {
-            confirm.report = VerificationReport::False_Signature;
+            confirm.report = DecapReport::False_Signature;
             return confirm;
         }
 
@@ -182,8 +182,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             SubjectType subject_type = cert.subject_info.subject_type;
 
             if (subject_type != SubjectType::Authorization_Ticket) {
-                confirm.report = VerificationReport::Invalid_Certificate;
-                confirm.certificate_validity = CertificateInvalidReason::INVALID_SIGNER;
+                confirm.report = DecapReport::Invalid_Certificate;
                 return confirm;
             }
 
@@ -191,7 +190,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
 
             // public key could not be extracted
             if (!public_key) {
-                confirm.report = VerificationReport::Invalid_Certificate;
+                confirm.report = DecapReport::Invalid_Certificate;
                 return confirm;
             }
 
@@ -203,48 +202,30 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
 
         if (!signer) {
             // could be a colliding HashedId8, but the probability is pretty low
-            confirm.report = VerificationReport::False_Signature;
-            confirm.certificate_id = signer_hash;
+            confirm.report = DecapReport::False_Signature;
             sign_policy.report_unknown_certificate(signer_hash);
             return confirm;
         }
 
-        CertificateValidity cert_validity = certs.check_certificate(signer.get());
+        confirm = certs.check_certificate(signer.get());
 
-        // if certificate could not be verified return correct DecapReport
-        if (!cert_validity) {
-            confirm.report = VerificationReport::Invalid_Certificate;
-            confirm.certificate_validity = cert_validity;
+        if (confirm.unknown_certificate) {
+            sign_policy.report_unknown_certificate(confirm.unknown_certificate.get());
+        }
 
-            if (cert_validity.reason() == CertificateInvalidReason::UNKNOWN_SIGNER) {
-                const Certificate& invalid_cert = signer.get();
-                if (get_type(invalid_cert.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
-                    HashedId8 signer_hash = boost::get<HashedId8>(invalid_cert.signer_info);
-
-                    confirm.certificate_id = signer_hash;
-                    sign_policy.report_unknown_certificate(*confirm.certificate_id);
-                }
-            }
-
-            return confirm;
+        if (confirm.report == DecapReport::Success) {
+            cert_cache.insert(signer.get());
         }
 
         // TODO check if Revoked_Certificate
 
-        cert_cache.insert(signer.get());
-        confirm.report = VerificationReport::Success;
         return confirm;
     };
 }
 
-VerifyService dummy_verify_service(VerificationReport report, CertificateValidity validity)
+VerifyService dummy_verify_service(DecapConfirm confirm)
 {
-    return [=](VerifyRequest&& request) -> VerifyConfirm {
-        VerifyConfirm confirm;
-        confirm.report = report;
-        confirm.certificate_validity = validity;
-        const IntX* its_aid = request.secured_message.header_field<HeaderFieldType::Its_Aid>();
-        confirm.its_aid = its_aid ? *its_aid : IntX(0);
+    return [=](DecapRequest& request) -> DecapConfirm {
         return confirm;
     };
 }

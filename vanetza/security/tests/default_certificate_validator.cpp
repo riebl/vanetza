@@ -60,9 +60,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
@@ -80,8 +79,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_TRUE(validity);
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Success, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
@@ -99,8 +98,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_TRUE(validity);
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Success, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_end)
@@ -117,9 +116,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
     cert_cache.insert(cert_provider.root_certificate());
 
     // Time period broken, because AA and root CA have start time
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Inconsistant_Chain, confirm.report);
 
     // TODO: Add test for certificate, AA and root CA with EndValidity
 }
@@ -144,9 +142,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
@@ -165,9 +162,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Inconsistant_Chain, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
@@ -186,9 +182,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
@@ -212,9 +207,8 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+    auto confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
@@ -238,26 +232,25 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity;
+    DecapConfirm confirm;
     LongPositionVector lpv;
     lpv.position_accuracy_indicator = true;
 
     // inside
     lpv.latitude = static_cast<geo_angle_i32t>(10.000001 * units::degree);
     lpv.longitude = static_cast<geo_angle_i32t>(20 * units::degree);
-
     cert_validator.update(lpv);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_TRUE(validity);
+
+    confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Success, confirm.report);
 
     // outside
     lpv.latitude = static_cast<geo_angle_i32t>(10.1 * units::degree);
     lpv.longitude = static_cast<geo_angle_i32t>(20 * units::degree);
-
     cert_validator.update(lpv);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
@@ -289,51 +282,47 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
     cert_cache.insert(cert_provider.aa_certificate());
     cert_cache.insert(cert_provider.root_certificate());
 
-    CertificateValidity validity;
+    DecapConfirm confirm;
     LongPositionVector lpv;
     lpv.position_accuracy_indicator = true;
 
     // inside
     lpv.latitude = static_cast<geo_angle_i32t>(15 * units::degree);
     lpv.longitude = static_cast<geo_angle_i32t>(15 * units::degree);
-
     cert_validator.update(lpv);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_TRUE(validity);
+
+    confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Success, confirm.report);
 
     // outside - left
     lpv.latitude = static_cast<geo_angle_i32t>(9 * units::degree);
     lpv.longitude = static_cast<geo_angle_i32t>(15 * units::degree);
-
     cert_validator.update(lpv);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 
     // outside - right
     lpv.latitude = static_cast<geo_angle_i32t>(20.0001 * units::degree);
     lpv.longitude = static_cast<geo_angle_i32t>(15 * units::degree);
-
     cert_validator.update(lpv);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 
     // outside - top
     lpv.latitude = static_cast<geo_angle_i32t>(15 * units::degree);
     lpv.longitude = static_cast<geo_angle_i32t>(9 * units::degree);
-
     cert_validator.update(lpv);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 
     // outside - down
     lpv.latitude = static_cast<geo_angle_i32t>(15 * units::degree);
     lpv.longitude = static_cast<geo_angle_i32t>(21 * units::degree);
-
     cert_validator.update(lpv);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+
+    confirm = cert_validator.check_certificate(cert);
+    EXPECT_EQ(DecapReport::Invalid_Certificate, confirm.report);
 }

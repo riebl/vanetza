@@ -30,7 +30,7 @@ public:
      * \param certificate to verify
      * \return certificate status
      */
-    CertificateValidity check_certificate(const Certificate& certificate) override;
+    DecapConfirm check_certificate(const Certificate& certificate) override;
 
     /**
      * \brief Update local position vector

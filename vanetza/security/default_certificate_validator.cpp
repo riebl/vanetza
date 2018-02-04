@@ -114,8 +114,11 @@ void DefaultCertificateValidator::update(const LongPositionVector& lpv)
     m_local_position_vector.gn_addr = gn_addr;
 }
 
-CertificateValidity DefaultCertificateValidator::check_certificate(const Certificate& certificate)
+DecapConfirm DefaultCertificateValidator::check_certificate(const Certificate& certificate)
 {
+    DecapConfirm confirm;
+    std::list<Certificate> in_progress_chain; // in progress chain, don't assign to confirm unless complete
+
     uint8_t depth = 0;
     bool in_trust_store = false;
 
@@ -123,47 +126,58 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     Certificate current_cert = certificate;
 
     while (++depth < 10) {
+        in_progress_chain.push_back(current_cert);
+
         boost::optional<Time32> cert_time_start;
         boost::optional<Time32> cert_time_end;
 
         // ensure exactly one time validity constraint is present
         // section 6.7 in TS 103 097 v1.2.1
         if (!extract_validity_time(current_cert, cert_time_start, cert_time_end)) {
-            return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+            confirm.report = DecapReport::Invalid_Certificate;
+            return confirm;
         }
 
         // check if certificate is premature or outdated
         if (cert_time_start && cert_time_end) {
             if (*cert_time_start >= *cert_time_end) {
-                return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                confirm.report = DecapReport::Invalid_Certificate;
+                return confirm;
             }
         }
 
         if (cert_time_start && now < *cert_time_start) {
-            return CertificateInvalidReason::OFF_TIME_PERIOD;
+            confirm.report = DecapReport::Invalid_Certificate;
+            return confirm;
         }
 
         if (cert_time_end && now > *cert_time_end) {
-            return CertificateInvalidReason::OFF_TIME_PERIOD;
+            confirm.report = DecapReport::Invalid_Certificate;
+            return confirm;
         }
 
         if (!check_region(current_cert)) {
-            return CertificateInvalidReason::OFF_REGION;
+            confirm.report = DecapReport::Invalid_Certificate;
+            return confirm;
         }
 
         SubjectType subject_type = current_cert.subject_info.subject_type;
 
         // check if subject_name is empty if certificate is authorization ticket
         if (subject_type == SubjectType::Authorization_Ticket && 0 != current_cert.subject_info.subject_name.size()) {
-            return CertificateInvalidReason::INVALID_NAME;
+            confirm.report = DecapReport::Invalid_Certificate;
+            return confirm;
         }
 
         // check signer info
         if (in_trust_store) {
             // we only need to validate validity restrictions for trusted certificates, no signature, so abort here
-            return CertificateValidity::valid();
+            confirm.report = DecapReport::Success;
+            confirm.certificate_chain = in_progress_chain;
+            return confirm;
         } else if (get_type(current_cert.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
-            return CertificateInvalidReason::INVALID_SIGNER;
+            confirm.report = DecapReport::Unsupported_Signer_Identifier_Type;
+            return confirm;
         }
 
         HashedId8 signer_hash = boost::get<HashedId8>(current_cert.signer_info);
@@ -171,7 +185,8 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         // try to extract ECDSA signature
         boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(current_cert.signature);
         if (!sig) {
-            return CertificateInvalidReason::MISSING_SIGNATURE;
+            confirm.report = DecapReport::Invalid_Certificate;
+            return confirm;
         }
 
         // create buffer of certificate
@@ -181,18 +196,19 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         for (auto& possible_signer : m_trust_store.lookup(signer_hash)) {
             auto verification_key = get_public_key(possible_signer);
             if (!verification_key) {
-                continue;
+                continue; // shouldn't happen, broken certificates shouldn't be in the trust store
             }
 
             const auto signer_type = possible_signer.subject_info.subject_type;
 
             if (signer_type != SubjectType::Authorization_Authority && signer_type != SubjectType::Root_Ca) {
-                continue;
+                continue; // ignore any certificates in the trust store that are not authorized to sign ATs
             }
 
             if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
                 if (!check_time_consistency(current_cert, possible_signer)) {
-                    return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                    confirm.report = DecapReport::Inconsistant_Chain;
+                    return confirm;
                 }
 
                 current_cert = possible_signer;
@@ -210,18 +226,19 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         for (auto& possible_signer : m_cert_cache.lookup(signer_hash)) {
             auto verification_key = get_public_key(possible_signer);
             if (!verification_key) {
-                continue;
+                continue; // shouldn't happen, broken certificates shouldn't be in the certificate cache
             }
 
             const auto signer_type = possible_signer.subject_info.subject_type;
 
             if (signer_type != SubjectType::Authorization_Authority && signer_type != SubjectType::Root_Ca) {
-                continue;
+                continue; // ignore any certificates in the certificate cache that are not authorized to sign ATs
             }
 
             if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
                 if (!check_time_consistency(current_cert, possible_signer)) {
-                    return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                    confirm.report = DecapReport::Inconsistant_Chain;
+                    return confirm;
                 }
 
                 current_cert = possible_signer;
@@ -235,10 +252,13 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             continue;
         }
 
-        return CertificateInvalidReason::UNKNOWN_SIGNER;
+        confirm.report = DecapReport::Signer_Certificate_Not_Found;
+        confirm.unknown_certificate = signer_hash;
+        return confirm;
     }
 
-    return CertificateInvalidReason::TOO_LONG_CHAIN;
+    confirm.report = DecapReport::Invalid_Certificate; // Excessive_Chain
+    return confirm;
 }
 
 bool DefaultCertificateValidator::check_region(const Certificate& certificate)
