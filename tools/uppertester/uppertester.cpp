@@ -5,6 +5,11 @@
 #include "trigger/common_ut_initialize.hpp"
 #include "trigger/common_change_position.hpp"
 #include "trigger/common_change_pseudonym.hpp"
+#include "trigger/gn_geo_anycast.hpp"
+#include "trigger/gn_geo_broadcast.hpp"
+#include "trigger/gn_geo_unicast.hpp"
+#include "trigger/gn_shb.hpp"
+#include "trigger/gn_tsb.hpp"
 #include "uppertester.hpp"
 #include <boost/algorithm/hex.hpp>
 #include <boost/optional.hpp>
@@ -129,6 +134,16 @@ void UpperTester::process_udp_trigger(ByteBuffer& packet)
         trigger = new ChangePositionTrigger();
     } else if (type == 0x04) {
         trigger = new ChangePseudonymTrigger();
+    } else if (type == 0x50) {
+        trigger = new GeoUnicastTrigger();
+    } else if (type == 0x51) {
+        trigger = new GeoBroadcastTrigger();
+    } else if (type == 0x52) {
+        trigger = new ShbTrigger();
+    } else if (type == 0x53) {
+        trigger = new TsbTrigger();
+    } else if (type == 0x54) {
+        trigger = new GeoUnicastTrigger();
     } else if (type == 0x70) {
         trigger = new BtpATrigger();
     } else if (type == 0x71) {

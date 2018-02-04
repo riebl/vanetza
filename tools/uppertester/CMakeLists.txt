@@ -26,6 +26,12 @@ add_executable(uppertester
     trigger/common_change_pseudonym.cpp
     trigger/common_ut_initialize.cpp
     trigger/common_ut_result.cpp
+    trigger/gn.cpp
+    trigger/gn_geo_anycast.cpp
+    trigger/gn_geo_broadcast.cpp
+    trigger/gn_geo_unicast.cpp
+    trigger/gn_shb.cpp
+    trigger/gn_tsb.cpp
     trigger/trigger.cpp
 )
 
