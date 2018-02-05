@@ -9,7 +9,6 @@ add_executable(certify
     commands/generate-root.cpp
     commands/generate-ticket.cpp
     commands/show-certificate.cpp
-    keyio.cpp
     main.cpp
     options.cpp
 )

@@ -10,7 +10,7 @@ public:
     int execute() override;
 
 private:
-    std::string cert_key;
+    std::string subject_key_path;
     std::string output;
     std::string subject_name;
     int validity_days;

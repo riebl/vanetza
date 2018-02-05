@@ -1,7 +1,7 @@
 #include "generate-key.hpp"
-#include "keyio.hpp"
 #include <boost/program_options.hpp>
 #include <cryptopp/eccrypto.h>
+#include <cryptopp/files.h>
 #include <cryptopp/oids.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/queue.h>
@@ -58,7 +58,9 @@ int GenerateKeyCommand::execute()
 
     ByteQueue queue;
     private_key.Save(queue);
-    save_key(output, queue);
+    CryptoPP::FileSink file(output.c_str());
+    queue.CopyTo(file);
+    file.MessageEnd();
 
     return 0;
 }

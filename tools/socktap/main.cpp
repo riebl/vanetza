@@ -3,7 +3,6 @@
 #include "hello_application.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
-#include "utils.hpp"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
@@ -13,6 +12,7 @@
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/null_certificate_validator.hpp>
+#include <vanetza/security/persistence.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/trust_store.hpp>
@@ -120,14 +120,14 @@ int main(int argc, const char** argv)
             const std::string& certificate_path = vm["certificate"].as<std::string>();
             const std::string& certificate_key_path = vm["certificate-key"].as<std::string>();
 
-            auto authorization_ticket = load_certificate_from_file(certificate_path);
-            auto authorization_ticket_key = load_private_key_from_file(certificate_key_path);
+            auto authorization_ticket = security::load_certificate_from_file(certificate_path);
+            auto authorization_ticket_key = security::load_private_key_from_file(certificate_key_path);
 
             std::list<security::Certificate> chain;
 
             if (vm.count("certificate-chain")) {
                 for (auto& chain_path : vm["certificate-chain"].as<std::vector<std::string> >()) {
-                    auto chain_certificate = load_certificate_from_file(chain_path);
+                    auto chain_certificate = security::load_certificate_from_file(chain_path);
                     chain.push_back(chain_certificate);
 
                     // Only add root certificates to trust store, so certificate requests are visible for demo purposes.
@@ -139,7 +139,7 @@ int main(int argc, const char** argv)
 
             if (vm.count("trusted-certificate")) {
                 for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
-                    auto trusted_certificate = load_certificate_from_file(cert_path);
+                    auto trusted_certificate = security::load_certificate_from_file(cert_path);
                     trust_store.insert(trusted_certificate);
                 }
             }

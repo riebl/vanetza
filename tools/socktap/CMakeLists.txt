@@ -20,7 +20,6 @@ add_executable(socktap
     main.cpp
     router_context.cpp
     time_trigger.cpp
-    utils.cpp
 )
 target_link_libraries(socktap Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
 install(TARGETS socktap EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})

@@ -1,4 +1,3 @@
-#include "keyio.hpp"
 #include "show-certificate.hpp"
 #include <boost/algorithm/hex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -9,9 +8,9 @@
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/its_aid.hpp>
+#include <vanetza/security/persistence.hpp>
 
 namespace po = boost::program_options;
-using namespace CryptoPP;
 using namespace vanetza;
 using namespace vanetza::security;
 
@@ -48,12 +47,7 @@ bool ShowCertificateCommand::parse(const std::vector<std::string>& opts)
 
 int ShowCertificateCommand::execute()
 {
-    Certificate cert;
-
-    std::ifstream src;
-    src.open(certificate_path.c_str(), std::ios::in | std::ios::binary);
-    vanetza::InputArchive archive(src, boost::archive::no_header);
-    deserialize(archive, cert);
+    Certificate cert = load_certificate_from_file(certificate_path);
 
     // subject info
 
