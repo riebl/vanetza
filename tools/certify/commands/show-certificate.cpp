@@ -1,5 +1,5 @@
 #include "keyio.hpp"
-#include "show-cert.hpp"
+#include "show-certificate.hpp"
 #include <boost/algorithm/hex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
@@ -15,7 +15,7 @@ using namespace CryptoPP;
 using namespace vanetza;
 using namespace vanetza::security;
 
-bool ShowCertCommand::parse(const std::vector<std::string>& opts)
+bool ShowCertificateCommand::parse(const std::vector<std::string>& opts)
 {
     po::options_description desc("Available options");
     desc.add_options()
@@ -46,7 +46,7 @@ bool ShowCertCommand::parse(const std::vector<std::string>& opts)
     return true;
 }
 
-int ShowCertCommand::execute()
+int ShowCertificateCommand::execute()
 {
     Certificate cert;
 
