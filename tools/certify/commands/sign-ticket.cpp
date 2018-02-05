@@ -75,7 +75,7 @@ int SignTicketCommand::execute()
     std::ifstream src;
     src.open(sign_cert.c_str(), std::ios::in | std::ios::binary);
 
-    InputArchive iarchive(src);
+    InputArchive iarchive(src, boost::archive::no_header);
     deserialize(iarchive, loaded_sign_cert);
 
     auto sign_key_pair = to_keypair(loaded_sign_key);
@@ -128,7 +128,7 @@ int SignTicketCommand::execute()
     std::ofstream dest;
     dest.open(output.c_str(), std::ios::out | std::ios::binary);
 
-    OutputArchive archive(dest);
+    OutputArchive archive(dest, boost::archive::no_header);
     serialize(archive, certificate);
 
     std::cout << "OK" << std::endl;

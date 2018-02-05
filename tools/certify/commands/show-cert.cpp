@@ -36,7 +36,7 @@ int ShowCertCommand::execute()
 
     std::ifstream src;
     src.open(certificate_path.c_str(), std::ios::in | std::ios::binary);
-    vanetza::InputArchive archive(src);
+    vanetza::InputArchive archive(src, boost::archive::no_header);
     deserialize(archive, cert);
 
     // subject info

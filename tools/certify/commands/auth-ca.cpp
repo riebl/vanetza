@@ -74,7 +74,7 @@ int AuthCaCommand::execute()
     std::ifstream src;
     src.open(sign_cert.c_str(), std::ios::in | std::ios::binary);
 
-    vanetza::InputArchive iarchive(src);
+    vanetza::InputArchive iarchive(src, boost::archive::no_header);
     vs::deserialize(iarchive, loaded_sign_cert);
 
     auto sign_key_pair = to_keypair(loaded_sign_key);
@@ -118,7 +118,7 @@ int AuthCaCommand::execute()
     std::ofstream dest;
     dest.open(output.c_str(), std::ios::out | std::ios::binary);
 
-    vanetza::OutputArchive archive(dest);
+    vanetza::OutputArchive archive(dest, boost::archive::no_header);
     vs::serialize(archive, certificate);
 
     std::cout << "OK" << std::endl;

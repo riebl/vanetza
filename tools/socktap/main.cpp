@@ -149,14 +149,14 @@ int main(int argc, const char** argv)
             security::Certificate sign_cert;
             std::ifstream sign_cert_src;
             sign_cert_src.open("aa.cert", std::ios::in | std::ios::binary);
-            vanetza::InputArchive sign_cert_archive(sign_cert_src);
+            vanetza::InputArchive sign_cert_archive(sign_cert_src, boost::archive::no_header);
             security::deserialize(sign_cert_archive, sign_cert);
             trust_store.insert(sign_cert);
 
             security::Certificate authorization_ticket;
             std::ifstream authorization_ticket_src;
             authorization_ticket_src.open("ticket.cert", std::ios::in | std::ios::binary);
-            vanetza::InputArchive authorization_ticket_archive(authorization_ticket_src);
+            vanetza::InputArchive authorization_ticket_archive(authorization_ticket_src, boost::archive::no_header);
             security::deserialize(authorization_ticket_archive, authorization_ticket);
 
             mib.itsGnSecurity = true;
