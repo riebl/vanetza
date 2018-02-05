@@ -7,6 +7,7 @@
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <functional>
+#include <set>
 
 namespace vanetza
 {
@@ -51,7 +52,7 @@ public:
 private:
     const Clock::time_point& m_time_now;
     Clock::time_point m_cam_next_certificate;
-    std::list<HashedId3> m_unknown_certificates;
+    std::set<HashedId3> m_unknown_certificates;
     bool m_cert_requested;
     bool m_chain_requested;
 };
