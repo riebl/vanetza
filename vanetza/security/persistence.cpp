@@ -1,16 +1,26 @@
-#include "utils.hpp"
+#include "persistence.hpp"
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/files.h>
 #include <cryptopp/oids.h>
+#include <cryptopp/osrng.h>
 #include <fstream>
 
-using namespace vanetza::security;
+namespace vanetza
+{
+namespace security
+{
 
 ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path)
 {
+    CryptoPP::AutoSeededRandomPool rng;
+
     CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey private_key;
     CryptoPP::FileSource key_file(key_path.c_str(), true);
     private_key.Load(key_file);
+
+    if (!private_key.Validate(rng, 3)) {
+        throw std::runtime_error("Private key validation failed");
+    }
 
     ecdsa256::KeyPair key_pair;
 
@@ -37,3 +47,15 @@ Certificate load_certificate_from_file(const std::string& certificate_path)
 
     return certificate;
 }
+
+void save_certificate_to_file(const std::string& certificate_path, const Certificate& certificate)
+{
+    std::ofstream dest;
+    dest.open(certificate_path.c_str(), std::ios::out | std::ios::binary);
+
+    OutputArchive archive(dest, boost::archive::no_header);
+    serialize(archive, certificate);
+}
+
+} // namespace security
+} // namespace vanetza

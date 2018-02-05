@@ -11,9 +11,9 @@ public:
 
 private:
     std::string output;
-    std::string sign_key;
-    std::string sign_cert;
-    std::string subject_key;
+    std::string sign_key_path;
+    std::string sign_cert_path;
+    std::string subject_key_path;
     int validity_days;
 };
 
