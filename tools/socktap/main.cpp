@@ -3,19 +3,15 @@
 #include "hello_application.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
+#include "utils.hpp"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <boost/program_options.hpp>
-#include <cryptopp/eccrypto.h>
-#include <cryptopp/files.h>
-#include <cryptopp/oids.h>
-#include <fstream>
 #include <iostream>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
-#include <vanetza/security/null_certificate_provider.hpp>
 #include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
@@ -26,23 +22,6 @@ namespace gn = vanetza::geonet;
 namespace po = boost::program_options;
 using namespace vanetza;
 
-vanetza::security::ecdsa256::KeyPair to_keypair(const vanetza::security::BackendCryptoPP::PrivateKey& private_key)
-{
-    vanetza::security::ecdsa256::KeyPair kp;
-
-    auto& private_exponent = private_key.GetPrivateExponent();
-    private_exponent.Encode(kp.private_key.key.data(), kp.private_key.key.size());
-
-    vanetza::security::BackendCryptoPP::PublicKey public_key;
-    private_key.MakePublicKey(public_key);
-
-    auto& public_element = public_key.GetPublicElement();
-    public_element.x.Encode(kp.public_key.x.data(), kp.public_key.x.size());
-    public_element.y.Encode(kp.public_key.y.data(), kp.public_key.y.size());
-
-    return kp;
-}
-
 int main(int argc, const char** argv)
 {
     po::options_description options("Allowed options");
@@ -50,7 +29,10 @@ int main(int argc, const char** argv)
         ("help", "Print out available options.")
         ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
         ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
-        ("security", po::value<std::string>()->default_value("off"), "Security profile to use.")
+        ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
+        ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
+        ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
+        ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed. Root certificate in the chain are automatically trusted.")
         ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
         ("require-gnss-fix", "suppress transmissions while GNSS position fix is missing")
@@ -117,6 +99,7 @@ int main(int argc, const char** argv)
         mib.itsGnLocalGnAddr.mid(mac_address);
         mib.itsGnLocalGnAddr.is_manually_configured(true);
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
+        mib.itsGnSecurity = false;
 
         // We always use the same ceritificate manager and crypto services for now.
         // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
@@ -128,45 +111,45 @@ int main(int argc, const char** argv)
         security::TrustStore trust_store;
         security::CertificateCache cert_cache(trigger.runtime());
 
-        const std::string& security_option = vm["security"].as<std::string>();
-        if (security_option == "off") {
-            mib.itsGnSecurity = false;
-        } else if (security_option == "naive") {
+        if (vm.count("certificate") ^ vm.count("certificate-key")) {
+            std::cerr << "Either --certificate and --certificate-key must be present or none.";
+            return 1;
+        }
+
+        if (vm.count("certificate") && vm.count("certificate-key")) {
+            const std::string& certificate_path = vm["certificate"].as<std::string>();
+            const std::string& certificate_key_path = vm["certificate-key"].as<std::string>();
+
+            auto authorization_ticket = load_certificate_from_file(certificate_path);
+            auto authorization_ticket_key = load_private_key_from_file(certificate_key_path);
+
+            std::list<security::Certificate> chain;
+
+            if (vm.count("certificate-chain")) {
+                for (auto& chain_path : vm["certificate-chain"].as<std::vector<std::string> >()) {
+                    auto chain_certificate = load_certificate_from_file(chain_path);
+                    chain.push_back(chain_certificate);
+
+                    // Only add root certificates to trust store, so certificate requests are visible for demo purposes.
+                    if (chain_certificate.subject_info.subject_type == security::SubjectType::Root_Ca) {
+                        trust_store.insert(chain_certificate);
+                    }
+                }
+            }
+
+            if (vm.count("trusted-certificate")) {
+                for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
+                    auto trusted_certificate = load_certificate_from_file(cert_path);
+                    trust_store.insert(trusted_certificate);
+                }
+            }
+
             mib.itsGnSecurity = true;
-            certificate_validator = std::unique_ptr<vanetza::security::CertificateValidator> {
-                new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), trust_store, cert_cache) };
-        } else if (security_option == "null") {
-            mib.itsGnSecurity = true;
+
             certificate_provider = std::unique_ptr<security::CertificateProvider> {
-                new security::NullCertificateProvider() };
-            crypto_backend = security::create_backend("Null");
-        } else if (security_option == "default") {
-            CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey ticket_key;
-            CryptoPP::FileSource ticket_key_file("ticket.key", true);
-            ticket_key.Load(ticket_key_file);
-            auto authorization_ticket_key = to_keypair(ticket_key);
-
-            security::Certificate sign_cert;
-            std::ifstream sign_cert_src;
-            sign_cert_src.open("aa.cert", std::ios::in | std::ios::binary);
-            vanetza::InputArchive sign_cert_archive(sign_cert_src, boost::archive::no_header);
-            security::deserialize(sign_cert_archive, sign_cert);
-            trust_store.insert(sign_cert);
-
-            security::Certificate authorization_ticket;
-            std::ifstream authorization_ticket_src;
-            authorization_ticket_src.open("ticket.cert", std::ios::in | std::ios::binary);
-            vanetza::InputArchive authorization_ticket_archive(authorization_ticket_src, boost::archive::no_header);
-            security::deserialize(authorization_ticket_archive, authorization_ticket);
-
-            mib.itsGnSecurity = true;
-            certificate_provider = std::unique_ptr<security::CertificateProvider> {
-                new security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key) };
+                new security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key, chain) };
             certificate_validator = std::unique_ptr<security::CertificateValidator> {
                 new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), trust_store, cert_cache) };
-        } else {
-            std::cerr << "Invalid security option '" << security_option << "', falling back to 'off'." << "\n";
-            mib.itsGnSecurity = false;
         }
 
         security::SignHeaderPolicy sign_header_policy(trigger.runtime().now());
