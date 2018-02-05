@@ -58,7 +58,9 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
         }
 
         if (m_unknown_certificates.size() > 0) {
-            header_fields.push_back(m_unknown_certificates);
+            std::list<HashedId3> unknown_certificates(m_unknown_certificates.begin(), m_unknown_certificates.end());
+            header_fields.push_back(unknown_certificates);
+            m_unknown_certificates.clear();
         }
 
         m_cert_requested = false;
@@ -73,7 +75,7 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
 
 void SignHeaderPolicy::report_unknown_certificate(HashedId8 id)
 {
-    m_unknown_certificates.push_back(truncate(id));
+    m_unknown_certificates.insert(truncate(id));
 }
 
 void SignHeaderPolicy::report_requested_certificate()
