@@ -12,7 +12,7 @@ namespace po = boost::program_options;
 
 std::unique_ptr<Command> parse_options(int argc, const char *argv[])
 {
-    po::options_description global("global options");
+    po::options_description global("Global options");
     global.add_options()
         ("command", po::value<std::string>(), "Command to execute.")
         ("subargs", po::value<std::vector<std::string>>(), "Arguments for command.")
@@ -34,19 +34,19 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     po::notify(vm);
 
     if (!vm.count("command")) {
-        std::cout << "Available commands: genkey | root-ca | auth-ca | sign-ticket | show-cert" << std::endl;
+        std::cerr << global << std::endl;
+        std::cerr << "Available commands: root-ca, auth-ca, sign-ticket, show-cert" << std::endl;
 
-        throw po::invalid_option_value("");
+        return nullptr;
     }
 
     std::string cmd = vm["command"].as<std::string>();
-
-    std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
-    opts.erase(opts.begin());
-
     std::unique_ptr<Command> command;
 
-    if (cmd == "genkey") {
+    if (cmd == "--help") {
+        std::cerr << global << std::endl;
+        std::cerr << "Available commands: root-ca, auth-ca, sign-ticket, show-cert" << std::endl;
+    } else if (cmd == "genkey") {
         command.reset(new GenkeyCommand());
     } else if (cmd == "root-ca") {
         command.reset(new RootCaCommand());
@@ -56,14 +56,16 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
         command.reset(new SignTicketCommand());
     } else if (cmd == "show-cert") {
         command.reset(new ShowCertCommand());
+    } else {
+        // unrecognized command
+        throw po::invalid_option_value(cmd);
     }
 
-    if (command) {
-        command->parse(opts);
+    std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
 
-        return command;
+    if (!command->parse(opts)) {
+        return nullptr;
     }
 
-    // unrecognized command
-    throw po::invalid_option_value(cmd);
+    return command;
 }
