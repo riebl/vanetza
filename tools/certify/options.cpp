@@ -1,8 +1,8 @@
-#include "commands/genkey.hpp"
-#include "commands/root-ca.hpp"
-#include "commands/auth-ca.hpp"
-#include "commands/show-cert.hpp"
-#include "commands/sign-ticket.hpp"
+#include "commands/generate-aa.hpp"
+#include "commands/generate-key.hpp"
+#include "commands/generate-root.hpp"
+#include "commands/generate-ticket.hpp"
+#include "commands/show-certificate.hpp"
 #include "options.hpp"
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -33,9 +33,11 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     po::store(parsed, vm);
     po::notify(vm);
 
+    std::string available_commands = "Available commands: generate-key, generate-root, generate-aa, generate-ticket, show-certificate";
+
     if (!vm.count("command")) {
         std::cerr << global << std::endl;
-        std::cerr << "Available commands: root-ca, auth-ca, sign-ticket, show-cert" << std::endl;
+        std::cerr << available_commands << std::endl;
 
         return nullptr;
     }
@@ -45,23 +47,24 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
 
     if (cmd == "--help") {
         std::cerr << global << std::endl;
-        std::cerr << "Available commands: root-ca, auth-ca, sign-ticket, show-cert" << std::endl;
-    } else if (cmd == "genkey") {
-        command.reset(new GenkeyCommand());
-    } else if (cmd == "root-ca") {
-        command.reset(new RootCaCommand());
-    } else if (cmd == "auth-ca") {
-        command.reset(new AuthCaCommand());
-    } else if (cmd == "sign-ticket") {
-        command.reset(new SignTicketCommand());
-    } else if (cmd == "show-cert") {
-        command.reset(new ShowCertCommand());
+        std::cerr << available_commands << std::endl;
+    } else if (cmd == "generate-aa") {
+        command.reset(new GenerateAaCommand());
+    } else if (cmd == "generate-key") {
+        command.reset(new GenerateKeyCommand());
+    } else if (cmd == "generate-root") {
+        command.reset(new GenerateRootCommand());
+    } else if (cmd == "generate-ticket") {
+        command.reset(new GenerateTicketCommand());
+    } else if (cmd == "show-certificate") {
+        command.reset(new ShowCertificateCommand());
     } else {
         // unrecognized command
         throw po::invalid_option_value(cmd);
     }
 
     std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
+    opts.erase(opts.begin());
 
     if (!command->parse(opts)) {
         return nullptr;

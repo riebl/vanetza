@@ -1,5 +1,5 @@
+#include "generate-ticket.hpp"
 #include "keyio.hpp"
-#include "sign-ticket.hpp"
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <cryptopp/eccrypto.h>
@@ -23,7 +23,7 @@ using namespace CryptoPP;
 using namespace vanetza;
 using namespace security;
 
-bool SignTicketCommand::parse(const std::vector<std::string>& opts)
+bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
 {
     po::options_description desc("Available options");
     desc.add_options()
@@ -58,7 +58,7 @@ bool SignTicketCommand::parse(const std::vector<std::string>& opts)
     return true;
 }
 
-int SignTicketCommand::execute()
+int GenerateTicketCommand::execute()
 {
     std::cout << "Loading keys... ";
 

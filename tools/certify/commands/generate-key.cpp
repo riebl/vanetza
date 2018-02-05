@@ -1,4 +1,4 @@
-#include "genkey.hpp"
+#include "generate-key.hpp"
 #include "keyio.hpp"
 #include <boost/program_options.hpp>
 #include <cryptopp/eccrypto.h>
@@ -12,7 +12,7 @@
 namespace po = boost::program_options;
 using namespace CryptoPP;
 
-bool GenkeyCommand::parse(const std::vector<std::string>& opts)
+bool GenerateKeyCommand::parse(const std::vector<std::string>& opts)
 {
     po::options_description desc("Available options");
     desc.add_options()
@@ -43,7 +43,7 @@ bool GenkeyCommand::parse(const std::vector<std::string>& opts)
     return true;
 }
 
-int GenkeyCommand::execute()
+int GenerateKeyCommand::execute()
 {
     std::cout << "Generating key..." << std::endl;
 

@@ -1,9 +1,9 @@
-#ifndef CERTIFY_COMMANDS_ROOT_CA_HPP
-#define CERTIFY_COMMANDS_ROOT_CA_HPP
+#ifndef CERTIFY_COMMANDS_GENERATE_ROOT_HPP
+#define CERTIFY_COMMANDS_GENERATE_ROOT_HPP
 
 #include "command.hpp"
 
-class RootCaCommand : public Command
+class GenerateRootCommand : public Command
 {
 public:
     bool parse(const std::vector<std::string>&) override;
@@ -16,4 +16,4 @@ private:
     int validity_days;
 };
 
-#endif /* CERTIFY_COMMANDS_ROOT_CA_HPP */
+#endif /* CERTIFY_COMMANDS_GENERATE_ROOT_HPP */
