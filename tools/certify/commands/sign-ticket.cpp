@@ -23,10 +23,11 @@ using namespace CryptoPP;
 using namespace vanetza;
 using namespace security;
 
-void SignTicketCommand::parse(const std::vector<std::string>& opts)
+bool SignTicketCommand::parse(const std::vector<std::string>& opts)
 {
-    po::options_description desc("auth-ca options");
+    po::options_description desc("Available options");
     desc.add_options()
+        ("help", "Print out available options.")
         ("output", po::value<std::string>(&output)->required(), "Output file.")
         ("sign-key", po::value<std::string>(&sign_key)->required(), "Private key file of the signer.")
         ("sign-cert", po::value<std::string>(&sign_cert)->required(), "Private certificate file of the signer.")
@@ -39,7 +40,22 @@ void SignTicketCommand::parse(const std::vector<std::string>& opts)
 
     po::variables_map vm;
     po::store(po::command_line_parser(opts).options(desc).positional(pos).run(), vm);
-    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cerr << desc << std::endl;
+
+        return false;
+    }
+
+    try {
+        po::notify(vm);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl << std::endl << desc << std::endl;
+
+        return false;
+    }
+
+    return true;
 }
 
 int SignTicketCommand::execute()

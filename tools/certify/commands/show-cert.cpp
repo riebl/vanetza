@@ -15,10 +15,11 @@ using namespace CryptoPP;
 using namespace vanetza;
 using namespace vanetza::security;
 
-void ShowCertCommand::parse(const std::vector<std::string>& opts)
+bool ShowCertCommand::parse(const std::vector<std::string>& opts)
 {
-    po::options_description desc("auth-ca options");
+    po::options_description desc("Available options");
     desc.add_options()
+        ("help", "Print out available options.")
         ("certificate", po::value<std::string>(&certificate_path)->required(), "Certificate to show.")
     ;
 
@@ -27,7 +28,22 @@ void ShowCertCommand::parse(const std::vector<std::string>& opts)
 
     po::variables_map vm;
     po::store(po::command_line_parser(opts).options(desc).positional(pos).run(), vm);
-    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cerr << desc << std::endl;
+
+        return false;
+    }
+
+    try {
+        po::notify(vm);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl << std::endl << desc << std::endl;
+
+        return false;
+    }
+
+    return true;
 }
 
 int ShowCertCommand::execute()

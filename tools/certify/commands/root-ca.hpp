@@ -6,7 +6,7 @@
 class RootCaCommand : public Command
 {
 public:
-    void parse(const std::vector<std::string>&) override;
+    bool parse(const std::vector<std::string>&) override;
     int execute() override;
 
 private:

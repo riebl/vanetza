@@ -21,10 +21,11 @@ namespace po = boost::program_options;
 namespace vs = vanetza::security;
 using namespace CryptoPP;
 
-void RootCaCommand::parse(const std::vector<std::string>& opts)
+bool RootCaCommand::parse(const std::vector<std::string>& opts)
 {
-    po::options_description desc("root-ca options");
+    po::options_description desc("Available options");
     desc.add_options()
+        ("help", "Print out available options.")
         ("output", po::value<std::string>(&output)->required(), "Output file.")
         ("cert-key", po::value<std::string>(&cert_key)->required(), "Private key file.")
         ("subject-name", po::value<std::string>(&subject_name)->default_value("Hello World Root-CA"), "Subject name.")
@@ -36,7 +37,22 @@ void RootCaCommand::parse(const std::vector<std::string>& opts)
 
     po::variables_map vm;
     po::store(po::command_line_parser(opts).options(desc).positional(pos).run(), vm);
-    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cerr << desc << std::endl;
+
+        return false;
+    }
+
+    try {
+        po::notify(vm);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl << std::endl << desc << std::endl;
+
+        return false;
+    }
+
+    return true;
 }
 
 int RootCaCommand::execute()
