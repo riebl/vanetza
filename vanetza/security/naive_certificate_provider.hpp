@@ -43,10 +43,22 @@ public:
     const ecdsa256::PrivateKey& own_private_key() override;
 
     /**
+     * \brief get ticket signer certificate (same for all instances)
+     * \return signing authorization authority certificate
+     */
+    const Certificate& aa_certificate();
+
+    /**
      * \brief get root certificate (same for all instances)
      * \return signing root certificate
      */
     const Certificate& root_certificate();
+
+    /**
+     * \brief generate an authorization ticket
+     * \return generated certificate
+     */
+    Certificate generate_authorization_ticket();
 
     /**
      * \brief sign an authorization ticket
@@ -66,19 +78,6 @@ private:
      * \return root key
      */
     const ecdsa256::KeyPair& root_key_pair();
-
-    /**
-     * \brief get ticket signer certificate (same for all instances)
-     * \return signing authorization authoirity certificate
-     */
-    const Certificate& aa_certificate();
-
-    /**
-     * \brief generate a authorization ticket
-     *
-     * \return generated certificate
-     */
-    Certificate generate_authorization_ticket();
 
     /**
      * \brief generate a authorization authority certificate
