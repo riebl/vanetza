@@ -1,3 +1,4 @@
+#include "commands/extract-public-key.hpp"
 #include "commands/generate-aa.hpp"
 #include "commands/generate-key.hpp"
 #include "commands/generate-root.hpp"
@@ -33,7 +34,7 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     po::store(parsed, vm);
     po::notify(vm);
 
-    std::string available_commands = "Available commands: generate-key, generate-root, generate-aa, generate-ticket, show-certificate";
+    std::string available_commands = "Available commands: generate-key, extract-public-key, generate-root, generate-aa, generate-ticket, show-certificate";
 
     if (!vm.count("command")) {
         std::cerr << global << std::endl;
@@ -48,6 +49,8 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     if (cmd == "--help") {
         std::cerr << global << std::endl;
         std::cerr << available_commands << std::endl;
+    } else if (cmd == "extract-public-key") {
+        command.reset(new ExtractPublicKeyCommand());
     } else if (cmd == "generate-aa") {
         command.reset(new GenerateAaCommand());
     } else if (cmd == "generate-key") {
