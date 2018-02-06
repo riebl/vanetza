@@ -251,6 +251,22 @@ size_t deserialize(InputArchive&, IdentifiedRegion&);
  */
 size_t deserialize(InputArchive&, GeographicRegion&);
 
+/**
+ * \brief Check if position is within circular region
+ * \param pos position
+ * \param c cicrular region
+ * \true if pos is within region
+ */
+bool is_within(const TwoDLocation&, const CircularRegion&);
+
+/**
+ * \brief Check if position is within rectangular region
+ * \param pos position
+ * \param r rectangular region
+ * \true if pos is within region
+ */
+bool is_within(const TwoDLocation&, const RectangularRegion&);
+
 } //namespace security
 } //namespace vanetza
 

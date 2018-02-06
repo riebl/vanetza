@@ -1,8 +1,10 @@
 #include <vanetza/common/serialization.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/region.hpp>
+#include <vanetza/units/angle.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/variant/apply_visitor.hpp>
+#include <GeographicLib/Geodesic.hpp>
 
 namespace vanetza
 {
@@ -330,6 +332,43 @@ size_t deserialize(InputArchive& ar, GeographicRegion& reg)
         }
     }
     return (size);
+}
+
+bool is_within(const TwoDLocation& position, const CircularRegion& circular)
+{
+    const auto& geod = GeographicLib::Geodesic::WGS84();
+    double dist = 0.0;
+    const units::GeoAngle pos_lat { position.latitude };
+    const units::GeoAngle pos_lon { position.longitude };
+    const units::GeoAngle center_lat { circular.center.latitude };
+    const units::GeoAngle center_lon { circular.center.longitude };
+    geod.Inverse(pos_lat / units::degree, pos_lon / units::degree,
+            center_lat / units::degree, center_lon / units::degree, dist);
+    return dist <= circular.radius / units::si::meter;
+}
+
+bool is_within(const TwoDLocation& position, const RectangularRegion& rectangle)
+{
+    // basic coordinate checks according to TS 103 097 v1.2.1, 4.2.23 and IEEE 1609.2-2016, 6.4.20
+    // - northwest is truly north of southeast (never equal)
+    // - northwest is truly west of southeast (never equal)
+    if (rectangle.northwest.latitude <= rectangle.southeast.latitude) {
+        return false;
+    } else if (rectangle.northwest.longitude >= rectangle.southeast.longitude) {
+        return false;
+    }
+
+    if (rectangle.northwest.latitude < position.latitude) {
+        return false; // position is north of rectangle
+    } else if (rectangle.northwest.longitude > position.longitude) {
+        return false; // position is west of rectangle
+    } else if (rectangle.southeast.latitude > position.latitude) {
+        return false; // position is south of rectangle
+    } else if (rectangle.southeast.longitude < position.longitude) {
+        return false; // position is east of rectangle
+    }
+
+    return true;
 }
 
 } // namespace security
