@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <cryptopp/cryptlib.h>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
@@ -57,8 +58,14 @@ int GenerateTicketCommand::execute()
     BackendCryptoPP crypto_backend;
 
     std::cout << "Loading keys... ";
-    auto subject_key = load_private_key_from_file(subject_key_path);
     auto sign_key = load_private_key_from_file(sign_key_path);
+    ecdsa256::PublicKey subject_key;
+    try {
+        auto subject_private_key = load_private_key_from_file(subject_key_path);
+        subject_key = subject_private_key.public_key;
+    } catch (CryptoPP::BERDecodeErr e) {
+        subject_key = load_public_key_from_file(subject_key_path);
+    }
     std::cout << "OK" << std::endl;
 
     auto sign_cert = load_certificate_from_file(sign_cert_path);
@@ -72,11 +79,18 @@ int GenerateTicketCommand::execute()
     certificate_aids.push_back(itsAidDen);
 
     std::list<ItsAidSsp> certificate_ssp;
+
     // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
     ItsAidSsp certificate_ssp_ca;
     certificate_ssp_ca.its_aid = itsAidCa;
-    certificate_ssp_ca.service_specific_permissions = ByteBuffer({ 1, 0, 0 }); // no special permissions
+    certificate_ssp_ca.service_specific_permissions = ByteBuffer({ 1, 0x80, 0 }); // no special permissions
     certificate_ssp.push_back(certificate_ssp_ca);
+
+    // see ETSI EN 302 637-3 V1.2.2 (2014-11)
+    ItsAidSsp certificate_ssp_den;
+    certificate_ssp_den.its_aid = itsAidDen;
+    certificate_ssp_den.service_specific_permissions = ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
+    certificate_ssp.push_back(certificate_ssp_den);
 
     certificate.signer_info = calculate_hash(sign_cert);
     certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
@@ -85,8 +99,8 @@ int GenerateTicketCommand::execute()
     certificate.subject_attributes.push_back(certificate_aids);
 
     Uncompressed coordinates;
-    coordinates.x.assign(subject_key.public_key.x.begin(), subject_key.public_key.x.end());
-    coordinates.y.assign(subject_key.public_key.y.begin(), subject_key.public_key.y.end());
+    coordinates.x.assign(subject_key.x.begin(), subject_key.x.end());
+    coordinates.y.assign(subject_key.y.begin(), subject_key.y.end());
     EccPoint ecc_point = coordinates;
     ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = ecc_point;
