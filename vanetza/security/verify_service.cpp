@@ -191,6 +191,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             // public key could not be extracted
             if (!public_key) {
                 confirm.report = VerificationReport::Invalid_Certificate;
+                confirm.certificate_validity = CertificateInvalidReason::MISSING_PUBLIC_KEY;
                 return confirm;
             }
 
