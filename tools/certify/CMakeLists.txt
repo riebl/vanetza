@@ -4,12 +4,12 @@ if(NOT TARGET Boost::program_options)
 endif()
 
 add_executable(certify
-    commands/auth-ca.cpp
-    commands/genkey.cpp
-    commands/root-ca.cpp
-    commands/show-cert.cpp
-    commands/sign-ticket.cpp
-    keyio.cpp
+    commands/extract-public-key.cpp
+    commands/generate-aa.cpp
+    commands/generate-key.cpp
+    commands/generate-root.cpp
+    commands/generate-ticket.cpp
+    commands/show-certificate.cpp
     main.cpp
     options.cpp
 )

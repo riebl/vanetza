@@ -1,8 +1,9 @@
-#include "commands/genkey.hpp"
-#include "commands/root-ca.hpp"
-#include "commands/auth-ca.hpp"
-#include "commands/show-cert.hpp"
-#include "commands/sign-ticket.hpp"
+#include "commands/extract-public-key.hpp"
+#include "commands/generate-aa.hpp"
+#include "commands/generate-key.hpp"
+#include "commands/generate-root.hpp"
+#include "commands/generate-ticket.hpp"
+#include "commands/show-certificate.hpp"
 #include "options.hpp"
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -12,10 +13,10 @@ namespace po = boost::program_options;
 
 std::unique_ptr<Command> parse_options(int argc, const char *argv[])
 {
-    po::options_description global("global options");
+    po::options_description global("Global options");
     global.add_options()
         ("command", po::value<std::string>(), "Command to execute.")
-        ("subargs", po::value<std::vector<std::string>>(), "Arguments for command.")
+        ("subargs", po::value<std::vector<std::string> >(), "Arguments for command.")
     ;
 
     po::positional_options_description pos;
@@ -33,37 +34,44 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     po::store(parsed, vm);
     po::notify(vm);
 
-    if (!vm.count("command")) {
-        std::cout << "Available commands: genkey | root-ca | auth-ca | sign-ticket | show-cert" << std::endl;
+    std::string available_commands = "Available commands: generate-key, extract-public-key, generate-root, generate-aa, generate-ticket, show-certificate";
 
-        throw po::invalid_option_value("");
+    if (!vm.count("command")) {
+        std::cerr << global << std::endl;
+        std::cerr << available_commands << std::endl;
+
+        return nullptr;
     }
 
     std::string cmd = vm["command"].as<std::string>();
+    std::unique_ptr<Command> command;
+
+    if (cmd == "--help") {
+        std::cerr << global << std::endl;
+        std::cerr << available_commands << std::endl;
+    } else if (cmd == "extract-public-key") {
+        command.reset(new ExtractPublicKeyCommand());
+    } else if (cmd == "generate-aa") {
+        command.reset(new GenerateAaCommand());
+    } else if (cmd == "generate-key") {
+        command.reset(new GenerateKeyCommand());
+    } else if (cmd == "generate-root") {
+        command.reset(new GenerateRootCommand());
+    } else if (cmd == "generate-ticket") {
+        command.reset(new GenerateTicketCommand());
+    } else if (cmd == "show-certificate") {
+        command.reset(new ShowCertificateCommand());
+    } else {
+        // unrecognized command
+        throw po::invalid_option_value(cmd);
+    }
 
     std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
     opts.erase(opts.begin());
 
-    std::unique_ptr<Command> command;
-
-    if (cmd == "genkey") {
-        command.reset(new GenkeyCommand());
-    } else if (cmd == "root-ca") {
-        command.reset(new RootCaCommand());
-    } else if (cmd == "auth-ca") {
-        command.reset(new AuthCaCommand());
-    } else if (cmd == "sign-ticket") {
-        command.reset(new SignTicketCommand());
-    } else if (cmd == "show-cert") {
-        command.reset(new ShowCertCommand());
+    if (!command->parse(opts)) {
+        return nullptr;
     }
 
-    if (command) {
-        command->parse(opts);
-
-        return command;
-    }
-
-    // unrecognized command
-    throw po::invalid_option_value(cmd);
+    return command;
 }

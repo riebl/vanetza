@@ -1,5 +1,4 @@
-#include "keyio.hpp"
-#include "show-cert.hpp"
+#include "show-certificate.hpp"
 #include <boost/algorithm/hex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
@@ -9,16 +8,17 @@
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/its_aid.hpp>
+#include <vanetza/security/persistence.hpp>
 
 namespace po = boost::program_options;
-using namespace CryptoPP;
 using namespace vanetza;
 using namespace vanetza::security;
 
-void ShowCertCommand::parse(const std::vector<std::string>& opts)
+bool ShowCertificateCommand::parse(const std::vector<std::string>& opts)
 {
-    po::options_description desc("auth-ca options");
+    po::options_description desc("Available options");
     desc.add_options()
+        ("help", "Print out available options.")
         ("certificate", po::value<std::string>(&certificate_path)->required(), "Certificate to show.")
     ;
 
@@ -27,17 +27,27 @@ void ShowCertCommand::parse(const std::vector<std::string>& opts)
 
     po::variables_map vm;
     po::store(po::command_line_parser(opts).options(desc).positional(pos).run(), vm);
-    po::notify(vm);
+
+    if (vm.count("help")) {
+        std::cerr << desc << std::endl;
+
+        return false;
+    }
+
+    try {
+        po::notify(vm);
+    } catch (const std::exception& e) {
+        std::cerr << "Error: " << e.what() << std::endl << std::endl << desc << std::endl;
+
+        return false;
+    }
+
+    return true;
 }
 
-int ShowCertCommand::execute()
+int ShowCertificateCommand::execute()
 {
-    Certificate cert;
-
-    std::ifstream src;
-    src.open(certificate_path.c_str(), std::ios::in | std::ios::binary);
-    vanetza::InputArchive archive(src);
-    deserialize(archive, cert);
+    Certificate cert = load_certificate_from_file(certificate_path);
 
     // subject info
 
