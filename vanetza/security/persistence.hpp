@@ -17,6 +17,20 @@ namespace security
 ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path);
 
 /**
+ * \brief Loads a public key from a file
+ * \param key_path file to load the key from
+ * \return loaded key
+ */
+ecdsa256::PublicKey load_public_key_from_file(const std::string& key_path);
+
+/**
+ * \brief Saves a public key to a file
+ * \param key_path file to save the key to
+ * \param public_key key to save
+ */
+void save_public_key_to_file(const std::string& key_path, const ecdsa256::PublicKey& public_key);
+
+/**
  * \brief Loads a certificate from a file
  * \param certificate_path file to load the certificate from
  * \return loaded certificate

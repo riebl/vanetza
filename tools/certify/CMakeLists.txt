@@ -4,6 +4,7 @@ if(NOT TARGET Boost::program_options)
 endif()
 
 add_executable(certify
+    commands/extract-public-key.cpp
     commands/generate-aa.cpp
     commands/generate-key.cpp
     commands/generate-root.cpp
