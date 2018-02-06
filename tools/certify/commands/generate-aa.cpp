@@ -57,7 +57,13 @@ int GenerateAaCommand::execute()
 
     std::cout << "Loading keys... ";
     auto sign_key = load_private_key_from_file(sign_key_path);
-    auto subject_key = load_private_key_from_file(subject_key_path);
+    ecdsa256::PublicKey subject_key;
+    try {
+        auto subject_private_key = load_private_key_from_file(subject_key_path);
+        subject_key = subject_private_key.public_key;
+    } catch (CryptoPP::BERDecodeErr e) {
+        subject_key = load_public_key_from_file(subject_key_path);
+    }
     std::cout << "OK" << std::endl;
 
     Certificate sign_cert = load_certificate_from_file(sign_cert_path);
@@ -75,8 +81,8 @@ int GenerateAaCommand::execute()
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
     Uncompressed coordinates;
-    coordinates.x.assign(subject_key.public_key.x.begin(), subject_key.public_key.x.end());
-    coordinates.y.assign(subject_key.public_key.y.begin(), subject_key.public_key.y.end());
+    coordinates.x.assign(subject_key.x.begin(), subject_key.x.end());
+    coordinates.y.assign(subject_key.y.begin(), subject_key.y.end());
     EccPoint ecc_point = coordinates;
     ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = ecc_point;
