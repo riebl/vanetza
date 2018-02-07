@@ -19,7 +19,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
         IS_TS103301/ISO_TS_19321.asn
         IS_TS103301/ETSI_TS_103301.asn
     )
-    set(_its_asn1_revision 24)
+    set(_its_asn1_revision 20)
     set(_its_asn1_name "ITS_ASN1.r${_its_asn1_revision}")
     set(_its_asn1_archive "${_its_asn1_name}.tar.gz")
     set(_its_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its")
@@ -30,7 +30,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
     file(DOWNLOAD
         "http://oldforge.etsi.org/websvn/dl.php?repname=ITS.ITS_ASN1&path=%2Ftrunk%2F&isdir=1&rev=${_its_asn1_revision}"
         "${CMAKE_CURRENT_SOURCE_DIR}/${_its_asn1_archive}"
-        EXPECTED_HASH SHA256=5a02659c8fd45a0708d64e52a9fb7f98e18daf981c990afb572383a64d28e52b
+        EXPECTED_HASH SHA256=d7fff5db0080df75bf6ad5b0d213b77d60db4cacc49929c1f6c34cede1306e9b
         SHOW_PROGRESS)
     add_custom_command(OUTPUT ${_its_asn1_name}/${_its_asn1_files}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_its_asn1_archive}

@@ -20,7 +20,10 @@ extern "C" {
 
 /* Dependencies */
 typedef enum CurvatureValue {
-	CurvatureValue_unavailable	= 1023
+	CurvatureValue_straight	= 0,
+	CurvatureValue_reciprocalOf1MeterRadiusToRight	= -30000,
+	CurvatureValue_reciprocalOf1MeterRadiusToLeft	= 30000,
+	CurvatureValue_unavailable	= 30001
 } e_CurvatureValue;
 
 /* CurvatureValue */

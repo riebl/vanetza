@@ -21,7 +21,7 @@ CurvatureValue_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	value = *(const long *)sptr;
 	
-	if((value >= 0 && value <= 1023)) {
+	if((value >= -30000 && value <= 30001)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -37,10 +37,10 @@ CurvatureValue_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * so here we adjust the DEF accordingly.
  */
 static asn_oer_constraints_t asn_OER_type_CurvatureValue_constr_1 CC_NOTUSED = {
-	{ 2, 1 }	/* (0..1023) */,
+	{ 2, 0 }	/* (-30000..30001) */,
 	-1};
 asn_per_constraints_t asn_PER_type_CurvatureValue_constr_1 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 10,  10,  0,  1023 }	/* (0..1023) */,
+	{ APC_CONSTRAINED,	 16,  16, -30000,  30001 }	/* (-30000..30001) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
