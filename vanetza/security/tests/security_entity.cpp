@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
-#include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/signer_info.hpp>
@@ -411,7 +411,7 @@ TEST_F(SecurityEntityTest, verify_message_its_aid)
 {
     auto secured_message = create_secured_message();
     auto aid_header = secured_message.header_field(HeaderFieldType::Its_Aid);
-    ASSERT_EQ(boost::get<IntX>(*aid_header), itsAidCa);
+    ASSERT_EQ(boost::get<IntX>(*aid_header), aid::CA);
 }
 
 // See TS 103 096-2 v1.3.1, section 5.2.4.3 + 5.2.4.5 + 5.2.4.6 + 5.2.4.7

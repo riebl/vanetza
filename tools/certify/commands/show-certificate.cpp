@@ -5,9 +5,9 @@
 #include <boost/variant.hpp>
 #include <fstream>
 #include <iostream>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/security/certificate.hpp>
-#include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/persistence.hpp>
 
 namespace po = boost::program_options;
@@ -124,9 +124,9 @@ int ShowCertificateCommand::execute()
                     certificate_application_ids++;
 
                     std::cout << " - ";
-                    if (its_application_id == itsAidCa) {
+                    if (its_application_id == aid::CA) {
                         std::cout << "36 (CA-Basic service)";
-                    } else if (its_application_id == itsAidDen) {
+                    } else if (its_application_id == aid::DEN) {
                         std::cout << "37 (DEN-Basic service)";
                     } else {
                         std::cout << its_application_id.get();
@@ -138,7 +138,7 @@ int ShowCertificateCommand::execute()
         } else if (attr_type == SubjectAttributeType::Its_Aid_Ssp_List) {
             std::list<ItsAidSsp> its_service_specific_permissions = boost::get<std::list<ItsAidSsp>>(subject_attr);
             for (auto& its_ssp : its_service_specific_permissions) {
-                if (its_ssp.its_aid == itsAidCa) {
+                if (its_ssp.its_aid == aid::CA) {
                     std::cout << "CA - ITS Service Specific Permissions:" << std::endl;
                     ByteBuffer& ssp = its_ssp.service_specific_permissions;
 

@@ -1,3 +1,4 @@
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <stdexcept>
 
@@ -29,10 +30,10 @@ EncapConfirm SecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
     // TODO: switch from profile to ITS-AID in EncapRequest
     switch (encap_request.security_profile.value_or(Profile::Generic)) {
         case Profile::CAM:
-            sign_request.its_aid = itsAidCa;
+            sign_request.its_aid = IntX(aid::CA);
             break;
         case Profile::DENM:
-            sign_request.its_aid = itsAidDen;
+            sign_request.its_aid = IntX(aid::DEN);
             break;
         default:
             break;

@@ -5,10 +5,10 @@
 #include <stdexcept>
 #include <cryptopp/cryptlib.h>
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
-#include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
@@ -75,20 +75,20 @@ int GenerateTicketCommand::execute()
     Certificate certificate;
 
     std::list<IntX> certificate_aids;
-    certificate_aids.push_back(itsAidCa);
-    certificate_aids.push_back(itsAidDen);
+    certificate_aids.push_back(IntX(aid::CA));
+    certificate_aids.push_back(IntX(aid::DEN));
 
     std::list<ItsAidSsp> certificate_ssp;
 
     // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
     ItsAidSsp certificate_ssp_ca;
-    certificate_ssp_ca.its_aid = itsAidCa;
+    certificate_ssp_ca.its_aid = IntX(aid::CA);
     certificate_ssp_ca.service_specific_permissions = ByteBuffer({ 1, 0x80, 0 }); // no special permissions
     certificate_ssp.push_back(certificate_ssp_ca);
 
     // see ETSI EN 302 637-3 V1.2.2 (2014-11)
     ItsAidSsp certificate_ssp_den;
-    certificate_ssp_den.its_aid = itsAidDen;
+    certificate_ssp_den.its_aid = IntX(aid::DEN);
     certificate_ssp_den.service_specific_permissions = ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
     certificate_ssp.push_back(certificate_ssp_den);
 

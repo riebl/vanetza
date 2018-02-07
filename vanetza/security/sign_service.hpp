@@ -3,7 +3,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/net/packet.hpp>
-#include <vanetza/security/its_aid.hpp>
+#include <vanetza/security/int_x.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <functional>

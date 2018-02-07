@@ -1,9 +1,9 @@
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/certificate_provider.hpp>
 #include <vanetza/security/certificate_validator.hpp>
-#include <vanetza/security/its_aid.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <boost/optional.hpp>
@@ -33,7 +33,7 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
 
         const HeaderField* its_aid_field = message.header_field(HeaderFieldType::Its_Aid);
         const IntX* its_aid = boost::get<IntX>(its_aid_field);
-        if (its_aid && itsAidCa == *its_aid) {
+        if (its_aid && aid::CA == *its_aid) {
             generation_time_past = generation_time_past_ca;
         }
 
@@ -97,7 +97,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     possible_certificates.push_back(boost::get<Certificate>(*signer_info));
                     signer_hash = calculate_hash(boost::get<Certificate>(*signer_info));
 
-                    if (confirm.its_aid == itsAidCa && cert_cache.lookup(signer_hash).size() == 0) {
+                    if (confirm.its_aid == aid::CA && cert_cache.lookup(signer_hash).size() == 0) {
                         // Previously unknown certificate, send own certificate in next CAM
                         // See TS 103 097 v1.2.1, section 7.1, 1st bullet, 3rd dash
                         sign_policy.report_requested_certificate();

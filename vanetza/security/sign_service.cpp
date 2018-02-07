@@ -1,3 +1,4 @@
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_provider.hpp>
@@ -42,7 +43,7 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
     header_fields.push_back(convert_time64(m_time_now));
     header_fields.push_back(request.its_aid);
 
-    if (request.its_aid == itsAidCa) {
+    if (request.its_aid == aid::CA) {
         // section 7.1 in TS 103 097 v1.2.1
         if (m_chain_requested) {
             std::list<Certificate> full_chain;

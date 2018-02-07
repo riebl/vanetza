@@ -4,7 +4,7 @@
 #include <boost/optional.hpp>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/certificate.hpp>
-#include <vanetza/security/its_aid.hpp>
+#include <vanetza/security/int_x.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <functional>
 
