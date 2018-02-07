@@ -70,6 +70,21 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
         header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
     }
 
+    // ensure correct serialization order, see TS 103 097 v1.2.1
+    header_fields.sort([](const HeaderField& a, const HeaderField& b) {
+        auto type_a = get_type(a);
+        auto type_b = get_type(b);
+
+        // signer_info must be encoded first in all profiles
+        if (type_a == HeaderFieldType::Signer_Info) {
+            // return false if both are signer_info fields
+            return type_b != HeaderFieldType::Signer_Info;
+        }
+
+        // all other fields must be encoded in ascending order
+        return static_cast<int>(type_a) < static_cast<int>(type_b);
+    });
+
     return header_fields;
 }
 
