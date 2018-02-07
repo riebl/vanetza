@@ -1,5 +1,6 @@
 #include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/data_request.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/access_control.hpp>
 #include <vanetza/dcc/data_request.hpp>
@@ -36,10 +37,10 @@ struct ControlInfo
 {
     ControlInfo(const DataRequest request) :
         communication_profile(request.communication_profile),
-        security_profile(request.security_profile) {}
+        its_aid(request.its_aid) {}
 
     const CommunicationProfile communication_profile;
-    const security::Profile security_profile;
+    const ItsAid its_aid;
 };
 
 template<typename PDU>
@@ -202,7 +203,7 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
 
             // step 2: encapsulate packet by security
             if (m_mib.itsGnSecurity) {
-                payload = encap_packet(ctrl.security_profile, *pdu, std::move(payload));
+                payload = encap_packet(ctrl.its_aid, *pdu, std::move(payload));
             }
 
             // step 5: execute media-dependent procedures
@@ -267,7 +268,7 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
         // step 5: apply security
         if (m_mib.itsGnSecurity) {
             assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
-            payload = encap_packet(ctrl.security_profile, *pdu, std::move(payload));
+            payload = encap_packet(ctrl.its_aid, *pdu, std::move(payload));
         }
 
         // step 6: repetition is already set-up before
@@ -670,7 +671,7 @@ void Router::on_beacon_timer_expired()
 
     if (m_mib.itsGnSecurity) {
         pdu->basic().next_header = NextHeaderBasic::SECURED;
-        payload = encap_packet(security::Profile::Generic, *pdu, std::move(payload));
+        payload = encap_packet(aid::GN_MGMT, *pdu, std::move(payload));
     } else {
         pdu->basic().next_header = NextHeaderBasic::COMMON;
     }
@@ -1152,7 +1153,7 @@ std::unique_ptr<GbcPdu> Router::create_gbc_pdu(const GbcDataRequest& request)
     return pdu;
 }
 
-Router::DownPacketPtr Router::encap_packet(security::Profile profile, Pdu& pdu, DownPacketPtr packet)
+Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, Pdu& pdu, DownPacketPtr packet)
 {
     security::EncapRequest encap_request;
 
@@ -1160,7 +1161,7 @@ Router::DownPacketPtr Router::encap_packet(security::Profile profile, Pdu& pdu, 
     sec_payload[OsiLayer::Network] = SecuredPdu(pdu);
     sec_payload.merge(*packet, OsiLayer::Transport, max_osi_layer());
     encap_request.plaintext_payload = std::move(sec_payload);
-    encap_request.security_profile = profile;
+    encap_request.its_aid = its_aid;
 
     if (m_security_entity) {
         security::EncapConfirm confirm = m_security_entity->encapsulate_packet(std::move(encap_request));

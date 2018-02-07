@@ -34,7 +34,7 @@ void HelloApplication::on_timer(const boost::system::error_code& ec)
         DataRequest request;
         request.transport_type = geonet::TransportType::SHB;
         request.communication_profile = geonet::CommunicationProfile::ITS_G5;
-        request.security_profile = security::Profile::CAM;
+        request.its_aid = aid::CA;
         auto confirm = Application::request(request, std::move(packet));
         if (!confirm.accepted()) {
             std::cerr << "HelloApplication data request failed\n";

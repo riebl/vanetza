@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
 #include <vanetza/geonet/tests/security_context.hpp>
@@ -44,7 +45,7 @@ protected:
 TEST_F(RouterRequest, router_request)
 {
     // create ShbDataRequest
-    ShbDataRequest request(mib, security::Profile::CAM);
+    ShbDataRequest request(mib, aid::CA);
     request.upper_protocol = UpperProtocol::IPv6;
 
     // Router handles request
@@ -103,7 +104,7 @@ TEST_F(RouterRequest, router_request)
 TEST_F(RouterRequest, modified_request_maximum_lifetime)
 {
     // create ShbDataRequest
-    ShbDataRequest request(mib, security::Profile::CAM);
+    ShbDataRequest request(mib, aid::CA);
 
     // create new Lifetime that is larger than the itsGnMaxPacketLifetime of mib
     Lifetime large_lifetime(Lifetime::Base::_100_S, 9);
@@ -119,7 +120,7 @@ TEST_F(RouterRequest, modified_request_maximum_lifetime)
 TEST_F(RouterRequest, modified_request_repetition)
 {
     // create ShbDataRequest
-    ShbDataRequest request(mib, security::Profile::CAM);
+    ShbDataRequest request(mib, aid::CA);
 
     // create durations that will fail in data_confirm
     auto rep_faulty_int = 0.0 * units::si::seconds; // this has to be lower than mib.itsGnMinPacketRepetitionInterval
@@ -141,7 +142,7 @@ TEST_F(RouterRequest, modified_request_repetition)
 TEST_F(RouterRequest, modified_request_payload_null)
 {
     // create ShbDataRequest
-    ShbDataRequest request(mib, security::Profile::CAM);
+    ShbDataRequest request(mib, aid::CA);
     request.upper_protocol = UpperProtocol::IPv6;
 
     // Router handles request
@@ -164,7 +165,7 @@ TEST_F(RouterRequest, modified_request_large_payload)
     packet->layer(OsiLayer::Transport) = ByteBuffer(payload_large);
 
     // create ShbDataRequest
-    ShbDataRequest request(mib, security::Profile::CAM);
+    ShbDataRequest request(mib, aid::CA);
     request.upper_protocol = UpperProtocol::IPv6;
 
     // Router handles request
@@ -174,7 +175,7 @@ TEST_F(RouterRequest, modified_request_large_payload)
 
 TEST_F(RouterRequest, shb_repetition)
 {
-    ShbDataRequest request(mib, security::Profile::CAM);
+    ShbDataRequest request(mib, aid::CA);
     request.repetition = DataRequest::Repetition {
         0.1 * units::si::seconds, 10.0 * units::si::seconds
     };

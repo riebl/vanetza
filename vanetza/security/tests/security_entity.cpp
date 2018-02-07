@@ -45,7 +45,7 @@ protected:
     {
         EncapRequest encap_request;
         encap_request.plaintext_payload = expected_payload;
-        encap_request.security_profile = Profile::CAM;
+        encap_request.its_aid = aid::CA;
         return encap_request;
     }
 

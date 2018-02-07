@@ -3,6 +3,7 @@
 
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/hook.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/common_header.hpp>
@@ -481,11 +482,11 @@ private:
     /**
      * \brief Encaspulate a packet according to security profile
      *
-     * \param profile Security profile
+     * \param aid ITS-AID
      * \param pdu PDU
      * \param packet Packet with payload
      */
-    DownPacketPtr encap_packet(security::Profile, Pdu&, DownPacketPtr);
+    DownPacketPtr encap_packet(ItsAid aid, Pdu& pdu, DownPacketPtr packet);
 
     /**
      * \brief Create an initialized Single-Hop-Broadcast PDU

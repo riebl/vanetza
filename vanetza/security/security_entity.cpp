@@ -27,17 +27,7 @@ EncapConfirm SecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
 {
     SignRequest sign_request;
     sign_request.plain_message = std::move(encap_request.plaintext_payload);
-    // TODO: switch from profile to ITS-AID in EncapRequest
-    switch (encap_request.security_profile.value_or(Profile::Generic)) {
-        case Profile::CAM:
-            sign_request.its_aid = IntX(aid::CA);
-            break;
-        case Profile::DENM:
-            sign_request.its_aid = IntX(aid::DEN);
-            break;
-        default:
-            break;
-    }
+    sign_request.its_aid = encap_request.its_aid;
 
     SignConfirm sign_confirm = m_sign_service(std::move(sign_request));
     EncapConfirm encap_confirm;

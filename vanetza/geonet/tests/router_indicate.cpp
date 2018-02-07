@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/btp/header.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
 #include <vanetza/geonet/tests/security_context.hpp>
@@ -58,7 +59,7 @@ protected:
         mib.itsGnSecurity = true;
 
         // create ShbDataRequest
-        geonet::ShbDataRequest request(mib, security::Profile::CAM);
+        geonet::ShbDataRequest request(mib, aid::CA);
         request.upper_protocol = geonet::UpperProtocol::IPv6;
 
         // Router handles request
@@ -80,7 +81,7 @@ protected:
         mib.itsGnSecurity = false;
 
         // create ShbDataRequest
-        geonet::ShbDataRequest request(mib, security::Profile::CAM);
+        geonet::ShbDataRequest request(mib, aid::CA);
         request.upper_protocol = geonet::UpperProtocol::IPv6;
 
         // Router handles request

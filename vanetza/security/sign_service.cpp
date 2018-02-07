@@ -41,7 +41,7 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
     std::list<HeaderField> header_fields;
 
     header_fields.push_back(convert_time64(m_time_now));
-    header_fields.push_back(request.its_aid);
+    header_fields.push_back(IntX(request.its_aid));
 
     if (request.its_aid == aid::CA) {
         // section 7.1 in TS 103 097 v1.2.1

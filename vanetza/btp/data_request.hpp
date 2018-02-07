@@ -2,12 +2,12 @@
 #define DATA_REQUEST_HPP_BSJC1VFV
 
 #include <vanetza/btp/header.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/geonet/data_request.hpp>
 #include <vanetza/geonet/destination_variant.hpp>
 #include <vanetza/geonet/interface.hpp>
 #include <vanetza/geonet/lifetime.hpp>
 #include <vanetza/geonet/traffic_class.hpp>
-#include <vanetza/security/profile.hpp>
 
 namespace vanetza
 {
@@ -19,7 +19,7 @@ struct DataRequestGeoNetParams
     geonet::TransportType transport_type;
     geonet::DestinationVariant destination;
     geonet::CommunicationProfile communication_profile;
-    security::Profile security_profile;
+    ItsAid its_aid;
     boost::optional<geonet::Lifetime> maximum_lifetime;
     boost::optional<unsigned> maximum_hop_limit;
     boost::optional<geonet::DataRequest::Repetition> repetition;

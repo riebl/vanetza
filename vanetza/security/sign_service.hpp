@@ -2,6 +2,7 @@
 #define SIGN_SERVICE_HPP_4MDQBSEF
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/net/packet.hpp>
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/secured_message.hpp>
@@ -26,7 +27,7 @@ class CertificateProvider;
 struct SignRequest
 {
     DownPacket plain_message;
-    IntX its_aid;
+    ItsAid its_aid;
     ByteBuffer permissions;
 };
 
