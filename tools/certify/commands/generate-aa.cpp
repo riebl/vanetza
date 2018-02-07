@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <boost/variant/get.hpp>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
@@ -13,7 +14,6 @@
 
 namespace po = boost::program_options;
 using namespace vanetza::security;
-using namespace CryptoPP;
 
 bool GenerateAaCommand::parse(const std::vector<std::string>& opts)
 {
@@ -62,7 +62,19 @@ int GenerateAaCommand::execute()
         auto subject_private_key = load_private_key_from_file(subject_key_path);
         subject_key = subject_private_key.public_key;
     } catch (CryptoPP::BERDecodeErr e) {
-        subject_key = load_public_key_from_file(subject_key_path);
+        auto subject_key_etsi = load_public_key_from_file(subject_key_path);
+        if (get_type(subject_key_etsi) != PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) {
+            std::cerr << "Wrong public key algorithm." << std::endl;
+            return 1;
+        }
+
+        auto subject_key_etsi_ecdsa = boost::get<ecdsa_nistp256_with_sha256>(subject_key_etsi);
+        if (get_type(subject_key_etsi_ecdsa.public_key) != EccPointType::Uncompressed) {
+            std::cerr << "Unsupported ECC point type, must be uncompressed.";
+            return 1;
+        }
+
+        subject_key = ecdsa256::create_public_key(boost::get<Uncompressed>(subject_key_etsi_ecdsa.public_key));
     }
     std::cout << "OK" << std::endl;
 
@@ -97,7 +109,7 @@ int GenerateAaCommand::execute()
 
     std::cout << "Signing certificate... ";
 
-    vanetza::ByteBuffer data_buffer = convert_for_signing(certificate);
+    auto data_buffer = convert_for_signing(certificate);
     certificate.signature = crypto_backend.sign_data(sign_key.private_key, data_buffer);
 
     std::cout << "OK" << std::endl;
