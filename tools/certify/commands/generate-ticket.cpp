@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
+#include <boost/variant/get.hpp>
 #include <cryptopp/cryptlib.h>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
@@ -13,9 +14,8 @@
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 
+namespace aid = vanetza::aid;
 namespace po = boost::program_options;
-using namespace CryptoPP;
-using namespace vanetza;
 using namespace vanetza::security;
 
 bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
@@ -64,13 +64,25 @@ int GenerateTicketCommand::execute()
         auto subject_private_key = load_private_key_from_file(subject_key_path);
         subject_key = subject_private_key.public_key;
     } catch (CryptoPP::BERDecodeErr e) {
-        subject_key = load_public_key_from_file(subject_key_path);
+        auto subject_key_etsi = load_public_key_from_file(subject_key_path);
+        if (get_type(subject_key_etsi) != PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) {
+            std::cerr << "Wrong public key algorithm." << std::endl;
+            return 1;
+        }
+
+        auto subject_key_etsi_ecdsa = boost::get<ecdsa_nistp256_with_sha256>(subject_key_etsi);
+        if (get_type(subject_key_etsi_ecdsa.public_key) != EccPointType::Uncompressed) {
+            std::cerr << "Unsupported ECC point type, must be uncompressed.";
+            return 1;
+        }
+
+        subject_key = ecdsa256::create_public_key(boost::get<Uncompressed>(subject_key_etsi_ecdsa.public_key));
     }
     std::cout << "OK" << std::endl;
 
     auto sign_cert = load_certificate_from_file(sign_cert_path);
 
-    auto time_now = Clock::at(boost::posix_time::microsec_clock::universal_time());
+    auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
 
     Certificate certificate;
 
@@ -83,13 +95,13 @@ int GenerateTicketCommand::execute()
     // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
     ItsAidSsp certificate_ssp_ca;
     certificate_ssp_ca.its_aid = IntX(aid::CA);
-    certificate_ssp_ca.service_specific_permissions = ByteBuffer({ 1, 0x80, 0 }); // no special permissions
+    certificate_ssp_ca.service_specific_permissions = vanetza::ByteBuffer({ 1, 0, 0 }); // no special permissions
     certificate_ssp.push_back(certificate_ssp_ca);
 
     // see ETSI EN 302 637-3 V1.2.2 (2014-11)
     ItsAidSsp certificate_ssp_den;
     certificate_ssp_den.its_aid = IntX(aid::DEN);
-    certificate_ssp_den.service_specific_permissions = ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
+    certificate_ssp_den.service_specific_permissions = vanetza::ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
     certificate_ssp.push_back(certificate_ssp_den);
 
     certificate.signer_info = calculate_hash(sign_cert);
@@ -115,7 +127,7 @@ int GenerateTicketCommand::execute()
 
     std::cout << "Signing certificate... ";
 
-    ByteBuffer data_buffer = convert_for_signing(certificate);
+    auto data_buffer = convert_for_signing(certificate);
     certificate.signature = crypto_backend.sign_data(sign_key.private_key, data_buffer);
 
     std::cout << "OK" << std::endl;

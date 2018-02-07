@@ -38,40 +38,25 @@ ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path)
     return key_pair;
 }
 
-ecdsa256::PublicKey load_public_key_from_file(const std::string& key_path)
+PublicKey load_public_key_from_file(const std::string& key_path)
 {
-    EccPoint ecc_point;
+    PublicKey public_key;
 
     std::ifstream key_src;
     key_src.open(key_path, std::ios::in | std::ios::binary);
     vanetza::InputArchive key_archive(key_src, boost::archive::no_header);
-    deserialize(key_archive, ecc_point, PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    deserialize(key_archive, public_key);
 
-    auto coordinates = boost::get<Uncompressed>(ecc_point);
-
-    ecdsa256::PublicKey pub;
-    if (coordinates.x.size() != pub.x.size() || coordinates.y.size() != pub.y.size()) {
-        throw std::runtime_error("Coordinate size mismatch");
-    }
-
-    std::copy_n(coordinates.x.begin(), pub.x.size(), pub.x.data());
-    std::copy_n(coordinates.y.begin(), pub.y.size(), pub.y.data());
-
-    return pub;
+    return public_key;
 }
 
-void save_public_key_to_file(const std::string& key_path, const ecdsa256::PublicKey& public_key)
+void save_public_key_to_file(const std::string& key_path, const PublicKey& public_key)
 {
-    Uncompressed coordinates;
-    coordinates.x.assign(public_key.x.begin(), public_key.x.end());
-    coordinates.y.assign(public_key.y.begin(), public_key.y.end());
-    EccPoint ecc_point = coordinates;
-
     std::ofstream dest;
     dest.open(key_path.c_str(), std::ios::out | std::ios::binary);
 
     OutputArchive archive(dest, boost::archive::no_header);
-    serialize(archive, ecc_point, PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    serialize(archive, public_key);
 }
 
 Certificate load_certificate_from_file(const std::string& certificate_path)

@@ -68,8 +68,15 @@ int ExtractPublicKeyCommand::execute()
 
     std::cout << "OK" << std::endl;
 
+    Uncompressed coordinates;
+    coordinates.x.assign(public_key.x.begin(), public_key.x.end());
+    coordinates.y.assign(public_key.y.begin(), public_key.y.end());
+
+    ecdsa_nistp256_with_sha256 public_key_etsi;
+    public_key_etsi.public_key = coordinates;
+
     std::cout << "Writing public key to '" << output << "'... ";
-    save_public_key_to_file(output, public_key);
+    save_public_key_to_file(output, public_key_etsi);
     std::cout << "OK" << std::endl;
 
     return 0;
