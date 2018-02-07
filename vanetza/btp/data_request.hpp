@@ -7,7 +7,7 @@
 #include <vanetza/geonet/interface.hpp>
 #include <vanetza/geonet/lifetime.hpp>
 #include <vanetza/geonet/traffic_class.hpp>
-#include <vanetza/security/profile.hpp>
+#include <vanetza/security/int_x.hpp>
 
 namespace vanetza
 {
@@ -19,7 +19,7 @@ struct DataRequestGeoNetParams
     geonet::TransportType transport_type;
     geonet::DestinationVariant destination;
     geonet::CommunicationProfile communication_profile;
-    security::Profile security_profile;
+    security::IntX its_aid;
     boost::optional<geonet::Lifetime> maximum_lifetime;
     boost::optional<unsigned> maximum_hop_limit;
     boost::optional<geonet::DataRequest::Repetition> repetition;

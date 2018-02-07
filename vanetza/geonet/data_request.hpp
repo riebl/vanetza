@@ -8,7 +8,7 @@
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/traffic_class.hpp>
 #include <vanetza/units/time.hpp>
-#include <vanetza/security/profile.hpp>
+#include <vanetza/security/int_x.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
@@ -23,12 +23,10 @@ namespace geonet
 
 struct DataRequest
 {
-    using Profile = security::Profile;
-
-    DataRequest(const MIB& mib, Profile profile = Profile::Generic) :
+    DataRequest(const MIB& mib, security::IntX its_aid = security::IntX(0)) :
         upper_protocol(UpperProtocol::BTP_A),
         communication_profile(CommunicationProfile::UNSPECIFIED),
-        security_profile(profile),
+        its_aid(its_aid),
         maximum_lifetime(mib.itsGnDefaultPacketLifetime),
         max_hop_limit(mib.itsGnDefaultHopLimit),
         traffic_class(mib.itsGnDefaultTrafficClass)
@@ -42,7 +40,7 @@ struct DataRequest
 
     UpperProtocol upper_protocol;
     CommunicationProfile communication_profile;
-    Profile security_profile;
+    security::IntX its_aid;
     Lifetime maximum_lifetime;
     boost::optional<Repetition> repetition;
     unsigned max_hop_limit;
@@ -133,4 +131,3 @@ void copy_request_parameters(const btp::DataRequestB& btp, DataRequest& gn);
 } // namespace vanetza
 
 #endif /* DATA_REQUEST_HPP_3JYISVXB */
-
