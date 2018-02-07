@@ -13,7 +13,9 @@ namespace security
 {
 
 /// IntX specified in TS 103 097 v1.2.1, section 4.2.1
-class IntX : public boost::equality_comparable<IntX>
+class IntX :
+    public boost::equality_comparable<IntX>,
+    public boost::equality_comparable<IntX, std::uintmax_t>
 {
 public:
     using integer_type = std::uintmax_t;
@@ -26,6 +28,11 @@ public:
     constexpr bool operator==(const IntX& other) const
     {
         return m_value == other.m_value;
+    }
+
+    constexpr bool operator==(integer_type other) const
+    {
+        return m_value == other;
     }
 
     ByteBuffer encode() const;
