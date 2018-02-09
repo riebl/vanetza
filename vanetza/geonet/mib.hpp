@@ -60,7 +60,7 @@ struct ManagementInformationBase
     unsigned itsGnProtocolVersion;
     bool itsGnIsMobile;
     InterfaceType itsGnIfType;
-    units::Frequency itsGnMinimumUpdateFrequencyLPV;
+    units::Frequency itsGnMinimumUpdateFrequencyEPV;
     units::Length itsGnPaiInterval;
     unsigned itsGnMaxSduSize;
     unsigned itsGnMaxGeoNetworkingHeaderSize;

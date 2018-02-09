@@ -18,7 +18,7 @@ ManagementInformationBase::ManagementInformationBase() :
     itsGnProtocolVersion(1),
     itsGnIsMobile(true),
     itsGnIfType(InterfaceType::ITS_G5),
-    itsGnMinimumUpdateFrequencyLPV(1.0 / (1000.0 * milliseconds)),
+    itsGnMinimumUpdateFrequencyEPV(1.0 / (1000.0 * milliseconds)),
     itsGnPaiInterval(10 * meters),
     itsGnMaxSduSize(1398),
     itsGnMaxGeoNetworkingHeaderSize(88),
