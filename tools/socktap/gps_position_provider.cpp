@@ -49,6 +49,22 @@ void GpsPositionProvider::fetch_position_fix()
         fetched_position_fix.longitude = gps_data.fix.longitude * degree;
         fetched_position_fix.speed.assign(gps_data.fix.speed * si::meter_per_second, gps_data.fix.eps * si::meter_per_second);
         fetched_position_fix.course.assign(north + gps_data.fix.track * degree, north + gps_data.fix.epd * degree);
+        fetched_position_fix.timestamp = convert(gps_data.fix.time);
+        fetched_position_fix.latitude = gps_data.fix.latitude * degree;
+        fetched_position_fix.longitude = gps_data.fix.longitude * degree;
+        if (!std::isnan(gps_data.fix.epx) && !std::isnan(gps_data.fix.epy)) {
+            if (gps_data.fix.epx > gps_data.fix.epy) {
+                fetched_position_fix.confidence.semi_minor = gps_data.fix.epy * si::meter;
+                fetched_position_fix.confidence.semi_major = gps_data.fix.epx * si::meter;
+                fetched_position_fix.confidence.orientation = north + 90.0 * degree;
+            } else {
+                fetched_position_fix.confidence.semi_minor = gps_data.fix.epx * si::meter;
+                fetched_position_fix.confidence.semi_major = gps_data.fix.epy * si::meter;
+                fetched_position_fix.confidence.orientation = north;
+            }
+        } else {
+            fetched_position_fix.confidence = vanetza::PositionConfidence();
+        }
     }
 }
 
