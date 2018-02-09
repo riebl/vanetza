@@ -2,9 +2,9 @@
 #define DEFAULT_CERTIFICATE_VALIDATOR_HPP_MTULFLKX
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_validator.hpp>
-#include <boost/optional/optional.hpp>
 
 namespace vanetza
 {
@@ -23,7 +23,7 @@ class CertificateCache;
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
-    DefaultCertificateValidator(Backend&, const Clock::time_point& time_now, const TrustStore&, CertificateCache&);
+    DefaultCertificateValidator(Backend&, const Clock::time_point& time_now, PositionProvider&, const TrustStore&, CertificateCache&);
 
     /**
      * \brief check certificate
@@ -32,20 +32,14 @@ public:
      */
     CertificateValidity check_certificate(const Certificate& certificate) override;
 
-    /**
-     * \brief set own position for geographic region checks
-     * \param pos own position
-     */
-    void set_ego_position(const TwoDLocation& pos);
-
 private:
     bool check_region(const Certificate& certificate);
 
     Backend& m_crypto_backend;
     const Clock::time_point& m_time_now;
+    PositionProvider& m_position_provider;
     const TrustStore& m_trust_store;
     CertificateCache& m_cert_cache;
-    boost::optional<TwoDLocation> m_ego_position;
 };
 
 } // namespace security

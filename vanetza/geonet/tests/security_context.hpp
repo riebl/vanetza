@@ -2,6 +2,7 @@
 #define SECURITY_CONTEXT_HPP_FEYZW1RS
 
 #include <vanetza/common/runtime.hpp>
+#include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
@@ -19,7 +20,7 @@ public:
         backend(security::create_backend("default")),
         certificate_provider(new security::NaiveCertificateProvider(rt.now())),
         cert_cache(rt),
-        certificate_validator(new security::DefaultCertificateValidator(*backend, rt.now(), trust_store, cert_cache)),
+        certificate_validator(new security::DefaultCertificateValidator(*backend, rt.now(), position_provider, trust_store, cert_cache)),
         sign_header_policy(rt.now()),
         security(
             straight_sign_service(*certificate_provider, *backend, sign_header_policy),
@@ -36,7 +37,19 @@ public:
         return security;
     }
 
+    void set_accurate_position(units::GeoAngle latitude, units::GeoAngle longitude)
+    {
+        PositionFix position_fix;
+        position_fix.latitude = latitude;
+        position_fix.longitude = longitude;
+        position_fix.confidence.semi_major = 25.0 * units::si::meter;
+        position_fix.confidence.semi_minor = 25.0 * units::si::meter;
+        assert(position_fix.confidence);
+        position_provider.position_fix(position_fix);
+    }
+
 private:
+    StoredPositionProvider position_provider;
     std::unique_ptr<security::Backend> backend;
     std::unique_ptr<security::NaiveCertificateProvider> certificate_provider;
     std::vector<security::Certificate> roots;

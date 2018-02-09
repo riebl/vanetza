@@ -1,3 +1,4 @@
+#include <vanetza/common/position_fix.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
@@ -97,17 +98,13 @@ bool check_time_consistency(const Certificate& certificate, const Certificate& s
 } // namespace
 
 DefaultCertificateValidator::DefaultCertificateValidator(Backend& backend, const Clock::time_point& time_now,
-        const TrustStore& trust_store, CertificateCache& cert_cache) :
+        PositionProvider& positioning, const TrustStore& trust_store, CertificateCache& cert_cache) :
     m_crypto_backend(backend),
     m_time_now(time_now),
+    m_position_provider(positioning),
     m_trust_store(trust_store),
     m_cert_cache(cert_cache)
 {
-}
-
-void DefaultCertificateValidator::set_ego_position(const TwoDLocation& pos)
-{
-    m_ego_position = pos;
 }
 
 CertificateValidity DefaultCertificateValidator::check_certificate(const Certificate& certificate)
@@ -238,6 +235,8 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 bool DefaultCertificateValidator::check_region(const Certificate& certificate)
 {
     using namespace boost::units;
+    const PositionFix& position_fix = m_position_provider.position_fix();
+    TwoDLocation ego_position(position_fix.latitude, position_fix.longitude);
 
     for (auto& restriction : certificate.validity_restriction) {
         ValidityRestriction validity_restriction = restriction;
@@ -251,11 +250,11 @@ bool DefaultCertificateValidator::check_region(const Certificate& certificate)
                 continue;
             }
 
-            if (!m_ego_position) {
-                return false; // restriction present, but no own position known, so fail
+            if (!position_fix.confidence) {
+                return false; // cannot check region restrictions without good position fix
             } else if (region_type == RegionType::Circle) {
                 CircularRegion circular_region = boost::get<CircularRegion>(region);
-                return is_within(*m_ego_position, circular_region);
+                return is_within(ego_position, circular_region);
             } else if (region_type == RegionType::Rectangle) {
                 std::list<RectangularRegion> region_rectangles = boost::get<std::list<RectangularRegion>>(region);
                 static const unsigned max_rectangles = 6; // see TS 103 097 v1.2.1, section 4.2.20
@@ -263,9 +262,8 @@ bool DefaultCertificateValidator::check_region(const Certificate& certificate)
                     return false;
                 }
 
-                TwoDLocation pos = *m_ego_position;
                 return std::any_of(region_rectangles.begin(), region_rectangles.end(),
-                        [&pos](const RectangularRegion& rect) { return is_within(pos, rect); });
+                        [&ego_position](const RectangularRegion& rect) { return is_within(ego_position, rect); });
             }
 
             // TODO: Add support for polygonal region, see TS 103 097 v1.2.1, section 4.2.24

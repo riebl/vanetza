@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
+#include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
@@ -23,7 +24,7 @@ protected:
         crypto_backend(create_backend("default")),
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
         cert_cache(runtime),
-        certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), trust_store, cert_cache)),
+        certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), position_provider, trust_store, cert_cache)),
         sign_header_policy(runtime.now()),
         sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),
         verify_service(straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy)),
@@ -68,6 +69,7 @@ protected:
     }
 
     Runtime runtime;
+    StoredPositionProvider position_provider;
     std::unique_ptr<Backend> crypto_backend;
     std::unique_ptr<NaiveCertificateProvider> certificate_provider;
     std::vector<Certificate> roots;

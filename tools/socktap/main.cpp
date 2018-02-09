@@ -151,7 +151,7 @@ int main(int argc, const char** argv)
             certificate_provider = std::unique_ptr<security::CertificateProvider> {
                 new security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key, chain) };
             certificate_validator = std::unique_ptr<security::CertificateValidator> {
-                new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), trust_store, cert_cache) };
+                new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), positioning, trust_store, cert_cache) };
         }
 
         security::SignHeaderPolicy sign_header_policy(trigger.runtime().now());

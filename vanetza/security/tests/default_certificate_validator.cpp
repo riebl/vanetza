@@ -1,5 +1,6 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/runtime.hpp>
+#include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
@@ -19,13 +20,24 @@ public:
         backend(create_backend("default")),
         cert_provider(runtime.now()),
         cert_cache(runtime),
-        cert_validator(*backend, runtime.now(), trust_store, cert_cache)
+        cert_validator(*backend, runtime.now(), position_provider, trust_store, cert_cache)
     {
         trust_store.insert(cert_provider.root_certificate());
     }
 
+    void set_position(units::GeoAngle latitude, units::GeoAngle longitude)
+    {
+        PositionFix position;
+        position.latitude = latitude;
+        position.longitude = longitude;
+        position.confidence.semi_minor = 50.0 * units::si::meter;
+        position.confidence.semi_major = 50.0 * units::si::meter;
+        position_provider.position_fix(position);
+    }
+
 protected:
     Runtime runtime;
+    StoredPositionProvider position_provider;
     std::unique_ptr<Backend> backend;
     NaiveCertificateProvider cert_provider;
     std::vector<Certificate> roots;
@@ -218,14 +230,12 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
     CertificateValidity validity;
     TwoDLocation ego_pos;
     // inside
-    ego_pos = TwoDLocation { 10.000001 * units::degree,  20 * units::degree };
-    cert_validator.set_ego_position(ego_pos);
+    set_position(10.000001 * units::degree,  20 * units::degree);
     validity = cert_validator.check_certificate(cert);
     ASSERT_TRUE(validity);
 
     // outside
-    ego_pos = TwoDLocation { 10.1 * units::degree, 20 * units::degree };
-    cert_validator.set_ego_position(ego_pos);
+    set_position(10.1 * units::degree, 20 * units::degree);
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
@@ -249,35 +259,30 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
     TwoDLocation ego_pos;
 
     // inside
-    ego_pos = TwoDLocation { 15 * units::degree, 15 * units::degree };
-    cert_validator.set_ego_position(ego_pos);
+    set_position(15 * units::degree, 15 * units::degree);
     validity = cert_validator.check_certificate(cert);
     ASSERT_TRUE(validity);
 
     // outside - left
-    ego_pos = TwoDLocation { 15 * units::degree, 9 * units::degree };
-    cert_validator.set_ego_position(ego_pos);
+    set_position(15 * units::degree, 9 * units::degree);
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 
     // outside - right
-    ego_pos = TwoDLocation { 15 * units::degree, 21 * units::degree };
-    cert_validator.set_ego_position(ego_pos);
+    set_position(15 * units::degree, 21 * units::degree);
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 
     // outside - top
-    ego_pos = TwoDLocation { 21 * units::degree, 15 * units::degree };
-    cert_validator.set_ego_position(ego_pos);
+    set_position(21 * units::degree, 15 * units::degree);
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 
     // outside - down
-    ego_pos = TwoDLocation { 9 * units::degree, 15 * units::degree };
-    cert_validator.set_ego_position(ego_pos);
+    set_position(9 * units::degree, 15 * units::degree);
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());

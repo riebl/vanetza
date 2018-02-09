@@ -234,6 +234,7 @@ void NetworkTopology::set_position(const MacAddress& addr, CartesianPosition c)
         host->position.latitude = pos.latitude;
         host->position.longitude = pos.longitude;
         host->router.update_position(host->position);
+        host->security.set_accurate_position(host->position.latitude, host->position.longitude);
     }
 }
 
