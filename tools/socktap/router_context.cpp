@@ -1,7 +1,6 @@
 #include "application.hpp"
 #include "dcc_passthrough.hpp"
 #include "ethernet_device.hpp"
-#include "position_provider.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
 #include <vanetza/dcc/data_request.hpp>
@@ -19,7 +18,7 @@ namespace asio = boost::asio;
 using boost::asio::generic::raw_protocol;
 using namespace vanetza;
 
-RouterContext::RouterContext(raw_protocol::socket& socket, const geonet::MIB& mib, TimeTrigger& trigger, PositionProvider& positioning, vanetza::security::SecurityEntity& security_entity) :
+RouterContext::RouterContext(raw_protocol::socket& socket, const geonet::MIB& mib, TimeTrigger& trigger, vanetza::PositionProvider& positioning, vanetza::security::SecurityEntity& security_entity) :
     mib_(mib), router_(trigger.runtime(), mib_),
     socket_(socket), trigger_(trigger), positioning_(positioning),
     request_interface_(new DccPassthrough(socket, trigger)),
@@ -110,14 +109,13 @@ void RouterContext::require_position_fix(bool flag)
 
 void RouterContext::update_position_vector()
 {
-    auto position = positioning_.current_position();
-    router_.update(position);
+    router_.update_position(positioning_.position_fix());
     vanetza::Runtime::Callback callback = [this](vanetza::Clock::time_point) { this->update_position_vector(); };
     vanetza::Clock::duration next = std::chrono::seconds(1);
     trigger_.runtime().schedule(next, callback);
     trigger_.schedule();
 
-    update_packet_flow(position);
+    update_packet_flow(router_.get_local_position_vector());
 }
 
 void RouterContext::update_packet_flow(const geonet::LongPositionVector& lpv)

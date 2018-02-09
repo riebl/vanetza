@@ -93,9 +93,11 @@ NetworkTopology::RouterContext::RouterContext(NetworkTopology& network) :
 
 void NetworkTopology::RouterContext::set_position_accuracy_indicator(bool flag)
 {
-    LongPositionVector lpv = router.get_local_position_vector();
-    lpv.position_accuracy_indicator = flag;
-    router.update(lpv);
+    const double pai_scaling = flag ? 0.25 : 0.75;
+    position.confidence.semi_minor = pai_scaling * router.get_mib().itsGnPaiInterval;
+    position.confidence.semi_major = pai_scaling * router.get_mib().itsGnPaiInterval;
+    router.update_position(position);
+    assert(router.get_local_position_vector().position_accuracy_indicator == flag);
 }
 
 NetworkTopology::NetworkTopology() : now(Clock::at("2016-02-29 23:59"))
@@ -226,13 +228,12 @@ void NetworkTopology::set_position(const MacAddress& addr, CartesianPosition c)
 {
     // convert cartesian to geodetic position
     GeodeticPosition pos = convert_cartesian_geodetic(c);
-    auto router = get_router(addr);
-    if (router) {
-        LongPositionVector lpv = router->get_local_position_vector();
-        lpv.timestamp = now;
-        lpv.latitude = geo_angle_i32t(pos.latitude);
-        lpv.longitude = geo_angle_i32t(pos.longitude);
-        router->update(lpv);
+    auto host = get_host(addr);
+    if (host) {
+        host->position.timestamp = now;
+        host->position.latitude = pos.latitude;
+        host->position.longitude = pos.longitude;
+        host->router.update_position(host->position);
     }
 }
 
@@ -244,13 +245,11 @@ void NetworkTopology::advance_time(Clock::duration t)
         now += step;
         t -= step;
         // update timestamp for every router
-        for (auto& host : hosts) {
-            Runtime& runtime = host.second->runtime;
-            runtime.trigger(now);
-            Router& router = host.second->router;
-            LongPositionVector lpv = router.get_local_position_vector();
-            lpv.timestamp = now;
-            router.update(lpv);
+        for (auto& kv : hosts) {
+            RouterContext& host = *kv.second;
+            host.runtime.trigger(now);
+            host.position.timestamp = now;
+            host.router.update_position(host.position);
         }
         dispatch();
     } while (t.count() > 0);

@@ -35,6 +35,7 @@ namespace vanetza
 
 // forward declarations
 class MacAddress;
+class PositionFix;
 class Runtime;
 
 namespace dcc
@@ -157,11 +158,10 @@ public:
 
     /**
      * \brief Update router's local position vector
-     * \note GN Address of given LongPositionVector is ignored!
      *
-     * \param lpv Set positional data according to this argument
+     * \param fix current position fix
      */
-    void update(const LongPositionVector&);
+    void update_position(const PositionFix&);
 
     /**
      * \brief Register a transport protocol handler.

@@ -1,4 +1,5 @@
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/position_fix.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
@@ -69,6 +70,7 @@ public:
         RequestInterface request_interface;
         TransportHandler transport_interface;
         Runtime runtime;
+        PositionFix position;
         SecurityContext security;
         Router router;
     };

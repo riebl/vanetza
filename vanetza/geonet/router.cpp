@@ -1,6 +1,7 @@
 #include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/data_request.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/common/position_fix.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/access_control.hpp>
 #include <vanetza/dcc/data_request.hpp>
@@ -139,12 +140,24 @@ Router::~Router()
     m_runtime.cancel(this);
 }
 
-void Router::update(const LongPositionVector& lpv)
+void Router::update_position(const PositionFix& position_fix)
 {
-    // Update LPV except for GN address
-    Address gn_addr = m_local_position_vector.gn_addr;
-    m_local_position_vector = lpv;
-    m_local_position_vector.gn_addr = gn_addr;
+    // EN 302 636-4-1 v1.3.1 is a little bit fuzzy regarding the time stamp:
+    // "Expresses the time (...) at which the latitude and longitude (...) were acquired by the GeoAdhoc router."
+    // My reading: use the current time stamp (now) when update_position is called (not the position fix time stamp)
+    m_local_position_vector.timestamp = m_runtime.now();
+    m_local_position_vector.latitude = static_cast<geo_angle_i32t>(position_fix.latitude);
+    m_local_position_vector.longitude = static_cast<geo_angle_i32t>(position_fix.longitude);
+    if (m_mib.itsGnIsMobile) {
+        m_local_position_vector.speed = static_cast<LongPositionVector::speed_u15t>(position_fix.speed.value());
+        m_local_position_vector.heading = static_cast<heading_u16t>(position_fix.course.value() - units::TrueNorth::from_value(0.0));
+    } else {
+        m_local_position_vector.speed = static_cast<LongPositionVector::speed_u15t>(0);
+        m_local_position_vector.heading = static_cast<heading_u16t>(0);
+    }
+    // see field 5 (PAI) in table 2 (long position vector)
+    m_local_position_vector.position_accuracy_indicator =
+        position_fix.confidence.semi_major * 2.0 < m_mib.itsGnPaiInterval;
 }
 
 void Router::set_transport_handler(UpperProtocol proto, TransportInterface* ifc)

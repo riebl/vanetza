@@ -1,12 +1,13 @@
 #ifndef GPS_POSITION_PROVIDER_HPP_GYN3GVQA
 #define GPS_POSITION_PROVIDER_HPP_GYN3GVQA
 
-#include "position_provider.hpp"
+#include <vanetza/common/clock.hpp>
+#include <vanetza/common/position_provider.hpp>
 #include <stdexcept>
 #include <string>
 #include <gps.h>
 
-class GpsPositionProvider : public PositionProvider
+class GpsPositionProvider : public vanetza::PositionProvider
 {
 public:
     class gps_error : public std::runtime_error
@@ -19,12 +20,15 @@ public:
     GpsPositionProvider();
     GpsPositionProvider(const std::string& hostname, const std::string& port);
     ~GpsPositionProvider();
-    vanetza::geonet::LongPositionVector current_position();
+
+    const vanetza::PositionFix& position_fix() override;
+    void fetch_position_fix();
 
 private:
-    vanetza::geonet::Timestamp convert(timestamp_t) const;
+    vanetza::Clock::time_point convert(timestamp_t) const;
 
     gps_data_t gps_data;
+    vanetza::PositionFix fetched_position_fix;
 };
 
 namespace gpsd

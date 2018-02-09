@@ -101,6 +101,8 @@ int main(int argc, const char** argv)
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
         mib.itsGnSecurity = false;
 
+        GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
+
         // We always use the same ceritificate manager and crypto services for now.
         // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
         auto certificate_provider = std::unique_ptr<security::CertificateProvider> {
@@ -156,7 +158,6 @@ int main(int argc, const char** argv)
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
 
-        GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
         security::SecurityEntity security_entity(sign_service, verify_service);
         RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);

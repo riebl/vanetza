@@ -29,32 +29,30 @@ GpsPositionProvider::gps_error::gps_error(int err) :
 {
 }
 
-vanetza::geonet::LongPositionVector GpsPositionProvider::current_position()
+const vanetza::PositionFix& GpsPositionProvider::position_fix()
+{
+    return fetched_position_fix;
+}
+
+void GpsPositionProvider::fetch_position_fix()
 {
     if (gps_read(&gps_data) < 0) {
         throw gps_error(errno);
     }
 
-    vanetza::geonet::LongPositionVector pv;
-    pv.position_accuracy_indicator = false;
     if (gps_data.status == STATUS_FIX && gps_data.fix.mode >= MODE_2D) {
-        using geo_angle_t = vanetza::geonet::geo_angle_i32t;
-        using speed_t = vanetza::geonet::LongPositionVector::speed_u15t;
-        using heading_t = vanetza::geonet::heading_u16t;
         using namespace vanetza::units;
+        static const TrueNorth north = TrueNorth::from_value(0.0);
 
-        pv.timestamp = convert(gps_data.fix.time);
-        pv.position_accuracy_indicator = true; // TODO check position error
-        pv.latitude = static_cast<geo_angle_t>(gps_data.fix.latitude * degree);
-        pv.longitude = static_cast<geo_angle_t>(gps_data.fix.longitude * degree);
-        pv.speed = static_cast<speed_t>(gps_data.fix.speed * si::meter_per_second);
-        pv.heading = static_cast<heading_t>(gps_data.fix.track * degree);
+        fetched_position_fix.timestamp = convert(gps_data.fix.time);
+        fetched_position_fix.latitude = gps_data.fix.latitude * degree;
+        fetched_position_fix.longitude = gps_data.fix.longitude * degree;
+        fetched_position_fix.speed.assign(gps_data.fix.speed * si::meter_per_second, gps_data.fix.eps * si::meter_per_second);
+        fetched_position_fix.course.assign(north + gps_data.fix.track * degree, north + gps_data.fix.epd * degree);
     }
-
-    return pv;
 }
 
-vanetza::geonet::Timestamp GpsPositionProvider::convert(timestamp_t gpstime) const
+vanetza::Clock::time_point GpsPositionProvider::convert(timestamp_t gpstime) const
 {
     using namespace boost::gregorian;
     using namespace boost::posix_time;
@@ -69,5 +67,5 @@ vanetza::geonet::Timestamp GpsPositionProvider::convert(timestamp_t gpstime) con
 
     // TAI has some seconds bias compared to UTC
     const auto tai_utc_bias = seconds(36); // 36 seconds since 1st July 2015
-    return vanetza::geonet::Timestamp { posix_time + tai_utc_bias };
+    return vanetza::Clock::at(posix_time + tai_utc_bias);
 }
