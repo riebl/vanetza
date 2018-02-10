@@ -166,7 +166,6 @@ void CbfPacketBuffer::flush()
         bool valid_packet = reduce_lifetime(timer, packet);
         m_stored_bytes -= packet.length();
         if (valid_packet) {
-            //CbfPacket::Data data(std::move(packet));
             m_timer_callback(std::move(packet).packet());
         }
 
