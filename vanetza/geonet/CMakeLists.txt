@@ -22,6 +22,7 @@ set(CXX_SOURCES
     parser.cpp
     pdu.cpp
     pdu_conversion.cpp
+    position_updater.cpp
     position_vector.cpp
     repeater.cpp
     router.cpp
