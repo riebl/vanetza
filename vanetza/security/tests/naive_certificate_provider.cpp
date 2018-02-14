@@ -40,7 +40,14 @@ TEST_F(NaiveCertificateProviderTest, own_certificate)
     SubjectAssurance test_assurance_level;
     int assurance_level_counter = 0;
 
+    using subject_type_int = std::underlying_type<SubjectAttributeType>::type;
+    subject_type_int last_subject_type = 0;
+
     for (auto& subject_attribute : signed_certificate.subject_attributes) {
+        // Verify that fields are in ascending order
+        subject_type_int subject_type = static_cast<subject_type_int>(get_type(subject_attribute));
+        EXPECT_LE(last_subject_type, subject_type);
+        last_subject_type = subject_type;
 
         if (SubjectAttributeType::Verification_Key == get_type(subject_attribute)) {
             verification_key_counter++;
@@ -51,6 +58,7 @@ TEST_F(NaiveCertificateProviderTest, own_certificate)
             // TODO: check aid permissions
         }
     }
+
     EXPECT_EQ(1, verification_key_counter);
     ASSERT_EQ(1, assurance_level_counter);
     EXPECT_EQ(0, test_assurance_level.raw);
@@ -58,7 +66,16 @@ TEST_F(NaiveCertificateProviderTest, own_certificate)
     // Check validity restrictions
     Time32 start_time;
     Time32 end_time;
-    for (ValidityRestriction restriction : signed_certificate.validity_restriction){
+
+    using restriction_type_int = std::underlying_type<ValidityRestrictionType>::type;
+    restriction_type_int last_restriction_type = 0;
+
+    for (ValidityRestriction restriction : signed_certificate.validity_restriction) {
+        // Verify that fields are in ascending order
+        restriction_type_int restriction_type = static_cast<restriction_type_int>(get_type(restriction));
+        EXPECT_LE(last_restriction_type, restriction_type);
+        last_restriction_type = restriction_type;
+
         if (ValidityRestrictionType::Time_Start_And_End == get_type(restriction)) {
             StartAndEndValidity& time_validation = get<StartAndEndValidity>(restriction);
             start_time = time_validation.start_validity;
@@ -67,5 +84,6 @@ TEST_F(NaiveCertificateProviderTest, own_certificate)
             // TODO: Region not specified yet
         }
     }
+
     EXPECT_LT(start_time, end_time);
 }

@@ -97,7 +97,7 @@ int GenerateRootCommand::execute()
 
     std::cout << "Signing certificate... ";
 
-    // set signature
+    sort(certificate);
     vanetza::ByteBuffer data_buffer = convert_for_signing(certificate);
     certificate.signature = crypto_backend.sign_data(subject_key.private_key, data_buffer);
 
