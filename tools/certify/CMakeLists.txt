@@ -12,6 +12,7 @@ add_executable(certify
     commands/show-certificate.cpp
     main.cpp
     options.cpp
+    utils.cpp
 )
 
 set_target_properties(certify PROPERTIES INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})

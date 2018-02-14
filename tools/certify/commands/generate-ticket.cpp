@@ -1,4 +1,5 @@
 #include "generate-ticket.hpp"
+#include "utils.hpp"
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>
@@ -28,6 +29,8 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
         ("sign-cert", po::value<std::string>(&sign_cert_path)->required(), "Private certificate file of the signer.")
         ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Private key file to issue the certificate for.")
         ("days", po::value<int>(&validity_days)->default_value(7), "Validity in days.")
+        ("cam-permissions", po::value<std::string>(&cam_permissions), "CAM permissions as binary string (e.g. '1111111111111100' to grant all SSPs)")
+        ("denm-permissions", po::value<std::string>(&cam_permissions), "DENM permissions as binary string (e.g. '000000000000000000000000' to grant no SSPs)")
     ;
 
     po::positional_options_description pos;
@@ -81,8 +84,18 @@ int GenerateTicketCommand::execute()
     std::cout << "OK" << std::endl;
 
     auto sign_cert = load_certificate_from_file(sign_cert_path);
-
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
+
+    auto cam_ssps = vanetza::ByteBuffer({ 1, 0, 0 }); // no special permissions
+    auto denm_ssps = vanetza::ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
+
+    if (cam_permissions.size()) {
+        permission_string_to_buffer(cam_permissions, cam_ssps);
+    }
+
+    if (denm_permissions.size()) {
+        permission_string_to_buffer(denm_permissions, denm_ssps);
+    }
 
     Certificate certificate;
 
@@ -95,13 +108,13 @@ int GenerateTicketCommand::execute()
     // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
     ItsAidSsp certificate_ssp_ca;
     certificate_ssp_ca.its_aid = IntX(aid::CA);
-    certificate_ssp_ca.service_specific_permissions = vanetza::ByteBuffer({ 1, 0, 0 }); // no special permissions
+    certificate_ssp_ca.service_specific_permissions = cam_ssps;
     certificate_ssp.push_back(certificate_ssp_ca);
 
     // see ETSI EN 302 637-3 V1.2.2 (2014-11)
     ItsAidSsp certificate_ssp_den;
     certificate_ssp_den.its_aid = IntX(aid::DEN);
-    certificate_ssp_den.service_specific_permissions = vanetza::ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
+    certificate_ssp_den.service_specific_permissions = denm_ssps;
     certificate_ssp.push_back(certificate_ssp_den);
 
     certificate.signer_info = calculate_hash(sign_cert);
