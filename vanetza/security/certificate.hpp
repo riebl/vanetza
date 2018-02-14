@@ -116,6 +116,13 @@ size_t deserialize(InputArchive&, Certificate&);
 ByteBuffer convert_for_signing(const Certificate&);
 
 /**
+ * \brief Sort lists in the certificate to be in the correct order for serialization
+ *
+ * \param cert certificate to sort
+ */
+void sort(Certificate& certificate);
+
+/**
  * \brief Extract public key from certificate
  * \param cert Certificate
  * \return Uncompressed public key (if available)

@@ -134,6 +134,7 @@ int GenerateTicketCommand::execute()
 
     std::cout << "Signing certificate... ";
 
+    sort(certificate);
     auto data_buffer = convert_for_signing(certificate);
     certificate.signature = crypto_backend.sign_data(sign_key.private_key, data_buffer);
 

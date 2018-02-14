@@ -115,6 +115,8 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
 
 void NaiveCertificateProvider::sign_authorization_ticket(Certificate& certificate)
 {
+    sort(certificate);
+
     ByteBuffer data_buffer = convert_for_signing(certificate);
     certificate.signature = m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer);
 }
@@ -156,6 +158,8 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     start_and_end.start_validity = convert_time32(m_time_now - std::chrono::hours(1));
     start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(23));
     certificate.validity_restriction.push_back(start_and_end);
+
+    sort(certificate);
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);
@@ -201,6 +205,8 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     start_and_end.start_validity = convert_time32(m_time_now - std::chrono::hours(1));
     start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(365 * 24));
     certificate.validity_restriction.push_back(start_and_end);
+
+    sort(certificate);
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);

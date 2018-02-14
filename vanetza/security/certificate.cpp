@@ -80,6 +80,27 @@ ByteBuffer convert_for_signing(const Certificate& cert)
     return buf;
 }
 
+void sort(Certificate& cert)
+{
+    cert.subject_attributes.sort([](const SubjectAttribute& a, const SubjectAttribute& b) {
+        const SubjectAttributeType type_a = get_type(a);
+        const SubjectAttributeType type_b = get_type(b);
+
+        // all fields must be encoded in ascending order
+        using enum_int = std::underlying_type<SubjectAttributeType>::type;
+        return static_cast<enum_int>(type_a) < static_cast<enum_int>(type_b);
+    });
+
+    cert.validity_restriction.sort([](const ValidityRestriction& a, const ValidityRestriction& b) {
+        const ValidityRestrictionType type_a = get_type(a);
+        const ValidityRestrictionType type_b = get_type(b);
+
+        // all fields must be encoded in ascending order
+        using enum_int = std::underlying_type<ValidityRestrictionType>::type;
+        return static_cast<enum_int>(type_a) < static_cast<enum_int>(type_b);
+    });
+}
+
 boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate& cert)
 {
     boost::optional<Uncompressed> public_key_coordinates;
