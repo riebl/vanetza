@@ -175,7 +175,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         }
 
         // verify payload signature with given signature
-        ByteBuffer payload = convert_for_signing(secured_message, get_size(*signature_field));
+        ByteBuffer payload = convert_for_signing(secured_message, secured_message.trailer_fields);
         boost::optional<Certificate> signer;
 
         for (auto& cert : possible_certificates) {
