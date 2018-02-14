@@ -35,7 +35,8 @@ int main(int argc, const char** argv)
         ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed. Root certificates in the chain are automatically trusted.")
         ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
-        ("require-gnss-fix", "suppress transmissions while GNSS position fix is missing")
+        ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
+        ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.");
     ;
 
     po::positional_options_description positional_options;
@@ -100,6 +101,11 @@ int main(int argc, const char** argv)
         mib.itsGnLocalGnAddr.is_manually_configured(true);
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
         mib.itsGnSecurity = false;
+        mib.itsGnProtocolVersion = vm["gn-version"].as<unsigned>();
+
+        if (mib.itsGnProtocolVersion != 0 && mib.itsGnProtocolVersion != 1) {
+            throw std::runtime_error("Unsupported GeoNetworking version, only version 0 and 1 are supported.");
+        }
 
         asio::steady_timer gps_timer(io_service);
         GpsPositionProvider positioning(gps_timer, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
