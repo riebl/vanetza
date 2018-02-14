@@ -1,9 +1,11 @@
 #include "generate-root.hpp"
+#include "utils.hpp"
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
@@ -11,9 +13,9 @@
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 
+namespace aid = vanetza::aid;
 namespace po = boost::program_options;
 using namespace vanetza::security;
-using namespace CryptoPP;
 
 bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
 {
@@ -24,6 +26,8 @@ bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
         ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Private key file.")
         ("subject-name", po::value<std::string>(&subject_name)->default_value("Hello World Root-CA"), "Subject name.")
         ("days", po::value<int>(&validity_days)->default_value(365), "Validity in days.")
+        ("cam-permissions", po::value<std::string>(&cam_permissions), "CAM permissions as binary string (e.g. '1111111111111100' to grant all SSPs)")
+        ("denm-permissions", po::value<std::string>(&cam_permissions), "DENM permissions as binary string (e.g. '000000000000000000000000' to grant no SSPs)")
     ;
 
     po::positional_options_description pos;
@@ -59,8 +63,37 @@ int GenerateRootCommand::execute()
 
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
 
+    auto cam_ssps = vanetza::ByteBuffer({ 1, 0, 0 }); // no special permissions
+    auto denm_ssps = vanetza::ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
+
+    if (cam_permissions.size()) {
+        permission_string_to_buffer(cam_permissions, cam_ssps);
+    }
+
+    if (denm_permissions.size()) {
+        permission_string_to_buffer(denm_permissions, denm_ssps);
+    }
+
     // create certificate
     Certificate certificate;
+
+    std::list<IntX> certificate_aids;
+    certificate_aids.push_back(IntX(aid::CA));
+    certificate_aids.push_back(IntX(aid::DEN));
+
+    std::list<ItsAidSsp> certificate_ssp;
+
+    // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
+    ItsAidSsp certificate_ssp_ca;
+    certificate_ssp_ca.its_aid = IntX(aid::CA);
+    certificate_ssp_ca.service_specific_permissions = cam_ssps;
+    certificate_ssp.push_back(certificate_ssp_ca);
+
+    // see ETSI EN 302 637-3 V1.2.2 (2014-11)
+    ItsAidSsp certificate_ssp_den;
+    certificate_ssp_den.its_aid = IntX(aid::DEN);
+    certificate_ssp_den.service_specific_permissions = denm_ssps;
+    certificate_ssp.push_back(certificate_ssp_den);
 
     // section 6.1 in TS 103 097 v1.2.1
     certificate.signer_info = nullptr; /* self */
@@ -74,6 +107,8 @@ int GenerateRootCommand::execute()
 
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
+    certificate.subject_attributes.push_back(certificate_ssp);
+    certificate.subject_attributes.push_back(certificate_aids);
 
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
