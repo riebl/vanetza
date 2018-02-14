@@ -95,7 +95,7 @@ size_t deserialize(InputArchive& ar, SecuredMessage& message)
     return length;
 }
 
-ByteBuffer convert_for_signing(const SecuredMessage& message, size_t trailer_fields_size)
+ByteBuffer convert_for_signing(const SecuredMessage& message, const std::list<TrailerField> trailer_fields)
 {
     ByteBuffer buf;
     byte_buffer_sink sink(buf);
@@ -108,7 +108,18 @@ ByteBuffer convert_for_signing(const SecuredMessage& message, size_t trailer_fie
     serialize(ar, message.header_fields);
     serialize(ar, message.payload);
 
-    ar << trailer_fields_size;
+    // We must encode the total length, all trailer fields before the signature and the type of the signature
+    // See TS 103 097 v1.2.1, section 5.6
+    serialize_length(ar, get_size(trailer_fields));
+    for (auto& elem : trailer_fields) {
+        TrailerFieldType type = get_type(elem);
+        if (type == TrailerFieldType::Signature) {
+            serialize(ar, type);
+            break;
+        }
+
+        serialize(ar, elem);
+    }
 
     return buf;
 }
