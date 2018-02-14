@@ -202,8 +202,16 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         }
 
         if (!signer) {
-            // could be a colliding HashedId8, but the probability is pretty low
-            confirm.report = VerificationReport::False_Signature;
+            // HashedId8 of authorization tickets is not guaranteed to be globally unique.
+            // The probability is rather low, but it might happen. This might also be a false signature,
+            // but we can't be certain unless we got a certificate with the message.
+            // Assume a collision if we got a hash.
+            if (signer_info && get_type(*signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
+                confirm.report = VerificationReport::Signer_Certificate_Not_Found;
+            } else {
+                confirm.report = VerificationReport::False_Signature;
+            }
+
             confirm.certificate_id = signer_hash;
             sign_policy.report_unknown_certificate(signer_hash);
             return confirm;
