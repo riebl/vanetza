@@ -58,3 +58,8 @@ geonet::ShbDataRequest Application::request_shb(const DataRequest& generic)
     initialize_request(generic, shb);
     return shb;
 }
+
+Application::PromiscuousHook* Application::promiscuous_hook()
+{
+    return nullptr;
+}
