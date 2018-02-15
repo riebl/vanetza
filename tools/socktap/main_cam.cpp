@@ -36,7 +36,8 @@ int main(int argc, const char** argv)
         ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
-        ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.");
+        ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
+        ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
     ;
 
     po::positional_options_description positional_options;
@@ -170,7 +171,7 @@ int main(int argc, const char** argv)
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
         asio::steady_timer cam_timer(io_service);
-        CamApplication cam_app(positioning, trigger.runtime().now(), cam_timer, std::chrono::milliseconds(1000));
+        CamApplication cam_app(positioning, trigger.runtime().now(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
         context.enable(&cam_app);
 
         io_service.run();
