@@ -76,10 +76,18 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
         const HeaderFieldType type_a = get_type(a);
         const HeaderFieldType type_b = get_type(b);
 
+        // this shouldn't happen, as every header field should be present only once
+        if (type_a == type_b) {
+            return false; // a >= b
+        }
+
         // signer_info must be encoded first in all profiles
         if (type_a == HeaderFieldType::Signer_Info) {
-            // return false if both are signer_info fields
-            return type_b != HeaderFieldType::Signer_Info;
+            return true; // a < b
+        }
+
+        if (type_b == HeaderFieldType::Signer_Info) {
+            return false; // a >= b
         }
 
         // all other fields must be encoded in ascending order
