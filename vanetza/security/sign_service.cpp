@@ -80,6 +80,8 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
         if (type_a == HeaderFieldType::Signer_Info) {
             // return false if both are signer_info fields
             return type_b != HeaderFieldType::Signer_Info;
+        } else if (type_b == HeaderFieldType::Signer_Info) {
+            return false; // "signer info" @ b has precedence over "non-signer info" @ a
         }
 
         // all other fields must be encoded in ascending order
