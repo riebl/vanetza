@@ -142,6 +142,18 @@ TEST_F(SecurityEntityTest, signature_is_ecdsa)
     EXPECT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, signature_type);
 }
 
+TEST_F(SecurityEntityTest, signer_info_is_encoded_first)
+{
+    auto message = create_secured_message();
+    EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(message.header_fields.front()));
+
+    // Creates an additional header field that results in a difference in the sorting algorithm
+    sign_header_policy.report_unknown_certificate(HashedId8({ 0, 0, 0, 0, 0, 0, 0, 0 }));
+
+    message = create_secured_message();
+    EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(message.header_fields.front()));
+}
+
 TEST_F(SecurityEntityTest, expected_header_field_size)
 {
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
