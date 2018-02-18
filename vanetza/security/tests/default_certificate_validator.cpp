@@ -245,3 +245,50 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 }
+
+TEST_F(DefaultCertificateValidatorTest, reject_additional_permissions)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    certificate_add_permission(cert, 16513 /* deprecated, so won't be used */, ByteBuffer({}));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
+{
+    // We test both orders here, so we're not dependent on changes to the certificate provider order.
+    Certificate cert = cert_provider.generate_authorization_ticket();
+
+    // Order 1
+    certificate_remove_attribute(cert, SubjectAttributeType::Its_Aid_Ssp_List);
+    certificate_add_permission(cert, aid::GN_MGMT, ByteBuffer({}));
+    certificate_add_permission(cert, aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // Order 2
+    certificate_remove_attribute(cert, SubjectAttributeType::Its_Aid_Ssp_List);
+    certificate_add_permission(cert, aid::CA, ByteBuffer({ 1, 0, 0 }));
+    certificate_add_permission(cert, aid::GN_MGMT, ByteBuffer({}));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // Definite subset
+    certificate_remove_attribute(cert, SubjectAttributeType::Its_Aid_Ssp_List);
+    certificate_add_permission(cert, aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+}
