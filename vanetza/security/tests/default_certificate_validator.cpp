@@ -23,6 +23,7 @@ public:
         cert_validator(*backend, runtime.now(), position_provider, trust_store, cert_cache)
     {
         trust_store.insert(cert_provider.root_certificate());
+        cert_cache.insert(cert_provider.aa_certificate());
     }
 
     void set_position(units::GeoAngle latitude, units::GeoAngle longitude)
@@ -69,9 +70,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_TRUE(validity);
 }
@@ -88,9 +86,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_TRUE(validity);
 }
@@ -104,9 +99,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
     cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
-
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
 
     // Time period broken, because AA and root CA have start time
     CertificateValidity validity = cert_validator.check_certificate(cert);
@@ -133,9 +125,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
     // re-sign certificate
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
@@ -153,9 +142,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
     cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
-
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
@@ -175,9 +161,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
 
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
@@ -191,9 +174,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
     cert.validity_restriction.push_back(region);
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
@@ -206,9 +186,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
     CircularRegion region { center, 10 * units::si::meter };
     cert.validity_restriction.push_back(region);
     cert_provider.sign_authorization_ticket(cert);
-
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
 
     CertificateValidity validity;
     TwoDLocation ego_pos;
@@ -234,9 +211,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
     regions.push_back(region);
     cert.validity_restriction.push_back(regions);
     cert_provider.sign_authorization_ticket(cert);
-
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
 
     CertificateValidity validity;
     TwoDLocation ego_pos;
