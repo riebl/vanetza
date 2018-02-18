@@ -128,7 +128,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
     // Time period broken, because AA and root CA have start time
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
 
     // TODO: Add test for certificate, AA and root CA with EndValidity
 }
@@ -176,7 +176,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)

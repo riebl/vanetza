@@ -1,3 +1,4 @@
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate_cache.hpp>
@@ -95,6 +96,63 @@ bool check_time_consistency(const Certificate& certificate, const Certificate& s
     return true;
 }
 
+std::list<ItsAid> extract_permissions(const Certificate& certificate)
+{
+    std::list<ItsAid> aids;
+    auto certificate_type = certificate.subject_info.subject_type;
+
+    for (auto& attribute : certificate.subject_attributes) {
+        auto type = get_type(attribute);
+
+        if (certificate_type == SubjectType::Authorization_Ticket) {
+            if (type == SubjectAttributeType::Its_Aid_Ssp_List) {
+                auto list = boost::get<std::list<ItsAidSsp> >(attribute);
+                for (auto& item : list) {
+                    aids.push_back(item.its_aid.get());
+                }
+                break;
+            }
+        } else {
+            if (type == SubjectAttributeType::Its_Aid_List) {
+                auto list = boost::get<std::list<IntX> >(attribute);
+                for (auto& item : list) {
+                    aids.push_back(item.get());
+                }
+                break;
+            }
+        }
+    }
+
+    return aids;
+}
+
+bool check_permission_consistency(const Certificate& certificate, const Certificate& signer)
+{
+    auto certificate_aids = extract_permissions(certificate);
+    auto signer_aids = extract_permissions(signer);
+    auto compare = [](ItsAid a, ItsAid b) {
+        return a < b;
+    };
+
+    certificate_aids.sort(compare);
+    signer_aids.sort(compare);
+
+    return std::includes(signer_aids.begin(), signer_aids.end(), certificate_aids.begin(), certificate_aids.end());
+}
+
+bool check_consistency(const Certificate& certificate, const Certificate& signer)
+{
+    if (!check_time_consistency(certificate, signer)) {
+        return false;
+    }
+
+    if (!check_permission_consistency(certificate, signer)) {
+        return false;
+    }
+
+    return true;
+}
+
 } // namespace
 
 DefaultCertificateValidator::DefaultCertificateValidator(Backend& backend, const Clock::time_point& time_now,
@@ -171,6 +229,8 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         ByteBuffer binary_cert = convert_for_signing(current_cert);
         bool signer_found = false;
 
+        // TODO check if revoked certificate for all CA certificates, ATs are never revoked
+
         for (auto& possible_signer : m_trust_store.lookup(signer_hash)) {
             auto verification_key = get_public_key(possible_signer);
             if (!verification_key) {
@@ -183,8 +243,8 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             }
 
             if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
-                if (!check_time_consistency(current_cert, possible_signer)) {
-                    return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                if (!check_consistency(current_cert, possible_signer)) {
+                    return CertificateInvalidReason::INCONSISTENT_WITH_SIGNER;
                 }
 
                 current_cert = possible_signer;
@@ -211,8 +271,8 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             }
 
             if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
-                if (!check_time_consistency(current_cert, possible_signer)) {
-                    return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+                if (!check_consistency(current_cert, possible_signer)) {
+                    return CertificateInvalidReason::INCONSISTENT_WITH_SIGNER;
                 }
 
                 current_cert = possible_signer;

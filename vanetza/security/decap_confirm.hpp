@@ -1,6 +1,7 @@
 #ifndef DECAP_CONFIRM_HPP
 #define DECAP_CONFIRM_HPP
 
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/payload.hpp>
 #include <boost/optional.hpp>
@@ -45,7 +46,8 @@ struct DecapConfirm
     DecapReport report; // mandatory
     CertificateValidity certificate_validity; // non-standard extension
     boost::optional<HashedId8> certificate_id; // optional
-    // member field 'permissions' currently not used; optional
+    ItsAid its_aid; // mandatory
+    ByteBuffer permissions; // mandatory
 };
 
 } // namespace security
