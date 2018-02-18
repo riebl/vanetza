@@ -2,6 +2,7 @@
 #define CERTIFICATE_HPP_LWBWIAVL
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/ecdsa256.hpp>
@@ -28,6 +29,31 @@ struct Certificate
     Signature signature;
     // certificate version is two, for conformance with the present standard
     uint8_t version() const { return 2; }
+
+    /**
+     * Remove subject attribute of a certain type (if present)
+     * \param sat type of subject attribute
+     */
+    void remove_attribute(SubjectAttributeType);
+
+    /**
+     * Remove validity restriction of a certain type (if present)
+     * \param vrt type of validity restriction
+     */
+    void remove_restriction(ValidityRestrictionType vrt);
+
+    /**
+     * Add ITS-AID to certificate's subject attributes
+     * \param aid ITS-AID
+     */
+    void add_permission(ItsAid aid);
+
+    /**
+     * Add ITS-AID along with SSP to certificate's subject attributes
+     * \param aid ITS-AID
+     * \param ssp Service Specific Permissions
+     */
+    void add_permission(ItsAid aid, const ByteBuffer& ssp);
 };
 
 enum class CertificateInvalidReason
@@ -42,6 +68,7 @@ enum class CertificateInvalidReason
     EXCESSIVE_CHAIN_LENGTH,
     OFF_REGION,
     INCONSISTENT_WITH_SIGNER,
+    INSUFFICIENT_ITS_AID,
 };
 
 class CertificateValidity

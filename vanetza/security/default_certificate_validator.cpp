@@ -96,7 +96,7 @@ bool check_time_consistency(const Certificate& certificate, const Certificate& s
     return true;
 }
 
-std::list<ItsAid> extract_permissions(const Certificate& certificate)
+std::list<ItsAid> extract_application_identifiers(const Certificate& certificate)
 {
     std::list<ItsAid> aids;
     auto certificate_type = certificate.subject_info.subject_type;
@@ -106,16 +106,16 @@ std::list<ItsAid> extract_permissions(const Certificate& certificate)
 
         if (certificate_type == SubjectType::Authorization_Ticket) {
             if (type == SubjectAttributeType::Its_Aid_Ssp_List) {
-                auto list = boost::get<std::list<ItsAidSsp> >(attribute);
-                for (auto& item : list) {
+                auto& aid_ssp_list = boost::get<std::list<ItsAidSsp>>(attribute);
+                for (auto& item : aid_ssp_list) {
                     aids.push_back(item.its_aid.get());
                 }
                 break;
             }
         } else {
             if (type == SubjectAttributeType::Its_Aid_List) {
-                auto list = boost::get<std::list<IntX> >(attribute);
-                for (auto& item : list) {
+                auto& aid_list = boost::get<std::list<IntX>>(attribute);
+                for (auto& item : aid_list) {
                     aids.push_back(item.get());
                 }
                 break;
@@ -128,11 +128,9 @@ std::list<ItsAid> extract_permissions(const Certificate& certificate)
 
 bool check_permission_consistency(const Certificate& certificate, const Certificate& signer)
 {
-    auto certificate_aids = extract_permissions(certificate);
-    auto signer_aids = extract_permissions(signer);
-    auto compare = [](ItsAid a, ItsAid b) {
-        return a < b;
-    };
+    auto certificate_aids = extract_application_identifiers(certificate);
+    auto signer_aids = extract_application_identifiers(signer);
+    auto compare = [](ItsAid a, ItsAid b) { return a < b; };
 
     certificate_aids.sort(compare);
     signer_aids.sort(compare);
@@ -229,7 +227,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         ByteBuffer binary_cert = convert_for_signing(current_cert);
         bool signer_found = false;
 
-        // TODO check if revoked certificate for all CA certificates, ATs are never revoked
+        // TODO check if certificate has been revoked for all CA certificates, ATs are never revoked
 
         for (auto& possible_signer : m_trust_store.lookup(signer_hash)) {
             auto verification_key = get_public_key(possible_signer);

@@ -55,7 +55,7 @@ bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
             continue;
         }
 
-        auto permissions = boost::get<std::list<ItsAidSsp> >(subject_attribute);
+        auto& permissions = boost::get<std::list<ItsAidSsp> >(subject_attribute);
         for (auto& permission : permissions) {
             if (permission.its_aid == confirm.its_aid) {
                 confirm.permissions = permission.service_specific_permissions;
@@ -256,7 +256,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     HashedId8 signer_hash = boost::get<HashedId8>(invalid_cert.signer_info);
 
                     confirm.certificate_id = signer_hash;
-                    sign_policy.report_unknown_certificate(confirm.certificate_id.get());
+                    sign_policy.report_unknown_certificate(signer_hash);
                 }
             }
 
@@ -270,6 +270,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         if (!assign_permissions(signer.get(), confirm)) {
             // This might seem weird, because the certificate itself is valid, but not for the received message.
             confirm.report = VerificationReport::Invalid_Certificate;
+            confirm.certificate_validity = CertificateInvalidReason::INSUFFICIENT_ITS_AID;
             return confirm;
         }
 

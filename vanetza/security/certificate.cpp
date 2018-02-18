@@ -176,5 +176,51 @@ HashedId8 calculate_hash(const Certificate& cert)
     return id;
 }
 
+void Certificate::remove_attribute(SubjectAttributeType type)
+{
+    for (auto it = subject_attributes.begin(); it != subject_attributes.end(); ++it) {
+        if (get_type(*it) == type) {
+            it = subject_attributes.erase(it);
+        }
+    }
+}
+
+void Certificate::remove_restriction(ValidityRestrictionType type)
+{
+    for (auto it = validity_restriction.begin(); it != validity_restriction.end(); ++it) {
+        if (get_type(*it) == type) {
+            it = validity_restriction.erase(it);
+        }
+    }
+}
+
+void Certificate::add_permission(ItsAid aid)
+{
+    for (auto& item : subject_attributes) {
+        if (get_type(item) == SubjectAttributeType::Its_Aid_List) {
+            auto& aid_list = boost::get<std::list<IntX>>(item);
+            aid_list.push_back(IntX(aid));
+            return;
+        }
+    }
+
+    subject_attributes.push_back(std::list<IntX>({ IntX(aid) }));
+}
+
+void Certificate::add_permission(ItsAid aid, const ByteBuffer& ssp)
+{
+    ItsAidSsp permission({ IntX(aid), ssp });
+
+    for (auto& item : subject_attributes) {
+        if (get_type(item) == SubjectAttributeType::Its_Aid_Ssp_List) {
+            auto& aid_ssp_list = boost::get<std::list<ItsAidSsp> >(item);
+            aid_ssp_list.push_back(permission);
+            return;
+        }
+    }
+
+    subject_attributes.push_back(std::list<ItsAidSsp>({ permission }));
+}
+
 } // ns security
 } // ns vanetza

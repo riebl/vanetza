@@ -89,22 +89,9 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     // set assurance level
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
-    std::list<ItsAidSsp> permissions;
-
-    ItsAidSsp ca_permissions;
-    ca_permissions.its_aid = IntX(aid::CA);
-    ca_permissions.service_specific_permissions = ByteBuffer({ 1, 0, 0 });
-    permissions.push_back(ca_permissions);
-
-    ItsAidSsp gn_permissions; // required for beacons in tests
-    gn_permissions.its_aid = IntX(aid::GN_MGMT);
-    permissions.push_back(gn_permissions);
-
-    ItsAidSsp ip_permissions; // required for routing tests
-    ip_permissions.its_aid = IntX(aid::IPV6_ROUTING);
-    permissions.push_back(ip_permissions);
-
-    certificate.subject_attributes.push_back(permissions);
+    certificate.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    certificate.add_permission(aid::GN_MGMT, ByteBuffer({})); // required for beacons
+    certificate.add_permission(aid::IPV6_ROUTING, ByteBuffer({})); // required for routing tests
 
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
@@ -157,11 +144,9 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
-    std::list<IntX> permissions;
-    permissions.push_back(IntX(aid::CA));
-    permissions.push_back(IntX(aid::GN_MGMT)); // required for beacons in tests
-    permissions.push_back(IntX(aid::IPV6_ROUTING)); // required for routing tests
-    certificate.subject_attributes.push_back(permissions);
+    certificate.add_permission(aid::CA);
+    certificate.add_permission(aid::GN_MGMT); // required for beacons
+    certificate.add_permission(aid::IPV6_ROUTING); // required for routing tests
 
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
@@ -210,11 +195,9 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
-    std::list<IntX> permissions;
-    permissions.push_back(IntX(aid::CA));
-    permissions.push_back(IntX(aid::GN_MGMT)); // required for beacons in tests
-    permissions.push_back(IntX(aid::IPV6_ROUTING)); // required for routing tests
-    certificate.subject_attributes.push_back(permissions);
+    certificate.add_permission(aid::CA);
+    certificate.add_permission(aid::GN_MGMT); // required for beacons
+    certificate.add_permission(aid::IPV6_ROUTING); // required for routing tests
 
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
