@@ -2,6 +2,7 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/certificate_cache.hpp>
+#include <vanetza/security/certificate_modifications.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
@@ -46,27 +47,10 @@ protected:
     DefaultCertificateValidator cert_validator;
 };
 
-void certificate_remove_time_constraints(Certificate& cert)
-{
-    for (auto it = cert.validity_restriction.begin(); it != cert.validity_restriction.end(); ++it) {
-        const ValidityRestriction& restriction = *it;
-        ValidityRestrictionType type = get_type(restriction);
-        switch (type) {
-            case ValidityRestrictionType::Time_End:
-            case ValidityRestrictionType::Time_Start_And_End:
-            case ValidityRestrictionType::Time_Start_And_Duration:
-                it = cert.validity_restriction.erase(it);
-                break;
-            default:
-                break;
-        }
-    }
-}
-
 TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
     cert_provider.sign_authorization_ticket(cert);
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
@@ -77,7 +61,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndEndValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
@@ -96,7 +80,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndDurationValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
@@ -115,7 +99,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 TEST_F(DefaultCertificateValidatorTest, validity_time_end)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     EndValidity restriction = convert_time32(runtime.now() + std::chrono::hours(23));
     cert.validity_restriction.push_back(restriction);
@@ -136,7 +120,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
 TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
     // add first constraint
     StartAndEndValidity start_and_end_validity;
     start_and_end_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
@@ -162,7 +146,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
 {
     // The generated authorization ticket's start time is prior to the AA certificate's start time
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndEndValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(3));
@@ -183,7 +167,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
 {
     // The generated authorization ticket's start time is prior to the AA certificate's start time
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndEndValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() + std::chrono::hours(3));
