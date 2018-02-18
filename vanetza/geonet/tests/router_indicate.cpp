@@ -163,6 +163,7 @@ TEST_F(RouterIndicate, shb_secured_equal_payload)
 
     // check if packet was not discarded
     ASSERT_NE(nullptr, ind_ifc.m_last_packet.get());
+    ASSERT_TRUE(ind_ifc.m_last_indication);
     // prepare a packet to check it's payload
     CohesivePacket* received_payload_ptr = boost::get<CohesivePacket>(ind_ifc.m_last_packet.get());
     ASSERT_NE(nullptr, received_payload_ptr);
@@ -171,6 +172,11 @@ TEST_F(RouterIndicate, shb_secured_equal_payload)
     const ByteBuffer received_payload = ByteBuffer(received_payload_range.begin(), received_payload_range.end());
     // check payload
     EXPECT_EQ(send_payload, received_payload);
+    // check permissions are exposed correctly, these are set by NaiveCertificateProvider for the aid::CA
+    ASSERT_TRUE(ind_ifc.m_last_indication.get().its_aid);
+    ASSERT_TRUE(ind_ifc.m_last_indication.get().permissions);
+    EXPECT_EQ(ind_ifc.m_last_indication.get().its_aid.get(), aid::CA);
+    EXPECT_EQ(ind_ifc.m_last_indication.get().permissions.get(), ByteBuffer({ 1, 0, 0 }));
 }
 
 TEST_F(RouterIndicate, shb_secured_hook_its_protocol_version)
