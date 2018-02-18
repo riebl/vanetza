@@ -466,6 +466,8 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
         using namespace vanetza::security;
         DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(DecapRequest(*secured_message));
         ctx.service_primitive().security_report = decap_confirm.report;
+        ctx.service_primitive().its_aid = decap_confirm.its_aid;
+        ctx.service_primitive().permissions = decap_confirm.permissions;
         secured_payload_visitor visitor(*this, ctx, basic);
 
         // check whether the received packet is valid

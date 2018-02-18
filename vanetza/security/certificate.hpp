@@ -41,6 +41,7 @@ enum class CertificateInvalidReason
     INVALID_NAME,
     EXCESSIVE_CHAIN_LENGTH,
     OFF_REGION,
+    INCONSISTENT_WITH_SIGNER,
 };
 
 class CertificateValidity

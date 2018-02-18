@@ -2,6 +2,7 @@
 #define VERIFY_SERVICE_HPP_BR4ISDBH
 
 #include <boost/optional.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/int_x.hpp>
@@ -30,7 +31,7 @@ enum class VerificationReport
     False_Signature,
     Invalid_Certificate,
     Revoked_Certificate,
-    Inconsistant_Chain,
+    Inconsistent_Chain,
     Invalid_Timestamp,
     Duplicate_Message,
     Invalid_Mobility_Data,
@@ -51,7 +52,7 @@ struct VerifyRequest
 struct VerifyConfirm
 {
     VerificationReport report; // mandatory
-    IntX its_aid; // mandatory
+    ItsAid its_aid; // mandatory
     ByteBuffer permissions; // mandatory
     CertificateValidity certificate_validity; // non-standard extension
     boost::optional<HashedId8> certificate_id; // optional

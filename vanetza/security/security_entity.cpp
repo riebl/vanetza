@@ -42,6 +42,8 @@ DecapConfirm SecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
     decap_confirm.plaintext_payload = std::move(decap_request.sec_packet.payload.data);
     decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
     decap_confirm.certificate_validity = verify_confirm.certificate_validity;
+    decap_confirm.its_aid = verify_confirm.its_aid;
+    decap_confirm.permissions = verify_confirm.permissions;
     return decap_confirm;
 }
 
