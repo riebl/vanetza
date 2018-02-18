@@ -1,5 +1,4 @@
 #include "generate-aa.hpp"
-#include "utils.hpp"
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>
@@ -29,8 +28,7 @@ bool GenerateAaCommand::parse(const std::vector<std::string>& opts)
         ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Private key file to issue the certificate for.")
         ("subject-name", po::value<std::string>(&subject_name)->default_value("Hello World Auth-CA"), "Subject name.")
         ("days", po::value<int>(&validity_days)->default_value(180), "Validity in days.")
-        ("cam-permissions", po::value<std::string>(&cam_permissions), "CAM permissions as binary string (e.g. '1111111111111100' to grant all SSPs)")
-        ("denm-permissions", po::value<std::string>(&cam_permissions), "DENM permissions as binary string (e.g. '000000000000000000000000' to grant no SSPs)")
+        ("aid", po::value<std::vector<unsigned> >(&aids)->multitoken(), "Allowed ITS-AIDs to restrict permissions, defaults to 36 (CA) and 37 (DEN) if empty.")
     ;
 
     po::positional_options_description pos;
@@ -87,46 +85,24 @@ int GenerateAaCommand::execute()
 
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
 
-    auto cam_ssps = vanetza::ByteBuffer({ 1, 0, 0 }); // no special permissions
-    auto denm_ssps = vanetza::ByteBuffer({ 1, 0, 0, 0 }); // no special permissions
-
-    if (cam_permissions.size()) {
-        permission_string_to_buffer(cam_permissions, cam_ssps);
-    }
-
-    if (denm_permissions.size()) {
-        permission_string_to_buffer(denm_permissions, denm_ssps);
-    }
-
     Certificate certificate;
-
     std::list<IntX> certificate_aids;
-    certificate_aids.push_back(IntX(aid::CA));
-    certificate_aids.push_back(IntX(aid::DEN));
 
-    std::list<ItsAidSsp> certificate_ssp;
-
-    // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
-    ItsAidSsp certificate_ssp_ca;
-    certificate_ssp_ca.its_aid = IntX(aid::CA);
-    certificate_ssp_ca.service_specific_permissions = cam_ssps;
-    certificate_ssp.push_back(certificate_ssp_ca);
-
-    // see ETSI EN 302 637-3 V1.2.2 (2014-11)
-    ItsAidSsp certificate_ssp_den;
-    certificate_ssp_den.its_aid = IntX(aid::DEN);
-    certificate_ssp_den.service_specific_permissions = denm_ssps;
-    certificate_ssp.push_back(certificate_ssp_den);
+    if (aids.size()) {
+        for (unsigned aid : aids) {
+            certificate_aids.push_back(IntX(aid));
+        }
+    } else {
+        certificate_aids.push_back(IntX(aid::CA));
+        certificate_aids.push_back(IntX(aid::DEN));
+    }
 
     certificate.signer_info = calculate_hash(sign_cert);
 
     std::vector<unsigned char> subject(subject_name.begin(), subject_name.end());
     certificate.subject_info.subject_name = subject;
     certificate.subject_info.subject_type = SubjectType::Authorization_Authority;
-
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
-    certificate.subject_attributes.push_back(certificate_ssp);
-    certificate.subject_attributes.push_back(certificate_aids);
 
     Uncompressed coordinates;
     coordinates.x.assign(subject_key.x.begin(), subject_key.x.end());

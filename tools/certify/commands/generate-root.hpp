@@ -14,8 +14,7 @@ private:
     std::string output;
     std::string subject_name;
     int validity_days;
-    std::string cam_permissions;
-    std::string denm_permissions;
+    std::vector<unsigned> aids;
 };
 
 #endif /* CERTIFY_COMMANDS_GENERATE_ROOT_HPP */

@@ -98,11 +98,6 @@ int GenerateTicketCommand::execute()
     }
 
     Certificate certificate;
-
-    std::list<IntX> certificate_aids;
-    certificate_aids.push_back(IntX(aid::CA));
-    certificate_aids.push_back(IntX(aid::DEN));
-
     std::list<ItsAidSsp> certificate_ssp;
 
     // see  ETSI EN 302 637-2 V1.3.1 (2014-09)
@@ -121,7 +116,6 @@ int GenerateTicketCommand::execute()
     certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
     certificate.subject_attributes.push_back(certificate_ssp);
-    certificate.subject_attributes.push_back(certificate_aids);
 
     Uncompressed coordinates;
     coordinates.x.assign(subject_key.x.begin(), subject_key.x.end());
