@@ -47,8 +47,8 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
         // section 7.1 in TS 103 097 v1.2.1
         if (m_chain_requested) {
             std::list<Certificate> full_chain;
-            full_chain.push_back(certificate_provider.own_certificate());
             full_chain.splice(full_chain.end(), certificate_provider.own_chain());
+            full_chain.push_back(certificate_provider.own_certificate());
             header_fields.push_back(SignerInfo { std::move(full_chain) });
             m_cam_next_certificate = m_time_now + std::chrono::seconds(1);
         } else if (m_time_now < m_cam_next_certificate && !m_cert_requested) {
