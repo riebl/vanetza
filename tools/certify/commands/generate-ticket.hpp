@@ -15,6 +15,8 @@ private:
     std::string sign_cert_path;
     std::string subject_key_path;
     int validity_days;
+    std::string cam_permissions;
+    std::string denm_permissions;
 };
 
 #endif /* CERTIFY_COMMANDS_GENERATE_TICKET_HPP */

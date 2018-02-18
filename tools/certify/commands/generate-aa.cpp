@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <boost/variant/get.hpp>
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
@@ -12,6 +13,7 @@
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 
+namespace aid = vanetza::aid;
 namespace po = boost::program_options;
 using namespace vanetza::security;
 
@@ -26,6 +28,7 @@ bool GenerateAaCommand::parse(const std::vector<std::string>& opts)
         ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Private key file to issue the certificate for.")
         ("subject-name", po::value<std::string>(&subject_name)->default_value("Hello World Auth-CA"), "Subject name.")
         ("days", po::value<int>(&validity_days)->default_value(180), "Validity in days.")
+        ("aid", po::value<std::vector<unsigned> >(&aids)->multitoken(), "Allowed ITS-AIDs to restrict permissions, defaults to 36 (CA) and 37 (DEN) if empty.")
     ;
 
     po::positional_options_description pos;
@@ -83,13 +86,22 @@ int GenerateAaCommand::execute()
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
 
     Certificate certificate;
+    std::list<IntX> certificate_aids;
+
+    if (aids.size()) {
+        for (unsigned aid : aids) {
+            certificate_aids.push_back(IntX(aid));
+        }
+    } else {
+        certificate_aids.push_back(IntX(aid::CA));
+        certificate_aids.push_back(IntX(aid::DEN));
+    }
 
     certificate.signer_info = calculate_hash(sign_cert);
 
     std::vector<unsigned char> subject(subject_name.begin(), subject_name.end());
     certificate.subject_info.subject_name = subject;
     certificate.subject_info.subject_type = SubjectType::Authorization_Authority;
-
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
     Uncompressed coordinates;

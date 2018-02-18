@@ -14,6 +14,7 @@ private:
     std::string output;
     std::string subject_name;
     int validity_days;
+    std::vector<unsigned> aids;
 };
 
 #endif /* CERTIFY_COMMANDS_GENERATE_ROOT_HPP */

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/certificate.hpp>
@@ -11,9 +12,9 @@
 #include <vanetza/security/subject_attribute.hpp>
 #include <vanetza/security/subject_info.hpp>
 
+namespace aid = vanetza::aid;
 namespace po = boost::program_options;
 using namespace vanetza::security;
-using namespace CryptoPP;
 
 bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
 {
@@ -24,6 +25,7 @@ bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
         ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Private key file.")
         ("subject-name", po::value<std::string>(&subject_name)->default_value("Hello World Root-CA"), "Subject name.")
         ("days", po::value<int>(&validity_days)->default_value(365), "Validity in days.")
+        ("aid", po::value<std::vector<unsigned> >(&aids)->multitoken(), "Allowed ITS-AIDs to restrict permissions, defaults to 36 (CA) and 37 (DEN) if empty.")
     ;
 
     po::positional_options_description pos;
@@ -61,6 +63,16 @@ int GenerateRootCommand::execute()
 
     // create certificate
     Certificate certificate;
+    std::list<IntX> certificate_aids;
+
+    if (aids.size()) {
+        for (unsigned aid : aids) {
+            certificate_aids.push_back(IntX(aid));
+        }
+    } else {
+        certificate_aids.push_back(IntX(aid::CA));
+        certificate_aids.push_back(IntX(aid::DEN));
+    }
 
     // section 6.1 in TS 103 097 v1.2.1
     certificate.signer_info = nullptr; /* self */
