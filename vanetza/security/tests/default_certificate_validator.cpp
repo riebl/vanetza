@@ -244,3 +244,50 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 }
+
+TEST_F(DefaultCertificateValidatorTest, reject_additional_permissions)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    cert.add_permission(16513 /* deprecated, so won't be used */, ByteBuffer({}));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
+{
+    // We test both orders here, so we're not dependent on changes to the certificate provider order.
+    Certificate cert = cert_provider.generate_authorization_ticket();
+
+    // Order 1
+    cert.remove_attribute(SubjectAttributeType::Its_Aid_Ssp_List);
+    cert.add_permission(aid::GN_MGMT, ByteBuffer({}));
+    cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // Order 2
+    cert.remove_attribute(SubjectAttributeType::Its_Aid_Ssp_List);
+    cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert.add_permission(aid::GN_MGMT, ByteBuffer({}));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // Definite subset
+    cert.remove_attribute(SubjectAttributeType::Its_Aid_Ssp_List);
+    cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+}
