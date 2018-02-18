@@ -20,7 +20,7 @@ public:
     virtual const Certificate& own_certificate() = 0;
 
     /**
-     * Get own certificate chain, excluding the leaf certificate and root CA
+     * Get own certificate chain in root CA → AA → AT order, excluding the AT and root certificate
      * \return own certificate chain
      */
     virtual std::list<Certificate> own_chain() = 0;

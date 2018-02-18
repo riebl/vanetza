@@ -118,8 +118,8 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
                         return confirm;
                     }
-                    // pre-check chain certificates in reverse order, otherwise they're not available for the ticket check
-                    for (auto& cert : boost::adaptors::reverse(chain)) {
+                    // pre-check chain certificates, otherwise they're not available for the ticket check
+                    for (auto& cert : chain) {
                         if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
                             CertificateValidity validity = certs.check_certificate(cert);
                             if (validity) {
@@ -127,8 +127,9 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                             }
                         }
                     }
-                    signer_hash = calculate_hash(chain.front());
-                    possible_certificates.push_back(chain.front());
+                    // last certificate must be the authorization ticket
+                    signer_hash = calculate_hash(chain.back());
+                    possible_certificates.push_back(chain.back());
                 }
                     break;
                 default:
