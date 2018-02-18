@@ -1,5 +1,7 @@
 # Vanetza
 
+[![Join the chat at https://gitter.im/vanetza/Lobby](https://badges.gitter.im/vanetza/Lobby.svg)](https://gitter.im/vanetza/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Vanetza is an open-source implementation of the ETSI C-ITS protocol suite.
 This comprises the following protocols and features among others:
 
