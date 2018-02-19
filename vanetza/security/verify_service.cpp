@@ -147,6 +147,11 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                         confirm.report = VerificationReport::Invalid_Certificate; // TODO add custom report code?
                         return confirm;
                     }
+                    // prevent DoS by sending very long chains
+                    if (chain.size() > 10) {
+                        confirm.report = VerificationReport::Invalid_Certificate;
+                        return confirm;
+                    }
                     // pre-check chain certificates, otherwise they're not available for the ticket check
                     for (auto& cert : chain) {
                         if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
