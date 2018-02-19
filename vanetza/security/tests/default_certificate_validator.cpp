@@ -2,6 +2,7 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/certificate_cache.hpp>
+#include <vanetza/security/certificate_modifications.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
@@ -23,6 +24,7 @@ public:
         cert_validator(*backend, runtime.now(), position_provider, trust_store, cert_cache)
     {
         trust_store.insert(cert_provider.root_certificate());
+        cert_cache.insert(cert_provider.aa_certificate());
     }
 
     void set_position(units::GeoAngle latitude, units::GeoAngle longitude)
@@ -46,27 +48,10 @@ protected:
     DefaultCertificateValidator cert_validator;
 };
 
-void certificate_remove_time_constraints(Certificate& cert)
-{
-    for (auto it = cert.validity_restriction.begin(); it != cert.validity_restriction.end(); ++it) {
-        const ValidityRestriction& restriction = *it;
-        ValidityRestrictionType type = get_type(restriction);
-        switch (type) {
-            case ValidityRestrictionType::Time_End:
-            case ValidityRestrictionType::Time_Start_And_End:
-            case ValidityRestrictionType::Time_Start_And_Duration:
-                it = cert.validity_restriction.erase(it);
-                break;
-            default:
-                break;
-        }
-    }
-}
-
 TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
     cert_provider.sign_authorization_ticket(cert);
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
@@ -77,7 +62,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndEndValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
@@ -86,9 +71,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_TRUE(validity);
 }
@@ -96,7 +78,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndDurationValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
@@ -105,9 +87,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_TRUE(validity);
 }
@@ -115,20 +94,17 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 TEST_F(DefaultCertificateValidatorTest, validity_time_end)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     EndValidity restriction = convert_time32(runtime.now() + std::chrono::hours(23));
     cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     // Time period broken, because AA and root CA have start time
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
 
     // TODO: Add test for certificate, AA and root CA with EndValidity
 }
@@ -136,7 +112,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
 TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
     // add first constraint
     StartAndEndValidity start_and_end_validity;
     start_and_end_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
@@ -150,9 +126,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
     // re-sign certificate
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
@@ -162,7 +135,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
 {
     // The generated authorization ticket's start time is prior to the AA certificate's start time
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndEndValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(3));
@@ -171,19 +144,16 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
 
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
 {
     // The generated authorization ticket's start time is prior to the AA certificate's start time
     Certificate cert = cert_provider.generate_authorization_ticket();
-    certificate_remove_time_constraints(cert);
+    certificate_remove_restriction(cert, ValidityRestrictionType::Time_Start_And_End);
 
     StartAndEndValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() + std::chrono::hours(3));
@@ -191,9 +161,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
     cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
-
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
@@ -208,9 +175,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
     cert.validity_restriction.push_back(region);
     cert_provider.sign_authorization_ticket(cert);
 
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
-
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
@@ -223,9 +187,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
     CircularRegion region { center, 10 * units::si::meter };
     cert.validity_restriction.push_back(region);
     cert_provider.sign_authorization_ticket(cert);
-
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
 
     CertificateValidity validity;
     TwoDLocation ego_pos;
@@ -251,9 +212,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
     regions.push_back(region);
     cert.validity_restriction.push_back(regions);
     cert_provider.sign_authorization_ticket(cert);
-
-    cert_cache.insert(cert_provider.aa_certificate());
-    cert_cache.insert(cert_provider.root_certificate());
 
     CertificateValidity validity;
     TwoDLocation ego_pos;
@@ -286,4 +244,51 @@ TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, reject_additional_permissions)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    certificate_add_permission(cert, 16513 /* deprecated, so won't be used */, ByteBuffer({}));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
+{
+    // We test both orders here, so we're not dependent on changes to the certificate provider order.
+    Certificate cert = cert_provider.generate_authorization_ticket();
+
+    // Order 1
+    certificate_remove_attribute(cert, SubjectAttributeType::Its_Aid_Ssp_List);
+    certificate_add_permission(cert, aid::GN_MGMT, ByteBuffer({}));
+    certificate_add_permission(cert, aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // Order 2
+    certificate_remove_attribute(cert, SubjectAttributeType::Its_Aid_Ssp_List);
+    certificate_add_permission(cert, aid::CA, ByteBuffer({ 1, 0, 0 }));
+    certificate_add_permission(cert, aid::GN_MGMT, ByteBuffer({}));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
+
+    // Definite subset
+    certificate_remove_attribute(cert, SubjectAttributeType::Its_Aid_Ssp_List);
+    certificate_add_permission(cert, aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_TRUE(validity);
 }

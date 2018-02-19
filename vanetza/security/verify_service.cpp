@@ -48,6 +48,27 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
     return valid;
 }
 
+bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
+{
+    for (auto& subject_attribute : certificate.subject_attributes) {
+        if (get_type(subject_attribute) != SubjectAttributeType::Its_Aid_Ssp_List) {
+            continue;
+        }
+
+        auto permissions = boost::get<std::list<ItsAidSsp> >(subject_attribute);
+        for (auto& permission : permissions) {
+            if (permission.its_aid == confirm.its_aid) {
+                confirm.permissions = permission.service_specific_permissions;
+                return true;
+            }
+        }
+
+        break;
+    }
+
+    return false;
+}
+
 } // namespace
 
 VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy)
@@ -82,7 +103,12 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         }
 
         const IntX* its_aid = secured_message.header_field<HeaderFieldType::Its_Aid>();
-        confirm.its_aid = its_aid ? *its_aid : IntX(0);
+        if (!its_aid) {
+            // ITS-AID is required to be present, report as incompatible protocol, as that's the closest match
+            confirm.report = VerificationReport::Incompatible_Protocol;
+            return confirm;
+        }
+        confirm.its_aid = its_aid->get();
 
         const SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         std::list<Certificate> possible_certificates;
@@ -218,11 +244,11 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         }
 
         CertificateValidity cert_validity = certs.check_certificate(signer.get());
+        confirm.certificate_validity = cert_validity;
 
         // if certificate could not be verified return correct DecapReport
         if (!cert_validity) {
             confirm.report = VerificationReport::Invalid_Certificate;
-            confirm.certificate_validity = cert_validity;
 
             if (cert_validity.reason() == CertificateInvalidReason::UNKNOWN_SIGNER) {
                 const Certificate& invalid_cert = signer.get();
@@ -230,16 +256,23 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     HashedId8 signer_hash = boost::get<HashedId8>(invalid_cert.signer_info);
 
                     confirm.certificate_id = signer_hash;
-                    sign_policy.report_unknown_certificate(*confirm.certificate_id);
+                    sign_policy.report_unknown_certificate(confirm.certificate_id.get());
                 }
             }
 
             return confirm;
         }
 
-        // TODO check if Revoked_Certificate
-
         cert_cache.insert(signer.get());
+
+        // Assign permissions from the certificate based on the message AID already present in the confirm
+        // and reject the certificate if no permissions are present for the claimed AID.
+        if (!assign_permissions(signer.get(), confirm)) {
+            // This might seem weird, because the certificate itself is valid, but not for the received message.
+            confirm.report = VerificationReport::Invalid_Certificate;
+            return confirm;
+        }
+
         confirm.report = VerificationReport::Success;
         return confirm;
     };
@@ -252,7 +285,7 @@ VerifyService dummy_verify_service(VerificationReport report, CertificateValidit
         confirm.report = report;
         confirm.certificate_validity = validity;
         const IntX* its_aid = request.secured_message.header_field<HeaderFieldType::Its_Aid>();
-        confirm.its_aid = its_aid ? *its_aid : IntX(0);
+        confirm.its_aid = its_aid ? its_aid->get() : 0;
         return confirm;
     };
 }

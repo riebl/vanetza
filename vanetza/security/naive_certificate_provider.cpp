@@ -1,4 +1,6 @@
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/security/certificate_modifications.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/payload.hpp>
@@ -88,6 +90,10 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     // set assurance level
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
+    certificate_add_permission(certificate, aid::CA, ByteBuffer({ 1, 0, 0 }));
+    certificate_add_permission(certificate, aid::GN_MGMT, ByteBuffer({})); // required for beacons
+    certificate_add_permission(certificate, aid::IPV6_ROUTING, ByteBuffer({})); // required for routing tests
+
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
     // set the verification_key
@@ -139,6 +145,10 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
+    certificate_add_permission(certificate, aid::CA);
+    certificate_add_permission(certificate, aid::GN_MGMT); // required for beacons
+    certificate_add_permission(certificate, aid::IPV6_ROUTING); // required for routing tests
+
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
     // set the verification_key
@@ -185,6 +195,10 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
 
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
+
+    certificate_add_permission(certificate, aid::CA);
+    certificate_add_permission(certificate, aid::GN_MGMT); // required for beacons
+    certificate_add_permission(certificate, aid::IPV6_ROUTING); // required for routing tests
 
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
