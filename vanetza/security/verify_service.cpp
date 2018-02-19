@@ -46,6 +46,27 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
     return valid;
 }
 
+bool check_generation_location(const SecuredMessageV2& message, const Certificate& cert)
+{
+    const IntX* its_aid = message.header_field<HeaderFieldType::Its_Aid>();
+    if (its_aid && aid::CA == *its_aid) {
+        return true; // no check required for CAMs, field not even allowed
+    }
+
+    const ThreeDLocation* generation_location = message.header_field<HeaderFieldType::Generation_Location>();
+    if (generation_location) {
+        auto region = cert.get_restriction<ValidityRestrictionType::Region>();
+
+        if (!region || get_type(*region) == RegionType::None) {
+            return true;
+        }
+
+        return is_within(TwoDLocation(*generation_location), *region);
+    }
+
+    return false;
+}
+
 bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
 {
     for (auto& subject_attribute : certificate.subject_attributes) {
@@ -242,6 +263,13 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
 
             confirm.certificate_id = signer_hash;
             sign_policy.report_unknown_certificate(signer_hash);
+            return confirm;
+        }
+
+        // we can only check the generation location after we have identified the correct certificate
+        if (!check_generation_location(secured_message, signer.get())) {
+            confirm.report = VerificationReport::Invalid_Certificate;
+            confirm.certificate_validity = CertificateInvalidReason::OFF_REGION;
             return confirm;
         }
 
