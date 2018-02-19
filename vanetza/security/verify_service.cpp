@@ -21,8 +21,7 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
     using namespace std::chrono;
 
     bool valid = false;
-    const HeaderField* generation_time_field = message.header_field(HeaderFieldType::Generation_Time);
-    const Time64* generation_time = boost::get<Time64>(generation_time_field);
+    const Time64* generation_time = message.header_field<HeaderFieldType::Generation_Time>();
     if (generation_time) {
         // Values are picked from C2C-CC Basic System Profile v1.1.0, see RS_BSP_168
         static const auto generation_time_future = milliseconds(40);
@@ -30,8 +29,7 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
         static const Clock::duration generation_time_past_ca = seconds(2);
         auto generation_time_past = generation_time_past_default;
 
-        const HeaderField* its_aid_field = message.header_field(HeaderFieldType::Its_Aid);
-        const IntX* its_aid = boost::get<IntX>(its_aid_field);
+        const IntX* its_aid = message.header_field<HeaderFieldType::Its_Aid>();
         if (its_aid && aid::CA == *its_aid) {
             generation_time_past = generation_time_past_ca;
         }
