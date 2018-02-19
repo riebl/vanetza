@@ -6,6 +6,7 @@
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
+#include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
@@ -148,8 +149,10 @@ TEST_F(SecurityEntityTest, captured_acceptance)
 
     CertificateValidity validity;
     VerificationReport report = VerificationReport::Success;
-    VerifyService dummy_verify = dummy_verify_service(report, validity);
-    SecurityEntity dummy_security(sign_service, dummy_verify);
+    NullCertificateValidator validator;
+    validator.certificate_check_result(CertificateValidity::valid());
+    VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy);
+    SecurityEntity dummy_security(sign_service, verify);
 
     // We only care about the message signature here to be valid, the certificate isn't validated.
     // The certificate validity duration isn't valid for the message generation time here anyway...
