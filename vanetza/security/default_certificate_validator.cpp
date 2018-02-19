@@ -316,47 +316,20 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
 bool DefaultCertificateValidator::check_region(const Certificate& certificate)
 {
-    using namespace boost::units;
+    auto region = certificate.get_restriction<ValidityRestrictionType::Region>();
+
+    if (!region || get_type(*region) == RegionType::None) {
+        return true;
+    }
+
     const PositionFix& position_fix = m_position_provider.position_fix();
     TwoDLocation ego_position(position_fix.latitude, position_fix.longitude);
 
-    for (auto& restriction : certificate.validity_restriction) {
-        ValidityRestriction validity_restriction = restriction;
-        ValidityRestrictionType type = get_type(validity_restriction);
-
-        if (type == ValidityRestrictionType::Region) {
-            GeographicRegion region = boost::get<GeographicRegion>(validity_restriction);
-            RegionType region_type = get_type(region);
-
-            if (region_type == RegionType::None) {
-                continue;
-            }
-
-            if (!position_fix.confidence) {
-                return false; // cannot check region restrictions without good position fix
-            } else if (region_type == RegionType::Circle) {
-                CircularRegion circular_region = boost::get<CircularRegion>(region);
-                return is_within(ego_position, circular_region);
-            } else if (region_type == RegionType::Rectangle) {
-                std::list<RectangularRegion> region_rectangles = boost::get<std::list<RectangularRegion>>(region);
-                static const unsigned max_rectangles = 6; // see TS 103 097 v1.2.1, section 4.2.20
-                if (region_rectangles.size() > max_rectangles) {
-                    return false;
-                }
-
-                return std::any_of(region_rectangles.begin(), region_rectangles.end(),
-                        [&ego_position](const RectangularRegion& rect) { return is_within(ego_position, rect); });
-            }
-
-            // TODO: Add support for polygonal region, see TS 103 097 v1.2.1, section 4.2.24
-            // TODO: Add support for identified region, see TS 103 097 v1.2.1, section 4.2.25
-
-            // unsupported region restriction
-            return false;
-        }
+    if (!position_fix.confidence) {
+        return false; // cannot check region restrictions without good position fix
     }
 
-    return true;
+    return is_within(ego_position, *region);
 }
 
 } // namespace security

@@ -21,6 +21,11 @@ void check(const TwoDLocation& expected, const TwoDLocation& actual)
     EXPECT_EQ(expected.latitude, actual.latitude);
 }
 
+void check(const NoneRegion& expected, const NoneRegion& actual)
+{
+    SCOPED_TRACE("None");
+}
+
 void check(const CircularRegion& expected, const CircularRegion& actual)
 {
     SCOPED_TRACE("CiruclarRegion");
