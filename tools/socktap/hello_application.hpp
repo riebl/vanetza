@@ -7,7 +7,7 @@
 class HelloApplication : public Application
 {
 public:
-    HelloApplication(boost::asio::steady_timer&);
+    HelloApplication(boost::asio::steady_timer&, std::chrono::milliseconds interval);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
 
@@ -16,7 +16,7 @@ private:
     void on_timer(const boost::system::error_code& ec);
 
     boost::asio::steady_timer& timer_;
+    std::chrono::milliseconds interval_;
 };
 
 #endif /* HELLO_APPLICATION_HPP_EUIC2VFR */
-

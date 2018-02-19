@@ -1,6 +1,6 @@
 #include "ethernet_device.hpp"
 #include "gps_position_provider.hpp"
-#include "hello_application.hpp"
+#include "cam_application.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
 #include <boost/asio/io_service.hpp>
@@ -32,10 +32,12 @@ int main(int argc, const char** argv)
         ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
         ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
-        ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed. Root certificate in the chain are automatically trusted.")
+        ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed. Root certificates in the chain are automatically trusted.")
         ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
-        ("require-gnss-fix", "suppress transmissions while GNSS position fix is missing")
+        ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
+        ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
+        ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
     ;
 
     po::positional_options_description positional_options;
@@ -53,13 +55,13 @@ int main(int argc, const char** argv)
         );
         po::notify(vm);
     } catch (po::error& e) {
-        std::cerr << "ERROR: " << e.what() << "\n\n";
-        std::cerr << options << "\n";
+        std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+        std::cerr << options << std::endl;
         return 1;
     }
 
     if (vm.count("help")) {
-        std::cout << options << "\n";
+        std::cout << options << std::endl;
         return 1;
     }
 
@@ -72,10 +74,10 @@ int main(int argc, const char** argv)
         vanetza::MacAddress mac_address = device.address();
 
         if (vm.count("mac-address")) {
-            std::cout << "Using MAC address: " << vm["mac-address"].as<std::string>() << ".\n";
+            std::cout << "Using MAC address: " << vm["mac-address"].as<std::string>() << "." << std::endl;
 
             if (!parse_mac_address(vm["mac-address"].as<std::string>().c_str(), mac_address)) {
-                std::cerr << "The specified MAC address is invalid." << "\n";
+                std::cerr << "The specified MAC address is invalid." << std::endl;
                 return 1;
             }
         }
@@ -100,8 +102,14 @@ int main(int argc, const char** argv)
         mib.itsGnLocalGnAddr.is_manually_configured(true);
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
         mib.itsGnSecurity = false;
+        mib.itsGnProtocolVersion = vm["gn-version"].as<unsigned>();
 
-        GpsPositionProvider positioning(vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
+        if (mib.itsGnProtocolVersion != 0 && mib.itsGnProtocolVersion != 1) {
+            throw std::runtime_error("Unsupported GeoNetworking version, only version 0 and 1 are supported.");
+        }
+
+        asio::steady_timer gps_timer(io_service);
+        GpsPositionProvider positioning(gps_timer, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
 
         // We always use the same ceritificate manager and crypto services for now.
         // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
@@ -162,9 +170,9 @@ int main(int argc, const char** argv)
         RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
-        asio::steady_timer hello_timer(io_service);
-        HelloApplication hello_app(hello_timer);
-        context.enable(&hello_app);
+        asio::steady_timer cam_timer(io_service);
+        CamApplication cam_app(positioning, trigger.runtime().now(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+        context.enable(&cam_app);
 
         io_service.run();
     } catch (GpsPositionProvider::gps_error& e) {

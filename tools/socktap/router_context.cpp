@@ -98,7 +98,12 @@ void RouterContext::pass_up(CohesivePacket&& packet)
 void RouterContext::enable(Application* app)
 {
     app->router_ = &router_;
-    dispatcher_.set_non_interactive_handler(app->port(), app);
+
+    if (btp::PortDispatcher::PromiscuousHook* hook = dynamic_cast<btp::PortDispatcher::PromiscuousHook*>(app)) {
+        dispatcher_.add_promiscuous_hook(hook);
+    } else {
+        dispatcher_.set_non_interactive_handler(app->port(), app);
+    }
 }
 
 void RouterContext::require_position_fix(bool flag)
@@ -127,4 +132,3 @@ void RouterContext::update_packet_flow(const geonet::LongPositionVector& lpv)
         request_interface_->allow_packet_flow(true);
     }
 }
-
