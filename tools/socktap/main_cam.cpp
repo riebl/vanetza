@@ -162,7 +162,7 @@ int main(int argc, const char** argv)
                 new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), positioning, trust_store, cert_cache) };
         }
 
-        security::SignHeaderPolicy sign_header_policy(trigger.runtime().now());
+        security::SignHeaderPolicy sign_header_policy(trigger.runtime().now(), positioning);
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
 

@@ -123,7 +123,7 @@ int main(int argc, const char** argv)
             }
         }
 
-        security::SignHeaderPolicy sign_header_policy(trigger.runtime().now());
+        security::SignHeaderPolicy sign_header_policy(trigger.runtime().now(), positioning);
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
         security::SecurityEntity security_entity(sign_service, verify_service);

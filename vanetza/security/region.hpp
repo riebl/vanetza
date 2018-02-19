@@ -29,6 +29,16 @@ struct TwoDLocation
 /// ThreeDLocation specified in TS 103 097 v1.2.1, section 4.2.19
 struct ThreeDLocation
 {
+    ThreeDLocation() = default;
+    ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude) :
+        latitude(latitude), longitude(longitude), elevation({ 0xF0, 0x00 }) {} // unknown elevation
+    ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude) :
+        latitude(latitude), longitude(longitude), elevation({ 0xF0, 0x00 }) {} // unknown elevation
+    ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude, std::array<uint8_t, 2> elevation) :
+        latitude(latitude), longitude(longitude), elevation(elevation) {}
+    ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude, std::array<uint8_t, 2> elevation) :
+        latitude(latitude), longitude(longitude), elevation(elevation) {}
+
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longitude;
     std::array<uint8_t, 2> elevation;

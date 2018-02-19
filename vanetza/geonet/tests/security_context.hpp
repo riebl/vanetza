@@ -21,7 +21,7 @@ public:
         certificate_provider(new security::NaiveCertificateProvider(rt.now())),
         cert_cache(rt),
         certificate_validator(new security::DefaultCertificateValidator(*backend, rt.now(), position_provider, trust_store, cert_cache)),
-        sign_header_policy(rt.now()),
+        sign_header_policy(rt.now(), position_provider),
         security(
             straight_sign_service(*certificate_provider, *backend, sign_header_policy),
             straight_verify_service(rt, *certificate_provider, *certificate_validator, *backend, cert_cache, sign_header_policy))
