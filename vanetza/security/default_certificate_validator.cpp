@@ -131,6 +131,27 @@ bool check_permission_consistency(const Certificate& certificate, const Certific
     return std::includes(signer_aids.begin(), signer_aids.end(), certificate_aids.begin(), certificate_aids.end());
 }
 
+bool check_subject_assurance_consistency(const Certificate& certificate, const Certificate& signer)
+{
+    auto certificate_assurance = certificate.get_attribute<SubjectAttributeType::Assurance_Level>();
+    auto signer_assurance = signer.get_attribute<SubjectAttributeType::Assurance_Level>();
+
+    if (!certificate_assurance || !signer_assurance) {
+        return false;
+    }
+
+    // See TS 103 096-2 v1.3.1, section 5.2.7.11 + 5.3.5.17 and following
+    if (certificate_assurance->assurance() > signer_assurance->assurance()) {
+        return false;
+    } else if (certificate_assurance->assurance() == signer_assurance->assurance()) {
+        if (certificate_assurance->confidence() > signer_assurance->confidence()) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 bool check_consistency(const Certificate& certificate, const Certificate& signer)
 {
     if (!check_time_consistency(certificate, signer)) {
@@ -138,6 +159,10 @@ bool check_consistency(const Certificate& certificate, const Certificate& signer
     }
 
     if (!check_permission_consistency(certificate, signer)) {
+        return false;
+    }
+
+    if (!check_subject_assurance_consistency(certificate, signer)) {
         return false;
     }
 
@@ -191,6 +216,10 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
         if (!check_region(current_cert)) {
             return CertificateInvalidReason::OFF_REGION;
+        }
+
+        if (!certificate.get_attribute<SubjectAttributeType::Assurance_Level>()) {
+            return CertificateInvalidReason::MISSING_SUBJECT_ASSURANCE;
         }
 
         SubjectType subject_type = current_cert.subject_info.subject_type;

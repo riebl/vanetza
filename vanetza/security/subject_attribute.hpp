@@ -22,6 +22,16 @@ struct SubjectAssurance
     static constexpr uint8_t confidence_mask = 0x03;
 
     uint8_t raw;
+
+    uint8_t assurance() const
+    {
+        return (raw & assurance_mask) >> 5;
+    }
+
+    uint8_t confidence() const
+    {
+        return raw & confidence_mask;
+    }
 };
 
 /// ItsAidSsp specified in TS 103 097 v1.2.1, section 6.9

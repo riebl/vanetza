@@ -98,6 +98,7 @@ enum class CertificateInvalidReason
     OFF_REGION,
     INCONSISTENT_WITH_SIGNER,
     INSUFFICIENT_ITS_AID,
+    MISSING_SUBJECT_ASSURANCE,
 };
 
 class CertificateValidity
