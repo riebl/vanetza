@@ -538,6 +538,36 @@ TEST_F(SecurityEntityTest, verify_message_header_fields_denm)
     }
 }
 
+// See TS 103 096-2 v1.3.1, section 5.2.6.2
+TEST_F(SecurityEntityTest, verify_message_header_fields_other)
+{
+    its_aid = aid::DEN;
+
+    auto secured_message = create_secured_message();
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Signer_Info>());
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time>());
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Location>());
+
+    EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(secured_message.header_fields.front()));
+
+    using enum_int = std::underlying_type<HeaderFieldType>::type;
+    HeaderFieldType previous_field = HeaderFieldType::Signer_Info;
+    for (auto& field : secured_message.header_fields) {
+        if (get_type(field) == HeaderFieldType::Signer_Info) {
+            continue;
+        }
+
+        if (previous_field == HeaderFieldType::Signer_Info) {
+            previous_field = get_type(field);
+            continue;
+        }
+
+        // check ascending order
+        EXPECT_GT(static_cast<enum_int>(get_type(field)), static_cast<enum_int>(previous_field));
+        previous_field = get_type(field);
+    }
+}
+
 // See TS 103 096-2 v1.3.1, section 5.2.4.3 + 5.2.4.5 + 5.2.4.6 + 5.2.4.7
 TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
 {
@@ -607,6 +637,23 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_denm)
     };
 
     its_aid = aid::DEN;
+
+    // all message must be signed with certificate
+    for (int i = 0; i < 3; i++) {
+        auto secured_message = create_secured_message();
+        ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
+    }
+}
+
+// See TS 103 096-2 v1.3.1, section 5.2.6.3
+TEST_F(SecurityEntityTest, verify_message_signer_info_other)
+{
+    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+        auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+        return *signer_info;
+    };
+
+    its_aid = aid::GN_MGMT; // something other than CA or DEN
 
     // all message must be signed with certificate
     for (int i = 0; i < 3; i++) {
