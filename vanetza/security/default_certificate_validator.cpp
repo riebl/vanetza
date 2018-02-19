@@ -229,11 +229,13 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             return CertificateInvalidReason::INVALID_NAME;
         }
 
-        // check signer info
+        // we only need to validate validity restrictions for trusted certificates, no signature, so abort here
         if (in_trust_store) {
-            // we only need to validate validity restrictions for trusted certificates, no signature, so abort here
             return CertificateValidity::valid();
-        } else if (get_type(current_cert.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
+        }
+
+        // check signer info
+        if (get_type(current_cert.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
             return CertificateInvalidReason::INVALID_SIGNER;
         }
 

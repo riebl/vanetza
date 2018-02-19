@@ -47,6 +47,17 @@ protected:
     DefaultCertificateValidator cert_validator;
 };
 
+TEST_F(DefaultCertificateValidatorTest, invalid_signer_info)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.signer_info = cert_provider.own_chain().front();
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNER, validity.reason());
+}
+
 TEST_F(DefaultCertificateValidatorTest, missing_subject_assurance)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
