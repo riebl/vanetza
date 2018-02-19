@@ -5,6 +5,7 @@
 #include <vanetza/security/sign_service.hpp>
 #include <cassert>
 #include <future>
+#include <iostream>
 
 namespace vanetza
 {
@@ -115,11 +116,10 @@ SignService straight_sign_service(CertificateProvider& certificate_provider, Bac
 
         const auto& private_key = certificate_provider.own_private_key();
         static const Signature placeholder = signature_placeholder();
-        static const size_t trailer_size = get_size(TrailerField { placeholder });
+        static const std::list<TrailerField> trailer_fields = { placeholder };
 
-        ByteBuffer data_buffer = convert_for_signing(confirm.secured_message, trailer_size);
+        ByteBuffer data_buffer = convert_for_signing(confirm.secured_message, trailer_fields);
         TrailerField trailer_field = backend.sign_data(private_key, data_buffer);
-        assert(get_size(trailer_field) == trailer_size);
         confirm.secured_message.trailer_fields.push_back(trailer_field);
         return confirm;
     };
@@ -136,11 +136,11 @@ SignService deferred_sign_service(CertificateProvider& certificate_provider, Bac
         const auto& private_key = certificate_provider.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const size_t signature_size = get_size(placeholder);
-        static const size_t trailer_size = get_size(TrailerField { placeholder });
+        static const std::list<TrailerField> trailer_fields = { placeholder };
 
         const SecuredMessage& secured_message = confirm.secured_message;
         auto future = std::async(std::launch::deferred, [&backend, secured_message, private_key]() {
-            ByteBuffer data = convert_for_signing(secured_message, trailer_size);
+            ByteBuffer data = convert_for_signing(secured_message, trailer_fields);
             return backend.sign_data(private_key, data);
         });
         EcdsaSignatureFuture signature(future.share(), signature_size);

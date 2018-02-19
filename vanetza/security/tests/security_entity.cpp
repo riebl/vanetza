@@ -6,12 +6,14 @@
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
+#include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
+#include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -121,6 +123,42 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
 }
 #endif
+
+TEST_F(SecurityEntityTest, captured_acceptance)
+{
+    const char secured_cam[] =
+            "0280bc80020201bba3829050f4a9630100560200210b240301fffc25040100000020022425000004"
+            "a9d249733e79cfd577c6947fd4c7f26ce908ef11ce1998e69b2a961cd921b0fc78d3622c8e5354d7"
+            "7186002d420ee1619914d9c48e65f85985a999e3f46e565b09011a8f52d42a0274e4000029b705fb"
+            "4ae128219a30948162dd5937444e2c0cc9ac11a5b8d231325e1ee28041f144f523de45880717450e"
+            "37671826430ae890a2880fd30bafc4f3a82113cd000001950b00f0e56d05240181102050030000ec"
+            "01003ce8000d411004f9b0e59d071d36ac6105057c9e809400010000000007d100000102001003f8"
+            "303900fa5b72ac2e09e9d3dffffffc2237c6a0bed4952be91d417b198780000ce9a92a5d633a82f4"
+            "df0f00001a1352554e647507c64421800033b6a4aa9cc8ea0f8c88430000686d495306e9d4295268"
+            "860000cf1a92a60dd3a852a4d10c0001a2352544b36750fbf2a21000033e6a4a8966cea1f7e54420"
+            "00068cd494fb9e9d4559648860000cfda929f73d3a8ab2c910c0001a3b52541d007519b12e210000"
+            "3406a4a83a00ea33625c420000690d49529781d475dfc0840000cada92a52f03a8ebbf8108000197"
+            "35256b538751d985c21000032c6a4ad6a70ea3b30b842000065e430100001931f9e14f77f4b031ab"
+            "1894d8233cedf94a05c3cd1143b91619daf5538c3711a3a9c2d1eccc0f002f9f43e57ce9ff90bbd3"
+            "df28b69434c1cfd2935beeb31fa6";
+
+    SecuredMessage message;
+    deserialize_from_hexstring(secured_cam, message);
+
+    runtime.reset(Clock::at("2018-02-10 12:11:10"));
+
+    CertificateValidity validity;
+    VerificationReport report = VerificationReport::Success;
+    NullCertificateValidator validator;
+    validator.certificate_check_result(CertificateValidity::valid());
+    VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy);
+    SecurityEntity dummy_security(sign_service, verify);
+
+    // We only care about the message signature here to be valid, the certificate isn't validated.
+    // The certificate validity duration isn't valid for the message generation time here anyway...
+    DecapConfirm decap_confirm = dummy_security.decapsulate_packet(DecapRequest { message });
+    EXPECT_EQ(DecapReport::Success, decap_confirm.report);
+}
 
 TEST_F(SecurityEntityTest, signed_payload_equals_plaintext_payload)
 {

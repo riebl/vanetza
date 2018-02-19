@@ -105,13 +105,13 @@ size_t deserialize(InputArchive& ar, SecuredMessage& message);
  * \brief Create ByteBuffer equivalent of SecuredMessage suitable for signature creation
  *
  * ByteBuffer contains message's version, header_fields and payload.
- * Additionally, the length of trailer fields is appended.
+ * Additionally, the length of trailer fields and the type of the signature is appended.
  *
  * \param message
- * \param trailer_fields_size Length of trailer fields in bytes
+ * \param trailer_fields all trailer fields up to the signature, but without any fields after the signature
  * \return serialized data fields relevant for signature creation
  */
-ByteBuffer convert_for_signing(const SecuredMessage& message, size_t trailer_fields_size);
+ByteBuffer convert_for_signing(const SecuredMessage& message, const std::list<TrailerField> trailer_fields);
 
 } // namespace security
 } // namespace vanetza
