@@ -142,6 +142,10 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     if (chain.size() == 0) {
                         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
                         return confirm;
+                    } else if (chain.size() > 10) {
+                        // prevent DoS by sending very long chains
+                        confirm.report = VerificationReport::Invalid_Certificate; // TODO add custom report code?
+                        return confirm;
                     }
                     // pre-check chain certificates, otherwise they're not available for the ticket check
                     for (auto& cert : chain) {
