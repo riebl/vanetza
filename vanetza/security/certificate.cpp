@@ -176,6 +176,30 @@ HashedId8 calculate_hash(const Certificate& cert)
     return id;
 }
 
+const SubjectAttribute* Certificate::get_attribute(SubjectAttributeType sat) const
+{
+    const SubjectAttribute* match = nullptr;
+    for (auto& attribute : subject_attributes) {
+        if (get_type(attribute) == sat) {
+            match = &attribute;
+            break;
+        }
+    }
+    return match;
+}
+
+const ValidityRestriction* Certificate::get_restriction(ValidityRestrictionType vrt) const
+{
+    const ValidityRestriction* match = nullptr;
+    for (auto& restriction : validity_restriction) {
+        if (get_type(restriction) == vrt) {
+            match = &restriction;
+            break;
+        }
+    }
+    return match;
+}
+
 void Certificate::remove_attribute(SubjectAttributeType type)
 {
     for (auto it = subject_attributes.begin(); it != subject_attributes.end(); ++it) {

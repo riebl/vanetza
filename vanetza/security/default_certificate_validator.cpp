@@ -22,8 +22,7 @@ bool extract_validity_time(const Certificate& certificate, boost::optional<Time3
 {
     unsigned certificate_time_constraints = 0;
 
-    for (auto& restriction : certificate.validity_restriction) {
-        ValidityRestriction validity_restriction = restriction;
+    for (auto& validity_restriction : certificate.validity_restriction) {
         ValidityRestrictionType type = get_type(validity_restriction);
 
         if (type == ValidityRestrictionType::Time_Start_And_End) {
@@ -99,26 +98,20 @@ bool check_time_consistency(const Certificate& certificate, const Certificate& s
 std::list<ItsAid> extract_application_identifiers(const Certificate& certificate)
 {
     std::list<ItsAid> aids;
+
     auto certificate_type = certificate.subject_info.subject_type;
-
-    for (auto& attribute : certificate.subject_attributes) {
-        auto type = get_type(attribute);
-
-        if (certificate_type == SubjectType::Authorization_Ticket) {
-            if (type == SubjectAttributeType::Its_Aid_Ssp_List) {
-                auto& aid_ssp_list = boost::get<std::list<ItsAidSsp>>(attribute);
-                for (auto& item : aid_ssp_list) {
-                    aids.push_back(item.its_aid.get());
-                }
-                break;
+    if (certificate_type == SubjectType::Authorization_Ticket) {
+        auto list = certificate.get_attribute<SubjectAttributeType::Its_Aid_Ssp_List>();
+        if (list) {
+            for (auto& item : *list) {
+                aids.push_back(item.its_aid.get());
             }
-        } else {
-            if (type == SubjectAttributeType::Its_Aid_List) {
-                auto& aid_list = boost::get<std::list<IntX>>(attribute);
-                for (auto& item : aid_list) {
-                    aids.push_back(item.get());
-                }
-                break;
+        }
+    } else {
+        auto list = certificate.get_attribute<SubjectAttributeType::Its_Aid_List>();
+        if (list) {
+            for (auto& item : *list) {
+                aids.push_back(item.get());
             }
         }
     }
