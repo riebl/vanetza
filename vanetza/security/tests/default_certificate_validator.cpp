@@ -47,6 +47,37 @@ protected:
     DefaultCertificateValidator cert_validator;
 };
 
+TEST_F(DefaultCertificateValidatorTest, missing_subject_assurance)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.remove_attribute(SubjectAttributeType::Assurance_Level);
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::MISSING_SUBJECT_ASSURANCE, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, inconsistent_subject_assurance)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.remove_attribute(SubjectAttributeType::Assurance_Level);
+    cert.subject_attributes.push_back(SubjectAssurance(0xE0)); // higher level
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+
+    cert.remove_attribute(SubjectAttributeType::Assurance_Level);
+    cert.subject_attributes.push_back(SubjectAssurance(0x03)); // same level, higher confidence
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+}
+
 TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();
