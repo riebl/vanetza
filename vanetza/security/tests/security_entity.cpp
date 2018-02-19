@@ -27,12 +27,21 @@ protected:
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
         cert_cache(runtime),
         certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), position_provider, trust_store, cert_cache)),
-        sign_header_policy(runtime.now()),
+        sign_header_policy(runtime.now(), position_provider),
         sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),
         verify_service(straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy)),
-        security(sign_service, verify_service)
+        security(sign_service, verify_service),
+        its_aid(aid::CA)
     {
         trust_store.insert(certificate_provider->root_certificate());
+
+        PositionFix position_fix;
+        position_fix.latitude = 49.014420 * units::degree;
+        position_fix.longitude = 8.404417 * units::degree;
+        position_fix.confidence.semi_major = 25.0 * units::si::meter;
+        position_fix.confidence.semi_minor = 25.0 * units::si::meter;
+        assert(position_fix.confidence);
+        position_provider.position_fix(position_fix);
     }
 
     void SetUp() override
@@ -48,7 +57,7 @@ protected:
     {
         EncapRequest encap_request;
         encap_request.plaintext_payload = expected_payload;
-        encap_request.its_aid = aid::CA;
+        encap_request.its_aid = its_aid;
         return encap_request;
     }
 
@@ -62,7 +71,7 @@ protected:
     {
         // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider.get()->own_private_key());
-        SignHeaderPolicy sign_header_policy(runtime.now());
+        SignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
         SignService local_sign_service(straight_sign_service(local_cert_provider, *crypto_backend, sign_header_policy));
         SecurityEntity local_security(local_sign_service, verify_service);
 
@@ -83,11 +92,12 @@ protected:
     VerifyService verify_service;
     SecurityEntity security;
     ChunkPacket expected_payload;
+    ItsAid its_aid;
 };
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    SignHeaderPolicy sign_header_policy(runtime.now());
+    SignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
     VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
     SecurityEntity other_security(sign, verify);
@@ -103,8 +113,8 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     auto openssl_backend = create_backend("OpenSSL");
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
-    security::SignHeaderPolicy sign_header_policy_openssl(runtime.now());
-    security::SignHeaderPolicy sign_header_policy_cryptopp(runtime.now());
+    security::SignHeaderPolicy sign_header_policy_openssl(runtime.now(), position_provider);
+    security::SignHeaderPolicy sign_header_policy_cryptopp(runtime.now(), position_provider);
     SecurityEntity cryptopp_security {
             straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
             straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl) };
@@ -460,16 +470,80 @@ TEST_F(SecurityEntityTest, verify_message_protocol_version)
 TEST_F(SecurityEntityTest, verify_message_its_aid)
 {
     auto secured_message = create_secured_message();
-    auto aid_header = secured_message.header_field(HeaderFieldType::Its_Aid);
-    ASSERT_EQ(boost::get<IntX>(*aid_header), aid::CA);
+    auto aid_header = secured_message.header_field<HeaderFieldType::Its_Aid>();
+    ASSERT_EQ(*aid_header, aid::CA);
+}
+
+// See TS 103 096-2 v1.3.1, section 5.2.4.2
+TEST_F(SecurityEntityTest, verify_message_header_fields_cam)
+{
+    auto secured_message = create_secured_message();
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Signer_Info>());
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Its_Aid>());
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time>());
+    EXPECT_EQ(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time_Confidence>());
+    EXPECT_EQ(nullptr, secured_message.header_field<HeaderFieldType::Expiration>());
+    EXPECT_EQ(nullptr, secured_message.header_field<HeaderFieldType::Encryption_Parameters>());
+    EXPECT_EQ(nullptr, secured_message.header_field<HeaderFieldType::Recipient_Info>());
+
+    EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(secured_message.header_fields.front()));
+
+    using enum_int = std::underlying_type<HeaderFieldType>::type;
+    HeaderFieldType previous_field = HeaderFieldType::Signer_Info;
+    for (auto& field : secured_message.header_fields) {
+        if (get_type(field) == HeaderFieldType::Signer_Info) {
+            continue;
+        }
+
+        if (previous_field == HeaderFieldType::Signer_Info) {
+            previous_field = get_type(field);
+            continue;
+        }
+
+        // check ascending order
+        EXPECT_GT(static_cast<enum_int>(get_type(field)), static_cast<enum_int>(previous_field));
+        previous_field = get_type(field);
+    }
+}
+
+// See TS 103 096-2 v1.3.1, section 5.2.5.2
+TEST_F(SecurityEntityTest, verify_message_header_fields_denm)
+{
+    its_aid = aid::DEN;
+
+    auto secured_message = create_secured_message();
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Signer_Info>());
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Its_Aid>());
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time>());
+    EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Location>());
+    EXPECT_EQ(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time_Confidence>());
+
+    EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(secured_message.header_fields.front()));
+
+    using enum_int = std::underlying_type<HeaderFieldType>::type;
+    HeaderFieldType previous_field = HeaderFieldType::Signer_Info;
+    for (auto& field : secured_message.header_fields) {
+        if (get_type(field) == HeaderFieldType::Signer_Info) {
+            continue;
+        }
+
+        if (previous_field == HeaderFieldType::Signer_Info) {
+            previous_field = get_type(field);
+            continue;
+        }
+
+        // check ascending order
+        EXPECT_GT(static_cast<enum_int>(get_type(field)), static_cast<enum_int>(previous_field));
+        previous_field = get_type(field);
+    }
 }
 
 // See TS 103 096-2 v1.3.1, section 5.2.4.3 + 5.2.4.5 + 5.2.4.6 + 5.2.4.7
-TEST_F(SecurityEntityTest, verify_message_signer_info)
+TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
 {
     auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
-        auto signer_info = secured_message.header_field(HeaderFieldType::Signer_Info);
-        return boost::get<SignerInfo>(*signer_info);
+        auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+        return *signer_info;
     };
 
     // first message must be signed with certificate
@@ -521,6 +595,23 @@ TEST_F(SecurityEntityTest, verify_message_signer_info)
     for (int i = 0; i < 5; i++) {
         secured_message = create_secured_message();
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
+    }
+}
+
+// See TS 103 096-2 v1.3.1, section 5.2.5.3
+TEST_F(SecurityEntityTest, verify_message_signer_info_denm)
+{
+    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+        auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+        return *signer_info;
+    };
+
+    its_aid = aid::DEN;
+
+    // all message must be signed with certificate
+    for (int i = 0; i < 3; i++) {
+        auto secured_message = create_secured_message();
+        ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
     }
 }
 
