@@ -80,6 +80,11 @@ if(BUILD_CERTIFY)
   add_subdirectory(tools/certify)
 endif()
 
+option(BUILD_UPPERTESTER "Build uppertester for TTCN-3 tests" OFF)
+if(BUILD_UPPERTESTER)
+  add_subdirectory(tools/uppertester)
+endif()
+
 # interface library for convenience
 get_property(_components GLOBAL PROPERTY VANETZA_COMPONENTS)
 add_library(vanetza INTERFACE)

@@ -51,4 +51,3 @@ ByteBuffer buffer_copy(const T& object)
 } // namespace vanetza
 
 #endif /* BYTE_BUFFER_HPP_7NOEQO4F */
-
