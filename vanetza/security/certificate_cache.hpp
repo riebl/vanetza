@@ -34,9 +34,10 @@ public:
      * Lookup certificates based on the passed HashedId8.
      *
      * \param id hash identifier of the certificate
-     * \return all stored certificates matching the passed identifier
+     * \param type type of certificate to lookup
+     * \return all stored certificates matching the passed identifier and type
      */
-    std::list<Certificate> lookup(const HashedId8& id);
+    std::list<Certificate> lookup(const HashedId8& id, SubjectType type);
 
     /**
      * Number of currently stored certificates

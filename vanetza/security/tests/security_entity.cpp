@@ -26,10 +26,10 @@ protected:
         crypto_backend(create_backend("default")),
         certificate_provider(new NaiveCertificateProvider(runtime.now())),
         cert_cache(runtime),
-        certificate_validator(new DefaultCertificateValidator(*crypto_backend, runtime.now(), position_provider, trust_store, cert_cache)),
+        certificate_validator(new DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store)),
         sign_header_policy(runtime.now(), position_provider),
         sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),
-        verify_service(straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy)),
+        verify_service(straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider)),
         security(sign_service, verify_service),
         its_aid(aid::CA)
     {
@@ -99,7 +99,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
 {
     SignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
-    VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
+    VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
     SecurityEntity other_security(sign, verify);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
@@ -117,10 +117,10 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     security::SignHeaderPolicy sign_header_policy_cryptopp(runtime.now(), position_provider);
     SecurityEntity cryptopp_security {
             straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
-            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl) };
+            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl, position_provider) };
     SecurityEntity openssl_security {
             straight_sign_service(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp),
-            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *openssl_backend, cert_cache, sign_header_policy_cryptopp) };
+            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *openssl_backend, cert_cache, sign_header_policy_cryptopp, position_provider) };
 
     // OpenSSL to Crypto++
     EncapConfirm encap_confirm = openssl_security.encapsulate_packet(create_encap_request());
@@ -136,34 +136,31 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
 
 TEST_F(SecurityEntityTest, captured_acceptance)
 {
+
     const char secured_cam[] =
-            "0280bc80020201bba3829050f4a9630100560200210b240301fffc25040100000020022425000004"
-            "a9d249733e79cfd577c6947fd4c7f26ce908ef11ce1998e69b2a961cd921b0fc78d3622c8e5354d7"
-            "7186002d420ee1619914d9c48e65f85985a999e3f46e565b09011a8f52d42a0274e4000029b705fb"
-            "4ae128219a30948162dd5937444e2c0cc9ac11a5b8d231325e1ee28041f144f523de45880717450e"
-            "37671826430ae890a2880fd30bafc4f3a82113cd000001950b00f0e56d05240181102050030000ec"
-            "01003ce8000d411004f9b0e59d071d36ac6105057c9e809400010000000007d100000102001003f8"
-            "303900fa5b72ac2e09e9d3dffffffc2237c6a0bed4952be91d417b198780000ce9a92a5d633a82f4"
-            "df0f00001a1352554e647507c64421800033b6a4aa9cc8ea0f8c88430000686d495306e9d4295268"
-            "860000cf1a92a60dd3a852a4d10c0001a2352544b36750fbf2a21000033e6a4a8966cea1f7e54420"
-            "00068cd494fb9e9d4559648860000cfda929f73d3a8ab2c910c0001a3b52541d007519b12e210000"
-            "3406a4a83a00ea33625c420000690d49529781d475dfc0840000cada92a52f03a8ebbf8108000197"
-            "35256b538751d985c21000032c6a4ad6a70ea3b30b842000065e430100001931f9e14f77f4b031ab"
-            "1894d8233cedf94a05c3cd1143b91619daf5538c3711a3a9c2d1eccc0f002f9f43e57ce9ff90bbd3"
-            "df28b69434c1cfd2935beeb31fa6";
+            "0280bc8002020118180bd751330373010056000004058caca9488f1710d7e7407b5402bc2986a87c43c9d695e91eacee9b1495060d"
+            "403d64f8f9ef25e269b586042490f2b24b761f639b8bd2691a4a9e17a4392d3d020020022425210b240301889c2504010000000901"
+            "1a9230c01b99ead00000771505917c6ecfe986f3a446eadd8277712a6cb8189312330cc862b5bffa7dea375ae9f3349cf2038e67f2"
+            "4f4a9ab050af72c3809b654117ca6632afc8e8eb7c00000195732e7667fd05240181102050030000ec01003ce8000d411004f9cb88"
+            "5ef11d36b23105057269800000000000000007d100000102001003f8303900fa5b73662e09e88d3ffffffc2230d400bed4952be91d"
+            "417b198780000ce9a92a5d633a82f4df0f00001a1352554e647507c64421800033b6a4aa9cc8ea0f8c88430000686d495306e9d429"
+            "5268860000cf1a92a60dd3a852a4d10c0001a2352544b36750fbf2a21000033e6a4a8966cea1f7e5442000068cd494fb9e9d455964"
+            "8860000cfda929f73d3a8ab2c910c0001a3b52541d007519b12e2100003406a4a83a00ea33625c420000690d49529781d475dfc084"
+            "0000cada92a52f03a8ebbf810800019735256b538751d985c21000032c6a4ad6a70ea3b30b842000065e43010000e7adf7c0ec3e51"
+            "765b6f5366837cda248d22f66da7d806e740810de221c6bd389c060bd02c48a9a574f32ec5a193ed2de21ef6d86de9e7c313d364f8"
+            "91398776";
 
     SecuredMessage message;
     deserialize_from_hexstring(secured_cam, message);
 
-    runtime.reset(Clock::at("2018-02-10 12:11:10"));
+    runtime.reset(Clock::at("2018-02-15 16:28:30"));
 
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
-    VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy);
+    VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
     SecurityEntity dummy_security(sign_service, verify);
 
     // We only care about the message signature here to be valid, the certificate isn't validated.
-    // The certificate validity duration isn't valid for the message generation time here anyway...
     DecapConfirm decap_confirm = dummy_security.decapsulate_packet(DecapRequest { message });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
 }
@@ -315,6 +312,7 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
     Certificate certificate = certificate_provider.get()->own_certificate();
     certificate.validity_restriction.clear();
     certificate.validity_restriction.push_back(outdated_validity);
+    certificate_provider->sign_authorization_ticket(certificate);
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
@@ -328,11 +326,12 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
     // forge certificate with premature validity
     StartAndEndValidity premature_validity;
     premature_validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(1));
-    premature_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(25));
+    premature_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(5));
 
     Certificate certificate = certificate_provider.get()->own_certificate();
     certificate.validity_restriction.clear();
     certificate.validity_restriction.push_back(premature_validity);
+    certificate_provider->sign_authorization_ticket(certificate);
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
