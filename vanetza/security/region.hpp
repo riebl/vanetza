@@ -332,6 +332,46 @@ bool is_within(const TwoDLocation&, const PolygonalRegion&);
  */
 bool is_within(const TwoDLocation&, const IdentifiedRegion&);
 
+/**
+ * \brief Check if a region is within another geographic region
+ * \param reg region
+ * \param r region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const GeographicRegion&);
+
+/**
+ * \brief Check if a region is within a circular region
+ * \param reg region
+ * \param c cicrular region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const CircularRegion&);
+
+/**
+ * \brief Check if a region is within a set of rectangular regions
+ * \param reg region
+ * \param r rectangular regions
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const std::list<RectangularRegion>&);
+
+/**
+ * \brief Check if a region is within a polygonal region
+ * \param reg region
+ * \param c cicrular region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const PolygonalRegion&);
+
+/**
+ * \brief Check if a region is within an identified region
+ * \param reg region
+ * \param i identified region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const IdentifiedRegion&);
+
 } //namespace security
 } //namespace vanetza
 
