@@ -152,6 +152,22 @@ bool check_subject_assurance_consistency(const Certificate& certificate, const C
     return true;
 }
 
+bool check_region_consistency(const Certificate& certificate, const Certificate& signer)
+{
+    auto certificate_region = certificate.get_restriction<ValidityRestrictionType::Region>();
+    auto signer_region = signer.get_restriction<ValidityRestrictionType::Region>();
+
+    if (!signer_region) {
+        return true;
+    }
+
+    if (!certificate_region) {
+        return false;
+    }
+
+    return is_within(*certificate_region, *signer_region);
+}
+
 bool check_consistency(const Certificate& certificate, const Certificate& signer)
 {
     if (!check_time_consistency(certificate, signer)) {
@@ -163,6 +179,10 @@ bool check_consistency(const Certificate& certificate, const Certificate& signer
     }
 
     if (!check_subject_assurance_consistency(certificate, signer)) {
+        return false;
+    }
+
+    if (!check_region_consistency(certificate, signer)) {
         return false;
     }
 
