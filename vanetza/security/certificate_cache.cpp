@@ -13,7 +13,9 @@ CertificateCache::CertificateCache(const Runtime& rt) : m_runtime(rt)
 void CertificateCache::insert(const Certificate& certificate)
 {
     const HashedId8 id = calculate_hash(certificate);
-    std::list<Certificate> certs = lookup(id); /*< this may drop expired entries and extend some's lifetime */
+
+    // this may drop expired entries and extend some's lifetime
+    std::list<Certificate> certs = lookup(id, certificate.subject_info.subject_type);
 
     // TODO: implement equality comparison for Certificate
     if (certs.size()) {
@@ -48,7 +50,7 @@ void CertificateCache::insert(const Certificate& certificate)
     }
 }
 
-std::list<Certificate> CertificateCache::lookup(const HashedId8& id)
+std::list<Certificate> CertificateCache::lookup(const HashedId8& id, SubjectType type)
 {
     drop_expired();
 
@@ -58,10 +60,15 @@ std::list<Certificate> CertificateCache::lookup(const HashedId8& id)
     std::list<Certificate> matches;
     for (auto item = range.first; item != range.second; ++item) {
         const Certificate& cert = item->second.certificate;
+
+        auto subject_type = cert.subject_info.subject_type;
+        if (subject_type != type) {
+            continue;
+        }
+
         matches.push_back(cert);
 
         // renew cached certificate
-        auto subject_type = cert.subject_info.subject_type;
         if (subject_type == SubjectType::Authorization_Ticket) {
             refresh(item->second.handle, std::chrono::seconds(2));
         } else if (subject_type == SubjectType::Authorization_Authority) {

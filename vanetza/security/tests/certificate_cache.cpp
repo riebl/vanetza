@@ -42,17 +42,20 @@ TEST_F(CertificateCacheTest, lookup)
     const HashedId8 cert_id = calculate_hash(cert);
 
     // empty cache
-    EXPECT_EQ(0, cache.lookup(cert_id).size());
+    EXPECT_EQ(0, cache.lookup(cert_id, SubjectType::Authorization_Ticket).size());
 
     cache.insert(cert);
 
     // cache only contains 'cert' and must be able to find it
-    EXPECT_EQ(1, cache.lookup(cert_id).size());
+    EXPECT_EQ(1, cache.lookup(cert_id, SubjectType::Authorization_Ticket).size());
+
+    // cache only contains 'cert' and must not return it for other types
+    EXPECT_EQ(0, cache.lookup(cert_id, SubjectType::Authorization_Authority).size());
 
     // but nothing else
     HashedId8 other_id = cert_id;
     other_id[3] = cert_id[3] + 1;
-    EXPECT_EQ(0, cache.lookup(other_id).size());
+    EXPECT_EQ(0, cache.lookup(other_id, SubjectType::Authorization_Ticket).size());
 }
 
 TEST_F(CertificateCacheTest, insert_only_some_subject_type)
@@ -82,11 +85,11 @@ TEST_F(CertificateCacheTest, drop_expired)
 
     runtime.trigger(std::chrono::seconds(3));
     EXPECT_EQ(2, cache.size());
-    cache.lookup(zero_id); // any lookup drops expired cache entries
+    cache.lookup(zero_id, SubjectType::Authorization_Ticket); // any lookup drops expired cache entries
     EXPECT_EQ(1, cache.size());
 
     runtime.trigger(std::chrono::minutes(60));
-    cache.lookup(zero_id);
+    cache.lookup(zero_id, SubjectType::Authorization_Ticket);
     EXPECT_EQ(0, cache.size());
 }
 
@@ -95,6 +98,7 @@ TEST_F(CertificateCacheTest, lookup_match_extends_lifetime)
     const Certificate cert1 = build_certificate(SubjectType::Authorization_Ticket);
     const Certificate cert2 = build_certificate(SubjectType::Authorization_Authority);
     const HashedId8 id_cert1 = calculate_hash(cert1);
+    const HashedId8 id_cert2 = calculate_hash(cert2);
 
     cache.insert(cert1);
     cache.insert(cert2);
@@ -102,10 +106,10 @@ TEST_F(CertificateCacheTest, lookup_match_extends_lifetime)
 
     for (unsigned i = 0; i < 3601; ++i) {
         runtime.trigger(std::chrono::seconds(1));
-        cache.lookup(id_cert1);
+        cache.lookup(id_cert2, SubjectType::Authorization_Authority);
     }
     EXPECT_EQ(1, cache.size());
-    EXPECT_EQ(1, cache.lookup(id_cert1).size());
+    EXPECT_EQ(1, cache.lookup(id_cert2, SubjectType::Authorization_Authority).size());
 }
 
 TEST_F(CertificateCacheTest, insert_extends_lifetime)
@@ -121,11 +125,10 @@ TEST_F(CertificateCacheTest, insert_extends_lifetime)
     cache.insert(cert);
     EXPECT_EQ(1, cache.size());
 
-    cache.lookup(zero_id);
+    cache.lookup(zero_id, SubjectType::Authorization_Ticket);
     EXPECT_EQ(1, cache.size());
 
     runtime.trigger(std::chrono::seconds(2));
-    cache.lookup(id);
+    cache.lookup(id, SubjectType::Authorization_Ticket);
     EXPECT_EQ(1, cache.size());
 }
-

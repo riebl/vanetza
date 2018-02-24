@@ -12,7 +12,7 @@ class CertificateValidator
 {
 public:
     /**
-     * Check validity of given certificate
+     * Check validity of given certificate and consistency with parent certificates.
      * \param certificate given certificate
      * \return validity result
      */
