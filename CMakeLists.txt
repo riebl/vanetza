@@ -80,6 +80,11 @@ if(BUILD_CERTIFY)
   add_subdirectory(tools/certify)
 endif()
 
+option(BUILD_BENCHMARK "Build benchmark application" OFF)
+if(BUILD_BENCHMARK)
+  add_subdirectory(tools/benchmark)
+endif()
+
 # interface library for convenience
 get_property(_components GLOBAL PROPERTY VANETZA_COMPONENTS)
 add_library(vanetza INTERFACE)
