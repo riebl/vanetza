@@ -193,18 +193,35 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     if (chain.size() == 0) {
                         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
                         return confirm;
-                    } else if (chain.size() > 10) {
-                        // prevent DoS by sending very long chains
-                        confirm.report = VerificationReport::Invalid_Certificate; // TODO add custom report code?
+                    } else if (chain.size() > 3) {
+                        // prevent DoS by sending very long chains, maximum length is three certificates, because:
+                        // AT → AA → Root and no other signatures are allowed, sending the Root is optional
+                        confirm.report = VerificationReport::Invalid_Certificate;
                         return confirm;
                     }
                     // pre-check chain certificates, otherwise they're not available for the ticket check
                     for (auto& cert : chain) {
+                        // root certificates must already be known, otherwise the validation will fail anyway
                         if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
+                            // there's no need to report unknown signers at this point, see comment above
                             CertificateValidity validity = certs.check_certificate(cert);
-                            if (validity) {
-                                cert_cache.insert(cert);
+
+                            // we can abort early if there are invalid AA certificates in the chain
+                            if (!validity) {
+                                confirm.report = VerificationReport::Invalid_Certificate;
+                                confirm.certificate_validity = validity;
+                                return confirm;
                             }
+
+                            // We won't cache outdated or premature certificates in the cache and abort early.
+                            // This check isn't required as it would just fail below or in the consistency checks,
+                            // but it's an optimization and saves us from polluting the cache with such certificates.
+                            if (!check_certificate_time(cert, rt.now()) || !check_certificate_region(cert, positioning.position_fix())) {
+                                confirm.report = VerificationReport::Invalid_Certificate;
+                                return confirm;
+                            }
+
+                            cert_cache.insert(cert);
                         }
                     }
                     // last certificate must be the authorization ticket
