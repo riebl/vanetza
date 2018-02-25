@@ -140,4 +140,66 @@ TEST(Region, Circle_Within_None)
     };
 
     EXPECT_TRUE(is_within(inner, outer));
+    EXPECT_FALSE(is_within(outer, inner));
+}
+
+TEST(Region, TwoDLocation_Within_Rectangles)
+{
+    TwoDLocation northwest {
+        static_cast<geo_angle_i32t>(20 * degrees),
+        static_cast<geo_angle_i32t>(10 * degrees)
+    };
+    TwoDLocation southeast {
+        static_cast<geo_angle_i32t>(10 * degrees),
+        static_cast<geo_angle_i32t>(20 * degrees)
+    };
+    RectangularRegion region { northwest, southeast };
+    std::list<RectangularRegion> regions({ region });
+
+    // inside
+    EXPECT_TRUE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(15 * degrees),
+        static_cast<geo_angle_i32t>(15 * degrees)
+    }, regions));
+
+    // outside - left
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(15 * degrees),
+        static_cast<geo_angle_i32t>(9 * degrees)
+    }, regions));
+
+    // outside - right
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(15 * degrees),
+        static_cast<geo_angle_i32t>(21 * degrees)
+    }, regions));
+
+    // outside - top
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(21 * degrees),
+        static_cast<geo_angle_i32t>(15 * degrees)
+    }, regions));
+
+    // outside - down
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(9 * degrees),
+        static_cast<geo_angle_i32t>(15 * degrees)
+    }, regions));
+}
+
+TEST(Region, Rectangles_Within_None)
+{
+    TwoDLocation northwest {
+        static_cast<geo_angle_i32t>(20 * degrees),
+        static_cast<geo_angle_i32t>(10 * degrees)
+    };
+    TwoDLocation southeast {
+        static_cast<geo_angle_i32t>(10 * degrees),
+        static_cast<geo_angle_i32t>(20 * degrees)
+    };
+    RectangularRegion region { northwest, southeast };
+    std::list<RectangularRegion> regions({ region });
+
+    EXPECT_TRUE(is_within(regions, NoneRegion()));
+    EXPECT_FALSE(is_within(NoneRegion(), regions));
 }
