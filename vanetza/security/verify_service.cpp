@@ -61,7 +61,7 @@ bool check_generation_location(const SecuredMessageV2& message, const Certificat
             return true;
         }
 
-        return is_within(*generation_location, *region);
+        return is_within(TwoDLocation(*generation_location), *region);
     }
 
     return false;
