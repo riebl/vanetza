@@ -8,6 +8,7 @@
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/sign_header_policy.hpp>
 #include <vanetza/security/trust_store.hpp>
 
 namespace vanetza
@@ -56,7 +57,7 @@ private:
     security::TrustStore trust_store;
     security::CertificateCache cert_cache;
     std::unique_ptr<security::CertificateValidator> certificate_validator;
-    security::SignHeaderPolicy sign_header_policy;
+    security::DefaultSignHeaderPolicy sign_header_policy;
     security::SecurityEntity security;
 };
 

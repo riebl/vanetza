@@ -13,6 +13,7 @@
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/persistence.hpp>
+#include <vanetza/security/sign_header_policy.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/trust_store.hpp>
@@ -162,7 +163,7 @@ int main(int argc, const char** argv)
                 new security::DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store) };
         }
 
-        security::SignHeaderPolicy sign_header_policy(trigger.runtime().now(), positioning);
+        security::DefaultSignHeaderPolicy sign_header_policy(trigger.runtime().now(), positioning);
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, positioning);
 

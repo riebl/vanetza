@@ -10,6 +10,7 @@
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/sign_header_policy.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/trust_store.hpp>
 #include <vanetza/security/verify_service.hpp>
@@ -29,7 +30,7 @@ protected:
     vanetza::security::CertificateCache certificate_cache;
     vanetza::security::NaiveCertificateProvider certificate_provider;
     vanetza::security::DefaultCertificateValidator certificate_validator;
-    vanetza::security::SignHeaderPolicy sign_header_policy;
+    vanetza::security::DefaultSignHeaderPolicy sign_header_policy;
     vanetza::security::SignService sign_service;
     vanetza::security::VerifyService verify_service;
     vanetza::security::SecurityEntity security_entity;

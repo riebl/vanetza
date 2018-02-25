@@ -8,6 +8,7 @@
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/sign_header_policy.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
@@ -76,7 +77,7 @@ protected:
     {
         // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider.get()->own_private_key());
-        SignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
+        DefaultSignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
         SignService local_sign_service(straight_sign_service(local_cert_provider, *crypto_backend, sign_header_policy));
         SecurityEntity local_security(local_sign_service, verify_service);
 
@@ -92,7 +93,7 @@ protected:
     TrustStore trust_store;
     CertificateCache cert_cache;
     std::unique_ptr<CertificateValidator> certificate_validator;
-    SignHeaderPolicy sign_header_policy;
+    DefaultSignHeaderPolicy sign_header_policy;
     SignService sign_service;
     VerifyService verify_service;
     SecurityEntity security;
@@ -102,7 +103,7 @@ protected:
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    SignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
     VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
     SecurityEntity other_security(sign, verify);
@@ -118,8 +119,8 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     auto openssl_backend = create_backend("OpenSSL");
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
-    security::SignHeaderPolicy sign_header_policy_openssl(runtime.now(), position_provider);
-    security::SignHeaderPolicy sign_header_policy_cryptopp(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy sign_header_policy_openssl(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime.now(), position_provider);
     SecurityEntity cryptopp_security {
             straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
             straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl, position_provider) };
@@ -196,7 +197,7 @@ TEST_F(SecurityEntityTest, signer_info_is_encoded_first)
     EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(message.header_fields.front()));
 
     // cause inclusion of additional header field that should not change order of header fields
-    sign_header_policy.report_unknown_certificate(HashedId8({ 0, 0, 0, 0, 0, 0, 0, 0 }));
+    sign_header_policy.request_unrecognized_certificate(HashedId8({ 0, 0, 0, 0, 0, 0, 0, 0 }));
 
     message = create_secured_message();
     EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(message.header_fields.front()));
@@ -612,7 +613,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
     }
 
     // certificate has been requested by another party, send certificate
-    sign_header_policy.report_requested_certificate();
+    sign_header_policy.request_certificate();
     secured_message = create_secured_message();
     ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
 
@@ -623,7 +624,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
     }
 
     // certificate chain has been requested by another party, send certificate chain
-    sign_header_policy.report_requested_certificate_chain();
+    sign_header_policy.request_certificate_chain();
     secured_message = create_secured_message();
     ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Chain);
 
@@ -636,7 +637,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
     runtime.trigger(std::chrono::seconds(1));
 
     // one second has passed, send certificate
-    sign_header_policy.report_requested_certificate();
+    sign_header_policy.request_certificate();
     secured_message = create_secured_message();
     ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
 
@@ -807,7 +808,7 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_hash)
 
 TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
 {
-    sign_header_policy.report_requested_certificate_chain();
+    sign_header_policy.request_certificate_chain();
 
     auto message = create_secured_message();
 
@@ -822,7 +823,7 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
 
 TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_verify)
 {
-    SignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
@@ -849,7 +850,7 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
     };
 
     NaiveCertificateProvider other_provider(runtime.now());
-    SignHeaderPolicy other_policy(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy other_policy(runtime.now(), position_provider);
     SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
     VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
     SecurityEntity other_security(sign, verify);

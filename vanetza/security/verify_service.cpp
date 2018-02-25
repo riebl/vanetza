@@ -4,6 +4,7 @@
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/certificate_provider.hpp>
 #include <vanetza/security/certificate_validator.hpp>
+#include <vanetza/security/sign_header_policy.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <boost/optional.hpp>
@@ -143,12 +144,12 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         if (requested_certs) {
             for (auto& requested_cert : *requested_certs) {
                 if (truncate(calculate_hash(cert_provider.own_certificate())) == requested_cert) {
-                    sign_policy.report_requested_certificate();
+                    sign_policy.request_certificate();
                 }
 
                 for (auto& cert : cert_provider.own_chain()) {
                     if (truncate(calculate_hash(cert)) == requested_cert) {
-                        sign_policy.report_requested_certificate_chain();
+                        sign_policy.request_certificate_chain();
                     }
                 }
             }
@@ -178,7 +179,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     if (confirm.its_aid == aid::CA && cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket).size() == 0) {
                         // Previously unknown certificate, send own certificate in next CAM
                         // See TS 103 097 v1.2.1, section 7.1, 1st bullet, 3rd dash
-                        sign_policy.report_requested_certificate();
+                        sign_policy.request_certificate();
                     }
 
                     break;
@@ -239,7 +240,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         if (possible_certificates.size() == 0) {
             confirm.report = VerificationReport::Signer_Certificate_Not_Found;
             confirm.certificate_id = signer_hash;
-            sign_policy.report_unknown_certificate(signer_hash);
+            sign_policy.request_unrecognized_certificate(signer_hash);
             return confirm;
         }
 
@@ -311,7 +312,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             }
 
             confirm.certificate_id = signer_hash;
-            sign_policy.report_unknown_certificate(signer_hash);
+            sign_policy.request_unrecognized_certificate(signer_hash);
             return confirm;
         }
 
@@ -337,7 +338,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                 if (get_type(signer->signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
                     auto signer_hash = boost::get<HashedId8>(signer->signer_info);
                     confirm.certificate_id = signer_hash;
-                    sign_policy.report_unknown_certificate(signer_hash);
+                    sign_policy.request_unrecognized_certificate(signer_hash);
                 }
             }
 

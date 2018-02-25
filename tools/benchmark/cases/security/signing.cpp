@@ -54,9 +54,9 @@ int SecuritySigningCase::execute()
     }
 
     if (signer_info_type == "certificate") {
-        sign_header_policy.report_requested_certificate();
+        sign_header_policy.request_certificate();
     } else if (signer_info_type == "chain") {
-        sign_header_policy.report_requested_certificate_chain();
+        sign_header_policy.request_certificate_chain();
     }
 
     std::cout << "Starting benchmark for messages ... ";

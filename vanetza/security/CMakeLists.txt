@@ -25,6 +25,7 @@ add_vanetza_component(security
     serialization.cpp
     sha.cpp
     signature.cpp
+    sign_header_policy.cpp
     sign_service.cpp
     signer_info.cpp
     static_certificate_provider.cpp

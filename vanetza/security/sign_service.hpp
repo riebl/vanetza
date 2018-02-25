@@ -9,7 +9,6 @@
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signer_info.hpp>
 #include <functional>
-#include <set>
 
 namespace vanetza
 {
@@ -23,6 +22,7 @@ namespace security
 // forward declarations
 class Backend;
 class CertificateProvider;
+class SignHeaderPolicy;
 
 // mandatory SN-SIGN.request parameters
 struct SignRequest
@@ -36,28 +36,6 @@ struct SignRequest
 struct SignConfirm
 {
     SecuredMessage secured_message;
-};
-
-class SignHeaderPolicy
-{
-public:
-    SignHeaderPolicy(const Clock::time_point& time_now, PositionProvider& positioning);
-
-    std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
-
-    void report_unknown_certificate(HashedId8 id);
-
-    void report_requested_certificate();
-
-    void report_requested_certificate_chain();
-
-private:
-    const Clock::time_point& m_time_now;
-    PositionProvider& m_positioning;
-    Clock::time_point m_cam_next_certificate;
-    std::set<HashedId3> m_unknown_certificates;
-    bool m_cert_requested;
-    bool m_chain_requested;
 };
 
 /**
