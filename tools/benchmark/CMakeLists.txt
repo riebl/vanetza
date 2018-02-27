@@ -5,8 +5,7 @@ endif()
 
 add_executable(benchmark
     cases/security/base.cpp
-    cases/security/validate_certificate.cpp
-    cases/security/validate_certificate_hash.cpp
+    cases/security/validation.cpp
     main.cpp
     options.cpp
 )

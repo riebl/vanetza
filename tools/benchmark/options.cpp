@@ -1,5 +1,4 @@
-#include "cases/security/validate_certificate.hpp"
-#include "cases/security/validate_certificate_hash.hpp"
+#include "cases/security/validation.hpp"
 #include "options.hpp"
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -10,10 +9,13 @@ namespace po = boost::program_options;
 std::unique_ptr<Case> parse_options(int argc, const char *argv[])
 {
     po::options_description global("Global options");
-    global.add_options()("case", po::value<std::string>(), "Case to execute.");
+    global.add_options()
+        ("case", po::value<std::string>(), "Case to execute.")
+        ("subargs", po::value<std::vector<std::string>>(), "Arguments for case.");
 
     po::positional_options_description pos;
     pos.add("case", 1);
+    pos.add("subargs", -1);
 
     po::variables_map vm;
 
@@ -26,7 +28,7 @@ std::unique_ptr<Case> parse_options(int argc, const char *argv[])
     po::store(parsed, vm);
     po::notify(vm);
 
-    std::string available_commands = "Available cases: security-validate-certificate, security-validate-certificate-hash";
+    std::string available_commands = "Available cases: security-validate-certificate, security-validate-certificate-hash, security-validate-many";
 
     if (!vm.count("case")) {
         std::cerr << global << std::endl;
@@ -41,13 +43,17 @@ std::unique_ptr<Case> parse_options(int argc, const char *argv[])
     if (name == "--help") {
         std::cerr << global << std::endl;
         std::cerr << available_commands << std::endl;
-    } else if (name == "security-validate-certificate") {
-        instance.reset(new SecurityValidateCertificateCase());
-    } else if (name == "security-validate-certificate-hash") {
-        instance.reset(new SecurityValidateCertificateHashCase());
+    } else if (name == "security-validation") {
+        instance.reset(new SecurityValidationCase());
     } else {
-        // unrecognized command
-        throw po::invalid_option_value(name);
+        throw std::runtime_error("Unknown benchmark case.");
+    }
+
+    std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
+    opts.erase(opts.begin());
+
+    if (!instance->parse(opts)) {
+        return nullptr;
     }
 
     return instance;
