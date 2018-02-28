@@ -14,9 +14,14 @@
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/serialization.hpp>
+#include <vanetza/units/angle.hpp>
+#include <vanetza/units/length.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
+using vanetza::geonet::distance_u16t;
+using vanetza::geonet::geo_angle_i32t;
+using vanetza::units::si::meter;
 
 class SecurityEntityTest : public ::testing::Test
 {
@@ -418,9 +423,24 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload)
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
 }
 
-TEST_F(SecurityEntityTest, verify_message_modified_generation_time_before_current_time)
+TEST_F(SecurityEntityTest, verify_message_generation_time_before_current_time)
 {
+    // prepare decap request
+    auto secured_message = create_secured_message();
+    DecapRequest decap_request(secured_message);
+
     // change the time, so the generation time of SecuredMessage is before current time
+    runtime.trigger(std::chrono::hours(12));
+
+    // verify message
+    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    // check if verify was successful
+    EXPECT_EQ(DecapReport::Invalid_Timestamp, decap_confirm.report);
+}
+
+TEST_F(SecurityEntityTest, verify_message_generation_time_after_current_time)
+{
+    // change the time, so the generation time of SecuredMessage is after current time
     runtime.trigger(std::chrono::hours(12));
 
     // prepare decap request
@@ -659,6 +679,206 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_other)
         auto secured_message = create_secured_message();
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
     }
+}
+
+TEST_F(SecurityEntityTest, verify_message_without_position_and_with_restriction)
+{
+    // certificate with region restriction
+    CircularRegion circle;
+    circle.radius = static_cast<distance_u16t>(400 * meter);
+    circle.center = TwoDLocation {
+        geo_angle_i32t::from_value(490139190),
+        geo_angle_i32t::from_value(84044460)
+    };
+
+    Certificate certificate = certificate_provider.get()->own_certificate();
+    certificate.validity_restriction.push_back(circle);
+    certificate_provider->sign_authorization_ticket(certificate);
+
+    PositionFix unknown;
+    ASSERT_FALSE(unknown.confidence);
+    position_provider.position_fix(unknown);
+
+    // verify message
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
+    EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_without_position_and_without_restriction)
+{
+    PositionFix unknown;
+    ASSERT_FALSE(unknown.confidence);
+    position_provider.position_fix(unknown);
+
+    // verify message
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message() });
+    EXPECT_EQ(DecapReport::Success, decap_confirm.report);
+    ASSERT_TRUE(decap_confirm.certificate_validity);
+}
+
+TEST_F(SecurityEntityTest, verify_message_with_insufficient_aid)
+{
+    its_aid = 42; // some random value not present in the certificate
+
+    // verify message
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message() });
+    EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::INSUFFICIENT_ITS_AID, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_non_cam_generation_location_ok)
+{
+    its_aid = aid::GN_MGMT;
+
+    // certificate with region restriction
+    CircularRegion circle;
+    circle.radius = static_cast<distance_u16t>(400 * meter);
+    circle.center = TwoDLocation {
+        geo_angle_i32t::from_value(490139190),
+        geo_angle_i32t::from_value(84044460)
+    };
+
+    Certificate certificate = certificate_provider.get()->own_certificate();
+    certificate.validity_restriction.push_back(circle);
+    certificate_provider->sign_authorization_ticket(certificate);
+
+    // verify message
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
+    EXPECT_EQ(DecapReport::Success, decap_confirm.report);
+    ASSERT_TRUE(decap_confirm.certificate_validity);
+}
+
+TEST_F(SecurityEntityTest, verify_non_cam_generation_location_fail)
+{
+    its_aid = aid::GN_MGMT;
+
+    // certificate with region restriction
+    CircularRegion circle;
+    circle.radius = static_cast<distance_u16t>(400 * meter);
+    circle.center = TwoDLocation {
+        geo_angle_i32t::from_value(10139190),
+        geo_angle_i32t::from_value(84044460)
+    };
+
+    Certificate certificate = certificate_provider.get()->own_certificate();
+    certificate.validity_restriction.push_back(circle);
+    certificate_provider->sign_authorization_ticket(certificate);
+
+    // verify message
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
+    EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_without_signature)
+{
+    auto message = create_secured_message();
+    message.trailer_fields.clear();
+
+    // verify message
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { message });
+    EXPECT_EQ(DecapReport::Unsigned_Message, decap_confirm.report);
+}
+
+TEST_F(SecurityEntityTest, verify_message_with_signer_info_hash)
+{
+    auto message_a = create_secured_message();
+    auto message_b = create_secured_message();
+
+    auto signer_info = message_b.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_EQ(get_type(*signer_info), SignerInfoType::Certificate_Digest_With_SHA256);
+
+    // verify message - hash unknown
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { message_b });
+    EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
+    EXPECT_EQ(cert_cache.size(), 1);
+
+    cert_cache.insert(certificate_provider->own_certificate());
+
+    // verify message - certificate now known
+    decap_confirm = security.decapsulate_packet(DecapRequest { message_b });
+    EXPECT_EQ(DecapReport::Success, decap_confirm.report);
+    EXPECT_EQ(cert_cache.size(), 2);
+}
+
+TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
+{
+    sign_header_policy.report_requested_certificate_chain();
+
+    auto message = create_secured_message();
+
+    auto signer_info = message.header_field<HeaderFieldType::Signer_Info>();
+    ASSERT_EQ(get_type(*signer_info), SignerInfoType::Certificate_Chain);
+
+    // verify message - hash unknown
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { message });
+    EXPECT_EQ(DecapReport::Success, decap_confirm.report);
+    EXPECT_EQ(cert_cache.size(), 2);
+}
+
+TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_verify)
+{
+    SignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
+    SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
+    NullCertificateValidator validator;
+    validator.certificate_check_result(CertificateValidity::valid());
+    VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
+    SecurityEntity other_security(sign, verify);
+
+    Certificate certificate = certificate_provider.get()->own_certificate();
+    certificate.remove_restriction(ValidityRestrictionType::Time_Start_And_End);
+    certificate_provider->sign_authorization_ticket(certificate);
+
+    auto message = create_secured_message(certificate);
+
+    DecapConfirm decap_confirm = other_security.decapsulate_packet(DecapRequest { message });
+    EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_certificate_requests)
+{
+    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+        auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
+        return *signer_info;
+    };
+
+    NaiveCertificateProvider other_provider(runtime.now());
+    SignHeaderPolicy other_policy(runtime.now(), position_provider);
+    SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
+    VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
+    SecurityEntity other_security(sign, verify);
+
+    // Security entity doesn't request certificate of other
+    EncapConfirm encap_confirm = security.encapsulate_packet(create_encap_request());
+    ASSERT_EQ(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
+
+    // Create message with hash from other, thus two times
+    encap_confirm = other_security.encapsulate_packet(create_encap_request());
+    encap_confirm = other_security.encapsulate_packet(create_encap_request());
+    ASSERT_EQ(get_type(signer_info(encap_confirm.sec_packet)), SignerInfoType::Certificate_Digest_With_SHA256);
+
+    // Unknown certificate hash incoming from other
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
+    EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
+
+    // Security entity does request certificate from other
+    encap_confirm = security.encapsulate_packet(create_encap_request());
+    ASSERT_NE(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
+
+    // Other hasn't received certificate request, yet, so sends with hash
+    EncapConfirm other_encap_confirm = other_security.encapsulate_packet(create_encap_request());
+    ASSERT_EQ(get_type(signer_info(other_encap_confirm.sec_packet)), SignerInfoType::Certificate_Digest_With_SHA256);
+
+    // Other receives certificate request and sends certificate with next message
+    decap_confirm = other_security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
+    encap_confirm = other_security.encapsulate_packet(create_encap_request());
+    ASSERT_EQ(get_type(signer_info(encap_confirm.sec_packet)), SignerInfoType::Certificate);
 }
 
 // TODO add tests for Unsupported_Signer_Identifier_Type, Incompatible_Protocol
