@@ -36,14 +36,54 @@ TEST(Duration, Value)
     EXPECT_EQ(duration.value(), 7);
 }
 
-TEST(Duration, ToSeconds)
+TEST(Duration, ToSeconds_Seconds)
+{
+    const uint16_t raw = 0x0007;
+    Duration duration(raw);
+
+    EXPECT_EQ(duration.raw(), raw);
+    EXPECT_EQ(duration.value(), 7);
+    EXPECT_EQ(duration.to_seconds(), std::chrono::seconds(7));
+}
+
+TEST(Duration, ToSeconds_Minutes)
 {
     const uint16_t raw = 0x2007;
     Duration duration(raw);
 
     EXPECT_EQ(duration.raw(), raw);
     EXPECT_EQ(duration.value(), 7);
-    EXPECT_EQ(duration.to_seconds(), std::chrono::seconds(7 * 60));
+    EXPECT_EQ(duration.to_seconds(), std::chrono::minutes(7));
+}
+
+TEST(Duration, ToSeconds_Hours)
+{
+    const uint16_t raw = 0x4007;
+    Duration duration(raw);
+
+    EXPECT_EQ(duration.raw(), raw);
+    EXPECT_EQ(duration.value(), 7);
+    EXPECT_EQ(duration.to_seconds(), std::chrono::hours(7));
+}
+
+TEST(Duration, ToSeconds_Sixty_Hour_Blocks)
+{
+    const uint16_t raw = 0x6007;
+    Duration duration(raw);
+
+    EXPECT_EQ(duration.raw(), raw);
+    EXPECT_EQ(duration.value(), 7);
+    EXPECT_EQ(duration.to_seconds(), std::chrono::hours(7 * 60));
+}
+
+TEST(Duration, ToSeconds_Years)
+{
+    const uint16_t raw = 0x8002;
+    Duration duration(raw);
+
+    EXPECT_EQ(duration.raw(), raw);
+    EXPECT_EQ(duration.value(), 2);
+    EXPECT_EQ(duration.to_seconds(), std::chrono::seconds(2 * 31556925));
 }
 
 TEST(Duration, ToSecondsMax)
