@@ -5,6 +5,7 @@ endif()
 
 add_executable(benchmark
     cases/security/base.cpp
+    cases/security/signing.cpp
     cases/security/validation.cpp
     main.cpp
     options.cpp

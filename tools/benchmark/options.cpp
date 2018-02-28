@@ -1,3 +1,4 @@
+#include "cases/security/signing.hpp"
 #include "cases/security/validation.hpp"
 #include "options.hpp"
 #include <boost/program_options.hpp>
@@ -28,7 +29,7 @@ std::unique_ptr<Case> parse_options(int argc, const char *argv[])
     po::store(parsed, vm);
     po::notify(vm);
 
-    std::string available_commands = "Available cases: security-validate-certificate, security-validate-certificate-hash, security-validate-many";
+    std::string available_commands = "Available cases: security-validation, security-signing";
 
     if (!vm.count("case")) {
         std::cerr << global << std::endl;
@@ -43,6 +44,8 @@ std::unique_ptr<Case> parse_options(int argc, const char *argv[])
     if (name == "--help") {
         std::cerr << global << std::endl;
         std::cerr << available_commands << std::endl;
+    } else if (name == "security-signing") {
+        instance.reset(new SecuritySigningCase());
     } else if (name == "security-validation") {
         instance.reset(new SecurityValidationCase());
     } else {
