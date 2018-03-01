@@ -50,10 +50,10 @@ int SecurityValidationCase::execute()
     certificate_cache.insert(certificate_provider.aa_certificate());
     trust_store.insert(certificate_provider.root_certificate());
 
-    NaiveCertificateProvider* providers[identities];
+    std::vector<NaiveCertificateProvider*> providers(identities, nullptr);
     std::vector<SignService> signers(identities);
-    SecurityEntity* entities[identities];
-    SecuredMessageV2 secured_messages[identities];
+    std::vector<SecurityEntity*> entities(identities, nullptr);
+    std::vector<SecuredMessageV2> secured_messages(identities);
 
     for (unsigned i = 0; i < identities; i++) {
         providers[i] = new NaiveCertificateProvider(runtime.now());
