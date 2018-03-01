@@ -29,11 +29,13 @@ struct TwoDLocation
 /// ThreeDLocation specified in TS 103 097 v1.2.1, section 4.2.19
 struct ThreeDLocation
 {
+    constexpr static std::array<uint8_t, 2> unknown_elevation = { 0xF0, 0x00 };
+
     ThreeDLocation() = default;
     ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude) :
-        latitude(latitude), longitude(longitude), elevation({ 0xF0, 0x00 }) {} // unknown elevation
+        latitude(latitude), longitude(longitude), elevation(unknown_elevation) {}
     ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude) :
-        latitude(latitude), longitude(longitude), elevation({ 0xF0, 0x00 }) {} // unknown elevation
+        latitude(latitude), longitude(longitude), elevation(unknown_elevation) {}
     ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude, std::array<uint8_t, 2> elevation) :
         latitude(latitude), longitude(longitude), elevation(elevation) {}
     ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude, std::array<uint8_t, 2> elevation) :
