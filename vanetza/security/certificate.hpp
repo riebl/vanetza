@@ -69,17 +69,17 @@ struct Certificate
     void add_permission(ItsAid aid, const ByteBuffer& ssp);
 
     template<SubjectAttributeType T>
-    const typename subject_attribute_type<T>::type* get_attribute() const
+    const subject_attribute_type<T>* get_attribute() const
     {
-        using type = typename subject_attribute_type<T>::type;
+        using type = subject_attribute_type<T>;
         const SubjectAttribute* field = get_attribute(T);
         return boost::get<type>(field);
     }
 
     template<ValidityRestrictionType T>
-    const typename validity_restriction_type<T>::type* get_restriction() const
+    const validity_restriction_type<T>* get_restriction() const
     {
-        using type = typename validity_restriction_type<T>::type;
+        using type = validity_restriction_type<T>;
         const ValidityRestriction* field = get_restriction(T);
         return boost::get<type>(field);
     }

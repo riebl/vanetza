@@ -130,11 +130,9 @@ size_t deserialize(InputArchive&, ValidityRestriction&);
  */
 void serialize(OutputArchive&, const ValidityRestriction&);
 
-/**
- * \brief resolve type for matching ValidityRestrictionType
- *
- * This is kind of the reverse function of get_type(const ValidityRestrictionType&)
- */
+namespace detail
+{
+
 template<ValidityRestrictionType>
 struct validity_restriction_type;
 
@@ -161,6 +159,16 @@ struct validity_restriction_type<ValidityRestrictionType::Region>
 {
     using type = GeographicRegion;
 };
+
+} // namespace details
+
+/**
+ * \brief resolve type for matching ValidityRestrictionType
+ *
+ * This is kind of the reverse function of get_type(const ValidityRestrictionType&)
+ */
+template<ValidityRestrictionType T>
+using validity_restriction_type = typename detail::validity_restriction_type<T>::type;
 
 } // namespace security
 } // namespace vanetza

@@ -121,11 +121,9 @@ void serialize(OutputArchive&, const SubjectAttribute&);
  */
 void serialize(OutputArchive&, const ItsAidSsp&);
 
-/**
- * \brief resolve type for matching SubjectAttributeType
- *
- * This is kind of the reverse function of get_type(const SubjectAttribute&)
- */
+namespace detail
+{
+
 template<SubjectAttributeType>
 struct subject_attribute_type;
 
@@ -164,6 +162,16 @@ struct subject_attribute_type<SubjectAttributeType::Its_Aid_Ssp_List>
 {
     using type = std::list<ItsAidSsp>;
 };
+
+} // namespace detail
+
+/**
+ * \brief resolve type for matching SubjectAttributeType
+ *
+ * This is kind of the reverse function of get_type(const SubjectAttribute&)
+ */
+template<SubjectAttributeType T>
+using subject_attribute_type = typename detail::subject_attribute_type<T>::type;
 
 } // namespace security
 } // namespace vanetza
