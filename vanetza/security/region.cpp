@@ -506,16 +506,16 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
         bool operator()(const std::list<RectangularRegion>& inner)
         {
             // TODO: Implement check whether reactangles are within the circle
-            // Note: The rectangles can be converted to a polygon and its implementation be reused then.
-            // Note: Checking whether all corners of a rectangle are within the circle is NOT enough!
-            // Example: The rectangle here is spanning the earth except for a small part within the circle.
-            //         ________
-            //       /         \
-            // _____/__       __\_____
-            //     |   |     |   |
-            // _____\__|     |__/____
-            //       \_________/
-            //
+            /* Note: The rectangles can be converted to a polygon and its implementation be reused then.
+             * Note: Checking whether all corners of a rectangle are within the circle is NOT enough!
+             * Example: The rectangle here is spanning the earth except for a small part within the circle.
+             *         ________
+             *       /         \
+             * _____/__       __\_____
+             *     |   |     |   |
+             * _____\__|     |__/____
+             *       \_________/
+             */
             return false;
         }
         bool operator()(const PolygonalRegion& inner)
