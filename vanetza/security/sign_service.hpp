@@ -43,7 +43,7 @@ class SignHeaderPolicy
 public:
     SignHeaderPolicy(const Clock::time_point& time_now, PositionProvider& positioning);
 
-    std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
+    virtual std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
 
     void report_unknown_certificate(HashedId8 id);
 
@@ -51,8 +51,10 @@ public:
 
     void report_requested_certificate_chain();
 
-private:
+protected:
     const Clock::time_point& m_time_now;
+
+private:
     PositionProvider& m_positioning;
     Clock::time_point m_cam_next_certificate;
     std::set<HashedId3> m_unknown_certificates;

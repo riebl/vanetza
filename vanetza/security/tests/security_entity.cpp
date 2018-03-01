@@ -841,6 +841,20 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
     EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
 }
 
+TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
+{
+    Certificate certificate = certificate_provider->own_certificate();
+    certificate.remove_attribute(SubjectAttributeType::Verification_Key);
+    certificate_provider->sign_authorization_ticket(certificate);
+
+    auto message = create_secured_message(certificate);
+
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { message });
+    EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::MISSING_PUBLIC_KEY, decap_confirm.certificate_validity.reason());
+}
+
 TEST_F(SecurityEntityTest, verify_message_certificate_requests)
 {
     auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
@@ -879,6 +893,67 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
     decap_confirm = other_security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
     ASSERT_EQ(get_type(signer_info(encap_confirm.sec_packet)), SignerInfoType::Certificate);
+}
+
+TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
+{
+    NaiveCertificateProvider other_provider(runtime.now());
+
+    class NoLocationHeaderPolicy : public SignHeaderPolicy
+    {
+    public:
+        using SignHeaderPolicy::SignHeaderPolicy;
+
+        std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override
+        {
+            std::list<HeaderField> header_fields;
+
+            header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
+            header_fields.push_back(convert_time64(m_time_now));
+            header_fields.push_back(IntX(request.its_aid));
+
+            return header_fields;
+        }
+    } other_policy(runtime.now(), position_provider);
+
+    SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
+    VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
+    SecurityEntity other_security(sign, verify);
+
+    its_aid = aid::DEN;
+    EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
+    EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
+    ASSERT_FALSE(decap_confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, decap_confirm.certificate_validity.reason());
+}
+
+TEST_F(SecurityEntityTest, verify_message_without_its_aid)
+{
+    NaiveCertificateProvider other_provider(runtime.now());
+
+    class NoneHeaderPolicy : public SignHeaderPolicy
+    {
+    public:
+        using SignHeaderPolicy::SignHeaderPolicy;
+
+        std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override
+        {
+            std::list<HeaderField> header_fields;
+            return header_fields;
+        }
+    } other_policy(runtime.now(), position_provider);
+
+    SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
+    VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
+    SecurityEntity other_security(sign, verify);
+
+    its_aid = aid::DEN;
+    EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
+    ASSERT_EQ(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Its_Aid>());
+
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
+    EXPECT_EQ(DecapReport::Incompatible_Protocol, decap_confirm.report);
 }
 
 // TODO add tests for Unsupported_Signer_Identifier_Type, Incompatible_Protocol
