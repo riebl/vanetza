@@ -13,6 +13,7 @@ namespace vanetza
 {
 
 // forward declaration
+class PositionProvider;
 class Runtime;
 
 namespace security
