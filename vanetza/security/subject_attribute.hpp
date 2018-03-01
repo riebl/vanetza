@@ -22,6 +22,16 @@ struct SubjectAssurance
     static constexpr uint8_t confidence_mask = 0x03;
 
     uint8_t raw;
+
+    uint8_t assurance() const
+    {
+        return (raw & assurance_mask) >> 5;
+    }
+
+    uint8_t confidence() const
+    {
+        return raw & confidence_mask;
+    }
 };
 
 /// ItsAidSsp specified in TS 103 097 v1.2.1, section 6.9
@@ -120,6 +130,50 @@ void serialize(OutputArchive&, const SubjectAttribute&);
  * \param its_aid_ssp to serialize
  */
 void serialize(OutputArchive&, const ItsAidSsp&);
+
+/**
+ * \brief resolve type for matching SubjectAttributeType
+ *
+ * This is kind of the reverse function of get_type(const SubjectAttribute&)
+ */
+template<SubjectAttributeType>
+struct subject_attribute_type;
+
+template<>
+struct subject_attribute_type<SubjectAttributeType::Verification_Key>
+{
+    using type = VerificationKey;
+};
+
+template<>
+struct subject_attribute_type<SubjectAttributeType::Encryption_Key>
+{
+    using type = EncryptionKey;
+};
+
+template<>
+struct subject_attribute_type<SubjectAttributeType::Assurance_Level>
+{
+    using type = SubjectAssurance;
+};
+
+template<>
+struct subject_attribute_type<SubjectAttributeType::Reconstruction_Value>
+{
+    using type = EccPoint;
+};
+
+template<>
+struct subject_attribute_type<SubjectAttributeType::Its_Aid_List>
+{
+    using type = std::list<IntX>;
+};
+
+template<>
+struct subject_attribute_type<SubjectAttributeType::Its_Aid_Ssp_List>
+{
+    using type = std::list<ItsAidSsp>;
+};
 
 } // namespace security
 } // namespace vanetza

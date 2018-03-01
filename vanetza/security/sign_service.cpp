@@ -31,8 +31,8 @@ Signature signature_placeholder()
 } // namespace
 
 
-SignHeaderPolicy::SignHeaderPolicy(const Clock::time_point& time_now) :
-    m_time_now(time_now), m_cam_next_certificate(time_now), m_cert_requested(false), m_chain_requested(false)
+SignHeaderPolicy::SignHeaderPolicy(const Clock::time_point& time_now, PositionProvider& positioning) :
+    m_time_now(time_now), m_positioning(positioning), m_cam_next_certificate(time_now), m_cert_requested(false), m_chain_requested(false)
 {
 }
 
@@ -67,7 +67,9 @@ std::list<HeaderField> SignHeaderPolicy::prepare_header(const SignRequest& reque
         m_cert_requested = false;
         m_chain_requested = false;
     } else {
-        // TODO: Add generation location
+        // TODO: Add elevation once available via PositionFix
+        auto position = m_positioning.position_fix();
+        header_fields.push_back(ThreeDLocation(position.latitude, position.longitude));
         header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
     }
 

@@ -114,7 +114,7 @@ int main(int argc, const char** argv)
         auto certificate_provider = std::unique_ptr<security::CertificateProvider> {
             new security::NaiveCertificateProvider(trigger.runtime().now()) };
         auto certificate_validator = std::unique_ptr<security::CertificateValidator> {
-            new security::DefaultCertificateValidator(*crypto_backend, trigger.runtime().now(), positioning, trust_store, cert_cache) };
+            new security::DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store) };
 
         if (vm.count("trusted-certificate")) {
             for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
@@ -123,9 +123,9 @@ int main(int argc, const char** argv)
             }
         }
 
-        security::SignHeaderPolicy sign_header_policy(trigger.runtime().now());
+        security::SignHeaderPolicy sign_header_policy(trigger.runtime().now(), positioning);
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
-        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy);
+        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, positioning);
         security::SecurityEntity security_entity(sign_service, verify_service);
 
         RouterContext context(raw_socket, mib, trigger, positioning, security_entity);

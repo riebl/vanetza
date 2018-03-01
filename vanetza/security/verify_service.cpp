@@ -16,13 +16,12 @@ namespace security
 namespace
 {
 
-bool check_generation_time(Clock::time_point now, const SecuredMessageV2& message)
+bool check_generation_time(const SecuredMessageV2& message, Clock::time_point now)
 {
     using namespace std::chrono;
 
     bool valid = false;
-    const HeaderField* generation_time_field = message.header_field(HeaderFieldType::Generation_Time);
-    const Time64* generation_time = boost::get<Time64>(generation_time_field);
+    const Time64* generation_time = message.header_field<HeaderFieldType::Generation_Time>();
     if (generation_time) {
         // Values are picked from C2C-CC Basic System Profile v1.1.0, see RS_BSP_168
         static const auto generation_time_future = milliseconds(40);
@@ -30,8 +29,7 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
         static const Clock::duration generation_time_past_ca = seconds(2);
         auto generation_time_past = generation_time_past_default;
 
-        const HeaderField* its_aid_field = message.header_field(HeaderFieldType::Its_Aid);
-        const IntX* its_aid = boost::get<IntX>(its_aid_field);
+        const IntX* its_aid = message.header_field<HeaderFieldType::Its_Aid>();
         if (its_aid && aid::CA == *its_aid) {
             generation_time_past = generation_time_past_ca;
         }
@@ -46,6 +44,58 @@ bool check_generation_time(Clock::time_point now, const SecuredMessageV2& messag
     }
 
     return valid;
+}
+
+bool check_generation_location(const SecuredMessageV2& message, const Certificate& cert)
+{
+    const IntX* its_aid = message.header_field<HeaderFieldType::Its_Aid>();
+    if (its_aid && aid::CA == *its_aid) {
+        return true; // no check required for CAMs, field not even allowed
+    }
+
+    const ThreeDLocation* generation_location = message.header_field<HeaderFieldType::Generation_Location>();
+    if (generation_location) {
+        auto region = cert.get_restriction<ValidityRestrictionType::Region>();
+
+        if (!region || get_type(*region) == RegionType::None) {
+            return true;
+        }
+
+        return is_within(TwoDLocation(*generation_location), *region);
+    }
+
+    return false;
+}
+
+bool check_certificate_time(const Certificate& certificate, Clock::time_point now)
+{
+    auto time = certificate.get_restriction<ValidityRestrictionType::Time_Start_And_End>();
+    auto time_now = convert_time32(now);
+
+    if (!time) {
+        return false; // must be present
+    }
+
+    if (time->start_validity > time_now || time->end_validity < time_now) {
+        return false; // premature or outdated
+    }
+
+    return true;
+}
+
+bool check_certificate_region(const Certificate& certificate, const PositionFix& position)
+{
+    auto region = certificate.get_restriction<ValidityRestrictionType::Region>();
+
+    if (!region || get_type(*region) == RegionType::None) {
+        return true;
+    }
+
+    if (!position.confidence) {
+        return false; // cannot check region restrictions without good position fix
+    }
+
+    return is_within(TwoDLocation(position.latitude, position.longitude), *region);
 }
 
 bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
@@ -71,9 +121,11 @@ bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
 
 } // namespace
 
-VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy)
+VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy, PositionProvider& positioning)
 {
     return [&](VerifyRequest&& request) -> VerifyConfirm {
+        // TODO check if certificates in chain have been revoked for all CA certificates, ATs are never revoked
+
         VerifyConfirm confirm;
         const SecuredMessage& secured_message = request.secured_message;
 
@@ -112,6 +164,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
 
         const SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         std::list<Certificate> possible_certificates;
+        bool possible_certificates_from_cache = false;
 
         // use a dummy hash for initialization
         HashedId8 signer_hash({ 0, 0, 0, 0, 0, 0, 0, 0 });
@@ -122,7 +175,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     possible_certificates.push_back(boost::get<Certificate>(*signer_info));
                     signer_hash = calculate_hash(boost::get<Certificate>(*signer_info));
 
-                    if (confirm.its_aid == aid::CA && cert_cache.lookup(signer_hash).size() == 0) {
+                    if (confirm.its_aid == aid::CA && cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket).size() == 0) {
                         // Previously unknown certificate, send own certificate in next CAM
                         // See TS 103 097 v1.2.1, section 7.1, 1st bullet, 3rd dash
                         sign_policy.report_requested_certificate();
@@ -131,10 +184,8 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     break;
                 case SignerInfoType::Certificate_Digest_With_SHA256:
                     signer_hash = boost::get<HashedId8>(*signer_info);
-                    possible_certificates.splice(possible_certificates.end(), cert_cache.lookup(signer_hash));
-                    break;
-                case SignerInfoType::Self:
-                case SignerInfoType::Certificate_Digest_With_Other_Algorithm:
+                    possible_certificates.splice(possible_certificates.end(), cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket));
+                    possible_certificates_from_cache = true;
                     break;
                 case SignerInfoType::Certificate_Chain:
                 {
@@ -142,18 +193,35 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     if (chain.size() == 0) {
                         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
                         return confirm;
-                    } else if (chain.size() > 10) {
-                        // prevent DoS by sending very long chains
-                        confirm.report = VerificationReport::Invalid_Certificate; // TODO add custom report code?
+                    } else if (chain.size() > 3) {
+                        // prevent DoS by sending very long chains, maximum length is three certificates, because:
+                        // AT → AA → Root and no other signatures are allowed, sending the Root is optional
+                        confirm.report = VerificationReport::Invalid_Certificate;
                         return confirm;
                     }
                     // pre-check chain certificates, otherwise they're not available for the ticket check
                     for (auto& cert : chain) {
+                        // root certificates must already be known, otherwise the validation will fail anyway
                         if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
+                            // there's no need to report unknown signers at this point, see comment above
                             CertificateValidity validity = certs.check_certificate(cert);
-                            if (validity) {
-                                cert_cache.insert(cert);
+
+                            // we can abort early if there are invalid AA certificates in the chain
+                            if (!validity) {
+                                confirm.report = VerificationReport::Invalid_Certificate;
+                                confirm.certificate_validity = validity;
+                                return confirm;
                             }
+
+                            // we won't cache outdated or premature certificates in the cache and abort early
+                            // this check isn't required, at it would just fail below or in the consistency checks,
+                            // but is an optimizations and saves us from polluting the cache with such certificates.
+                            if (!check_certificate_time(cert, rt.now()) || !check_certificate_region(cert, positioning.position_fix())) {
+                                confirm.report = VerificationReport::Invalid_Certificate;
+                                return confirm;
+                            }
+
+                            cert_cache.insert(cert);
                         }
                     }
                     // last certificate must be the authorization ticket
@@ -175,7 +243,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             return confirm;
         }
 
-        if (!check_generation_time(rt.now(), secured_message)) {
+        if (!check_generation_time(secured_message, rt.now())) {
             confirm.report = VerificationReport::Invalid_Timestamp;
             return confirm;
         }
@@ -208,7 +276,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         ByteBuffer payload = convert_for_signing(secured_message, secured_message.trailer_fields);
         boost::optional<Certificate> signer;
 
-        for (auto& cert : possible_certificates) {
+        for (const auto& cert : possible_certificates) {
             SubjectType subject_type = cert.subject_info.subject_type;
             if (subject_type != SubjectType::Authorization_Ticket) {
                 confirm.report = VerificationReport::Invalid_Certificate;
@@ -247,7 +315,18 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             return confirm;
         }
 
-        CertificateValidity cert_validity = certs.check_certificate(signer.get());
+        // we can only check the generation location after we have identified the correct certificate
+        if (!check_generation_location(secured_message, *signer)) {
+            confirm.report = VerificationReport::Invalid_Certificate;
+            confirm.certificate_validity = CertificateInvalidReason::OFF_REGION;
+            return confirm;
+        }
+
+        CertificateValidity cert_validity = CertificateValidity::valid();
+        if (!possible_certificates_from_cache) { // certificates from cache are already verified as trusted
+            cert_validity = certs.check_certificate(*signer);
+        }
+
         confirm.certificate_validity = cert_validity;
 
         // if certificate could not be verified return correct DecapReport
@@ -255,10 +334,8 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             confirm.report = VerificationReport::Invalid_Certificate;
 
             if (cert_validity.reason() == CertificateInvalidReason::UNKNOWN_SIGNER) {
-                const Certificate& invalid_cert = signer.get();
-                if (get_type(invalid_cert.signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
-                    HashedId8 signer_hash = boost::get<HashedId8>(invalid_cert.signer_info);
-
+                if (get_type(signer->signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
+                    auto signer_hash = boost::get<HashedId8>(signer->signer_info);
                     confirm.certificate_id = signer_hash;
                     sign_policy.report_unknown_certificate(signer_hash);
                 }
@@ -267,16 +344,29 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             return confirm;
         }
 
-        cert_cache.insert(signer.get());
+        if (!check_certificate_time(*signer, rt.now())) {
+            confirm.report = VerificationReport::Invalid_Certificate;
+            confirm.certificate_validity = CertificateInvalidReason::OFF_TIME_PERIOD;
+            return confirm;
+        }
+
+        if (!check_certificate_region(*signer, positioning.position_fix())) {
+            confirm.report = VerificationReport::Invalid_Certificate;
+            confirm.certificate_validity = CertificateInvalidReason::OFF_REGION;
+            return confirm;
+        }
 
         // Assign permissions from the certificate based on the message AID already present in the confirm
         // and reject the certificate if no permissions are present for the claimed AID.
-        if (!assign_permissions(signer.get(), confirm)) {
+        if (!assign_permissions(*signer, confirm)) {
             // This might seem weird, because the certificate itself is valid, but not for the received message.
             confirm.report = VerificationReport::Invalid_Certificate;
             confirm.certificate_validity = CertificateInvalidReason::INSUFFICIENT_ITS_AID;
             return confirm;
         }
+
+        // cache only certificates that are useful, one that mismatches its restrictions isn't
+        cert_cache.insert(*signer);
 
         confirm.report = VerificationReport::Success;
         return confirm;

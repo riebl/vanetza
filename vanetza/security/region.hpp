@@ -13,6 +13,24 @@ namespace vanetza
 namespace security
 {
 
+/// ThreeDLocation specified in TS 103 097 v1.2.1, section 4.2.19
+struct ThreeDLocation
+{
+    ThreeDLocation() = default;
+    ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude) :
+        latitude(latitude), longitude(longitude), elevation({ 0xF0, 0x00 }) {} // unknown elevation
+    ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude) :
+        latitude(latitude), longitude(longitude), elevation({ 0xF0, 0x00 }) {} // unknown elevation
+    ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude, std::array<uint8_t, 2> elevation) :
+        latitude(latitude), longitude(longitude), elevation(elevation) {}
+    ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude, std::array<uint8_t, 2> elevation) :
+        latitude(latitude), longitude(longitude), elevation(elevation) {}
+
+    geonet::geo_angle_i32t latitude;
+    geonet::geo_angle_i32t longitude;
+    std::array<uint8_t, 2> elevation;
+};
+
 /// TwoDLocation specified in TS 103 097 v1.2.1, section 4.2.18
 struct TwoDLocation
 {
@@ -21,17 +39,17 @@ struct TwoDLocation
         latitude(latitude), longitude(longitude) {}
     TwoDLocation(units::GeoAngle latitude, units::GeoAngle longitude) :
         latitude(latitude), longitude(longitude) {}
+    TwoDLocation(ThreeDLocation threeD) :
+        latitude(threeD.latitude), longitude(threeD.longitude) {}
 
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longitude;
 };
 
-/// ThreeDLocation specified in TS 103 097 v1.2.1, section 4.2.19
-struct ThreeDLocation
+/// Specified in TS 103 097 v1.2.1, section 4.2.20
+struct NoneRegion
 {
-    geonet::geo_angle_i32t latitude;
-    geonet::geo_angle_i32t longitude;
-    std::array<uint8_t, 2> elevation;
+    // empty
 };
 
 /// CircularRegion specified in TS 103 097 v1.2.1, section 4.2.22
@@ -84,6 +102,7 @@ enum class RegionType : uint8_t
 
 /// GeographicRegion specified in TS 103 097 v1.2.1, section 4.2.20
 using GeographicRegion = boost::variant<
+    NoneRegion,
     CircularRegion,
     std::list<RectangularRegion>,
     PolygonalRegion,
@@ -266,6 +285,14 @@ size_t deserialize(InputArchive&, IdentifiedRegion&);
 size_t deserialize(InputArchive&, GeographicRegion&);
 
 /**
+ * \brief Check if position is within geographic region
+ * \param pos position
+ * \param r region
+ * \true if pos is within region
+ */
+bool is_within(const TwoDLocation&, const GeographicRegion&);
+
+/**
  * \brief Check if position is within circular region
  * \param pos position
  * \param c cicrular region
@@ -274,12 +301,76 @@ size_t deserialize(InputArchive&, GeographicRegion&);
 bool is_within(const TwoDLocation&, const CircularRegion&);
 
 /**
+ * \brief Check if position is within set of rectangular regions
+ * \param pos position
+ * \param r rectangular regions
+ * \true if pos is within region
+ */
+bool is_within(const TwoDLocation&, const std::list<RectangularRegion>&);
+
+/**
  * \brief Check if position is within rectangular region
  * \param pos position
  * \param r rectangular region
  * \true if pos is within region
  */
 bool is_within(const TwoDLocation&, const RectangularRegion&);
+
+/**
+ * \brief Check if position is within polygonal region
+ * \param pos position
+ * \param c cicrular region
+ * \true if pos is within region
+ */
+bool is_within(const TwoDLocation&, const PolygonalRegion&);
+
+/**
+ * \brief Check if position is within identified region
+ * \param pos position
+ * \param i identified region
+ * \true if pos is within region
+ */
+bool is_within(const TwoDLocation&, const IdentifiedRegion&);
+
+/**
+ * \brief Check if a region is within another geographic region
+ * \param reg region
+ * \param r region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const GeographicRegion&);
+
+/**
+ * \brief Check if a region is within a circular region
+ * \param reg region
+ * \param c cicrular region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const CircularRegion&);
+
+/**
+ * \brief Check if a region is within a set of rectangular regions
+ * \param reg region
+ * \param r rectangular regions
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const std::list<RectangularRegion>&);
+
+/**
+ * \brief Check if a region is within a polygonal region
+ * \param reg region
+ * \param c cicrular region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const PolygonalRegion&);
+
+/**
+ * \brief Check if a region is within an identified region
+ * \param reg region
+ * \param i identified region
+ * \true if pos is within region
+ */
+bool is_within(const GeographicRegion&, const IdentifiedRegion&);
 
 } //namespace security
 } //namespace vanetza

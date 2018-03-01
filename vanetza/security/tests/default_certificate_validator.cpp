@@ -1,6 +1,3 @@
-#include <vanetza/common/clock.hpp>
-#include <vanetza/common/runtime.hpp>
-#include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
@@ -20,25 +17,14 @@ public:
         backend(create_backend("default")),
         cert_provider(runtime.now()),
         cert_cache(runtime),
-        cert_validator(*backend, runtime.now(), position_provider, trust_store, cert_cache)
+        cert_validator(*backend, cert_cache, trust_store)
     {
         trust_store.insert(cert_provider.root_certificate());
         cert_cache.insert(cert_provider.aa_certificate());
     }
 
-    void set_position(units::GeoAngle latitude, units::GeoAngle longitude)
-    {
-        PositionFix position;
-        position.latitude = latitude;
-        position.longitude = longitude;
-        position.confidence.semi_minor = 50.0 * units::si::meter;
-        position.confidence.semi_major = 50.0 * units::si::meter;
-        position_provider.position_fix(position);
-    }
-
 protected:
     Runtime runtime;
-    StoredPositionProvider position_provider;
     std::unique_ptr<Backend> backend;
     NaiveCertificateProvider cert_provider;
     std::vector<Certificate> roots;
@@ -46,6 +32,48 @@ protected:
     CertificateCache cert_cache;
     DefaultCertificateValidator cert_validator;
 };
+
+TEST_F(DefaultCertificateValidatorTest, invalid_signer_info)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.signer_info = cert_provider.own_chain().front();
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNER, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, missing_subject_assurance)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.remove_attribute(SubjectAttributeType::Assurance_Level);
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::MISSING_SUBJECT_ASSURANCE, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, inconsistent_subject_assurance)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.remove_attribute(SubjectAttributeType::Assurance_Level);
+    cert.subject_attributes.push_back(SubjectAssurance(0xE0)); // higher level
+    cert_provider.sign_authorization_ticket(cert);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+
+    cert.remove_attribute(SubjectAttributeType::Assurance_Level);
+    cert.subject_attributes.push_back(SubjectAssurance(0x03)); // same level, higher confidence
+    cert_provider.sign_authorization_ticket(cert);
+
+    validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+}
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 {
@@ -86,8 +114,10 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 
     cert_provider.sign_authorization_ticket(cert);
 
+    // all certificates must use time_start_and_end as restriction
     CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_TRUE(validity);
+    ASSERT_FALSE(validity);
+    ASSERT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_end)
@@ -100,12 +130,10 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
 
     cert_provider.sign_authorization_ticket(cert);
 
-    // Time period broken, because AA and root CA have start time
+    // all certificates must use time_start_and_end as restriction
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
-
-    // TODO: Add test for certificate, AA and root CA with EndValidity
+    ASSERT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
@@ -164,85 +192,6 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
     EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
-}
-
-TEST_F(DefaultCertificateValidatorTest, validity_region_without_position)
-{
-    Certificate cert = cert_provider.generate_authorization_ticket();
-    TwoDLocation center { 10 * units::degree, 20 * units::degree };
-    CircularRegion region { center, 10 * units::si::meter };
-    cert.validity_restriction.push_back(region);
-    cert_provider.sign_authorization_ticket(cert);
-
-    CertificateValidity validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
-}
-
-TEST_F(DefaultCertificateValidatorTest, validity_region_circle)
-{
-    Certificate cert = cert_provider.generate_authorization_ticket();
-    TwoDLocation center { 10 * units::degree, 20 * units::degree };
-    CircularRegion region { center, 10 * units::si::meter };
-    cert.validity_restriction.push_back(region);
-    cert_provider.sign_authorization_ticket(cert);
-
-    CertificateValidity validity;
-    TwoDLocation ego_pos;
-    // inside
-    set_position(10.000001 * units::degree,  20 * units::degree);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_TRUE(validity);
-
-    // outside
-    set_position(10.1 * units::degree, 20 * units::degree);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
-}
-
-TEST_F(DefaultCertificateValidatorTest, validity_region_rectangle)
-{
-    Certificate cert = cert_provider.generate_authorization_ticket();
-    TwoDLocation northwest { 20 * units::degree, 10 * units::degree };
-    TwoDLocation southeast { 10 * units::degree, 20 * units::degree };
-    RectangularRegion region { northwest, southeast };
-    std::list<RectangularRegion> regions;
-    regions.push_back(region);
-    cert.validity_restriction.push_back(regions);
-    cert_provider.sign_authorization_ticket(cert);
-
-    CertificateValidity validity;
-    TwoDLocation ego_pos;
-
-    // inside
-    set_position(15 * units::degree, 15 * units::degree);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_TRUE(validity);
-
-    // outside - left
-    set_position(15 * units::degree, 9 * units::degree);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
-
-    // outside - right
-    set_position(15 * units::degree, 21 * units::degree);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
-
-    // outside - top
-    set_position(21 * units::degree, 15 * units::degree);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
-
-    // outside - down
-    set_position(9 * units::degree, 15 * units::degree);
-    validity = cert_validator.check_certificate(cert);
-    ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, reject_additional_permissions)

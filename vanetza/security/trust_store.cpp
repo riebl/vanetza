@@ -7,6 +7,10 @@ namespace security
 
 void TrustStore::insert(const Certificate& certificate)
 {
+    if (certificate.subject_info.subject_type != SubjectType::Root_Ca) {
+        throw std::runtime_error("Only root certificate authorities may be added to the trust store");
+    }
+
     HashedId8 id = calculate_hash(certificate);
     m_certificates.insert(std::make_pair(id, certificate));
 }

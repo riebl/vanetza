@@ -130,8 +130,39 @@ size_t deserialize(InputArchive&, ValidityRestriction&);
  */
 void serialize(OutputArchive&, const ValidityRestriction&);
 
+/**
+ * \brief resolve type for matching ValidityRestrictionType
+ *
+ * This is kind of the reverse function of get_type(const ValidityRestrictionType&)
+ */
+template<ValidityRestrictionType>
+struct validity_restriction_type;
+
+template<>
+struct validity_restriction_type<ValidityRestrictionType::Time_End>
+{
+    using type = EndValidity;
+};
+
+template<>
+struct validity_restriction_type<ValidityRestrictionType::Time_Start_And_End>
+{
+    using type = StartAndEndValidity;
+};
+
+template<>
+struct validity_restriction_type<ValidityRestrictionType::Time_Start_And_Duration>
+{
+    using type = StartAndDurationValidity;
+};
+
+template<>
+struct validity_restriction_type<ValidityRestrictionType::Region>
+{
+    using type = GeographicRegion;
+};
+
 } // namespace security
 } // namespace vanetza
 
 #endif /* VALIDITY_RESTRICTION_HPP_LMCUHYLJ */
-

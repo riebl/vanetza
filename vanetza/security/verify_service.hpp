@@ -4,6 +4,7 @@
 #include <boost/optional.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/position_provider.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/secured_message.hpp>
@@ -73,7 +74,7 @@ using VerifyService = std::function<VerifyConfirm(VerifyRequest&&)>;
  * \param sign_header_policy sign header policy to report unknown certificates
  * \return callable verify service
  */
-VerifyService straight_verify_service(Runtime&, CertificateProvider&, CertificateValidator&, Backend&, CertificateCache&, SignHeaderPolicy&);
+VerifyService straight_verify_service(Runtime&, CertificateProvider&, CertificateValidator&, Backend&, CertificateCache&, SignHeaderPolicy&, PositionProvider&);
 
 /**
  * Get insecure dummy verify service without any checks

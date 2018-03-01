@@ -15,6 +15,10 @@ RegionType get_type(const GeographicRegion& reg)
 {
     struct geograpical_region_visitor : public boost::static_visitor<RegionType>
     {
+        RegionType operator()(NoneRegion reg)
+        {
+            return RegionType::None;
+        }
         RegionType operator()(CircularRegion reg)
         {
             return RegionType::Circle;
@@ -115,6 +119,10 @@ size_t get_size(const GeographicRegion& reg)
 
     struct geograpical_region_visitor : public boost::static_visitor<>
     {
+        void operator()(NoneRegion reg)
+        {
+            m_size = 0;
+        }
         void operator()(CircularRegion reg)
         {
             m_size = get_size(reg);
@@ -202,6 +210,10 @@ void serialize(OutputArchive& ar, const GeographicRegion& reg)
         geograpical_region_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
+        }
+        void operator()(NoneRegion reg)
+        {
+            // nothing to do
         }
         void operator()(CircularRegion reg)
         {
@@ -299,6 +311,8 @@ size_t deserialize(InputArchive& ar, GeographicRegion& reg)
     size_t size = sizeof(RegionType);
     switch (type) {
         case RegionType::None:
+            NoneRegion none;
+            reg = none;
             break;
         case RegionType::Circle: {
             CircularRegion circle;
@@ -334,6 +348,41 @@ size_t deserialize(InputArchive& ar, GeographicRegion& reg)
     return (size);
 }
 
+bool is_within(const TwoDLocation& position, const GeographicRegion& reg)
+{
+    struct geograpical_region_visitor : public boost::static_visitor<bool>
+    {
+        geograpical_region_visitor(const TwoDLocation& position) :
+            m_position(position)
+        {
+        }
+        bool operator()(const NoneRegion& reg)
+        {
+            return true;
+        }
+        bool operator()(const CircularRegion& reg)
+        {
+            return is_within(m_position, reg);
+        }
+        bool operator()(const std::list<RectangularRegion>& reg)
+        {
+            return is_within(m_position, reg);
+        }
+        bool operator()(const PolygonalRegion& reg)
+        {
+            return is_within(m_position, reg);
+        }
+        bool operator()(const IdentifiedRegion& reg)
+        {
+            return is_within(m_position, reg);
+        }
+        const TwoDLocation& m_position;
+    };
+
+    geograpical_region_visitor visit(position);
+    return boost::apply_visitor(visit, reg);
+}
+
 bool is_within(const TwoDLocation& position, const CircularRegion& circular)
 {
     const auto& geod = GeographicLib::Geodesic::WGS84();
@@ -345,6 +394,18 @@ bool is_within(const TwoDLocation& position, const CircularRegion& circular)
     geod.Inverse(pos_lat / units::degree, pos_lon / units::degree,
             center_lat / units::degree, center_lon / units::degree, dist);
     return dist <= circular.radius / units::si::meter;
+}
+
+bool is_within(const TwoDLocation& position, const std::list<RectangularRegion>& rectangles)
+{
+    static const unsigned max_rectangles = 6; // see TS 103 097 v1.2.1, section 4.2.20
+
+    if (rectangles.size() > max_rectangles) {
+        return false;
+    }
+
+    return std::any_of(rectangles.begin(), rectangles.end(),
+            [&position](const RectangularRegion& rect) { return is_within(position, rect); });
 }
 
 bool is_within(const TwoDLocation& position, const RectangularRegion& rectangle)
@@ -369,6 +430,133 @@ bool is_within(const TwoDLocation& position, const RectangularRegion& rectangle)
     }
 
     return true;
+}
+
+bool is_within(const TwoDLocation& position, const PolygonalRegion& region)
+{
+    // TODO: Add support for polygonal region, see TS 103 097 v1.2.1, section 4.2.24
+    return false;
+}
+
+bool is_within(const TwoDLocation& position, const IdentifiedRegion& region)
+{
+    // TODO: Add support for identified region, see TS 103 097 v1.2.1, section 4.2.25
+    return false;
+}
+
+bool is_within(const GeographicRegion& inner, const GeographicRegion& outer)
+{
+    struct outer_geograpical_region_visitor : public boost::static_visitor<bool>
+    {
+        outer_geograpical_region_visitor(const GeographicRegion& inner) :
+            inner(inner)
+        {
+        }
+        bool operator()(const NoneRegion& outer)
+        {
+            return true;
+        }
+        bool operator()(const CircularRegion& outer)
+        {
+            return is_within(inner, outer);
+        }
+        bool operator()(const std::list<RectangularRegion>& outer)
+        {
+            return is_within(inner, outer);
+        }
+        bool operator()(const PolygonalRegion& outer)
+        {
+            return is_within(inner, outer);
+        }
+        bool operator()(const IdentifiedRegion& outer)
+        {
+            return is_within(inner, outer);
+        }
+        const GeographicRegion& inner;
+    };
+
+    outer_geograpical_region_visitor visit(inner);
+    return boost::apply_visitor(visit, outer);
+}
+
+bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
+{
+    struct inner_geograpical_region_visitor : public boost::static_visitor<bool>
+    {
+        inner_geograpical_region_visitor(const CircularRegion& outer) :
+            outer(outer)
+        {
+        }
+        bool operator()(const NoneRegion& inner)
+        {
+            return false;
+        }
+        bool operator()(const CircularRegion& inner)
+        {
+            const auto& geod = GeographicLib::Geodesic::WGS84();
+            double center_dist = 0.0;
+            const units::GeoAngle inner_lat { inner.center.latitude };
+            const units::GeoAngle inner_long { inner.center.longitude };
+            const units::GeoAngle outer_lat { outer.center.latitude };
+            const units::GeoAngle outer_long { outer.center.longitude };
+            geod.Inverse(inner_lat / units::degree, inner_long / units::degree,
+                    outer_lat / units::degree, outer_long / units::degree, center_dist);
+            return center_dist + inner.radius / units::si::meter <= outer.radius / units::si::meter;
+        }
+        bool operator()(const std::list<RectangularRegion>& inner)
+        {
+            // TODO: Implement check whether reactangles are within the circle
+            // Note: The rectangles can be converted to a polygon and its implementation be reused then.
+            // Note: Checking whether all corners of a rectangle are within the circle is NOT enough!
+            // Example: The rectangle here is spanning the earth except for a small part within the circle.
+            //         ________
+            //       /         \
+            // _____/__       __\_____
+            //     |   |     |   |
+            // _____\__|     |__/____
+            //       \_________/
+            //
+            return false;
+        }
+        bool operator()(const PolygonalRegion& inner)
+        {
+            // TODO: Implement check whether a polygon is within the circle.
+            // Note: Same thoughts as for rectangles applies.
+            return false;
+        }
+        bool operator()(const IdentifiedRegion& inner)
+        {
+            // TODO: Implement check whether an identified region is within the circle.
+            // Note: The identified region can be converted to a polygon and its implementation be reused then.
+            // Note: Same thoughts as for rectangles applies.
+            return false;
+        }
+        const CircularRegion& outer;
+    };
+
+    inner_geograpical_region_visitor visit(outer);
+    return boost::apply_visitor(visit, inner);
+}
+
+bool is_within(const GeographicRegion& inner, const std::list<RectangularRegion>& outer)
+{
+    // Note: The rectangles cover an area combined, there's no need for the inner shape to be within a single one!
+    // TODO: Implement check whether inner is within the set of rectangles
+    // Note: The rectangles can be converted to a polygon and its implementation be reused then.
+    return false;
+}
+
+bool is_within(const GeographicRegion& inner, const PolygonalRegion& outer)
+{
+    // TODO: Implement check whether inner is within the polygon
+    return false;
+}
+
+bool is_within(const GeographicRegion& inner, const IdentifiedRegion& outer)
+{
+    // TODO: Implement check whether inner is within the polygon identified by the outer region
+    // Note: The identified region can be converted to a polygon and its implementation be reused then.
+    return false;
 }
 
 } // namespace security

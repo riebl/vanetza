@@ -58,3 +58,148 @@ TEST(Region, Serialize_RectangularRegion_list)
     }
     check(reg, serialize_roundtrip(reg));
 }
+
+TEST(Region, TwoDLocation_Within_Circle)
+{
+    CircularRegion region;
+    region.radius = static_cast<distance_u16t>(400 * meter);
+    region.center = TwoDLocation {
+        geo_angle_i32t::from_value(490139190),
+        geo_angle_i32t::from_value(84044460)
+    };
+
+    EXPECT_TRUE(is_within(region.center, region));
+
+    EXPECT_TRUE(is_within(TwoDLocation {
+        geo_angle_i32t::from_value(490143170),
+        geo_angle_i32t::from_value(83995470)
+    }, region));
+
+    EXPECT_FALSE(is_within(TwoDLocation {
+        geo_angle_i32t::from_value(490145910),
+        geo_angle_i32t::from_value(83984740)
+    }, region));
+
+    EXPECT_FALSE(is_within(TwoDLocation {
+        geo_angle_i32t::from_value(490137060),
+        geo_angle_i32t::from_value(84120020)
+    }, region));
+}
+
+TEST(Region, Circle_Within_Circle)
+{
+    CircularRegion outer;
+    outer.radius = static_cast<distance_u16t>(400 * meter);
+    outer.center = TwoDLocation {
+        geo_angle_i32t::from_value(490139190),
+        geo_angle_i32t::from_value(84044460)
+    };
+
+    CircularRegion inner;
+    inner.center = outer.center;
+
+    for (int i = 0; i <= 400; i += 10) {
+        inner.radius = static_cast<distance_u16t>(i * meter);
+        EXPECT_TRUE(is_within(inner, outer));
+    }
+
+    inner.radius = static_cast<distance_u16t>(401 * meter);
+    EXPECT_FALSE(is_within(inner, outer));
+
+    inner.center = TwoDLocation {
+        geo_angle_i32t::from_value(490143170),
+        geo_angle_i32t::from_value(83995470)
+    };
+
+    inner.radius = static_cast<distance_u16t>(38 * meter);
+    EXPECT_TRUE(is_within(inner, outer));
+
+    inner.radius = static_cast<distance_u16t>(40 * meter);
+    EXPECT_FALSE(is_within(inner, outer));
+}
+
+TEST(Region, TwoDLocation_Within_None)
+{
+    NoneRegion region;
+
+    EXPECT_TRUE(is_within(TwoDLocation {
+        geo_angle_i32t::from_value(490143170),
+        geo_angle_i32t::from_value(83995470)
+    }, region));
+}
+
+TEST(Region, Circle_Within_None)
+{
+    NoneRegion outer;
+
+    CircularRegion inner;
+    inner.radius = static_cast<distance_u16t>(400 * meter);
+    inner.center = TwoDLocation {
+        geo_angle_i32t::from_value(490139190),
+        geo_angle_i32t::from_value(84044460)
+    };
+
+    EXPECT_TRUE(is_within(inner, outer));
+    EXPECT_FALSE(is_within(outer, inner));
+}
+
+TEST(Region, TwoDLocation_Within_Rectangles)
+{
+    TwoDLocation northwest {
+        static_cast<geo_angle_i32t>(20 * degrees),
+        static_cast<geo_angle_i32t>(10 * degrees)
+    };
+    TwoDLocation southeast {
+        static_cast<geo_angle_i32t>(10 * degrees),
+        static_cast<geo_angle_i32t>(20 * degrees)
+    };
+    RectangularRegion region { northwest, southeast };
+    std::list<RectangularRegion> regions({ region });
+
+    // inside
+    EXPECT_TRUE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(15 * degrees),
+        static_cast<geo_angle_i32t>(15 * degrees)
+    }, regions));
+
+    // outside - left
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(15 * degrees),
+        static_cast<geo_angle_i32t>(9 * degrees)
+    }, regions));
+
+    // outside - right
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(15 * degrees),
+        static_cast<geo_angle_i32t>(21 * degrees)
+    }, regions));
+
+    // outside - top
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(21 * degrees),
+        static_cast<geo_angle_i32t>(15 * degrees)
+    }, regions));
+
+    // outside - down
+    EXPECT_FALSE(is_within(TwoDLocation {
+        static_cast<geo_angle_i32t>(9 * degrees),
+        static_cast<geo_angle_i32t>(15 * degrees)
+    }, regions));
+}
+
+TEST(Region, Rectangles_Within_None)
+{
+    TwoDLocation northwest {
+        static_cast<geo_angle_i32t>(20 * degrees),
+        static_cast<geo_angle_i32t>(10 * degrees)
+    };
+    TwoDLocation southeast {
+        static_cast<geo_angle_i32t>(10 * degrees),
+        static_cast<geo_angle_i32t>(20 * degrees)
+    };
+    RectangularRegion region { northwest, southeast };
+    std::list<RectangularRegion> regions({ region });
+
+    EXPECT_TRUE(is_within(regions, NoneRegion()));
+    EXPECT_FALSE(is_within(NoneRegion(), regions));
+}

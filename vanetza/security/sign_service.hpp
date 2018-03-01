@@ -3,6 +3,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/common/position_provider.hpp>
 #include <vanetza/net/packet.hpp>
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/secured_message.hpp>
@@ -40,9 +41,9 @@ struct SignConfirm
 class SignHeaderPolicy
 {
 public:
-    SignHeaderPolicy(const Clock::time_point& time_now);
+    SignHeaderPolicy(const Clock::time_point& time_now, PositionProvider& positioning);
 
-    std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
+    virtual std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider);
 
     void report_unknown_certificate(HashedId8 id);
 
@@ -50,8 +51,11 @@ public:
 
     void report_requested_certificate_chain();
 
-private:
+protected:
     const Clock::time_point& m_time_now;
+
+private:
+    PositionProvider& m_positioning;
     Clock::time_point m_cam_next_certificate;
     std::set<HashedId3> m_unknown_certificates;
     bool m_cert_requested;

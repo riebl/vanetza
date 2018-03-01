@@ -13,6 +13,7 @@
 #include <vanetza/security/subject_info.hpp>
 #include <vanetza/security/validity_restriction.hpp>
 #include <boost/optional/optional.hpp>
+#include <boost/variant/get.hpp>
 
 namespace vanetza
 {
@@ -31,10 +32,22 @@ struct Certificate
     uint8_t version() const { return 2; }
 
     /**
+     * Get subject attribute of a certain type (if present)
+     * \param sat type of subject attribute
+     */
+    const SubjectAttribute* get_attribute(SubjectAttributeType type) const;
+
+    /**
+     * Get validity restriction of a certain type (if present)
+     * \param vrt type of validity restriction
+     */
+    const ValidityRestriction* get_restriction(ValidityRestrictionType vrt) const;
+
+    /**
      * Remove subject attribute of a certain type (if present)
      * \param sat type of subject attribute
      */
-    void remove_attribute(SubjectAttributeType);
+    void remove_attribute(SubjectAttributeType sat);
 
     /**
      * Remove validity restriction of a certain type (if present)
@@ -54,6 +67,22 @@ struct Certificate
      * \param ssp Service Specific Permissions
      */
     void add_permission(ItsAid aid, const ByteBuffer& ssp);
+
+    template<SubjectAttributeType T>
+    const typename subject_attribute_type<T>::type* get_attribute() const
+    {
+        using type = typename subject_attribute_type<T>::type;
+        const SubjectAttribute* field = get_attribute(T);
+        return boost::get<type>(field);
+    }
+
+    template<ValidityRestrictionType T>
+    const typename validity_restriction_type<T>::type* get_restriction() const
+    {
+        using type = typename validity_restriction_type<T>::type;
+        const ValidityRestriction* field = get_restriction(T);
+        return boost::get<type>(field);
+    }
 };
 
 enum class CertificateInvalidReason
@@ -69,6 +98,7 @@ enum class CertificateInvalidReason
     OFF_REGION,
     INCONSISTENT_WITH_SIGNER,
     INSUFFICIENT_ITS_AID,
+    MISSING_SUBJECT_ASSURANCE,
 };
 
 class CertificateValidity
