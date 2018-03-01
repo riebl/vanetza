@@ -16,7 +16,7 @@ namespace security
 /// ThreeDLocation specified in TS 103 097 v1.2.1, section 4.2.19
 struct ThreeDLocation
 {
-    constexpr static std::array<uint8_t, 2> unknown_elevation = { 0xF0, 0x00 };
+    static const std::array<uint8_t, 2> unknown_elevation;
 
     ThreeDLocation() = default;
     ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude) :

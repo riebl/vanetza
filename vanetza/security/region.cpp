@@ -11,6 +11,8 @@ namespace vanetza
 namespace security
 {
 
+const std::array<uint8_t, 2> ThreeDLocation::unknown_elevation({0xF0, 0x00});
+
 RegionType get_type(const GeographicRegion& reg)
 {
     struct geograpical_region_visitor : public boost::static_visitor<RegionType>
