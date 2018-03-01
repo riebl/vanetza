@@ -97,7 +97,6 @@ TEST_F(CertificateCacheTest, lookup_match_extends_lifetime)
 {
     const Certificate cert1 = build_certificate(SubjectType::Authorization_Ticket);
     const Certificate cert2 = build_certificate(SubjectType::Authorization_Authority);
-    const HashedId8 id_cert1 = calculate_hash(cert1);
     const HashedId8 id_cert2 = calculate_hash(cert2);
 
     cache.insert(cert1);
