@@ -43,6 +43,68 @@ RegionType get_type(const GeographicRegion& reg)
     return boost::apply_visitor(visit, reg);
 }
 
+bool TwoDLocation::operator==(const TwoDLocation& other) const
+{
+    return this->latitude == other.latitude && this->longitude == other.longitude;
+}
+
+bool TwoDLocation::operator!=(const TwoDLocation& other) const
+{
+    return !(*this == other);
+}
+
+bool ThreeDLocation::operator==(const ThreeDLocation& other) const
+{
+    return this->latitude == other.latitude && this->longitude == other.longitude && this->elevation == other.elevation;
+}
+
+bool ThreeDLocation::operator!=(const ThreeDLocation& other) const
+{
+    return !(*this == other);
+}
+
+bool NoneRegion::operator==(const NoneRegion& other) const
+{
+    return true;
+}
+
+bool NoneRegion::operator!=(const NoneRegion& other) const
+{
+    return !(*this == other);
+}
+
+bool CircularRegion::operator==(const CircularRegion& other) const
+{
+    return this->center == other.center && this->radius == other.radius;
+}
+
+bool CircularRegion::operator!=(const CircularRegion& other) const
+{
+    return !(*this == other);
+}
+
+bool RectangularRegion::operator==(const RectangularRegion& other) const
+{
+    return this->northwest == other.northwest && this->southeast == other.southeast;
+}
+
+bool RectangularRegion::operator!=(const RectangularRegion& other) const
+{
+    return !(*this == other);
+}
+
+bool IdentifiedRegion::operator==(const IdentifiedRegion& other) const
+{
+    return this->region_dictionary == other.region_dictionary
+        && this->region_identifier == other.region_identifier
+        && this->local_region == other.local_region;
+}
+
+bool IdentifiedRegion::operator!=(const IdentifiedRegion& other) const
+{
+    return !(*this == other);
+}
+
 size_t get_size(const TwoDLocation& loc)
 {
     size_t size = 0;
@@ -495,6 +557,10 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
         }
         bool operator()(const CircularRegion& inner)
         {
+            if (inner == outer) {
+                return true;
+            }
+
             const auto& geod = GeographicLib::Geodesic::WGS84();
             double center_dist = 0.0;
             const units::GeoAngle inner_lat { inner.center.latitude };
@@ -545,7 +611,47 @@ bool is_within(const GeographicRegion& inner, const std::list<RectangularRegion>
     // Note: The rectangles cover an area combined, there's no need for the inner shape to be within a single one!
     // TODO: Implement check whether inner is within the set of rectangles
     // Note: The rectangles can be converted to a polygon and its implementation be reused then.
-    return false;
+    // Note: Only exact matches are implemented for now.
+
+    struct inner_geograpical_region_visitor : public boost::static_visitor<bool>
+    {
+        inner_geograpical_region_visitor(const std::list<RectangularRegion>& outer) :
+            outer(outer)
+        {
+        }
+        bool operator()(const NoneRegion& inner)
+        {
+            return false;
+        }
+        bool operator()(const CircularRegion& inner)
+        {
+            // TODO: Implement.
+            return false;
+        }
+        bool operator()(const std::list<RectangularRegion>& inner)
+        {
+            if (inner == outer) {
+                return true;
+            }
+
+            // TODO: Implement.
+            return false;
+        }
+        bool operator()(const PolygonalRegion& inner)
+        {
+            // TODO: Implement.
+            return false;
+        }
+        bool operator()(const IdentifiedRegion& inner)
+        {
+            // TODO: Implement.
+            return false;
+        }
+        const std::list<RectangularRegion>& outer;
+    };
+
+    inner_geograpical_region_visitor visit(outer);
+    return boost::apply_visitor(visit, inner);
 }
 
 bool is_within(const GeographicRegion& inner, const PolygonalRegion& outer)

@@ -203,3 +203,33 @@ TEST(Region, Rectangles_Within_None)
     EXPECT_TRUE(is_within(regions, NoneRegion()));
     EXPECT_FALSE(is_within(NoneRegion(), regions));
 }
+
+TEST(Region, Rectangle_Within_Rectangle_Exact)
+{
+    TwoDLocation northwest_a {
+        static_cast<geo_angle_i32t>(10 * degrees),
+        static_cast<geo_angle_i32t>(10 * degrees)
+    };
+    TwoDLocation southeast_a {
+        static_cast<geo_angle_i32t>(20 * degrees),
+        static_cast<geo_angle_i32t>(20 * degrees)
+    };
+
+    TwoDLocation northwest_b {
+        static_cast<geo_angle_i32t>(10 * degrees),
+        static_cast<geo_angle_i32t>(10 * degrees)
+    };
+    TwoDLocation southeast_b {
+        static_cast<geo_angle_i32t>(20 * degrees),
+        static_cast<geo_angle_i32t>(20 * degrees)
+    };
+
+    RectangularRegion a { northwest_a, southeast_a };
+    RectangularRegion b { northwest_b, southeast_b };
+
+    std::list<RectangularRegion> region_a({ a });
+    std::list<RectangularRegion> region_b({ b });
+
+    EXPECT_TRUE(is_within(region_a, region_b));
+    EXPECT_TRUE(is_within(region_b, region_a));
+}
