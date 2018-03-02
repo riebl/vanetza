@@ -2,7 +2,6 @@
 #define LENGTH_CODING_HPP_UQ1OIDUN
 
 #include <vanetza/common/byte_buffer.hpp>
-#include <boost/optional.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <cstdint>
 #include <tuple>
@@ -31,8 +30,7 @@ boost::iterator_range<ByteBuffer::const_iterator> decode_length_range(const Byte
  * \param buffer Buffer with input data, shall start with first byte of encoded length
  * \return tuple of iterator pointing at start of payload buffer and its length
  */
-boost::optional<std::tuple<ByteBuffer::const_iterator, std::size_t>> decode_length(
-    const ByteBuffer& buffer);
+std::tuple<ByteBuffer::const_iterator, std::size_t> decode_length(const ByteBuffer& buffer);
 
 /**
  * Count number of leading one bits

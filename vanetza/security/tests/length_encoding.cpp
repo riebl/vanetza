@@ -42,40 +42,41 @@ TEST(LengthEncoding, encode_length)
 TEST(LengthEncoding, decode_length_empty_buffer)
 {
     ByteBuffer buffer;
-    EXPECT_FALSE(!!decode_length(buffer));
+    auto decoded = decode_length(buffer);
+    EXPECT_EQ(buffer.end(), std::get<0>(decoded));
+    EXPECT_EQ(0, std::get<1>(decoded));
 }
 
 TEST(LengthEncoding, decode_length_zero_size)
 {
-    ByteBuffer buffer { 0x00 };
-    auto decoded_tuple = decode_length(buffer);
-    ASSERT_TRUE(!!decoded_tuple);
-    EXPECT_EQ(buffer.end(), std::get<0>(*decoded_tuple));
-    EXPECT_EQ(0, std::get<1>(*decoded_tuple));
+    ByteBuffer buffer { 0x00, 0xC0, 0xFF, 0xEE };
+    auto decoded = decode_length(buffer);
+    EXPECT_EQ(buffer.begin() += 1, std::get<0>(decoded));
+    EXPECT_EQ(0, std::get<1>(decoded));
 }
 
 TEST(LengthEncoding, decode_length_prefix_too_long)
 {
     ByteBuffer buffer { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xba, 0xbe };
-    EXPECT_FALSE(!!decode_length(buffer));
+    auto decoded = decode_length(buffer);
+    EXPECT_EQ(buffer.end(), std::get<0>(decoded));
+    EXPECT_EQ(0, std::get<1>(decoded));
 }
 
 TEST(LengthEncoding, decode_length_buffer_too_short)
 {
     ByteBuffer buffer { 0x02, 0xde };
     auto decoded_tuple = decode_length(buffer);
-    ASSERT_TRUE(!!decoded_tuple);
-    EXPECT_EQ(buffer.begin() += 1, std::get<0>(*decoded_tuple));
-    EXPECT_EQ(2, std::get<1>(*decoded_tuple));
+    EXPECT_EQ(buffer.begin() += 1, std::get<0>(decoded_tuple));
+    EXPECT_EQ(2, std::get<1>(decoded_tuple));
 }
 
 TEST(LengthEncoding, decode_length_good)
 {
     ByteBuffer buffer { 0xe0, 0x00, 0x00, 0x04, 0x12, 0x34, 0x56, 0x78, 0x9a, 0xbc, 0xde };
     auto decoded_tuple = decode_length(buffer);
-    ASSERT_TRUE(!!decoded_tuple);
-    EXPECT_EQ(buffer.begin() += 4, std::get<0>(*decoded_tuple));
-    EXPECT_EQ(4, std::get<1>(*decoded_tuple));
+    EXPECT_EQ(buffer.begin() += 4, std::get<0>(decoded_tuple));
+    EXPECT_EQ(4, std::get<1>(decoded_tuple));
 }
 
 TEST(LengthEncoding, decode_length_range_empty_buffer)
@@ -93,13 +94,13 @@ TEST(LengthEncoding, decode_length_range_zero_size)
 TEST(LengthEncoding, decode_length_range_prefix_too_long)
 {
     ByteBuffer buffer { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xba, 0xbe };
-    EXPECT_EQ(boost::make_iterator_range(buffer), decode_length_range(buffer));
+    EXPECT_EQ(boost::make_iterator_range(buffer.end(), buffer.end()), decode_length_range(buffer));
 }
 
 TEST(LengthEncoding, decode_length_range_buffer_too_short)
 {
     ByteBuffer buffer { 0x02, 0xde };
-    EXPECT_EQ(boost::make_iterator_range(buffer), decode_length_range(buffer));
+    EXPECT_EQ(boost::make_iterator_range(buffer.end(), buffer.end()), decode_length_range(buffer));
 }
 
 TEST(LengthEncoding, decode_length_range_good)

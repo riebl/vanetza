@@ -26,9 +26,8 @@ size_t deserialize_length(InputArchive& ar)
         ar >> buf[c];
     }
     auto tup = decode_length(buf);
-    assert(tup);
-    assert(std::get<0>(*tup) == buf.end());
-    return std::get<1>(*tup);
+    assert(std::get<0>(tup) == buf.end());
+    return std::get<1>(tup);
 }
 
 } // namespace security

@@ -18,14 +18,13 @@ ByteBuffer IntX::encode() const
 
 boost::optional<IntX> IntX::decode(const ByteBuffer& buffer)
 {
-    boost::optional<IntX> result;
-    auto decoded_tuple = decode_length(buffer);
-    if (decoded_tuple) {
-        IntX tmp;
-        tmp.set(std::get<1>(*decoded_tuple));
-        result = tmp;
+    std::tuple<ByteBuffer::const_iterator, std::size_t> decoded = decode_length(buffer);
+    if (std::get<1>(decoded) > 0 || std::get<0>(decoded) != buffer.end() || buffer.size() == 1) {
+        IntX result;
+        result.set(std::get<1>(decoded));
+        return result;
     }
-    return result;
+    return boost::none;
 }
 
 size_t get_size(IntX intx)

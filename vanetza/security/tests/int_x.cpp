@@ -71,6 +71,28 @@ TEST(IntX, decode)
     EXPECT_EQ(0x320034, decoded->get());
 }
 
+TEST(IntX, decode_one_null_byte)
+{
+    ByteBuffer buf { 0x00 };
+    auto decoded = IntX::decode(buf);
+    ASSERT_TRUE(!!decoded);
+    EXPECT_EQ(0, decoded->get());
+}
+
+TEST(IntX, decode_empty)
+{
+    ByteBuffer buf;
+    auto decoded = IntX::decode(buf);
+    EXPECT_FALSE(!!decoded);
+}
+
+TEST(IntX, decode_broken)
+{
+    ByteBuffer buf { 0xff, 0xff };
+    auto decoded = IntX::decode(buf);
+    EXPECT_FALSE(!!decoded);
+}
+
 TEST(IntX, serialization)
 {
     IntX x;
@@ -82,7 +104,4 @@ TEST(IntX, serialization)
 
     x.set(0x123456);
     EXPECT_EQ(x, serialize_roundtrip(x));
-
-    x.set(~1);
-    EXPECT_DEBUG_DEATH(serialize_roundtrip(x), "");
 }

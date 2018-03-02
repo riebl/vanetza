@@ -61,27 +61,22 @@ ByteBuffer encode_length(std::size_t length)
 
 boost::iterator_range<ByteBuffer::const_iterator> decode_length_range(const ByteBuffer& buffer)
 {
-    auto range = boost::make_iterator_range(buffer.begin(), buffer.end());
-    auto payload = decode_length(buffer);
-    if (payload) {
-        ByteBuffer::const_iterator start;
-        ByteBuffer::difference_type length = 0;
-        std::tie(start, length) = payload.get();
+    ByteBuffer::const_iterator start;
+    ByteBuffer::difference_type length = 0;
+    std::tie(start, length) = decode_length(buffer);
+    if (start != buffer.end()) {
         if (std::distance(start, buffer.end()) >= length) {
             ByteBuffer::const_iterator stop = start;
             std::advance(stop, length);
-            range = boost::make_iterator_range(start, stop);
+            return boost::make_iterator_range(start, stop);
         }
     }
 
-    return range;
+    return boost::make_iterator_range(buffer.end(), buffer.end());
 }
 
-boost::optional<std::tuple<ByteBuffer::const_iterator, std::size_t>> decode_length(
-    const ByteBuffer& buffer)
+std::tuple<ByteBuffer::const_iterator, std::size_t> decode_length(const ByteBuffer& buffer)
 {
-    boost::optional<std::tuple<ByteBuffer::const_iterator, std::size_t>> result;
-
     if (!buffer.empty()) {
         std::size_t additional_prefix = count_leading_ones(buffer.front());
         static const std::size_t additional_bytes_max = std::min(sizeof(std::size_t) - 1,
@@ -97,11 +92,11 @@ boost::optional<std::tuple<ByteBuffer::const_iterator, std::size_t>> decode_leng
 
             auto start = buffer.begin();
             std::advance(start, additional_prefix + 1);
-            result = std::make_tuple(start, length);
+            return std::make_tuple(start, length);
         }
     }
 
-    return result;
+    return std::make_tuple(buffer.end(), 0);
 }
 
 } // namespace security
