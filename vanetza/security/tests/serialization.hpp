@@ -33,7 +33,7 @@ size_t deserialize_from_hexstring(const char* string, T& result, ARGS&&... args)
     auto buffer = buffer_from_hexstring(string);
     byte_buffer_source source(buffer);
     boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
-    InputArchive ar(stream, boost::archive::no_header);
+    InputArchive ar(stream);
     return deserialize(ar, result, std::forward<ARGS>(args)...);
 }
 

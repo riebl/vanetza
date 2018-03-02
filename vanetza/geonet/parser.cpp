@@ -12,7 +12,7 @@ namespace geonet
 Parser::Parser(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end) :
     m_byte_buffer_source(begin, end),
     m_stream(m_byte_buffer_source),
-    m_archive(m_stream, boost::archive::no_header),
+    m_archive(m_stream),
     m_read_bytes(0)
 {
 }
@@ -28,7 +28,7 @@ std::size_t Parser::parse_basic(BasicHeader& basic)
     try {
         deserialize(basic, m_archive);
         bytes = BasicHeader::length_bytes;
-    } catch (boost::archive::archive_exception&) {
+    } catch (InputArchive::Exception&) {
     }
 
     m_read_bytes += bytes;
@@ -41,7 +41,7 @@ std::size_t Parser::parse_common(CommonHeader& common)
     try {
         deserialize(common, m_archive);
         bytes = CommonHeader::length_bytes;
-    } catch (boost::archive::archive_exception&) {
+    } catch (InputArchive::Exception&) {
     }
 
     m_read_bytes += bytes;
@@ -53,7 +53,7 @@ std::size_t Parser::parse_secured(security::SecuredMessageV2& secured)
     std::size_t bytes = 0;
     try {
         bytes = deserialize(m_archive, secured);
-    } catch (boost::archive::archive_exception&) {
+    } catch (InputArchive::Exception&) {
     } catch (security::deserialization_error&) {
     }
 
@@ -101,7 +101,7 @@ std::size_t Parser::parse_extended(HeaderVariant& extended, HeaderType ht)
                 // invalid types
                 break;
         }
-    } catch (boost::archive::archive_exception&) {
+    } catch (InputArchive::Exception&) {
     }
 
     m_read_bytes += bytes;

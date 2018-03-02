@@ -116,7 +116,7 @@ ByteBuffer convert_for_signing(const ExtendedPdu<HEADER>& pdu)
     byte_buffer_sink sink(buf);
 
     boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
-    OutputArchive ar(stream, boost::archive::no_header);
+    OutputArchive ar(stream);
 
     serialize(pdu.common(), ar);
     serialize(pdu.extended(), ar);

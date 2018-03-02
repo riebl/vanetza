@@ -15,7 +15,7 @@ void serialize_into_buffer(const T& t, ByteBuffer& buf)
 {
     byte_buffer_sink sink(buf);
     boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
-    OutputArchive ar(stream, boost::archive::no_header);
+    OutputArchive ar(stream);
     serialize(ar, t);
 }
 
@@ -24,7 +24,7 @@ void deserialize_from_buffer(T& t, const ByteBuffer& buf)
 {
     byte_buffer_source source(buf);
     boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
-    InputArchive ar(stream, boost::archive::no_header);
+    InputArchive ar(stream);
     deserialize(ar, t);
 }
 
@@ -33,7 +33,7 @@ void deserialize_from_range(T& t, typename byte_buffer_source::range range)
 {
     byte_buffer_source source(range);
     boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
-    InputArchive ar(stream, boost::archive::no_header);
+    InputArchive ar(stream);
     deserialize(ar, t);
 }
 

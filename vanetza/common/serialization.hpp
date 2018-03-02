@@ -1,17 +1,13 @@
 #ifndef SERIALIZATION_HPP_U2YGHSPB
 #define SERIALIZATION_HPP_U2YGHSPB
 
+#include <vanetza/common/archives.hpp>
 #include <vanetza/common/byte_order.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
 #include <boost/units/quantity.hpp>
 #include <type_traits>
 
 namespace vanetza
 {
-
-typedef boost::archive::binary_iarchive InputArchive;
-typedef boost::archive::binary_oarchive OutputArchive;
 
 template<typename T, ByteOrder ORDER>
 void serialize(OutputArchive& ar, EndianType<T, ORDER> value)

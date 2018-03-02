@@ -101,7 +101,7 @@ ByteBuffer convert_for_signing(const SecuredMessage& message, const std::list<Tr
     byte_buffer_sink sink(buf);
 
     boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
-    OutputArchive ar(stream, boost::archive::no_header);
+    OutputArchive ar(stream);
 
     const uint8_t protocol_version = message.protocol_version();
     ar << protocol_version;

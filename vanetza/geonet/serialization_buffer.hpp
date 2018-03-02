@@ -22,7 +22,7 @@ void serialize_into_buffer(const T& t, ByteBuffer& buf)
 {
     byte_buffer_sink sink(buf);
     boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
-    OutputArchive ar(stream, boost::archive::no_header);
+    OutputArchive ar(stream);
     serialize(t, ar);
 }
 
@@ -36,7 +36,7 @@ void deserialize_from_buffer(T& t, const ByteBuffer& buf)
 {
     byte_buffer_source source(buf);
     boost::iostreams::stream_buffer<byte_buffer_source> stream(source);
-    InputArchive ar(stream, boost::archive::no_header);
+    InputArchive ar(stream);
     deserialize(t, ar);
 }
 

@@ -44,7 +44,7 @@ PublicKey load_public_key_from_file(const std::string& key_path)
 
     std::ifstream key_src;
     key_src.open(key_path, std::ios::in | std::ios::binary);
-    vanetza::InputArchive key_archive(key_src, boost::archive::no_header);
+    vanetza::InputArchive key_archive(key_src);
     deserialize(key_archive, public_key);
 
     return public_key;
@@ -55,7 +55,7 @@ void save_public_key_to_file(const std::string& key_path, const PublicKey& publi
     std::ofstream dest;
     dest.open(key_path.c_str(), std::ios::out | std::ios::binary);
 
-    OutputArchive archive(dest, boost::archive::no_header);
+    OutputArchive archive(dest);
     serialize(archive, public_key);
 }
 
@@ -65,7 +65,7 @@ Certificate load_certificate_from_file(const std::string& certificate_path)
 
     std::ifstream certificate_src;
     certificate_src.open(certificate_path, std::ios::in | std::ios::binary);
-    vanetza::InputArchive certificate_archive(certificate_src, boost::archive::no_header);
+    vanetza::InputArchive certificate_archive(certificate_src);
     deserialize(certificate_archive, certificate);
 
     return certificate;
@@ -76,7 +76,7 @@ void save_certificate_to_file(const std::string& certificate_path, const Certifi
     std::ofstream dest;
     dest.open(certificate_path.c_str(), std::ios::out | std::ios::binary);
 
-    OutputArchive archive(dest, boost::archive::no_header);
+    OutputArchive archive(dest);
     serialize(archive, certificate);
 }
 

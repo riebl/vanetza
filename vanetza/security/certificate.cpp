@@ -68,7 +68,7 @@ ByteBuffer convert_for_signing(const Certificate& cert)
     byte_buffer_sink sink(buf);
 
     boost::iostreams::stream_buffer<byte_buffer_sink> stream(sink);
-    OutputArchive ar(stream, boost::archive::no_header);
+    OutputArchive ar(stream);
 
     const uint8_t version = cert.version();
     ar << version;

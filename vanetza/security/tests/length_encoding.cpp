@@ -121,7 +121,7 @@ TEST(LengthEncoding, serialize_length)
     auto serialize_length_into_buffer = [&buf](std::size_t length) {
         vanetza::byte_buffer_sink sink(buf);
         boost::iostreams::stream_buffer<vanetza::byte_buffer_sink> stream(sink);
-        OutputArchive oa(stream, boost::archive::no_header);
+        OutputArchive oa(stream);
         serialize_length(oa, length);
     };
 
@@ -158,7 +158,7 @@ TEST(LengthEncoding, WebValidator_length)
     ByteBuffer buf {{ 0x81, 0x03 }};
     vanetza::byte_buffer_source source(buf);
     boost::iostreams::stream_buffer<vanetza::byte_buffer_source> stream(source);
-    InputArchive ia(stream, boost::archive::no_header);
+    InputArchive ia(stream);
     size_t length = deserialize_length(ia);
     EXPECT_EQ(259, length);
 }
