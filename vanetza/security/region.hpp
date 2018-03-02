@@ -31,6 +31,9 @@ struct ThreeDLocation
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longitude;
     std::array<uint8_t, 2> elevation;
+
+    bool operator==(const ThreeDLocation&) const;
+    bool operator!=(const ThreeDLocation&) const;
 };
 
 /// TwoDLocation specified in TS 103 097 v1.2.1, section 4.2.18
@@ -46,12 +49,18 @@ struct TwoDLocation
 
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longitude;
+
+    bool operator==(const TwoDLocation&) const;
+    bool operator!=(const TwoDLocation&) const;
 };
 
 /// Specified in TS 103 097 v1.2.1, section 4.2.20
 struct NoneRegion
 {
     // empty
+
+    bool operator==(const NoneRegion&) const;
+    bool operator!=(const NoneRegion&) const;
 };
 
 /// CircularRegion specified in TS 103 097 v1.2.1, section 4.2.22
@@ -65,6 +74,9 @@ struct CircularRegion
 
     TwoDLocation center;
     geonet::distance_u16t radius;
+
+    bool operator==(const CircularRegion&) const;
+    bool operator!=(const CircularRegion&) const;
 };
 
 /// RectangularRegion specified in TS 103 097 v1.2.1, section 4.2.23
@@ -72,6 +84,9 @@ struct RectangularRegion
 {
     TwoDLocation northwest;
     TwoDLocation southeast;
+
+    bool operator==(const RectangularRegion&) const;
+    bool operator!=(const RectangularRegion&) const;
 };
 
 /// PolygonalRegion specified in TS 103 097 v1.2.1, section 4.2.24
@@ -90,6 +105,9 @@ struct IdentifiedRegion
     RegionDictionary region_dictionary;
     int16_t region_identifier;
     IntX local_region;
+
+    bool operator==(const IdentifiedRegion&) const;
+    bool operator!=(const IdentifiedRegion&) const;
 };
 
 /// RegionType specified in TS 103 097 v1.2.1, section 4.2.21
