@@ -383,8 +383,12 @@ void Router::indicate_basic(IndicationContextBasic& ctx)
             indication.security_report = security::DecapReport::Incompatible_Protocol;
             indicate_secured(ctx, *basic);
         } else if (basic->next_header == NextHeaderBasic::COMMON) {
-            indication.security_report = security::DecapReport::Unsigned_Message,
-            indicate_common(ctx, *basic);
+            if (!m_mib.itsGnSecurity || SecurityDecapHandling::NON_STRICT == m_mib.itsGnSnDecapResultHandling) {
+                indication.security_report = security::DecapReport::Unsigned_Message,
+                indicate_common(ctx, *basic);
+            } else {
+                packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
+            }
         }
     }
 }
