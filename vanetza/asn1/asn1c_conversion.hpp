@@ -25,6 +25,11 @@ public:
     {
     }
 
+    byte_buffer_impl(std::shared_ptr<const wrapper_type> other) :
+        m_wrapper(other)
+    {
+    }
+
     void convert(ByteBuffer& buffer) const override
     {
         buffer = m_wrapper->encode();
@@ -42,18 +47,13 @@ public:
         return m_wrapper->size();
     }
 
-    const std::shared_ptr<wrapper_type>& wrapper() const
+    std::shared_ptr<const wrapper_type> wrapper() const
     {
         return m_wrapper;
     }
 
 private:
-    byte_buffer_impl(const std::shared_ptr<wrapper_type>& other) :
-        m_wrapper(other)
-    {
-    }
-
-    std::shared_ptr<wrapper_type> m_wrapper;
+    std::shared_ptr<const wrapper_type> m_wrapper;
 };
 
 } // namespace convertible
