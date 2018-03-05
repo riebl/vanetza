@@ -2,9 +2,9 @@
 #include <vanetza/btp/header.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/runtime.hpp>
+#include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
 #include <vanetza/geonet/tests/security_context.hpp>
-#include <vanetza/geonet/router.hpp>
 
 using namespace vanetza;
 
@@ -322,4 +322,50 @@ TEST_F(RouterIndicate, shb_secured_hook_hop_limit)
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
+}
+
+TEST_F(RouterIndicate, shb_secured_hook_unsecured_packet)
+{
+    // modify up_packet for negative test
+    ByteBuffer packet_buffer = create_plain_packet();
+
+    // enable security after create_plain_packet() disabled it
+    mib.itsGnSecurity = true;
+
+    std::unique_ptr<geonet::UpPacket> packet_up = get_up_packet(packet_buffer);
+    router.indicate(std::move(packet_up), mac_address_sender, mac_address_destination);
+
+    // check hook
+    EXPECT_TRUE(test_and_reset_packet_drop());
+    EXPECT_EQ(geonet::Router::PacketDropReason::DECAP_UNSUCCESSFUL_STRICT, drop_reason);
+
+    // check if packet was dropped
+    EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
+}
+
+TEST_F(RouterIndicate, shb_secured_hook_unsecured_packet_nonstrict)
+{
+    // modify up_packet for negative test
+    ByteBuffer packet_buffer = create_plain_packet();
+
+    // enable security after create_plain_packet() disabled it
+    mib.itsGnSecurity = true;
+    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::NON_STRICT;
+
+    std::unique_ptr<geonet::UpPacket> packet_up = get_up_packet(packet_buffer);
+    router.indicate(std::move(packet_up), mac_address_sender, mac_address_destination);
+
+    // check hook
+    EXPECT_FALSE(test_and_reset_packet_drop());
+    // check if packet was not discarded
+    ASSERT_NE(nullptr, ind_ifc.m_last_packet.get());
+    ASSERT_TRUE(ind_ifc.m_last_indication);
+    // prepare a packet to check it's payload
+    CohesivePacket* received_payload_ptr = boost::get<CohesivePacket>(ind_ifc.m_last_packet.get());
+    ASSERT_NE(nullptr, received_payload_ptr);
+    // extract received payload
+    auto received_payload_range = (*received_payload_ptr)[OsiLayer::Transport];
+    const ByteBuffer received_payload = ByteBuffer(received_payload_range.begin(), received_payload_range.end());
+    // check payload
+    EXPECT_EQ(send_payload, received_payload);
 }
