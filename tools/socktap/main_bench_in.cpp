@@ -122,6 +122,8 @@ int main(int argc, const char** argv)
                 auto trusted_certificate = security::load_certificate_from_file(cert_path);
                 trust_store.insert(trusted_certificate);
             }
+        } else {
+            mib.itsGnSecurity = false;
         }
 
         security::DefaultSignHeaderPolicy sign_header_policy(trigger.runtime().now(), positioning);
