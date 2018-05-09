@@ -460,7 +460,7 @@ private:
     units::Duration timeout_cbf(const MacAddress& sender) const;
 
     /**
-     * \brief Determine next hop for area advnaced forwarding
+     * \brief Determine next hop for area advanced forwarding
      * See EN 302 636-4-1 v1.3.1 Annex F.4
      *
      * \param pdu
