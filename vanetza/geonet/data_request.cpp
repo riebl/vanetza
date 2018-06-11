@@ -2,6 +2,7 @@
 #include <vanetza/btp/data_request.hpp>
 #include <vanetza/units/time.hpp>
 #include <boost/units/cmath.hpp>
+#include <stdexcept>
 
 namespace vanetza
 {
@@ -64,6 +65,28 @@ void copy_request_parameters(const btp::DataRequestB& btp, DataRequest& gn)
         gn.max_hop_limit = *btp.gn.maximum_hop_limit;
     }
     gn.traffic_class = btp.gn.traffic_class;
+}
+
+void copy_request_parameters(const btp::DataRequestB& btp, DataRequestWithAddress& gn)
+{
+    copy_request_parameters(btp, static_cast<DataRequest&>(gn));
+    const Address* address = boost::get<Address>(&btp.gn.destination);
+    if (address) {
+        gn.destination = *address;
+    } else {
+        throw std::runtime_error("BTP-B data request lacks destination address");
+    }
+}
+
+void copy_request_parameters(const btp::DataRequestB& btp, DataRequestWithArea& gn)
+{
+    copy_request_parameters(btp, static_cast<DataRequest&>(gn));
+    const Area* area = boost::get<Area>(&btp.gn.destination);
+    if (area) {
+        gn.destination = *area;
+    } else {
+        throw std::runtime_error("BTP-B data request lacks destination area");
+    }
 }
 
 } // namespace geonet

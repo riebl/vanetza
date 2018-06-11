@@ -126,6 +126,8 @@ DataRequest& access_request(DataRequestVariant&);
  * \param gn GeoNet destination request
  */
 void copy_request_parameters(const btp::DataRequestB& btp, DataRequest& gn);
+void copy_request_parameters(const btp::DataRequestB& btp, DataRequestWithAddress& gn);
+void copy_request_parameters(const btp::DataRequestB& btp, DataRequestWithArea& gn);
 
 } // namespace geonet
 } // namespace vanetza
