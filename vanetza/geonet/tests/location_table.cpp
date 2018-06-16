@@ -5,6 +5,7 @@
 #include <vanetza/geonet/position_vector.hpp>
 #include <algorithm>
 #include <chrono>
+#include <cmath>
 #include <memory>
 #include <unordered_set>
 
@@ -116,7 +117,7 @@ TEST_F(LocationTableTest, update_pdr) {
 
     using std::chrono::milliseconds;
     auto& entry = loct->update(pv);
-    EXPECT_TRUE(isnan(entry.get_pdr()));
+    EXPECT_TRUE(std::isnan(entry.get_pdr()));
     runtime->trigger(milliseconds(100));
     entry.update_pdr(30);
     EXPECT_DOUBLE_EQ(0.0, entry.get_pdr());
