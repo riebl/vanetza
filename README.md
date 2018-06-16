@@ -57,7 +57,7 @@ Projects using CMake can integrate Vanetza most easily by calling `find_package(
 
 # Authors
 
-Development of Vanetza is part of ongoing research work at [Technische Hochschule Ingolstadt](https://www.thi.de/forschung/carissma/labore/car2x-testlabor/).
+Development of Vanetza is part of ongoing research work at [Technische Hochschule Ingolstadt](https://www.thi.de/forschung/carissma/labore/car2x-labor/).
 Maintenance is coordinated by Raphael Riebl. Contributions are happily accepted.
 
 # License
