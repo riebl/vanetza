@@ -4,6 +4,7 @@
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/hook.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/common/channel.hpp>
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/common_header.hpp>
@@ -77,6 +78,9 @@ public:
 
     using PendingPacketForwarding = PendingPacket<GbcPdu, const MacAddress&>;
 
+    using AccessInterface = std::tuple<Channel, MacAddress, dcc::RequestInterface*>;
+    using AccessInterfaceList = std::vector<AccessInterface>;
+
     /// Reason for packet drop used by drop hook
     enum class PacketDropReason
     {
@@ -142,7 +146,7 @@ public:
      * \param sender MAC address of sender
      * \param destination MAC address of destination (might be broadcast)
      */
-    void indicate(UpPacketPtr, const MacAddress& sender, const MacAddress& destination);
+    void indicate(UpPacketPtr, const MacAddress& sender, const MacAddress& destination, const Channel channel);
 
     /**
      * \brief When a packet is dropped, this Hook is invoked
@@ -179,11 +183,11 @@ public:
     void set_security_entity(security::SecurityEntity* entity);
 
     /**
-     * \brief Register access layer interface
+     * \brief Register access layer interfaces
      *
-     * \param ifc interface used for passing packets down to access layer
+     * \param ifc_list interfaces used for passing packets down to access layer
      */
-    void set_access_interface(dcc::RequestInterface* ifc);
+    void set_access_interfaces(AccessInterfaceList ifc_list);
 
     /**
      * \brief Set Router's own GeoNetworking address
@@ -360,11 +364,12 @@ private:
     /**
      * \brief Pass down the packet to the access layer.
      *
+     * \param addr MAC address of source
      * \param addr MAC address of destination
      * \param pdu header information
      * \param payload Packet payload
      */
-    void pass_down(const MacAddress&, PduPtr, DownPacketPtr);
+    void pass_down(const MacAddress&, const MacAddress&, PduPtr, DownPacketPtr);
 
     /**
      * \brief Send packet using the information in the DataRequest.
@@ -373,6 +378,7 @@ private:
      * \param request containing transmission parameters
      * \param pdu header information
      * \param payload Packet payload
+     * \param request_interface request interface
      */
     void pass_down(const dcc::DataRequest&, PduPtr, DownPacketPtr);
 
@@ -393,7 +399,7 @@ private:
      * \param source address of source (from packet header)
      * \param sender address of sender (link layer)
      */
-    void detect_duplicate_address(const Address& source, const MacAddress& sender);
+    void detect_duplicate_address(const Address& source, const LinkLayer& ll);
 
     /**
      * \brief Detect duplicate packets
@@ -413,7 +419,7 @@ private:
      * \param payload
      * \return next hop
      */
-    NextHop greedy_forwarding(PendingPacketForwarding&&);
+    NextHop greedy_forwarding(PendingPacketForwarding&&, const LinkLayer* ll);
 
     /**
      * \brief Determine next hop for non-area contention-based forwarding
@@ -424,7 +430,7 @@ private:
      * \param sender optional sender MAC address (if not first hop)
      * \return next hop
      */
-    NextHop non_area_contention_based_forwarding(PendingPacketForwarding&&, const MacAddress* sender);
+    NextHop non_area_contention_based_forwarding(PendingPacketForwarding&&, const MacAddress* sender, Channel channel);
 
     /**
      * \brief Determine next hop for area contention-based forwarding
@@ -513,7 +519,10 @@ private:
 
     const MIB& m_mib;
     Runtime& m_runtime;
-    dcc::RequestInterface* m_request_interface;
+
+    std::map<Channel, MacAddress> m_channel_mac_map;
+    std::map<MacAddress, dcc::RequestInterface*> m_mac_interface_map;
+
     security::SecurityEntity* m_security_entity;
     transport_map_t m_transport_ifcs;
     LocationTable m_location_table;
