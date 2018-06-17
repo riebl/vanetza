@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
-ROOT=${1:?missing Vanetza root directory}
+SCRIPT=$(readlink -f $0)
+SCRIPT_PATH=$(dirname $SCRIPT)
+ROOT=${1:-$SCRIPT_PATH/../..}
 ROOT_PATH=$(readlink -f ${ROOT})
 
 mkdir build && cd build
