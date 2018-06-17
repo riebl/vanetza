@@ -7,6 +7,7 @@ install:
  - docker build --tag vanetza/xenial-build tools/docker
 
 script:
- - docker run -itd --name xenial vanetza/xenial-build
- - docker exec xenial setup_workspace.sh https://github.com/${TRAVIS_REPO_SLUG}.git ${TRAVIS_BRANCH} ${TRAVIS_COMMIT}
- - docker exec xenial ./vanetza/tools/docker/build_and_run_tests.sh vanetza
+ - docker run -itd
+     --mount type=bind,source=$TRAVIS_BUILD_DIR,destination=/travis/build
+     --name xenial vanetza/xenial-build
+ - docker exec xenial /travis/build/tools/docker/build_and_run_tests.sh

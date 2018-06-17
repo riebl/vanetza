@@ -12,8 +12,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgeographic-dev \
     libssl-dev \
     && rm -rf /var/lib/apt/lists/*
-COPY setup_workspace.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/setup_workspace.sh
 RUN useradd -m build-user
 USER build-user
 WORKDIR /home/build-user
