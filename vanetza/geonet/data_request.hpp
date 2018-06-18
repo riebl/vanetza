@@ -1,6 +1,7 @@
 #ifndef DATA_REQUEST_HPP_3JYISVXB
 #define DATA_REQUEST_HPP_3JYISVXB
 
+#include <vanetza/common/channel.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/areas.hpp>
@@ -45,6 +46,7 @@ struct DataRequest
     boost::optional<Repetition> repetition;
     unsigned max_hop_limit;
     TrafficClass traffic_class;
+    Channel channel;
 };
 
 /**

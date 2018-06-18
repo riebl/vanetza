@@ -38,10 +38,12 @@ struct ControlInfo
 {
     ControlInfo(const DataRequest request) :
         communication_profile(request.communication_profile),
-        its_aid(request.its_aid) {}
+        its_aid(request.its_aid),
+        channel(request.channel) {}
 
     const CommunicationProfile communication_profile;
     const ItsAid its_aid;
+    const Channel channel;
 };
 
 template<typename PDU>
@@ -119,7 +121,6 @@ const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
 Router::Router(Runtime& rt, const MIB& mib) :
     m_mib(mib),
     m_runtime(rt),
-    m_request_interface(&DummyDccRequestInterface::get()),
     m_security_entity(nullptr),
     m_location_table(mib, m_runtime),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
@@ -133,6 +134,8 @@ Router::Router(Runtime& rt, const MIB& mib) :
 {
     // send BEACON immediately after start-up at next runtime trigger invocation
     reset_beacon_timer(Clock::duration::zero());
+
+	set_access_interfaces(AccessInterfaceList{std::make_tuple(channel::CCH, MacAddress(), &DummyDccRequestInterface::get())});
 }
 
 Router::~Router()
@@ -170,12 +173,6 @@ void Router::set_security_entity(security::SecurityEntity* entity)
     m_security_entity = entity;
 }
 
-void Router::set_access_interface(dcc::RequestInterface* ifc)
-{
-    m_request_interface = (ifc == nullptr ? &DummyDccRequestInterface::get() : ifc);
-    assert(m_request_interface != nullptr);
-}
-
 void Router::set_address(const Address& addr)
 {
     m_local_position_vector.gn_addr = addr;
@@ -184,6 +181,22 @@ void Router::set_address(const Address& addr)
 void Router::set_random_seed(std::uint_fast32_t seed)
 {
     m_random_gen.seed(seed);
+}
+
+void Router::set_access_interfaces(AccessInterfaceList ifc_list)
+{
+    m_channel_mac_map.clear();
+    m_mac_interface_map.clear();
+
+    for (auto ifc : ifc_list) {
+        Channel channel;
+        MacAddress mac;
+        dcc::RequestInterface* interface;
+        std::tie(channel, mac, interface) = ifc;
+
+        m_channel_mac_map.insert(std::make_pair(channel, mac));
+        m_mac_interface_map.insert(std::make_pair(mac, interface));
+    }
 }
 
 DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload)
@@ -223,7 +236,8 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
             execute_media_procedures(ctrl.communication_profile);
 
             // step 6: pass packet down to link layer with broadcast destination
-            pass_down(cBroadcastMacAddress, std::move(pdu), std::move(payload));
+            const auto source = m_channel_mac_map.at(ctrl.channel);
+            pass_down(source, cBroadcastMacAddress, std::move(pdu), std::move(payload));
 
             // step 7: reset beacon timer
             reset_beacon_timer();
@@ -232,7 +246,7 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
         PendingPacket packet(std::make_tuple(std::move(pdu), std::move(payload)), transmit);
 
         // step 3: store & carry forwarding
-        if (request.traffic_class.store_carry_forward() && !m_location_table.has_neighbours()) {
+        if (request.traffic_class.store_carry_forward() && !m_location_table.has_neighbours(request.channel)) {
             PacketBuffer::data_ptr data { new PendingPacketBufferData<ShbPdu>(std::move(packet)) };
             m_bc_forward_buffer.push(std::move(data), m_runtime.now());
         } else {
@@ -270,7 +284,7 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
     pdu->common().payload = payload->size();
 
     ControlInfo ctrl(request);
-    auto transmit = [this, ctrl](Packet&& packet, const MacAddress& mac) {
+    auto transmit = [this, ctrl](Packet&& packet, const MacAddress& destination) {
         std::unique_ptr<GbcPdu> pdu;
         std::unique_ptr<DownPacket> payload;
         std::tie(pdu, payload) = std::move(packet);
@@ -290,7 +304,8 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
         execute_media_procedures(ctrl.communication_profile);
 
         // step 8: pass PDU to link layer
-        pass_down(mac, std::move(pdu), std::move(payload));
+        const auto source = m_channel_mac_map.at(ctrl.channel);
+        pass_down(source, destination, std::move(pdu), std::move(payload));
     };
 
     auto forwarding = [this, transmit](Packet&& packet) {
@@ -305,7 +320,7 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
 
     // step 2: check if neighbours are present
     const bool scf = request.traffic_class.store_carry_forward();
-    if (scf && !m_location_table.has_neighbours()) {
+    if (scf && !m_location_table.has_neighbours(request.channel)) {
         PacketBuffer::data_ptr data { new PendingPacketBufferData<GbcPdu>(std::move(packet)) };
         m_bc_forward_buffer.push(std::move(data), m_runtime.now());
     } else {
@@ -330,7 +345,7 @@ DataConfirm Router::request(const TsbDataRequest&, DownPacketPtr)
     return DataConfirm(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
 }
 
-void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
+void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination, const Channel channel)
 {
     assert(packet);
 
@@ -361,6 +376,7 @@ void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAdd
     IndicationContext::LinkLayer link_layer;
     link_layer.sender = sender;
     link_layer.destination = destination;
+	link_layer.channel = channel;
 
     UpPacket* packet_ptr = packet.get();
     indication_visitor visitor(*this, link_layer, std::move(packet));
@@ -603,10 +619,10 @@ NextHop Router::forwarding_algorithm_selection(PendingPacketForwarding&& packet,
                 case UnicastForwarding::UNSPECIFIED:
                     // fall through to greedy forwarding
                 case UnicastForwarding::GREEDY:
-                    nh = greedy_forwarding(std::move(packet));
+                    nh = greedy_forwarding(std::move(packet), ll);
                     break;
                 case UnicastForwarding::CBF:
-                    nh = non_area_contention_based_forwarding(std::move(packet), ll ? &ll->sender : nullptr);
+                    nh = non_area_contention_based_forwarding(std::move(packet), ll ? &ll->sender : nullptr, ll->channel);
                     break;
                 default:
                     throw std::runtime_error("unhandled non-area forwarding algorithm");
@@ -656,17 +672,18 @@ void Router::pass_down(const dcc::DataRequest& request, PduPtr pdu, DownPacketPt
     }
 
     (*payload)[OsiLayer::Network] = ByteBufferConvertible(std::move(pdu));
-    assert(m_request_interface);
-    m_request_interface->request(request, std::move(payload));
+    auto request_interface = m_mac_interface_map.at(request.source);
+    assert(request_interface);
+    request_interface->request(request, std::move(payload));
 }
 
-void Router::pass_down(const MacAddress& addr, PduPtr pdu, DownPacketPtr payload)
+void Router::pass_down(const MacAddress& src_addr, const MacAddress& dst_addr, PduPtr pdu, DownPacketPtr payload)
 {
     assert(pdu);
 
     dcc::DataRequest request;
-    request.destination = addr;
-    request.source = m_local_position_vector.gn_addr.mid();
+    request.destination = dst_addr;
+    request.source = src_addr;
     request.dcc_profile = map_tc_onto_profile(pdu->common().traffic_class);
     request.ether_type = geonet::ether_type;
     request.lifetime = std::chrono::seconds(pdu->basic().lifetime.decode() / units::si::seconds);
@@ -696,7 +713,9 @@ void Router::on_beacon_timer_expired()
     }
 
     execute_media_procedures(m_mib.itsGnIfType);
-    pass_down(cBroadcastMacAddress, std::move(pdu), std::move(payload));
+
+    auto source = m_channel_mac_map.at(channel::CCH);
+    pass_down(source, cBroadcastMacAddress, std::move(pdu), std::move(payload));
     reset_beacon_timer();
 }
 
@@ -726,7 +745,7 @@ void Router::dispatch_repetition(const DataRequestVariant& request, std::unique_
     boost::apply_visitor(dispatcher, request);
 }
 
-NextHop Router::greedy_forwarding(PendingPacketForwarding&& packet)
+NextHop Router::greedy_forwarding(PendingPacketForwarding&& packet, const LinkLayer* ll)
 {
     NextHop nh;
     GeodeticPosition dest = packet.pdu().extended().position();
@@ -734,10 +753,10 @@ NextHop Router::greedy_forwarding(PendingPacketForwarding&& packet)
     units::Length mfr_dist = own;
 
     MacAddress mfr_addr;
-    for (auto& neighbour : m_location_table.neighbours()) {
+    for (auto& neighbour : m_location_table.neighbours(ll->channel)) {
         const units::Length dist = distance(dest, neighbour.get_position_vector().position());
         if (dist < mfr_dist) {
-            mfr_addr = neighbour.link_layer_address();
+            mfr_addr = neighbour.link_layer_address(ll->channel);
             mfr_dist = dist;
         }
     }
@@ -747,8 +766,8 @@ NextHop Router::greedy_forwarding(PendingPacketForwarding&& packet)
     } else {
         const bool scf = packet.pdu().common().traffic_class.store_carry_forward();
         if (scf) {
-            std::function<void(PendingPacketForwarding&&)> greedy_fwd = [this](PendingPacketForwarding&& packet) {
-                NextHop nh = greedy_forwarding(std::move(packet));
+            std::function<void(PendingPacketForwarding&&)> greedy_fwd = [this, ll](PendingPacketForwarding&& packet) {
+                NextHop nh = greedy_forwarding(std::move(packet), ll);
                 std::move(nh).process();
             };
             PendingPacket<GbcPdu> greedy_packet(std::move(packet), greedy_fwd);
@@ -763,7 +782,7 @@ NextHop Router::greedy_forwarding(PendingPacketForwarding&& packet)
     return nh;
 }
 
-NextHop Router::non_area_contention_based_forwarding(PendingPacketForwarding&& packet, const MacAddress* sender)
+NextHop Router::non_area_contention_based_forwarding(PendingPacketForwarding&& packet, const MacAddress* sender, Channel channel)
 {
     NextHop nh;
     const GeoBroadcastHeader& gbc = packet.pdu().extended();
@@ -879,9 +898,9 @@ NextHop Router::area_advanced_forwarding(PendingPacketForwarding&& packet, const
                 nh.buffer();
             }
         } else {
-            if (ll->destination == m_local_position_vector.gn_addr.mid()) {
+            if (m_mac_interface_map.find(ll->destination) != m_mac_interface_map.end()) {
                 // continue with greedy forwarding
-                nh = greedy_forwarding(packet.duplicate());
+                nh = greedy_forwarding(packet.duplicate(), ll);
                 // optimization: avoid "double broadcast"
                 if (nh.valid() && nh.mac() == cBroadcastMacAddress) {
                     // contending without further broadcasting
@@ -942,15 +961,16 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
     const Address& source_addr = shb.source_position.gn_addr;
 
     // step 3: execute duplicate address detection (see 9.2.1.5)
-    detect_duplicate_address(source_addr, ll.sender);
+    detect_duplicate_address(source_addr, ll);
 
     // step 4: update location table with SO.PV (see C.2)
     auto& source_entry = m_location_table.update(shb.source_position);
     assert(source_entry.has_position_vector());
+	m_location_table.update(ll.channel, ll.sender, shb.source_position.gn_addr);
 
     // step 5: update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
-    source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
+    source_entry.update_pdr(ll.channel, packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
 
     // step 6: set SO LocTE to neighbour
     source_entry.set_neighbour(true);
@@ -965,14 +985,15 @@ bool Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, con
     const Address& source_addr = beacon.source_position.gn_addr;
 
     // step 3: execute duplicate address detection (see 9.2.1.5)
-    detect_duplicate_address(source_addr, ll.sender);
+    detect_duplicate_address(source_addr, ll);
 
     // step 4: update location table with SO.PV (see C.2)
     auto& source_entry = m_location_table.update(beacon.source_position);
+	m_location_table.update(ll.channel, ll.sender, beacon.source_position.gn_addr);
 
     // step 5: update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
-    source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
+    source_entry.update_pdr(ll.channel, packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
 
     // step 6: set SO LocTE to neighbour
     source_entry.set_neighbour(true);
@@ -1014,12 +1035,12 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     }
 
     // step 4: execute DAD
-    detect_duplicate_address(source_addr, ll.sender);
+    detect_duplicate_address(source_addr, ll);
 
     // step 5 & step 6 (make sure IS_NEIGHBOUR is false for new location table entry)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
     auto& source_entry = m_location_table.update(gbc.source_position);
-    source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
+    source_entry.update_pdr(ll.channel, packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
     if (!locte_exists) {
         // step 5b only
         source_entry.set_neighbour(false);
@@ -1037,11 +1058,11 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
         return within_destination; // discard packet (step 9a)
     } else if (m_mib.itsGnMaxPacketDataRate < std::numeric_limits<decltype(m_mib.itsGnMaxPacketDataRate)>::max()) {
         // do packet data rate checks (annex B.2) if set maximum rate is not "infinity" (i.e. max unsigned value)
-        if (source_entry.get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
+        if (source_entry.get_pdr(ll.channel) > m_mib.itsGnMaxPacketDataRate * 1000.0) {
             forwarding_stopped(ForwardingStopReason::SOURCE_PDR);
             return within_destination; // omit forwarding, source exceeds PDR limit
         } else if (const auto* sender_entry = m_location_table.get_entry(ll.sender)) {
-            if (sender_entry->get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
+            if (sender_entry->get_pdr(ll.channel) > m_mib.itsGnMaxPacketDataRate * 1000.0) {
                 forwarding_stopped(ForwardingStopReason::SENDER_PDR);
                 return within_destination; // omit forwarding, sender exceeds PDR limit
             }
@@ -1056,7 +1077,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
 
     using Packet = PendingPacketGbc::Packet;
 
-    auto transmit = [this](Packet&& packet, const MacAddress& mac) {
+    auto transmit = [this, ll](Packet&& packet, const MacAddress& destination) {
         // step 13: execute media-dependent procedures
         execute_media_procedures(m_mib.itsGnIfType);
 
@@ -1066,8 +1087,12 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
         std::tie(pdu, payload) = std::move(packet);
 
         dcc::DataRequest request;
-        request.destination = mac;
-        request.source = m_local_position_vector.gn_addr.mid();
+        request.destination = destination;
+
+        // TODO: implement channel offloading
+        // send out on the same interface as received
+        request.source = m_channel_mac_map.at(ll.channel);
+
         request.dcc_profile = dcc::Profile::DP3;
         request.ether_type = geonet::ether_type;
         request.lifetime = std::chrono::seconds(pdu->basic().lifetime.decode() / units::si::seconds);
@@ -1088,7 +1113,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
 
     // step 10: store & carry forwarding procedure
     const bool scf = pdu.common().traffic_class.store_carry_forward();
-    if (scf && !m_location_table.has_neighbours()) {
+    if (scf && !m_location_table.has_neighbours(ll.channel)) {
         PacketBuffer::data_ptr data { new PendingPacketBufferData<GbcPdu>(std::move(fwd_packet)) };
         m_bc_forward_buffer.push(std::move(data), m_runtime.now());
     } else {
@@ -1110,19 +1135,32 @@ void Router::flush_unicast_forwarding_buffer(const Address& source)
     m_uc_forward_buffer.flush(m_runtime.now());
 }
 
-void Router::detect_duplicate_address(const Address& source, const MacAddress& sender)
+void Router::detect_duplicate_address(const Address& source, const LinkLayer& ll)
 {
     // EN 302 636-4-1 V1.3.1 10.2.1.5: DAD is only applied for AUTO
     if (m_mib.itsGnLocalAddrConfMethod == AddrConfMethod::AUTO) {
         const Address& local = m_local_position_vector.gn_addr;
-        if (source == local || sender == local.mid()) {
+        auto mac = m_channel_mac_map.at(ll.channel);
+        bool is_gn_same = source == local;
+        bool is_mac_same = ll.sender == mac;
+        if ( is_gn_same || is_mac_same) {
             MacAddress random_mac_addr;
             std::uniform_int_distribution<unsigned> octet_dist;
             for (auto& octet : random_mac_addr.octets) {
                 octet = octet_dist(m_random_gen);
             }
-
-            m_local_position_vector.gn_addr.mid(random_mac_addr);
+            if (is_gn_same) {
+                m_local_position_vector.gn_addr.mid(random_mac_addr);
+                // TODO: callback
+            }
+            if (is_mac_same) {
+                auto interface = m_mac_interface_map.at(mac);
+                m_channel_mac_map.erase(ll.channel);
+                m_mac_interface_map.erase(mac);
+                m_channel_mac_map.insert({ll.channel, random_mac_addr});
+                m_mac_interface_map.insert({random_mac_addr, interface});
+                // TODO: callback to device
+            }
         }
     }
 }
