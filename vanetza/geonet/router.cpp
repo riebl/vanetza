@@ -131,8 +131,15 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_repeater(m_runtime,
             std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2))
 {
-    // send BEACON immediately after start-up at next runtime trigger invocation
-    reset_beacon_timer(Clock::duration::zero());
+    if (!m_mib.vanetzaDeferInitialBeacon) {
+        // send BEACON immediately after start-up at next runtime trigger invocation
+        reset_beacon_timer(Clock::duration::zero());
+    } else {
+        // defer initial BEACON transmission slightly
+        std::uniform_real_distribution<double> dist(0.0, 1.0);
+        const auto first_beacon = dist(m_random_gen) * m_mib.itsGnBeaconServiceRetransmitTimer;
+        reset_beacon_timer(clock_cast(first_beacon));
+    }
 }
 
 Router::~Router()
@@ -704,6 +711,7 @@ void Router::reset_beacon_timer()
 {
     using duration_t = decltype(m_mib.itsGnBeaconServiceRetransmitTimer);
     using real_t = duration_t::value_type;
+    static_assert(std::is_floating_point<real_t>::value, "floating point type expected");
 
     std::uniform_real_distribution<real_t> dist_jitter(0.0, 1.0);
     const auto jitter = dist_jitter(m_random_gen);

@@ -91,6 +91,7 @@ struct ManagementInformationBase
     unsigned itsGnCbfPacketBufferSize; // kbyte
     TrafficClass itsGnDefaultTrafficClass;
     std::size_t vanetzaCbfMaxCounter; /*< maximum counter value used for ADVANCED routing */
+    bool vanetzaDeferInitialBeacon; /*< defer first beacon up to itsGnBeaconServiceRetransmitTimer */
 };
 
 // This name is too clumsy to write it out every time
