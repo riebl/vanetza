@@ -66,7 +66,7 @@ int GenerateTicketCommand::execute()
     try {
         auto subject_private_key = load_private_key_from_file(subject_key_path);
         subject_key = subject_private_key.public_key;
-    } catch (CryptoPP::BERDecodeErr e) {
+    } catch (CryptoPP::BERDecodeErr& e) {
         auto subject_key_etsi = load_public_key_from_file(subject_key_path);
         if (get_type(subject_key_etsi) != PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256) {
             std::cerr << "Wrong public key algorithm." << std::endl;
