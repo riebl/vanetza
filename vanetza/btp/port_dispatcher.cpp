@@ -1,81 +1,12 @@
 #include "port_dispatcher.hpp"
 #include "data_indication.hpp"
 #include <vanetza/geonet/data_indication.hpp>
-#include <vanetza/common/serialization_buffer.hpp>
 #include <cassert>
 
 namespace vanetza
 {
 namespace btp
 {
-
-HeaderA parse_btp_a(CohesivePacket& packet)
-{
-    HeaderA hdr;
-    deserialize_from_range(hdr, packet[OsiLayer::Transport]);
-    packet.set_boundary(OsiLayer::Transport, btp::HeaderA::length_bytes);
-    return hdr;
-}
-
-HeaderA parse_btp_a(ChunkPacket& packet)
-{
-    HeaderA hdr;
-    ByteBuffer tmp;
-    packet[OsiLayer::Transport].convert(tmp);
-    deserialize_from_buffer(hdr, tmp);
-    return hdr;
-}
-
-HeaderA parse_btp_a(PacketVariant& packet)
-{
-    struct parse_btp_visitor : public boost::static_visitor<HeaderA>
-    {
-        HeaderA operator()(CohesivePacket& packet) {
-            return parse_btp_a(packet);
-        }
-
-        HeaderA operator()(ChunkPacket& packet) {
-            return parse_btp_a(packet);
-        }
-    };
-
-    parse_btp_visitor visitor;
-    return boost::apply_visitor(visitor, packet);
-}
-
-HeaderB parse_btp_b(CohesivePacket& packet)
-{
-    HeaderB hdr;
-    deserialize_from_range(hdr, packet[OsiLayer::Transport]);
-    packet.set_boundary(OsiLayer::Transport, btp::HeaderB::length_bytes);
-    return hdr;
-}
-
-HeaderB parse_btp_b(ChunkPacket& packet)
-{
-    HeaderB hdr;
-    ByteBuffer tmp;
-    packet[OsiLayer::Transport].convert(tmp);
-    deserialize_from_buffer(hdr, tmp);
-    return hdr;
-}
-
-HeaderB parse_btp_b(PacketVariant& packet)
-{
-    struct parse_btp_visitor : public boost::static_visitor<HeaderB>
-    {
-        HeaderB operator()(CohesivePacket& packet) {
-            return parse_btp_b(packet);
-        }
-
-        HeaderB operator()(ChunkPacket& packet) {
-            return parse_btp_b(packet);
-        }
-    };
-
-    parse_btp_visitor visitor;
-    return boost::apply_visitor(visitor, packet);
-}
 
 boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& gn_ind, PacketVariant& packet)
 {
