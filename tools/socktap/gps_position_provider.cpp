@@ -96,6 +96,6 @@ vanetza::Clock::time_point GpsPositionProvider::convert(timestamp_t gpstime) con
     const posix::ptime posix_time { posix_epoch, posix::time_duration(0, 0, 0, posix_ticks) };
 
     // TAI has some seconds bias compared to UTC
-    const auto tai_utc_bias = posix::seconds(36); // 36 seconds since 1st July 2015
+    const auto tai_utc_bias = posix::seconds(37); // 37 seconds since 1st January 2017
     return vanetza::Clock::at(posix_time + tai_utc_bias);
 }
