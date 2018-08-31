@@ -88,18 +88,14 @@ void GpsPositionProvider::fetch_position_fix()
 
 vanetza::Clock::time_point GpsPositionProvider::convert(timestamp_t gpstime) const
 {
-    using namespace boost::gregorian;
-    using namespace boost::posix_time;
+    namespace posix = boost::posix_time;
 
     // gpsd's timestamp_t is UNIX time (UTC) with fractional seconds
-    static date posix_epoch(1970, Jan, 1);
-    timestamp_t gps_integral;
-    timestamp_t gps_fractional = std::modf(gpstime, &gps_integral);
-    auto posix_seconds = seconds(gps_integral);
-    auto posix_milliseconds = milliseconds(gps_fractional * 1000.0);
-    ptime posix_time { posix_epoch, posix_seconds + posix_milliseconds };
+    static const boost::gregorian::date posix_epoch(1970, boost::gregorian::Jan, 1);
+    const posix::time_duration::fractional_seconds_type posix_ticks(gpstime * posix::time_duration::ticks_per_second());
+    const posix::ptime posix_time { posix_epoch, posix::time_duration(0, 0, 0, posix_ticks) };
 
     // TAI has some seconds bias compared to UTC
-    const auto tai_utc_bias = seconds(36); // 36 seconds since 1st July 2015
+    const auto tai_utc_bias = posix::seconds(36); // 36 seconds since 1st July 2015
     return vanetza::Clock::at(posix_time + tai_utc_bias);
 }
