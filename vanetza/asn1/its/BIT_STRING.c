@@ -35,9 +35,13 @@ asn_TYPE_operation_t asn_OP_BIT_STRING = {
 #ifdef	ASN_DISABLE_PER_SUPPORT
 	0,
 	0,
+	0,
+	0,
 #else
 	BIT_STRING_decode_uper,	/* Unaligned PER decoder */
 	BIT_STRING_encode_uper,	/* Unaligned PER encoder */
+	OCTET_STRING_decode_aper,	/* Aligned PER decoder */
+	OCTET_STRING_encode_aper,	/* Aligned PER encoder */
 #endif  /* ASN_DISABLE_PER_SUPPORT */
 	BIT_STRING_random_fill,
 	0	/* Use generic outmost tag fetcher */
@@ -92,7 +96,7 @@ asn_enc_rval_t
 BIT_STRING_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
                       int ilevel, enum xer_encoder_flags_e flags,
                       asn_app_consume_bytes_f *cb, void *app_key) {
-    asn_enc_rval_t er;
+	asn_enc_rval_t er = {0, 0, 0};
 	char scratch[128];
 	char *p = scratch;
 	char *scend = scratch + (sizeof(scratch) - 10);

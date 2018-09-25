@@ -8,19 +8,12 @@ if(VANETZA_ASN1_WITH_ASN1C)
     string(REPLACE " " ";" _asn1c_flags "${ASN1C_FLAGS}")
 
     set(_its_asn1_files
-        CDD_TS102894-2/ITS-Container.asn
-        CAM_EN302637-2/CAM.asn
-        DENM_EN302637-3/DENM.asn
-        IS_TS103301/ISO_TS_24534-3.asn
-        IS_TS103301/ISO_TS_14816.asn
-        IS_TS103301/ISO_TS_14906_Application.asn
-        IS_TS103301/ISO_TS_17419.asn
-        IS_TS103301/ISO_TS_19091.asn
-        IS_TS103301/ISO_TS_19321.asn
-        IS_TS103301/ETSI_TS_103301.asn
+        CDD_TS102894-2/v1.2.1/ITS-Container.asn
+        CAM_EN302637-2/v1.3.2/CAM.asn
+        DENM_EN302637-3/v1.2.2/DENM.asn
     )
-    set(_its_asn1_revision 20)
-    set(_its_asn1_name "ITS_ASN1.r${_its_asn1_revision}")
+    set(_its_asn1_revision 36)
+    set(_its_asn1_name "ITS_ASN1-releases.r${_its_asn1_revision}")
     set(_its_asn1_archive "${_its_asn1_name}.tar.gz")
     set(_its_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its")
 
@@ -28,9 +21,9 @@ if(VANETZA_ASN1_WITH_ASN1C)
         COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=its -P clean_asn1c.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     file(DOWNLOAD
-        "http://oldforge.etsi.org/websvn/dl.php?repname=ITS.ITS_ASN1&path=%2Ftrunk%2F&isdir=1&rev=${_its_asn1_revision}"
+        "http://oldforge.etsi.org/websvn/dl.php?repname=ITS.ITS_ASN1&path=%2Freleases%2F&isdir=1&rev=${_its_asn1_revision}"
         "${CMAKE_CURRENT_SOURCE_DIR}/${_its_asn1_archive}"
-        EXPECTED_HASH SHA256=d7fff5db0080df75bf6ad5b0d213b77d60db4cacc49929c1f6c34cede1306e9b
+        EXPECTED_HASH SHA256=35b82b6adb6e67f8f2cb2da1a412095a9b68fb425b78f6ce910b4c938f5f7751
         SHOW_PROGRESS)
     add_custom_command(OUTPUT ${_its_asn1_name}/${_its_asn1_files}
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_its_asn1_archive}
