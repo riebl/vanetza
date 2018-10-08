@@ -21,10 +21,10 @@ class UnitInterval :
     boost::totally_ordered<UnitInterval>
 {
 public:
-    UnitInterval();
+    constexpr UnitInterval() : UnitInterval(0.0) {}
+    constexpr explicit UnitInterval(double v) : m_value(clamp(v)) {}
     UnitInterval(const UnitInterval&) = default;
     UnitInterval& operator=(const UnitInterval&) = default;
-    explicit UnitInterval(double);
     UnitInterval& operator=(double);
 
     // arithmetic
@@ -46,7 +46,12 @@ public:
     UnitInterval complement() const;
 
 private:
+    constexpr static double clamp(double v)
+    {
+        return (v > 1.0 ? 1.0 : (v < 0.0 ? 0.0 : v));
+    }
     UnitInterval& clamp();
+
     double m_value;
 };
 

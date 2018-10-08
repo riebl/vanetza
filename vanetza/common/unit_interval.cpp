@@ -5,15 +5,6 @@
 namespace vanetza
 {
 
-UnitInterval::UnitInterval() : m_value(0.0)
-{
-}
-
-UnitInterval::UnitInterval(double value) : m_value(value)
-{
-    clamp();
-}
-
 UnitInterval& UnitInterval::operator=(double value)
 {
     m_value = value;
@@ -84,7 +75,7 @@ bool UnitInterval::operator==(const UnitInterval& other) const
 
 UnitInterval& UnitInterval::clamp()
 {
-    m_value = std::min(1.0, std::max(m_value, 0.0));
+    m_value = clamp(m_value);
     return *this;
 }
 
