@@ -1,4 +1,5 @@
 #include "burst_budget.hpp"
+#include <cassert>
 
 namespace vanetza
 {
@@ -6,7 +7,7 @@ namespace dcc
 {
 
 BurstBudget::BurstBudget(const Clock::time_point& clock) :
-    m_clock(clock), m_bursts(N_Burst)
+    m_clock(clock), m_messages(N_Burst)
 {
 }
 
@@ -16,17 +17,18 @@ BurstBudget::~BurstBudget()
 
 Clock::duration BurstBudget::delay()
 {
+    assert(m_burst_duration < m_burst_period);
     Clock::duration delay = Clock::duration::max();
 
-    if (m_bursts.empty()) {
+    if (m_messages.empty()) {
         delay = Clock::duration::zero();
-    } else if (m_bursts.front() + T_Burst > m_clock && !m_bursts.full()) {
+    } else if (m_messages.front() + m_burst_duration > m_clock && !m_messages.full()) {
         delay = Clock::duration::zero();
-    } else if (m_bursts.front() + T_BurstPeriod < m_clock) {
-        m_bursts.clear();
+    } else if (m_messages.front() + m_burst_period < m_clock) {
+        m_messages.clear();
         delay = Clock::duration::zero();
     } else {
-        delay = m_bursts.front() + T_BurstPeriod - m_clock;
+        delay = m_messages.front() + m_burst_period - m_clock;
     }
 
     return delay;
@@ -34,7 +36,25 @@ Clock::duration BurstBudget::delay()
 
 void BurstBudget::notify()
 {
-    m_bursts.push_back(m_clock);
+    m_messages.push_back(m_clock);
+}
+
+void BurstBudget::burst_messages(std::size_t n)
+{
+    // circular_buffer::resize removes last elements if necessary
+    m_messages.resize(n);
+}
+
+void BurstBudget::burst_duration(Clock::duration d)
+{
+    assert(d > Clock::duration::zero());
+    m_burst_duration = d;
+}
+
+void BurstBudget::burst_period(Clock::duration p)
+{
+    assert(p > Clock::duration::zero());
+    m_burst_period = p;
 }
 
 } // namespace dcc
