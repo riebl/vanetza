@@ -1,7 +1,6 @@
 include(UseGTest)
 configure_gtest_directory(LINK_LIBRARIES dcc)
 
-add_gtest(AccessControl access_control.cpp)
 add_gtest(BurstBudget burst_budget.cpp)
 add_gtest(ChannelLoad channel_load.cpp)
 add_gtest(ChannelLoadSmoothing channel_load_smoothing.cpp)

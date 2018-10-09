@@ -3,7 +3,6 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/common/runtime.hpp>
-#include <vanetza/dcc/access_control.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/dcc/profile.hpp>
