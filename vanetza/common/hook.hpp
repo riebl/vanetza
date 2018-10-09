@@ -25,6 +25,11 @@ public:
         m_function = std::move(cb);
     }
 
+    void operator=(const callback_type& cb)
+    {
+        m_function = cb;
+    }
+
     /**
      * Execute hook callback if assigned
      * \param Args... various arguments passed to assigned callback
@@ -73,6 +78,11 @@ public:
     void operator=(callback_type&& cb)
     {
         m_hook = std::move(cb);
+    }
+
+    void operator=(const callback_type& cb)
+    {
+        m_hook = cb;
     }
 
     void reset()
