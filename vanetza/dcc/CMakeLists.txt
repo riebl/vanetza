@@ -1,12 +1,12 @@
 set(CXX_SOURCES
     burst_budget.cpp
+    bursty_transmit_rate_control.cpp
     channel_load.cpp
     channel_load_smoothing.cpp
     flow_control.cpp
     fully_meshed_state_machine.cpp
     gradual_state_machine.cpp
     mapping.cpp
-    scheduler.cpp
     state_machine_budget.cpp
 )
 
