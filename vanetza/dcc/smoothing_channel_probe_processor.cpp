@@ -5,17 +5,15 @@ namespace vanetza
 namespace dcc
 {
 
-SmoothingChannelProbeProcessor::SmoothingChannelProbeProcessor(const OnUpdateFn& fn, UnitInterval alpha) :
-    m_alpha(alpha), m_update_fn(fn)
+SmoothingChannelProbeProcessor::SmoothingChannelProbeProcessor(UnitInterval alpha) :
+    m_alpha(alpha)
 {
 }
 
 void SmoothingChannelProbeProcessor::indicate(ChannelLoad cl)
 {
     m_channel_load = m_alpha * cl + m_alpha.complement() * m_channel_load;
-    if (m_update_fn) {
-        m_update_fn(m_channel_load);
-    }
+    HookedChannelProbeProcessor::indicate(m_channel_load);
 }
 
 ChannelLoad SmoothingChannelProbeProcessor::channel_load() const

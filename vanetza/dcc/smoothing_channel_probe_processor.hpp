@@ -3,7 +3,7 @@
 
 #include <vanetza/common/unit_interval.hpp>
 #include <vanetza/dcc/channel_load.hpp>
-#include <vanetza/dcc/channel_probe_processor.hpp>
+#include <vanetza/dcc/hooked_channel_probe_processor.hpp>
 #include <functional>
 
 namespace vanetza
@@ -16,17 +16,14 @@ namespace dcc
  * C2C-CC Whitepaper on DCC for Day One (Version 1.0 from 2013)
  * and Basic System Profile (RS_BSP_240 in Version 1.3)
  */
-class SmoothingChannelProbeProcessor : public ChannelProbeProcessor
+class SmoothingChannelProbeProcessor : public HookedChannelProbeProcessor
 {
 public:
-    using OnUpdateFn = std::function<void(ChannelLoad)>;
-
     /**
      * Initialize ChannelProbeProcessor with smoothing behaviour.
-     * \param fn update function to be called when new smoothed channel load is available
      * \param alpha smoothing factor (influence of new raw measurement)
      */
-    SmoothingChannelProbeProcessor(const OnUpdateFn& fn, UnitInterval alpha = UnitInterval(0.5));
+    SmoothingChannelProbeProcessor(UnitInterval alpha = UnitInterval(0.5));
 
     /**
      * Feed new local channel load measurement into smoothing algorithm.
@@ -43,7 +40,6 @@ public:
 private:
     UnitInterval m_alpha;
     ChannelLoad m_channel_load;
-    OnUpdateFn m_update_fn;
 };
 
 } // namespace dcc
