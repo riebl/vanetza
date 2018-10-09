@@ -3,8 +3,7 @@
 #include <vanetza/access/interface.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/flow_control.hpp>
-#include <vanetza/dcc/scheduler.hpp>
-#include <vanetza/dcc/state_machine.hpp>
+#include <vanetza/dcc/transmit_rate_control.hpp>
 #include <chrono>
 
 using namespace vanetza;
@@ -26,12 +25,32 @@ public:
     unsigned transmissions = 0;
 };
 
+class FakeTransmitRateControl : public TransmitRateControl
+{
+public:
+    FakeTransmitRateControl(const Runtime& rt) :
+        runtime(rt), trc_off(milliseconds(200)), last_notify(Clock::time_point::min()) {}
+
+    Clock::duration delay(Profile) override
+    {
+        auto delay = runtime.now() - last_notify + trc_off;
+        return delay < Clock::duration::zero() ? Clock::duration::zero() : delay;
+    }
+
+    Clock::duration interval(Profile) override { return trc_off; }
+    void notify(Profile) override { last_notify = runtime.now(); }
+
+    const Runtime& runtime;
+    Clock::duration trc_off;
+    Clock::time_point last_notify;
+};
+
 class FlowControlTest : public testing::Test
 {
 protected:
     FlowControlTest() :
-        runtime(), scheduler(fsm, runtime.now()),
-        flow_control(runtime, scheduler, access)
+        runtime(), trc(runtime),
+        flow_control(runtime, trc, access)
     {}
 
     std::unique_ptr<ChunkPacket> create_packet(std::size_t length = 0)
@@ -47,33 +66,32 @@ protected:
     }
 
     Runtime runtime;
-    StateMachine fsm;
-    Scheduler scheduler;
+    FakeTransmitRateControl trc;
     FakeAccessInterface access;
     FlowControl flow_control;
 };
 
 TEST_F(FlowControlTest, immediate_transmission)
 {
-    EXPECT_EQ(Clock::duration::zero(), scheduler.delay(Profile::DP1));
-    EXPECT_FALSE(access.last_request);
+    ASSERT_EQ(milliseconds(0), trc.delay(Profile::DP1));
+    ASSERT_FALSE(access.last_request);
     DataRequest request;
     request.dcc_profile = Profile::DP1;
     flow_control.request(request, create_packet());
     ASSERT_TRUE(!!access.last_request);
     EXPECT_EQ(AccessCategory::VI, access.last_request->access_category);
 
-    EXPECT_LT(Clock::duration::zero(), scheduler.delay(Profile::DP2));
+    EXPECT_EQ(trc.interval(Profile::DP2), trc.delay(Profile::DP2));
     request.dcc_profile = Profile::DP2;
     access.last_request = boost::none;
     flow_control.request(request, create_packet());
     EXPECT_FALSE(access.last_request);
 
-    EXPECT_EQ(Clock::duration::zero(), scheduler.delay(Profile::DP0));
+    // DP0 bursts are implemented by TRC not by FlowControl
+    EXPECT_EQ(trc.interval(Profile::DP0), trc.delay(Profile::DP0));
     request.dcc_profile = Profile::DP0;
     flow_control.request(request, create_packet());
-    ASSERT_TRUE(!!access.last_request);
-    EXPECT_EQ(AccessCategory::VO, access.last_request->access_category);
+    EXPECT_FALSE(access.last_request);
 }
 
 TEST_F(FlowControlTest, queuing)
@@ -81,10 +99,10 @@ TEST_F(FlowControlTest, queuing)
     DataRequest request;
     request.lifetime = hours(1); // expired lifetime shall be no concern here
 
-    scheduler.notify(Profile::DP1);
-    EXPECT_LT(Clock::duration::zero(), scheduler.delay(Profile::DP1));
-    EXPECT_LT(Clock::duration::zero(), scheduler.delay(Profile::DP2));
-    EXPECT_LT(Clock::duration::zero(), scheduler.delay(Profile::DP3));
+    trc.notify(Profile::DP1);
+    EXPECT_LT(Clock::duration::zero(), trc.delay(Profile::DP1));
+    EXPECT_LT(Clock::duration::zero(), trc.delay(Profile::DP2));
+    EXPECT_LT(Clock::duration::zero(), trc.delay(Profile::DP3));
 
     request.destination = mac(1);
     request.dcc_profile = Profile::DP1;
@@ -96,15 +114,15 @@ TEST_F(FlowControlTest, queuing)
     request.dcc_profile = Profile::DP2;
     flow_control.request(request, create_packet());
 
-    runtime.trigger(scheduler.delay(Profile::DP1));
+    runtime.trigger(trc.delay(Profile::DP1));
     ASSERT_TRUE(!!access.last_request);
     EXPECT_EQ(mac(1), access.last_request->destination_addr);
     EXPECT_EQ(1, access.transmissions);
 
-    runtime.trigger(scheduler.delay(Profile::DP2) / 2);
+    runtime.trigger(trc.delay(Profile::DP2) / 2);
     EXPECT_EQ(1, access.transmissions);
 
-    runtime.trigger(scheduler.delay(Profile::DP2));
+    runtime.trigger(trc.delay(Profile::DP2));
     EXPECT_EQ(2, access.transmissions);
     EXPECT_EQ(mac(3), access.last_request->destination_addr);
 
@@ -115,15 +133,15 @@ TEST_F(FlowControlTest, queuing)
     request.dcc_profile = Profile::DP3;
     flow_control.request(request, create_packet());
 
-    runtime.trigger(scheduler.delay(Profile::DP2));
+    runtime.trigger(trc.delay(Profile::DP2));
     EXPECT_EQ(3, access.transmissions);
     EXPECT_EQ(mac(4), access.last_request->destination_addr);
 
-    runtime.trigger(scheduler.delay(Profile::DP3));
+    runtime.trigger(trc.delay(Profile::DP3));
     EXPECT_EQ(4, access.transmissions);
     EXPECT_EQ(mac(2), access.last_request->destination_addr);
 
-    runtime.trigger(scheduler.delay(Profile::DP3));
+    runtime.trigger(trc.delay(Profile::DP3));
     EXPECT_EQ(5, access.transmissions);
     EXPECT_EQ(mac(5), access.last_request->destination_addr);
 
@@ -139,19 +157,19 @@ TEST_F(FlowControlTest, drop_expired)
             drops.push_back(ac);
     });
 
-    scheduler.notify(Profile::DP3);
+    trc.notify(Profile::DP3);
     DataRequest request;
     request.dcc_profile = Profile::DP3;
-    request.lifetime = scheduler.delay(Profile::DP3) - milliseconds(10);
+    request.lifetime = trc.delay(Profile::DP3) - milliseconds(10);
     flow_control.request(request, create_packet());
-    runtime.trigger(scheduler.delay(Profile::DP3) + milliseconds(10));
+    runtime.trigger(trc.delay(Profile::DP3) + milliseconds(10));
     EXPECT_FALSE(access.last_request);
     ASSERT_FALSE(drops.empty());
     EXPECT_EQ(AccessCategory::BK, drops.back());
     EXPECT_EQ(0, access.transmissions);
 
-    scheduler.notify(Profile::DP3);
-    auto delay = scheduler.delay(Profile::DP3);
+    trc.notify(Profile::DP3);
+    auto delay = trc.delay(Profile::DP3);
     EXPECT_NE(Clock::duration::zero(), delay);
     request.lifetime = delay;
     flow_control.request(request, create_packet());
@@ -189,8 +207,8 @@ TEST_F(FlowControlTest, queue_length)
     request.lifetime = std::chrono::seconds(5);
 
     // cause enqueuing of arriving DP1 packets
-    scheduler.notify(Profile::DP1);
-    ASSERT_LT(Clock::duration::zero(), scheduler.delay(Profile::DP1));
+    trc.notify(Profile::DP1);
+    ASSERT_LT(Clock::duration::zero(), trc.delay(Profile::DP1));
 
     flow_control.request(request, create_packet(1));
     flow_control.request(request, create_packet(2));
@@ -201,11 +219,11 @@ TEST_F(FlowControlTest, queue_length)
     EXPECT_EQ(0, access.transmissions);
     EXPECT_EQ(1, drops);
 
-    runtime.trigger(scheduler.delay(Profile::DP1));
+    runtime.trigger(trc.delay(Profile::DP1));
     EXPECT_EQ(1, access.transmissions);
     EXPECT_EQ(2, access.last_packet->size());
 
-    runtime.trigger(scheduler.delay(Profile::DP1));
+    runtime.trigger(trc.delay(Profile::DP1));
     EXPECT_EQ(2, access.transmissions);
     EXPECT_EQ(3, access.last_packet->size());
     EXPECT_EQ(1, drops);

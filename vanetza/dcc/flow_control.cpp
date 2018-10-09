@@ -1,7 +1,7 @@
 #include "data_request.hpp"
 #include "flow_control.hpp"
 #include "mapping.hpp"
-#include "scheduler.hpp"
+#include "transmit_rate_control.hpp"
 #include <vanetza/access/data_request.hpp>
 #include <vanetza/access/interface.hpp>
 #include <vanetza/common/runtime.hpp>
@@ -12,8 +12,8 @@ namespace vanetza
 namespace dcc
 {
 
-FlowControl::FlowControl(Runtime& runtime, Scheduler& scheduler, access::Interface& ifc) :
-    m_runtime(runtime), m_scheduler(scheduler), m_access(ifc), m_queue_length(0)
+FlowControl::FlowControl(Runtime& runtime, TransmitRateControl& trc, access::Interface& ifc) :
+    m_runtime(runtime), m_trc(trc), m_access(ifc), m_queue_length(0)
 {
 }
 
@@ -49,7 +49,7 @@ void FlowControl::trigger()
 
 void FlowControl::schedule_trigger(Profile dcc_profile)
 {
-    auto callback_delay = m_scheduler.delay(dcc_profile);
+    auto callback_delay = m_trc.delay(dcc_profile);
     m_runtime.schedule(callback_delay, std::bind(&FlowControl::trigger, this), this);
 }
 
@@ -94,7 +94,7 @@ bool FlowControl::transmit_immediately(const DataRequest& request) const
         }
     }
 
-    return !contention && m_scheduler.delay(request.dcc_profile) == Clock::duration::zero();
+    return !contention && m_trc.delay(request.dcc_profile) == Clock::duration::zero();
 }
 
 bool FlowControl::empty() const
@@ -114,7 +114,7 @@ FlowControl::Queue* FlowControl::next_queue()
         Queue& queue = kv.second;
         if (!queue.empty()) {
             const auto profile = std::get<1>(queue.front()).dcc_profile;
-            const auto delay = m_scheduler.delay(profile);
+            const auto delay = m_trc.delay(profile);
             if (delay < min_delay) {
                 min_delay = delay;
                 next = &queue;
@@ -154,7 +154,7 @@ void FlowControl::transmit(const DataRequest& request, std::unique_ptr<ChunkPack
     mac_req.ether_type = request.ether_type;
     mac_req.access_category = map_profile_onto_ac(request.dcc_profile);
 
-    m_scheduler.notify(request.dcc_profile);
+    m_trc.notify(request.dcc_profile);
     m_access.request(mac_req, std::move(packet));
     m_packet_transmit_hook(mac_req.access_category);
 }

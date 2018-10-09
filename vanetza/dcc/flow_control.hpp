@@ -25,7 +25,7 @@ namespace dcc
 {
 
 // forward declarations
-class Scheduler;
+class TransmitRateControl;
 
 /**
  * FlowControl is a gatekeeper above access layer.
@@ -46,7 +46,7 @@ public:
      * \param scheduler Scheduler providing transmission intervals
      * \param access Interface to access layer
      */
-    FlowControl(Runtime&, Scheduler&, access::Interface&);
+    FlowControl(Runtime&, TransmitRateControl&, access::Interface&);
     ~FlowControl();
 
     /**
@@ -92,7 +92,7 @@ private:
     Queue* next_queue();
 
     Runtime& m_runtime;
-    Scheduler& m_scheduler;
+    TransmitRateControl& m_trc;
     access::Interface& m_access;
     std::map<AccessCategory, Queue, std::greater<AccessCategory>> m_queues;
     std::size_t m_queue_length;
