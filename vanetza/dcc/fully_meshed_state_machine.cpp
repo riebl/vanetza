@@ -1,5 +1,5 @@
 #include "channel_load.hpp"
-#include "state_machine.hpp"
+#include "fully_meshed_state_machine.hpp"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -90,17 +90,17 @@ const char* Active::name() const
     return names[m_substate];
 }
 
-StateMachine::StateMachine() :
+FullyMeshedStateMachine::FullyMeshedStateMachine() :
     m_state(&m_relaxed),
     m_channel_loads(std::max(N_samples_up, N_samples_down))
 {
 }
 
-StateMachine::~StateMachine()
+FullyMeshedStateMachine::~FullyMeshedStateMachine()
 {
 }
 
-void StateMachine::update(ChannelLoad cl)
+void FullyMeshedStateMachine::update(ChannelLoad cl)
 {
     m_channel_loads.push_front(cl);
 
@@ -126,24 +126,24 @@ void StateMachine::update(ChannelLoad cl)
     }
 }
 
-double StateMachine::message_rate() const
+double FullyMeshedStateMachine::message_rate() const
 {
     std::chrono::duration<double> one_sec = std::chrono::seconds(1);
     return one_sec / transmission_interval();
 }
 
-Clock::duration StateMachine::transmission_interval() const
+Clock::duration FullyMeshedStateMachine::transmission_interval() const
 {
     return m_state->transmission_interval();
 }
 
-const State& StateMachine::state() const
+const State& FullyMeshedStateMachine::state() const
 {
     assert(m_state != nullptr);
     return *m_state;
 }
 
-double StateMachine::min_channel_load() const
+double FullyMeshedStateMachine::min_channel_load() const
 {
     assert(N_samples_up > 0);
     double min_cl = std::numeric_limits<double>::infinity();
@@ -160,7 +160,7 @@ double StateMachine::min_channel_load() const
     return std::isinf(min_cl) ? 0.0 : min_cl;
 }
 
-double StateMachine::max_channel_load() const
+double FullyMeshedStateMachine::max_channel_load() const
 {
     assert(N_samples_down > 0);
     double max_cl = 0.0;

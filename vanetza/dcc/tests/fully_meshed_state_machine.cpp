@@ -1,21 +1,21 @@
 #include <gtest/gtest.h>
-#include <vanetza/dcc/state_machine.hpp>
+#include <vanetza/dcc/fully_meshed_state_machine.hpp>
 
 using std::chrono::milliseconds;
 using namespace vanetza::dcc;
 
 
-TEST(StateMachine, ctor)
+TEST(FullyMeshedStateMachine, ctor)
 {
-    StateMachine sm;
+    FullyMeshedStateMachine sm;
     EXPECT_STREQ("Relaxed", sm.state().name());
     EXPECT_EQ(milliseconds(60), sm.transmission_interval());
     EXPECT_NEAR(16.66, sm.message_rate(), 0.01);
 }
 
-TEST(StateMachine, ramp_up)
+TEST(FullyMeshedStateMachine, ramp_up)
 {
-    StateMachine sm;
+    FullyMeshedStateMachine sm;
 
     // keep below minChannelLoad at first: relaxed
     sm.update(ChannelLoad(0.16));
@@ -46,9 +46,9 @@ TEST(StateMachine, ramp_up)
     EXPECT_STREQ("Restrictive", sm.state().name());
 }
 
-TEST(StateMachine, ramp_down)
+TEST(FullyMeshedStateMachine, ramp_down)
 {
-    StateMachine sm;
+    FullyMeshedStateMachine sm;
 
     // fill up CL ring buffer for restrictive
     for (unsigned i = 0; i < 10; ++i) {
