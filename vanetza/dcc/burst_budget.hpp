@@ -54,6 +54,12 @@ public:
      */
     void burst_period(Clock::duration p);
 
+    /**
+     * Get burst interval
+     * \return bust interval
+     */
+    Clock::duration burst_period() const { return m_burst_period; }
+
 private:
     const Clock::time_point& m_clock;
     boost::circular_buffer<Clock::time_point> m_messages;
