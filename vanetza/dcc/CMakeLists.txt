@@ -7,6 +7,7 @@ set(CXX_SOURCES
     gradual_state_machine.cpp
     hooked_channel_probe_processor.cpp
     mapping.cpp
+    single_reactive_transmit_rate_control.cpp
     state_machine_budget.cpp
     smoothing_channel_probe_processor.cpp
 )
