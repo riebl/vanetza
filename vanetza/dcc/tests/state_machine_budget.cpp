@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/clock.hpp>
-#include <vanetza/dcc/regular_budget.hpp>
-#include <vanetza/dcc/state_machine.hpp>
+#include <vanetza/dcc/fully_meshed_state_machine.hpp>
+#include <vanetza/dcc/state_machine_budget.hpp>
 
 using namespace vanetza::dcc;
 using vanetza::Clock;
@@ -9,17 +9,17 @@ using std::chrono::milliseconds;
 
 static const Clock::duration immediately = milliseconds(0);
 
-class RegularBudgetTest : public ::testing::Test
+class StateMachineBudgetTest : public ::testing::Test
 {
 protected:
-    RegularBudgetTest() : now(std::chrono::seconds(4711)), budget(fsm, now) {}
+    StateMachineBudgetTest() : now(std::chrono::seconds(4711)), budget(fsm, now) {}
 
     Clock::time_point now;
-    StateMachine fsm;
-    RegularBudget budget;
+    FullyMeshedStateMachine fsm;
+    StateMachineBudget budget;
 };
 
-TEST_F(RegularBudgetTest, relaxed)
+TEST_F(StateMachineBudgetTest, relaxed)
 {
     Relaxed relaxed;
     const auto relaxed_tx_interval = relaxed.transmission_interval();
@@ -36,7 +36,7 @@ TEST_F(RegularBudgetTest, relaxed)
     EXPECT_EQ(immediately, budget.delay());
 }
 
-TEST_F(RegularBudgetTest, restrictive)
+TEST_F(StateMachineBudgetTest, restrictive)
 {
     Restrictive restrictive;
     const auto restrictive_tx_interval = restrictive.transmission_interval();

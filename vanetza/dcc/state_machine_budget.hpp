@@ -1,5 +1,5 @@
-#ifndef REGULAR_BUDGET_HPP_9AL8A2JG
-#define REGULAR_BUDGET_HPP_9AL8A2JG
+#ifndef STATE_MACHINE_BUDGET_HPP_9AL8A2JG
+#define STATE_MACHINE_BUDGET_HPP_9AL8A2JG
 
 #include <vanetza/common/clock.hpp>
 #include <boost/optional.hpp>
@@ -12,10 +12,13 @@ namespace dcc
 // forward declarations
 class StateMachine;
 
-class RegularBudget
+/**
+ * StateMachineBudget: TRC restrictions as determined by a state machine
+ */
+class StateMachineBudget
 {
 public:
-    RegularBudget(const StateMachine&, const Clock::time_point&);
+    StateMachineBudget(const StateMachine&, const Clock::time_point&);
     Clock::duration delay();
     void notify();
 
@@ -28,5 +31,5 @@ private:
 } // namespace dcc
 } // namespace vanetza
 
-#endif /* REGULAR_BUDGET_HPP_9AL8A2JG */
+#endif /* STATE_MACHINE_BUDGET_HPP_9AL8A2JG */
 

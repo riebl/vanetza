@@ -8,6 +8,6 @@ add_gtest(FlowControl flow_control.cpp)
 add_gtest(FullyMeshedStateMachine fully_meshed_state_machine.cpp)
 add_gtest(GradualStateMachine gradual_state_machine.cpp)
 add_gtest(Mapping mapping.cpp)
-add_gtest(RegularBudget regular_budget.cpp)
+add_gtest(StateMachineBudget state_machine_budget.cpp)
 add_gtest(Scheduler scheduler.cpp)
 

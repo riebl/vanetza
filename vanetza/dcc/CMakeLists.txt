@@ -6,8 +6,8 @@ set(CXX_SOURCES
     fully_meshed_state_machine.cpp
     gradual_state_machine.cpp
     mapping.cpp
-    regular_budget.cpp
     scheduler.cpp
+    state_machine_budget.cpp
 )
 
 add_vanetza_component(dcc ${CXX_SOURCES})

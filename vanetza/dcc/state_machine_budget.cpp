@@ -1,4 +1,4 @@
-#include "regular_budget.hpp"
+#include "state_machine_budget.hpp"
 #include "state_machine.hpp"
 
 namespace vanetza
@@ -6,12 +6,12 @@ namespace vanetza
 namespace dcc
 {
 
-RegularBudget::RegularBudget(const StateMachine& fsm, const Clock::time_point& clock) :
+StateMachineBudget::StateMachineBudget(const StateMachine& fsm, const Clock::time_point& clock) :
     m_fsm(fsm), m_clock(clock)
 {
 }
 
-Clock::duration RegularBudget::delay()
+Clock::duration StateMachineBudget::delay()
 {
     Clock::duration delay = Clock::duration::max();
 
@@ -30,7 +30,7 @@ Clock::duration RegularBudget::delay()
     return delay;
 }
 
-void RegularBudget::notify()
+void StateMachineBudget::notify()
 {
     m_last_tx = m_clock;
 }
