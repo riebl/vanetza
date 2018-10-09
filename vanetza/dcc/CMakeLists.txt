@@ -5,6 +5,7 @@ set(CXX_SOURCES
     flow_control.cpp
     fully_meshed_state_machine.cpp
     gradual_state_machine.cpp
+    hooked_channel_probe_processor.cpp
     mapping.cpp
     state_machine_budget.cpp
     smoothing_channel_probe_processor.cpp
