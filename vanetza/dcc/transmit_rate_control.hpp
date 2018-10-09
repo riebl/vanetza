@@ -9,7 +9,7 @@ namespace vanetza
 namespace dcc
 {
 
-class TransmitRateControl
+class TransmitRateThrottle
 {
 public:
     /**
@@ -25,6 +25,24 @@ public:
      * \return interval enforced by DCC_access
      */
     virtual Clock::duration interval(Profile) = 0;
+
+    virtual ~TransmitRateThrottle() = default;
+};
+
+class TransmitRateFeedback
+{
+public:
+    /**
+     * Notify about an actual transmission at link layer
+     * \param p Profile associated with transmission
+     */
+    virtual void notify(Profile) = 0;
+
+    virtual ~TransmitRateFeedback() = default;
+};
+
+class TransmitRateControl : public TransmitRateThrottle, public TransmitRateFeedback
+{
 };
 
 } // namespace dcc
