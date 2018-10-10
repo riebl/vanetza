@@ -76,6 +76,12 @@ public:
      */
     void queue_length(std::size_t length);
 
+    /**
+     * Reschedule queued transmissions
+     * This reevaluates TRC restrictions as well, packets may get transmitted earlier.
+     */
+    void reschedule();
+
 private:
     using Transmission = std::tuple<Clock::time_point, DataRequest, std::unique_ptr<ChunkPacket>>;
     using Queue = std::list<Transmission>;

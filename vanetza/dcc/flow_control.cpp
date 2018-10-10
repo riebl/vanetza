@@ -174,5 +174,15 @@ void FlowControl::queue_length(std::size_t length)
     m_queue_length = length;
 }
 
+void FlowControl::reschedule()
+{
+    Transmission* next = next_transmission();
+    if (next) {
+        m_runtime.cancel(this);
+        const DataRequest& request = std::get<1>(*next);
+        schedule_trigger(request.dcc_profile);
+    }
+}
+
 } // namespace dcc
 } // namespace vanetza
