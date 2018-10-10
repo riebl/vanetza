@@ -54,6 +54,7 @@ if (VANETZA_WITH_OPENSSL)
   include(CompatOpenSSLTargets)
 endif()
 
+add_subdirectory(vanetza/access)
 add_subdirectory(vanetza/asn1)
 add_subdirectory(vanetza/btp)
 add_subdirectory(vanetza/common)
