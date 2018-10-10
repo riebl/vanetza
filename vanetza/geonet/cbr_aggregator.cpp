@@ -15,7 +15,8 @@ struct CbrAggregatorUnit
 
     void operator+=(dcc::ChannelLoad cbr)
     {
-        average = (average.value() * n + cbr.value()) / (n + 1);
+        // calculate average as double so numerator can be larger than 1.0 temporarily
+        average = dcc::ChannelLoad {(average.value() * n + cbr.value()) / (n + 1)};
         ++n;
 
         // >= comparison: second largest value might equal largest value

@@ -25,7 +25,6 @@ public:
     constexpr explicit UnitInterval(double v) : m_value(clamp(v)) {}
     UnitInterval(const UnitInterval&) = default;
     UnitInterval& operator=(const UnitInterval&) = default;
-    UnitInterval& operator=(double);
 
     // arithmetic
     UnitInterval& operator+=(const UnitInterval&);

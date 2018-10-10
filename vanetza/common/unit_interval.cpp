@@ -5,12 +5,6 @@
 namespace vanetza
 {
 
-UnitInterval& UnitInterval::operator=(double value)
-{
-    m_value = value;
-    return clamp();
-}
-
 UnitInterval& UnitInterval::operator+=(const UnitInterval& other)
 {
     m_value += other.m_value;
