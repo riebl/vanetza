@@ -10,10 +10,11 @@ set(CXX_SOURCES
     single_reactive_transmit_rate_control.cpp
     state_machine_budget.cpp
     smoothing_channel_probe_processor.cpp
+    transmission.cpp
 )
 
 add_vanetza_component(dcc ${CXX_SOURCES})
-target_link_libraries(dcc PUBLIC net)
+target_link_libraries(dcc PUBLIC access net)
 
 add_test_subdirectory(tests)
 
