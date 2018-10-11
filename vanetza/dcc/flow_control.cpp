@@ -25,7 +25,10 @@ FlowControl::~FlowControl()
 void FlowControl::request(const DataRequest& request, std::unique_ptr<ChunkPacket> packet)
 {
     drop_expired();
-    if (transmit_immediately(request)) {
+
+    const TransmissionLite transmission { request.dcc_profile, packet->size() };
+    if (transmit_immediately(transmission)) {
+        m_trc.notify(transmission);
         transmit(request, std::move(packet));
     } else {
         enqueue(request, std::move(packet));
@@ -37,19 +40,19 @@ void FlowControl::trigger()
     drop_expired();
     auto transmission = dequeue();
     if (transmission) {
-        transmit(std::get<1>(*transmission), std::move(std::get<2>(*transmission)));
+        m_trc.notify(*transmission);
+        transmit(transmission->request, std::move(transmission->packet));
     }
 
-    Transmission* next = next_transmission();
+    PendingTransmission* next = next_transmission();
     if (next) {
-        const DataRequest& request = std::get<1>(*next);
-        schedule_trigger(request.dcc_profile);
+        schedule_trigger(*next);
     }
 }
 
-void FlowControl::schedule_trigger(Profile dcc_profile)
+void FlowControl::schedule_trigger(const Transmission& tx)
 {
-    auto callback_delay = m_trc.delay(dcc_profile);
+    auto callback_delay = m_trc.delay(tx);
     m_runtime.schedule(callback_delay, std::bind(&FlowControl::trigger, this), this);
 }
 
@@ -65,13 +68,13 @@ void FlowControl::enqueue(const DataRequest& request, std::unique_ptr<ChunkPacke
     m_queues[ac].emplace_back(expiry, request, std::move(packet));
 
     if (first_packet) {
-        schedule_trigger(request.dcc_profile);
+        schedule_trigger(m_queues[ac].back());
     }
 }
 
-boost::optional<FlowControl::Transmission> FlowControl::dequeue()
+boost::optional<FlowControl::PendingTransmission> FlowControl::dequeue()
 {
-    boost::optional<Transmission> transmission;
+    boost::optional<PendingTransmission> transmission;
     Queue* queue = next_queue();
     if (queue) {
         transmission = std::move(queue->front());
@@ -81,9 +84,9 @@ boost::optional<FlowControl::Transmission> FlowControl::dequeue()
     return transmission;
 }
 
-bool FlowControl::transmit_immediately(const DataRequest& request) const
+bool FlowControl::transmit_immediately(const Transmission& transmission) const
 {
-    const auto ac = map_profile_onto_ac(request.dcc_profile);
+    const auto ac = map_profile_onto_ac(transmission.profile());
 
     // is there any packet enqueued with equal or higher priority?
     bool contention = false;
@@ -94,7 +97,7 @@ bool FlowControl::transmit_immediately(const DataRequest& request) const
         }
     }
 
-    return !contention && m_trc.delay(request.dcc_profile) == Clock::duration::zero();
+    return !contention && m_trc.delay(transmission) == Clock::duration::zero();
 }
 
 bool FlowControl::empty() const
@@ -113,8 +116,7 @@ FlowControl::Queue* FlowControl::next_queue()
     for (auto& kv : m_queues) {
         Queue& queue = kv.second;
         if (!queue.empty()) {
-            const auto profile = std::get<1>(queue.front()).dcc_profile;
-            const auto delay = m_trc.delay(profile);
+            const auto delay = m_trc.delay(queue.front());
             if (delay < min_delay) {
                 min_delay = delay;
                 next = &queue;
@@ -124,7 +126,7 @@ FlowControl::Queue* FlowControl::next_queue()
     return next;
 }
 
-FlowControl::Transmission* FlowControl::next_transmission()
+FlowControl::PendingTransmission* FlowControl::next_transmission()
 {
     Queue* queue = next_queue();
     return queue ? &queue->front() : nullptr;
@@ -135,9 +137,8 @@ void FlowControl::drop_expired()
     for (auto& kv : m_queues) {
         AccessCategory ac = kv.first;
         Queue& queue = kv.second;
-        queue.remove_if([this, ac](const Transmission& transmission) {
-            const Clock::time_point expiry = std::get<0>(transmission);
-            bool drop = expiry < m_runtime.now();
+        queue.remove_if([this, ac](const PendingTransmission& transmission) {
+            bool drop = transmission.expiry < m_runtime.now();
             if (drop) {
                 m_packet_drop_hook(ac);
             }
@@ -148,15 +149,14 @@ void FlowControl::drop_expired()
 
 void FlowControl::transmit(const DataRequest& request, std::unique_ptr<ChunkPacket> packet)
 {
-    access::DataRequest mac_req;
-    mac_req.source_addr = request.source;
-    mac_req.destination_addr = request.destination;
-    mac_req.ether_type = request.ether_type;
-    mac_req.access_category = map_profile_onto_ac(request.dcc_profile);
+    access::DataRequest access_request;
+    access_request.source_addr = request.source;
+    access_request.destination_addr = request.destination;
+    access_request.ether_type = request.ether_type;
+    access_request.access_category = map_profile_onto_ac(request.dcc_profile);
 
-    m_trc.notify(request.dcc_profile);
-    m_access.request(mac_req, std::move(packet));
-    m_packet_transmit_hook(mac_req.access_category);
+    m_access.request(access_request, std::move(packet));
+    m_packet_transmit_hook(access_request.access_category);
 }
 
 void FlowControl::set_packet_drop_hook(PacketDropHook::callback_type&& cb)
@@ -176,11 +176,10 @@ void FlowControl::queue_length(std::size_t length)
 
 void FlowControl::reschedule()
 {
-    Transmission* next = next_transmission();
+    PendingTransmission* next = next_transmission();
     if (next) {
         m_runtime.cancel(this);
-        const DataRequest& request = std::get<1>(*next);
-        schedule_trigger(request.dcc_profile);
+        schedule_trigger(*next);
     }
 }
 

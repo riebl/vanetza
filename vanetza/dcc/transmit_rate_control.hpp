@@ -2,7 +2,7 @@
 #define TRANSMIT_RATE_CONTROL_HPP_NOPDFSY6
 
 #include <vanetza/common/clock.hpp>
-#include <vanetza/dcc/profile.hpp>
+#include <vanetza/dcc/transmission.hpp>
 
 namespace vanetza
 {
@@ -14,17 +14,17 @@ class TransmitRateThrottle
 public:
     /**
      * Duration until next transmission has to be delayed
-     * \param p Profile associated to transmission
+     * \param tx transmission
      * \return waiting time until next transmission is allowed
      */
-    virtual Clock::duration delay(Profile) = 0;
+    virtual Clock::duration delay(const Transmission& tx) = 0;
 
     /**
      * Current interval between packets
-     * \param p Profile
+     * \param tx transmission
      * \return interval enforced by DCC_access
      */
-    virtual Clock::duration interval(Profile) = 0;
+    virtual Clock::duration interval(const Transmission& tx) = 0;
 
     virtual ~TransmitRateThrottle() = default;
 };
@@ -34,9 +34,9 @@ class TransmitRateFeedback
 public:
     /**
      * Notify about an actual transmission at link layer
-     * \param p Profile associated with transmission
+     * \param tx transmission
      */
-    virtual void notify(Profile) = 0;
+    virtual void notify(const Transmission& tx) = 0;
 
     virtual ~TransmitRateFeedback() = default;
 };

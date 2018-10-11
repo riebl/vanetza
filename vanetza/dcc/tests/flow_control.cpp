@@ -10,6 +10,11 @@ using namespace vanetza;
 using namespace vanetza::dcc;
 using namespace std::chrono;
 
+static const TransmissionLite dp0 { Profile::DP0, 0 };
+static const TransmissionLite dp1 { Profile::DP1, 0 };
+static const TransmissionLite dp2 { Profile::DP2, 0 };
+static const TransmissionLite dp3 { Profile::DP3, 0 };
+
 class FakeAccessInterface : public access::Interface
 {
 public:
@@ -31,14 +36,14 @@ public:
     FakeTransmitRateControl(const Runtime& rt) :
         runtime(rt), trc_off(milliseconds(200)), last_notify(Clock::time_point::min()) {}
 
-    Clock::duration delay(Profile) override
+    Clock::duration delay(const Transmission&) override
     {
         auto delay = runtime.now() - last_notify + trc_off;
         return delay < Clock::duration::zero() ? Clock::duration::zero() : delay;
     }
 
-    Clock::duration interval(Profile) override { return trc_off; }
-    void notify(Profile) override { last_notify = runtime.now(); }
+    Clock::duration interval(const Transmission&) override { return trc_off; }
+    void notify(const Transmission&) override { last_notify = runtime.now(); }
 
     const Runtime& runtime;
     Clock::duration trc_off;
@@ -73,7 +78,7 @@ protected:
 
 TEST_F(FlowControlTest, immediate_transmission)
 {
-    ASSERT_EQ(milliseconds(0), trc.delay(Profile::DP1));
+    ASSERT_EQ(milliseconds(0), trc.delay(dp1));
     ASSERT_FALSE(access.last_request);
     DataRequest request;
     request.dcc_profile = Profile::DP1;
@@ -81,14 +86,14 @@ TEST_F(FlowControlTest, immediate_transmission)
     ASSERT_TRUE(!!access.last_request);
     EXPECT_EQ(AccessCategory::VI, access.last_request->access_category);
 
-    EXPECT_EQ(trc.interval(Profile::DP2), trc.delay(Profile::DP2));
+    EXPECT_EQ(trc.interval(dp2), trc.delay(dp2));
     request.dcc_profile = Profile::DP2;
     access.last_request = boost::none;
     flow_control.request(request, create_packet());
     EXPECT_FALSE(access.last_request);
 
     // DP0 bursts are implemented by TRC not by FlowControl
-    EXPECT_EQ(trc.interval(Profile::DP0), trc.delay(Profile::DP0));
+    EXPECT_EQ(trc.interval(dp0), trc.delay(dp0));
     request.dcc_profile = Profile::DP0;
     flow_control.request(request, create_packet());
     EXPECT_FALSE(access.last_request);
@@ -99,10 +104,10 @@ TEST_F(FlowControlTest, queuing)
     DataRequest request;
     request.lifetime = hours(1); // expired lifetime shall be no concern here
 
-    trc.notify(Profile::DP1);
-    EXPECT_LT(Clock::duration::zero(), trc.delay(Profile::DP1));
-    EXPECT_LT(Clock::duration::zero(), trc.delay(Profile::DP2));
-    EXPECT_LT(Clock::duration::zero(), trc.delay(Profile::DP3));
+    trc.notify(dp1);
+    EXPECT_LT(Clock::duration::zero(), trc.delay(dp1));
+    EXPECT_LT(Clock::duration::zero(), trc.delay(dp2));
+    EXPECT_LT(Clock::duration::zero(), trc.delay(dp3));
 
     request.destination = mac(1);
     request.dcc_profile = Profile::DP1;
@@ -114,15 +119,15 @@ TEST_F(FlowControlTest, queuing)
     request.dcc_profile = Profile::DP2;
     flow_control.request(request, create_packet());
 
-    runtime.trigger(trc.delay(Profile::DP1));
+    runtime.trigger(trc.delay(dp1));
     ASSERT_TRUE(!!access.last_request);
     EXPECT_EQ(mac(1), access.last_request->destination_addr);
     EXPECT_EQ(1, access.transmissions);
 
-    runtime.trigger(trc.delay(Profile::DP2) / 2);
+    runtime.trigger(trc.delay(dp2) / 2);
     EXPECT_EQ(1, access.transmissions);
 
-    runtime.trigger(trc.delay(Profile::DP2));
+    runtime.trigger(trc.delay(dp2));
     EXPECT_EQ(2, access.transmissions);
     EXPECT_EQ(mac(3), access.last_request->destination_addr);
 
@@ -133,15 +138,15 @@ TEST_F(FlowControlTest, queuing)
     request.dcc_profile = Profile::DP3;
     flow_control.request(request, create_packet());
 
-    runtime.trigger(trc.delay(Profile::DP2));
+    runtime.trigger(trc.delay(dp2));
     EXPECT_EQ(3, access.transmissions);
     EXPECT_EQ(mac(4), access.last_request->destination_addr);
 
-    runtime.trigger(trc.delay(Profile::DP3));
+    runtime.trigger(trc.delay(dp3));
     EXPECT_EQ(4, access.transmissions);
     EXPECT_EQ(mac(2), access.last_request->destination_addr);
 
-    runtime.trigger(trc.delay(Profile::DP3));
+    runtime.trigger(trc.delay(dp3));
     EXPECT_EQ(5, access.transmissions);
     EXPECT_EQ(mac(5), access.last_request->destination_addr);
 
@@ -157,19 +162,19 @@ TEST_F(FlowControlTest, drop_expired)
             drops.push_back(ac);
     });
 
-    trc.notify(Profile::DP3);
+    trc.notify(dp3);
     DataRequest request;
     request.dcc_profile = Profile::DP3;
-    request.lifetime = trc.delay(Profile::DP3) - milliseconds(10);
+    request.lifetime = trc.delay(dp3) - milliseconds(10);
     flow_control.request(request, create_packet());
-    runtime.trigger(trc.delay(Profile::DP3) + milliseconds(10));
+    runtime.trigger(trc.delay(dp3) + milliseconds(10));
     EXPECT_FALSE(access.last_request);
     ASSERT_FALSE(drops.empty());
     EXPECT_EQ(AccessCategory::BK, drops.back());
     EXPECT_EQ(0, access.transmissions);
 
-    trc.notify(Profile::DP3);
-    auto delay = trc.delay(Profile::DP3);
+    trc.notify(dp3);
+    auto delay = trc.delay(dp3);
     EXPECT_NE(Clock::duration::zero(), delay);
     request.lifetime = delay;
     flow_control.request(request, create_packet());
@@ -207,8 +212,8 @@ TEST_F(FlowControlTest, queue_length)
     request.lifetime = std::chrono::seconds(5);
 
     // cause enqueuing of arriving DP1 packets
-    trc.notify(Profile::DP1);
-    ASSERT_LT(Clock::duration::zero(), trc.delay(Profile::DP1));
+    trc.notify(dp1);
+    ASSERT_LT(Clock::duration::zero(), trc.delay(dp1));
 
     flow_control.request(request, create_packet(1));
     flow_control.request(request, create_packet(2));
@@ -219,11 +224,11 @@ TEST_F(FlowControlTest, queue_length)
     EXPECT_EQ(0, access.transmissions);
     EXPECT_EQ(1, drops);
 
-    runtime.trigger(trc.delay(Profile::DP1));
+    runtime.trigger(trc.delay(dp1));
     EXPECT_EQ(1, access.transmissions);
     EXPECT_EQ(2, access.last_packet->size());
 
-    runtime.trigger(trc.delay(Profile::DP1));
+    runtime.trigger(trc.delay(dp1));
     EXPECT_EQ(2, access.transmissions);
     EXPECT_EQ(3, access.last_packet->size());
     EXPECT_EQ(1, drops);

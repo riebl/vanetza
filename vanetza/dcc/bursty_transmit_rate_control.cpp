@@ -11,11 +11,11 @@ BurstyTransmitRateControl::BurstyTransmitRateControl(const StateMachine& fsm, co
 {
 }
 
-Clock::duration BurstyTransmitRateControl::delay(Profile dp)
+Clock::duration BurstyTransmitRateControl::delay(const Transmission& tx)
 {
     Clock::duration delay = Clock::duration::max();
 
-    switch (dp) {
+    switch (tx.profile()) {
         case Profile::DP0:
             delay = m_burst_budget.delay();
             break;
@@ -32,11 +32,11 @@ Clock::duration BurstyTransmitRateControl::delay(Profile dp)
     return delay;
 }
 
-Clock::duration BurstyTransmitRateControl::interval(Profile dp)
+Clock::duration BurstyTransmitRateControl::interval(const Transmission& tx)
 {
     Clock::duration interval = Clock::duration::max();
 
-    switch (dp) {
+    switch (tx.profile()) {
         case Profile::DP0:
             interval = m_burst_budget.burst_period();
             break;
@@ -53,9 +53,9 @@ Clock::duration BurstyTransmitRateControl::interval(Profile dp)
     return interval;
 }
 
-void BurstyTransmitRateControl::notify(Profile dp)
+void BurstyTransmitRateControl::notify(const Transmission& tx)
 {
-    switch (dp) {
+    switch (tx.profile()) {
         case Profile::DP0:
             m_burst_budget.notify();
             break;

@@ -11,17 +11,17 @@ SingleReactiveTransmitRateControl::SingleReactiveTransmitRateControl(const State
 {
 }
 
-Clock::duration SingleReactiveTransmitRateControl::interval(Profile)
+Clock::duration SingleReactiveTransmitRateControl::interval(const Transmission&)
 {
     return m_fsm.transmission_interval();
 }
 
-Clock::duration SingleReactiveTransmitRateControl::delay(Profile)
+Clock::duration SingleReactiveTransmitRateControl::delay(const Transmission&)
 {
     return m_fsm_budget.delay();
 }
 
-void SingleReactiveTransmitRateControl::notify(Profile)
+void SingleReactiveTransmitRateControl::notify(const Transmission&)
 {
     m_fsm_budget.notify();
 }

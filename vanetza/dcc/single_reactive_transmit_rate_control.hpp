@@ -19,9 +19,9 @@ class SingleReactiveTransmitRateControl : public TransmitRateControl
 public:
     SingleReactiveTransmitRateControl(const StateMachine&, const Clock::time_point&);
 
-    Clock::duration delay(Profile) override;
-    Clock::duration interval(Profile) override;
-    void notify(Profile) override;
+    Clock::duration delay(const Transmission&) override;
+    Clock::duration interval(const Transmission&) override;
+    void notify(const Transmission&) override;
 
 private:
     const StateMachine& m_fsm;

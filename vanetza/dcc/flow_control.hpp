@@ -6,12 +6,12 @@
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/dcc/profile.hpp>
+#include <vanetza/dcc/transmission.hpp>
 #include <vanetza/net/access_category.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 #include <boost/optional/optional.hpp>
 #include <list>
 #include <memory>
-#include <tuple>
 #include <map>
 
 namespace vanetza
@@ -83,18 +83,31 @@ public:
     void reschedule();
 
 private:
-    using Transmission = std::tuple<Clock::time_point, DataRequest, std::unique_ptr<ChunkPacket>>;
-    using Queue = std::list<Transmission>;
+    struct PendingTransmission : public Transmission
+    {
+        PendingTransmission(Clock::time_point expiry, const DataRequest& request, std::unique_ptr<ChunkPacket> packet) :
+            expiry(expiry), request(request), packet(std::move(packet)) {}
+
+        Clock::time_point expiry;
+        DataRequest request;
+        std::unique_ptr<ChunkPacket> packet;
+
+        Profile profile() const override { return request.dcc_profile; }
+        const access::DataRateG5* data_rate() const override { return &access::G5_6Mbps; }
+        std::size_t body_length() const override { return packet ? packet->size() : 0; }
+    };
+
+    using Queue = std::list<PendingTransmission>;
 
     void enqueue(const DataRequest&, std::unique_ptr<ChunkPacket>);
-    boost::optional<Transmission> dequeue();
+    boost::optional<PendingTransmission> dequeue();
     void transmit(const DataRequest&, std::unique_ptr<ChunkPacket>);
-    bool transmit_immediately(const DataRequest&) const;
+    bool transmit_immediately(const Transmission&) const;
     void drop_expired();
     bool empty() const;
     void trigger();
-    void schedule_trigger(Profile);
-    Transmission* next_transmission();
+    void schedule_trigger(const Transmission&);
+    PendingTransmission* next_transmission();
     Queue* next_queue();
 
     Runtime& m_runtime;

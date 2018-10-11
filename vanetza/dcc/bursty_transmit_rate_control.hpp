@@ -22,9 +22,9 @@ class BurstyTransmitRateControl : public TransmitRateControl
 public:
     BurstyTransmitRateControl(const StateMachine&, const Clock::time_point& clock);
 
-    Clock::duration delay(Profile) override;
-    Clock::duration interval(Profile) override;
-    void notify(Profile) override;
+    Clock::duration delay(const Transmission&) override;
+    Clock::duration interval(const Transmission&) override;
+    void notify(const Transmission&) override;
 
 private:
     BurstBudget m_burst_budget;
