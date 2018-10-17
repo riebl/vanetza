@@ -514,10 +514,24 @@ TEST_P(Routing, forwarding_selection_inaccurate_position)
     EXPECT_EQ(cars[0], net.get_interface(cars[3])->last_request.destination);
 }
 
-INSTANTIATE_TEST_CASE_P(RoutingInstantiation, Routing,
-        ::testing::Combine(
+
+static const auto PacketHandlingValues = ::testing::Combine(
             ::testing::Values(
                 NetworkTopology::PacketDuplicationMode::COPY_CONSTRUCT,
                 NetworkTopology::PacketDuplicationMode::SERIALIZE),
-            ::testing::Bool()
-        ));
+            ::testing::Bool());
+std::string printPacketHandlingValue(const ::testing::TestParamInfo<Routing::ParamType>& value)
+{
+    std::string print;
+    switch (std::get<0>(value.param)) {
+        case NetworkTopology::PacketDuplicationMode::COPY_CONSTRUCT:
+            print = "Copy";
+            break;
+        case NetworkTopology::PacketDuplicationMode::SERIALIZE:
+            print = "Serialize";
+            break;
+    }
+    print += std::get<1>(value.param) ? "WithSecurity" : "WithoutSecurity";
+    return print;
+}
+INSTANTIATE_TEST_CASE_P(RoutingPacketHandling, Routing, PacketHandlingValues, printPacketHandlingValue);
