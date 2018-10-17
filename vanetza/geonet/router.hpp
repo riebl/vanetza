@@ -35,7 +35,7 @@ namespace vanetza
 
 // forward declarations
 class MacAddress;
-class PositionFix;
+struct PositionFix;
 class Runtime;
 
 namespace dcc

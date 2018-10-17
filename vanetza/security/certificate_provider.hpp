@@ -30,6 +30,8 @@ public:
      * \return private key
      */
     virtual const ecdsa256::PrivateKey& own_private_key() = 0;
+
+    virtual ~CertificateProvider() = default;
 };
 
 } // namespace security

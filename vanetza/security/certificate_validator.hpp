@@ -17,6 +17,8 @@ public:
      * \return validity result
      */
     virtual CertificateValidity check_certificate(const Certificate& certificate) = 0;
+
+    virtual ~CertificateValidator() = default;
 };
 
 } // namespace security

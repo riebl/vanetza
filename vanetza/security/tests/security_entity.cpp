@@ -591,7 +591,7 @@ TEST_F(SecurityEntityTest, verify_message_header_fields_other)
 // See TS 103 096-2 v1.3.1, section 5.2.4.3 + 5.2.4.5 + 5.2.4.6 + 5.2.4.7
 TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
 {
-    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
     };
@@ -651,7 +651,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
 // See TS 103 096-2 v1.3.1, section 5.2.5.3
 TEST_F(SecurityEntityTest, verify_message_signer_info_denm)
 {
-    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
     };
@@ -668,7 +668,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_denm)
 // See TS 103 096-2 v1.3.1, section 5.2.6.3
 TEST_F(SecurityEntityTest, verify_message_signer_info_other)
 {
-    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
     };
@@ -858,7 +858,7 @@ TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
 
 TEST_F(SecurityEntityTest, verify_message_certificate_requests)
 {
-    auto signer_info = [this](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
     };
