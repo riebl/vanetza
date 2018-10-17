@@ -1,7 +1,7 @@
-set(GTest_VERSION 1.8.0)
+set(GTest_VERSION 1.8.1)
 set(GTest_ARCHIVE_NAME release-${GTest_VERSION})
 set(GTest_ARCHIVE ${GTest_ARCHIVE_NAME}.tar.gz)
-set(GTest_ARCHIVE_SHA1 e7e646a6204638fe8e87e165292b8dd9cd4c36ed)
+set(GTest_ARCHIVE_SHA1 152b849610d91a9dfa1401293f43230c2e0c33f8)
 
 set(GTest_DIR ${PROJECT_SOURCE_DIR}/gtest)
 set(GTest_ARCHIVE_DIR ${GTest_DIR}/googletest-${GTest_ARCHIVE_NAME}/googletest)
