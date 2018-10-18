@@ -1,3 +1,4 @@
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
@@ -24,7 +25,7 @@ public:
     }
 
 protected:
-    Runtime runtime;
+    ManualRuntime runtime;
     std::unique_ptr<Backend> backend;
     NaiveCertificateProvider cert_provider;
     std::vector<Certificate> roots;

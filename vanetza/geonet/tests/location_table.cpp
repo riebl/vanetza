@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/location_table.hpp>
 #include <vanetza/geonet/mib.hpp>
@@ -11,7 +12,7 @@
 
 using namespace vanetza::geonet;
 using vanetza::Clock;
-using vanetza::Runtime;
+using vanetza::ManualRuntime;
 
 class LocationTableTest : public ::testing::Test
 {
@@ -20,7 +21,7 @@ protected:
     {
         mib.reset(new MIB());
         mib->itsGnLifetimeLocTE = 10 * vanetza::units::si::seconds;
-        runtime.reset(new Runtime());
+        runtime.reset(new ManualRuntime());
         loct.reset(new LocationTable(*mib, *runtime));
     }
 
@@ -32,7 +33,7 @@ protected:
     }
 
     std::unique_ptr<MIB> mib;
-    std::unique_ptr<Runtime> runtime;
+    std::unique_ptr<ManualRuntime> runtime;
     std::unique_ptr<LocationTable> loct;
 };
 

@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
-#include <vanetza/common/clock.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/dcc/bursty_transmit_rate_control.hpp>
 #include <vanetza/dcc/fully_meshed_state_machine.hpp>
 
 using namespace std::chrono;
 using namespace vanetza::dcc;
-using vanetza::Clock;
+using vanetza::ManualRuntime;
 
-static const Clock::duration immediately = milliseconds(0);
+static const vanetza::Clock::duration immediately = milliseconds(0);
 static const TransmissionLite dp0 { Profile::DP0, 0 };
 static const TransmissionLite dp1 { Profile::DP1, 0 };
 static const TransmissionLite dp2 { Profile::DP2, 0 };
@@ -16,9 +16,11 @@ static const TransmissionLite dp3 { Profile::DP3, 0 };
 class BurstyTransmitRateControlTest : public ::testing::Test
 {
 protected:
-    BurstyTransmitRateControlTest() : now(seconds(4711)), trc(fsm, now) {}
+    BurstyTransmitRateControlTest() :
+        runtime(vanetza::Clock::time_point { seconds(4711) }),
+        trc(fsm, runtime) {}
 
-    Clock::time_point now;
+    ManualRuntime runtime;
     FullyMeshedStateMachine fsm;
     BurstyTransmitRateControl trc;
 };
@@ -26,12 +28,12 @@ protected:
 TEST_F(BurstyTransmitRateControlTest, burst)
 {
     for (unsigned i = 0; i < 20; ++i) {
-        now += milliseconds(49);
+        runtime.trigger(milliseconds(49));
         EXPECT_EQ(immediately, trc.delay(dp0));
         trc.notify(dp0);
     }
 
-    now += milliseconds(20);
+    runtime.trigger(milliseconds(20));
     EXPECT_GT(seconds(10), trc.delay(dp0));
     EXPECT_LT(seconds(9), trc.delay(dp0));
 }
@@ -45,12 +47,12 @@ TEST_F(BurstyTransmitRateControlTest, regular)
     trc.notify(dp1);
     EXPECT_EQ(tx_int, trc.delay(dp1));
 
-    now += milliseconds(50);
+    runtime.trigger(milliseconds(50));
     EXPECT_EQ(milliseconds(10), trc.delay(dp1));
     EXPECT_EQ(milliseconds(10), trc.delay(dp2));
     EXPECT_EQ(milliseconds(10), trc.delay(dp3));
 
-    now += milliseconds(20);
+    runtime.trigger(milliseconds(20));
     EXPECT_EQ(immediately, trc.delay(dp1));
     EXPECT_EQ(immediately, trc.delay(dp2));
     EXPECT_EQ(immediately, trc.delay(dp3));
@@ -70,7 +72,7 @@ TEST_F(BurstyTransmitRateControlTest, burst_regular_independence)
     EXPECT_EQ(immediately, trc.delay(dp3));
 
     // recover burst budget
-    now += std::chrono::seconds(20);
+    runtime.trigger(std::chrono::seconds(20));
     ASSERT_EQ(immediately, trc.delay(dp0));
 
     // use regular budget

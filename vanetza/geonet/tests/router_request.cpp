@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
 #include <vanetza/geonet/tests/security_context.hpp>
 #include <vanetza/geonet/pdu_conversion.hpp>
@@ -34,7 +34,7 @@ protected:
     }
 
     ManagementInformationBase mib;
-    Runtime runtime;
+    ManualRuntime runtime;
     SecurityContext security;
     Router router;
     FakeRequestInterface req_ifc;

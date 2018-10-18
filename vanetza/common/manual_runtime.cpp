@@ -1,40 +1,24 @@
-#include "runtime.hpp"
+#include "manual_runtime.hpp"
 #include <cassert>
 
 namespace vanetza
 {
 
-Runtime::Runtime(Clock::time_point init) : m_now(init)
+ManualRuntime::ManualRuntime(Clock::time_point init) : m_now(init)
 {
 }
 
-void Runtime::schedule(Clock::time_point tp, const Callback& cb, const std::string& name)
-{
-    m_queue.emplace(queue_type::value_type { tp, cb, name });
-}
-
-void Runtime::schedule(Clock::duration d, const Callback& cb, const std::string& name)
-{
-    schedule(m_now + d, cb, name);
-}
-
-void Runtime::schedule(Clock::time_point tp, const Callback& cb, const void* scope)
+void ManualRuntime::schedule(Clock::time_point tp, const Callback& cb, const void* scope)
 {
     m_queue.emplace(queue_type::value_type { tp, cb, scope });
 }
 
-void Runtime::schedule(Clock::duration d, const Callback& cb, const void* scope)
+void ManualRuntime::schedule(Clock::duration d, const Callback& cb, const void* scope)
 {
     schedule(m_now + d, cb, scope);
 }
 
-void Runtime::cancel(const std::string& name)
-{
-    auto name_match_range = m_queue.get<by_name>().equal_range(name);
-    m_queue.get<by_name>().erase(name_match_range.first, name_match_range.second);
-}
-
-void Runtime::cancel(const void* scope)
+void ManualRuntime::cancel(const void* scope)
 {
     if (scope) {
         auto scope_match_range = m_queue.get<by_scope>().equal_range(scope);
@@ -42,7 +26,7 @@ void Runtime::cancel(const void* scope)
     }
 }
 
-Clock::time_point Runtime::next() const
+Clock::time_point ManualRuntime::next() const
 {
     Clock::time_point next_tp = Clock::time_point::max();
     if (!m_queue.empty()) {
@@ -51,12 +35,12 @@ Clock::time_point Runtime::next() const
     return next_tp;
 }
 
-const Clock::time_point& Runtime::now() const
+const Clock::time_point& ManualRuntime::now() const
 {
     return m_now;
 }
 
-void Runtime::trigger(Clock::time_point tp)
+void ManualRuntime::trigger(Clock::time_point tp)
 {
     // require monotonic clock
     assert(tp >= m_now);
@@ -64,13 +48,13 @@ void Runtime::trigger(Clock::time_point tp)
     trigger();
 }
 
-void Runtime::trigger(Clock::duration d)
+void ManualRuntime::trigger(Clock::duration d)
 {
     m_now += d;
     trigger();
 }
 
-void Runtime::trigger()
+void ManualRuntime::trigger()
 {
     // process queue elements separately because callback might modify runtime
     while (!m_queue.empty()) {
@@ -87,7 +71,7 @@ void Runtime::trigger()
     }
 }
 
-void Runtime::reset(Clock::time_point tp)
+void ManualRuntime::reset(Clock::time_point tp)
 {
     m_now = tp;
     queue_type queue;

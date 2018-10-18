@@ -6,11 +6,13 @@
 
 namespace vanetza
 {
-namespace dcc
-{
 
 // forward declarations
-class StateMachine;
+class Runtime;
+namespace dcc { class StateMachine; }
+
+namespace dcc
+{
 
 /**
  * StateMachineBudget: TRC restrictions as determined by a state machine
@@ -18,13 +20,13 @@ class StateMachine;
 class StateMachineBudget
 {
 public:
-    StateMachineBudget(const StateMachine&, const Clock::time_point&);
+    StateMachineBudget(const StateMachine&, const Runtime&);
     Clock::duration delay();
     void notify();
 
 private:
     const StateMachine& m_fsm;
-    const Clock::time_point& m_clock;
+    const Runtime& m_runtime;
     boost::optional<Clock::time_point> m_last_tx;
 };
 

@@ -6,8 +6,8 @@ namespace vanetza
 namespace dcc
 {
 
-SingleReactiveTransmitRateControl::SingleReactiveTransmitRateControl(const StateMachine& fsm, const Clock::time_point& clock) :
-    m_fsm(fsm), m_fsm_budget(fsm, clock)
+SingleReactiveTransmitRateControl::SingleReactiveTransmitRateControl(const StateMachine& fsm, const Runtime& rt) :
+    m_fsm(fsm), m_fsm_budget(fsm, rt)
 {
 }
 

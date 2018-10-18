@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
@@ -85,7 +85,7 @@ protected:
         return confirm.sec_packet;
     }
 
-    Runtime runtime;
+    ManualRuntime runtime;
     StoredPositionProvider position_provider;
     std::unique_ptr<Backend> crypto_backend;
     std::unique_ptr<NaiveCertificateProvider> certificate_provider;

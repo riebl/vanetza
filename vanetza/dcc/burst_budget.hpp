@@ -8,6 +8,10 @@
 
 namespace vanetza
 {
+
+// forward declaration
+class Runtime;
+
 namespace dcc
 {
 
@@ -22,7 +26,7 @@ public:
     static constexpr Clock::duration T_BurstPeriod = std::chrono::seconds(10);
     static constexpr std::size_t N_Burst = 20;
 
-    BurstBudget(const Clock::time_point&);
+    BurstBudget(const Runtime&);
     ~BurstBudget();
 
     /**
@@ -61,7 +65,7 @@ public:
     Clock::duration burst_period() const { return m_burst_period; }
 
 private:
-    const Clock::time_point& m_clock;
+    const Runtime& m_runtime;
     boost::circular_buffer<Clock::time_point> m_messages;
     Clock::duration m_burst_duration = T_Burst;
     Clock::duration m_burst_period = T_BurstPeriod;

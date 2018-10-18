@@ -1,13 +1,14 @@
-#include "state_machine_budget.hpp"
-#include "state_machine.hpp"
+#include <vanetza/common/runtime.hpp>
+#include <vanetza/dcc/state_machine.hpp>
+#include <vanetza/dcc/state_machine_budget.hpp>
 
 namespace vanetza
 {
 namespace dcc
 {
 
-StateMachineBudget::StateMachineBudget(const StateMachine& fsm, const Clock::time_point& clock) :
-    m_fsm(fsm), m_clock(clock)
+StateMachineBudget::StateMachineBudget(const StateMachine& fsm, const Runtime& rt) :
+    m_fsm(fsm), m_runtime(rt)
 {
 }
 
@@ -18,10 +19,10 @@ Clock::duration StateMachineBudget::delay()
     if (m_last_tx) {
         const auto last_tx = m_last_tx.get();
         const auto tx_interval = m_fsm.transmission_interval();
-        if (last_tx + tx_interval < m_clock) {
+        if (last_tx + tx_interval < m_runtime.now()) {
             delay = Clock::duration::zero();
         } else {
-            delay = last_tx + tx_interval - m_clock;
+            delay = last_tx + tx_interval - m_runtime.now();
         }
     } else {
         delay = Clock::duration::zero();
@@ -32,7 +33,7 @@ Clock::duration StateMachineBudget::delay()
 
 void StateMachineBudget::notify()
 {
-    m_last_tx = m_clock;
+    m_last_tx = m_runtime.now();
 }
 
 } // namespace dcc

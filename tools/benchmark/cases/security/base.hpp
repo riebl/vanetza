@@ -3,7 +3,7 @@
 
 #include "case.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
@@ -23,7 +23,7 @@ public:
     void prepare() override;
 
 protected:
-    vanetza::Runtime runtime;
+    vanetza::ManualRuntime runtime;
     vanetza::StoredPositionProvider positioning;
     std::unique_ptr<vanetza::security::Backend> crypto_backend;
     vanetza::security::TrustStore trust_store;

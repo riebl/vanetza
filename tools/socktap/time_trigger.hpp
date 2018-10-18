@@ -1,7 +1,7 @@
 #ifndef TIME_TRIGGER_HPP_XRPGDYXO
 #define TIME_TRIGGER_HPP_XRPGDYXO
 
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/deadline_timer.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
@@ -20,7 +20,7 @@ private:
 
     boost::asio::io_service& io_service_;
     boost::asio::deadline_timer timer_;
-    vanetza::Runtime runtime_;
+    vanetza::ManualRuntime runtime_;
 };
 
 #endif /* TIME_TRIGGER_HPP_XRPGDYXO */

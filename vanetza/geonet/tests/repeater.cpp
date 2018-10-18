@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/geonet/data_request.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/packet.hpp>
@@ -52,7 +52,7 @@ protected:
     }
 
     MIB mib;
-    Runtime runtime;
+    ManualRuntime runtime;
     Repeater repeater;
     unsigned dispatch_counter;
     const DownPacket packet;

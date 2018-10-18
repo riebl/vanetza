@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <boost/optional.hpp>
@@ -17,7 +17,7 @@ TEST(Router, shb_round_trip)
 
     // init router
     ManagementInformationBase mib;
-    Runtime runtime;
+    ManualRuntime runtime;
     Router router(runtime, mib);
     Address gn_addr;
     gn_addr.mid(MacAddress { 0, 0, 0, 0, 0, 1});

@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <functional>
@@ -32,7 +32,7 @@ protected:
     CbfPacketBuffer::TimerCallback callback();
 
     MIB mib;
-    Runtime runtime;
+    ManualRuntime runtime;
     unsigned calls;
     unsigned last_call_length;
 };

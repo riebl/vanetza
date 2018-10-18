@@ -1,6 +1,6 @@
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/position_fix.hpp>
-#include <vanetza/common/runtime.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/geonet/areas.hpp>
@@ -69,7 +69,7 @@ public:
         MacAddress mac_address;
         RequestInterface request_interface;
         TransportHandler transport_interface;
-        Runtime runtime;
+        ManualRuntime runtime;
         PositionFix position;
         SecurityContext security;
         Router router;

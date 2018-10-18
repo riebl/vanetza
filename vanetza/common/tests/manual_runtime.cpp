@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <chrono>
 #include <functional>
 #include <string>
@@ -10,15 +10,15 @@ using std::chrono::hours;
 using std::chrono::minutes;
 using std::chrono::seconds;
 
-TEST(Runtime, default_construction)
+TEST(ManualRuntime, default_construction)
 {
-    Runtime r;
+    ManualRuntime r;
     EXPECT_EQ(std::chrono::milliseconds(0), r.now().time_since_epoch());
 }
 
-TEST(Runtime, time_progress_absolute)
+TEST(ManualRuntime, time_progress_absolute)
 {
-    Runtime r;
+    ManualRuntime r;
 
     const Clock::time_point t1 { hours(27) };
     r.trigger(t1);
@@ -29,9 +29,9 @@ TEST(Runtime, time_progress_absolute)
     EXPECT_EQ(t2, r.now());
 }
 
-TEST(Runtime, time_progress_relative)
+TEST(ManualRuntime, time_progress_relative)
 {
-    Runtime r;
+    ManualRuntime r;
 
     r.trigger(hours(3));
     EXPECT_EQ(Clock::time_point { hours(3) }, r.now());
@@ -40,15 +40,15 @@ TEST(Runtime, time_progress_relative)
     EXPECT_EQ(Clock::time_point { hours(5) }, r.now());
 }
 
-TEST(Runtime, sorting)
+TEST(ManualRuntime, sorting)
 {
-    Runtime r;
+    ManualRuntime r;
     r.trigger(hours(3));
     EXPECT_EQ(Clock::time_point::max(), r.next());
 
     auto cb = [](Clock::time_point) {};
     const auto tp1 = Clock::time_point { hours(2) };
-    r.schedule(tp1, cb);
+    static_cast<Runtime*>(&r)->schedule(tp1, cb);
     EXPECT_EQ(tp1, r.next());
 
     r.schedule(Clock::time_point { hours(3) }, cb);
@@ -62,9 +62,9 @@ TEST(Runtime, sorting)
     EXPECT_EQ(tp2, r.next());
 }
 
-TEST(Runtime, scheduling)
+TEST(ManualRuntime, scheduling)
 {
-    Runtime r;
+    ManualRuntime r;
     r.trigger(hours(5));
 
     namespace ph = std::placeholders;
@@ -110,9 +110,9 @@ TEST(Runtime, scheduling)
     EXPECT_EQ(expected_deadlines, deadlines);
 }
 
-TEST(Runtime, reset)
+TEST(ManualRuntime, reset)
 {
-    Runtime r;
+    ManualRuntime r;
     unsigned calls = 0;
     auto cb = [&calls](Clock::time_point) { ++calls; };
 
@@ -134,41 +134,46 @@ TEST(Runtime, reset)
     EXPECT_EQ(90, calls);
 }
 
-TEST(Runtime, cancel)
+TEST(ManualRuntime, cancel)
 {
-    Runtime r;
+    ManualRuntime r;
     std::vector<char> calls;
     auto cb = [&calls](char c, Clock::time_point) { calls.push_back(c); };
 
+    // some dummy scopes
+    const int foo = 1;
+    const int bar = 2;
+    const int doe = 3;
+
     namespace ph = std::placeholders;
     r.schedule(minutes(3), std::bind<void>(cb, 'a', ph::_1));
-    r.schedule(minutes(4), std::bind<void>(cb, 'b', ph::_1), "foo");
+    r.schedule(minutes(4), std::bind<void>(cb, 'b', ph::_1), &foo);
     r.schedule(minutes(5), std::bind<void>(cb, 'c', ph::_1));
-    r.schedule(minutes(3), std::bind<void>(cb, 'd', ph::_1), "bar");
+    r.schedule(minutes(3), std::bind<void>(cb, 'd', ph::_1), &bar);
     r.schedule(minutes(4), std::bind<void>(cb, 'e', ph::_1));
-    r.schedule(minutes(5), std::bind<void>(cb, 'f', ph::_1), "foo");
-    r.schedule(minutes(6), std::bind<void>(cb, 'g', ph::_1), "doe");
-    r.schedule(minutes(7), std::bind<void>(cb, 'h', ph::_1), "");
+    r.schedule(minutes(5), std::bind<void>(cb, 'f', ph::_1), &foo);
+    r.schedule(minutes(6), std::bind<void>(cb, 'g', ph::_1), &doe);
+    r.schedule(minutes(7), std::bind<void>(cb, 'h', ph::_1), nullptr);
 
     // cancel single callback
-    r.cancel("bar");
+    r.cancel(&bar);
     r.trigger(minutes(8));
     EXPECT_EQ((std::vector<char> {'a', 'b', 'e', 'c', 'f', 'g', 'h'}), calls);
 
     // cancel several callbacks
     calls.clear();
-    r.schedule(minutes(1), std::bind<void>(cb, 'a', ph::_1), "foo");
-    r.schedule(minutes(1), std::bind<void>(cb, 'b', ph::_1), "bar");
-    r.schedule(minutes(1), std::bind<void>(cb, 'c', ph::_1), "bar");
-    r.schedule(minutes(1), std::bind<void>(cb, 'd', ph::_1), "foo");
-    r.cancel("foo");
+    r.schedule(minutes(1), std::bind<void>(cb, 'a', ph::_1), &foo);
+    r.schedule(minutes(1), std::bind<void>(cb, 'b', ph::_1), &bar);
+    r.schedule(minutes(1), std::bind<void>(cb, 'c', ph::_1), &bar);
+    r.schedule(minutes(1), std::bind<void>(cb, 'd', ph::_1), &foo);
+    r.cancel(&foo);
     r.trigger(minutes(1));
     EXPECT_EQ((std::vector<char> {'b', 'c'}), calls);
 }
 
-TEST(Runtime, scope)
+TEST(ManualRuntime, scope)
 {
-    Runtime r;
+    ManualRuntime r;
     std::vector<char> calls;
     auto cb = [&calls](char c, Clock::time_point) { calls.push_back(c); };
     int scope1, scope2;

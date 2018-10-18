@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/geonet/cbr_aggregator.hpp>
 #include <vanetza/geonet/location_table.hpp>
 #include <vanetza/geonet/loctex_g5.hpp>
@@ -17,7 +17,7 @@ protected:
     void SetUp() override
     {
         mib.reset(new MIB());
-        runtime.reset(new Runtime(Clock::at("2017-05-20 17:36:00")));
+        runtime.reset(new ManualRuntime(Clock::at("2017-05-20 17:36:00")));
         location_table.reset(new LocationTable(*mib, *runtime));
     }
 

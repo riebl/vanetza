@@ -1,4 +1,6 @@
-#include "bursty_transmit_rate_control.hpp"
+#include <vanetza/common/runtime.hpp>
+#include <vanetza/dcc/bursty_transmit_rate_control.hpp>
+#include <vanetza/dcc/state_machine.hpp>
 #include <stdexcept>
 
 namespace vanetza
@@ -6,8 +8,8 @@ namespace vanetza
 namespace dcc
 {
 
-BurstyTransmitRateControl::BurstyTransmitRateControl(const StateMachine& fsm, const Clock::time_point& clock) :
-    m_burst_budget(clock), m_fsm_budget(fsm, clock), m_fsm(fsm)
+BurstyTransmitRateControl::BurstyTransmitRateControl(const StateMachine& fsm, const Runtime& rt) :
+    m_burst_budget(rt), m_fsm_budget(fsm, rt), m_fsm(fsm)
 {
 }
 

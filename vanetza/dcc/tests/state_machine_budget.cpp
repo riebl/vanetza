@@ -1,20 +1,23 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/dcc/fully_meshed_state_machine.hpp>
 #include <vanetza/dcc/state_machine_budget.hpp>
 
 using namespace vanetza::dcc;
-using vanetza::Clock;
+using vanetza::ManualRuntime;
 using std::chrono::milliseconds;
 
-static const Clock::duration immediately = milliseconds(0);
+static const vanetza::Clock::duration immediately = milliseconds(0);
 
 class StateMachineBudgetTest : public ::testing::Test
 {
 protected:
-    StateMachineBudgetTest() : now(std::chrono::seconds(4711)), budget(fsm, now) {}
+    StateMachineBudgetTest() :
+        runtime(vanetza::Clock::time_point { std::chrono::seconds(4711) }),
+        budget(fsm, runtime) {}
 
-    Clock::time_point now;
+    ManualRuntime runtime;
     FullyMeshedStateMachine fsm;
     StateMachineBudget budget;
 };
@@ -29,10 +32,10 @@ TEST_F(StateMachineBudgetTest, relaxed)
     budget.notify();
     EXPECT_EQ(relaxed_tx_interval, budget.delay());
 
-    now += relaxed_tx_interval - milliseconds(10);
+    runtime.trigger(relaxed_tx_interval - milliseconds(10));
     EXPECT_EQ(milliseconds(10), budget.delay());
 
-    now += milliseconds(20);
+    runtime.trigger(milliseconds(20));
     EXPECT_EQ(immediately, budget.delay());
 }
 
@@ -51,8 +54,8 @@ TEST_F(StateMachineBudgetTest, restrictive)
     budget.notify();
     EXPECT_EQ(restrictive_tx_interval, budget.delay());
 
-    now += restrictive_tx_interval / 2;
+    runtime.trigger(restrictive_tx_interval / 2);
     EXPECT_EQ(restrictive_tx_interval / 2, budget.delay());
-    now += restrictive_tx_interval / 2;
+    runtime.trigger(restrictive_tx_interval / 2);
     EXPECT_EQ(immediately, budget.delay());
 }

@@ -4,12 +4,16 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/burst_budget.hpp>
 #include <vanetza/dcc/profile.hpp>
-#include <vanetza/dcc/state_machine.hpp>
 #include <vanetza/dcc/state_machine_budget.hpp>
 #include <vanetza/dcc/transmit_rate_control.hpp>
 
 namespace vanetza
 {
+
+// forward declarations
+class Runtime;
+namespace dcc { class StateMachine; }
+
 namespace dcc
 {
 
@@ -20,7 +24,7 @@ namespace dcc
 class BurstyTransmitRateControl : public TransmitRateControl
 {
 public:
-    BurstyTransmitRateControl(const StateMachine&, const Clock::time_point& clock);
+    BurstyTransmitRateControl(const StateMachine&, const Runtime& rt);
 
     Clock::duration delay(const Transmission&) override;
     Clock::duration interval(const Transmission&) override;

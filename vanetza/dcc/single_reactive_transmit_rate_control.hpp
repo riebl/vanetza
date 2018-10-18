@@ -6,10 +6,13 @@
 
 namespace vanetza
 {
+
+// forward declarations
+class Runtime;
+namespace dcc { class StateMachine; }
+
 namespace dcc
 {
-
-class StateMachine;
 
 /**
  * Transmit Rate Control using a single reactive state machine for all messages
@@ -17,7 +20,7 @@ class StateMachine;
 class SingleReactiveTransmitRateControl : public TransmitRateControl
 {
 public:
-    SingleReactiveTransmitRateControl(const StateMachine&, const Clock::time_point&);
+    SingleReactiveTransmitRateControl(const StateMachine&, const Runtime&);
 
     Clock::duration delay(const Transmission&) override;
     Clock::duration interval(const Transmission&) override;

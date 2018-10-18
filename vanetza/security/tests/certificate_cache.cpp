@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/security/certificate.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/tests/serialization.hpp>
@@ -30,7 +31,7 @@ public:
     }
 
 protected:
-    Runtime runtime;
+    ManualRuntime runtime;
     CertificateCache cache;
 };
 

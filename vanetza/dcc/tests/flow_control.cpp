@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/access/data_request.hpp>
 #include <vanetza/access/interface.hpp>
-#include <vanetza/common/runtime.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/dcc/flow_control.hpp>
 #include <vanetza/dcc/transmit_rate_control.hpp>
 #include <chrono>
@@ -70,7 +70,7 @@ protected:
         return MacAddress { 0, 0, 0, 0, 0, static_cast<uint8_t>(x) };
     }
 
-    Runtime runtime;
+    ManualRuntime runtime;
     FakeTransmitRateControl trc;
     FakeAccessInterface access;
     FlowControl flow_control;

@@ -6,7 +6,7 @@ set(CXX_SOURCES
     byte_sequence.cpp
     byte_view.cpp
     clock.cpp
-    runtime.cpp
+    manual_runtime.cpp
     unit_interval.cpp
 )
 add_vanetza_component(common ${CXX_SOURCES})

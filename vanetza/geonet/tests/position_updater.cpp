@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/position_provider.hpp>
-#include <vanetza/common/runtime.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/position_updater.hpp>
 #include <vanetza/geonet/router.hpp>
@@ -54,7 +54,7 @@ public:
     }
 
 protected:
-    Runtime runtime;
+    ManualRuntime runtime;
     MIB mib;
     Router router;
     IncrementalPositionProvider positioning;
