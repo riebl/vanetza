@@ -2,7 +2,7 @@
 #define NAIVE_CERTIFICATE_PROVIDER_HPP_MTULFLKX
 
 #include <string>
-#include <vanetza/common/clock.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/certificate_provider.hpp>
 
@@ -22,7 +22,7 @@ namespace security
 class NaiveCertificateProvider : public CertificateProvider
 {
 public:
-    NaiveCertificateProvider(const Clock::time_point& time_now);
+    NaiveCertificateProvider(const Runtime&);
 
     /**
      * \brief get own certificate for signing
@@ -94,7 +94,7 @@ private:
     Certificate generate_root_certificate(const std::string& subject_name);
 
     BackendCryptoPP m_crypto_backend; /*< key generation is not a generic backend feature */
-    const Clock::time_point& m_time_now;
+    const Runtime& m_runtime;
     const ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;
 };

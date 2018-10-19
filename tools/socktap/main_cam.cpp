@@ -115,7 +115,7 @@ int main(int argc, const char** argv)
         // We always use the same ceritificate manager and crypto services for now.
         // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
         auto certificate_provider = std::unique_ptr<security::CertificateProvider> {
-            new security::NaiveCertificateProvider(trigger.runtime().now()) };
+            new security::NaiveCertificateProvider(trigger.runtime()) };
         auto certificate_validator = std::unique_ptr<security::CertificateValidator> {
             new security::NullCertificateValidator() };
         auto crypto_backend = security::create_backend("default");
@@ -163,7 +163,7 @@ int main(int argc, const char** argv)
                 new security::DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store) };
         }
 
-        security::DefaultSignHeaderPolicy sign_header_policy(trigger.runtime().now(), positioning);
+        security::DefaultSignHeaderPolicy sign_header_policy(trigger.runtime(), positioning);
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, positioning);
 
@@ -172,7 +172,7 @@ int main(int argc, const char** argv)
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
         asio::steady_timer cam_timer(io_service);
-        CamApplication cam_app(positioning, trigger.runtime().now(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+        CamApplication cam_app(positioning, trigger.runtime(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
         context.enable(&cam_app);
 
         io_service.run();

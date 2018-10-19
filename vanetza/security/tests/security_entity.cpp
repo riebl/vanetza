@@ -30,10 +30,10 @@ protected:
     SecurityEntityTest() :
         runtime(Clock::at("2016-03-7 08:23")),
         crypto_backend(create_backend("default")),
-        certificate_provider(new NaiveCertificateProvider(runtime.now())),
+        certificate_provider(new NaiveCertificateProvider(runtime)),
         cert_cache(runtime),
         certificate_validator(new DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store)),
-        sign_header_policy(runtime.now(), position_provider),
+        sign_header_policy(runtime, position_provider),
         sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),
         verify_service(straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider)),
         security(sign_service, verify_service),
@@ -77,7 +77,7 @@ protected:
     {
         // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider.get()->own_private_key());
-        DefaultSignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
+        DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
         SignService local_sign_service(straight_sign_service(local_cert_provider, *crypto_backend, sign_header_policy));
         SecurityEntity local_security(local_sign_service, verify_service);
 
@@ -103,7 +103,7 @@ protected:
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    DefaultSignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
     VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
     SecurityEntity other_security(sign, verify);
@@ -119,8 +119,8 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     auto openssl_backend = create_backend("OpenSSL");
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
-    DefaultSignHeaderPolicy sign_header_policy_openssl(runtime.now(), position_provider);
-    DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy sign_header_policy_openssl(runtime, position_provider);
+    DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime, position_provider);
     SecurityEntity cryptopp_security {
             straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
             straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl, position_provider) };
@@ -823,7 +823,7 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
 
 TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_verify)
 {
-    DefaultSignHeaderPolicy sign_header_policy(runtime.now(), position_provider);
+    DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
@@ -863,8 +863,8 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
         return *signer_info;
     };
 
-    NaiveCertificateProvider other_provider(runtime.now());
-    DefaultSignHeaderPolicy other_policy(runtime.now(), position_provider);
+    NaiveCertificateProvider other_provider(runtime);
+    DefaultSignHeaderPolicy other_policy(runtime, position_provider);
     SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
     VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
     SecurityEntity other_security(sign, verify);
@@ -898,28 +898,28 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
 
 TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
 {
-    NaiveCertificateProvider other_provider(runtime.now());
+    NaiveCertificateProvider other_provider(runtime);
 
     class NoLocationHeaderPolicy : public DefaultSignHeaderPolicy
     {
     public:
-        NoLocationHeaderPolicy(const Clock::time_point& now, PositionProvider& positioning) :
-            DefaultSignHeaderPolicy(now, positioning), m_time_now(now) {}
+        NoLocationHeaderPolicy(const Runtime& rt, PositionProvider& positioning) :
+            DefaultSignHeaderPolicy(rt, positioning), m_runtime(rt) {}
 
         std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override
         {
             std::list<HeaderField> header_fields;
 
             header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
-            header_fields.push_back(convert_time64(m_time_now));
+            header_fields.push_back(convert_time64(m_runtime.now()));
             header_fields.push_back(IntX(request.its_aid));
 
             return header_fields;
         }
 
     private:
-        const Clock::time_point& m_time_now;
-    } other_policy(runtime.now(), position_provider);
+        const Runtime& m_runtime;
+    } other_policy(runtime, position_provider);
 
     SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
     VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
@@ -935,7 +935,7 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
 
 TEST_F(SecurityEntityTest, verify_message_without_its_aid)
 {
-    NaiveCertificateProvider other_provider(runtime.now());
+    NaiveCertificateProvider other_provider(runtime);
 
     class NoneHeaderPolicy : public DefaultSignHeaderPolicy
     {
@@ -947,7 +947,7 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
             std::list<HeaderField> header_fields;
             return header_fields;
         }
-    } other_policy(runtime.now(), position_provider);
+    } other_policy(runtime, position_provider);
 
     SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
     VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);

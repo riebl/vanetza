@@ -13,8 +13,8 @@
 using namespace vanetza;
 using namespace std::chrono;
 
-BenchInApplication::BenchInApplication(const Clock::time_point& time_now, boost::asio::steady_timer& timer, milliseconds interval)
-    : m_time_now(time_now), m_interval(interval), m_timer(timer)
+BenchInApplication::BenchInApplication(const Runtime& rt, boost::asio::steady_timer& timer, milliseconds interval)
+    : m_runtime(rt), m_interval(interval), m_timer(timer)
 {
     schedule_timer();
 }

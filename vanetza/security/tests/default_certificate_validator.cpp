@@ -16,7 +16,7 @@ public:
     DefaultCertificateValidatorTest() :
         runtime(Clock::at("2016-08-01 00:00")),
         backend(create_backend("default")),
-        cert_provider(runtime.now()),
+        cert_provider(runtime),
         cert_cache(runtime),
         cert_validator(*backend, cert_cache, trust_store)
     {

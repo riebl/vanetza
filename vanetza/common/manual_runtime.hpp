@@ -60,7 +60,7 @@ public:
     void schedule(Clock::time_point, const Callback&, const void* = nullptr) override;
     void schedule(Clock::duration, const Callback&, const void* = nullptr) override;
     void cancel(const void* scope) override;
-    const Clock::time_point& now() const override;
+    Clock::time_point now() const override;
 
 private:
     struct ScheduledCallback

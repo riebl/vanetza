@@ -43,7 +43,7 @@ public:
      * Get current time
      * \return current time
      */
-    virtual const Clock::time_point& now() const = 0;
+    virtual Clock::time_point now() const = 0;
 
     virtual ~Runtime() = default;
 };

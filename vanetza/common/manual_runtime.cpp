@@ -35,7 +35,7 @@ Clock::time_point ManualRuntime::next() const
     return next_tp;
 }
 
-const Clock::time_point& ManualRuntime::now() const
+Clock::time_point ManualRuntime::now() const
 {
     return m_now;
 }

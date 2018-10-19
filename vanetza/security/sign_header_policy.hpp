@@ -2,6 +2,7 @@
 #define SIGN_HEADER_POLICY_HPP_KJIIEGCH
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/runtime.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/header_field.hpp>
 #include <set>
@@ -60,7 +61,7 @@ public:
 class DefaultSignHeaderPolicy : public SignHeaderPolicy
 {
 public:
-    DefaultSignHeaderPolicy(const Clock::time_point& time_now, PositionProvider& positioning);
+    DefaultSignHeaderPolicy(const Runtime&, PositionProvider& positioning);
 
     std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override;
     void request_unrecognized_certificate(HashedId8 id) override;
@@ -68,7 +69,7 @@ public:
     void request_certificate_chain() override;
 
 private:
-    const Clock::time_point& m_time_now;
+    const Runtime& m_runtime;
     PositionProvider& m_positioning;
     Clock::time_point m_cam_next_certificate;
     std::set<HashedId3> m_unknown_certificates;

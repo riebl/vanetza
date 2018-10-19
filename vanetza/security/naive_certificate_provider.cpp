@@ -12,8 +12,8 @@ namespace vanetza
 namespace security
 {
 
-NaiveCertificateProvider::NaiveCertificateProvider(const Clock::time_point& time_now) :
-    m_time_now(time_now),
+NaiveCertificateProvider::NaiveCertificateProvider(const Runtime& rt) :
+    m_runtime(rt),
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_authorization_ticket()) { }
 
@@ -22,7 +22,7 @@ const Certificate& NaiveCertificateProvider::own_certificate()
     // renew certificate if necessary
     for (auto& validity_restriction : m_own_certificate.validity_restriction) {
         auto start_and_end = boost::get<StartAndEndValidity>(&validity_restriction);
-        auto renewal_deadline = convert_time32(m_time_now + std::chrono::hours(1));
+        auto renewal_deadline = convert_time32(m_runtime.now() + std::chrono::hours(1));
         if (start_and_end && start_and_end->end_validity < renewal_deadline) {
             m_own_certificate = generate_authorization_ticket();
             break;
@@ -109,8 +109,8 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
     StartAndEndValidity start_and_end;
-    start_and_end.start_validity = convert_time32(m_time_now - std::chrono::hours(1));
-    start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(23));
+    start_and_end.start_validity = convert_time32(m_runtime.now() - std::chrono::hours(1));
+    start_and_end.end_validity = convert_time32(m_runtime.now() + std::chrono::hours(23));
     certificate.validity_restriction.push_back(start_and_end);
 
     sign_authorization_ticket(certificate);
@@ -164,8 +164,8 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
     StartAndEndValidity start_and_end;
-    start_and_end.start_validity = convert_time32(m_time_now - std::chrono::hours(1));
-    start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(23));
+    start_and_end.start_validity = convert_time32(m_runtime.now() - std::chrono::hours(1));
+    start_and_end.end_validity = convert_time32(m_runtime.now() + std::chrono::hours(23));
     certificate.validity_restriction.push_back(start_and_end);
 
     sort(certificate);
@@ -215,8 +215,8 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
     StartAndEndValidity start_and_end;
-    start_and_end.start_validity = convert_time32(m_time_now - std::chrono::hours(1));
-    start_and_end.end_validity = convert_time32(m_time_now + std::chrono::hours(365 * 24));
+    start_and_end.start_validity = convert_time32(m_runtime.now() - std::chrono::hours(1));
+    start_and_end.end_validity = convert_time32(m_runtime.now() + std::chrono::hours(365 * 24));
     certificate.validity_restriction.push_back(start_and_end);
 
     sort(certificate);

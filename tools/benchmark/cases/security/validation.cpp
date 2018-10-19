@@ -56,7 +56,7 @@ int SecurityValidationCase::execute()
     std::vector<SecuredMessageV2> secured_messages(identities);
 
     for (unsigned i = 0; i < identities; i++) {
-        providers[i] = new NaiveCertificateProvider(runtime.now());
+        providers[i] = new NaiveCertificateProvider(runtime);
         signers[i] = straight_sign_service(*providers[i], *crypto_backend, sign_header_policy);
         entities[i] = new SecurityEntity(signers[i], verify_service);
         certificate_cache.insert(providers[i]->own_certificate());

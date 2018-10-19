@@ -22,8 +22,8 @@ long round(const boost::units::quantity<T>& q, const U& u)
 	return std::round(v.value());
 }
 
-CamApplication::CamApplication(PositionProvider& positioning, const Clock::time_point& time_now, boost::asio::steady_timer& timer, milliseconds cam_interval)
-    : positioning_(positioning), time_now_(time_now), cam_interval_(cam_interval), timer_(timer)
+CamApplication::CamApplication(PositionProvider& positioning, const Runtime& rt, boost::asio::steady_timer& timer, milliseconds cam_interval)
+    : positioning_(positioning), runtime_(rt), cam_interval_(cam_interval), timer_(timer)
 {
     schedule_timer();
 }
@@ -57,7 +57,7 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
     header.messageID = ItsPduHeader__messageID_cam;
     header.stationID = 1; // some dummy value
 
-    const auto time_now = duration_cast<milliseconds>(time_now_.time_since_epoch());
+    const auto time_now = duration_cast<milliseconds>(runtime_.now().time_since_epoch());
     uint16_t gen_delta_time = time_now.count();
 
     CoopAwareness_t& cam = message->cam;

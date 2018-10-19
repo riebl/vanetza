@@ -1,4 +1,5 @@
 #include <vanetza/common/clock.hpp>
+#include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <boost/variant/get.hpp>
@@ -11,12 +12,12 @@ using boost::get;
 class NaiveCertificateProviderTest : public ::testing::Test
 {
 public:
-    NaiveCertificateProviderTest() : time_now(Clock::at("2016-08-01 00:00")), cert_provider(time_now)
+    NaiveCertificateProviderTest() : runtime(Clock::at("2016-08-01 00:00")), cert_provider(runtime)
     {
     }
 
 protected:
-    Clock::time_point time_now;
+    ManualRuntime runtime;
     NaiveCertificateProvider cert_provider;
 };
 

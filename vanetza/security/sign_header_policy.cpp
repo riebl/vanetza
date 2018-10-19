@@ -11,8 +11,8 @@ namespace vanetza
 namespace security
 {
 
-DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Clock::time_point& time_now, PositionProvider& positioning) :
-    m_time_now(time_now), m_positioning(positioning), m_cam_next_certificate(time_now), m_cert_requested(false), m_chain_requested(false)
+DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning) :
+    m_runtime(rt), m_positioning(positioning), m_cam_next_certificate(m_runtime.now()), m_cert_requested(false), m_chain_requested(false)
 {
 }
 
@@ -20,7 +20,7 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
 {
     std::list<HeaderField> header_fields;
 
-    header_fields.push_back(convert_time64(m_time_now));
+    header_fields.push_back(convert_time64(m_runtime.now()));
     header_fields.push_back(IntX(request.its_aid));
 
     if (request.its_aid == aid::CA) {
@@ -30,12 +30,12 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
             full_chain.splice(full_chain.end(), certificate_provider.own_chain());
             full_chain.push_back(certificate_provider.own_certificate());
             header_fields.push_back(SignerInfo { std::move(full_chain) });
-            m_cam_next_certificate = m_time_now + std::chrono::seconds(1);
-        } else if (m_time_now < m_cam_next_certificate && !m_cert_requested) {
+            m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
+        } else if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
             header_fields.push_back(SignerInfo { calculate_hash(certificate_provider.own_certificate()) });
         } else {
             header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
-            m_cam_next_certificate = m_time_now + std::chrono::seconds(1);
+            m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         }
 
         if (m_unknown_certificates.size() > 0) {

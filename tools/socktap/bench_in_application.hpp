@@ -10,7 +10,7 @@
 class BenchInApplication : public Application, private Application::PromiscuousHook
 {
 public:
-    BenchInApplication(const vanetza::Clock::time_point& time_now, boost::asio::steady_timer&, std::chrono::milliseconds interval);
+    BenchInApplication(const vanetza::Runtime& rt, boost::asio::steady_timer&, std::chrono::milliseconds interval);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
     Application::PromiscuousHook* promiscuous_hook() override;
@@ -20,7 +20,7 @@ private:
     void on_timer(const boost::system::error_code& ec);
     void tap_packet(const DataIndication&, const vanetza::UpPacket&) override;
 
-    const vanetza::Clock::time_point& m_time_now;
+    const vanetza::Runtime& m_runtime;
     std::chrono::milliseconds m_interval;
     boost::asio::steady_timer& m_timer;
     unsigned m_received_messages;

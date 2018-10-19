@@ -17,9 +17,9 @@ SecurityBaseCase::SecurityBaseCase() :
     runtime(Clock::at(boost::posix_time::microsec_clock::universal_time())),
     crypto_backend(create_backend("default")),
     certificate_cache(runtime),
-    certificate_provider(runtime.now()),
+    certificate_provider(runtime),
     certificate_validator(*crypto_backend, certificate_cache, trust_store),
-    sign_header_policy(runtime.now(), positioning),
+    sign_header_policy(runtime, positioning),
     sign_service(straight_sign_service(certificate_provider, *crypto_backend, sign_header_policy)),
     verify_service(straight_verify_service(runtime, certificate_provider, certificate_validator, *crypto_backend, certificate_cache, sign_header_policy, positioning)),
     security_entity(sign_service, verify_service)
