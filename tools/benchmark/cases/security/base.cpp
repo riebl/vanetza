@@ -1,13 +1,5 @@
 #include "base.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/certificate_cache.hpp>
-#include <vanetza/security/default_certificate_validator.hpp>
-#include <vanetza/security/naive_certificate_provider.hpp>
-#include <vanetza/security/security_entity.hpp>
-#include <vanetza/security/sign_service.hpp>
-#include <vanetza/security/trust_store.hpp>
-#include <vanetza/security/verify_service.hpp>
 #include <iostream>
 
 using namespace vanetza;

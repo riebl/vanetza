@@ -2,14 +2,13 @@
 #define BENCHMARK_CASES_SECURITY_BASE_HPP
 
 #include "case.hpp"
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
-#include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/sign_header_policy.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/trust_store.hpp>
@@ -33,7 +32,7 @@ protected:
     vanetza::security::DefaultSignHeaderPolicy sign_header_policy;
     vanetza::security::SignService sign_service;
     vanetza::security::VerifyService verify_service;
-    vanetza::security::SecurityEntity security_entity;
+    vanetza::security::DelegatingSecurityEntity security_entity;
 };
 
 #endif /* BENCHMARK_CASES_SECURITY_BASE_HPP */

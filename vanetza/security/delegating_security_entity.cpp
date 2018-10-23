@@ -1,5 +1,5 @@
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/delegating_security_entity.hpp>
 #include <stdexcept>
 
 namespace vanetza
@@ -7,7 +7,7 @@ namespace vanetza
 namespace security
 {
 
-SecurityEntity::SecurityEntity(SignService sign, VerifyService verify) :
+DelegatingSecurityEntity::DelegatingSecurityEntity(SignService sign, VerifyService verify) :
     m_sign_service(std::move(sign)),
     m_verify_service(std::move(verify))
 {
@@ -18,12 +18,7 @@ SecurityEntity::SecurityEntity(SignService sign, VerifyService verify) :
     }
 }
 
-SecurityEntity::~SecurityEntity()
-{
-    // only defined here so unique_ptr members can be used with incomplete types
-}
-
-EncapConfirm SecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
+EncapConfirm DelegatingSecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
 {
     SignRequest sign_request;
     sign_request.plain_message = std::move(encap_request.plaintext_payload);
@@ -35,7 +30,7 @@ EncapConfirm SecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
     return encap_confirm;
 }
 
-DecapConfirm SecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
+DecapConfirm DelegatingSecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
 {
     VerifyConfirm verify_confirm = m_verify_service(VerifyRequest { decap_request.sec_packet });
     DecapConfirm decap_confirm;

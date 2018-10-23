@@ -6,6 +6,7 @@ add_vanetza_component(security
     certificate.cpp
     certificate_cache.cpp
     default_certificate_validator.cpp
+    delegating_security_entity.cpp
     ecc_point.cpp
     ecdsa256.cpp
     encryption_parameter.cpp
@@ -21,7 +22,6 @@ add_vanetza_component(security
     recipient_info.cpp
     region.cpp
     secured_message.cpp
-    security_entity.cpp
     serialization.cpp
     sha.cpp
     signature.cpp

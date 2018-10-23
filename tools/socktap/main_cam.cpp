@@ -10,12 +10,12 @@
 #include <iostream>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/sign_header_policy.hpp>
 #include <vanetza/security/static_certificate_provider.hpp>
-#include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/trust_store.hpp>
 
 namespace asio = boost::asio;
@@ -167,7 +167,7 @@ int main(int argc, const char** argv)
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, positioning);
 
-        security::SecurityEntity security_entity(sign_service, verify_service);
+        security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
         RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 

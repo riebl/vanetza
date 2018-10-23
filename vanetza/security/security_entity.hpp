@@ -5,8 +5,6 @@
 #include <vanetza/security/decap_request.hpp>
 #include <vanetza/security/encap_confirm.hpp>
 #include <vanetza/security/encap_request.hpp>
-#include <vanetza/security/sign_service.hpp>
-#include <vanetza/security/verify_service.hpp>
 
 namespace vanetza
 {
@@ -17,19 +15,6 @@ class SecurityEntity
 {
 public:
     /**
-     * \brief Create security entity from primitive services.
-     *
-     * A std::invalid_argument exception is thrown at construction
-     * if any given service is not callable.
-     *
-     * \param sign SN-SIGN service
-     * \param verify SN-VERIFY service
-     */
-    SecurityEntity(SignService sign, VerifyService verify);
-
-    ~SecurityEntity();
-
-    /**
      * \brief Creates a security envelope covering the given payload.
      *
      * The payload consists of the CommonHeader, ExtendedHeader and the payload of
@@ -39,7 +24,7 @@ public:
      * \param request containing payload to sign
      * \return confirmation containing signed SecuredMessage
      */
-    EncapConfirm encapsulate_packet(EncapRequest&& encap_request);
+    virtual EncapConfirm encapsulate_packet(EncapRequest&& encap_request) = 0;
 
     /**
      * \brief Decapsulates the payload within a SecuredMessage
@@ -49,11 +34,9 @@ public:
      * \param request containing a SecuredMessage
      * \return decapsulation confirmation including plaintext payload
      */
-    DecapConfirm decapsulate_packet(DecapRequest&& decap_request);
+    virtual DecapConfirm decapsulate_packet(DecapRequest&& decap_request) = 0;
 
-private:
-    SignService m_sign_service;
-    VerifyService m_verify_service;
+    virtual ~SecurityEntity() = default;
 };
 
 } // namespace security

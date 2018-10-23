@@ -5,6 +5,7 @@
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
+#include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/naive_certificate_provider.hpp>
 #include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/security_entity.hpp>
@@ -79,7 +80,7 @@ protected:
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider.get()->own_private_key());
         DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
         SignService local_sign_service(straight_sign_service(local_cert_provider, *crypto_backend, sign_header_policy));
-        SecurityEntity local_security(local_sign_service, verify_service);
+        DelegatingSecurityEntity local_security(local_sign_service, verify_service);
 
         EncapConfirm confirm = local_security.encapsulate_packet(create_encap_request());
         return confirm.sec_packet;
@@ -96,7 +97,7 @@ protected:
     DefaultSignHeaderPolicy sign_header_policy;
     SignService sign_service;
     VerifyService verify_service;
-    SecurityEntity security;
+    DelegatingSecurityEntity security;
     ChunkPacket expected_payload;
     ItsAid its_aid;
 };
@@ -106,7 +107,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
     DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
     SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
     VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
-    SecurityEntity other_security(sign, verify);
+    DelegatingSecurityEntity other_security(sign, verify);
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
@@ -121,10 +122,10 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     ASSERT_TRUE(openssl_backend);
     DefaultSignHeaderPolicy sign_header_policy_openssl(runtime, position_provider);
     DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime, position_provider);
-    SecurityEntity cryptopp_security {
+    DelegatingSecurityEntity cryptopp_security {
             straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
             straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl, position_provider) };
-    SecurityEntity openssl_security {
+    DelegatingSecurityEntity openssl_security {
             straight_sign_service(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp),
             straight_verify_service(runtime, *certificate_provider, *certificate_validator, *openssl_backend, cert_cache, sign_header_policy_cryptopp, position_provider) };
 
@@ -164,7 +165,7 @@ TEST_F(SecurityEntityTest, captured_acceptance)
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
     VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
-    SecurityEntity dummy_security(sign_service, verify);
+    DelegatingSecurityEntity dummy_security(sign_service, verify);
 
     // We only care about the message signature here to be valid, the certificate isn't validated.
     DecapConfirm decap_confirm = dummy_security.decapsulate_packet(DecapRequest { message });
@@ -828,7 +829,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
     VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
-    SecurityEntity other_security(sign, verify);
+    DelegatingSecurityEntity other_security(sign, verify);
 
     Certificate certificate = certificate_provider.get()->own_certificate();
     certificate.remove_restriction(ValidityRestrictionType::Time_Start_And_End);
@@ -867,7 +868,7 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
     DefaultSignHeaderPolicy other_policy(runtime, position_provider);
     SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
     VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
-    SecurityEntity other_security(sign, verify);
+    DelegatingSecurityEntity other_security(sign, verify);
 
     // Security entity doesn't request certificate of other
     EncapConfirm encap_confirm = security.encapsulate_packet(create_encap_request());
@@ -923,7 +924,7 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
 
     SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
     VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
-    SecurityEntity other_security(sign, verify);
+    DelegatingSecurityEntity other_security(sign, verify);
 
     its_aid = aid::DEN;
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
@@ -951,7 +952,7 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
 
     SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
     VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
-    SecurityEntity other_security(sign, verify);
+    DelegatingSecurityEntity other_security(sign, verify);
 
     its_aid = aid::DEN;
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());

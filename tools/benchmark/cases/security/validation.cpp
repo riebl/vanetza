@@ -1,4 +1,5 @@
 #include "validation.hpp"
+#include <vanetza/security/delegating_security_entity.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <random>
@@ -58,7 +59,7 @@ int SecurityValidationCase::execute()
     for (unsigned i = 0; i < identities; i++) {
         providers[i] = new NaiveCertificateProvider(runtime);
         signers[i] = straight_sign_service(*providers[i], *crypto_backend, sign_header_policy);
-        entities[i] = new SecurityEntity(signers[i], verify_service);
+        entities[i] = new DelegatingSecurityEntity(signers[i], verify_service);
         certificate_cache.insert(providers[i]->own_certificate());
     }
 

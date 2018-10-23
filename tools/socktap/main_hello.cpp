@@ -8,7 +8,7 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/delegating_security_entity.hpp>
 
 namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
@@ -96,7 +96,7 @@ int main(int argc, const char** argv)
         security::SignService sign_service = security::dummy_sign_service(trigger.runtime(), nullptr);
         security::VerifyService verify_service =
             security::dummy_verify_service(security::VerificationReport::Success, security::CertificateValidity::valid());
-        security::SecurityEntity security_entity(sign_service, verify_service);
+        security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
 
         RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
