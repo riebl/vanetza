@@ -22,6 +22,7 @@ class RequestInterface
 {
 public:
     virtual void request(const DataRequest&, std::unique_ptr<ChunkPacket>) = 0;
+    virtual ~RequestInterface() = default;
 };
 
 /**
