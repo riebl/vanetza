@@ -46,6 +46,16 @@ byte_view_range create_byte_view(const ChunkPacket&, OsiLayer);
 byte_view_range create_byte_view(const CohesivePacket&, OsiLayer);
 
 /**
+ * Create a byte view for a sub-range of layers
+ * \param packet
+ * \param from first byte will be from this layer
+ * \param to last byte will be from this layer
+ * \return a byte view
+ */
+byte_view_range create_byte_view(const ChunkPacket& packet, OsiLayer from, OsiLayer to);
+byte_view_range create_byte_view(const CohesivePacket& packet, OsiLayer from, OsiLayer to);
+
+/**
  * Serialize a whole packet from physical to application layer
  * \param archive destination archive
  * \param packet source packet
@@ -62,6 +72,7 @@ namespace boost
 std::size_t size(const vanetza::PacketVariant&, vanetza::OsiLayer from, vanetza::OsiLayer to);
 std::size_t size(const vanetza::PacketVariant&, vanetza::OsiLayer);
 vanetza::byte_view_range create_byte_view(const vanetza::PacketVariant&, vanetza::OsiLayer);
+vanetza::byte_view_range create_byte_view(const vanetza::PacketVariant&, vanetza::OsiLayer from, vanetza::OsiLayer to);
 void serialize(vanetza::OutputArchive&, const vanetza::PacketVariant&);
 
 } // namespace boost

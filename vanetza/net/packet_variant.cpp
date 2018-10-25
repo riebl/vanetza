@@ -15,6 +15,25 @@ byte_view_range create_byte_view(const CohesivePacket& packet, OsiLayer layer)
     return byte_view_range { range.begin(), range.end() };
 }
 
+byte_view_range create_byte_view(const ChunkPacket& packet, OsiLayer from, OsiLayer to)
+{
+    ByteBuffer buffer_range;
+    for (auto layer : osi_layer_range(from, to)) {
+        ByteBuffer buffer_layer;
+        packet[layer].convert(buffer_layer); // convert clears passed buffer (does not append)
+        buffer_range.insert(buffer_range.end(), buffer_layer.begin(), buffer_layer.end());
+    }
+    return create_byte_view(std::move(buffer_range));
+}
+
+byte_view_range create_byte_view(const CohesivePacket& packet, OsiLayer from, OsiLayer to)
+{
+    ByteBuffer::const_iterator from_begin = packet[from].begin();
+    ByteBuffer::const_iterator to_end = packet[to].end();
+    return byte_view_range(from_begin, to_end);
+}
+
+
 void serialize(OutputArchive& oa, const ChunkPacket& packet)
 {
     ByteBuffer buf;
@@ -104,6 +123,30 @@ byte_view_range create_byte_view(const PacketVariant& packet, OsiLayer layer)
     };
 
     payload_visitor visitor(layer);
+    return boost::apply_visitor(visitor, packet);
+}
+
+byte_view_range create_byte_view(const PacketVariant& packet, OsiLayer from, OsiLayer to)
+{
+    struct payload_visitor : public boost::static_visitor<byte_view_range>
+    {
+        payload_visitor(OsiLayer from, OsiLayer to) : m_from(from), m_to(to) {}
+
+        byte_view_range operator()(const CohesivePacket& packet)
+        {
+            return create_byte_view(packet, m_from, m_to);
+        }
+
+        byte_view_range operator()(const ChunkPacket& packet)
+        {
+            return create_byte_view(packet, m_from, m_to);
+        }
+
+        OsiLayer m_from;
+        OsiLayer m_to;
+    };
+
+    payload_visitor visitor(from, to);
     return boost::apply_visitor(visitor, packet);
 }
 
