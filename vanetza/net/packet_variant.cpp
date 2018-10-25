@@ -103,6 +103,25 @@ std::size_t size(const PacketVariant& packet, OsiLayer from, OsiLayer to)
     return boost::apply_visitor(visitor, packet);
 }
 
+std::size_t size(const PacketVariant& packet)
+{
+    struct size_visitor : public boost::static_visitor<std::size_t>
+    {
+        std::size_t operator()(const CohesivePacket& packet)
+        {
+            return packet.size();
+        }
+
+        std::size_t operator()(const ChunkPacket& packet)
+        {
+            return packet.size();
+        }
+    };
+
+    size_visitor visitor;
+    return boost::apply_visitor(visitor, packet);
+}
+
 byte_view_range create_byte_view(const PacketVariant& packet, OsiLayer layer)
 {
     struct payload_visitor : public boost::static_visitor<byte_view_range>

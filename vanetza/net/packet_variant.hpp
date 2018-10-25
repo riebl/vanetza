@@ -71,6 +71,7 @@ namespace boost
 // PacketVariant is only a type alias, so we need this quirk for proper name lookup
 std::size_t size(const vanetza::PacketVariant&, vanetza::OsiLayer from, vanetza::OsiLayer to);
 std::size_t size(const vanetza::PacketVariant&, vanetza::OsiLayer);
+std::size_t size(const vanetza::PacketVariant&);
 vanetza::byte_view_range create_byte_view(const vanetza::PacketVariant&, vanetza::OsiLayer);
 vanetza::byte_view_range create_byte_view(const vanetza::PacketVariant&, vanetza::OsiLayer from, vanetza::OsiLayer to);
 void serialize(vanetza::OutputArchive&, const vanetza::PacketVariant&);
