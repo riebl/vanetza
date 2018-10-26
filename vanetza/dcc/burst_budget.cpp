@@ -7,8 +7,17 @@ namespace vanetza
 namespace dcc
 {
 
+namespace
+{
+// these constants are given in C2C-CC Basic System Profile (last v1.3.0)
+constexpr Clock::duration T_Burst = std::chrono::seconds(1);
+constexpr Clock::duration T_BurstPeriod = std::chrono::seconds(10);
+constexpr std::size_t N_Burst = 20;
+} // namespace
+
+
 BurstBudget::BurstBudget(const Runtime& rt) :
-    m_runtime(rt), m_messages(N_Burst)
+    m_runtime(rt), m_messages(N_Burst), m_burst_duration(T_Burst), m_burst_period(T_BurstPeriod)
 {
 }
 

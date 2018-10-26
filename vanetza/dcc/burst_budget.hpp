@@ -21,11 +21,6 @@ namespace dcc
 class BurstBudget
 {
 public:
-    // these constants are given in C2C-CC Basic System Profile (last v1.3.0)
-    static constexpr Clock::duration T_Burst = std::chrono::seconds(1);
-    static constexpr Clock::duration T_BurstPeriod = std::chrono::seconds(10);
-    static constexpr std::size_t N_Burst = 20;
-
     BurstBudget(const Runtime&);
     ~BurstBudget();
 
@@ -67,8 +62,8 @@ public:
 private:
     const Runtime& m_runtime;
     boost::circular_buffer<Clock::time_point> m_messages;
-    Clock::duration m_burst_duration = T_Burst;
-    Clock::duration m_burst_period = T_BurstPeriod;
+    Clock::duration m_burst_duration;
+    Clock::duration m_burst_period;
 };
 
 } // namespace dcc
