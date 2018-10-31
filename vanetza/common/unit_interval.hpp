@@ -2,6 +2,8 @@
 #define UNIT_INTERVAL_HPP_BG1EK7QX
 
 #include <boost/operators.hpp>
+#include <iterator>
+#include <type_traits>
 
 namespace vanetza
 {
@@ -53,6 +55,40 @@ private:
 
     double m_value;
 };
+
+/**
+ * Calculate mean value of two unit intervals
+ * \param lhs
+ * \param rhs
+ * \return mean unit interval
+ */
+UnitInterval mean(UnitInterval lhs, UnitInterval rhs);
+
+/**
+ * Calculate mean of a range of unit intervals
+ * \param begin of range
+ * \params end of range
+ * \reutrn mean unit interval
+ */
+template<
+    typename Iterator,
+    typename std::enable_if<
+        std::is_convertible<typename std::iterator_traits<Iterator>::value_type, UnitInterval>::value,
+        int>::type = 0
+>
+UnitInterval mean(Iterator begin, Iterator end)
+{
+    unsigned count = 0;
+    double accu = 0.0;
+
+    for (Iterator it = begin; it != end; ++it)
+    {
+        accu += it->value();
+        ++count;
+    }
+
+    return UnitInterval { count > 1 ? (accu / count) : accu };
+}
 
 } // namespace vanetza
 

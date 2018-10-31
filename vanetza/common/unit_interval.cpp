@@ -80,4 +80,9 @@ UnitInterval UnitInterval::complement() const
     return complement;
 }
 
+UnitInterval mean(UnitInterval lhs, UnitInterval rhs)
+{
+    return UnitInterval { 0.5 * (lhs.value() + rhs.value()) };
+}
+
 } // namespace vanetza

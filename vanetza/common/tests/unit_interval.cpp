@@ -3,6 +3,10 @@
 
 using namespace vanetza;
 
+namespace vanetza {
+    void PrintTo(const UnitInterval& cl, std::ostream* os) { *os << cl.value(); }
+}
+
 TEST(UnitInterval, construction)
 {
     UnitInterval v1;
@@ -145,4 +149,20 @@ TEST(UnitInterval, complement)
     EXPECT_EQ(UnitInterval(0.0), UnitInterval(1.0).complement());
     EXPECT_EQ(UnitInterval(1.0), UnitInterval(0.0).complement());
     EXPECT_EQ(UnitInterval(1.0), UnitInterval(0.67) + UnitInterval(0.67).complement());
+}
+
+TEST(UnitInterval, mean)
+{
+    EXPECT_EQ(UnitInterval(0.3), mean(UnitInterval(0.1), UnitInterval(0.5)));
+    EXPECT_EQ(UnitInterval(0.0), mean(UnitInterval(0.0), UnitInterval(0.0)));
+    EXPECT_EQ(UnitInterval(0.75), mean(UnitInterval(1.0), UnitInterval(0.5)));
+}
+
+TEST(UnitInterval, mean_range)
+{
+    UnitInterval a[3] = { UnitInterval (0.4), UnitInterval(0.2), UnitInterval(0.9) };
+    EXPECT_EQ(UnitInterval(0.0), mean(a, a));
+    EXPECT_EQ(UnitInterval(0.2), mean(a + 1, a + 2));
+    EXPECT_EQ(UnitInterval(0.3), mean(a, a + 2 ));
+    EXPECT_EQ(UnitInterval(0.5), mean(a, a + 3));
 }
