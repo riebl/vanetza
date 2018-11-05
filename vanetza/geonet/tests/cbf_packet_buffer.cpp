@@ -299,5 +299,5 @@ TEST_F(CbfPacketBufferTest, packets_to_send)
     runtime.trigger(runtime.next());
     ASSERT_EQ(5, packets.size());
     // Lifetime can only be encoded in 50ms steps (in best case): 950 ms remaining lifetime
-    EXPECT_EQ((Lifetime {Lifetime::Base::_50_MS, 19}), packets[4].pdu().basic().lifetime);
+    EXPECT_EQ((Lifetime {Lifetime::Base::Fifty_Milliseconds, 19}), packets[4].pdu().basic().lifetime);
 }

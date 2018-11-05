@@ -16,7 +16,7 @@ const Lifetime Lifetime::zero()
 
 Lifetime::Lifetime()
 {
-    set(Base::_50_MS, 0);
+    set(Base::Fifty_Milliseconds, 0);
 }
 
 Lifetime::Lifetime(Base base, BitNumber<uint8_t, 6> multiplier)
@@ -46,13 +46,13 @@ void Lifetime::encode(units::Duration duration)
 {
     double seconds = duration / boost::units::si::seconds;
     if (seconds >= 630.0) {
-        set(Base::_100_S, std::lround(seconds / 100.0));
+        set(Base::Hundred_Seconds, std::lround(seconds / 100.0));
     } else if (seconds >= 63.0) {
-        set(Base::_10_S, std::lround(seconds / 10.0));
+        set(Base::Ten_Seconds, std::lround(seconds / 10.0));
     } else if (seconds >= 3.15) {
-        set(Base::_1_S, std::lround(seconds));
+        set(Base::One_Second, std::lround(seconds));
     } else {
-        set(Base::_50_MS, std::lround(seconds / 0.050));
+        set(Base::Fifty_Milliseconds, std::lround(seconds / 0.050));
     }
 }
 
@@ -64,17 +64,17 @@ units::Duration Lifetime::decode() const
     units::Duration unit;
 
     switch (base) {
-        case Base::_50_MS:
+        case Base::Fifty_Milliseconds:
             unit = 0.050 * seconds;
             break;
-        case Base::_1_S:
+        case Base::One_Second:
             unit = 1.0 * seconds;
             // already done
             break;
-        case Base::_10_S:
+        case Base::Ten_Seconds:
             unit = 10.0 * seconds;
             break;
-        case Base::_100_S:
+        case Base::Hundred_Seconds:
             unit = 100.0 * seconds;
             break;
         default:

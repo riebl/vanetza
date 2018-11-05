@@ -7,30 +7,30 @@ using vanetza::units::si::seconds;
 TEST(Lifetime, ctor) {
     Lifetime a;
     EXPECT_EQ(a.raw(), 0);
-    Lifetime b(Lifetime::Base::_1_S, 34);
+    Lifetime b(Lifetime::Base::One_Second, 34);
     EXPECT_EQ(b.raw(), 0x89);
 }
 
 TEST(Lifetime, set) {
     Lifetime a;
-    a.set(Lifetime::Base::_1_S, 30);
+    a.set(Lifetime::Base::One_Second, 30);
     EXPECT_EQ(a.raw(), 0x79);
 }
 
 TEST(Lifetime, less) {
-    Lifetime a(Lifetime::Base::_10_S, 6);
-    Lifetime b(Lifetime::Base::_10_S, 5);
-    Lifetime c(Lifetime::Base::_1_S, 55);
+    Lifetime a(Lifetime::Base::Ten_Seconds, 6);
+    Lifetime b(Lifetime::Base::Ten_Seconds, 5);
+    Lifetime c(Lifetime::Base::One_Second, 55);
     EXPECT_LT(b, a);
     EXPECT_LT(b, c);
     EXPECT_LT(c, a);
 }
 
 TEST(Lifetime, equality) {
-    Lifetime a(Lifetime::Base::_1_S, 30);
-    Lifetime b(Lifetime::Base::_10_S, 3);
-    Lifetime c(Lifetime::Base::_1_S, 29);
-    Lifetime d(Lifetime::Base::_10_S, 3);
+    Lifetime a(Lifetime::Base::One_Second, 30);
+    Lifetime b(Lifetime::Base::Ten_Seconds, 3);
+    Lifetime c(Lifetime::Base::One_Second, 29);
+    Lifetime d(Lifetime::Base::Ten_Seconds, 3);
     EXPECT_EQ(a, b);
     EXPECT_NE(a, c);
     EXPECT_EQ(b, d);
@@ -38,19 +38,19 @@ TEST(Lifetime, equality) {
 
 TEST(Lifetime, decode) {
     Lifetime a;
-    a.set(Lifetime::Base::_10_S, 43);
+    a.set(Lifetime::Base::Ten_Seconds, 43);
     EXPECT_DOUBLE_EQ(a.decode() / seconds, 430.0);
 
     Lifetime b;
-    b.set(Lifetime::Base::_50_MS, 3);
+    b.set(Lifetime::Base::Fifty_Milliseconds, 3);
     EXPECT_DOUBLE_EQ(b.decode() / seconds, 0.150);
 
     Lifetime c;
-    c.set(Lifetime::Base::_1_S, 15);
+    c.set(Lifetime::Base::One_Second, 15);
     EXPECT_DOUBLE_EQ(c.decode() / seconds, 15.0);
 
     Lifetime d;
-    d.set(Lifetime::Base::_100_S, 63);
+    d.set(Lifetime::Base::Hundred_Seconds, 63);
     EXPECT_DOUBLE_EQ(d.decode() / seconds, 6300.0);
 }
 

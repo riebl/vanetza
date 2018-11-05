@@ -107,7 +107,7 @@ TEST_F(RouterRequest, modified_request_maximum_lifetime)
     ShbDataRequest request(mib, aid::CA);
 
     // create new Lifetime that is larger than the itsGnMaxPacketLifetime of mib
-    Lifetime large_lifetime(Lifetime::Base::_100_S, 9);
+    Lifetime large_lifetime(Lifetime::Base::Hundred_Seconds, 9);
 
     request.maximum_lifetime = large_lifetime;
     request.upper_protocol = UpperProtocol::IPv6;

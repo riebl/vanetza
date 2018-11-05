@@ -19,10 +19,10 @@ public:
     static constexpr uint8_t base_mask = 0x03;
 
     enum class Base {
-        _50_MS = 0,
-        _1_S = 1,
-        _10_S = 2,
-        _100_S = 3
+        Fifty_Milliseconds = 0,
+        One_Second = 1,
+        Ten_Seconds = 2,
+        Hundred_Seconds = 3
     };
 
     static const Lifetime zero();

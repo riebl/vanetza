@@ -14,7 +14,7 @@ TEST(BtpDataIndication, construct_from_header_b) {
     gn_ind.source_position.longitude =
         static_cast<geonet::geo_angle_i32t>(43.8 * units::degree);
     gn_ind.remaining_packet_lifetime =
-        geonet::Lifetime(geonet::Lifetime::Base::_10_S, 3);
+        geonet::Lifetime(geonet::Lifetime::Base::Ten_Seconds, 3);
 
     btp::HeaderB hdr;
     hdr.destination_port = host_cast<uint16_t>(0x1816);
