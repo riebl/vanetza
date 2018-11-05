@@ -87,7 +87,7 @@ int main(int argc, const char** argv)
         gn::MIB mib;
         mib.itsGnLocalGnAddr.mid(mac_address);
         mib.itsGnLocalGnAddr.is_manually_configured(true);
-        mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::MANAGED;
+        mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::Managed;
         mib.itsGnSecurity = false;
 
         asio::steady_timer gps_timer(io_service);

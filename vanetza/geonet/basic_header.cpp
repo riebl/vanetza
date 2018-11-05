@@ -11,7 +11,7 @@ constexpr std::size_t BasicHeader::length_bytes;
 
 BasicHeader::BasicHeader() :
     version(0),
-    next_header(NextHeaderBasic::ANY),
+    next_header(NextHeaderBasic::Any),
     reserved(0),
     hop_limit(0)
 {
@@ -19,7 +19,7 @@ BasicHeader::BasicHeader() :
 
 BasicHeader::BasicHeader(const MIB& mib) :
     version(mib.itsGnProtocolVersion),
-    next_header(NextHeaderBasic::ANY),
+    next_header(NextHeaderBasic::Any),
     reserved(0),
     lifetime(mib.itsGnDefaultPacketLifetime),
     hop_limit(mib.itsGnDefaultHopLimit)
@@ -30,9 +30,9 @@ BasicHeader::BasicHeader(const DataRequest& request, const MIB& mib) :
     BasicHeader(mib)
 {
     if (mib.itsGnSecurity) {
-        next_header = NextHeaderBasic::SECURED;
+        next_header = NextHeaderBasic::Secured;
     } else {
-        next_header = NextHeaderBasic::COMMON;
+        next_header = NextHeaderBasic::Common;
     }
 
     lifetime = request.maximum_lifetime;

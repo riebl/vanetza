@@ -175,22 +175,22 @@ DefaultCertificateValidator::DefaultCertificateValidator(Backend& backend, Certi
 CertificateValidity DefaultCertificateValidator::check_certificate(const Certificate& certificate)
 {
     if (!extract_validity_time(certificate)) {
-        return CertificateInvalidReason::BROKEN_TIME_PERIOD;
+        return CertificateInvalidReason::Broken_Time_Period;
     }
 
     if (!certificate.get_attribute<SubjectAttributeType::Assurance_Level>()) {
-        return CertificateInvalidReason::MISSING_SUBJECT_ASSURANCE;
+        return CertificateInvalidReason::Missing_Subject_Assurance;
     }
 
     SubjectType subject_type = certificate.subject_info.subject_type;
 
     // check if subject_name is empty if certificate is authorization ticket
     if (subject_type == SubjectType::Authorization_Ticket && 0 != certificate.subject_info.subject_name.size()) {
-        return CertificateInvalidReason::INVALID_NAME;
+        return CertificateInvalidReason::Invalid_Name;
     }
 
     if (get_type(certificate.signer_info) != SignerInfoType::Certificate_Digest_With_SHA256) {
-        return CertificateInvalidReason::INVALID_SIGNER;
+        return CertificateInvalidReason::Invalid_Signer;
     }
 
     HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
@@ -198,7 +198,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     // try to extract ECDSA signature
     boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.signature);
     if (!sig) {
-        return CertificateInvalidReason::MISSING_SIGNATURE;
+        return CertificateInvalidReason::Missing_Signature;
     }
 
     // create buffer of certificate
@@ -214,7 +214,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
             if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
                 if (!check_consistency(certificate, possible_signer)) {
-                    return CertificateInvalidReason::INCONSISTENT_WITH_SIGNER;
+                    return CertificateInvalidReason::Inconsistent_With_Signer;
                 }
 
                 return CertificateValidity::valid();
@@ -233,7 +233,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
 
             if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
                 if (!check_consistency(certificate, possible_signer)) {
-                    return CertificateInvalidReason::INCONSISTENT_WITH_SIGNER;
+                    return CertificateInvalidReason::Inconsistent_With_Signer;
                 }
 
                 return CertificateValidity::valid();
@@ -241,7 +241,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         }
     }
 
-    return CertificateInvalidReason::UNKNOWN_SIGNER;
+    return CertificateInvalidReason::Unknown_Signer;
 }
 
 } // namespace security

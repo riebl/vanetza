@@ -190,7 +190,7 @@ TEST_F(RouterIndicate, shb_secured_hook_its_protocol_version)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::ITS_PROTOCOL_VERSION, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::ITS_Protocol_Version, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -207,7 +207,7 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_basic_header)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_BASIC_HEADER, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::Parse_Basic_Header, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -224,7 +224,7 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_secured_header)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_SECURED_HEADER, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::Parse_Secured_Header, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -232,7 +232,7 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_secured_header)
 
 TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_non_strict)
 {
-    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::NON_STRICT;
+    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::Non_Strict;
 
     // modify up_packet for positive test
     ByteBuffer broken_packet_buffer = create_secured_packet();
@@ -251,7 +251,7 @@ TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_non_strict)
 
 TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_strict)
 {
-    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::STRICT;
+    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::Strict;
 
     // modify up_packet for negative test
     ByteBuffer broken_packet_buffer = create_secured_packet();
@@ -262,7 +262,7 @@ TEST_F(RouterIndicate, shb_secured_hook_decap_unsuccessful_strict)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::DECAP_UNSUCCESSFUL_STRICT, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::Decap_Unsuccessful_Strict, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -281,7 +281,7 @@ TEST_F(RouterIndicate, shb_secured_hook_parse_extended_header)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::PARSE_EXTENDED_HEADER, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::Parse_Extended_Header, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -300,7 +300,7 @@ TEST_F(RouterIndicate, shb_secured_hook_payload_size)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::PAYLOAD_SIZE, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::Payload_Size, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -318,7 +318,7 @@ TEST_F(RouterIndicate, shb_secured_hook_hop_limit)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::HOP_LIMIT, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::Hop_Limit, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -337,7 +337,7 @@ TEST_F(RouterIndicate, shb_secured_hook_unsecured_packet)
 
     // check hook
     EXPECT_TRUE(test_and_reset_packet_drop());
-    EXPECT_EQ(geonet::Router::PacketDropReason::DECAP_UNSUCCESSFUL_STRICT, drop_reason);
+    EXPECT_EQ(geonet::Router::PacketDropReason::Decap_Unsuccessful_Strict, drop_reason);
 
     // check if packet was dropped
     EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
@@ -350,7 +350,7 @@ TEST_F(RouterIndicate, shb_secured_hook_unsecured_packet_nonstrict)
 
     // enable security after create_plain_packet() disabled it
     mib.itsGnSecurity = true;
-    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::NON_STRICT;
+    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::Non_Strict;
 
     std::unique_ptr<geonet::UpPacket> packet_up = get_up_packet(packet_buffer);
     router.indicate(std::move(packet_up), mac_address_sender, mac_address_destination);

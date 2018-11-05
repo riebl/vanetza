@@ -11,16 +11,16 @@ using vanetza::units::si::meter;
 
 TEST(DataConfirm, ctor) {
     DataConfirm a;
-    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::ACCEPTED);
-    DataConfirm b(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
-    EXPECT_EQ(b.result_code, DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::Accepted);
+    DataConfirm b(DataConfirm::ResultCode::Rejected_Unspecified);
+    EXPECT_EQ(b.result_code, DataConfirm::ResultCode::Rejected_Unspecified);
 }
 
 TEST(DataConfirm, accepted_rejected) {
-    DataConfirm a(DataConfirm::ResultCode::REJECTED_MAX_LIFETIME);
+    DataConfirm a(DataConfirm::ResultCode::Rejected_Max_Lifetime);
     EXPECT_TRUE(a.rejected());
     EXPECT_FALSE(a.accepted());
-    a.result_code = DataConfirm::ResultCode::ACCEPTED;
+    a.result_code = DataConfirm::ResultCode::Accepted;
     EXPECT_FALSE(a.rejected());
     EXPECT_TRUE(a.accepted());
 }
@@ -29,32 +29,32 @@ TEST(DataConfirm, validate_data_request) {
     MIB mib;
     DataRequest req(mib);
     EXPECT_EQ(validate_data_request(req, mib),
-            DataConfirm::ResultCode::ACCEPTED);
+            DataConfirm::ResultCode::Accepted);
 
     DataRequest req_lt(req);
     req_lt.maximum_lifetime.encode(mib.itsGnMaxPacketLifetime.decode() + 10.0 * seconds);
     EXPECT_EQ(validate_data_request(req_lt, mib),
-            DataConfirm::ResultCode::REJECTED_MAX_LIFETIME);
+            DataConfirm::ResultCode::Rejected_Max_Lifetime);
 
     DataRequest req_rep(req);
     req_rep.repetition = DataRequest::Repetition();
     req_rep.repetition->interval = mib.itsGnMinPacketRepetitionInterval - 1 * seconds;
     EXPECT_EQ(validate_data_request(req_rep, mib),
-            DataConfirm::ResultCode::REJECTED_MIN_REPETITION_INTERVAL);
+            DataConfirm::ResultCode::Rejected_Min_Repetition_Interval);
 }
 
 TEST(DataConfirm, validate_data_request_with_area) {
     MIB mib;
     DataRequestWithArea req(mib);
     EXPECT_EQ(validate_data_request(req, mib),
-            DataConfirm::ResultCode::ACCEPTED);
+            DataConfirm::ResultCode::Accepted);
 
     Circle c;
     // radius = magnitude of max area size -> circle area is much larger
     c.r = vanetza::units::Length(mib.itsGnMaxGeoAreaSize / meter); // hack!
     req.destination.shape = c;
     EXPECT_EQ(validate_data_request(req, mib),
-            DataConfirm::ResultCode::REJECTED_MAX_GEO_AREA_SIZE);
+            DataConfirm::ResultCode::Rejected_Max_Geo_Area_Size);
 }
 
 TEST(DataConfirm, validate_payload) {
@@ -69,21 +69,21 @@ TEST(DataConfirm, validate_payload) {
     std::unique_ptr<DownPacket> ok_payload(new DownPacket());
 
     EXPECT_EQ(validate_payload(no_payload, mib),
-            DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+            DataConfirm::ResultCode::Rejected_Unspecified);
     EXPECT_EQ(validate_payload(giant_payload, mib),
-            DataConfirm::ResultCode::REJECTED_MAX_SDU_SIZE);
+            DataConfirm::ResultCode::Rejected_Max_SDU_Size);
     EXPECT_EQ(validate_payload(ok_payload, mib),
-            DataConfirm::ResultCode::ACCEPTED);
+            DataConfirm::ResultCode::Accepted);
 }
 
 TEST(DataConfirm, xor_op) {
     DataConfirm a;
-    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::ACCEPTED);
-    a ^= DataConfirm::ResultCode::REJECTED_MAX_LIFETIME;
-    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_MAX_LIFETIME);
-    a ^= DataConfirm::ResultCode::ACCEPTED;
-    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_MAX_LIFETIME);
-    a ^= DataConfirm::ResultCode::REJECTED_UNSPECIFIED;
-    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::Accepted);
+    a ^= DataConfirm::ResultCode::Rejected_Max_Lifetime;
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::Rejected_Max_Lifetime);
+    a ^= DataConfirm::ResultCode::Accepted;
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::Rejected_Max_Lifetime);
+    a ^= DataConfirm::ResultCode::Rejected_Unspecified;
+    EXPECT_EQ(a.result_code, DataConfirm::ResultCode::Rejected_Unspecified);
 }
 

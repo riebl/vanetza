@@ -81,24 +81,24 @@ public:
     /// Reason for packet drop used by drop hook
     enum class PacketDropReason
     {
-        PARSE_BASIC_HEADER,
-        PARSE_COMMON_HEADER,
-        PARSE_SECURED_HEADER,
-        PARSE_EXTENDED_HEADER,
-        ITS_PROTOCOL_VERSION,
-        DECAP_UNSUCCESSFUL_NON_STRICT,
-        DECAP_UNSUCCESSFUL_STRICT,
-        HOP_LIMIT,
-        PAYLOAD_SIZE,
-        SECURITY_ENTITY_MISSING
+        Parse_Basic_Header,
+        Parse_Common_Header,
+        Parse_Secured_Header,
+        Parse_Extended_Header,
+        ITS_Protocol_Version,
+        Decap_Unsuccessful_Non_Strict,
+        Decap_Unsuccessful_Strict,
+        Hop_Limit,
+        Payload_Size,
+        Security_Entity_Missing
     };
 
     // Reason for stopping packet forwarding
     enum class ForwardingStopReason
     {
-        HOP_LIMIT,
-        SOURCE_PDR,
-        SENDER_PDR
+        Hop_Limit,
+        Source_PDR,
+        Sender_PDR
     };
 
     Router(Runtime&, const MIB&);
@@ -241,7 +241,7 @@ public:
 
     /**
      * \brief Set seed for internal random number generator (RNG)
-     * RNG is used e.g. for random BEACON jitter
+     * RNG is used e.g. for random Beacon jitter
      *
      * \param seed reset RNG's state to this seed
      */
@@ -260,19 +260,19 @@ private:
     typedef std::map<UpperProtocol, TransportInterface*> transport_map_t;
 
     /**
-     * \brief Send BEACON packet to all neighbours with updated position vector.
+     * \brief Send Beacon packet to all neighbours with updated position vector.
      * Only to be called when the beacon timer expires.
      */
     void on_beacon_timer_expired();
 
     /**
-     * \brief Reschedule timer for next BEACON transmission
-     * Timer will be scheduled according to MIB's BEACON timer settings.
+     * \brief Reschedule timer for next Beacon transmission
+     * Timer will be scheduled according to MIB's Beacon timer settings.
      */
     void reset_beacon_timer();
 
     /**
-     * \brief Reschedule timer for next BEACON transmission
+     * \brief Reschedule timer for next Beacon transmission
      * \param next Duration until next transmission
      */
     void reset_beacon_timer(Clock::duration next);
@@ -311,7 +311,7 @@ private:
      * \param pdu containing the ExtendedHeader
      * \param packet received packet
      * \param ll link-layer control info
-     * \return pass up decision (always false for BEACONs)
+     * \return pass up decision (always false for Beacons)
      */
     bool process_extended(const ExtendedPduConstRefs<BeaconHeader>&, const UpPacket&, const LinkLayer& ll);
 
@@ -505,7 +505,7 @@ private:
     std::unique_ptr<ShbPdu> create_shb_pdu(const ShbDataRequest&);
 
     /**
-     * \brief Create an initialzed BEACON PDU
+     * \brief Create an initialzed Beacon PDU
      *
      * \return PDU object
      */

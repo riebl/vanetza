@@ -7,18 +7,18 @@ namespace geonet
 {
 
 enum class StationType {
-    UNKNOWN = 0,
-    PEDESTRIAN = 1,
-    CYCLIST = 2,
-    MOPED = 3,
-    MOTORCYCLE = 4,
-    PASSENGER_CAR = 5,
-    BUS = 6,
-    LIGHT_TRUCK = 7,
-    HEAVY_TRUCK = 8,
-    TRAILER = 9,
-    SPECIAL_VEHICLE = 10,
-    TRAM = 11,
+    Unknown = 0,
+    Pedestrian = 1,
+    Cyclist = 2,
+    Moped = 3,
+    Motorcycle = 4,
+    Passenger_Car = 5,
+    Bus = 6,
+    Light_Truck = 7,
+    Heavy_Truck = 8,
+    Trailer = 9,
+    Special_Vehicle = 10,
+    Tram = 11,
     RSU = 15
 };
 

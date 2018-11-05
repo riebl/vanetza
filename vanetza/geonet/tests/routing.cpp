@@ -24,8 +24,8 @@ protected:
     virtual void SetUp() override
     {
         net.set_duplication_mode(std::get<0>(GetParam()));
-        net.get_mib().itsGnNonAreaForwardingAlgorithm = UnicastForwarding::GREEDY;
-        net.get_mib().itsGnAreaForwardingAlgorithm = BroadcastForwarding::ADVANCED;
+        net.get_mib().itsGnNonAreaForwardingAlgorithm = UnicastForwarding::Greedy;
+        net.get_mib().itsGnAreaForwardingAlgorithm = BroadcastForwarding::Advanced;
         net.get_mib().itsGnSecurity = std::get<1>(GetParam());
 
         cars[0] = {0x00, 0x02, 0x03, 0x04, 0x05, 0x06};
@@ -66,7 +66,7 @@ protected:
          *                   (5)
          */
 
-        // advance time so BEACONs have been exchanged
+        // advance time so Beacons have been exchanged
         net.advance_time(std::chrono::seconds::zero());
         net.reset_counters();
     }
@@ -291,7 +291,7 @@ TEST_P(Routing, advanced_forwarding_inside_sectorial_area)
 TEST_P(Routing, advanced_forwarding_outside_sectorial_area)
 {
     net.set_position(cars[5], CartesianPosition(2.0_m, -2.0_m));
-    net.advance_time(std::chrono::seconds(5)); /*< let BEACONs update location tables */
+    net.advance_time(std::chrono::seconds(5)); /*< let Beacons update location tables */
     net.reset_counters();
     EXPECT_TRUE(net.get_router(cars[5])->outside_sectorial_contention_area(cars[0], cars[2]));
 
@@ -431,7 +431,7 @@ TEST_P(Routing, greedy_forwarding_scf)
 
     // let's age the the lifetime of the buffered packet a little bit
     net.advance_time(units::clock_cast(net.get_mib().itsGnDefaultPacketLifetime.decode() *  0.5));
-    net.reset_counters(); /*< ignore BEACON transmissions */
+    net.reset_counters(); /*< ignore Beacon transmissions */
 
     // move one station to become a forwarder and propagate its new position via SHB
     net.set_position(cars[5], CartesianPosition(-1.0_m, 0.0_m));
@@ -517,17 +517,17 @@ TEST_P(Routing, forwarding_selection_inaccurate_position)
 
 static const auto PacketHandlingValues = ::testing::Combine(
             ::testing::Values(
-                NetworkTopology::PacketDuplicationMode::COPY_CONSTRUCT,
-                NetworkTopology::PacketDuplicationMode::SERIALIZE),
+                NetworkTopology::PacketDuplicationMode::Copy_Construct,
+                NetworkTopology::PacketDuplicationMode::Serialize),
             ::testing::Bool());
 std::string printPacketHandlingValue(const ::testing::TestParamInfo<Routing::ParamType>& value)
 {
     std::string print;
     switch (std::get<0>(value.param)) {
-        case NetworkTopology::PacketDuplicationMode::COPY_CONSTRUCT:
+        case NetworkTopology::PacketDuplicationMode::Copy_Construct:
             print = "Copy";
             break;
-        case NetworkTopology::PacketDuplicationMode::SERIALIZE:
+        case NetworkTopology::PacketDuplicationMode::Serialize:
             print = "Serialize";
             break;
     }

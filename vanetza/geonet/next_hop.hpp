@@ -78,7 +78,7 @@ public:
     bool process() &&;
 
 private:
-    enum class State { VALID, DISCARDED, BUFFERED };
+    enum class State { Valid, Discarded, Buffered };
 
     State m_state;
     MacAddress m_destination;

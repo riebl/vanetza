@@ -21,7 +21,7 @@ class LocationTable;
 
 enum class NextHeaderCommon
 {
-    ANY = 0, BTP_A = 1, BTP_B = 2, IPv6 = 3
+    Any = 0, BTP_A = 1, BTP_B = 2, IPv6 = 3
 };
 
 struct CommonHeader

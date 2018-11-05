@@ -76,25 +76,25 @@ std::size_t Parser::parse_extended(HeaderVariant& extended, HeaderType ht)
 
     try {
         switch (ht) {
-            case HeaderType::TSB_SINGLE_HOP:
+            case HeaderType::TSB_Single_Hop:
                 bytes = deserialize_extended<ShbHeader>(m_archive, extended);
                 break;
-            case HeaderType::GEOBROADCAST_CIRCLE:
-            case HeaderType::GEOBROADCAST_RECT:
-            case HeaderType::GEOBROADCAST_ELIP:
+            case HeaderType::GeoBroadcast_Circle:
+            case HeaderType::GeoBroadcast_Rect:
+            case HeaderType::GeoBroadcast_Elip:
                 bytes = deserialize_extended<GeoBroadcastHeader>(m_archive, extended);
                 break;
-            case HeaderType::BEACON:
+            case HeaderType::Beacon:
                 bytes = deserialize_extended<BeaconHeader>(m_archive, extended);
                 break;
-            case HeaderType::ANY:
-            case HeaderType::GEOUNICAST:
-            case HeaderType::GEOANYCAST_CIRCLE:
-            case HeaderType::GEOANYCAST_RECT:
-            case HeaderType::GEOANYCAST_ELIP:
-            case HeaderType::TSB_MULTI_HOP:
-            case HeaderType::LS_REQUEST:
-            case HeaderType::LS_REPLY:
+            case HeaderType::Any:
+            case HeaderType::GeoUnicast:
+            case HeaderType::GeoAnycast_Circle:
+            case HeaderType::GeoAnycast_Rect:
+            case HeaderType::GeoAnycast_Elip:
+            case HeaderType::TSB_Multi_Hop:
+            case HeaderType::LS_Request:
+            case HeaderType::LS_Reply:
                 // unimplemented types
                 break;
             default:

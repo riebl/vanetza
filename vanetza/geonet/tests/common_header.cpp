@@ -22,7 +22,7 @@ TEST(CommonHeader, ctor) {
 
     ShbDataRequest shb(mib);
     CommonHeader c(shb, mib);
-    EXPECT_EQ(c.header_type, HeaderType::TSB_SINGLE_HOP);
+    EXPECT_EQ(c.header_type, HeaderType::TSB_Single_Hop);
     EXPECT_EQ(c.maximum_hop_limit, 1);
 }
 

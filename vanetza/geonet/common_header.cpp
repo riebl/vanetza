@@ -11,9 +11,9 @@ namespace geonet
 constexpr std::size_t CommonHeader::length_bytes;
 
 CommonHeader::CommonHeader() :
-    next_header(NextHeaderCommon::ANY),
+    next_header(NextHeaderCommon::Any),
     reserved1(0),
-    header_type(HeaderType::ANY),
+    header_type(HeaderType::Any),
     flags(0),
     payload(0),
     maximum_hop_limit(0),
@@ -22,9 +22,9 @@ CommonHeader::CommonHeader() :
 }
 
 CommonHeader::CommonHeader(const MIB& mib) :
-    next_header(NextHeaderCommon::ANY),
+    next_header(NextHeaderCommon::Any),
     reserved1(0),
-    header_type(HeaderType::ANY),
+    header_type(HeaderType::Any),
     traffic_class(mib.itsGnDefaultTrafficClass),
     flags(mib.itsGnIsMobile ? 0x80 : 0x00),
     payload(0),
@@ -58,7 +58,7 @@ CommonHeader::CommonHeader(const DataRequest& request, const MIB& mib) :
 CommonHeader::CommonHeader(const ShbDataRequest& request, const MIB& mib) :
     CommonHeader(static_cast<const DataRequest&>(request), mib)
 {
-    header_type = HeaderType::TSB_SINGLE_HOP;
+    header_type = HeaderType::TSB_Single_Hop;
     maximum_hop_limit = 1;
 }
 

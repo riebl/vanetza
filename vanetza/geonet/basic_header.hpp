@@ -17,9 +17,9 @@ struct ShbDataRequest;
 /// NextHeaderBasic specified in ETSI EN 302 636-4-1 v1.2.1, section 8.6.3
 enum class NextHeaderBasic : uint8_t
 {
-    ANY = 0,
-    COMMON = 1,
-    SECURED = 2,
+    Any = 0,
+    Common = 1,
+    Secured = 2,
 };
 
 /// BasicHeader specified in ETSI EN 302 636-4-1 v1.2.1, section 8.6

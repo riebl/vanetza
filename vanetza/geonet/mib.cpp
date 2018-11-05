@@ -14,7 +14,7 @@ using boost::units::si::milli;
 const auto milliseconds = milli * seconds;
 
 ManagementInformationBase::ManagementInformationBase() :
-    itsGnLocalAddrConfMethod(AddrConfMethod::MANAGED),
+    itsGnLocalAddrConfMethod(AddrConfMethod::Managed),
     itsGnProtocolVersion(1),
     itsGnIsMobile(true),
     itsGnIfType(InterfaceType::ITS_G5),
@@ -24,7 +24,7 @@ ManagementInformationBase::ManagementInformationBase() :
     itsGnMaxGeoNetworkingHeaderSize(88),
     itsGnLifetimeLocTE(20 * seconds),
     itsGnSecurity(false),
-    itsGnSnDecapResultHandling(SecurityDecapHandling::STRICT),
+    itsGnSnDecapResultHandling(SecurityDecapHandling::Strict),
     itsGnLocationServiceMaxRetrans(10),
     itsGnLocationServiceRetransmitTimer(1 * seconds),
     itsGnLocationServicePacketBufferSize(1024),
@@ -38,7 +38,7 @@ ManagementInformationBase::ManagementInformationBase() :
     itsGnMaxPacketDataRateEmaBeta(0.9),
     itsGnMaxGeoAreaSize(10 * kilo * kilo * square_meters),
     itsGnMinPacketRepetitionInterval(100 * milliseconds),
-    itsGnNonAreaForwardingAlgorithm(UnicastForwarding::GREEDY),
+    itsGnNonAreaForwardingAlgorithm(UnicastForwarding::Greedy),
     itsGnAreaForwardingAlgorithm(BroadcastForwarding::CBF),
     itsGnCbfMinTime(1 * milliseconds),
     itsGnCbfMaxTime(100 * milliseconds),

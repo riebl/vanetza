@@ -105,13 +105,13 @@ std::string gprmc(const time& ptime, const Wgs84Point& wgs84,
 
     smsg << "$GPRMC,";
     smsg << ptime << ","; // HHMMSS
-    smsg << static_cast<char>(RMCStatus::VALID) << ",";
+    smsg << static_cast<char>(RMCStatus::Valid) << ",";
     smsg << latitude(wgs84) << "," << longitude(wgs84) << ",";
     smsg << std::setprecision(1) << ground_speed.value() << ","; // GG.G
     smsg << std::setprecision(1) << std::fmod(heading.value(), 360.0) << ","; // RR.R
     smsg << ptime.date() << ","; // DDMMYY
     smsg << std::setprecision(1) << magnetic_angle << "," << magnetic_direction << ","; // M.M, E/W
-    smsg << static_cast<char>(FAAMode::AUTONOMOUS);
+    smsg << static_cast<char>(FAAMode::Autonomous);
 
     return finish(smsg);
 }

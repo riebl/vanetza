@@ -18,32 +18,32 @@ namespace geonet
 {
 
 enum class UnicastForwarding {
-    UNSPECIFIED = 0,
-    GREEDY = 1,
+    Unspecified = 0,
+    Greedy = 1,
     CBF = 2
 };
 
 enum class BroadcastForwarding {
-    UNSPECIFIED = 0,
+    Unspecified = 0,
     SIMPLE = 1,
     CBF = 2,
-    ADVANCED = 3
+    Advanced = 3
 };
 
 enum class AddrConfMethod {
-    AUTO = 0,
-    MANAGED = 1,
-    ANONYMOUS = 2
+    Auto = 0,
+    Managed = 1,
+    Anonymous = 2
 };
 
 enum class InterfaceType {
-    UNSPECIFIED = 0,
+    Unspecified = 0,
     ITS_G5 = 1
 };
 
 enum class SecurityDecapHandling {
-    STRICT = 0,
-    NON_STRICT = 1
+    Strict = 0,
+    Non_Strict = 1
 };
 
 /**
@@ -90,7 +90,7 @@ struct ManagementInformationBase
     unsigned itsGnBcForwardingPacketBufferSize; // kbyte
     unsigned itsGnCbfPacketBufferSize; // kbyte
     TrafficClass itsGnDefaultTrafficClass;
-    std::size_t vanetzaCbfMaxCounter; /*< maximum counter value used for ADVANCED routing */
+    std::size_t vanetzaCbfMaxCounter; /*< maximum counter value used for Advanced routing */
     bool vanetzaDeferInitialBeacon; /*< defer first beacon up to itsGnBeaconServiceRetransmitTimer */
 };
 

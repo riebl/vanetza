@@ -10,7 +10,7 @@ TEST(PositionVector, lpv_serialization)
 {
     LongPositionVector lpv1;
     lpv1.gn_addr.is_manually_configured(true);
-    lpv1.gn_addr.station_type(StationType::MOTORCYCLE);
+    lpv1.gn_addr.station_type(StationType::Motorcycle);
     lpv1.gn_addr.country_code(0x0333);
     lpv1.gn_addr.mid(MacAddress { 1, 2, 3, 0xa, 0xb, 0xc });
     lpv1.timestamp += 4321 * Timestamp::millisecond();

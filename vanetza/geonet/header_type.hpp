@@ -36,19 +36,19 @@ namespace nibble
 enum class HeaderType : uint8_t
 {
     // high nibble: type, low nibble: sub-type
-    ANY = nibble::high::any,
-    BEACON = nibble::high::beacon,
-    GEOUNICAST = nibble::high::unicast,
-    GEOANYCAST_CIRCLE = nibble::high::anycast | nibble::low::circle,
-    GEOANYCAST_RECT = nibble::high::anycast | nibble::low::rect,
-    GEOANYCAST_ELIP = nibble::high::anycast | nibble::low::elip,
-    GEOBROADCAST_CIRCLE = nibble::high::broadcast | nibble::low::circle,
-    GEOBROADCAST_RECT = nibble::high::broadcast | nibble::low::rect,
-    GEOBROADCAST_ELIP = nibble::high::broadcast | nibble::low::elip,
-    TSB_SINGLE_HOP = nibble::high::tsb | nibble::low::single_hop,
-    TSB_MULTI_HOP = nibble::high::tsb | nibble::low::multi_hop,
-    LS_REQUEST = nibble::high::ls | 0x00,
-    LS_REPLY = nibble::high::ls | 0x01
+    Any = nibble::high::any,
+    Beacon = nibble::high::beacon,
+    GeoUnicast = nibble::high::unicast,
+    GeoAnycast_Circle = nibble::high::anycast | nibble::low::circle,
+    GeoAnycast_Rect = nibble::high::anycast | nibble::low::rect,
+    GeoAnycast_Elip = nibble::high::anycast | nibble::low::elip,
+    GeoBroadcast_Circle = nibble::high::broadcast | nibble::low::circle,
+    GeoBroadcast_Rect = nibble::high::broadcast | nibble::low::rect,
+    GeoBroadcast_Elip = nibble::high::broadcast | nibble::low::elip,
+    TSB_Single_Hop = nibble::high::tsb | nibble::low::single_hop,
+    TSB_Multi_Hop = nibble::high::tsb | nibble::low::multi_hop,
+    LS_Request = nibble::high::ls | 0x00,
+    LS_Reply = nibble::high::ls | 0x01
 };
 
 inline uint8_t high_nibble(HeaderType ht) { return static_cast<uint8_t>(ht) & 0xf0; }

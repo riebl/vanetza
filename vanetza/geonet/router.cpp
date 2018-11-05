@@ -130,10 +130,10 @@ Router::Router(Runtime& rt, const MIB& mib) :
             std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2))
 {
     if (!m_mib.vanetzaDeferInitialBeacon) {
-        // send BEACON immediately after start-up at next runtime trigger invocation
+        // send Beacon immediately after start-up at next runtime trigger invocation
         reset_beacon_timer(Clock::duration::zero());
     } else {
-        // defer initial BEACON transmission slightly
+        // defer initial Beacon transmission slightly
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         const auto first_beacon = dist(m_random_gen) * m_mib.itsGnBeaconServiceRetransmitTimer;
         reset_beacon_timer(clock_cast(first_beacon));
@@ -291,7 +291,7 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
 
         // step 5: apply security
         if (m_mib.itsGnSecurity) {
-            assert(pdu->basic().next_header == NextHeaderBasic::SECURED);
+            assert(pdu->basic().next_header == NextHeaderBasic::Secured);
             payload = encap_packet(ctrl.its_aid, *pdu, std::move(payload));
         }
 
@@ -328,17 +328,17 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
 
 DataConfirm Router::request(const GacDataRequest&, DownPacketPtr)
 {
-    return DataConfirm(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    return DataConfirm(DataConfirm::ResultCode::Rejected_Unspecified);
 }
 
 DataConfirm Router::request(const GucDataRequest&, DownPacketPtr)
 {
-    return DataConfirm(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    return DataConfirm(DataConfirm::ResultCode::Rejected_Unspecified);
 }
 
 DataConfirm Router::request(const TsbDataRequest&, DownPacketPtr)
 {
-    return DataConfirm(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    return DataConfirm(DataConfirm::ResultCode::Rejected_Unspecified);
 }
 
 void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
@@ -382,23 +382,23 @@ void Router::indicate_basic(IndicationContextBasic& ctx)
 {
     const BasicHeader* basic = ctx.parse_basic();
     if (!basic) {
-        packet_dropped(PacketDropReason::PARSE_BASIC_HEADER);
+        packet_dropped(PacketDropReason::Parse_Basic_Header);
     } else if (basic->version.raw() != m_mib.itsGnProtocolVersion) {
-        packet_dropped(PacketDropReason::ITS_PROTOCOL_VERSION);
+        packet_dropped(PacketDropReason::ITS_Protocol_Version);
     } else {
         DataIndication& indication = ctx.service_primitive();
         indication.remaining_packet_lifetime = basic->lifetime;
         indication.remaining_hop_limit = basic->hop_limit;
 
-        if (basic->next_header == NextHeaderBasic::SECURED) {
+        if (basic->next_header == NextHeaderBasic::Secured) {
             indication.security_report = security::DecapReport::Incompatible_Protocol;
             indicate_secured(ctx, *basic);
-        } else if (basic->next_header == NextHeaderBasic::COMMON) {
-            if (!m_mib.itsGnSecurity || SecurityDecapHandling::NON_STRICT == m_mib.itsGnSnDecapResultHandling) {
+        } else if (basic->next_header == NextHeaderBasic::Common) {
+            if (!m_mib.itsGnSecurity || SecurityDecapHandling::Non_Strict == m_mib.itsGnSnDecapResultHandling) {
                 indication.security_report = security::DecapReport::Unsigned_Message,
                 indicate_common(ctx, *basic);
             } else {
-                packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
+                packet_dropped(PacketDropReason::Decap_Unsuccessful_Strict);
             }
         }
     }
@@ -408,10 +408,10 @@ void Router::indicate_common(IndicationContext& ctx, const BasicHeader& basic)
 {
     const CommonHeader* common = ctx.parse_common();
     if (!common) {
-        packet_dropped(PacketDropReason::PARSE_COMMON_HEADER);
+        packet_dropped(PacketDropReason::Parse_Common_Header);
     } else if (common->maximum_hop_limit < basic.hop_limit) {
         // step 1) check the MHL field
-        packet_dropped(PacketDropReason::HOP_LIMIT);
+        packet_dropped(PacketDropReason::Hop_Limit);
     } else {
         DataIndication& indication = ctx.service_primitive();
         indication.traffic_class = common->traffic_class;
@@ -475,7 +475,7 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
 
     auto secured_message = ctx.parse_secured();
     if (!secured_message) {
-        packet_dropped(PacketDropReason::PARSE_SECURED_HEADER);
+        packet_dropped(PacketDropReason::Parse_Secured_Header);
     } else if (m_security_entity) {
         // Decap packet
         using namespace vanetza::security;
@@ -488,9 +488,9 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
         // check whether the received packet is valid
         if (DecapReport::Success == decap_confirm.report) {
             boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
-        } else if (SecurityDecapHandling::NON_STRICT == m_mib.itsGnSnDecapResultHandling) {
+        } else if (SecurityDecapHandling::Non_Strict == m_mib.itsGnSnDecapResultHandling) {
             // according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
-            // handle the packet anyway, when itsGnDecapResultHandling is set to NON-STRICT (1)
+            // handle the packet anyway, when itsGnDecapResultHandling is set to NON-Strict (1)
             switch (decap_confirm.report) {
                 case DecapReport::False_Signature:
                 case DecapReport::Invalid_Certificate:
@@ -509,15 +509,15 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
                 case DecapReport::Incompatible_Protocol:
                 case DecapReport::Decryption_Error:
                 default:
-                    packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT);
+                    packet_dropped(PacketDropReason::Decap_Unsuccessful_Non_Strict);
                     break;
             }
         } else {
             // discard packet
-            packet_dropped(PacketDropReason::DECAP_UNSUCCESSFUL_STRICT);
+            packet_dropped(PacketDropReason::Decap_Unsuccessful_Strict);
         }
     } else {
-        packet_dropped(PacketDropReason::SECURITY_ENTITY_MISSING);
+        packet_dropped(PacketDropReason::Security_Entity_Missing);
     }
 }
 
@@ -571,9 +571,9 @@ void Router::indicate_extended(IndicationContext& ctx, const CommonHeader& commo
     assert(packet);
 
     if (!extended) {
-        packet_dropped(PacketDropReason::PARSE_EXTENDED_HEADER);
+        packet_dropped(PacketDropReason::Parse_Extended_Header);
     } else if (common.payload != size(*packet, OsiLayer::Transport, max_osi_layer())) {
-        packet_dropped(PacketDropReason::PAYLOAD_SIZE);
+        packet_dropped(PacketDropReason::Payload_Size);
     } else {
         extended_header_visitor visitor(*this, ctx, *packet);
         if (boost::apply_visitor(visitor, *extended)) {
@@ -588,7 +588,7 @@ NextHop Router::forwarding_algorithm_selection(PendingPacketForwarding&& packet,
     const Area& destination = packet.pdu().extended().destination(packet.pdu().common().header_type);
     if (inside_or_at_border(destination, m_local_position_vector.position())) {
         switch (m_mib.itsGnAreaForwardingAlgorithm) {
-            case BroadcastForwarding::UNSPECIFIED:
+            case BroadcastForwarding::Unspecified:
                 // do simple forwarding
             case BroadcastForwarding::SIMPLE:
                 // Simple always returns link-layer broadcast address (see Annex F.2)
@@ -597,7 +597,7 @@ NextHop Router::forwarding_algorithm_selection(PendingPacketForwarding&& packet,
             case BroadcastForwarding::CBF:
                 nh = area_contention_based_forwarding(std::move(packet), ll ? &ll->sender : nullptr);
                 break;
-            case BroadcastForwarding::ADVANCED:
+            case BroadcastForwarding::Advanced:
                 nh = area_advanced_forwarding(std::move(packet), ll);
                 break;
             default:
@@ -611,9 +611,9 @@ NextHop Router::forwarding_algorithm_selection(PendingPacketForwarding&& packet,
             nh.discard();
         } else {
             switch (m_mib.itsGnNonAreaForwardingAlgorithm) {
-                case UnicastForwarding::UNSPECIFIED:
+                case UnicastForwarding::Unspecified:
                     // fall through to greedy forwarding
-                case UnicastForwarding::GREEDY:
+                case UnicastForwarding::Greedy:
                     nh = greedy_forwarding(std::move(packet));
                     break;
                 case UnicastForwarding::CBF:
@@ -635,7 +635,7 @@ void Router::execute_media_procedures(CommunicationProfile com_profile)
         case CommunicationProfile::ITS_G5:
             execute_itsg5_procedures();
             break;
-        case CommunicationProfile::UNSPECIFIED:
+        case CommunicationProfile::Unspecified:
             // do nothing
             break;
         default:
@@ -654,15 +654,15 @@ void Router::pass_down(const dcc::DataRequest& request, PduPtr pdu, DownPacketPt
     assert(pdu);
     assert(payload);
     if (pdu->secured()) {
-        if (pdu->basic().next_header != NextHeaderBasic::SECURED) {
-            throw std::runtime_error("PDU with secured message but SECURED not set in basic header");
+        if (pdu->basic().next_header != NextHeaderBasic::Secured) {
+            throw std::runtime_error("PDU with secured message but Secured not set in basic header");
         }
         if (payload->size(OsiLayer::Transport, max_osi_layer()) > 0) {
             throw std::runtime_error("PDU with secured message and illegal upper layer payload");
         }
     } else {
-        if (pdu->basic().next_header == NextHeaderBasic::SECURED) {
-            throw std::runtime_error("PDU without secured message but SECURED set in basic header");
+        if (pdu->basic().next_header == NextHeaderBasic::Secured) {
+            throw std::runtime_error("PDU without secured message but Secured set in basic header");
         }
     }
 
@@ -695,15 +695,15 @@ void Router::pass_up(const DataIndication& ind, UpPacketPtr packet)
 
 void Router::on_beacon_timer_expired()
 {
-    // BEACONs originate in GeoNet layer, therefore no upper layer payload
+    // Beacons originate in GeoNet layer, therefore no upper layer payload
     DownPacketPtr payload { new DownPacket() };
     auto pdu = create_beacon_pdu();
 
     if (m_mib.itsGnSecurity) {
-        pdu->basic().next_header = NextHeaderBasic::SECURED;
+        pdu->basic().next_header = NextHeaderBasic::Secured;
         payload = encap_packet(aid::GN_MGMT, *pdu, std::move(payload));
     } else {
-        pdu->basic().next_header = NextHeaderBasic::COMMON;
+        pdu->basic().next_header = NextHeaderBasic::Common;
     }
 
     execute_media_procedures(m_mib.itsGnIfType);
@@ -1000,7 +1000,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, con
     // step 6: set SO LocTE to neighbour
     source_entry.set_neighbour(true);
 
-    // step 7: never pass up BEACONs
+    // step 7: never pass up Beacons
     return false;
 }
 
@@ -1019,13 +1019,13 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     // step 3a
     bool duplicate_packet = false;
     if (!within_destination) {
-        if (m_mib.itsGnNonAreaForwardingAlgorithm == UnicastForwarding::UNSPECIFIED ||
-            m_mib.itsGnNonAreaForwardingAlgorithm == UnicastForwarding::GREEDY) {
+        if (m_mib.itsGnNonAreaForwardingAlgorithm == UnicastForwarding::Unspecified ||
+            m_mib.itsGnNonAreaForwardingAlgorithm == UnicastForwarding::Greedy) {
             duplicate_packet = detect_duplicate_packet(source_addr, gbc.sequence_number);
         }
     // step 3b
     } else {
-        if (m_mib.itsGnAreaForwardingAlgorithm == BroadcastForwarding::UNSPECIFIED ||
+        if (m_mib.itsGnAreaForwardingAlgorithm == BroadcastForwarding::Unspecified ||
             m_mib.itsGnAreaForwardingAlgorithm == BroadcastForwarding::SIMPLE) {
             duplicate_packet = detect_duplicate_packet(source_addr, gbc.sequence_number);
         }
@@ -1056,16 +1056,16 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
 
     // step 9: discard packet (no forwarding) if hop limit is reached
     if (pdu.basic().hop_limit <= 1) {
-        forwarding_stopped(ForwardingStopReason::HOP_LIMIT);
+        forwarding_stopped(ForwardingStopReason::Hop_Limit);
         return within_destination; // discard packet (step 9a)
     } else if (m_mib.itsGnMaxPacketDataRate < std::numeric_limits<decltype(m_mib.itsGnMaxPacketDataRate)>::max()) {
         // do packet data rate checks (annex B.2) if set maximum rate is not "infinity" (i.e. max unsigned value)
         if (source_entry.get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
-            forwarding_stopped(ForwardingStopReason::SOURCE_PDR);
+            forwarding_stopped(ForwardingStopReason::Source_PDR);
             return within_destination; // omit forwarding, source exceeds PDR limit
         } else if (const auto* sender_entry = m_location_table.get_entry(ll.sender)) {
             if (sender_entry->get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
-                forwarding_stopped(ForwardingStopReason::SENDER_PDR);
+                forwarding_stopped(ForwardingStopReason::Sender_PDR);
                 return within_destination; // omit forwarding, sender exceeds PDR limit
             }
         }
@@ -1135,8 +1135,8 @@ void Router::flush_unicast_forwarding_buffer(const Address& source)
 
 void Router::detect_duplicate_address(const Address& source, const MacAddress& sender)
 {
-    // EN 302 636-4-1 V1.3.1 10.2.1.5: DAD is only applied for AUTO
-    if (m_mib.itsGnLocalAddrConfMethod == AddrConfMethod::AUTO) {
+    // EN 302 636-4-1 V1.3.1 10.2.1.5: DAD is only applied for Auto
+    if (m_mib.itsGnLocalAddrConfMethod == AddrConfMethod::Auto) {
         const Address& local = m_local_position_vector.gn_addr;
         if (source == local || sender == local.mid()) {
             MacAddress random_mac_addr;
@@ -1168,7 +1168,7 @@ bool Router::detect_duplicate_packet(const Address& addr_so, SequenceNumber sn)
 std::unique_ptr<ShbPdu> Router::create_shb_pdu(const ShbDataRequest& request)
 {
     std::unique_ptr<ShbPdu> pdu { new ShbPdu(request, m_mib) };
-    pdu->common().header_type = HeaderType::TSB_SINGLE_HOP;
+    pdu->common().header_type = HeaderType::TSB_Single_Hop;
     pdu->extended().source_position = m_local_position_vector;
     pdu->extended().dcc = m_dcc_field_generator->generate_dcc_field();
     return pdu;
@@ -1178,10 +1178,10 @@ std::unique_ptr<BeaconPdu> Router::create_beacon_pdu()
 {
     std::unique_ptr<BeaconPdu> pdu { new BeaconPdu(m_mib) };
     pdu->basic().hop_limit = 1;
-    pdu->common().next_header = NextHeaderCommon::ANY;
-    pdu->common().header_type = HeaderType::BEACON;
+    pdu->common().next_header = NextHeaderCommon::Any;
+    pdu->common().header_type = HeaderType::Beacon;
     pdu->common().maximum_hop_limit = 1;
-    // TODO: BEACONs are sent with itsGnDefaultTrafficClass (DP0) at the moment, but DP3 may be more appropriate?
+    // TODO: Beacons are sent with itsGnDefaultTrafficClass (DP0) at the moment, but DP3 may be more appropriate?
     pdu->extended().source_position = m_local_position_vector;
     return pdu;
 }
@@ -1214,7 +1214,7 @@ Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, Pdu& pdu, DownPacketP
     }
 
     assert(size(*packet, OsiLayer::Transport, max_osi_layer()) == 0);
-    assert(pdu.basic().next_header == NextHeaderBasic::SECURED);
+    assert(pdu.basic().next_header == NextHeaderBasic::Secured);
     return packet;
 }
 
@@ -1224,35 +1224,35 @@ std::string stringify(Router::PacketDropReason pdr)
 
     // TODO replace this by something more elegant, e.g. https://github.com/aantron/better-enums
     switch (pdr) {
-        case Router::PacketDropReason::PARSE_BASIC_HEADER:
-            reason_string = "PARSE_BASIC_HEADER";
+        case Router::PacketDropReason::Parse_Basic_Header:
+            reason_string = "Parse_Basic_Header";
             break;
-        case Router::PacketDropReason::PARSE_COMMON_HEADER:
-            reason_string = "PARSE_COMMON_HEADER";
+        case Router::PacketDropReason::Parse_Common_Header:
+            reason_string = "Parse_Common_Header";
             break;
-        case Router::PacketDropReason::PARSE_SECURED_HEADER:
-            reason_string = "PARSE_SECURED_HEADER";
+        case Router::PacketDropReason::Parse_Secured_Header:
+            reason_string = "Parse_Secured_Header";
             break;
-        case Router::PacketDropReason::PARSE_EXTENDED_HEADER:
-            reason_string = "PARSE_EXTENDED_HEADER";
+        case Router::PacketDropReason::Parse_Extended_Header:
+            reason_string = "Parse_Extended_Header";
             break;
-        case Router::PacketDropReason::ITS_PROTOCOL_VERSION:
-            reason_string = "ITS_PROTOCOL_VERSION";
+        case Router::PacketDropReason::ITS_Protocol_Version:
+            reason_string = "ITS_Protocol_Version";
             break;
-        case Router::PacketDropReason::DECAP_UNSUCCESSFUL_NON_STRICT:
-            reason_string = "DECAP_UNSUCCESSFUL_NON_STRICT";
+        case Router::PacketDropReason::Decap_Unsuccessful_Non_Strict:
+            reason_string = "Decap_Unsuccessful_Non_Strict";
             break;
-        case Router::PacketDropReason::DECAP_UNSUCCESSFUL_STRICT:
-            reason_string = "DECAP_UNSUCCESSFUL_STRICT";
+        case Router::PacketDropReason::Decap_Unsuccessful_Strict:
+            reason_string = "Decap_Unsuccessful_Strict";
             break;
-        case Router::PacketDropReason::HOP_LIMIT:
-            reason_string = "HOP_LIMIT";
+        case Router::PacketDropReason::Hop_Limit:
+            reason_string = "Hop_Limit";
             break;
-        case Router::PacketDropReason::PAYLOAD_SIZE:
-            reason_string = "PAYLOAD_SIZE";
+        case Router::PacketDropReason::Payload_Size:
+            reason_string = "Payload_Size";
             break;
-        case Router::PacketDropReason::SECURITY_ENTITY_MISSING:
-            reason_string = "SECURITY_ENTITY_MISSING";
+        case Router::PacketDropReason::Security_Entity_Missing:
+            reason_string = "Security_Entity_Missing";
             break;
         default:
             reason_string = "UNKNOWN";

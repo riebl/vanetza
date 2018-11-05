@@ -76,7 +76,7 @@ TEST_F(RouterRequest, router_request)
     ASSERT_TRUE(pdu_ext);
 
     // check if packet has secured part
-    EXPECT_EQ(NextHeaderBasic::SECURED, pdu->basic().next_header);
+    EXPECT_EQ(NextHeaderBasic::Secured, pdu->basic().next_header);
     EXPECT_TRUE(pdu_ext->secured());
     auto secured = *pdu_ext->secured();
 
@@ -114,7 +114,7 @@ TEST_F(RouterRequest, modified_request_maximum_lifetime)
 
     // Router handles request
     auto confirm = router.request(request, create_packet());
-    EXPECT_EQ(DataConfirm::ResultCode::REJECTED_MAX_LIFETIME, confirm.result_code);
+    EXPECT_EQ(DataConfirm::ResultCode::Rejected_Max_Lifetime, confirm.result_code);
 }
 
 TEST_F(RouterRequest, modified_request_repetition)
@@ -136,7 +136,7 @@ TEST_F(RouterRequest, modified_request_repetition)
 
     // Router handles request
     auto confirm = router.request(request, create_packet());
-    EXPECT_EQ(DataConfirm::ResultCode::REJECTED_MIN_REPETITION_INTERVAL, confirm.result_code);
+    EXPECT_EQ(DataConfirm::ResultCode::Rejected_Min_Repetition_Interval, confirm.result_code);
 }
 
 TEST_F(RouterRequest, modified_request_payload_null)
@@ -147,7 +147,7 @@ TEST_F(RouterRequest, modified_request_payload_null)
 
     // Router handles request
     auto confirm = router.request(request, nullptr);
-    EXPECT_EQ(DataConfirm::ResultCode::REJECTED_UNSPECIFIED, confirm.result_code);
+    EXPECT_EQ(DataConfirm::ResultCode::Rejected_Unspecified, confirm.result_code);
 }
 
 TEST_F(RouterRequest, modified_request_large_payload)
@@ -170,7 +170,7 @@ TEST_F(RouterRequest, modified_request_large_payload)
 
     // Router handles request
     auto confirm = router.request(request, std::move(packet));
-    EXPECT_EQ(DataConfirm::ResultCode::REJECTED_MAX_SDU_SIZE, confirm.result_code);
+    EXPECT_EQ(DataConfirm::ResultCode::Rejected_Max_SDU_Size, confirm.result_code);
 }
 
 TEST_F(RouterRequest, shb_repetition)
@@ -182,7 +182,7 @@ TEST_F(RouterRequest, shb_repetition)
     EXPECT_EQ(0, req_ifc.m_requests);
 
     auto confirm = router.request(request, create_packet());
-    EXPECT_EQ(DataConfirm::ResultCode::ACCEPTED, confirm.result_code);
+    EXPECT_EQ(DataConfirm::ResultCode::Accepted, confirm.result_code);
     EXPECT_EQ(1, req_ifc.m_requests);
     ASSERT_TRUE(!!req_ifc.m_last_packet);
     // length of network layer is excluded because of varying secured message header fields

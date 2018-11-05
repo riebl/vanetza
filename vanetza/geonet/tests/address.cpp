@@ -10,7 +10,7 @@ TEST(Address, ctor) {
     Address a;
     EXPECT_FALSE(a.is_manually_configured());
     EXPECT_EQ(a.mid(), MacAddress());
-    EXPECT_EQ(a.station_type(), StationType::UNKNOWN);
+    EXPECT_EQ(a.station_type(), StationType::Unknown);
     EXPECT_EQ(a.country_code(), 0);
 }
 
@@ -24,7 +24,7 @@ TEST(Address, equality) {
     EXPECT_NE(b, c);
     Address d = c;
     EXPECT_EQ(c, d);
-    d.station_type(StationType::PASSENGER_CAR);
+    d.station_type(StationType::Passenger_Car);
     EXPECT_NE(c, d);
     Address e = d;
     EXPECT_EQ(d, e);
@@ -37,7 +37,7 @@ TEST(Address, equality) {
 TEST(Address, serialization) {
     Address a({1, 2, 3, 4, 5, 6});
     a.is_manually_configured(true);
-    a.station_type(StationType::TRAM);
+    a.station_type(StationType::Tram);
     a.country_code(0x0333);
 
     ByteBuffer buffer;

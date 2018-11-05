@@ -102,7 +102,7 @@ void NetworkTopology::RouterContext::set_position_accuracy_indicator(bool flag)
 
 NetworkTopology::NetworkTopology() : now(Clock::at("2016-02-29 23:59"))
 {
-    set_duplication_mode(PacketDuplicationMode::COPY_CONSTRUCT);
+    set_duplication_mode(PacketDuplicationMode::Copy_Construct);
     assert(fn_duplicate);
 }
 
@@ -272,10 +272,10 @@ void NetworkTopology::reset_counters()
 void NetworkTopology::set_duplication_mode(PacketDuplicationMode mode)
 {
     switch (mode) {
-        case PacketDuplicationMode::COPY_CONSTRUCT:
+        case PacketDuplicationMode::Copy_Construct:
             fn_duplicate = &duplicate_copy_construct;
             break;
-        case PacketDuplicationMode::SERIALIZE:
+        case PacketDuplicationMode::Serialize:
             fn_duplicate = &duplicate_serialize;
             break;
         default:

@@ -12,17 +12,17 @@ struct gbc_header_type_visitor : public boost::static_visitor<HeaderType>
 {
     HeaderType operator()(const Circle&) const
     {
-        return HeaderType::GEOBROADCAST_CIRCLE;
+        return HeaderType::GeoBroadcast_Circle;
     }
 
     HeaderType operator()(const Rectangle&) const
     {
-        return HeaderType::GEOBROADCAST_RECT;
+        return HeaderType::GeoBroadcast_Rect;
     }
 
     HeaderType operator()(const Ellipse&) const
     {
-        return HeaderType::GEOBROADCAST_ELIP;
+        return HeaderType::GeoBroadcast_Elip;
     }
 };
 
@@ -35,17 +35,17 @@ struct gac_header_type_visitor : public boost::static_visitor<HeaderType>
 {
     HeaderType operator()(const Circle&) const
     {
-        return HeaderType::GEOANYCAST_CIRCLE;
+        return HeaderType::GeoAnycast_Circle;
     }
 
     HeaderType operator()(const Rectangle&) const
     {
-        return HeaderType::GEOANYCAST_RECT;
+        return HeaderType::GeoAnycast_Rect;
     }
 
     HeaderType operator()(const Ellipse&) const
     {
-        return HeaderType::GEOANYCAST_ELIP;
+        return HeaderType::GeoAnycast_Elip;
     }
 };
 

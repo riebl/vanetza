@@ -11,13 +11,13 @@ Area GeoBroadcastHeader::destination(HeaderType ht) const
 {
     decltype(Area::shape) shape;
     switch (ht) {
-        case HeaderType::GEOBROADCAST_CIRCLE:
+        case HeaderType::GeoBroadcast_Circle:
             shape = Circle();
             break;
-        case HeaderType::GEOBROADCAST_RECT:
+        case HeaderType::GeoBroadcast_Rect:
             shape = Rectangle();
             break;
-        case HeaderType::GEOBROADCAST_ELIP:
+        case HeaderType::GeoBroadcast_Elip:
             shape = Ellipse();
             break;
         default:

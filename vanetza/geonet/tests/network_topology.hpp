@@ -29,8 +29,8 @@ class NetworkTopology
 public:
     enum class PacketDuplicationMode
     {
-        COPY_CONSTRUCT,
-        SERIALIZE
+        Copy_Construct,
+        Serialize
     };
 
     class RequestInterface : public dcc::RequestInterface

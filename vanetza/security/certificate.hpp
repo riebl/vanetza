@@ -87,18 +87,18 @@ struct Certificate
 
 enum class CertificateInvalidReason
 {
-    BROKEN_TIME_PERIOD,
-    OFF_TIME_PERIOD,
-    UNKNOWN_SIGNER,
-    MISSING_SIGNATURE,
-    MISSING_PUBLIC_KEY,
-    INVALID_SIGNER,
-    INVALID_NAME,
-    EXCESSIVE_CHAIN_LENGTH,
-    OFF_REGION,
-    INCONSISTENT_WITH_SIGNER,
-    INSUFFICIENT_ITS_AID,
-    MISSING_SUBJECT_ASSURANCE,
+    Broken_Time_Period,
+    Off_Time_Period,
+    Unknown_Signer,
+    Missing_Signature,
+    Missing_Public_Key,
+    Invalid_Signer,
+    Invalid_Name,
+    Excessive_Chain_Length,
+    Off_Region,
+    Inconsistent_With_Signer,
+    Insufficient_ITS_AID,
+    Missing_Subject_Assurance,
 };
 
 class CertificateValidity

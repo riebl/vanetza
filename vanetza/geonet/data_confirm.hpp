@@ -16,18 +16,18 @@ struct DataRequestWithArea;
 struct DataConfirm
 {
     enum class ResultCode {
-        ACCEPTED,
-        REJECTED_MAX_SDU_SIZE,
-        REJECTED_MAX_LIFETIME,
-        REJECTED_MIN_REPETITION_INTERVAL,
-        REJECTED_UNSUPPORTED_TRAFFIC_CLASS,
-        REJECTED_MAX_GEO_AREA_SIZE,
-        REJECTED_UNSPECIFIED
+        Accepted,
+        Rejected_Max_SDU_Size,
+        Rejected_Max_Lifetime,
+        Rejected_Min_Repetition_Interval,
+        Rejected_Unsupported_Traffic_Class,
+        Rejected_Max_Geo_Area_Size,
+        Rejected_Unspecified
     };
 
-    DataConfirm() : result_code(ResultCode::ACCEPTED) {}
+    DataConfirm() : result_code(ResultCode::Accepted) {}
     DataConfirm(ResultCode code) : result_code(code) {}
-    bool accepted() const { return result_code == ResultCode::ACCEPTED; }
+    bool accepted() const { return result_code == ResultCode::Accepted; }
     bool rejected() const { return !accepted(); }
     ResultCode result_code;
 };

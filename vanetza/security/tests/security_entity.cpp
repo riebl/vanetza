@@ -264,7 +264,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_NAME, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Name, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
@@ -277,7 +277,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
@@ -289,7 +289,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNER, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Signer, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)
@@ -306,7 +306,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
@@ -325,7 +325,7 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Off_Time_Period, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_premature_certificate)
@@ -344,7 +344,7 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Off_Time_Period, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restriction)
@@ -363,7 +363,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restrict
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Broken_Time_Period, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
@@ -374,7 +374,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::UNKNOWN_SIGNER, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_signature)
@@ -705,7 +705,7 @@ TEST_F(SecurityEntityTest, verify_message_without_position_and_with_restriction)
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Off_Region, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_without_position_and_without_restriction)
@@ -728,7 +728,7 @@ TEST_F(SecurityEntityTest, verify_message_with_insufficient_aid)
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message() });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::INSUFFICIENT_ITS_AID, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Insufficient_ITS_AID, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_non_cam_generation_location_ok)
@@ -773,7 +773,7 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_fail)
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Off_Region, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_without_signature)
@@ -840,7 +840,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
     DecapConfirm decap_confirm = other_security.decapsulate_packet(DecapRequest { message });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_TIME_PERIOD, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Off_Time_Period, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
@@ -854,7 +854,7 @@ TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { message });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::MISSING_PUBLIC_KEY, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Missing_Public_Key, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_certificate_requests)
@@ -931,7 +931,7 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::OFF_REGION, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Off_Region, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_without_its_aid)

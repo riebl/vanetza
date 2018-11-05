@@ -282,7 +282,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             SubjectType subject_type = cert.subject_info.subject_type;
             if (subject_type != SubjectType::Authorization_Ticket) {
                 confirm.report = VerificationReport::Invalid_Certificate;
-                confirm.certificate_validity = CertificateInvalidReason::INVALID_SIGNER;
+                confirm.certificate_validity = CertificateInvalidReason::Invalid_Signer;
                 return confirm;
             }
 
@@ -291,7 +291,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             // public key could not be extracted
             if (!public_key) {
                 confirm.report = VerificationReport::Invalid_Certificate;
-                confirm.certificate_validity = CertificateInvalidReason::MISSING_PUBLIC_KEY;
+                confirm.certificate_validity = CertificateInvalidReason::Missing_Public_Key;
                 return confirm;
             }
 
@@ -320,7 +320,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         // we can only check the generation location after we have identified the correct certificate
         if (!check_generation_location(secured_message, *signer)) {
             confirm.report = VerificationReport::Invalid_Certificate;
-            confirm.certificate_validity = CertificateInvalidReason::OFF_REGION;
+            confirm.certificate_validity = CertificateInvalidReason::Off_Region;
             return confirm;
         }
 
@@ -335,7 +335,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         if (!cert_validity) {
             confirm.report = VerificationReport::Invalid_Certificate;
 
-            if (cert_validity.reason() == CertificateInvalidReason::UNKNOWN_SIGNER) {
+            if (cert_validity.reason() == CertificateInvalidReason::Unknown_Signer) {
                 if (get_type(signer->signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
                     auto signer_hash = boost::get<HashedId8>(signer->signer_info);
                     confirm.certificate_id = signer_hash;
@@ -348,13 +348,13 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
 
         if (!check_certificate_time(*signer, rt.now())) {
             confirm.report = VerificationReport::Invalid_Certificate;
-            confirm.certificate_validity = CertificateInvalidReason::OFF_TIME_PERIOD;
+            confirm.certificate_validity = CertificateInvalidReason::Off_Time_Period;
             return confirm;
         }
 
         if (!check_certificate_region(*signer, positioning.position_fix())) {
             confirm.report = VerificationReport::Invalid_Certificate;
-            confirm.certificate_validity = CertificateInvalidReason::OFF_REGION;
+            confirm.certificate_validity = CertificateInvalidReason::Off_Region;
             return confirm;
         }
 
@@ -363,7 +363,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         if (!assign_permissions(*signer, confirm)) {
             // This might seem weird, because the certificate itself is valid, but not for the received message.
             confirm.report = VerificationReport::Invalid_Certificate;
-            confirm.certificate_validity = CertificateInvalidReason::INSUFFICIENT_ITS_AID;
+            confirm.certificate_validity = CertificateInvalidReason::Insufficient_ITS_AID;
             return confirm;
         }
 

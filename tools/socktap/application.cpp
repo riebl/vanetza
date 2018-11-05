@@ -7,7 +7,7 @@ using namespace vanetza;
 
 Application::DataConfirm Application::request(const DataRequest& request, DownPacketPtr packet)
 {
-    DataConfirm confirm(DataConfirm::ResultCode::REJECTED_UNSPECIFIED);
+    DataConfirm confirm(DataConfirm::ResultCode::Rejected_Unspecified);
     if (router_ && packet) {
         btp::HeaderB btp_header;
         btp_header.destination_port = this->port();

@@ -42,7 +42,7 @@ TEST_F(DefaultCertificateValidatorTest, invalid_signer_info)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::INVALID_SIGNER, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Signer, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, missing_subject_assurance)
@@ -53,7 +53,7 @@ TEST_F(DefaultCertificateValidatorTest, missing_subject_assurance)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::MISSING_SUBJECT_ASSURANCE, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Missing_Subject_Assurance, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, inconsistent_subject_assurance)
@@ -65,7 +65,7 @@ TEST_F(DefaultCertificateValidatorTest, inconsistent_subject_assurance)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Inconsistent_With_Signer, validity.reason());
 
     cert.remove_attribute(SubjectAttributeType::Assurance_Level);
     cert.subject_attributes.push_back(SubjectAssurance(0x03)); // same level, higher confidence
@@ -73,7 +73,7 @@ TEST_F(DefaultCertificateValidatorTest, inconsistent_subject_assurance)
 
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Inconsistent_With_Signer, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
@@ -84,7 +84,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_no_constraint)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Broken_Time_Period, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_end)
@@ -118,7 +118,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
     // all certificates must use time_start_and_end as restriction
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    ASSERT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    ASSERT_EQ(CertificateInvalidReason::Broken_Time_Period, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_end)
@@ -134,7 +134,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_end)
     // all certificates must use time_start_and_end as restriction
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    ASSERT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    ASSERT_EQ(CertificateInvalidReason::Broken_Time_Period, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
@@ -156,7 +156,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Broken_Time_Period, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
@@ -174,7 +174,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_with_parent)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Inconsistent_With_Signer, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
@@ -192,7 +192,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_consistency_start_and_end)
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::BROKEN_TIME_PERIOD, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Broken_Time_Period, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, reject_additional_permissions)
@@ -207,7 +207,7 @@ TEST_F(DefaultCertificateValidatorTest, reject_additional_permissions)
 
     validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::INCONSISTENT_WITH_SIGNER, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Inconsistent_With_Signer, validity.reason());
 }
 
 TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
