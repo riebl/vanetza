@@ -1,4 +1,5 @@
 #include <vanetza/security/length_coding.hpp>
+#include <cassert>
 #include <cmath>
 #include <iterator>
 #include <list>
@@ -30,6 +31,7 @@ std::size_t length_coding_size(std::size_t length) {
 
 ByteBuffer encode_length(std::size_t length)
 {
+    static_assert(sizeof(std::size_t) <= 8, "size of length type exceeds implementation capabilities");
     std::list<uint8_t> length_info;
 
     while (length != 0) {
@@ -43,7 +45,8 @@ ByteBuffer encode_length(std::size_t length)
         length_info.push_back(0x00);
     }
     else {
-        uint8_t prefix_mask = static_cast<int8_t>(0x80) >> ((prefix_length % 8) - 1);
+        assert(prefix_length <= 8);
+        uint8_t prefix_mask = ~((1 << (8 - prefix_length)) - 1);
         if ((length_info.front() & ~prefix_mask) != length_info.front()) {
             // additional byte needed for prefix
             length_info.push_front(prefix_mask);
