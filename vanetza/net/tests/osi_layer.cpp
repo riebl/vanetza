@@ -39,7 +39,7 @@ TEST(OsiLayer, list) {
     EXPECT_EQ(list.end(), it);
 
     auto prev = list.begin();
-    for (auto it = prev + 1; it != list.end(); prev = it, ++it) {
+    for (it = prev + 1; it != list.end(); prev = it, ++it) {
         EXPECT_LT(*prev, *it);
     }
 }
