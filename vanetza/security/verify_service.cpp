@@ -168,7 +168,8 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
         bool possible_certificates_from_cache = false;
 
         // use a dummy hash for initialization
-        HashedId8 signer_hash({ 0, 0, 0, 0, 0, 0, 0, 0 });
+        HashedId8 signer_hash;
+        signer_hash.fill(0x00);
 
         if (signer_info) {
             switch (get_type(*signer_info)) {
