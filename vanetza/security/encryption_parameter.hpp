@@ -3,6 +3,7 @@
 
 #include <vanetza/security/serialization.hpp>
 #include <boost/variant/variant.hpp>
+#include <array>
 #include <cstdint>
 
 namespace vanetza
