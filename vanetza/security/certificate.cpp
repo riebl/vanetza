@@ -203,18 +203,22 @@ const ValidityRestriction* Certificate::get_restriction(ValidityRestrictionType 
 
 void Certificate::remove_attribute(SubjectAttributeType type)
 {
-    for (auto it = subject_attributes.begin(); it != subject_attributes.end(); ++it) {
+    for (auto it = subject_attributes.begin(); it != subject_attributes.end(); /* noop */) {
         if (get_type(*it) == type) {
             it = subject_attributes.erase(it);
+        } else {
+            ++it;
         }
     }
 }
 
 void Certificate::remove_restriction(ValidityRestrictionType type)
 {
-    for (auto it = validity_restriction.begin(); it != validity_restriction.end(); ++it) {
+    for (auto it = validity_restriction.begin(); it != validity_restriction.end(); /* noop */) {
         if (get_type(*it) == type) {
             it = validity_restriction.erase(it);
+        } else {
+            ++it;
         }
     }
 }
