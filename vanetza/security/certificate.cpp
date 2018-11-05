@@ -77,6 +77,7 @@ ByteBuffer convert_for_signing(const Certificate& cert)
     serialize(ar, cert.subject_attributes);
     serialize(ar, cert.validity_restriction);
 
+    stream.close();
     return buf;
 }
 

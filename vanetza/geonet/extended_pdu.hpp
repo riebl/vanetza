@@ -121,6 +121,7 @@ ByteBuffer convert_for_signing(const ExtendedPdu<HEADER>& pdu)
     serialize(pdu.common(), ar);
     serialize(pdu.extended(), ar);
 
+    stream.close();
     return buf;
 }
 

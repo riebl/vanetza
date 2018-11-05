@@ -121,6 +121,7 @@ ByteBuffer convert_for_signing(const SecuredMessage& message, const std::list<Tr
         }
     }
 
+    stream.close();
     return buf;
 }
 
