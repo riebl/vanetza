@@ -57,12 +57,12 @@ TEST(HeaderField, Serialize)
 
     std::list<RecipientInfo> recipients;
     for (unsigned i = 0; i < 2; ++i) {
-        const std::size_t length = field_size(PublicKeyAlgorithm::Ecies_Nistp256);
+        const std::size_t length = field_size(PublicKeyAlgorithm::ECIES_NISTP256);
         auto rand_gen = random_byte_generator(i + 93);
         RecipientInfo info;
         EciesEncryptedKey key;
         std::generate(info.cert_id.begin(), info.cert_id.end(), rand_gen);
-        key.c = random_byte_sequence(field_size(SymmetricAlgorithm::Aes128_Ccm), rand_gen());
+        key.c = random_byte_sequence(field_size(SymmetricAlgorithm::AES128_CCM), rand_gen());
         std::generate(key.t.begin(), key.t.end(), rand_gen);
         key.v = Uncompressed {
             random_byte_sequence(length, rand_gen()),

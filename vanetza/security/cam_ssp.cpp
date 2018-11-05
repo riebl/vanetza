@@ -93,16 +93,16 @@ std::string stringify(CamPermission permission)
 {
     std::string result;
     switch (permission) {
-        case CamPermission::CenDsrcTollingZone:
+        case CamPermission::CEN_DSRC_Tolling_Zone:
             result = "CEN DSRC Tolling Zone";
             break;
-        case CamPermission::PublicTransport:
+        case CamPermission::Public_Transport:
             result = "Public Transport";
             break;
-        case CamPermission::SpecialTransport:
+        case CamPermission::Special_Transport:
             result = "Special Transport";
             break;
-        case CamPermission::DangerousGoods:
+        case CamPermission::Dangerous_Goods:
             result = "Dangerous Goods";
             break;
         case CamPermission::Roadwork:
@@ -114,26 +114,26 @@ std::string stringify(CamPermission permission)
         case CamPermission::Emergency:
             result = "Emergency";
             break;
-        case CamPermission::SafetyCar:
+        case CamPermission::Safety_Car:
             // everybody should have an AMG GT S Safety Car ;-)
             result = "Safety Car";
             break;
-        case CamPermission::ClosedLanes:
+        case CamPermission::Closed_Lanes:
             result = "Closed Lanes";
             break;
-        case CamPermission::RequestForRightOfWay:
+        case CamPermission::Request_For_Right_Of_Way:
             result = "Request for Right of Way";
             break;
-        case CamPermission::RequestForFreeCrossingAtTrafficLight:
+        case CamPermission::Request_For_Free_Crossing_At_Traffic_Light:
             result = "Request for Free Crossing at Traffic Light";
             break;
-        case CamPermission::NoPassing:
+        case CamPermission::No_Passing:
             result = "No Passing";
             break;
-        case CamPermission::NoPassingForTrucks:
+        case CamPermission::No_Passing_For_Trucks:
             result = "No Passing for Trucks";
             break;
-        case CamPermission::SpeedLimit:
+        case CamPermission::Speed_Limit:
             result = "Speed Limit";
             break;
         default:

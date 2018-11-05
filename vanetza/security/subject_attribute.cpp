@@ -24,7 +24,7 @@ SubjectAttributeType get_type(const SubjectAttribute& sub)
         }
         SubjectAttributeType operator()(std::list<IntX> list)
         {
-            return SubjectAttributeType::Its_Aid_List;
+            return SubjectAttributeType::ITS_AID_List;
         }
         SubjectAttributeType operator()(EccPoint ecc)
         {
@@ -32,7 +32,7 @@ SubjectAttributeType get_type(const SubjectAttribute& sub)
         }
         SubjectAttributeType operator()(std::list<ItsAidSsp> list)
         {
-            return SubjectAttributeType::Its_Aid_Ssp_List;
+            return SubjectAttributeType::ITS_AID_SSP_List;
         }
     };
 
@@ -184,7 +184,7 @@ size_t deserialize(InputArchive& ar, SubjectAttribute& sub)
             sub = key;
             break;
         }
-        case SubjectAttributeType::Its_Aid_List: {
+        case SubjectAttributeType::ITS_AID_List: {
             std::list<IntX> intx_list;
             size_t tmp_size = deserialize(ar, intx_list);
             size += tmp_size;
@@ -192,7 +192,7 @@ size_t deserialize(InputArchive& ar, SubjectAttribute& sub)
             sub = intx_list;
             break;
         }
-        case SubjectAttributeType::Its_Aid_Ssp_List: {
+        case SubjectAttributeType::ITS_AID_SSP_List: {
             std::list<ItsAidSsp> itsAidSsp_list;
             size_t tmp_size = deserialize(ar, itsAidSsp_list);
             size += tmp_size;

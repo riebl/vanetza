@@ -18,8 +18,8 @@ enum class SubjectType : uint8_t
     Authorization_Ticket = 1,
     Authorization_Authority = 2,
     Enrollment_Authority = 3,
-    Root_Ca = 4,
-    Crl_Signer = 5
+    Root_CA = 4,
+    CRL_Signer = 5
 };
 
 /// described in TS 103 097 v1.2.1, section 6.2

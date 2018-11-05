@@ -26,9 +26,9 @@ TEST_F(NaiveCertificateProviderTest, own_certificate)
     Certificate signed_certificate = cert_provider.own_certificate();
 
     // Check signature
-    EXPECT_EQ(2 * field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256),
+    EXPECT_EQ(2 * field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256),
               extract_signature_buffer(signed_certificate.signature).size());
-    EXPECT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(signed_certificate.signature));
+    EXPECT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(signed_certificate.signature));
 
     // Check signer_info and subject_info
     EXPECT_EQ(2, signed_certificate.version());
@@ -55,7 +55,7 @@ TEST_F(NaiveCertificateProviderTest, own_certificate)
         } else if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
             test_assurance_level = get<SubjectAssurance>(subject_attribute);
             assurance_level_counter++;
-        } else if (SubjectAttributeType::Its_Aid_Ssp_List == get_type(subject_attribute)) {
+        } else if (SubjectAttributeType::ITS_AID_SSP_List == get_type(subject_attribute)) {
             // TODO: check aid permissions
         }
     }

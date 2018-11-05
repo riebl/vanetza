@@ -9,16 +9,16 @@ using namespace vanetza::security;
 using namespace vanetza;
 using namespace std;
 
-static const std::size_t length = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+static const std::size_t length = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
 
 EccPoint serialize_roundtrip(const EccPoint& point)
 {
     EccPoint outPoint;
     std::stringstream stream;
     OutputArchive oa(stream);
-    serialize(oa, point, PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    serialize(oa, point, PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
     InputArchive ia(stream);
-    deserialize(ia, outPoint, PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    deserialize(ia, outPoint, PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
     return outPoint;
 }
 

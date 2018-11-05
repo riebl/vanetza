@@ -28,7 +28,7 @@ void check(const Signature& expected, const Signature& actual)
 
 EcdsaSignature create_random_ecdsa_signature(int seed)
 {
-    const std::size_t field = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    const std::size_t field = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
     EcdsaSignature signature;
     signature.s = random_byte_sequence(field, seed);
     signature.R = X_Coordinate_Only { random_byte_sequence(field, ~seed) };

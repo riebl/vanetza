@@ -69,9 +69,9 @@ TEST_F(CertificateCacheTest, insert_only_some_subject_type)
     EXPECT_EQ(2, cache.size());
     cache.insert(build_certificate(SubjectType::Enrollment_Authority));
     EXPECT_EQ(2, cache.size());
-    cache.insert(build_certificate(SubjectType::Root_Ca));
+    cache.insert(build_certificate(SubjectType::Root_CA));
     EXPECT_EQ(2, cache.size());
-    cache.insert(build_certificate(SubjectType::Crl_Signer));
+    cache.insert(build_certificate(SubjectType::CRL_Signer));
     EXPECT_EQ(2, cache.size());
 }
 

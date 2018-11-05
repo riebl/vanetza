@@ -186,7 +186,7 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     certificate.signer_info = nullptr; /* self */
 
     // section 6.3 in TS 103 097 v1.2.1
-    certificate.subject_info.subject_type = SubjectType::Root_Ca;
+    certificate.subject_info.subject_type = SubjectType::Root_CA;
 
     // section 7.4.2 in TS 103 097 v1.2.1
     std::vector<unsigned char> subject(subject_name.begin(), subject_name.end());

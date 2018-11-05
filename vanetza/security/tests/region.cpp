@@ -23,7 +23,7 @@ TEST(Region, Serialize_CircularRegion)
 TEST(Region, Serialize_IdentifiedRegion)
 {
     IdentifiedRegion reg;
-    reg.region_dictionary = RegionDictionary::Iso_3166_1;
+    reg.region_dictionary = RegionDictionary::ISO_3166_1;
     reg.region_identifier = 12345;
     reg.local_region.set(546);
     check(reg, serialize_roundtrip(reg));

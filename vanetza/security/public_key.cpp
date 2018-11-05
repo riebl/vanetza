@@ -14,11 +14,11 @@ PublicKeyAlgorithm get_type(const PublicKey& key)
     {
         PublicKeyAlgorithm operator()(const ecdsa_nistp256_with_sha256& ecdsa)
         {
-            return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+            return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
         PublicKeyAlgorithm operator()(const ecies_nistp256& ecies)
         {
-            return PublicKeyAlgorithm::Ecies_Nistp256;
+            return PublicKeyAlgorithm::ECIES_NISTP256;
         }
     };
 
@@ -57,10 +57,10 @@ std::size_t field_size(PublicKeyAlgorithm algo)
 {
     size_t size = 0;
     switch (algo) {
-        case PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256:
+        case PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256:
             size = 32;
             break;
-        case PublicKeyAlgorithm::Ecies_Nistp256:
+        case PublicKeyAlgorithm::ECIES_NISTP256:
             size = 32;
             break;
     }
@@ -71,7 +71,7 @@ std::size_t field_size(SymmetricAlgorithm algo)
 {
     size_t size = 0;
     switch (algo) {
-        case SymmetricAlgorithm::Aes128_Ccm:
+        case SymmetricAlgorithm::AES128_CCM:
             size = 16;
             break;
         default:
@@ -86,16 +86,16 @@ size_t deserialize(InputArchive& ar, PublicKey& key)
     PublicKeyAlgorithm type;
     deserialize(ar, type);
     switch (type) {
-        case PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256: {
+        case PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256: {
             ecdsa_nistp256_with_sha256 ecdsa;
-            deserialize(ar, ecdsa.public_key, PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+            deserialize(ar, ecdsa.public_key, PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
             key = ecdsa;
             break;
         }
-        case PublicKeyAlgorithm::Ecies_Nistp256: {
+        case PublicKeyAlgorithm::ECIES_NISTP256: {
             ecies_nistp256 ecies;
             deserialize(ar, ecies.supported_symm_alg);
-            deserialize(ar, ecies.public_key, PublicKeyAlgorithm::Ecies_Nistp256);
+            deserialize(ar, ecies.public_key, PublicKeyAlgorithm::ECIES_NISTP256);
             key = ecies;
             break;
         }

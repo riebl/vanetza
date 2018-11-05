@@ -226,7 +226,7 @@ void Certificate::remove_restriction(ValidityRestrictionType type)
 void Certificate::add_permission(ItsAid aid)
 {
     for (auto& item : subject_attributes) {
-        if (get_type(item) == SubjectAttributeType::Its_Aid_List) {
+        if (get_type(item) == SubjectAttributeType::ITS_AID_List) {
             auto& aid_list = boost::get<std::list<IntX>>(item);
             aid_list.push_back(IntX(aid));
             return;
@@ -241,7 +241,7 @@ void Certificate::add_permission(ItsAid aid, const ByteBuffer& ssp)
     ItsAidSsp permission({ IntX(aid), ssp });
 
     for (auto& item : subject_attributes) {
-        if (get_type(item) == SubjectAttributeType::Its_Aid_Ssp_List) {
+        if (get_type(item) == SubjectAttributeType::ITS_AID_SSP_List) {
             auto& aid_ssp_list = boost::get<std::list<ItsAidSsp> >(item);
             aid_ssp_list.push_back(permission);
             return;

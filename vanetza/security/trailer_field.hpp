@@ -14,7 +14,7 @@ namespace security
 /// TrailerFieldType specified in TS 103 097 v1.2.1, section 5.7
 enum class TrailerFieldType : uint8_t
 {
-        Signature = 1
+    Signature = 1
 };
 
 /// TrailerField specified in TS 103 097 v1.2.1, section 5.6

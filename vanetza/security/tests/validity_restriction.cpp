@@ -120,7 +120,7 @@ TEST(ValidityRestriction, WebValidator_Size)
     list.push_back(start);
 
     IdentifiedRegion id;
-    id.region_dictionary = RegionDictionary::Un_Stats;
+    id.region_dictionary = RegionDictionary::UN_Stats;
     id.region_identifier = 150;
     id.local_region.set(0);
     list.push_back(GeographicRegion { id });

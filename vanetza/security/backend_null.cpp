@@ -22,7 +22,7 @@ bool BackendNull::verify_data(const ecdsa256::PublicKey&, const ByteBuffer&, con
 
 EcdsaSignature BackendNull::fake_signature() const
 {
-    const std::size_t size = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    const std::size_t size = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
     EcdsaSignature signature;
     X_Coordinate_Only coordinate;
     coordinate.x = random_byte_sequence(size, 0xdead);

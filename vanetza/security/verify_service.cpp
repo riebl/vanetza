@@ -102,7 +102,7 @@ bool check_certificate_region(const Certificate& certificate, const PositionFix&
 bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
 {
     for (auto& subject_attribute : certificate.subject_attributes) {
-        if (get_type(subject_attribute) != SubjectAttributeType::Its_Aid_Ssp_List) {
+        if (get_type(subject_attribute) != SubjectAttributeType::ITS_AID_SSP_List) {
             continue;
         }
 
@@ -261,14 +261,14 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
             return confirm;
         }
 
-        if (PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 != get_type(*signature)) {
+        if (PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256 != get_type(*signature)) {
             confirm.report = VerificationReport::False_Signature;
             return confirm;
         }
 
         // check the size of signature.R and siganture.s
         auto ecdsa = extract_ecdsa_signature(*signature);
-        const auto field_len = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+        const auto field_len = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
         if (!ecdsa || ecdsa->s.size() != field_len) {
             confirm.report = VerificationReport::False_Signature;
             return confirm;

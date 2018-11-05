@@ -189,7 +189,7 @@ TEST_F(SecurityEntityTest, signature_is_ecdsa)
     auto signature = confirm.sec_packet.trailer_field(TrailerFieldType::Signature);
     ASSERT_TRUE(!!signature);
     auto signature_type = get_type(boost::get<Signature>(*signature));
-    EXPECT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, signature_type);
+    EXPECT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, signature_type);
 }
 
 TEST_F(SecurityEntityTest, signer_info_is_encoded_first)
@@ -284,7 +284,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
 {
     // change the subject info
     Certificate certificate = certificate_provider.get()->own_certificate();
-    certificate.subject_info.subject_type = SubjectType::Root_Ca;
+    certificate.subject_info.subject_type = SubjectType::Root_CA;
 
     // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { create_secured_message(certificate) });
@@ -385,7 +385,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
 
     Signature* signature = secured_message.trailer_field<TrailerFieldType::Signature>();
     ASSERT_TRUE(signature);
-    ASSERT_EQ(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256, get_type(*signature));
+    ASSERT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(*signature));
     EcdsaSignature& ecdsa_signature = boost::get<EcdsaSignature>(*signature);
     ecdsa_signature.s = {8, 15, 23};
 

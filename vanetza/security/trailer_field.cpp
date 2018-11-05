@@ -78,7 +78,7 @@ size_t deserialize(InputArchive& ar, TrailerField& field)
 boost::optional<ByteBuffer> extract_signature_buffer(const TrailerField& trailer_field)
 {
     assert(TrailerFieldType::Signature == get_type(trailer_field));
-    assert(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256 == get_type(boost::get<Signature>(trailer_field)));
+    assert(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256 == get_type(boost::get<Signature>(trailer_field)));
 
     return extract_signature_buffer(boost::get<Signature>(trailer_field));
 }

@@ -42,7 +42,7 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
     X_Coordinate_Only coordinate;
 
     if (sig_r && sig_s) {
-        const size_t len = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+        const size_t len = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
 
         const auto num_bytes_s = BN_num_bytes(sig_s);
         assert(len >= static_cast<size_t>(num_bytes_s));

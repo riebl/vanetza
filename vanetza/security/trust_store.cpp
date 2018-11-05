@@ -7,7 +7,7 @@ namespace security
 
 void TrustStore::insert(const Certificate& certificate)
 {
-    if (certificate.subject_info.subject_type != SubjectType::Root_Ca) {
+    if (certificate.subject_info.subject_type != SubjectType::Root_CA) {
         throw std::runtime_error("Only root certificate authorities may be added to the trust store");
     }
 

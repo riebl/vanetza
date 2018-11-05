@@ -9,7 +9,7 @@ using namespace vanetza::security;
 TEST(SubjectInfo, Serialization)
 {
     SubjectInfo sub;
-    sub.subject_type = SubjectType::Root_Ca;
+    sub.subject_type = SubjectType::Root_CA;
     sub.subject_name = vanetza::random_byte_sequence(40);
     check(sub, serialize_roundtrip(sub));
 }

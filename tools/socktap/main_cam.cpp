@@ -142,7 +142,7 @@ int main(int argc, const char** argv)
                     chain.push_back(chain_certificate);
 
                     // Only add root certificates to trust store, so certificate requests are visible for demo purposes.
-                    if (chain_certificate.subject_info.subject_type == security::SubjectType::Root_Ca) {
+                    if (chain_certificate.subject_info.subject_type == security::SubjectType::Root_CA) {
                         trust_store.insert(chain_certificate);
                     }
                 }

@@ -61,9 +61,9 @@ int ShowCertificateCommand::execute()
         std::cout << "Authorization Authority";
     } else if (cert.subject_info.subject_type == SubjectType::Enrollment_Authority) {
         std::cout << "Enrollment Authority";
-    } else if (cert.subject_info.subject_type == SubjectType::Root_Ca) {
+    } else if (cert.subject_info.subject_type == SubjectType::Root_CA) {
         std::cout << "Root Authority";
-    } else if (cert.subject_info.subject_type == SubjectType::Crl_Signer) {
+    } else if (cert.subject_info.subject_type == SubjectType::CRL_Signer) {
         std::cout << "CRL Signer";
     }
 
@@ -113,7 +113,7 @@ int ShowCertificateCommand::execute()
             std::cout << "Assurance: " << (assurance.raw & assurance.assurance_mask);
             std::cout << " with a confidence of " <<  (assurance.raw & assurance.confidence_mask);
             std::cout << std::endl << std::endl;
-        } else if (attr_type == SubjectAttributeType::Its_Aid_List) {
+        } else if (attr_type == SubjectAttributeType::ITS_AID_List) {
             std::list<IntX> its_application_ids = boost::get<std::list<IntX>>(subject_attr);
 
             std::cout << "ITS Application IDs:" << std::endl;
@@ -135,7 +135,7 @@ int ShowCertificateCommand::execute()
                 }
             }
             std::cout << std::endl;
-        } else if (attr_type == SubjectAttributeType::Its_Aid_Ssp_List) {
+        } else if (attr_type == SubjectAttributeType::ITS_AID_SSP_List) {
             std::list<ItsAidSsp> its_service_specific_permissions = boost::get<std::list<ItsAidSsp>>(subject_attr);
             for (auto& its_ssp : its_service_specific_permissions) {
                 if (its_ssp.its_aid == aid::CA) {

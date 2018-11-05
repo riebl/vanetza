@@ -14,12 +14,12 @@ PublicKeyAlgorithm get_type(const Signature& sig)
     {
         PublicKeyAlgorithm operator()(const EcdsaSignature& sig)
         {
-            return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+            return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
 
         PublicKeyAlgorithm operator()(const EcdsaSignatureFuture& sig)
         {
-            return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+            return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
     };
     Signature_visitor visit;
@@ -85,7 +85,7 @@ void serialize(OutputArchive& ar, const Signature& sig)
 
 void serialize(OutputArchive& ar, const EcdsaSignature& sig)
 {
-    const PublicKeyAlgorithm algo = PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+    const PublicKeyAlgorithm algo = PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
     assert(field_size(algo) == sig.s.size());
 
     serialize(ar, sig.R, algo);
@@ -122,7 +122,7 @@ size_t deserialize(InputArchive& ar, Signature& sig)
     deserialize(ar, algo);
     size += sizeof(algo);
     switch (algo) {
-        case PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256: {
+        case PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256: {
             EcdsaSignature signature;
             size += deserialize(ar, signature, algo);
             sig = signature;

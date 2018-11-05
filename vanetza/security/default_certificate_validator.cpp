@@ -75,14 +75,14 @@ std::list<ItsAid> extract_application_identifiers(const Certificate& certificate
 
     auto certificate_type = certificate.subject_info.subject_type;
     if (certificate_type == SubjectType::Authorization_Ticket) {
-        auto list = certificate.get_attribute<SubjectAttributeType::Its_Aid_Ssp_List>();
+        auto list = certificate.get_attribute<SubjectAttributeType::ITS_AID_SSP_List>();
         if (list) {
             for (auto& item : *list) {
                 aids.push_back(item.its_aid.get());
             }
         }
     } else {
-        auto list = certificate.get_attribute<SubjectAttributeType::Its_Aid_List>();
+        auto list = certificate.get_attribute<SubjectAttributeType::ITS_AID_List>();
         if (list) {
             for (auto& item : *list) {
                 aids.push_back(item.get());

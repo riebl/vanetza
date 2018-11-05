@@ -95,8 +95,8 @@ using PolygonalRegion = std::list<TwoDLocation>;
 /// RegionDictionary specified in TS 103 097 v1.2.1, section 4.2.26
 enum class RegionDictionary : uint8_t
 {
-    Iso_3166_1 = 0,
-    Un_Stats = 1,
+    ISO_3166_1 = 0,
+    UN_Stats = 1,
 };
 
 /// IdentifiedRegion specified in TS 103 097 v1.2.1, section 4.2.25

@@ -154,7 +154,7 @@ bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermi
     if (params.highFrequencyContainer.present == HighFrequencyContainer_PR_rsuContainerHighFrequency) {
         const RSUContainerHighFrequency_t& rsu = params.highFrequencyContainer.choice.rsuContainerHighFrequency;
         if (rsu.protectedCommunicationZonesRSU) {
-            required_permissions.add(CamPermission::CenDsrcTollingZone);
+            required_permissions.add(CamPermission::CEN_DSRC_Tolling_Zone);
         }
     }
 
@@ -165,13 +165,13 @@ bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermi
 
         switch (special->present) {
             case SpecialVehicleContainer_PR_publicTransportContainer:
-                required_permissions.add(CamPermission::PublicTransport);
+                required_permissions.add(CamPermission::Public_Transport);
                 break;
             case SpecialVehicleContainer_PR_specialTransportContainer:
-                required_permissions.add(CamPermission::SpecialTransport);
+                required_permissions.add(CamPermission::Special_Transport);
                 break;
             case SpecialVehicleContainer_PR_dangerousGoodsContainer:
-                required_permissions.add(CamPermission::DangerousGoods);
+                required_permissions.add(CamPermission::Dangerous_Goods);
                 break;
             case SpecialVehicleContainer_PR_roadWorksContainerBasic:
                 required_permissions.add(CamPermission::Roadwork);
@@ -185,7 +185,7 @@ bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermi
                 emergency = &special->choice.emergencyContainer;
                 break;
             case SpecialVehicleContainer_PR_safetyCarContainer:
-                required_permissions.add(CamPermission::SafetyCar);
+                required_permissions.add(CamPermission::Safety_Car);
                 safety = &special->choice.safetyCarContainer;
                 break;
             case SpecialVehicleContainer_PR_NOTHING:
@@ -198,24 +198,24 @@ bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermi
             assert(emergency->emergencyPriority->buf);
             uint8_t bits = *emergency->emergencyPriority->buf;
             if (bits & (1 << (7 - EmergencyPriority_requestForRightOfWay))) {
-                required_permissions.add(CamPermission::RequestForRightOfWay);
+                required_permissions.add(CamPermission::Request_For_Right_Of_Way);
             }
             if (bits & (1 << (7 - EmergencyPriority_requestForFreeCrossingAtATrafficLight))) {
-                required_permissions.add(CamPermission::RequestForFreeCrossingAtTrafficLight);
+                required_permissions.add(CamPermission::Request_For_Free_Crossing_At_Traffic_Light);
             }
         }
 
         if (roadworks && roadworks->closedLanes) {
-            required_permissions.add(CamPermission::ClosedLanes);
+            required_permissions.add(CamPermission::Closed_Lanes);
         }
 
         if (safety && safety->trafficRule) {
             switch (*safety->trafficRule) {
                 case TrafficRule_noPassing:
-                    required_permissions.add(CamPermission::NoPassing);
+                    required_permissions.add(CamPermission::No_Passing);
                     break;
                 case TrafficRule_noPassingForTrucks:
-                    required_permissions.add(CamPermission::NoPassingForTrucks);
+                    required_permissions.add(CamPermission::No_Passing_For_Trucks);
                     break;
                 default:
                     break;
@@ -223,7 +223,7 @@ bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermi
         }
 
         if (safety && safety->speedLimit) {
-            required_permissions.add(CamPermission::SpeedLimit);
+            required_permissions.add(CamPermission::Speed_Limit);
         }
     }
 

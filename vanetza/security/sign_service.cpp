@@ -20,7 +20,7 @@ namespace
  */
 Signature signature_placeholder()
 {
-    const auto size = field_size(PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256);
+    const auto size = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
     EcdsaSignature ecdsa;
     ecdsa.s.resize(size, 0x00);
     X_Coordinate_Only coordinate;

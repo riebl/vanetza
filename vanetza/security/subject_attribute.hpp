@@ -47,8 +47,8 @@ enum class SubjectAttributeType : uint8_t {
     Encryption_Key = 1,         //EncryptionKey
     Assurance_Level = 2,        //SubjectAssurance
     Reconstruction_Value = 3,   //EccPoint
-    Its_Aid_List = 32,          //std::list<IntX>
-    Its_Aid_Ssp_List = 33,      //std::list<ItsAidSsp>
+    ITS_AID_List = 32,          //std::list<IntX>
+    ITS_AID_SSP_List = 33,      //std::list<ItsAidSsp>
 };
 
 /// VerificationKey specified in TS 103 097 v1.2.1, section 6.4
@@ -162,13 +162,13 @@ struct subject_attribute_type<SubjectAttributeType::Reconstruction_Value>
 };
 
 template<>
-struct subject_attribute_type<SubjectAttributeType::Its_Aid_List>
+struct subject_attribute_type<SubjectAttributeType::ITS_AID_List>
 {
     using type = std::list<IntX>;
 };
 
 template<>
-struct subject_attribute_type<SubjectAttributeType::Its_Aid_Ssp_List>
+struct subject_attribute_type<SubjectAttributeType::ITS_AID_SSP_List>
 {
     using type = std::list<ItsAidSsp>;
 };

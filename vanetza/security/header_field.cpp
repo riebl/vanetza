@@ -160,7 +160,7 @@ void serialize(OutputArchive& ar, const HeaderField& field)
         void operator()(const std::list<RecipientInfo>& list)
         {
             // TODO: only works until further symmetric algorithms are introduced
-            serialize(m_archive, list, SymmetricAlgorithm::Aes128_Ccm);
+            serialize(m_archive, list, SymmetricAlgorithm::AES128_CCM);
         }
         void operator()(const EncryptionParameter& param)
         {

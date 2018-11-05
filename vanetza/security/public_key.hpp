@@ -12,14 +12,14 @@ namespace security
 /// SymmetricAlgorithm specified in TS 103 097 v1.2.1, section 4.2.3
 enum class SymmetricAlgorithm : uint8_t
 {
-    Aes128_Ccm = 0
+    AES128_CCM = 0
 };
 
 /// PublicKeyAlgorithm specified in TS 103 097 v1.2.1, section 4.2.2
 enum class PublicKeyAlgorithm : uint8_t
 {
-    Ecdsa_Nistp256_With_Sha256 = 0,
-    Ecies_Nistp256 = 1
+    ECDSA_NISTP256_With_SHA256 = 0,
+    ECIES_NISTP256 = 1
 };
 
 /// ecdsa_nistp256_with_sha256 specified in TS 103 097 v1.2.1, section 4.2.4

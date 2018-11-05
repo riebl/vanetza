@@ -216,7 +216,7 @@ TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
     Certificate cert = cert_provider.generate_authorization_ticket();
 
     // Order 1
-    cert.remove_attribute(SubjectAttributeType::Its_Aid_Ssp_List);
+    cert.remove_attribute(SubjectAttributeType::ITS_AID_SSP_List);
     cert.add_permission(aid::GN_MGMT, ByteBuffer({}));
     cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
     cert_provider.sign_authorization_ticket(cert);
@@ -225,7 +225,7 @@ TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
     ASSERT_TRUE(validity);
 
     // Order 2
-    cert.remove_attribute(SubjectAttributeType::Its_Aid_Ssp_List);
+    cert.remove_attribute(SubjectAttributeType::ITS_AID_SSP_List);
     cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
     cert.add_permission(aid::GN_MGMT, ByteBuffer({}));
     cert_provider.sign_authorization_ticket(cert);
@@ -234,7 +234,7 @@ TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
     ASSERT_TRUE(validity);
 
     // Definite subset
-    cert.remove_attribute(SubjectAttributeType::Its_Aid_Ssp_List);
+    cert.remove_attribute(SubjectAttributeType::ITS_AID_SSP_List);
     cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
     cert_provider.sign_authorization_ticket(cert);
 

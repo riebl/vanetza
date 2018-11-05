@@ -14,13 +14,13 @@ PublicKeyAlgorithm get_type(const Key& key)
     {
         PublicKeyAlgorithm operator()(const EciesEncryptedKey& key)
         {
-            return PublicKeyAlgorithm::Ecies_Nistp256;
+            return PublicKeyAlgorithm::ECIES_NISTP256;
         }
 
         PublicKeyAlgorithm operator()(const OpaqueKey& key)
         {
-            // TODO: could be anything except Ecies_Nistp256
-            return PublicKeyAlgorithm::Ecdsa_Nistp256_With_Sha256;
+            // TODO: could be anything except ECIES_NISTP256
+            return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
     };
 
@@ -105,9 +105,9 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
     PublicKeyAlgorithm algo;
     deserialize(ar, algo);
     switch (algo) {
-        case PublicKeyAlgorithm::Ecies_Nistp256: {
+        case PublicKeyAlgorithm::ECIES_NISTP256: {
             EciesEncryptedKey ecies;
-            deserialize(ar, ecies.v, PublicKeyAlgorithm::Ecies_Nistp256);
+            deserialize(ar, ecies.v, PublicKeyAlgorithm::ECIES_NISTP256);
             const size_t fieldSize = field_size(symAlgo);
             for (size_t c = 0; c < fieldSize; ++c) {
                 uint8_t tmp;

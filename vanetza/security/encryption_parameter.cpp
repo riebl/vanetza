@@ -15,7 +15,7 @@ SymmetricAlgorithm get_type(const EncryptionParameter& param)
     {
         SymmetricAlgorithm operator()(const Nonce& nonce)
         {
-            return SymmetricAlgorithm::Aes128_Ccm;
+            return SymmetricAlgorithm::AES128_CCM;
         }
     };
 
@@ -67,7 +67,7 @@ size_t deserialize(InputArchive& ar, EncryptionParameter& param)
     SymmetricAlgorithm algo;
     deserialize(ar, algo);
     switch (algo) {
-        case SymmetricAlgorithm::Aes128_Ccm: {
+        case SymmetricAlgorithm::AES128_CCM: {
             Nonce nonce;
             for (size_t s = 0; s < nonce.size(); s++) {
                 ar >> nonce[s];

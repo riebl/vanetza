@@ -22,22 +22,22 @@ namespace security
 enum class CamPermission : uint16_t
 {
     // first octet
-    CenDsrcTollingZone = 0x80,
-    PublicTransport = 0x40,
-    SpecialTransport = 0x20,
-    DangerousGoods = 0x10,
+    CEN_DSRC_Tolling_Zone = 0x80,
+    Public_Transport = 0x40,
+    Special_Transport = 0x20,
+    Dangerous_Goods = 0x10,
     Roadwork = 0x08,
     Rescue = 0x04,
     Emergency = 0x02,
-    SafetyCar = 0x01,
+    Safety_Car = 0x01,
 
     // second octet
-    ClosedLanes = 0x8000,
-    RequestForRightOfWay = 0x4000,
-    RequestForFreeCrossingAtTrafficLight = 0x2000,
-    NoPassing = 0x1000,
-    NoPassingForTrucks = 0x0800,
-    SpeedLimit = 0x0400,
+    Closed_Lanes = 0x8000,
+    Request_For_Right_Of_Way = 0x4000,
+    Request_For_Free_Crossing_At_Traffic_Light = 0x2000,
+    No_Passing = 0x1000,
+    No_Passing_For_Trucks = 0x0800,
+    Speed_Limit = 0x0400,
     // 0x0200 and 0x0100 are reserved for future usage
 };
 

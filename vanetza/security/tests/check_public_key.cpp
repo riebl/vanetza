@@ -28,12 +28,12 @@ void check(const PublicKey& expected, const PublicKey& actual)
 
 PublicKey create_random_public_key(int seed)
 {
-    const std::size_t size = field_size(PublicKeyAlgorithm::Ecies_Nistp256);
+    const std::size_t size = field_size(PublicKeyAlgorithm::ECIES_NISTP256);
     EccPoint point = Uncompressed { random_byte_sequence(size, seed),
         random_byte_sequence(size, seed + 1) };
     ecies_nistp256 ecies;
     ecies.public_key = point;
-    ecies.supported_symm_alg = SymmetricAlgorithm::Aes128_Ccm;
+    ecies.supported_symm_alg = SymmetricAlgorithm::AES128_CCM;
 
     return ecies;
 }
