@@ -14,7 +14,7 @@ double get_signal_power(const ProxyHeader& header)
 
 void set_signal_power(ProxyHeader& header, double dbm)
 {
-    decltype(ProxyHeader::signal_power) power = dbm * 256;
+    auto power = static_cast<decltype(ProxyHeader::signal_power)>(dbm * 256.0);
     header.signal_power = hton(power);
 }
 
