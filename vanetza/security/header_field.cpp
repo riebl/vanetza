@@ -13,39 +13,39 @@ HeaderFieldType get_type(const HeaderField& field)
 {
     struct HeaderFieldVisitor : public boost::static_visitor<HeaderFieldType>
     {
-        HeaderFieldType operator()(const Time64& time)
+        HeaderFieldType operator()(const Time64&)
         {
-            return  HeaderFieldType::Generation_Time;
+            return HeaderFieldType::Generation_Time;
         }
-        HeaderFieldType operator()(const Time64WithStandardDeviation& time)
+        HeaderFieldType operator()(const Time64WithStandardDeviation&)
         {
-            return  HeaderFieldType::Generation_Time_Confidence;
+            return HeaderFieldType::Generation_Time_Confidence;
         }
-        HeaderFieldType operator()(const Time32& time)
+        HeaderFieldType operator()(const Time32&)
         {
-            return  HeaderFieldType::Expiration;
+            return HeaderFieldType::Expiration;
         }
-        HeaderFieldType operator()(const ThreeDLocation& time)
+        HeaderFieldType operator()(const ThreeDLocation&)
         {
-            return  HeaderFieldType::Generation_Location;
+            return HeaderFieldType::Generation_Location;
         }
-        HeaderFieldType operator()(const std::list<HashedId3>& digest)
+        HeaderFieldType operator()(const std::list<HashedId3>&)
         {
-            return  HeaderFieldType::Request_Unrecognized_Certificate;
+            return HeaderFieldType::Request_Unrecognized_Certificate;
         }
-        HeaderFieldType operator()(const IntX& itsAid)
+        HeaderFieldType operator()(const IntX&)
         {
-            return  HeaderFieldType::Its_Aid;
+            return HeaderFieldType::Its_Aid;
         }
-        HeaderFieldType operator()(const SignerInfo& info)
+        HeaderFieldType operator()(const SignerInfo&)
         {
-            return  HeaderFieldType::Signer_Info;
+            return HeaderFieldType::Signer_Info;
         }
-        HeaderFieldType operator()(const std::list<RecipientInfo>& list)
+        HeaderFieldType operator()(const std::list<RecipientInfo>&)
         {
-            return  HeaderFieldType::Recipient_Info;
+            return HeaderFieldType::Recipient_Info;
         }
-        HeaderFieldType operator()(const EncryptionParameter& param)
+        HeaderFieldType operator()(const EncryptionParameter&)
         {
             return HeaderFieldType::Encryption_Parameters;
         }
@@ -60,7 +60,7 @@ size_t get_size(const HeaderField& field)
     size_t size = sizeof(HeaderFieldType);
     struct HeaderFieldVisitor : public boost::static_visitor<>
     {
-        void operator()(const Time64& time)
+        void operator()(const Time64&)
         {
             m_size = sizeof(Time64);
         }
@@ -69,7 +69,7 @@ size_t get_size(const HeaderField& field)
             m_size = sizeof(time.time64);
             m_size += sizeof(time.log_std_dev);
         }
-        void operator()(const Time32& time)
+        void operator()(const Time32&)
         {
             m_size = sizeof(Time32);
         }
