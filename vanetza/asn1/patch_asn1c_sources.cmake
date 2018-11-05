@@ -29,3 +29,22 @@ foreach(_file ${_files})
     endif()
 endforeach()
 
+## those fixes are for Windows builds using MSVC
+# add inclusion of inttypes.h
+file(READ OBJECT_IDENTIFIER.c _content)
+string(REPLACE "#include <limits.h>"
+    "#include <inttypes.h> /* for PRIu32 */\n#include <limits.h>"
+    _content "${_content}")
+file(WRITE OBJECT_IDENTIFIER.c "${_content}")
+# random() is a POSIX function
+file(READ asn_random_fill.c _content)
+string(REPLACE "random()" "rand()" _content "${_content}")
+file(WRITE asn_random_fill.c "${_content}")
+# remove #define for some math functions
+file(READ asn_system.h _content)
+string(REPLACE "#define isnan _isnan\n" "" _content "${_content}")
+string(REPLACE "#define finite _finite\n" "" _content "${_content}")
+string(REPLACE "#define copysign _copysign\n" "" _content "${_content}")
+string(REPLACE "#define	ilogb	_logb\n" "" _content "${_content}")
+file(WRITE asn_system.h "${_content}")
+message(STATUS "applied MSVC compatibility changes")

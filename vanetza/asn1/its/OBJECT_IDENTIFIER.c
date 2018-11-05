@@ -6,6 +6,7 @@
 #include "INTEGER.h"
 #include "OBJECT_IDENTIFIER.h"
 #include "OCTET_STRING.h"
+#include <inttypes.h> /* for PRIu32 */
 #include <limits.h>	/* for CHAR_BIT */
 #include <errno.h>
 
