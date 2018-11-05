@@ -1,4 +1,5 @@
 #include <vanetza/common/unit_interval.hpp>
+#include <algorithm>
 #include <cmath>
 #include <limits>
 
