@@ -19,7 +19,7 @@ struct SecuredMessageV2
     std::list<TrailerField> trailer_fields;
     Payload payload;
 
-    unsigned protocol_version() const { return 2; }
+    uint8_t protocol_version() const { return 2; }
 
     /**
      * Fetch pointer to first matching header field
