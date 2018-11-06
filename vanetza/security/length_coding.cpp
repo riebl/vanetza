@@ -19,7 +19,7 @@ std::size_t count_leading_ones(uint8_t v)
     return count;
 }
 
-std::size_t length_coding_size(std::size_t length) {
+std::size_t length_coding_size(std::uintmax_t length) {
     std::size_t size = 1;
     while ((length & ~0x7f) != 0) {
         // prefix enlongates by one additional leading "1" per shift
@@ -29,9 +29,9 @@ std::size_t length_coding_size(std::size_t length) {
     return size;
 }
 
-ByteBuffer encode_length(std::size_t length)
+ByteBuffer encode_length(std::uintmax_t length)
 {
-    static_assert(sizeof(std::size_t) <= 8, "size of length type exceeds implementation capabilities");
+    static_assert(sizeof(std::uintmax_t) <= 8, "size of length type exceeds implementation capabilities");
     std::list<uint8_t> length_info;
 
     while (length != 0) {
@@ -62,16 +62,17 @@ ByteBuffer encode_length(std::size_t length)
     return ByteBuffer(length_info.begin(), length_info.end());
 }
 
-std::tuple<ByteBuffer::const_iterator, std::size_t> decode_length(const ByteBuffer& buffer)
+std::tuple<ByteBuffer::const_iterator, std::uintmax_t> decode_length(const ByteBuffer& buffer)
 {
     if (!buffer.empty()) {
         std::size_t additional_prefix = count_leading_ones(buffer.front());
-        static const std::size_t additional_bytes_max = std::min(sizeof(std::size_t) - 1,
-            static_cast<std::size_t>(7));
 
-        if (additional_prefix <= additional_bytes_max && buffer.size() >= additional_prefix) {
-            uint8_t prefix_mask = static_cast<int8_t>(0x80) >> additional_prefix;
-            std::size_t length = buffer.front() & ~prefix_mask;
+        if (additional_prefix >= sizeof(std::uintmax_t)) {
+            // encoded length is wider than uintmax_t, we cannot represent this number
+            return std::make_tuple(buffer.begin(), 0);
+        } else if (buffer.size() > additional_prefix) {
+            uint8_t prefix_mask = (1 << (8 - additional_prefix)) - 1;
+            std::uintmax_t length = buffer.front() & prefix_mask;
             for (std::size_t i = 1; i <= additional_prefix; ++i) {
                 length <<= 8;
                 length |= buffer[i];

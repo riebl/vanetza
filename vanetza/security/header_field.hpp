@@ -55,7 +55,7 @@ HeaderFieldType get_type(const HeaderField& field);
  * \param field
  * \return number of octets needed to serialize the HeaderField
  */
-size_t get_size(const HeaderField& field);
+std::size_t get_size(const HeaderField& field);
 
 /**
  * \brief Serializes a HeaderField into a binary archive

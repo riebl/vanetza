@@ -19,14 +19,14 @@ using vanetza::deserialize;
  * \param ar to serialize in
  * \param size to encode
  */
-void serialize_length(OutputArchive&, size_t);
+void serialize_length(OutputArchive&, std::uintmax_t);
 
 /**
  * \brief Deserialize length from a given archive
  * \param ar shall start with encoded length
  * \return length deserialized from archive
  */
-size_t deserialize_length(InputArchive&);
+std::uintmax_t deserialize_length(InputArchive&);
 
 /**
  * \brief Calculate size of a list
@@ -83,10 +83,10 @@ void serialize(OutputArchive& ar, const std::list<T>& list, ARGS&&... args)
  * \return size of the deserialized list in bytes
  */
 template<class T, typename... ARGS>
-size_t deserialize(InputArchive& ar, std::list<T>& list, ARGS&&... args)
+std::size_t deserialize(InputArchive& ar, std::list<T>& list, ARGS&&... args)
 {
-    const size_t length = deserialize_length(ar);
-    int remainder = length;
+    const auto length = trim_size(deserialize_length(ar));
+    std::intmax_t remainder = length;
     while (remainder > 0) {
         T t;
         remainder -= deserialize(ar, t, std::forward<ARGS>(args)...);

@@ -54,10 +54,10 @@ size_t deserialize(InputArchive& ar, ItsAidSsp& its_aid_ssp)
 {
     size_t size = 0;
     size += deserialize(ar, its_aid_ssp.its_aid);
-    const size_t buf_size = deserialize_length(ar);
+    const std::uintmax_t buf_size = deserialize_length(ar);
     its_aid_ssp.service_specific_permissions.resize(buf_size);
     size += buf_size + length_coding_size(buf_size);
-    for (size_t i = 0; i < buf_size; ++i) {
+    for (std::uintmax_t i = 0; i < buf_size; ++i) {
         ar >> its_aid_ssp.service_specific_permissions[i];
     }
     return size;

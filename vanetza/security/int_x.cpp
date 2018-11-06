@@ -18,8 +18,8 @@ ByteBuffer IntX::encode() const
 
 boost::optional<IntX> IntX::decode(const ByteBuffer& buffer)
 {
-    std::tuple<ByteBuffer::const_iterator, std::size_t> decoded = decode_length(buffer);
-    if (std::get<1>(decoded) > 0 || std::get<0>(decoded) != buffer.end() || buffer.size() == 1) {
+    std::tuple<ByteBuffer::const_iterator, std::uintmax_t> decoded = decode_length(buffer);
+    if (std::get<0>(decoded) != buffer.begin()) {
         IntX result;
         result.set(std::get<1>(decoded));
         return result;

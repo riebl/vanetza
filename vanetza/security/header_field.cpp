@@ -175,23 +175,23 @@ void serialize(OutputArchive& ar, const HeaderField& field)
     boost::apply_visitor(visit, field);
 }
 
-size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
+std::size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
 {
-    size_t size = deserialize_length(ar);
-    size_t ret_size = size;
+    const std::size_t size = trim_size(deserialize_length(ar));
+    std::size_t read = 0;
     boost::optional<SymmetricAlgorithm> sym_algo;
-    while (size > 0) {
+    while (read < size) {
         HeaderField field;
         HeaderFieldType type;
         deserialize(ar, type);
-        size -= sizeof(HeaderFieldType);
+        read += sizeof(HeaderFieldType);
         switch (type) {
             case HeaderFieldType::Generation_Time: {
                 Time64 time;
                 deserialize(ar, time);
                 field = time;
                 list.push_back(field);
-                size -= sizeof(Time64);
+                read += sizeof(Time64);
                 break;
             }
             case HeaderFieldType::Generation_Time_Confidence: {
@@ -200,8 +200,8 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
                 deserialize(ar, time.log_std_dev);
                 field = time;
                 list.push_back(field);
-                size -= sizeof(Time64);
-                size -= sizeof(uint8_t);
+                read += sizeof(Time64);
+                read += sizeof(uint8_t);
                 break;
             }
             case HeaderFieldType::Expiration: {
@@ -209,21 +209,21 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
                 deserialize(ar, time);
                 field = time;
                 list.push_back(field);
-                size -= sizeof(Time32);
+                read += sizeof(Time32);
                 break;
             }
             case HeaderFieldType::Generation_Location: {
                 ThreeDLocation loc;
-                size -= deserialize(ar, loc);
+                read += deserialize(ar, loc);
                 field = loc;
                 list.push_back(field);
                 break;
             }
             case HeaderFieldType::Request_Unrecognized_Certificate: {
-                size_t tmp_size = deserialize_length(ar);
-                size -= tmp_size;
+                const std::size_t tmp_size = trim_size(deserialize_length(ar));
+                read += tmp_size;
                 std::list<HashedId3> hashedList;
-                for (size_t c = 0; c < tmp_size; c += 3) {
+                for (std::size_t c = 0; c < tmp_size; c += 3) {
                     HashedId3 id;
                     ar >> id[0];
                     ar >> id[1];
@@ -231,20 +231,20 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
                     hashedList.push_back(id);
                 }
                 field = hashedList;
-                size -= length_coding_size(tmp_size);
+                read += length_coding_size(tmp_size);
                 list.push_back(field);
                 break;
             }
             case HeaderFieldType::Its_Aid: {
                 IntX its_aid;
-                size -= deserialize(ar, its_aid);
+                read += deserialize(ar, its_aid);
                 field = its_aid;
                 list.push_back(field);
                 break;
             }
             case HeaderFieldType::Signer_Info: {
                 SignerInfo info;
-                size -= deserialize(ar, info);
+                read += deserialize(ar, info);
                 field = info;
                 list.push_back(field);
                 break;
@@ -252,9 +252,9 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             case HeaderFieldType::Recipient_Info: {
                 std::list<RecipientInfo> recipientList;
                 if (sym_algo) {
-                    size_t tmp_size = deserialize(ar, recipientList, sym_algo.get());
-                    size -= tmp_size;
-                    size -= length_coding_size(tmp_size);
+                    const size_t tmp_size = deserialize(ar, recipientList, sym_algo.get());
+                    read += tmp_size;
+                    read += length_coding_size(tmp_size);
                     field = recipientList;
                     list.push_back(field);
                 } else {
@@ -264,7 +264,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
             }
             case HeaderFieldType::Encryption_Parameters: {
                 EncryptionParameter param;
-                size -= deserialize(ar, param);
+                read += deserialize(ar, param);
                 field = param;
                 sym_algo = get_type(param);
                 list.push_back(field);
@@ -275,7 +275,7 @@ size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
                 break;
         }
     }
-    return ret_size;
+    return size;
 }
 
 } // namespace security

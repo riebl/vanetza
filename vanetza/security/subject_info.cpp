@@ -27,8 +27,8 @@ void serialize(OutputArchive& ar, const SubjectInfo& sub)
 size_t deserialize(InputArchive& ar, SubjectInfo& sub)
 {
     deserialize(ar, sub.subject_type);
-    size_t size = deserialize_length(ar);
-    for (size_t c = 0; c < size; ++c) {
+    const std::uintmax_t size = deserialize_length(ar);
+    for (uintmax_t c = 0; c < size; ++c) {
         uint8_t tmp;
         ar >> tmp;
         sub.subject_name.push_back(tmp);

@@ -41,7 +41,7 @@ size_t deserialize(InputArchive& ar, Payload& payload)
     deserialize(ar, type);
     payload.type = type;
 
-    const size_t data_length = deserialize_length(ar);
+    const auto data_length = deserialize_length(ar);
     size += length_coding_size(data_length);
     size += data_length;
     ByteBuffer buf(data_length);

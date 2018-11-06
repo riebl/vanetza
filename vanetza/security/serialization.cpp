@@ -31,7 +31,7 @@ std::size_t trim_size(std::uintmax_t in)
 }
 
 
-void serialize_length(OutputArchive& ar, size_t length)
+void serialize_length(OutputArchive& ar, std::uintmax_t length)
 {
     ByteBuffer buf;
     buf = encode_length(length);
@@ -40,7 +40,7 @@ void serialize_length(OutputArchive& ar, size_t length)
     }
 }
 
-size_t deserialize_length(InputArchive& ar)
+std::uintmax_t deserialize_length(InputArchive& ar)
 {
     ByteBuffer buf(1);
     ar >> buf[0];
@@ -50,7 +50,7 @@ size_t deserialize_length(InputArchive& ar)
         ar >> buf[c];
     }
     auto tup = decode_length(buf);
-    assert(std::get<0>(tup) == buf.end());
+    assert(std::get<0>(tup) != buf.begin());
     return std::get<1>(tup);
 }
 

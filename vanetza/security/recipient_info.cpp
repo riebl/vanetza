@@ -123,9 +123,9 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
             break;
         }
         default: {
-            const size_t length = deserialize_length(ar);
+            const std::uintmax_t length = deserialize_length(ar);
             ByteBuffer opaque(length);
-            for (size_t i = 0; i < length; ++i) {
+            for (std::uintmax_t i = 0; i < length; ++i) {
                 ar >> opaque[i];
             }
             info.enc_key = OpaqueKey { std::move(opaque) };
