@@ -1,4 +1,5 @@
 #include "dcc_mco_field.hpp"
+#include <algorithm>
 #include <cmath>
 
 namespace vanetza
