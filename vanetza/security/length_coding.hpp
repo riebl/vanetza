@@ -19,13 +19,6 @@ namespace security
 ByteBuffer encode_length(std::size_t length);
 
 /**
- * Extract data field of variable length from byte buffer
- * \param buffer Buffer with input data
- * \return range comprising data only if successful or whole buffer if error occurred
- */
-boost::iterator_range<ByteBuffer::const_iterator> decode_length_range(const ByteBuffer& buffer);
-
-/**
  * Extract length information
  * \param buffer Buffer with input data, shall start with first byte of encoded length
  * \return tuple of iterator pointing at start of payload buffer and its length

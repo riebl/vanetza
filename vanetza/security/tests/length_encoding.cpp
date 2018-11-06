@@ -79,43 +79,6 @@ TEST(LengthEncoding, decode_length_good)
     EXPECT_EQ(4, std::get<1>(decoded_tuple));
 }
 
-TEST(LengthEncoding, decode_length_range_empty_buffer)
-{
-    ByteBuffer buffer;
-    EXPECT_EQ(boost::make_iterator_range(buffer), decode_length_range(buffer));
-}
-
-TEST(LengthEncoding, decode_length_range_zero_size)
-{
-    ByteBuffer buffer { 0x00 };
-    EXPECT_EQ(boost::make_iterator_range(buffer.end(), buffer.end()), decode_length_range(buffer));
-}
-
-TEST(LengthEncoding, decode_length_range_prefix_too_long)
-{
-    ByteBuffer buffer { 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xba, 0xbe };
-    EXPECT_EQ(boost::make_iterator_range(buffer.end(), buffer.end()), decode_length_range(buffer));
-}
-
-TEST(LengthEncoding, decode_length_range_buffer_too_short)
-{
-    ByteBuffer buffer { 0x02, 0xde };
-    EXPECT_EQ(boost::make_iterator_range(buffer.end(), buffer.end()), decode_length_range(buffer));
-}
-
-TEST(LengthEncoding, decode_length_range_good)
-{
-    ByteBuffer buffer { 0xe0, 0x01, 0x00, 0x00 };
-    std::fill_n(std::back_inserter(buffer), 0x010000, 0x11);
-    EXPECT_EQ(boost::make_iterator_range(buffer, 4, 0), decode_length_range(buffer));
-
-    std::fill_n(std::back_inserter(buffer), 19, 0x22);
-    EXPECT_EQ(boost::make_iterator_range(buffer, 4, -19), decode_length_range(buffer));
-
-    auto result = decode_length_range(buffer);
-    EXPECT_TRUE(std::all_of(result.begin(), result.end(), [](uint8_t x) {return x == 0x11;}));
-}
-
 TEST(LengthEncoding, serialize_length)
 {
     ByteBuffer buf;

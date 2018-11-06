@@ -62,22 +62,6 @@ ByteBuffer encode_length(std::size_t length)
     return ByteBuffer(length_info.begin(), length_info.end());
 }
 
-boost::iterator_range<ByteBuffer::const_iterator> decode_length_range(const ByteBuffer& buffer)
-{
-    ByteBuffer::const_iterator start;
-    ByteBuffer::difference_type length = 0;
-    std::tie(start, length) = decode_length(buffer);
-    if (start != buffer.end()) {
-        if (std::distance(start, buffer.end()) >= length) {
-            ByteBuffer::const_iterator stop = start;
-            std::advance(stop, length);
-            return boost::make_iterator_range(start, stop);
-        }
-    }
-
-    return boost::make_iterator_range(buffer.end(), buffer.end());
-}
-
 std::tuple<ByteBuffer::const_iterator, std::size_t> decode_length(const ByteBuffer& buffer)
 {
     if (!buffer.empty()) {
