@@ -31,16 +31,16 @@ std::chrono::seconds Duration::to_seconds() const
             return seconds(value());
 
         case Units::Minutes:
-            return seconds(value() * 60L);
+            return seconds(value() * 60U);
 
         case Units::Hours:
-            return seconds(value() * 3600L);
+            return seconds(value() * 3600U);
 
         case Units::Sixty_Hour_Blocks:
-            return seconds(value() * 216000L);
+            return seconds(value() * 216000U);
 
         case Units::Years:
-            return seconds(value() * 31556925L);
+            return seconds(value() * 31556925ULL);
 
         default:
             // undefined, let's interpret it as minimal duration, which will fail during validation
