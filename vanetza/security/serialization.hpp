@@ -48,6 +48,16 @@ size_t get_size(const std::list<T>& list)
     return size;
 }
 
+/**
+ * \brief Trim (possibly) wider size type safely
+ *
+ *  This function throws an exception if size would be truncated.
+ *
+ * \param in wide size type
+ * \return same size using narrow type
+ */
+std::size_t trim_size(std::uintmax_t in);
+
 /** \brief Serialize from any given list into given binary archive
  * \tparam T the type of the list
  * \tparam ARGS all additional arguments for the underlying functions

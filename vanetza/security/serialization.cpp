@@ -1,11 +1,35 @@
 #include <vanetza/security/length_coding.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <cassert>
+#include <limits>
+#include <stdexcept>
+#include <type_traits>
 
 namespace vanetza
 {
 namespace security
 {
+
+template<typename T>
+std::size_t trim_size_impl(T in, typename std::enable_if<std::is_same<T, std::size_t>::value>::type* = nullptr)
+{
+    return in;
+}
+
+template<typename T>
+std::size_t trim_size_impl(T in, typename std::enable_if<!std::is_same<T, std::size_t>::value>::type* = nullptr)
+{
+    if (in > std::numeric_limits<std::size_t>::max()) {
+        throw std::overflow_error("given size exceeds limits of std::size_t");
+    }
+    return static_cast<std::size_t>(in);
+}
+
+std::size_t trim_size(std::uintmax_t in)
+{
+    return trim_size_impl(in);
+}
+
 
 void serialize_length(OutputArchive& ar, size_t length)
 {
