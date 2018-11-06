@@ -16,7 +16,7 @@ struct FakePacket
 
     const unsigned id = 0;
     std::size_t length = 0;
-    Clock::duration lifetime;
+    Clock::duration lifetime = Clock::duration::zero();
 };
 
 class FakeData : public packet_buffer::Data
