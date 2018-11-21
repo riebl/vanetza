@@ -54,11 +54,16 @@ void GpsPositionProvider::on_timer(const boost::system::error_code& ec)
 
 void GpsPositionProvider::fetch_position_fix()
 {
+    int gps_read_rc = 0;
+    do {
 #if GPSD_API_MAJOR_VERSION < 7
-    if (gps_read(&gps_data) < 0) {
+        gps_read_rc = gps_read(&gps_data);
 #else
-    if (gps_read(&gps_data, nullptr, 0) < 0) {
+        gps_read_rc = gps_read(&gps_data, nullptr, 0);
 #endif
+    } while (gps_read_rc > 0);
+
+    if (gps_read_rc < 0) {
         throw gps_error(errno);
     }
 
