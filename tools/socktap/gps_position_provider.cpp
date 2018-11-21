@@ -3,7 +3,7 @@
 #include <vanetza/units/velocity.hpp>
 #include <cmath>
 
-static_assert(GPSD_API_MAJOR_VERSION == 5 || GPSD_API_MAJOR_VERSION == 6, "libgps has incompatible API");
+static_assert(GPSD_API_MAJOR_VERSION >= 5 || GPSD_API_MAJOR_VERSION <= 7, "libgps has incompatible API");
 
 GpsPositionProvider::GpsPositionProvider(boost::asio::steady_timer& timer) :
     GpsPositionProvider(timer, gpsd::shared_memory, nullptr)
@@ -54,7 +54,11 @@ void GpsPositionProvider::on_timer(const boost::system::error_code& ec)
 
 void GpsPositionProvider::fetch_position_fix()
 {
+#if GPSD_API_MAJOR_VERSION < 7
     if (gps_read(&gps_data) < 0) {
+#else
+    if (gps_read(&gps_data, nullptr, 0) < 0) {
+#endif
         throw gps_error(errno);
     }
 
