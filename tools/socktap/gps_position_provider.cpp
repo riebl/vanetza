@@ -61,7 +61,7 @@ void GpsPositionProvider::fetch_position_fix()
 #else
         gps_read_rc = gps_read(&gps_data, nullptr, 0);
 #endif
-    } while (gps_read_rc > 0);
+    } while (gps_read_rc > 0 && gps_data.devices.ndevices > 0);
 
     if (gps_read_rc < 0) {
         throw gps_error(errno);
