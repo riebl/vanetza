@@ -993,7 +993,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
     source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
 
     // step 6: set SO LocTE to neighbour
-    source_entry.set_neighbour(true);
+    source_entry.set_neighbour(true, m_mib.vanetzaNeighbourFlagExpiry);
 
     // media-dependent update of LocTEX_G5 (see TS 102 636-4-2 V1.1.1, section 6.1.2)
     if (m_mib.itsGnIfType == InterfaceType::ITS_G5) {
@@ -1026,7 +1026,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<BeaconHeader>& pdu, con
     source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
 
     // step 6: set SO LocTE to neighbour
-    source_entry.set_neighbour(true);
+    source_entry.set_neighbour(true, m_mib.vanetzaNeighbourFlagExpiry);
 
     // step 7: never pass up Beacons
     return false;

@@ -10,7 +10,7 @@ namespace geonet
 static_assert(std::numeric_limits<double>::has_quiet_NaN, "quiet NaN value unavailable");
 
 LocationTableEntry::LocationTableEntry(const Runtime& rt) :
-    m_runtime(rt), m_is_neighbour(false), m_has_position_vector(false),
+    m_runtime(rt), m_is_neighbour(Clock::time_point::min()), m_has_position_vector(false),
     m_pdr(std::numeric_limits<double>::quiet_NaN()), m_pdr_update(rt.now())
 {
 }
@@ -28,6 +28,11 @@ const Address& LocationTableEntry::geonet_address() const
 const MacAddress& LocationTableEntry::link_layer_address() const
 {
     return geonet_address().mid();
+}
+
+bool LocationTableEntry::is_neighbour() const
+{
+    return m_is_neighbour > m_runtime.now();
 }
 
 void LocationTableEntry::update_pdr(std::size_t packet_size, double beta)
@@ -74,7 +79,16 @@ bool LocationTableEntry::update_position_vector(const LongPositionVector& lpv)
 
 void LocationTableEntry::set_neighbour(bool flag)
 {
-    m_is_neighbour = flag;
+    m_is_neighbour = flag ? Clock::time_point::max() : Clock::time_point::min();
+}
+
+void LocationTableEntry::set_neighbour(bool flag, Clock::duration expiry)
+{
+    if (flag && expiry > Clock::duration::zero()) {
+        m_is_neighbour = m_runtime.now() + expiry;
+    } else {
+        set_neighbour(flag);
+    }
 }
 
 

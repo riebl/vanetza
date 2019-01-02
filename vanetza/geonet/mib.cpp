@@ -52,7 +52,8 @@ ManagementInformationBase::ManagementInformationBase() :
     vanetzaCbfMaxCounter(3),
     vanetzaDeferInitialBeacon(false),
     vanetzaDisableBeaconing(false),
-    vanetzaFadingCbfCounter(false)
+    vanetzaFadingCbfCounter(false),
+    vanetzaNeighbourFlagExpiry(Clock::duration::zero())
 {
 }
 

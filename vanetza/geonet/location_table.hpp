@@ -62,13 +62,20 @@ public:
      * Check if this entry belongs to a direct neighbour
      * \return true if direct neighbour
      */
-    bool is_neighbour() const { return m_is_neighbour; }
+    bool is_neighbour() const;
 
     /**
      * Set neighbour relation
      * \param flag true if entry represents a direct neighbour
      */
     void set_neighbour(bool flag);
+
+    /**
+     * Set neighbour relation with expiry
+     * \param flag true if entry represents a direct neighbour
+     * \param expiry reset neighbour relation to false after expiry
+     */
+    void set_neighbour(bool flag, Clock::duration expiry);
 
     ObjectContainer extensions;
 
@@ -80,7 +87,7 @@ private:
     bool set_position_vector(const LongPositionVector& pv);
 
     const Runtime& m_runtime;
-    bool m_is_neighbour;
+    Clock::time_point m_is_neighbour;
     bool m_has_position_vector;
     LongPositionVector m_position_vector;
     double m_pdr; /*< packet data rate in bytes per second */

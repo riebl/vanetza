@@ -216,3 +216,35 @@ TEST(LocationTableEntry, update_position_vector)
     lpv.latitude = geo_angle_i32t::from_value(90 * 10 * 1000 * 1000);
     EXPECT_TRUE(locte.update_position_vector(lpv));
 }
+
+TEST(LocationTableEntry, init)
+{
+    ManualRuntime rt;
+    LocationTableEntry locte(rt);
+    EXPECT_FALSE(locte.has_position_vector());
+    EXPECT_TRUE(std::isnan(locte.get_pdr()));
+    EXPECT_FALSE(locte.is_neighbour());
+}
+
+TEST(LocationTableEntry, neighbour)
+{
+    ManualRuntime rt;
+    LocationTableEntry locte(rt);
+
+    locte.set_neighbour(true);
+    EXPECT_TRUE(locte.is_neighbour());
+
+    locte.set_neighbour(false);
+    EXPECT_FALSE(locte.is_neighbour());
+
+    locte.set_neighbour(true, std::chrono::seconds(5));
+    rt.trigger(std::chrono::seconds(4));
+    EXPECT_TRUE(locte.is_neighbour());
+    rt.trigger(std::chrono::seconds(1));
+    EXPECT_FALSE(locte.is_neighbour());
+
+    locte.set_neighbour(false, std::chrono::seconds(1));
+    EXPECT_FALSE(locte.is_neighbour());
+    rt.trigger(std::chrono::seconds(2));
+    EXPECT_FALSE(locte.is_neighbour());
+}

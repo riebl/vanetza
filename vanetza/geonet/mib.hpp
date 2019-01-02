@@ -1,6 +1,7 @@
 #ifndef MIB_HPP_U3WJ4WES
 #define MIB_HPP_U3WJ4WES
 
+#include <vanetza/common/clock.hpp>
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/lifetime.hpp>
 #include <vanetza/geonet/station_type.hpp>
@@ -96,6 +97,7 @@ struct ManagementInformationBase
     bool vanetzaDeferInitialBeacon; /*< defer first beacon up to itsGnBeaconServiceRetransmitTimer */
     bool vanetzaDisableBeaconing; /*< disable transmission of beacons entirely */
     bool vanetzaFadingCbfCounter; /*< use fading counters for CBF packet buffer */
+    Clock::duration vanetzaNeighbourFlagExpiry; /*< reset LocTE neighbour state without explicit updates */
 };
 
 // This name is too clumsy to write it out every time
