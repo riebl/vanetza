@@ -12,6 +12,7 @@ class ChannelLoad : public UnitInterval
 {
 public:
     using UnitInterval::UnitInterval;
+    ChannelLoad() = default;
     ChannelLoad(const UnitInterval&);
 
     /**
