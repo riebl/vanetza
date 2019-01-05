@@ -2,26 +2,34 @@
 #define CHANNEL_LOAD_HPP_D1JOCNLP
 
 #include <vanetza/common/unit_interval.hpp>
-#include <boost/operators.hpp>
 
 namespace vanetza
 {
 namespace dcc
 {
 
-using ChannelLoad = UnitInterval;
-
-struct ChannelLoadRational : boost::totally_ordered<ChannelLoadRational>
+class ChannelLoad : public UnitInterval
 {
-    ChannelLoadRational() :
-        probes_above(0), probes_total(0) {}
-    ChannelLoadRational(unsigned num, unsigned den) :
-        probes_above(num), probes_total(den) {}
-    unsigned probes_above;
-    unsigned probes_total;
+public:
+    using UnitInterval::UnitInterval;
+    ChannelLoad(const UnitInterval&);
 
-    UnitInterval fraction() const;
-    bool operator<(const ChannelLoadRational&) const;
+    /**
+     * Create ChannelLoad from rational probes
+     * \see ChannelLoad::create_from_probes
+     *
+     * \param probes_busy number of probes above busy threshold
+     * \param probes_total total number of probes
+     */
+    ChannelLoad(unsigned probes_busy, unsigned probes_total);
+
+    /**
+     * Calculate UnitInterval representing ChannelLoad from rational probes
+     * \param probes_busy number of probes above busy threshold
+     * \param probes_total total number of probes
+     * \return interval representing channel load (capped if probes_total < probes_busy)
+     */
+    static UnitInterval create_from_probes(unsigned probes_busy, unsigned probes_total);
 };
 
 } // namespace dcc

@@ -5,19 +5,25 @@ namespace vanetza
 namespace dcc
 {
 
-ChannelLoad ChannelLoadRational::fraction() const
+ChannelLoad::ChannelLoad(const UnitInterval& interval) :
+    UnitInterval(interval)
+{
+}
+
+ChannelLoad::ChannelLoad(unsigned probes_busy, unsigned probes_total) :
+    UnitInterval(create_from_probes(probes_busy, probes_total))
+{
+}
+
+UnitInterval ChannelLoad::create_from_probes(unsigned probes_busy, unsigned probes_total)
 {
     double fraction = 0.0;
     if (probes_total != 0) {
-        fraction = probes_above;
+        fraction = probes_busy;
         fraction /= probes_total;
     }
-    return ChannelLoad(fraction);
-}
 
-bool ChannelLoadRational::operator<(const ChannelLoadRational& other) const
-{
-    return fraction() < other.fraction();
+    return UnitInterval(fraction);
 }
 
 } // namespace dcc
