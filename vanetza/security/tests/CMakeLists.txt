@@ -15,9 +15,8 @@ add_library(security_test OBJECT
     check_validity_restriction.cpp
     serialization.cpp
 )
-target_include_directories(security_test
-    PUBLIC $<TARGET_PROPERTY:security,INTERFACE_INCLUDE_DIRECTORIES>
-    PUBLIC ${GTest_INCLUDE_DIR})
+target_include_directories(security_test PUBLIC $<TARGET_PROPERTY:security,INTERFACE_INCLUDE_DIRECTORIES>)
+target_include_directories(security_test BEFORE PUBLIC ${GTest_INCLUDE_DIR})
 configure_gtest_directory(SOURCES $<TARGET_OBJECTS:security_test> LINK_LIBRARIES Boost::boost security)
 
 add_gtest(CamServiceSpecificPermissions cam_ssp.cpp)
