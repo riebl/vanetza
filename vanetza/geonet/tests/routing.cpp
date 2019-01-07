@@ -26,6 +26,7 @@ protected:
         net.set_duplication_mode(std::get<0>(GetParam()));
         net.get_mib().itsGnNonAreaForwardingAlgorithm = UnicastForwarding::Greedy;
         net.get_mib().itsGnAreaForwardingAlgorithm = BroadcastForwarding::Advanced;
+        net.get_mib().vanetzaCbfMaxCounter = 3;
         net.get_mib().itsGnSecurity = std::get<1>(GetParam());
 
         cars[0] = {0x00, 0x02, 0x03, 0x04, 0x05, 0x06};

@@ -849,7 +849,7 @@ NextHop Router::area_contention_based_forwarding(PendingPacketForwarding&& packe
 
     if (!sender) {
         nh.transmit(std::move(packet), cBroadcastMacAddress);
-    } else if (m_cbf_buffer.remove(cbf_id)) {
+    } else if (m_cbf_buffer.remove(cbf_id) || m_cbf_buffer.counter(cbf_id) >= m_mib.vanetzaCbfMaxCounter) {
         nh.discard();
     } else {
         const units::Duration timeout = timeout_cbf(*sender);
