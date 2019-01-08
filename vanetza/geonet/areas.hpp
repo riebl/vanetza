@@ -88,15 +88,12 @@ CartesianPosition local_cartesian(
         const GeodeticPosition& position);
 
 /**
- * Canonicalize a point relative to the center point of a shape and
- * the azimuth angle of this shape, i.e. angle between north and its
- * long side.
+ * Canonicalize a point in a shape's coordinate system w.r.t. its azimuth angle
  * \param point Point to canonicalize
- * \param shape Center of shape
- * \param azimuth Azimuth angle
- * \return canonical position
+ * \param azimuth Azimuth angle of shape's long side
+ * \return canonical position (suitable for geometric_function)
  */
-CartesianPosition canonicalize(const CartesianPosition& point, const CartesianPosition& shape, units::Angle azimuth);
+CartesianPosition canonicalize(const CartesianPosition& point, units::Angle azimuth);
 
 /**
  * Check if positon is within or at border of area

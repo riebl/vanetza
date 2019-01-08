@@ -70,10 +70,9 @@ TEST(Areas, local_cartesian) {
 }
 
 TEST(Areas, canonicalize) {
-    CartesianPosition point(9.0 * meter, 5.0 * meter);
-    CartesianPosition shape_center(6.0 * meter, 3.0 * meter);
+    CartesianPosition point(3.0 * meter, 2.0 * meter);
     units::Angle azimuth = units::Angle(30.0 * degree);
-    CartesianPosition canonical_point = canonicalize(point, shape_center, azimuth);
+    CartesianPosition canonical_point = canonicalize(point, azimuth);
     EXPECT_NEAR(canonical_point.x / meter, 3.23, 0.01);
     EXPECT_NEAR(canonical_point.y / meter, -1.59, 0.01);
 }

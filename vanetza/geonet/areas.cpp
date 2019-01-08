@@ -81,19 +81,19 @@ CartesianPosition local_cartesian(
     return CartesianPosition(result_x * si::meter, result_y * si::meter);
 }
 
-CartesianPosition canonicalize(
-        const CartesianPosition& point,
-        const CartesianPosition& shape, units::Angle azimuth)
+CartesianPosition canonicalize(const CartesianPosition& point, units::Angle azimuth)
 {
-    // move point (shape center is in origin afterwards)
-    CartesianPosition moved = point - shape;
-    // rotate resulting point around origin clockwise: zenith = 90 deg - azimuth
-    // other interpretation: rotate shape's long side on abscissa
-    const units::Angle zenith = units::Angle(90.0 * units::degree) - azimuth;
-    CartesianPosition result;
-    result.x = cos(zenith) * moved.x + sin(zenith) * moved.y;
-    result.y = -sin(zenith) * moved.x + cos(zenith) * moved.y;
-    return result;
+    using namespace boost::math::double_constants;
+    // area.angle is azimuth angle of EN 302 931 V1.1.1
+    const units::Angle zenith = half_pi * units::si::radian - azimuth;
+    const double sin_z = sin(zenith);
+    const double cos_z = cos(zenith);
+    // rotate canonical point around origin clockwise: zenith = 90 deg - azimuth
+    // other interpretation: rotate shape's long side onto abscissa
+    CartesianPosition canonical;
+    canonical.x = cos_z * point.x + sin_z * point.y;
+    canonical.y = -sin_z * point.x + cos_z * point.y;
+    return canonical;
 }
 
 struct area_size_visitor : public boost::static_visitor<units::Area>
@@ -137,11 +137,9 @@ units::Length distance(const GeodeticPosition& lhs, const GeodeticPosition& rhs)
 bool inside_or_at_border(const Area& area, const GeodeticPosition& geo_position)
 {
     using units::si::meter;
-    CartesianPosition canonical_position = canonicalize(
-            CartesianPosition(0.0 * meter, 0.0 * meter),
-            local_cartesian(area.position, geo_position),
-            area.angle);
-    return !outside_shape(area.shape, canonical_position);
+    const CartesianPosition local = local_cartesian(area.position, geo_position);
+    const CartesianPosition canonical = canonicalize(local, area.angle);
+    return !outside_shape(area.shape, canonical);
 }
 
 } // namespace geonet
