@@ -96,6 +96,7 @@ int GenerateAaCommand::execute()
         certificate_aids.push_back(IntX(aid::CA));
         certificate_aids.push_back(IntX(aid::DEN));
     }
+    certificate.subject_attributes.push_back(certificate_aids);
 
     certificate.signer_info = calculate_hash(sign_cert);
 

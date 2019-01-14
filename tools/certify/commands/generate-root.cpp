@@ -73,6 +73,7 @@ int GenerateRootCommand::execute()
         certificate_aids.push_back(IntX(aid::CA));
         certificate_aids.push_back(IntX(aid::DEN));
     }
+    certificate.subject_attributes.push_back(certificate_aids);
 
     // section 6.1 in TS 103 097 v1.2.1
     certificate.signer_info = nullptr; /* self */
