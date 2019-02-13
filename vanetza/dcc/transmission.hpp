@@ -18,6 +18,7 @@ public:
     virtual const access::DataRateG5* data_rate() const = 0;
     virtual std::size_t body_length() const = 0;
     virtual Clock::duration channel_occupancy() const;
+    virtual ~Transmission() = default;
 };
 
 struct TransmissionLite : public Transmission
