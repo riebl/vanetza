@@ -76,8 +76,8 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
     BasicContainer_t& basic = cam.camParameters.basicContainer;
     basic.stationType = StationType_passengerCar;
     basic.referencePosition.altitude.altitudeValue = AltitudeValue_unavailable;
-    basic.referencePosition.longitude = position.longitude.value();
-    basic.referencePosition.latitude = position.latitude.value();
+    basic.referencePosition.longitude = round(position.longitude, microdegree) * Longitude_oneMicrodegreeEast;
+    basic.referencePosition.latitude = round(position.latitude, microdegree) * Latitude_oneMicrodegreeNorth;
     basic.referencePosition.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
     basic.referencePosition.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_unavailable;
     basic.referencePosition.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_unavailable;
