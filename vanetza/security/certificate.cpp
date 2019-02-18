@@ -102,14 +102,14 @@ void sort(Certificate& cert)
     });
 }
 
-boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate& cert)
+boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate& cert, Backend& backend)
 {
     boost::optional<Uncompressed> public_key_coordinates;
     for (auto& attribute : cert.subject_attributes) {
         if (get_type(attribute) == SubjectAttributeType::Verification_Key) {
             const VerificationKey& verification_key = boost::get<VerificationKey>(attribute);
             const EccPoint& ecc_point = boost::get<ecdsa_nistp256_with_sha256>(verification_key.key).public_key;
-            public_key_coordinates = boost::get<Uncompressed>(ecc_point);
+            public_key_coordinates = backend.decompress_ecc_point(ecc_point);
             break;
         }
     }
@@ -117,9 +117,9 @@ boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate& cer
     return public_key_coordinates;
 }
 
-boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate& cert)
+boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate& cert, Backend& backend)
 {
-    auto unc = get_uncompressed_public_key(cert);
+    auto unc = get_uncompressed_public_key(cert, backend);
     boost::optional<ecdsa256::PublicKey> result;
     ecdsa256::PublicKey pub;
     if (unc && unc->x.size() == pub.x.size() && unc->y.size() == pub.y.size()) {

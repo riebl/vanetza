@@ -286,7 +286,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                 return confirm;
             }
 
-            boost::optional<ecdsa256::PublicKey> public_key = get_public_key(cert);
+            boost::optional<ecdsa256::PublicKey> public_key = get_public_key(cert, backend);
 
             // public key could not be extracted
             if (!public_key) {

@@ -1,8 +1,10 @@
 #include <vanetza/security/backend_openssl.hpp>
+#include <vanetza/security/ecc_point_decompression_visitor.hpp>
 #include <vanetza/security/openssl_wrapper.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <openssl/bn.h>
+#include <openssl/ec.h>
 #include <openssl/ecdsa.h>
 #include <openssl/obj_mac.h>
 #include <openssl/sha.h>
@@ -68,6 +70,41 @@ bool BackendOpenSsl::verify_data(const ecdsa256::PublicKey& key, const ByteBuffe
     openssl::Signature signature(sig);
 
     return (ECDSA_do_verify(digest.data(), digest.size(), signature, pub) == 1);
+}
+
+class OpenSslEccPointDecompressionVisitor: public EccPointDecompressionVisitor
+{
+public:
+    virtual Uncompressed decompress(ByteBuffer x, EccPointType type) override {
+        // Only with actually compressed points that provide the bit of the y coordinate, we can perform decompression.
+        if (type != EccPointType::Compressed_Lsb_Y_0 && type != EccPointType::Compressed_Lsb_Y_1) {
+            throw std::logic_error("Unsupported compression type!");
+        }
+
+        openssl::BigNumberContext ctx;
+        openssl::BigNumber x_coordinate(x);
+        const EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
+        EC_POINT *point = EC_POINT_new(group);
+        BIGNUM *y_coordinate = BN_new();
+#if OPENSSL_API_COMPAT < 0x10101000L
+        EC_POINT_set_compressed_coordinates_GFp(group, point, x_coordinate, static_cast<unsigned>(type) % 2, ctx);
+        EC_POINT_get_affine_coordinates_GFp(group, point, nullptr, y_coordinate, ctx);
+#else
+        EC_POINT_set_compressed_coordinates(group, point, x_coordinate, static_cast<unsigned>(type) % 2, ctx);
+        EC_POINT_get_affine_coordinates(group, point, nullptr, y_coordinate, ctx);
+#endif
+
+        Uncompressed p { x };
+        p.y.resize(BN_num_bytes(y_coordinate));
+        BN_bn2bin(y_coordinate, p.y.data());
+
+        return p;
+    }
+};
+
+Uncompressed BackendOpenSsl::decompress_ecc_point(const EccPoint& ecc_point) {
+    OpenSslEccPointDecompressionVisitor visitor;
+    return boost::apply_visitor(visitor, ecc_point);
 }
 
 std::array<uint8_t, 32> BackendOpenSsl::calculate_digest(const ByteBuffer& data) const

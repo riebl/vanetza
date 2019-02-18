@@ -25,6 +25,9 @@ public:
     /// \see Backend::verify_data
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
 
+    /// \see Backend::decompress_ecc_point
+    Uncompressed decompress_ecc_point(const EccPoint& ecc_point) override;
+
 private:
     EcdsaSignature fake_signature() const;
 };

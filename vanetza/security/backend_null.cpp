@@ -1,5 +1,6 @@
 #include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/security/backend_null.hpp>
+#include <vanetza/security/ecc_point_decompression_visitor.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 
@@ -18,6 +19,11 @@ bool BackendNull::verify_data(const ecdsa256::PublicKey&, const ByteBuffer&, con
 {
     // accept everything
     return true;
+}
+
+Uncompressed BackendNull::decompress_ecc_point(const EccPoint& ecc_point) {
+    EccPointDecompressionVisitor visitor;
+    return boost::apply_visitor(visitor, ecc_point);
 }
 
 EcdsaSignature BackendNull::fake_signature() const
