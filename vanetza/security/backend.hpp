@@ -38,6 +38,14 @@ public:
      */
     virtual bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) = 0;
 
+    /**
+     * \brief decompress a possibly compressed elliptic curve point
+     *
+     * \param ecc_point elliptic curve point
+     * \return uncompressed point
+     */
+    virtual Uncompressed decompress_ecc_point(const EccPoint& ecc_point) = 0;
+
     virtual ~Backend() = default;
 };
 

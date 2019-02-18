@@ -19,6 +19,7 @@ public:
     using PublicKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PublicKey;
     using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
     using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
+    using Point = CryptoPP::ECP::Point;
 
     static constexpr auto backend_name = "CryptoPP";
 
@@ -29,6 +30,9 @@ public:
 
     /// \see Backend::verify_data
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
+
+    /// \see Backend::decompress_ecc_point
+    Uncompressed decompress_ecc_point(const EccPoint& ecc_point) override;
 
     /**
      * \brief generate a private key and the corresponding public key

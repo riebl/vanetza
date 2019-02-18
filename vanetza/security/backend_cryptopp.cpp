@@ -1,4 +1,5 @@
 #include <vanetza/security/backend_cryptopp.hpp>
+#include <vanetza/security/ecc_point_decompression_visitor.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <cryptopp/oids.h>
 #include <cassert>
@@ -55,6 +56,38 @@ bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer&
 {
     Verifier verifier(public_key);
     return verifier.VerifyMessage(msg.data(), msg.size(), sig.data(), sig.size());
+}
+
+class CryptoPPEccPointDecompressionVisitor: public EccPointDecompressionVisitor
+{
+public:
+    virtual Uncompressed decompress(ByteBuffer x, EccPointType type) override {
+        // Only with actually compressed points that provide the bit of the y coordinate, we can perform decompression.
+        if (type != EccPointType::Compressed_Lsb_Y_0 && type != EccPointType::Compressed_Lsb_Y_1) {
+            throw std::logic_error("Unsupported compression type!");
+        }
+
+        ByteBuffer compressed(x);
+        // prepend compression type
+        compressed.insert(compressed.begin(), static_cast<uint8_t>(type));
+
+        BackendCryptoPP::Point point;
+        CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> group(CryptoPP::ASN1::secp256r1());
+        CryptoPP::ECP curve = group.GetCurve();
+        curve.DecodePoint(point, compressed.data(), compressed.size());
+
+        Uncompressed p { x };
+        auto y_byte_count = point.y.ByteCount();
+        p.y.resize(y_byte_count);
+        point.y.Encode(p.y.data(), y_byte_count);
+
+        return p;
+    }
+};
+
+Uncompressed BackendCryptoPP::decompress_ecc_point(const EccPoint& ecc_point) {
+    CryptoPPEccPointDecompressionVisitor visitor;
+    return boost::apply_visitor(visitor, ecc_point);
 }
 
 ecdsa256::KeyPair BackendCryptoPP::generate_key_pair()

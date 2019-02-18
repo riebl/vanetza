@@ -55,6 +55,8 @@ if(TARGET OpenSSL::Crypto)
     if (${OPENSSL_VERSION} VERSION_EQUAL 2.0.0)
         # found LibreSSL most likely, should be API compatible to OpenSSL 1.0.1
         target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10000000L")
+    elseif (${OPENSSL_VERSION} VERSION_EQUAL 1.1.1)
+        target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10101000L")
     elseif (${OPENSSL_VERSION} VERSION_LESS 1.1.0)
         target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10000000L")
     else()

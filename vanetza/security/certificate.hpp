@@ -3,6 +3,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/backend.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/ecdsa256.hpp>
@@ -183,16 +184,18 @@ void sort(Certificate& certificate);
 /**
  * \brief Extract public key from certificate
  * \param cert Certificate
+ * \param backend Backend
  * \return Uncompressed public key (if available)
  */
-boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate&);
+boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate&, Backend& backend);
 
 /**
  * \brief Extract public ECDSA256 key from certificate
  * \param cert Certificate
+ * \param backend Backend
  * \return public key (if available)
  */
-boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate&);
+boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate&, Backend& backend);
 
 /**
  * Calculate hash id of certificate

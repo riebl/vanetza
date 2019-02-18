@@ -2,6 +2,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <stdexcept>
+#include <vanetza/security/backend.hpp>
 #include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/persistence.hpp>
 
@@ -51,10 +52,11 @@ int ExtractPublicKeyCommand::execute()
 {
     std::cout << "Loading key... ";
 
+    std::unique_ptr<Backend> backend = create_backend("CryptoPP");
     ecdsa256::PublicKey public_key;
     if (certificate_path.length() > 0) {
         auto certificate = load_certificate_from_file(certificate_path);
-        auto certificate_key = get_public_key(certificate);
+        auto certificate_key = get_public_key(certificate, *backend);
 
         if (!certificate_key) {
             std::cerr << "Reading public key from certificate failed." << std::endl;

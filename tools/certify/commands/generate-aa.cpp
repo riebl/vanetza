@@ -77,7 +77,7 @@ int GenerateAaCommand::execute()
             return 1;
         }
 
-        subject_key = ecdsa256::create_public_key(boost::get<Uncompressed>(subject_key_etsi_ecdsa.public_key));
+        subject_key = ecdsa256::create_public_key(crypto_backend.decompress_ecc_point(subject_key_etsi_ecdsa.public_key));
     }
     std::cout << "OK" << std::endl;
 

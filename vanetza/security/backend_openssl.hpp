@@ -33,6 +33,9 @@ public:
     /// \see Backend::verify_data
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
 
+    /// \see Backend::decompress_ecc_point
+    Uncompressed decompress_ecc_point(const EccPoint& ecc_point) override;
+
 private:
     /// calculate SHA256 digest of data buffer
     std::array<uint8_t, 32> calculate_digest(const ByteBuffer& data) const;

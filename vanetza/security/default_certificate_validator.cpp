@@ -207,7 +207,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     // authorization tickets may only be signed by authorization authorities
     if (subject_type == SubjectType::Authorization_Ticket) {
         for (auto& possible_signer : m_cert_cache.lookup(signer_hash, SubjectType::Authorization_Authority)) {
-            auto verification_key = get_public_key(possible_signer);
+            auto verification_key = get_public_key(possible_signer, m_crypto_backend);
             if (!verification_key) {
                 continue;
             }
@@ -226,7 +226,7 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     // Note: There's no clear specification about this, but there's a test for it in 5.2.7.12.4 of TS 103 096-2 V1.3.1
     if (subject_type == SubjectType::Authorization_Authority) {
         for (auto& possible_signer : m_trust_store.lookup(signer_hash)) {
-            auto verification_key = get_public_key(possible_signer);
+            auto verification_key = get_public_key(possible_signer, m_crypto_backend);
             if (!verification_key) {
                 continue;
             }
