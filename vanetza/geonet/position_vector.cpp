@@ -63,6 +63,25 @@ bool is_empty(const LongPositionVector& pv)
     return pv == zero;
 }
 
+bool is_valid(const LongPositionVector& pv)
+{
+    static const geo_angle_i32t limit_lat { 90.0 * units::degree };
+    static const geo_angle_i32t limit_lon { 180.0 * units::degree };
+    static const heading_u16t limit_hdg { 360.0 * units::degree };
+
+    if (is_empty(pv)) {
+         return false;
+    } else if (pv.latitude < -limit_lat || pv.latitude > limit_lat) {
+         return false;
+    } else if (pv.longitude < -limit_lon || pv.longitude > limit_lon) {
+         return false;
+    } else if (pv.heading > limit_hdg) {
+         return false;
+    }
+
+    return true;
+}
+
 void serialize(const LongPositionVector& lpv, OutputArchive& ar)
 {
     serialize(lpv.gn_addr, ar);

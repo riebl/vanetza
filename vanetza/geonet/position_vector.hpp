@@ -47,6 +47,13 @@ bool operator!=(const LongPositionVector& lhs, const LongPositionVector& rhs);
  */
 bool is_empty(const LongPositionVector&);
 
+/**
+ * Check if position vector contains valid data,
+ * i.e. not empty and latitude, longitude, and heading values within range
+ * \return true if all data fields are valid
+ */
+bool is_valid(const LongPositionVector&);
+
 void serialize(const LongPositionVector&, OutputArchive&);
 void deserialize(LongPositionVector&, InputArchive&);
 
