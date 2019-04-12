@@ -48,22 +48,25 @@ void LocationTableEntry::update_pdr(std::size_t packet_size, double beta)
     }
 }
 
-void LocationTableEntry::set_position_vector(const LongPositionVector& pv)
+bool LocationTableEntry::set_position_vector(const LongPositionVector& pv)
 {
-    m_has_position_vector = true;
-    m_position_vector = pv;
+    if (is_valid(pv)) {
+        m_has_position_vector = true;
+        m_position_vector = pv;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 bool LocationTableEntry::update_position_vector(const LongPositionVector& lpv)
 {
     if (has_position_vector()) {
         if (get_position_vector().timestamp < lpv.timestamp) {
-            set_position_vector(lpv);
-            return true;
+            return set_position_vector(lpv);
         }
     } else {
-        set_position_vector(lpv);
-        return true;
+        return set_position_vector(lpv);
     }
 
     return false;

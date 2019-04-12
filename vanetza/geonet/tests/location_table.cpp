@@ -201,3 +201,18 @@ TEST_F(LocationTableTest, visit) {
 
     EXPECT_EQ(addresses.size(), visited_addresses.size());
 }
+
+TEST(LocationTableEntry, update_position_vector)
+{
+    ManualRuntime rt;
+    LocationTableEntry locte(rt);
+
+    LongPositionVector lpv;
+    EXPECT_FALSE(locte.update_position_vector(lpv));
+
+    lpv.latitude = geo_angle_i32t::from_value(91 * 10 * 1000 * 1000);
+    EXPECT_FALSE(locte.update_position_vector(lpv));
+
+    lpv.latitude = geo_angle_i32t::from_value(90 * 10 * 1000 * 1000);
+    EXPECT_TRUE(locte.update_position_vector(lpv));
+}

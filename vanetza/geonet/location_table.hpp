@@ -77,7 +77,7 @@ private:
      * Set stored position vector (without timestamp check)
      * \param pv source position vector
      */
-    void set_position_vector(const LongPositionVector& pv);
+    bool set_position_vector(const LongPositionVector& pv);
 
     const Runtime& m_runtime;
     bool m_is_neighbour;
