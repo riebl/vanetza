@@ -77,9 +77,8 @@ public:
         curve.DecodePoint(point, compressed.data(), compressed.size());
 
         Uncompressed p { x };
-        auto y_byte_count = point.y.ByteCount();
-        p.y.resize(y_byte_count);
-        point.y.Encode(p.y.data(), y_byte_count);
+        p.y.resize(p.x.size());
+        point.y.Encode(p.y.data(), p.y.size());
 
         return p;
     }
