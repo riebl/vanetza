@@ -86,18 +86,18 @@ public:
         const EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
         EC_POINT *point = EC_POINT_new(group);
         BIGNUM *y_coordinate = BN_new();
+
+        Uncompressed p { x };
+        p.y.resize(p.x.size());
 #if OPENSSL_API_COMPAT < 0x10101000L
         EC_POINT_set_compressed_coordinates_GFp(group, point, x_coordinate, static_cast<unsigned>(type) % 2, ctx);
         EC_POINT_get_affine_coordinates_GFp(group, point, nullptr, y_coordinate, ctx);
+        BN_bn2bin(y_coordinate, p.y.data() + (p.y.size() - BN_num_bytes(y_coordinate)));
 #else
         EC_POINT_set_compressed_coordinates(group, point, x_coordinate, static_cast<unsigned>(type) % 2, ctx);
         EC_POINT_get_affine_coordinates(group, point, nullptr, y_coordinate, ctx);
+        BN_bn2binpad(y_coordinate, p.y.data(), p.y.size());
 #endif
-
-        Uncompressed p { x };
-        p.y.resize(BN_num_bytes(y_coordinate));
-        BN_bn2bin(y_coordinate, p.y.data());
-
         return p;
     }
 };
