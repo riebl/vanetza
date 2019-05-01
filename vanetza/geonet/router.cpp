@@ -753,11 +753,13 @@ NextHop Router::greedy_forwarding(PendingPacketForwarding&& packet)
     units::Length mfr_dist = own;
 
     MacAddress mfr_addr;
-    for (auto& neighbour : m_location_table.neighbours()) {
-        const units::Length dist = distance(dest, neighbour.get_position_vector().position());
-        if (dist < mfr_dist) {
-            mfr_addr = neighbour.link_layer_address();
-            mfr_dist = dist;
+    for (const LocationTableEntry& neighbour : m_location_table.neighbours()) {
+        if (neighbour.has_position_vector()) {
+            const units::Length dist = distance(dest, neighbour.get_position_vector().position());
+            if (dist < mfr_dist) {
+                mfr_addr = neighbour.link_layer_address();
+                mfr_dist = dist;
+            }
         }
     }
 
