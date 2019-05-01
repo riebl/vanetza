@@ -966,7 +966,8 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
 
     // step 4: update location table with SO.PV (see C.2)
     auto& source_entry = m_location_table.update(shb.source_position);
-    assert(source_entry.has_position_vector());
+    // NOTE: position vector (PV) may still be missing in location table when received PV has been invalid
+    assert(source_entry.has_position_vector() || !is_valid(shb.source_position));
 
     // step 5: update SO.PDR in location table (see B.2)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
