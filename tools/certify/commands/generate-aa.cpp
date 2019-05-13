@@ -72,12 +72,13 @@ int GenerateAaCommand::execute()
         }
 
         auto subject_key_etsi_ecdsa = boost::get<ecdsa_nistp256_with_sha256>(subject_key_etsi);
-        if (get_type(subject_key_etsi_ecdsa.public_key) != EccPointType::Uncompressed) {
-            std::cerr << "Unsupported ECC point type, must be uncompressed.";
+        auto uncompressed_subject_ecc_point = crypto_backend.decompress_point(subject_key_etsi_ecdsa.public_key);
+        if (!uncompressed_subject_ecc_point) {
+            std::cerr << "Cannot get uncompressed ECC point from public key.";
             return 1;
+        } else {
+            subject_key = ecdsa256::create_public_key(*uncompressed_subject_ecc_point);
         }
-
-        subject_key = ecdsa256::create_public_key(crypto_backend.decompress_ecc_point(subject_key_etsi_ecdsa.public_key));
     }
     std::cout << "OK" << std::endl;
 

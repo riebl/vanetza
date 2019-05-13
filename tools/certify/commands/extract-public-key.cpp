@@ -52,7 +52,7 @@ int ExtractPublicKeyCommand::execute()
 {
     std::cout << "Loading key... ";
 
-    std::unique_ptr<Backend> backend = create_backend("CryptoPP");
+    std::unique_ptr<Backend> backend = create_backend("default");
     ecdsa256::PublicKey public_key;
     if (certificate_path.length() > 0) {
         auto certificate = load_certificate_from_file(certificate_path);

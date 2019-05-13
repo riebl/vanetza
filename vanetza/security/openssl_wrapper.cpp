@@ -72,6 +72,16 @@ Point::~Point()
     EC_POINT_free(point);
 }
 
+Group::Group(int nid) : group(EC_GROUP_new_by_curve_name(nid))
+{
+    check(group != nullptr);
+}
+
+Group::~Group()
+{
+    EC_GROUP_clear_free(group);
+}
+
 Signature::Signature(ECDSA_SIG* sig) : signature(sig)
 {
     check(signature);

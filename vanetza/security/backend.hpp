@@ -5,6 +5,7 @@
 #include <vanetza/common/factory.hpp>
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/signature.hpp>
+#include <boost/optional/optional.hpp>
 #include <memory>
 #include <string>
 
@@ -44,7 +45,7 @@ public:
      * \param ecc_point elliptic curve point
      * \return uncompressed point
      */
-    virtual Uncompressed decompress_ecc_point(const EccPoint& ecc_point) = 0;
+    virtual boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) = 0;
 
     virtual ~Backend() = default;
 };

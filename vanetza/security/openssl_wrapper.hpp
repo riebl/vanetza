@@ -78,6 +78,19 @@ private:
 };
 
 
+class Group : private boost::noncopyable
+{
+public:
+    explicit Group(int nid);
+    ~Group();
+
+    operator EC_GROUP*() { return group; }
+
+private:
+    EC_GROUP* group;
+};
+
+
 class Point : private boost::noncopyable
 {
 public:

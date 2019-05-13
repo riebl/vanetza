@@ -1,8 +1,9 @@
 #include <vanetza/security/backend_cryptopp.hpp>
-#include <vanetza/security/ecc_point_decompression_visitor.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <cryptopp/oids.h>
+#include <algorithm>
 #include <cassert>
+#include <iterator>
 #include <functional>
 
 namespace vanetza
@@ -58,35 +59,59 @@ bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer&
     return verifier.VerifyMessage(msg.data(), msg.size(), sig.data(), sig.size());
 }
 
-class CryptoPPEccPointDecompressionVisitor: public EccPointDecompressionVisitor
+
+boost::optional<Uncompressed> BackendCryptoPP::decompress_point(const EccPoint& ecc_point)
 {
-public:
-    virtual Uncompressed decompress(ByteBuffer x, EccPointType type) override {
-        // Only with actually compressed points that provide the bit of the y coordinate, we can perform decompression.
-        if (type != EccPointType::Compressed_Lsb_Y_0 && type != EccPointType::Compressed_Lsb_Y_1) {
-            throw std::logic_error("Unsupported compression type!");
+    struct DecompressionVisitor : public boost::static_visitor<bool>
+    {
+        bool operator()(const X_Coordinate_Only&)
+        {
+            return false;
         }
 
-        ByteBuffer compressed(x);
-        // prepend compression type
-        compressed.insert(compressed.begin(), static_cast<uint8_t>(type));
+        bool operator()(const Compressed_Lsb_Y_0& p)
+        {
+            decompress(p.x, 0x02);
+            return true;
+        }
 
-        BackendCryptoPP::Point point;
-        CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> group(CryptoPP::ASN1::secp256r1());
-        CryptoPP::ECP curve = group.GetCurve();
-        curve.DecodePoint(point, compressed.data(), compressed.size());
+        bool operator()(const Compressed_Lsb_Y_1& p)
+        {
+            decompress(p.x, 0x03);
+            return true;
+        }
 
-        Uncompressed p { x };
-        p.y.resize(p.x.size());
-        point.y.Encode(p.y.data(), p.y.size());
+        bool operator()(const Uncompressed& p)
+        {
+            result = p;
+            return true;
+        }
 
-        return p;
+        void decompress(const ByteBuffer& x, ByteBuffer::value_type type)
+        {
+            ByteBuffer compact;
+            compact.reserve(x.size() + 1);
+            compact.push_back(type);
+            std::copy(x.begin(), x.end(), std::back_inserter(compact));
+
+            BackendCryptoPP::Point point;
+            CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> group(CryptoPP::ASN1::secp256r1());
+            group.GetCurve().DecodePoint(point, compact.data(), compact.size());
+
+            result.x = x;
+            result.y.resize(result.x.size());
+            point.y.Encode(result.y.data(), result.y.size());
+        }
+
+        Uncompressed result;
+    };
+
+    DecompressionVisitor visitor;
+    if (boost::apply_visitor(visitor, ecc_point)) {
+        return visitor.result;
+    } else {
+        return boost::none;
     }
-};
-
-Uncompressed BackendCryptoPP::decompress_ecc_point(const EccPoint& ecc_point) {
-    CryptoPPEccPointDecompressionVisitor visitor;
-    return boost::apply_visitor(visitor, ecc_point);
 }
 
 ecdsa256::KeyPair BackendCryptoPP::generate_key_pair()

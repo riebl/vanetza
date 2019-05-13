@@ -1,5 +1,4 @@
 #include <vanetza/security/backend_openssl.hpp>
-#include <vanetza/security/ecc_point_decompression_visitor.hpp>
 #include <vanetza/security/openssl_wrapper.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
@@ -72,39 +71,68 @@ bool BackendOpenSsl::verify_data(const ecdsa256::PublicKey& key, const ByteBuffe
     return (ECDSA_do_verify(digest.data(), digest.size(), signature, pub) == 1);
 }
 
-class OpenSslEccPointDecompressionVisitor: public EccPointDecompressionVisitor
+boost::optional<Uncompressed> BackendOpenSsl::decompress_point(const EccPoint& ecc_point)
 {
-public:
-    virtual Uncompressed decompress(ByteBuffer x, EccPointType type) override {
-        // Only with actually compressed points that provide the bit of the y coordinate, we can perform decompression.
-        if (type != EccPointType::Compressed_Lsb_Y_0 && type != EccPointType::Compressed_Lsb_Y_1) {
-            throw std::logic_error("Unsupported compression type!");
+    struct DecompressionVisitor : public boost::static_visitor<bool>
+    {
+        bool operator()(const X_Coordinate_Only&)
+        {
+            return false;
         }
 
-        openssl::BigNumberContext ctx;
-        openssl::BigNumber x_coordinate(x);
-        const EC_GROUP *group = EC_GROUP_new_by_curve_name(NID_X9_62_prime256v1);
-        EC_POINT *point = EC_POINT_new(group);
-        BIGNUM *y_coordinate = BN_new();
+        bool operator()(const Compressed_Lsb_Y_0& p)
+        {
+            return decompress(p.x, 0);
+        }
 
-        Uncompressed p { x };
-        p.y.resize(p.x.size());
+        bool operator()(const Compressed_Lsb_Y_1& p)
+        {
+            return decompress(p.x, 1);
+        }
+
+        bool operator()(const Uncompressed& p)
+        {
+            result = p;
+            return true;
+        }
+
+        bool decompress(const ByteBuffer& x, int y_bit)
+        {
+            openssl::BigNumberContext ctx;
+            openssl::BigNumber x_coordinate(x);
+            openssl::Group group(NID_X9_62_prime256v1);
+            openssl::Point point(group);
+            openssl::BigNumber y_coordinate;
+
+            result.x = x;
+            result.y.resize(result.x.size());
+
 #if OPENSSL_API_COMPAT < 0x10101000L
-        EC_POINT_set_compressed_coordinates_GFp(group, point, x_coordinate, static_cast<unsigned>(type) % 2, ctx);
-        EC_POINT_get_affine_coordinates_GFp(group, point, nullptr, y_coordinate, ctx);
-        BN_bn2bin(y_coordinate, p.y.data() + (p.y.size() - BN_num_bytes(y_coordinate)));
+            EC_POINT_set_compressed_coordinates_GFp(group, point, x_coordinate, y_bit, ctx);
+            EC_POINT_get_affine_coordinates_GFp(group, point, nullptr, y_coordinate, ctx);
+            std::size_t y_coordinate_bytes = BN_num_bytes(y_coordinate);
+            if (y_coordinate_bytes <= result.y.size()) {
+                BN_bn2bin(y_coordinate, result.y.data() + (result.y.size() - y_coordinate_bytes));
+                return true;
+            } else {
+                return false;
+            }
 #else
-        EC_POINT_set_compressed_coordinates(group, point, x_coordinate, static_cast<unsigned>(type) % 2, ctx);
-        EC_POINT_get_affine_coordinates(group, point, nullptr, y_coordinate, ctx);
-        BN_bn2binpad(y_coordinate, p.y.data(), p.y.size());
+            EC_POINT_set_compressed_coordinates(group, point, x_coordinate, y_bit, ctx);
+            EC_POINT_get_affine_coordinates(group, point, nullptr, y_coordinate, ctx);
+            return (BN_bn2binpad(y_coordinate, result.y.data(), result.y.size()) != -1);
 #endif
-        return p;
-    }
-};
+        }
 
-Uncompressed BackendOpenSsl::decompress_ecc_point(const EccPoint& ecc_point) {
-    OpenSslEccPointDecompressionVisitor visitor;
-    return boost::apply_visitor(visitor, ecc_point);
+        Uncompressed result;
+    };
+
+    DecompressionVisitor visitor;
+    if (boost::apply_visitor(visitor, ecc_point)) {
+        return visitor.result;
+    } else {
+        return boost::none;
+    }
 }
 
 std::array<uint8_t, 32> BackendOpenSsl::calculate_digest(const ByteBuffer& data) const

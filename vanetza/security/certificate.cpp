@@ -109,7 +109,7 @@ boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate& cer
         if (get_type(attribute) == SubjectAttributeType::Verification_Key) {
             const VerificationKey& verification_key = boost::get<VerificationKey>(attribute);
             const EccPoint& ecc_point = boost::get<ecdsa_nistp256_with_sha256>(verification_key.key).public_key;
-            public_key_coordinates = backend.decompress_ecc_point(ecc_point);
+            public_key_coordinates = backend.decompress_point(ecc_point);
             break;
         }
     }
