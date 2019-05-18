@@ -20,28 +20,35 @@ CartesianPosition operator-(const CartesianPosition& a, const CartesianPosition&
 
 double geometric_function(const Circle& c, const CartesianPosition& p)
 {
-    assert(c.r.value() != 0.0);
-    const double x_over_r = p.x / c.r;
-    const double y_over_r = p.y / c.r;
-    return 1.0 - (x_over_r * x_over_r) - (y_over_r * y_over_r);
+    if (c.r.value() != 0.0) {
+        const double x_over_r = p.x / c.r;
+        const double y_over_r = p.y / c.r;
+        return 1.0 - (x_over_r * x_over_r) - (y_over_r * y_over_r);
+    } else {
+        return -std::numeric_limits<double>::infinity();
+    };
 }
 
 double geometric_function(const Rectangle& r, const CartesianPosition& p)
 {
-    assert(r.a.value() != 0.0);
-    assert(r.b.value() != 0.0);
-    const double x_over_a = p.x / r.a;
-    const double y_over_b = p.y / r.b;
-    return std::min(1.0 - x_over_a * x_over_a, 1.0 - y_over_b * y_over_b);
+    if (r.a.value() != 0.0 && r.b.value() != 0.0) {
+        const double x_over_a = p.x / r.a;
+        const double y_over_b = p.y / r.b;
+        return std::min(1.0 - x_over_a * x_over_a, 1.0 - y_over_b * y_over_b);
+    } else {
+        return -std::numeric_limits<double>::infinity();
+    }
 }
 
 double geometric_function(const Ellipse& e, const CartesianPosition& p)
 {
-    assert(e.a.value() != 0.0);
-    assert(e.b.value() != 0.0);
-    const double x_over_a = p.x / e.a;
-    const double y_over_b = p.y / e.b;
-    return 1.0 - (x_over_a * x_over_a) - (y_over_b * y_over_b);
+    if (e.a.value() != 0.0 && e.b.value() != 0.0) {
+        const double x_over_a = p.x / e.a;
+        const double y_over_b = p.y / e.b;
+        return 1.0 - (x_over_a * x_over_a) - (y_over_b * y_over_b);
+    } else {
+        return -std::numeric_limits<double>::infinity();
+    }
 }
 
 struct geometric_function_visitor : public boost::static_visitor<double>
