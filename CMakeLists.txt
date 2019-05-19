@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(Vanetza VERSION 0.8)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12)
+if(NOT ${CMAKE_VERSION} VERSION_LESS 3.12)
   # find_package shall use <PackageName>_ROOT variables
   cmake_policy(SET CMP0074 NEW)
 endif()
