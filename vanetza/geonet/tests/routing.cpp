@@ -101,6 +101,17 @@ TEST_P(Routing, beacon_location_table)
     EXPECT_GT(0, entry5->get_position_vector().latitude.value());
 }
 
+/**
+ * No GN Beacon shall ever be transmitted when beaconing has been disabled explicitly.
+ */
+TEST_P(Routing, disabled_beaconing)
+{
+    net.get_mib().vanetzaDisableBeaconing = true;
+    net.advance_time(std::chrono::minutes(1));
+    EXPECT_EQ(0, net.get_interface(cars[0])->counter);
+    EXPECT_EQ(0, size(net.get_router(cars[0])->get_location_table().neighbours()));
+}
+
 /*
  * Preconditions:
  * - source router inside destination area

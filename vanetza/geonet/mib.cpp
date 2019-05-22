@@ -49,7 +49,8 @@ ManagementInformationBase::ManagementInformationBase() :
     itsGnCbfPacketBufferSize(256),
     itsGnDefaultTrafficClass(false, false, 0),
     vanetzaCbfMaxCounter(3),
-    vanetzaDeferInitialBeacon(false)
+    vanetzaDeferInitialBeacon(false),
+    vanetzaDisableBeaconing(false)
 {
 }
 

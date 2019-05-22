@@ -129,14 +129,16 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_repeater(m_runtime,
             std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2))
 {
-    if (!m_mib.vanetzaDeferInitialBeacon) {
-        // send Beacon immediately after start-up at next runtime trigger invocation
-        reset_beacon_timer(Clock::duration::zero());
-    } else {
-        // defer initial Beacon transmission slightly
-        std::uniform_real_distribution<double> dist(0.0, 1.0);
-        const auto first_beacon = dist(m_random_gen) * m_mib.itsGnBeaconServiceRetransmitTimer;
-        reset_beacon_timer(clock_cast(first_beacon));
+    if (!m_mib.vanetzaDisableBeaconing) {
+        if (!m_mib.vanetzaDeferInitialBeacon) {
+            // send Beacon immediately after start-up at next runtime trigger invocation
+            reset_beacon_timer(Clock::duration::zero());
+        } else {
+            // defer initial Beacon transmission slightly
+            std::uniform_real_distribution<double> dist(0.0, 1.0);
+            const auto first_beacon = dist(m_random_gen) * m_mib.itsGnBeaconServiceRetransmitTimer;
+            reset_beacon_timer(clock_cast(first_beacon));
+        }
     }
 }
 
@@ -695,6 +697,11 @@ void Router::pass_up(const DataIndication& ind, UpPacketPtr packet)
 
 void Router::on_beacon_timer_expired()
 {
+    if (m_mib.vanetzaDisableBeaconing) {
+        // bail out immediately if beaconing has been disabled
+        return;
+    }
+
     // Beacons originate in GeoNet layer, therefore no upper layer payload
     DownPacketPtr payload { new DownPacket() };
     auto pdu = create_beacon_pdu();
