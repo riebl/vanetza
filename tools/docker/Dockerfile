@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     libboost-date-time-dev \
     libboost-program-options-dev \
-    libboost-serialization-dev \
     libboost-system-dev \
     libcrypto++-dev \
     libgeographic-dev \
