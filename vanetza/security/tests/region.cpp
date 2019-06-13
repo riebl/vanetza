@@ -1,3 +1,4 @@
+#include <cmath>
 #include <gtest/gtest.h>
 #include <vanetza/security/region.hpp>
 #include <vanetza/security/tests/check_region.hpp>
@@ -232,4 +233,22 @@ TEST(Region, Rectangle_Within_Rectangle_Exact)
 
     EXPECT_TRUE(is_within(region_a, region_b));
     EXPECT_TRUE(is_within(region_b, region_a));
+}
+
+TEST(Region, Altitude_To_Elevation)
+{
+	double altitude_empty = NAN;
+	std::array<uint8_t, 2> elevation(ThreeDLocation::unknown_elevation);
+
+	EXPECT_EQ(to_elevation(altitude_empty), elevation);
+
+	double altitude_positive = 2843.6;
+	std::array<uint8_t, 2> elevation_positive = { 0x6F, 0x14 };
+
+	EXPECT_EQ(to_elevation(altitude_positive), elevation_positive);
+
+	double altitude_negative = -170.2;
+	std::array<uint8_t, 2> elevation_negative = { 0xF9, 0x5A };
+
+	EXPECT_EQ(to_elevation(altitude_negative), elevation_negative);
 }

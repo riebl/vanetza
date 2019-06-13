@@ -1,7 +1,12 @@
+#include <cmath>
+#include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/serialization.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/units/angle.hpp>
+#include <vanetza/units/length.hpp>
+#include <boost/algorithm/clamp.hpp>
+#include <boost/units/systems/si/prefixes.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <GeographicLib/Geodesic.hpp>
@@ -665,6 +670,29 @@ bool is_within(const GeographicRegion& inner, const IdentifiedRegion& outer)
     // TODO: Implement check whether inner is within the polygon identified by the outer region
     // Note: The identified region can be converted to a polygon and its implementation be reused then.
     return false;
+}
+
+
+// Altitude in PositionFix is in meters, we need to convert to decimeters
+static const auto m_to_dm = boost::units::conversion_factor(units::Length::unit_type(),
+        units::Length::unit_type() * boost::units::si::deci);
+// See TS 103 097 v1.2.1, section 4.2.19
+static constexpr auto min_elev = -4095;
+static constexpr auto max_elev = 61439;
+
+std::array<uint8_t, 2> to_elevation(const double& altitude) {
+    // Default to special value for nan elevation
+    std::array<uint8_t, 2> elevation(ThreeDLocation::unknown_elevation);
+    if (!std::isnan(altitude)) {
+        uint16_t* elev_value = reinterpret_cast<uint16_t*>(elevation.data());
+        auto altitude_value = std::round(boost::algorithm::clamp(altitude * m_to_dm, min_elev, max_elev));
+        if (altitude_value < 0) {
+            // For negative altitudes, elevation is the distance to the minimum value with 0xF001 as additional offset.
+            altitude_value += -min_elev + 0xF001;
+        }
+        *elev_value = hton(static_cast<uint16_t>(altitude_value));
+    }
+    return elevation;
 }
 
 } // namespace security

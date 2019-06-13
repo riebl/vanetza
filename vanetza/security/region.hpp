@@ -5,6 +5,7 @@
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
+#include <boost/optional/optional.hpp>
 #include <boost/variant/variant.hpp>
 #include <list>
 
@@ -391,6 +392,13 @@ bool is_within(const GeographicRegion&, const PolygonalRegion&);
  * \true if pos is within region
  */
 bool is_within(const GeographicRegion&, const IdentifiedRegion&);
+
+/**
+ * \brief Convert PositionFix' altitude to elevation representation from TS 103 097 v1.2.1, section 4.2.19
+ * \param altitude altitude value as obtained from PositionFix
+ * \return encoded elevation value
+ */
+std::array<uint8_t, 2> to_elevation(const double&);
 
 } //namespace security
 } //namespace vanetza
