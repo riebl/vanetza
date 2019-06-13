@@ -844,15 +844,14 @@ units::Duration Router::timeout_cbf(units::Length prog) const
     const auto dist_max = m_mib.itsGnDefaultMaxCommunicationRange;
     const auto to_cbf_min = m_mib.itsGnCbfMinTime;
     const auto to_cbf_max = m_mib.itsGnCbfMaxTime;
-    auto to_cbf_gbc = to_cbf_min;
 
-    if (prog <= dist_max) {
-        to_cbf_gbc = to_cbf_max + (to_cbf_min - to_cbf_max) / dist_max * prog;
+    if (prog > dist_max) {
+        return to_cbf_min;
+    } else if (prog > 0.0 * units::si::meter) {
+        return to_cbf_max + (to_cbf_min - to_cbf_max) / dist_max * prog;
     } else {
-        to_cbf_gbc = to_cbf_min;
+        return to_cbf_max;
     }
-
-    return to_cbf_gbc;
 }
 
 units::Duration Router::timeout_cbf(const MacAddress& sender) const
