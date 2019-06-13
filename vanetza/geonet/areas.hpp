@@ -40,7 +40,7 @@ struct GeodeticPosition
  * Get distance between two geodetic positions on WGS84 ellipsoid
  * \param lhs left hand side
  * \param rhs right hand side
- * \return distance in meters, always positive
+ * \return distance in meters (always positive) or NaN for invalid input
  */
 units::Length distance(const GeodeticPosition& lhs, const GeodeticPosition& rhs);
 

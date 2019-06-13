@@ -6,6 +6,7 @@
 #include <GeographicLib/LocalCartesian.hpp>
 #include <algorithm>
 #include <cassert>
+#include <limits>
 
 namespace vanetza
 {
@@ -130,8 +131,7 @@ units::Length distance(const GeodeticPosition& lhs, const GeodeticPosition& rhs)
     geod.Inverse(lhs.latitude / units::degree, lhs.longitude / units::degree,
             rhs.latitude / units::degree, rhs.longitude / units::degree,
             distance_m);
-    assert(distance_m >= 0.0);
-    return distance_m * units::si::meters;
+    return (distance_m >= 0.0 ? distance_m : std::numeric_limits<double>::quiet_NaN()) * units::si::meters;
 }
 
 bool inside_or_at_border(const Area& area, const GeodeticPosition& geo_position)
