@@ -2,16 +2,22 @@
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/region.hpp>
 #include <vanetza/units/angle.hpp>
+#include <vanetza/units/length.hpp>
+#include <boost/algorithm/clamp.hpp>
+#include <boost/units/cmath.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <GeographicLib/Geodesic.hpp>
+#include <cmath>
 
 namespace vanetza
 {
 namespace security
 {
 
-const std::array<uint8_t, 2> ThreeDLocation::unknown_elevation {{ 0xF0, 0x00 }};
+const ThreeDLocation::Elevation ThreeDLocation::unknown_elevation {{ 0xF0, 0x00 }};
+const ThreeDLocation::Elevation ThreeDLocation::min_elevation {{ 0xF0, 0x01 }};
+const ThreeDLocation::Elevation ThreeDLocation::max_elevation {{ 0xEF, 0xFF }};
 
 RegionType get_type(const GeographicRegion& reg)
 {
@@ -665,6 +671,27 @@ bool is_within(const GeographicRegion& inner, const IdentifiedRegion& outer)
     // TODO: Implement check whether inner is within the polygon identified by the outer region
     // Note: The identified region can be converted to a polygon and its implementation be reused then.
     return false;
+}
+
+ThreeDLocation::Elevation to_elevation(units::Length altitude)
+{
+    using boost::units::isnan;
+
+    // Default to special value for NaN elevation
+    ThreeDLocation::Elevation elevation { ThreeDLocation::unknown_elevation };
+
+    if (!isnan(altitude)) {
+        // see TS 103 097 v1.2.1, section 4.2.19
+        static constexpr double min_elevation = -4095.0;
+        static constexpr double max_elevation = 61439.0;
+        const double altitude_dm = 10.0 * (altitude / vanetza::units::si::meter);
+        std::int16_t altitude_int = boost::algorithm::clamp(std::round(altitude_dm), min_elevation, max_elevation);
+
+        elevation[0] = altitude_int >> 8;
+        elevation[1] = altitude_int & 0xFF;
+    }
+
+    return elevation;
 }
 
 } // namespace security

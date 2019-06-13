@@ -16,21 +16,24 @@ namespace security
 /// ThreeDLocation specified in TS 103 097 v1.2.1, section 4.2.19
 struct ThreeDLocation
 {
-    static const std::array<uint8_t, 2> unknown_elevation;
+    using Elevation = std::array<uint8_t, 2>;
+    static const Elevation unknown_elevation;
+    static const Elevation min_elevation;
+    static const Elevation max_elevation;
 
     ThreeDLocation() = default;
     ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude) :
         latitude(latitude), longitude(longitude), elevation(unknown_elevation) {}
     ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude) :
         latitude(latitude), longitude(longitude), elevation(unknown_elevation) {}
-    ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude, std::array<uint8_t, 2> elevation) :
+    ThreeDLocation(geonet::geo_angle_i32t latitude, geonet::geo_angle_i32t longitude, Elevation elevation) :
         latitude(latitude), longitude(longitude), elevation(elevation) {}
-    ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude, std::array<uint8_t, 2> elevation) :
+    ThreeDLocation(units::GeoAngle latitude, units::GeoAngle longitude, Elevation elevation) :
         latitude(latitude), longitude(longitude), elevation(elevation) {}
 
     geonet::geo_angle_i32t latitude;
     geonet::geo_angle_i32t longitude;
-    std::array<uint8_t, 2> elevation;
+    Elevation elevation;
 
     bool operator==(const ThreeDLocation&) const;
     bool operator!=(const ThreeDLocation&) const;
@@ -391,6 +394,14 @@ bool is_within(const GeographicRegion&, const PolygonalRegion&);
  * \true if pos is within region
  */
 bool is_within(const GeographicRegion&, const IdentifiedRegion&);
+
+/**
+ * \brief Convert WGS84 altitude to elevation
+ * \see TS 103 097 v1.2.1, section 4.2.19
+ * \param altitude altitude above ellipsoid (accepts NaN)
+ * \return encoded elevation
+ */
+ThreeDLocation::Elevation to_elevation(units::Length);
 
 } //namespace security
 } //namespace vanetza

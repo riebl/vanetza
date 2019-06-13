@@ -47,9 +47,12 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
         m_cert_requested = false;
         m_chain_requested = false;
     } else {
-        // TODO: Add elevation once available via PositionFix
         auto position = m_positioning.position_fix();
-        header_fields.push_back(ThreeDLocation(position.latitude, position.longitude));
+        if (position.altitude) {
+            header_fields.push_back(ThreeDLocation(position.latitude, position.longitude, to_elevation(position.altitude->value())));
+        } else {
+            header_fields.push_back(ThreeDLocation(position.latitude, position.longitude));
+        }
         header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
     }
 

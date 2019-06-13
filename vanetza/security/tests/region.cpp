@@ -4,6 +4,7 @@
 #include <vanetza/security/tests/serialization.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
+#include <limits>
 
 using namespace vanetza::security;
 using vanetza::geonet::distance_u16t;
@@ -232,4 +233,24 @@ TEST(Region, Rectangle_Within_Rectangle_Exact)
 
     EXPECT_TRUE(is_within(region_a, region_b));
     EXPECT_TRUE(is_within(region_b, region_a));
+}
+
+TEST(Region, Altitude_To_Elevation)
+{
+    using Elevation = ThreeDLocation::Elevation;
+
+    auto altitude_empty = std::numeric_limits<double>::quiet_NaN() * meter;
+    EXPECT_EQ(to_elevation(altitude_empty), ThreeDLocation::unknown_elevation);
+
+    auto altitude_positive = 2843.6 * meter;
+    EXPECT_EQ(to_elevation(altitude_positive), (Elevation { 0x6F, 0x14 }));
+
+    auto altitude_negative = -170.2 * meter;
+    EXPECT_EQ(to_elevation(altitude_negative), (Elevation { 0xF9, 0x5A }));
+
+    auto altitude_below_min = -420.0 * meter;
+    EXPECT_EQ(to_elevation(altitude_below_min), ThreeDLocation::min_elevation);
+
+    auto altitude_above_max = 6150.0 * meter;
+    EXPECT_EQ(to_elevation(altitude_above_max), ThreeDLocation::max_elevation);
 }
