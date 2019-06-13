@@ -6,6 +6,8 @@
 #include <vanetza/common/position_confidence.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/velocity.hpp>
+#include <vanetza/units/length.hpp>
+#include <boost/optional/optional.hpp>
 
 namespace vanetza
 {
@@ -18,6 +20,7 @@ struct PositionFix
     PositionConfidence confidence;
     ConfidentQuantity<units::TrueNorth> course;
     ConfidentQuantity<units::Velocity> speed;
+    boost::optional<ConfidentQuantity<units::Length>> altitude;
 };
 
 } // namespace vanetza
