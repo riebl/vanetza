@@ -127,7 +127,8 @@ Router::Router(Runtime& rt, const MIB& mib) :
             mib.itsGnCbfPacketBufferSize * 1024),
     m_local_sequence_number(0),
     m_repeater(m_runtime,
-            std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2))
+            std::bind(&Router::dispatch_repetition, this, std::placeholders::_1, std::placeholders::_2)),
+    m_random_gen(mib.vanetzaDefaultSeed)
 {
     if (!m_mib.vanetzaDisableBeaconing) {
         if (!m_mib.vanetzaDeferInitialBeacon) {

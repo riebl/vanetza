@@ -10,6 +10,7 @@
 #include <vanetza/units/frequency.hpp>
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
+#include <cstdint>
 #include <string>
 
 namespace vanetza
@@ -90,6 +91,7 @@ struct ManagementInformationBase
     unsigned itsGnBcForwardingPacketBufferSize; // kbyte
     unsigned itsGnCbfPacketBufferSize; // kbyte
     TrafficClass itsGnDefaultTrafficClass;
+    std::uint32_t vanetzaDefaultSeed; /*< default seed for internal random number generator */
     std::size_t vanetzaCbfMaxCounter; /*< maximum counter value used for Advanced routing */
     bool vanetzaDeferInitialBeacon; /*< defer first beacon up to itsGnBeaconServiceRetransmitTimer */
     bool vanetzaDisableBeaconing; /*< disable transmission of beacons entirely */
