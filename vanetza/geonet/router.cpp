@@ -612,6 +612,7 @@ NextHop Router::forwarding_algorithm_selection(PendingPacketForwarding&& packet,
         const LongPositionVector* pv_se = ll ? m_location_table.get_position(ll->sender) : nullptr;
         if (pv_se && pv_se->position_accuracy_indicator && inside_or_at_border(destination, pv_se->position())) {
             nh.discard();
+            forwarding_stopped(ForwardingStopReason::Outside_Destination_Area);
         } else {
             switch (m_mib.itsGnNonAreaForwardingAlgorithm) {
                 case UnicastForwarding::Unspecified:

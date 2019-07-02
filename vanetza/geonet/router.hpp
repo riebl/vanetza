@@ -98,7 +98,8 @@ public:
     {
         Hop_Limit,
         Source_PDR,
-        Sender_PDR
+        Sender_PDR,
+        Outside_Destination_Area
     };
 
     Router(Runtime&, const MIB&);
