@@ -83,3 +83,14 @@ TEST(asn1c_wrapper, decode_invalid) {
     // should have failed because of short buffer
     ASSERT_FALSE(result);
 }
+
+TEST(asn1c_wrapper, decode_range) {
+    test_wrapper wrapper(asn_DEF_VanetzaTest);
+    const vanetza::ByteBuffer buffer { 0xC0, 0xFF, 0xEE, 0x04, 0x02, 0x11, 0xA2, 0x80, 0x08, 0x15 };
+    auto begin = std::next(buffer.begin(), 3);
+    auto end = std::prev(buffer.end(), 2);
+    ASSERT_TRUE(wrapper.decode(begin, end));
+    EXPECT_EQ(8, wrapper->field);
+    EXPECT_EQ(4, wrapper->string.size);
+    EXPECT_STREQ("1234", (const char*)(wrapper->string.buf));
+}
