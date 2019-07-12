@@ -42,6 +42,7 @@ its/DeltaAltitude.c
 its/DeltaLatitude.c
 its/DeltaLongitude.c
 its/DeltaReferencePosition.c
+its/DigitalMap.c
 its/DriveDirection.c
 its/DrivingLaneStatus.c
 its/EXTERNAL.c
@@ -97,10 +98,12 @@ its/OCTET_STRING_oer.c
 its/OPEN_TYPE.c
 its/OPEN_TYPE_oer.c
 its/ObjectDescriptor.c
+its/OpeningDaysHours.c
 its/PathDeltaTime.c
 its/PathHistory.c
 its/PathPoint.c
 its/PerformanceClass.c
+its/PhoneNumber.c
 its/PosCentMass.c
 its/PosConfidenceEllipse.c
 its/PosFrontAx.c

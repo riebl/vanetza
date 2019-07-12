@@ -1835,7 +1835,7 @@ SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
 
 		/* Eliminate default values */
 		if(present && elm->default_value_cmp
-		        && elm->default_value_cmp(memb_ptr2) == 1)
+		        && elm->default_value_cmp(memb_ptr2) == 0)
 			present = 0;
 
 		ASN_DEBUG("Element %s %s %s->%s is %s",
@@ -1881,7 +1881,7 @@ SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
 		}
 
 		/* Eliminate default values */
-		if(elm->default_value_cmp && elm->default_value_cmp(memb_ptr2) == 1)
+		if(elm->default_value_cmp && elm->default_value_cmp(memb_ptr2) == 0)
 			continue;
 
 		ASN_DEBUG("Encoding %s->%s", td->name, elm->name);

@@ -8,29 +8,15 @@ if(VANETZA_ASN1_WITH_ASN1C)
     string(REPLACE " " ";" _asn1c_flags "${ASN1C_FLAGS}")
 
     set(_its_asn1_files
-        CDD_TS102894-2/v1.2.1/ITS-Container.asn
-        CAM_EN302637-2/v1.3.2/CAM.asn
-        DENM_EN302637-3/v1.2.2/DENM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102894-2v131-CDD.asn
+        ${PROJECT_SOURCE_DIR}/asn1/EN302637-2v141-CAM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/EN302637-3v131-DENM.asn
     )
-    set(_its_asn1_revision 36)
-    set(_its_asn1_name "ITS_ASN1-releases.r${_its_asn1_revision}")
-    set(_its_asn1_archive "${_its_asn1_name}.tar.gz")
     set(_its_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its")
 
     add_custom_target(clean_asn1c
-        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=its -P clean_asn1c.cmake
+        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=its -DASN1C_SOURCE_FILE=${_its_asn1_source_file} -P clean_asn1c.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    file(DOWNLOAD
-        "http://oldforge.etsi.org/websvn/dl.php?repname=ITS.ITS_ASN1&path=%2Freleases%2F&isdir=1&rev=${_its_asn1_revision}"
-        "${CMAKE_CURRENT_SOURCE_DIR}/${_its_asn1_archive}"
-        EXPECTED_HASH SHA256=35b82b6adb6e67f8f2cb2da1a412095a9b68fb425b78f6ce910b4c938f5f7751
-        SHOW_PROGRESS)
-    add_custom_command(OUTPUT ${_its_asn1_name}/${_its_asn1_files}
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${_its_asn1_archive}
-        COMMAND ${CMAKE_COMMAND} -E tar xfz ${CMAKE_CURRENT_SOURCE_DIR}/${_its_asn1_archive}
-        COMMENT "Extracting ITS ASN.1 modules"
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        VERBATIM)
     add_custom_command(OUTPUT ${_its_asn1_dir}
         DEPENDS ${_its_asn1_name}/${_its_asn1_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_its_asn1_dir}
@@ -43,7 +29,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     add_custom_target(generate_asn1c DEPENDS ${_its_asn1_dir} ${_its_asn1_source_file})
     add_custom_command(TARGET generate_asn1c POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_sources.cmake
+        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_sources.cmake
         COMMENT "Patching ITS asn1c files"
         WORKING_DIRECTORY ${_its_asn1_dir})
     # wipe directory with generated files before generating

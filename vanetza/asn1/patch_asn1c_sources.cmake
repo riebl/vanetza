@@ -6,6 +6,9 @@ foreach(_file ${_files})
     set(_patched "")
     file(READ "${_file}" _content)
 
+    # make absolute path relative to project source directory
+    string(REPLACE "found in \"${PROJECT_SOURCE_DIR}/" "found in \"" _content "${_content}")
+
     # change #include brackets to quotes in asn1c support code
     string(REGEX MATCHALL "#include <[^>]+>" _matches "${_content}")
     foreach(_match IN LISTS _matches)

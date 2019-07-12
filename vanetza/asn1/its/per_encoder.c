@@ -244,7 +244,7 @@ aper_encode(const asn_TYPE_descriptor_t *td,
 	po.buffer = po.tmpspace;
 	po.nboff = 0;
 	po.nbits = 8 * sizeof(po.tmpspace);
-	po.output = cb;
+	po.output = cb ? cb : ignore_output;
 	po.op_key = app_key;
 	po.flushed_bytes = 0;
 
