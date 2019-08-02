@@ -9,6 +9,13 @@ foreach(_file ${_files})
     # make absolute path relative to project source directory
     string(REPLACE "found in \"${PROJECT_SOURCE_DIR}/" "found in \"" _content "${_content}")
 
+    # hide absolute path of asn1c's standard-modules
+    string(REGEX REPLACE "found in \".*/asn1c/standard-modules/(.*)\""
+        "found in \"asn1c/standard-modules/\\1\"" _content "${_content}")
+    if (CMAKE_MATCH_1)
+        list(APPEND _patched "standard-module")
+    endif()
+
     # change #include brackets to quotes in asn1c support code
     string(REGEX MATCHALL "#include <[^>]+>" _matches "${_content}")
     foreach(_match IN LISTS _matches)
