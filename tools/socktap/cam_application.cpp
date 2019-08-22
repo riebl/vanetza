@@ -53,7 +53,7 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
     vanetza::asn1::Cam message;
 
     ItsPduHeader_t& header = message->header;
-    header.protocolVersion = 1;
+    header.protocolVersion = 2;
     header.messageID = ItsPduHeader__messageID_cam;
     header.stationID = 1; // some dummy value
 
