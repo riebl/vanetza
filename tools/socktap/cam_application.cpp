@@ -33,7 +33,7 @@ CamApplication::CamApplication(PositionProvider& positioning, const Runtime& rt,
 
 CamApplication::PortType CamApplication::port()
 {
-    return host_cast<uint16_t>(2001);
+    return btp::ports::CAM;
 }
 
 void CamApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
