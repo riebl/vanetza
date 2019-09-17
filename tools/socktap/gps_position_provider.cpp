@@ -1,6 +1,8 @@
 #include "gps_position_provider.hpp"
 #include <vanetza/units/angle.hpp>
+#include <vanetza/common/confident_quantity.hpp>
 #include <vanetza/units/velocity.hpp>
+#include <vanetza/units/length.hpp>
 #include <cmath>
 
 static_assert(GPSD_API_MAJOR_VERSION >= 5 || GPSD_API_MAJOR_VERSION <= 7, "libgps has incompatible API");
@@ -91,6 +93,11 @@ void GpsPositionProvider::fetch_position_fix()
             }
         } else {
             fetched_position_fix.confidence = vanetza::PositionConfidence();
+        }
+        if (gps_data.fix.mode == MODE_3D) {
+            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length>(gps_data.fix.altitude * si::meter, gps_data.fix.epv * si::meter);
+        } else {
+            fetched_position_fix.altitude = boost::none;
         }
     }
 }

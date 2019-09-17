@@ -1,6 +1,7 @@
 #include "cam_application.hpp"
 #include <vanetza/btp/ports.hpp>
 #include <vanetza/asn1/cam.hpp>
+#include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
 #include <chrono>
@@ -11,6 +12,7 @@
 // This is rather simple application that sends CAMs in a regular interval.
 
 using namespace vanetza;
+using namespace vanetza::facilities;
 using namespace std::chrono;
 
 auto microdegree = vanetza::units::degree * boost::units::si::micro;
@@ -75,12 +77,18 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
 
     BasicContainer_t& basic = cam.camParameters.basicContainer;
     basic.stationType = StationType_passengerCar;
-    basic.referencePosition.altitude.altitudeValue = AltitudeValue_unavailable;
     basic.referencePosition.longitude = round(position.longitude, microdegree) * Longitude_oneMicrodegreeEast;
     basic.referencePosition.latitude = round(position.latitude, microdegree) * Latitude_oneMicrodegreeNorth;
     basic.referencePosition.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
     basic.referencePosition.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_unavailable;
     basic.referencePosition.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_unavailable;
+    if (auto altitude = position.altitude) {
+        basic.referencePosition.altitude.altitudeValue = static_cast<altitude_i32t>(altitude->value()).value();
+        basic.referencePosition.altitude.altitudeConfidence = to_altitude_confidence(altitude->confidence().value());
+    } else {
+        basic.referencePosition.altitude.altitudeValue = AltitudeValue_unavailable;
+        basic.referencePosition.altitude.altitudeConfidence = AltitudeConfidence_unavailable;
+    }
 
     cam.camParameters.highFrequencyContainer.present = HighFrequencyContainer_PR_basicVehicleContainerHighFrequency;
 

@@ -143,6 +143,41 @@ bool is_available(const ReferencePosition& pos)
     return pos.latitude != Latitude_unavailable && pos.longitude != Longitude_unavailable;
 }
 
+AltitudeConfidence_t to_altitude_confidence(const double& alt_con) {
+	if (alt_con < 0 || std::isnan(alt_con)) {
+		return AltitudeConfidence_unavailable;
+	} else if (alt_con <= 0.01) {
+		return AltitudeConfidence_alt_000_01;
+	} else if (alt_con <= 0.02) {
+		return AltitudeConfidence_alt_000_02;
+	} else if (alt_con <= 0.05) {
+		return AltitudeConfidence_alt_000_05;
+	} else if (alt_con <= 0.1) {
+		return AltitudeConfidence_alt_000_10;
+	} else if (alt_con <= 0.2) {
+		return AltitudeConfidence_alt_000_20;
+	} else if (alt_con <= 0.5) {
+		return AltitudeConfidence_alt_000_50;
+	} else if (alt_con <= 1.0) {
+		return AltitudeConfidence_alt_001_00;
+	} else if (alt_con <= 2.0) {
+		return AltitudeConfidence_alt_002_00;
+	} else if (alt_con <= 5.0) {
+		return AltitudeConfidence_alt_005_00;
+	} else if (alt_con <= 10.0) {
+		return AltitudeConfidence_alt_010_00;
+	} else if (alt_con <= 20.0) {
+		return AltitudeConfidence_alt_020_00;
+	} else if (alt_con <= 50.0) {
+		return AltitudeConfidence_alt_050_00;
+	} else if (alt_con <= 100.0) {
+		return AltitudeConfidence_alt_100_00;
+	} else if (alt_con <= 200.0) {
+		return AltitudeConfidence_alt_200_00;
+	}
+	return AltitudeConfidence_outOfRange;
+}
+
 bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermissions ssp)
 {
     using security::CamPermission;
