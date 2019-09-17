@@ -17,6 +17,7 @@ private:
     int validity_days;
     std::string cam_permissions;
     std::string denm_permissions;
+    bool include_gn_mgmt;
 };
 
 #endif /* CERTIFY_COMMANDS_GENERATE_TICKET_HPP */
