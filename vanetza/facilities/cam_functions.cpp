@@ -5,6 +5,7 @@
 #include <vanetza/facilities/cam_functions.hpp>
 #include <vanetza/facilities/path_history.hpp>
 #include <vanetza/geonet/areas.hpp>
+#include <boost/algorithm/clamp.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/units/cmath.hpp>
@@ -141,6 +142,57 @@ bool is_available(const Heading& hd)
 bool is_available(const ReferencePosition& pos)
 {
     return pos.latitude != Latitude_unavailable && pos.longitude != Longitude_unavailable;
+}
+
+AltitudeConfidence_t to_altitude_confidence(units::Length confidence)
+{
+    const double alt_con = confidence / units::si::meter;
+
+    if (alt_con < 0 || std::isnan(alt_con)) {
+        return AltitudeConfidence_unavailable;
+    } else if (alt_con <= 0.01) {
+        return AltitudeConfidence_alt_000_01;
+    } else if (alt_con <= 0.02) {
+        return AltitudeConfidence_alt_000_02;
+    } else if (alt_con <= 0.05) {
+        return AltitudeConfidence_alt_000_05;
+    } else if (alt_con <= 0.1) {
+        return AltitudeConfidence_alt_000_10;
+    } else if (alt_con <= 0.2) {
+        return AltitudeConfidence_alt_000_20;
+    } else if (alt_con <= 0.5) {
+        return AltitudeConfidence_alt_000_50;
+    } else if (alt_con <= 1.0) {
+        return AltitudeConfidence_alt_001_00;
+    } else if (alt_con <= 2.0) {
+        return AltitudeConfidence_alt_002_00;
+    } else if (alt_con <= 5.0) {
+        return AltitudeConfidence_alt_005_00;
+    } else if (alt_con <= 10.0) {
+        return AltitudeConfidence_alt_010_00;
+    } else if (alt_con <= 20.0) {
+        return AltitudeConfidence_alt_020_00;
+    } else if (alt_con <= 50.0) {
+        return AltitudeConfidence_alt_050_00;
+    } else if (alt_con <= 100.0) {
+        return AltitudeConfidence_alt_100_00;
+    } else if (alt_con <= 200.0) {
+        return AltitudeConfidence_alt_200_00;
+    } else {
+        return AltitudeConfidence_outOfRange;
+    }
+}
+
+AltitudeValue_t to_altitude_value(units::Length alt)
+{
+    using boost::units::isnan;
+
+    if (!isnan(alt)) {
+        alt = boost::algorithm::clamp(alt, -1000.0 * units::si::meter, 8000.0 * units::si::meter);
+        return AltitudeValue_oneCentimeter * 100.0 * (alt / units::si::meter);
+    } else {
+        return AltitudeValue_unavailable;
+    }
 }
 
 bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermissions ssp)

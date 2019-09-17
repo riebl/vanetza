@@ -1,6 +1,8 @@
 #ifndef CAM_FUNCTIONS_HPP_PUFKBEM8
 #define CAM_FUNCTIONS_HPP_PUFKBEM8
 
+#include <vanetza/asn1/its/AltitudeConfidence.h>
+#include <vanetza/asn1/its/AltitudeValue.h>
 #include <vanetza/asn1/its/Heading.h>
 #include <vanetza/asn1/its/ReferencePosition.h>
 #include <vanetza/security/cam_ssp.hpp>
@@ -54,6 +56,16 @@ units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units:
  */
 bool is_available(const Heading&);
 bool is_available(const ReferencePosition_t&);
+
+/**
+ * Convert altitude to AltitudeValue from CDD
+ */
+AltitudeValue_t to_altitude_value(units::Length);
+
+/**
+ * Convert altitude confidencet to AltitudeConfidence from CDD
+ */
+AltitudeConfidence_t to_altitude_confidence(units::Length);
 
 /**
  * Check if a CAM contains only allowed data elements
