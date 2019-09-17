@@ -44,8 +44,8 @@ install(TARGETS socktap-hello EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL
 install(TARGETS socktap-cam EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(TARGETS socktap-bench-in EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-if(TARGET Cohda::headers)
-    target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_COHDA_SDK")
+if(TARGET Cohda::headers AND SOCKTAP_WITH_COHDA_LLC)
+    target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_COHDA_LLC")
     target_include_directories(socktap-common PRIVATE "${COHDA_INCLUDE_DIRS}")
     target_sources(socktap-common PRIVATE cohda.cpp)
 endif()

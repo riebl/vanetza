@@ -7,11 +7,12 @@
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/net/ethernet_header.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
+#include <boost/optional/optional.hpp>
 #include <iostream>
+#include <vanetza/common/byte_order.hpp>
 
-#ifdef SOCKTAP_WITH_COHDA_SDK
+#ifdef SOCKTAP_WITH_COHDA_LLC
 #include "cohda.hpp"
-#include <mk2mac-api-types.h>
 #endif
 
 namespace asio = boost::asio;
@@ -67,24 +68,20 @@ void RouterContext::on_read(const boost::system::error_code& ec, std::size_t rea
 
 void RouterContext::pass_up(CohesivePacket&& packet)
 {
-#ifdef SOCKTAP_WITH_COHDA_SDK
-    if (packet.size(OsiLayer::Physical) < sizeof(tMK2RxDescriptor)) {
-        std::cerr << "Router dropped invalid packet (too short for Cohda Rx Descriptor)\n";
-        return;
-    } else {
-        packet.set_boundary(OsiLayer::Physical, sizeof(tMK2RxDescriptor));
-        // information from Mk2RxDescriptor is currently ignored
-    }
+    EthernetHeader hdr;
+#ifdef SOCKTAP_WITH_COHDA_LLC
+    boost::optional<EthernetHeader> hdr_opt = strip_cohda_rx_header(packet);
+    if (hdr_opt) {
+        hdr = hdr_opt.get();
 #else
     packet.set_boundary(OsiLayer::Physical, 0);
-#endif
-
     if (packet.size(OsiLayer::Link) < EthernetHeader::length_bytes) {
         std::cerr << "Router dropped invalid packet (too short for Ethernet header)\n";
     } else {
         packet.set_boundary(OsiLayer::Link, EthernetHeader::length_bytes);
         auto link_range = packet[OsiLayer::Link];
         EthernetHeader hdr = decode_ethernet_header(link_range.begin(), link_range.end());
+#endif
         if (hdr.source != mib_.itsGnLocalGnAddr.mid()) {
             std::cout << "received packet from " << hdr.source << " (" << packet.size() << " bytes)\n";
             std::unique_ptr<PacketVariant> up { new PacketVariant(std::move(packet)) };
