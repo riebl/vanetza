@@ -7,7 +7,7 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <iostream>
 
-#ifdef SOCKTAP_WITH_COHDA_SDK
+#ifdef SOCKTAP_WITH_COHDA_LLC
 #include "cohda.hpp"
 #endif
 
@@ -26,11 +26,12 @@ void DccPassthrough::request(const dcc::DataRequest& request, std::unique_ptr<Ch
         return;
     }
 
-    #ifdef SOCKTAP_WITH_COHDA_SDK
-    buffers_[0] = create_cohda_tx_header(request);
-    #endif
-    buffers_[1] = create_ethernet_header(request.destination, request.source, request.ether_type);
-    for (auto& layer : osi_layer_range<OsiLayer::Network, OsiLayer::Application>()) {
+#ifdef SOCKTAP_WITH_COHDA_LLC
+    insert_cohda_tx_header(request, packet);
+#else
+    packet->layer(OsiLayer::Link) = std::move(create_ethernet_header(request.destination, request.source, request.ether_type));
+#endif
+    for (auto& layer : osi_layer_range<OsiLayer::Physical, OsiLayer::Application>()) {
         const auto index = distance(OsiLayer::Physical, layer);
         packet->layer(layer).convert(buffers_[index]);
     }
