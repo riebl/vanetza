@@ -31,6 +31,7 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
         ("days", po::value<int>(&validity_days)->default_value(7), "Validity in days.")
         ("cam-permissions", po::value<std::string>(&cam_permissions), "CAM permissions as binary string (e.g. '1111111111111100' to grant all SSPs)")
         ("denm-permissions", po::value<std::string>(&denm_permissions), "DENM permissions as binary string (e.g. '000000000000000000000000' to grant no SSPs)")
+        ("permit-gn-mgmt", "Generated ticket can be used to sign GN-MGMT messages (e.g. beacons).")
     ;
 
     po::positional_options_description pos;
@@ -52,6 +53,8 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
 
         return false;
     }
+
+    permit_gn_mgmt = vm.count("permit-gn-mgmt") > 0;
 
     return true;
 }
@@ -111,6 +114,10 @@ int GenerateTicketCommand::execute()
     certificate_ssp_den.its_aid = IntX(aid::DEN);
     certificate_ssp_den.service_specific_permissions = denm_ssps;
     certificate_ssp.push_back(certificate_ssp_den);
+
+    if (permit_gn_mgmt) {
+        certificate_ssp.push_back({IntX(aid::GN_MGMT), vanetza::ByteBuffer{}});
+    }
 
     certificate.signer_info = calculate_hash(sign_cert);
     certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
