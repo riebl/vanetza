@@ -1,0 +1,100 @@
+EtsiTs103097Module {
+itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(103097) v1(0)
+}
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS
+    Ieee1609Dot2Data, ExplicitCertificate
+FROM IEEE1609dot2 {
+iso(1) identified-organization(3) ieee(111) standards-association-numbered-series-standards(2) wave-stds(1609) dot2(2) base (1) schema (1) major-version-2(2)
+};
+
+EtsiTs103097Certificate ::= ExplicitCertificate (WITH COMPONENTS {...,
+    toBeSigned (WITH COMPONENTS {...,
+        id (WITH COMPONENTS {...,
+            linkageData ABSENT,
+            binaryId ABSENT
+        }),
+        certRequestPermissions ABSENT,
+        canRequestRollover ABSENT
+      })
+    })
+
+SingleEtsiTs103097Certificate ::= SEQUENCE {
+    only  EtsiTs103097Certificate
+}
+
+EtsiTs103097Data ::= Ieee1609Dot2Data (WITH COMPONENTS {...,
+    content (WITH COMPONENTS {...,
+    signedData (WITH COMPONENTS {..., -- constraints on signed data headers
+        tbsData (WITH COMPONENTS {
+            headerInfo (WITH COMPONENTS {...,
+                generationTime PRESENT,
+                p2pcdLearningRequest ABSENT,
+                missingCrlIdentifier ABSENT
+            })
+        }),
+        signer (WITH COMPONENTS {..., -- constraints on the certificate
+            certificate (SIZE(1))
+        })
+    }),
+    encryptedData (WITH COMPONENTS {..., -- constraints on encrypted data headers
+        recipients (WITH COMPONENT (
+            (WITH COMPONENTS {...,
+                pskRecipInfo ABSENT,
+                symmRecipInfo ABSENT,
+                rekRecipInfo ABSENT
+            })
+        ))
+    }),
+    signedCertificateRequest ABSENT
+  })
+})
+
+EtsiTs103097Data-Signed {ToBeSignedDataContent} ::= EtsiTs103097Data (WITH COMPONENTS {...,
+    content (WITH COMPONENTS {
+        signedData (WITH COMPONENTS {...,
+            tbsData (WITH COMPONENTS {
+                payload (WITH COMPONENTS {
+                    data (WITH COMPONENTS {...,
+                        content (WITH COMPONENTS {
+                            unsecuredData (CONTAINING ToBeSignedDataContent)
+                        })
+                    }) PRESENT
+                })
+            })
+        })
+    })
+})
+
+EtsiTs103097Data-SignedExternalPayload ::= EtsiTs103097Data (WITH COMPONENTS {...,
+    content (WITH COMPONENTS {
+        signedData (WITH COMPONENTS {...,
+            tbsData (WITH COMPONENTS {
+                payload (WITH COMPONENTS {
+                    extDataHash (WITH COMPONENTS {
+                        sha256HashedData PRESENT
+                    }) PRESENT
+                })
+            })
+        })
+    })
+})
+
+EtsiTs103097Data-Encrypted {ToBeEncryptedDataContent} ::= EtsiTs103097Data (WITH COMPONENTS {...,
+    content (WITH COMPONENTS {
+        encryptedData (WITH COMPONENTS {...,
+            ciphertext (WITH COMPONENTS {...,
+                aes128ccm (WITH COMPONENTS {...,
+                    ccmCiphertext (CONSTRAINED BY { -- ccm encryption of -- ToBeEncryptedDataContent})
+                })
+            })
+        })
+    })
+})
+
+
+EtsiTs103097Data-SignedAndEncrypted {ToBesignedAndEncryptedDataContent} ::= EtsiTs103097Data-Encrypted {EtsiTs103097Data-Signed {ToBesignedAndEncryptedDataContent}}
+
+END
