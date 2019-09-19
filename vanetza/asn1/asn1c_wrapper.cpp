@@ -1,5 +1,5 @@
-#include <vanetza/asn1/its/asn_application.h>
-#include <vanetza/asn1/its/constraints.h>
+#include <vanetza/asn1/support/asn_application.h>
+#include <vanetza/asn1/support/constraints.h>
 #include "asn1c_wrapper.hpp"
 #include <vanetza/common/byte_buffer.hpp>
 #include <boost/format.hpp>

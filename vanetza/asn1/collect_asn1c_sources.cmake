@@ -5,7 +5,11 @@ elseif(NOT DEFINED ASN1C_SOURCE_FILE)
 endif()
 
 file(GLOB _sources RELATIVE ${CMAKE_CURRENT_LIST_DIR} ${ASN1C_OUTPUT_DIR}/*.c)
-list(REMOVE_ITEM _sources ${ASN1C_OUTPUT_DIR}/converter-sample.c ${ASN1C_OUTPUT_DIR}/converter-example.c)
+list(REMOVE_ITEM _sources
+    ${ASN1C_OUTPUT_DIR}/converter-sample.c
+    ${ASN1C_OUTPUT_DIR}/converter-example.c
+    ${ASN1C_OUTPUT_DIR}/EXTERNAL.c
+)
 
 file(WRITE "${ASN1C_SOURCE_FILE}" "# generated file\n")
 foreach(_source ${_sources})
