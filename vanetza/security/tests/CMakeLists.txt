@@ -1,5 +1,5 @@
 include(UseGTest)
-add_library(security_test OBJECT
+add_library(security_test STATIC
     check_basic_elements.cpp
     check_certificate.cpp
     check_encryption_parameter.cpp
@@ -16,8 +16,8 @@ add_library(security_test OBJECT
     serialization.cpp
 )
 target_include_directories(security_test PUBLIC $<TARGET_PROPERTY:security,INTERFACE_INCLUDE_DIRECTORIES>)
-target_include_directories(security_test BEFORE PUBLIC ${GTest_INCLUDE_DIR})
-configure_gtest_directory(SOURCES $<TARGET_OBJECTS:security_test> LINK_LIBRARIES Boost::boost security)
+target_link_libraries(security_test PUBLIC ${GTest_LIBRARY})
+configure_gtest_directory(LINK_LIBRARIES Boost::boost security security_test)
 
 add_gtest(CamServiceSpecificPermissions cam_ssp.cpp)
 add_gtest(Certificate certificate.cpp)
