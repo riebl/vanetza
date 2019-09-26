@@ -47,80 +47,72 @@ struct tIEEE80211PHeader {
     tQOSControl QOSControl;
 };
 
-struct tTXPhysical {
-    tMKxTxPacket TxMessage;
-    tIEEE80211PHeader IEEE80211PHeader;
+struct LinkLayer {
+    tIEEE80211PHeader ieee802dot11p_header;
+    LLCHeader llc_header;
 };
 
 constexpr uint8_t IEEE80211P_FCS_LENGTH = 4;
 constexpr uint32_t CRC32_MAGIC_NUMBER = 0x2144df1c;
 
-struct tRXPhysical {
-    tMKxRxPacket RxMessage;
-    tIEEE80211PHeader IEEE80211PHeader;
-};
-
 void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket>& packet) {
-    LLCHeader llcData;
-    auto llcPtr = reinterpret_cast<uint8_t*>(&llcData);
-    packet->layer(OsiLayer::Link) = std::move(ByteBuffer(llcPtr, llcPtr + sizeof(LLCHeader)));
-
-    tTXPhysical phyData;
-    phyData.TxMessage = {};
-    std::copy(request.destination.octets.begin(), request.destination.octets.end(), phyData.IEEE80211PHeader.Destination);
-    std::copy(request.source.octets.begin(), request.source.octets.end(), phyData.IEEE80211PHeader.Source);
+    LinkLayer link_layer;
+    std::copy(request.destination.octets.begin(), request.destination.octets.end(), link_layer.ieee802dot11p_header.Destination);
+    std::copy(request.source.octets.begin(), request.source.octets.end(), link_layer.ieee802dot11p_header.Source);
     switch (request.dcc_profile) {
         case dcc::Profile::DP0:
-            phyData.IEEE80211PHeader.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_VO; // AC_VO (Voice)
+            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_VO; // AC_VO (Voice)
             break;
         case dcc::Profile::DP1:
-            phyData.IEEE80211PHeader.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_VI; // AC_VI (Video)
+            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_VI; // AC_VI (Video)
             break;
         case dcc::Profile::DP2:
-            phyData.IEEE80211PHeader.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BE; // AC_BE (Best effort)
+            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BE; // AC_BE (Best effort)
             break;
         case dcc::Profile::DP3:
-            phyData.IEEE80211PHeader.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BK; // AC_BK (Background)
+            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BK; // AC_BK (Background)
             break;
         default:
-            phyData.IEEE80211PHeader.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BE;
+            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BE;
             break;
     }
+    auto link_layer_ptr = reinterpret_cast<uint8_t*>(&link_layer);
+    packet->layer(OsiLayer::Link) = std::move(ByteBuffer(link_layer_ptr, link_layer_ptr + sizeof(LinkLayer)));
 
-    uint16_t payload_size = sizeof(tIEEE80211PHeader) + packet->size(OsiLayer::Link, OsiLayer::Application);
+    uint16_t payload_size = packet->size();
     uint16_t total_size = sizeof(tMKxTxPacket) + payload_size;
 
-    phyData.TxMessage.Hdr.Type = MKXIF_TXPACKET;
-    phyData.TxMessage.Hdr.Len = total_size;
+    tMKxTxPacket phy = {};
+    phy.Hdr.Type = MKXIF_TXPACKET;
+    phy.Hdr.Len = total_size;
+    phy.TxPacketData.TxAntenna = MKX_ANT_DEFAULT;
+    phy.TxPacketData.TxFrameLength = payload_size;
 
-    phyData.TxMessage.TxPacketData.TxAntenna = MKX_ANT_DEFAULT;
-    phyData.TxMessage.TxPacketData.TxFrameLength = payload_size;
-
-    auto phyPtr = reinterpret_cast<uint8_t*>(&phyData);
-    packet->layer(OsiLayer::Physical) = std::move(ByteBuffer(phyPtr, phyPtr + sizeof(tTXPhysical)));
+    auto phy_ptr = reinterpret_cast<uint8_t*>(&phy);
+    packet->layer(OsiLayer::Physical) = std::move(ByteBuffer(phy_ptr, phy_ptr + sizeof(tMKxTxPacket)));
 }
 
 boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
-    if (packet.size(OsiLayer::Physical) < sizeof(tRXPhysical) + IEEE80211P_FCS_LENGTH) {
+    if (packet.size(OsiLayer::Physical) < sizeof(tMKxRxPacket)) {
         return boost::none;
     }
-    packet.set_boundary(OsiLayer::Physical, sizeof(tRXPhysical));
+    packet.set_boundary(OsiLayer::Physical, sizeof(tMKxRxPacket));
 
-    tRXPhysical* rxPhy = reinterpret_cast<tRXPhysical*>(&*packet[OsiLayer::Physical].begin());
-    if (rxPhy->RxMessage.Hdr.Type != MKXIF_RXPACKET) {
+    tMKxRxPacket* phy = reinterpret_cast<tMKxRxPacket*>(&*packet[OsiLayer::Physical].begin());
+    if (phy->Hdr.Type != MKXIF_RXPACKET) {
         return boost::none;
     }
-    if (packet.size() != rxPhy->RxMessage.Hdr.Len) {
+    if (packet.size() != phy->Hdr.Len) {
         return boost::none;
     }
-    if (packet.size() - sizeof(tMKxRxPacket) != rxPhy->RxMessage.RxPacketData.RxFrameLength) {
+    if (packet.size() - sizeof(tMKxRxPacket) != phy->RxPacketData.RxFrameLength) {
         return boost::none;
     }
 
     boost::crc_32_type crc_result;
     /*
      * Process the whole 802.11p frame (including its FCS). If the FCS is correct, the CRC result has the same value
-     * as the CRC of one block (32 bit) of zeroes.
+     * as the CRC of one block (4 byte) of zeroes.
      */
     crc_result.process_bytes(packet.buffer().data() + sizeof(tMKxRxPacket), packet.size() - sizeof(tMKxRxPacket));
     if (crc_result.checksum() != CRC32_MAGIC_NUMBER) {
@@ -128,17 +120,17 @@ boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
     }
     packet.trim(OsiLayer::Link, packet.size() - IEEE80211P_FCS_LENGTH);
 
-    if (packet.size(OsiLayer::Link) < sizeof(LLCHeader)) {
+    if (packet.size(OsiLayer::Link) < sizeof(LinkLayer)) {
         return boost::none;
     }
-    packet.set_boundary(OsiLayer::Link, sizeof(LLCHeader));
+    packet.set_boundary(OsiLayer::Link, sizeof(LinkLayer));
 
-    LLCHeader *llcData = reinterpret_cast<LLCHeader*>(&*packet[OsiLayer::Link].begin());
+    LinkLayer* link_layer = reinterpret_cast<LinkLayer*>(&*packet[OsiLayer::Link].begin());
 
     EthernetHeader eth;
-    std::memcpy(eth.destination.octets.begin(), rxPhy->IEEE80211PHeader.Destination, MacAddress::length_bytes);
-    std::memcpy(eth.source.octets.begin(), rxPhy->IEEE80211PHeader.Source, MacAddress::length_bytes);
-    eth.type = host_cast<uint16_t>(ntoh(llcData->ProtocolID));
+    std::memcpy(eth.destination.octets.begin(), link_layer->ieee802dot11p_header.Destination, MacAddress::length_bytes);
+    std::memcpy(eth.source.octets.begin(), link_layer->ieee802dot11p_header.Source, MacAddress::length_bytes);
+    eth.type = host_cast<uint16_t>(ntoh(link_layer->llc_header.ProtocolID));
 
     if (eth.type != geonet::ether_type) {
         return boost::none;
