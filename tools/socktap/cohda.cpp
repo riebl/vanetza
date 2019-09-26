@@ -8,17 +8,8 @@
 #include <vanetza/common/byte_order.hpp>
 
 namespace vanetza {
-
-struct LLCHeader {
-    uint8_t DSAP = 0xAA;
-    uint8_t SSAP = 0xAA;
-    uint8_t ControlField = 0x03;
-    uint8_t OUI[3] = { 0x00, 0x00, 0x00 };
-    uint16_t ProtocolID = geonet::ether_type.net();
-};
-
 /* See ETSI EN 302 663 V1.2.1 (2013-07), Table B.3 */
-enum tPriority {
+enum Priority {
     AC_BK = 1, AC_BE = 3, AC_VI = 5, AC_VO = 6
 };
 constexpr uint8_t QOS_PRIO_MASK = 0x07;
@@ -31,49 +22,57 @@ constexpr uint8_t QOS_PRIO_MASK = 0x07;
  * 3 bits prioriy (set dynamically according to traffic class)
  * 8 bits TXOP (shall be set to 0 when communicating outside of a BSS)
  */
-struct tQOSControl {
-    uint8_t QOSFlags = 0x20;
-    uint8_t TXOP = 0; // not used
+struct QOSControl {
+    uint8_t qos_flags = 0x20;
+    uint8_t txop = 0; // not used
 };
 
-struct tIEEE80211PHeader {
-    uint8_t FrameControlVersionAndType = 0x88;
-    uint8_t FrameControlFlags = 0x00; // not used
-    uint16_t DurationID = 0x00; // not used
-    uint8_t Destination[6];
-    uint8_t Source[6];
-    uint8_t BSSID[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }; // Operation outside of a BSS, (see ETSI EN 302 663 V1.2.1 Annex A)
-    uint16_t SequenceControl = 0x00; // 12 bits for sequence number, 4 bits for fragment number; will be set by Cohda LLC
-    tQOSControl QOSControl;
+struct IEEE802Dot11PHeader {
+    uint8_t frame_control_protocol_version_and_type = 0x88;
+    uint8_t frame_control_flags = 0x00; // not used
+    uint16_t duration_or_id = 0x00; // not used
+    uint8_t destination[6];
+    uint8_t source[6];
+    uint8_t bssid[6] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff }; // Operation outside of a BSS, (see ETSI EN 302 663 V1.2.1 Annex A)
+    uint16_t sequence_control = 0x00; // 12 bits for sequence number, 4 bits for fragment number; will be set by Cohda LLC
+    QOSControl qos_control;
+};
+
+struct LLCHeader {
+    uint8_t dsap = 0xAA;
+    uint8_t ssap = 0xAA;
+    uint8_t control_field = 0x03;
+    uint8_t oui[3] = { 0x00, 0x00, 0x00 };
+    uint16_t protocol_id = geonet::ether_type.net();
 };
 
 struct LinkLayer {
-    tIEEE80211PHeader ieee802dot11p_header;
+    IEEE802Dot11PHeader ieee802dot11p_header;
     LLCHeader llc_header;
 };
 
-constexpr uint8_t IEEE80211P_FCS_LENGTH = 4;
+constexpr uint8_t IEEE802DOT11P_FCS_LENGTH = 4;
 constexpr uint32_t CRC32_MAGIC_NUMBER = 0x2144df1c;
 
 void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket>& packet) {
     LinkLayer link_layer;
-    std::copy(request.destination.octets.begin(), request.destination.octets.end(), link_layer.ieee802dot11p_header.Destination);
-    std::copy(request.source.octets.begin(), request.source.octets.end(), link_layer.ieee802dot11p_header.Source);
+    std::copy(request.destination.octets.begin(), request.destination.octets.end(), link_layer.ieee802dot11p_header.destination);
+    std::copy(request.source.octets.begin(), request.source.octets.end(), link_layer.ieee802dot11p_header.source);
     switch (request.dcc_profile) {
         case dcc::Profile::DP0:
-            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_VO; // AC_VO (Voice)
+            link_layer.ieee802dot11p_header.qos_control.qos_flags |= QOS_PRIO_MASK & Priority::AC_VO; // AC_VO (Voice)
             break;
         case dcc::Profile::DP1:
-            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_VI; // AC_VI (Video)
+            link_layer.ieee802dot11p_header.qos_control.qos_flags |= QOS_PRIO_MASK & Priority::AC_VI; // AC_VI (Video)
             break;
         case dcc::Profile::DP2:
-            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BE; // AC_BE (Best effort)
+            link_layer.ieee802dot11p_header.qos_control.qos_flags |= QOS_PRIO_MASK & Priority::AC_BE; // AC_BE (Best effort)
             break;
         case dcc::Profile::DP3:
-            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BK; // AC_BK (Background)
+            link_layer.ieee802dot11p_header.qos_control.qos_flags |= QOS_PRIO_MASK & Priority::AC_BK; // AC_BK (Background)
             break;
         default:
-            link_layer.ieee802dot11p_header.QOSControl.QOSFlags |= QOS_PRIO_MASK & tPriority::AC_BE;
+            link_layer.ieee802dot11p_header.qos_control.qos_flags |= QOS_PRIO_MASK & Priority::AC_BE;
             break;
     }
     auto link_layer_ptr = reinterpret_cast<uint8_t*>(&link_layer);
@@ -87,7 +86,6 @@ void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<Chu
     phy.Hdr.Len = total_size;
     phy.TxPacketData.TxAntenna = MKX_ANT_DEFAULT;
     phy.TxPacketData.TxFrameLength = payload_size;
-
     auto phy_ptr = reinterpret_cast<uint8_t*>(&phy);
     packet->layer(OsiLayer::Physical) = std::move(ByteBuffer(phy_ptr, phy_ptr + sizeof(tMKxTxPacket)));
 }
@@ -118,7 +116,7 @@ boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
     if (crc_result.checksum() != CRC32_MAGIC_NUMBER) {
         return boost::none;
     }
-    packet.trim(OsiLayer::Link, packet.size() - IEEE80211P_FCS_LENGTH);
+    packet.trim(OsiLayer::Link, packet.size() - IEEE802DOT11P_FCS_LENGTH);
 
     if (packet.size(OsiLayer::Link) < sizeof(LinkLayer)) {
         return boost::none;
@@ -126,11 +124,10 @@ boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
     packet.set_boundary(OsiLayer::Link, sizeof(LinkLayer));
 
     LinkLayer* link_layer = reinterpret_cast<LinkLayer*>(&*packet[OsiLayer::Link].begin());
-
     EthernetHeader eth;
-    std::memcpy(eth.destination.octets.begin(), link_layer->ieee802dot11p_header.Destination, MacAddress::length_bytes);
-    std::memcpy(eth.source.octets.begin(), link_layer->ieee802dot11p_header.Source, MacAddress::length_bytes);
-    eth.type = host_cast<uint16_t>(ntoh(link_layer->llc_header.ProtocolID));
+    std::memcpy(eth.destination.octets.begin(), link_layer->ieee802dot11p_header.destination, MacAddress::length_bytes);
+    std::memcpy(eth.source.octets.begin(), link_layer->ieee802dot11p_header.source, MacAddress::length_bytes);
+    eth.type = host_cast<uint16_t>(ntoh(link_layer->llc_header.protocol_id));
 
     if (eth.type != geonet::ether_type) {
         return boost::none;
