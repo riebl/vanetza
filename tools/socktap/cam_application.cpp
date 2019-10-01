@@ -1,6 +1,7 @@
 #include "cam_application.hpp"
 #include <vanetza/btp/ports.hpp>
 #include <vanetza/asn1/cam.hpp>
+#include <vanetza/asn1/packet_visitor.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
@@ -37,7 +38,10 @@ CamApplication::PortType CamApplication::port()
 
 void CamApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
 {
-    std::cout << "CAM application received a packet" << std::endl;
+    asn1::PacketVisitor<asn1::Cam> visitor;
+    std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(visitor, *packet);
+
+    std::cout << "CAM application received a packet with " << (cam ? "decodable" : "broken") << "content" << std::endl;
 }
 
 void CamApplication::schedule_timer()
