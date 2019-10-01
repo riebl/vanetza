@@ -1,5 +1,4 @@
 #include "cohda.hpp"
-#include <boost/crc.hpp>
 #include <iostream>
 #include <llc-api.h>
 #include <vanetza/geonet/router.hpp>
@@ -52,7 +51,6 @@ struct LinkLayer {
 };
 
 constexpr uint8_t IEEE802DOT11P_FCS_LENGTH = 4;
-constexpr uint32_t CRC32_MAGIC_NUMBER = 0x2144df1c;
 
 void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket>& packet) {
     LinkLayer link_layer;
@@ -107,13 +105,7 @@ boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
         return boost::none;
     }
 
-    boost::crc_32_type crc_result;
-    /*
-     * Process the whole 802.11p frame (including its FCS). If the FCS is correct, the CRC result has the same value
-     * as the CRC of one block (4 byte) of zeroes.
-     */
-    crc_result.process_bytes(packet.buffer().data() + sizeof(tMKxRxPacket), packet.size() - sizeof(tMKxRxPacket));
-    if (crc_result.checksum() != CRC32_MAGIC_NUMBER) {
+    if (!phy->RxPacketData.FCSPass) {
         return boost::none;
     }
     packet.trim(OsiLayer::Link, packet.size() - IEEE802DOT11P_FCS_LENGTH);
