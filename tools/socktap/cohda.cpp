@@ -1,5 +1,6 @@
 #include "cohda.hpp"
 #include <iostream>
+#include <cstring>
 #include <llc-api.h>
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/address.hpp>
@@ -12,6 +13,12 @@ enum Priority {
     AC_BK = 1, AC_BE = 3, AC_VI = 5, AC_VO = 6
 };
 
+/**
+ * QoS Control subfields in these bits have predetermined values during transmission and the same expected values
+ * during reception either because of 802.11p and the frame type (QoS data frame) used or because of the set of
+ * supported features (Ack Policy: only No Ack is supported, A-MSDU present: no A-MSDU supported).
+ */
+constexpr uint8_t QOS_FIXED_FIELDS_MASK = 0xE8;
 constexpr uint8_t QOS_USER_PRIORITY_MASK = 0x07;
 
 struct QOSControl {
@@ -90,7 +97,7 @@ void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<Chu
 }
 
 boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
-    if (packet.size(OsiLayer::Physical) < sizeof(tMKxRxPacket)) {
+    if (packet.size(OsiLayer::Physical) < sizeof(tMKxRxPacket) + sizeof(LinkLayer) + IEEE802DOT11P_FCS_LENGTH) {
         return boost::none;
     }
     packet.set_boundary(OsiLayer::Physical, sizeof(tMKxRxPacket));
@@ -99,31 +106,37 @@ boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
     if (phy->Hdr.Type != MKXIF_RXPACKET) {
         return boost::none;
     }
-    if (packet.size() != phy->Hdr.Len) {
-        return boost::none;
-    }
-    if (packet.size() - sizeof(tMKxRxPacket) != phy->RxPacketData.RxFrameLength) {
+    // Sanity check that sizes reported by Cohda LLC are correct, since we rely on Cohda's FCS checking
+    if (phy->Hdr.Len != packet.size() || phy->RxPacketData.RxFrameLength != packet.size() - sizeof(tMKxRxPacket)) {
         return boost::none;
     }
     if (!phy->RxPacketData.FCSPass) {
         return boost::none;
     }
     packet.trim(OsiLayer::Link, packet.size() - IEEE802DOT11P_FCS_LENGTH);
-
-    if (packet.size(OsiLayer::Link) < sizeof(LinkLayer)) {
-        return boost::none;
-    }
     packet.set_boundary(OsiLayer::Link, sizeof(LinkLayer));
 
     LinkLayer* link_layer_ptr = reinterpret_cast<LinkLayer*>(&*packet[OsiLayer::Link].begin());
+    IEEE802Dot11PHeader& mac_header = link_layer_ptr->ieee802dot11p_header;
+    LLCHeader& llc_header = link_layer_ptr->llc_header;
+    // For most explicitly initialized link layer header fields, their (default) value is expected in received frames
+    LinkLayer expected_link_layer;
+    IEEE802Dot11PHeader& expected_mac_header = expected_link_layer.ieee802dot11p_header;
+    LLCHeader& expected_llc_header = expected_link_layer.llc_header;
+
+    if (mac_header.frame_control_protocol_version_and_type != expected_mac_header.frame_control_protocol_version_and_type
+            || mac_header.frame_control_flags != expected_mac_header.frame_control_flags
+            || std::memcmp(mac_header.bssid, expected_mac_header.bssid, sizeof(mac_header.bssid))
+            || (mac_header.qos_control.qos_flags & QOS_FIXED_FIELDS_MASK) != (expected_mac_header.qos_control.qos_flags & QOS_FIXED_FIELDS_MASK)
+            || std::memcmp(&llc_header, &expected_llc_header, sizeof(llc_header))) {
+        return boost::none;
+    }
+
     EthernetHeader eth;
     std::memcpy(eth.destination.octets.begin(), link_layer_ptr->ieee802dot11p_header.destination, MacAddress::length_bytes);
     std::memcpy(eth.source.octets.begin(), link_layer_ptr->ieee802dot11p_header.source, MacAddress::length_bytes);
     eth.type = host_cast<uint16_t>(ntoh(link_layer_ptr->llc_header.protocol_id));
 
-    if (eth.type != geonet::ether_type) {
-        return boost::none;
-    }
     return eth;
 }
 
