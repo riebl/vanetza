@@ -67,7 +67,9 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     }
 
     std::vector<std::string> opts = po::collect_unrecognized(parsed.options, po::include_positional);
-    opts.erase(opts.begin());
+    if (!opts.empty()) {
+        opts.erase(opts.begin());
+    }
 
     if (!command->parse(opts)) {
         return nullptr;
