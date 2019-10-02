@@ -31,7 +31,7 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
         ("days", po::value<int>(&validity_days)->default_value(7), "Validity in days.")
         ("cam-permissions", po::value<std::string>(&cam_permissions), "CAM permissions as binary string (e.g. '1111111111111100' to grant all SSPs)")
         ("denm-permissions", po::value<std::string>(&denm_permissions), "DENM permissions as binary string (e.g. '000000000000000000000000' to grant no SSPs)")
-        ("permit-gn-mgmt", "Generated ticket can be used to sign GN-MGMT messages (e.g. beacons).")
+        ("permit-gn-mgmt", po::bool_switch(&permit_gn_mgmt), "Generated ticket can be used to sign GN-MGMT messages (e.g. beacons).")
     ;
 
     po::positional_options_description pos;
@@ -53,8 +53,6 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
 
         return false;
     }
-
-    permit_gn_mgmt = vm.count("permit-gn-mgmt") > 0;
 
     return true;
 }
