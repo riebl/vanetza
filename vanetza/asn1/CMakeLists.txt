@@ -118,7 +118,7 @@ install(DIRECTORY ${_support_asn1_dir} ${_its_asn1_dir}
 
 file(STRINGS "${_sec_asn1_source_file}" SEC_ASN1C_SOURCES REGEX "^[^#]+")
 if (SEC_ASN1C_SOURCES)
-    add_library(asn1_security OBJECT ${SEC_ASN1C_SOURCES})
+    add_library(asn1_security STATIC ${SEC_ASN1C_SOURCES})
     target_include_directories(asn1_security PUBLIC
         $<BUILD_INTERFACE:${_support_asn1_dir}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/support}>)
