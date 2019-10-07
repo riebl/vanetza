@@ -1,5 +1,4 @@
 #include "cohda.hpp"
-#include <boost/crc.hpp>
 #include <iostream>
 #include <llc-api.h>
 #include <vanetza/geonet/router.hpp>
