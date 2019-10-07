@@ -109,13 +109,13 @@ void ProxyHandler::send_ota(const vanetza::ProxyHeader& header, std::size_t leng
             m_mk2_tx.Priority = MK2_PRIO_1;
             break;
         case vanetza::access::AccessCategory::BE:
-            m_mk2_tx.Priority = MK2_PRIO_0;
+            m_mk2_tx.Priority = MK2_PRIO_3;
             break;
         case vanetza::access::AccessCategory::VI:
             m_mk2_tx.Priority = MK2_PRIO_5;
             break;
         case vanetza::access::AccessCategory::VO:
-            m_mk2_tx.Priority = MK2_PRIO_6;
+            m_mk2_tx.Priority = MK2_PRIO_7;
             break;
         default:
             assert(false && "Unknown access category");

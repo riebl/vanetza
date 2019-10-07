@@ -2,6 +2,7 @@
 #define G5_LINK_LAYER
 #include <cstdint>
 #include <cstring>
+#include <vanetza/access/access_category.hpp>
 #include <vanetza/geonet/router.hpp>
 
 namespace vanetza {
@@ -16,11 +17,6 @@ constexpr uint8_t qos_fixed_fields_mask = 0xE8;
 constexpr uint8_t qos_user_priority_mask = 0x07;
 } // namespace
 
-/* See ETSI EN 302 663 V1.2.1 (2013-07), Table B.3 */
-enum Priority {
-    AC_BK = 1, AC_BE = 3, AC_VI = 5, AC_VO = 6
-};
-
 struct QOSControl {
     /**
      * 1 bit A-MSDU present (not an A-MSDU = 0)
@@ -32,7 +28,7 @@ struct QOSControl {
     uint8_t qos_flags = 0x20;
     uint8_t txop = 0; // Not used
 
-    void priority(Priority prio) { qos_flags |= static_cast<int>(prio) & qos_user_priority_mask; }
+    void user_priority(AccessCategory access_category) { qos_flags |= static_cast<int>(access_category) & qos_user_priority_mask; }
 };
 
 struct IEEE802Dot11PHeader {

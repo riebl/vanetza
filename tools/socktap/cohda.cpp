@@ -1,7 +1,8 @@
 #include "cohda.hpp"
 #include <llc-api.h>
+#include <vanetza/access/access_category.hpp>
 #include <vanetza/access/g5_link_layer.hpp>
-#include <vanetza/dcc/profile.hpp>
+#include <vanetza/dcc/mapping.hpp>
 
 namespace vanetza {
 
@@ -10,23 +11,7 @@ void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<Chu
     access::IEEE802Dot11PHeader& mac_header = link_layer.ieee802dot11p_header;
     std::copy(request.destination.octets.begin(), request.destination.octets.end(), mac_header.destination);
     std::copy(request.source.octets.begin(), request.source.octets.end(), mac_header.source);
-    switch (request.dcc_profile) {
-        case dcc::Profile::DP0:
-            mac_header.qos_control.priority(access::Priority::AC_VO); // AC_VO (Voice)
-            break;
-        case dcc::Profile::DP1:
-            mac_header.qos_control.priority(access::Priority::AC_VI); // AC_VI (Video)
-            break;
-        case dcc::Profile::DP2:
-            mac_header.qos_control.priority(access::Priority::AC_BE); // AC_BE (Best effort)
-            break;
-        case dcc::Profile::DP3:
-            mac_header.qos_control.priority(access::Priority::AC_BK); // AC_BK (Background)
-            break;
-        default:
-            mac_header.qos_control.priority(access::Priority::AC_BE);
-            break;
-    }
+    mac_header.qos_control.user_priority(dcc::map_profile_onto_ac(request.dcc_profile));
     auto link_layer_ptr = reinterpret_cast<uint8_t*>(&link_layer);
     packet->layer(OsiLayer::Link) = std::move(ByteBuffer(link_layer_ptr, link_layer_ptr + sizeof(access::G5LinkLayer)));
 
