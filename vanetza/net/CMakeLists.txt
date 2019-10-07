@@ -1,5 +1,4 @@
 set(CXX_SOURCES
-    access_category.cpp
     buffer_packet.cpp
     chunk_packet.cpp
     cohesive_packet.cpp

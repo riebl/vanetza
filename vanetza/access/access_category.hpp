@@ -5,6 +5,8 @@
 
 namespace vanetza
 {
+namespace access
+{
 
 enum class AccessCategory {
     BK = 0,
@@ -15,7 +17,7 @@ enum class AccessCategory {
 
 std::ostream& operator<<(std::ostream&, AccessCategory);
 
+} // namespace access
 } // namespace vanetza
 
 #endif /* ACCESS_CATEGORY_HPP_QAWSOPED */
-

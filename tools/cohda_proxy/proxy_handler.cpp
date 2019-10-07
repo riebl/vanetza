@@ -105,16 +105,16 @@ void ProxyHandler::send_ota(const vanetza::ProxyHeader& header, std::size_t leng
     m_mk2_tx.TxPower.ManualPower = std::round(power * 2);
     // I suppose MK2 priorities are derived from 802.1d
     switch (get_access_category(header)) {
-        case vanetza::AccessCategory::BK:
+        case vanetza::access::AccessCategory::BK:
             m_mk2_tx.Priority = MK2_PRIO_1;
             break;
-        case vanetza::AccessCategory::BE:
+        case vanetza::access::AccessCategory::BE:
             m_mk2_tx.Priority = MK2_PRIO_0;
             break;
-        case vanetza::AccessCategory::VI:
+        case vanetza::access::AccessCategory::VI:
             m_mk2_tx.Priority = MK2_PRIO_5;
             break;
-        case vanetza::AccessCategory::VO:
+        case vanetza::access::AccessCategory::VO:
             m_mk2_tx.Priority = MK2_PRIO_6;
             break;
         default:
