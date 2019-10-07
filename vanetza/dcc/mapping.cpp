@@ -6,23 +6,23 @@ namespace vanetza
 namespace dcc
 {
 
-AccessCategory map_profile_onto_ac(Profile dp_id)
+access::AccessCategory map_profile_onto_ac(Profile dp_id)
 {
-    AccessCategory ac = AccessCategory::BE;
+    access::AccessCategory ac = access::AccessCategory::BE;
 
     switch (dp_id)
     {
         case Profile::DP0:
-            ac = AccessCategory::VO;
+            ac = access::AccessCategory::VO;
             break;
         case Profile::DP1:
-            ac = AccessCategory::VI;
+            ac = access::AccessCategory::VI;
             break;
         case Profile::DP2:
-            ac = AccessCategory::BE;
+            ac = access::AccessCategory::BE;
             break;
         case Profile::DP3:
-            ac = AccessCategory::BK;
+            ac = access::AccessCategory::BK;
             break;
         default:
             throw std::invalid_argument("Invalid DCC Profile ID");

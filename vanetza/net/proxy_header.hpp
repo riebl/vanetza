@@ -1,8 +1,8 @@
 #ifndef PROXY_HEADER_HPP_JWTV3BDT
 #define PROXY_HEADER_HPP_JWTV3BDT
 
-#include <vanetza/net/access_category.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <vanetza/access/access_category.hpp>
 #include <cstdint>
 
 namespace vanetza
@@ -37,8 +37,8 @@ static_assert(sizeof(ProxyHeader) == 9, "ProxyHeader has invalid size");
 
 double get_signal_power(const ProxyHeader&);
 void set_signal_power(ProxyHeader&, double dbm);
-AccessCategory get_access_category(const ProxyHeader&);
-void set_access_category(ProxyHeader&, AccessCategory);
+access::AccessCategory get_access_category(const ProxyHeader&);
+void set_access_category(ProxyHeader&, access::AccessCategory);
 boost::iterator_range<const uint8_t*> get_payload(const ProxyHeader&, std::size_t);
 void set_payload(ProxyHeader&, std::size_t);
 

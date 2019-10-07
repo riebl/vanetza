@@ -7,9 +7,9 @@
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/dcc/profile.hpp>
 #include <vanetza/dcc/transmission.hpp>
-#include <vanetza/net/access_category.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 #include <boost/optional/optional.hpp>
+#include <vanetza/access/access_category.hpp>
 #include <list>
 #include <memory>
 #include <map>
@@ -37,8 +37,8 @@ class TransmitRateControl;
 class FlowControl : public RequestInterface
 {
 public:
-    using PacketDropHook = Hook<AccessCategory, const ChunkPacket*>;
-    using PacketTransmitHook = Hook<AccessCategory, const ChunkPacket*>;
+    using PacketDropHook = Hook<access::AccessCategory, const ChunkPacket*>;
+    using PacketTransmitHook = Hook<access::AccessCategory, const ChunkPacket*>;
 
     /**
      * Create FlowControl instance
@@ -113,7 +113,7 @@ private:
     Runtime& m_runtime;
     TransmitRateControl& m_trc;
     access::Interface& m_access;
-    std::map<AccessCategory, Queue, std::greater<AccessCategory>> m_queues;
+    std::map<access::AccessCategory, Queue, std::greater<access::AccessCategory>> m_queues;
     std::size_t m_queue_length;
     PacketDropHook m_packet_drop_hook;
     PacketTransmitHook m_packet_transmit_hook;

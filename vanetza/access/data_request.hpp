@@ -1,8 +1,8 @@
 #ifndef DATA_REQUEST_HPP_3OGGPFWF
 #define DATA_REQUEST_HPP_3OGGPFWF
 
+#include <vanetza/access/access_category.hpp>
 #include <vanetza/common/byte_order.hpp>
-#include <vanetza/net/access_category.hpp>
 #include <vanetza/net/mac_address.hpp>
 
 namespace vanetza

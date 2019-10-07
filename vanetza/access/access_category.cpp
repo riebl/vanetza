@@ -1,7 +1,9 @@
-#include "access_category.hpp"
+#include <vanetza/access/access_category.hpp>
 #include <iostream>
 
 namespace vanetza
+{
+namespace access
 {
 
 std::ostream& operator<<(std::ostream& os, AccessCategory ac)
@@ -26,5 +28,6 @@ std::ostream& operator<<(std::ostream& os, AccessCategory ac)
     return os;
 }
 
+} // namespace access
 } // namespace vanetza
 

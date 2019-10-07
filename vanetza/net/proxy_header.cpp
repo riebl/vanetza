@@ -18,12 +18,12 @@ void set_signal_power(ProxyHeader& header, double dbm)
     header.signal_power = hton(power);
 }
 
-AccessCategory get_access_category(const ProxyHeader& header)
+access::AccessCategory get_access_category(const ProxyHeader& header)
 {
-    return static_cast<AccessCategory>(header.access_category & 0x03);
+    return static_cast<access::AccessCategory>(header.access_category & 0x07);
 }
 
-void set_access_category(ProxyHeader& header, AccessCategory ac)
+void set_access_category(ProxyHeader& header, access::AccessCategory ac)
 {
     header.access_category = static_cast<uint8_t>(ac);
 }

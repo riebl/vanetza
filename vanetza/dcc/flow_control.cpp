@@ -103,7 +103,7 @@ bool FlowControl::transmit_immediately(const Transmission& transmission) const
 bool FlowControl::empty() const
 {
     return std::all_of(m_queues.cbegin(), m_queues.cend(),
-            [](const std::pair<AccessCategory, const Queue&>& kv) {
+            [](const std::pair<access::AccessCategory, const Queue&>& kv) {
                 return kv.second.empty();
             });
 }
@@ -135,7 +135,7 @@ FlowControl::PendingTransmission* FlowControl::next_transmission()
 void FlowControl::drop_expired()
 {
     for (auto& kv : m_queues) {
-        AccessCategory ac = kv.first;
+        access::AccessCategory ac = kv.first;
         Queue& queue = kv.second;
         queue.remove_if([this, ac](const PendingTransmission& transmission) {
             bool drop = transmission.expiry < m_runtime.now();

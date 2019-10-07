@@ -84,7 +84,7 @@ TEST_F(FlowControlTest, immediate_transmission)
     request.dcc_profile = Profile::DP1;
     flow_control.request(request, create_packet());
     ASSERT_TRUE(!!access.last_request);
-    EXPECT_EQ(AccessCategory::VI, access.last_request->access_category);
+    EXPECT_EQ(access::AccessCategory::VI, access.last_request->access_category);
 
     EXPECT_EQ(trc.interval(dp2), trc.delay(dp2));
     request.dcc_profile = Profile::DP2;
@@ -157,8 +157,8 @@ TEST_F(FlowControlTest, queuing)
 
 TEST_F(FlowControlTest, drop_expired)
 {
-    std::list<AccessCategory> drops;
-    flow_control.set_packet_drop_hook([&drops](AccessCategory ac, const ChunkPacket*) {
+    std::list<access::AccessCategory> drops;
+    flow_control.set_packet_drop_hook([&drops](access::AccessCategory ac, const ChunkPacket*) {
             drops.push_back(ac);
     });
 
@@ -170,7 +170,7 @@ TEST_F(FlowControlTest, drop_expired)
     runtime.trigger(trc.delay(dp3) + milliseconds(10));
     EXPECT_FALSE(access.last_request);
     ASSERT_FALSE(drops.empty());
-    EXPECT_EQ(AccessCategory::BK, drops.back());
+    EXPECT_EQ(access::AccessCategory::BK, drops.back());
     EXPECT_EQ(0, access.transmissions);
 
     trc.notify(dp3);
@@ -205,7 +205,7 @@ TEST_F(FlowControlTest, queue_length)
 
     // count drops
     std::size_t drops = 0;
-    flow_control.set_packet_drop_hook([&drops](AccessCategory, const ChunkPacket*) { ++drops; });
+    flow_control.set_packet_drop_hook([&drops](access::AccessCategory, const ChunkPacket*) { ++drops; });
 
     DataRequest request;
     request.dcc_profile = Profile::DP1;
