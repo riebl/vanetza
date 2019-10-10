@@ -50,6 +50,7 @@ int SecuritySigningCase::execute()
         EncapRequest initial_encap_request;
         initial_encap_request.plaintext_payload = packet;
         initial_encap_request.its_aid = aid::CA;
+        initial_encap_request.permissions = ByteBuffer { 1, 0, 0 };
         security_entity.encapsulate_packet(std::move(initial_encap_request));
     }
 
@@ -68,8 +69,10 @@ int SecuritySigningCase::execute()
         EncapRequest encap_request;
         encap_request.plaintext_payload = packet;
         encap_request.its_aid = aid::CA;
+        encap_request.permissions = ByteBuffer { 1, 0, 0 };
 
         EncapConfirm encap_confirm = security_entity.encapsulate_packet(std::move(encap_request));
+        assert(encap_confirm.sec_packet);
     }
 
     std::cout << "[Done]" << std::endl;

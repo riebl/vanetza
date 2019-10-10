@@ -2,6 +2,7 @@
 #define ENCAP_CONFIRM_HPP
 
 #include <vanetza/security/secured_message.hpp>
+#include <boost/optional.hpp>
 
 namespace vanetza
 {
@@ -13,7 +14,7 @@ namespace security
 * TS 102 636-4-1 v1.2.3 (2015-01)
 */
 struct EncapConfirm {
-    SecuredMessage sec_packet; // mandatory
+    boost::optional<SecuredMessage> sec_packet; // mandatory, but encap may fail
 };
 
 } // namespace security

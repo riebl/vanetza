@@ -24,6 +24,7 @@
 #include <vanetza/geonet/timestamp.hpp>
 #include <vanetza/units/length.hpp>
 #include <vanetza/units/time.hpp>
+#include <vanetza/security/encap_request.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <boost/variant.hpp>
 #include <cstdint>
@@ -492,11 +493,13 @@ private:
     /**
      * \brief Encaspulate a packet according to security profile
      *
+     * \param security_profile security service(s) to invoke
      * \param aid ITS-AID
+     * \param permissions SSP required to sign the packet
      * \param pdu PDU
      * \param packet Packet with payload
      */
-    DownPacketPtr encap_packet(ItsAid aid, Pdu& pdu, DownPacketPtr packet);
+    boost::optional<DownPacketPtr> encap_packet(boost::optional<security::SecurityProfile> security_profile, ItsAid aid, ByteBuffer permissions, Pdu& pdu, DownPacketPtr packet);
 
     /**
      * \brief Create an initialized Single-Hop-Broadcast PDU

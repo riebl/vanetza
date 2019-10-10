@@ -1,6 +1,7 @@
 #ifndef DATA_REQUEST_HPP_3JYISVXB
 #define DATA_REQUEST_HPP_3JYISVXB
 
+#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/areas.hpp>
@@ -8,6 +9,7 @@
 #include <vanetza/geonet/lifetime.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/traffic_class.hpp>
+#include <vanetza/security/encap_request.hpp>
 #include <vanetza/units/time.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
@@ -40,7 +42,11 @@ struct DataRequest
 
     UpperProtocol upper_protocol;
     CommunicationProfile communication_profile;
+    decltype(security::EncapRequest::sec_services) security_profile;
     ItsAid its_aid;
+    boost::optional<ByteBuffer> permissions;
+    // TODO: Security context information (optional), Security target ID list (optional):
+    // Encryption is currently not supported
     Lifetime maximum_lifetime;
     boost::optional<Repetition> repetition;
     unsigned max_hop_limit;

@@ -68,6 +68,7 @@ int SecurityValidationCase::execute()
         EncapRequest initial_encap_request;
         initial_encap_request.plaintext_payload = packet;
         initial_encap_request.its_aid = aid::CA;
+        initial_encap_request.permissions = ByteBuffer { 1, 0, 0 };
         entities[0]->encapsulate_packet(std::move(initial_encap_request));
     }
 
@@ -81,10 +82,12 @@ int SecurityValidationCase::execute()
         EncapRequest encap_request;
         encap_request.plaintext_payload = packet;
         encap_request.its_aid = aid::CA;
+        encap_request.permissions = ByteBuffer { 1, 0, 0 };
 
         EncapConfirm encap_confirm = entities[i]->encapsulate_packet(std::move(encap_request));
-        secured_messages[i] = encap_confirm.sec_packet;
-        auto signer_info = encap_confirm.sec_packet.header_field<HeaderFieldType::Signer_Info>();
+        assert(encap_confirm.sec_packet);
+        secured_messages[i] = *encap_confirm.sec_packet;
+        auto signer_info = encap_confirm.sec_packet->header_field<HeaderFieldType::Signer_Info>();
 
         if (signer_info_type == "hash") {
             assert(signer_info && get_type(*signer_info) == SignerInfoType::Certificate_Digest_With_SHA256);

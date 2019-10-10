@@ -1,5 +1,6 @@
 #include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/data_request.hpp>
+#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/common/runtime.hpp>
@@ -23,6 +24,7 @@
 #include <vanetza/geonet/transport_interface.hpp>
 #include <vanetza/geonet/extended_pdu.hpp>
 #include <vanetza/geonet/secured_pdu.hpp>
+#include <boost/optional.hpp>
 #include <boost/units/cmath.hpp>
 #include <functional>
 #include <stdexcept>
@@ -40,10 +42,14 @@ struct ControlInfo
 {
     ControlInfo(const DataRequest request) :
         communication_profile(request.communication_profile),
-        its_aid(request.its_aid) {}
+        security_profile(request.security_profile),
+        its_aid(request.its_aid),
+        permissions(request.permissions) {}
 
     const CommunicationProfile communication_profile;
+    const decltype(security::EncapRequest::sec_services) security_profile;
     const ItsAid its_aid;
+    const boost::optional<ByteBuffer> permissions;
 };
 
 template<typename PDU>
@@ -229,8 +235,14 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
             pdu->extended().source_position = m_local_position_vector;
 
             // step 2: encapsulate packet by security
-            if (m_mib.itsGnSecurity) {
-                payload = encap_packet(ctrl.its_aid, *pdu, std::move(payload));
+            if (m_mib.itsGnSecurity && ctrl.security_profile) {
+                auto encap_result = encap_packet(ctrl.security_profile, ctrl.its_aid, *ctrl.permissions, *pdu, std::move(payload));
+                if (encap_result) {
+                    payload = std::move(encap_result.get());
+                } else {
+                    // TODO: How to throw an error here?
+                    return;
+                }
             }
 
             // step 5: execute media-dependent procedures
@@ -293,9 +305,15 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
         pdu->extended().source_position = m_local_position_vector;
 
         // step 5: apply security
-        if (m_mib.itsGnSecurity) {
+        if (m_mib.itsGnSecurity && ctrl.security_profile) {
             assert(pdu->basic().next_header == NextHeaderBasic::Secured);
-            payload = encap_packet(ctrl.its_aid, *pdu, std::move(payload));
+            auto encap_result = encap_packet(ctrl.security_profile, ctrl.its_aid, *ctrl.permissions, *pdu, std::move(payload));
+            if (encap_result) {
+                payload = std::move(encap_result.get());
+            } else {
+                // TODO: How to throw an error here?
+                return;
+            }
         }
 
         // step 6: repetition is already set-up before
@@ -707,10 +725,19 @@ void Router::on_beacon_timer_expired()
     // Beacons originate in GeoNet layer, therefore no upper layer payload
     DownPacketPtr payload { new DownPacket() };
     auto pdu = create_beacon_pdu();
+    // GN-MGMT has no SSP defined
+    auto permissions = ByteBuffer {};
 
     if (m_mib.itsGnSecurity) {
         pdu->basic().next_header = NextHeaderBasic::Secured;
-        payload = encap_packet(aid::GN_MGMT, *pdu, std::move(payload));
+        // Use default security profile for beacons, see ETSI EN 302 636-4-1 v1.2.1, table 22
+        auto encap_result = encap_packet(security::SecurityProfile::Default, aid::GN_MGMT, permissions, *pdu, std::move(payload));
+        if (!encap_result) {
+            // TODO: Throw an error here? If so, how?
+            return;
+        } else {
+            payload = std::move(encap_result.get());
+        }
     } else {
         pdu->basic().next_header = NextHeaderBasic::Common;
     }
@@ -1209,7 +1236,7 @@ std::unique_ptr<GbcPdu> Router::create_gbc_pdu(const GbcDataRequest& request)
     return pdu;
 }
 
-Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, Pdu& pdu, DownPacketPtr packet)
+boost::optional<Router::DownPacketPtr> Router::encap_packet(boost::optional<security::SecurityProfile> security_profile, ItsAid its_aid, ByteBuffer permissions, Pdu& pdu, DownPacketPtr packet)
 {
     security::EncapRequest encap_request;
 
@@ -1217,18 +1244,24 @@ Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, Pdu& pdu, DownPacketP
     sec_payload[OsiLayer::Network] = SecuredPdu(pdu);
     sec_payload.merge(*packet, OsiLayer::Transport, max_osi_layer());
     encap_request.plaintext_payload = std::move(sec_payload);
+    encap_request.sec_services = security_profile;
     encap_request.its_aid = its_aid;
+    encap_request.permissions = permissions;
 
     if (m_security_entity) {
         security::EncapConfirm confirm = m_security_entity->encapsulate_packet(std::move(encap_request));
-        pdu.secured(std::move(confirm.sec_packet));
+        if (confirm.sec_packet) {
+            pdu.secured(std::move(*confirm.sec_packet));
+        } else {
+            return boost::none;
+        }
     } else {
         throw std::runtime_error("security entity unavailable");
     }
 
     assert(size(*packet, OsiLayer::Transport, max_osi_layer()) == 0);
     assert(pdu.basic().next_header == NextHeaderBasic::Secured);
-    return packet;
+    return std::move(packet);
 }
 
 std::string stringify(Router::PacketDropReason pdr)

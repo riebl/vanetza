@@ -90,6 +90,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
     certificate.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    certificate.add_permission(aid::DEN, ByteBuffer({ 1, 0, 0, 0 }));
     certificate.add_permission(aid::GN_MGMT, ByteBuffer({})); // required for beacons
     certificate.add_permission(aid::IPV6_ROUTING, ByteBuffer({})); // required for routing tests
 
@@ -145,6 +146,7 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
     certificate.add_permission(aid::CA);
+    certificate.add_permission(aid::DEN);
     certificate.add_permission(aid::GN_MGMT); // required for beacons
     certificate.add_permission(aid::IPV6_ROUTING); // required for routing tests
 
@@ -196,6 +198,7 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     certificate.subject_attributes.push_back(SubjectAssurance(0x00));
 
     certificate.add_permission(aid::CA);
+    certificate.add_permission(aid::DEN);
     certificate.add_permission(aid::GN_MGMT); // required for beacons
     certificate.add_permission(aid::IPV6_ROUTING); // required for routing tests
 
