@@ -63,7 +63,7 @@ void FlowControl::enqueue(const DataRequest& request, std::unique_ptr<ChunkPacke
     auto expiry = m_runtime.now() + request.lifetime;
     while (m_queue_length > 0 && m_queues[ac].size() >= m_queue_length) {
         m_queues[ac].pop_front();
-        m_packet_drop_hook(ac);
+        m_packet_drop_hook(ac, packet.get());
     }
     m_queues[ac].emplace_back(expiry, request, std::move(packet));
 
@@ -140,7 +140,7 @@ void FlowControl::drop_expired()
         queue.remove_if([this, ac](const PendingTransmission& transmission) {
             bool drop = transmission.expiry < m_runtime.now();
             if (drop) {
-                m_packet_drop_hook(ac);
+                m_packet_drop_hook(ac, transmission.packet.get());
             }
             return drop;
         });
@@ -155,8 +155,8 @@ void FlowControl::transmit(const DataRequest& request, std::unique_ptr<ChunkPack
     access_request.ether_type = request.ether_type;
     access_request.access_category = map_profile_onto_ac(request.dcc_profile);
 
+    m_packet_transmit_hook(access_request.access_category, packet.get());
     m_access.request(access_request, std::move(packet));
-    m_packet_transmit_hook(access_request.access_category);
 }
 
 void FlowControl::set_packet_drop_hook(PacketDropHook::callback_type&& cb)

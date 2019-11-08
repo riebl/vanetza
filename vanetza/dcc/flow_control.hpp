@@ -37,8 +37,8 @@ class TransmitRateControl;
 class FlowControl : public RequestInterface
 {
 public:
-    using PacketDropHook = Hook<AccessCategory>;
-    using PacketTransmitHook = Hook<AccessCategory>;
+    using PacketDropHook = Hook<AccessCategory, const ChunkPacket*>;
+    using PacketTransmitHook = Hook<AccessCategory, const ChunkPacket*>;
 
     /**
      * Create FlowControl instance

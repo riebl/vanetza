@@ -158,7 +158,7 @@ TEST_F(FlowControlTest, queuing)
 TEST_F(FlowControlTest, drop_expired)
 {
     std::list<AccessCategory> drops;
-    flow_control.set_packet_drop_hook([&drops](AccessCategory ac) {
+    flow_control.set_packet_drop_hook([&drops](AccessCategory ac, const ChunkPacket*) {
             drops.push_back(ac);
     });
 
@@ -205,7 +205,7 @@ TEST_F(FlowControlTest, queue_length)
 
     // count drops
     std::size_t drops = 0;
-    flow_control.set_packet_drop_hook([&drops](AccessCategory) { ++drops; });
+    flow_control.set_packet_drop_hook([&drops](AccessCategory, const ChunkPacket*) { ++drops; });
 
     DataRequest request;
     request.dcc_profile = Profile::DP1;
