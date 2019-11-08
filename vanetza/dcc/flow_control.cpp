@@ -63,7 +63,7 @@ void FlowControl::enqueue(const DataRequest& request, std::unique_ptr<ChunkPacke
     auto expiry = m_runtime.now() + request.lifetime;
     while (m_queue_length > 0 && m_queues[ac].size() >= m_queue_length) {
         m_queues[ac].pop_front();
-        m_packet_drop_hook(ac);
+        call_drop_hooks(ac, *packet);
     }
     m_queues[ac].emplace_back(expiry, request, std::move(packet));
 
@@ -140,7 +140,7 @@ void FlowControl::drop_expired()
         queue.remove_if([this, ac](const PendingTransmission& transmission) {
             bool drop = transmission.expiry < m_runtime.now();
             if (drop) {
-                m_packet_drop_hook(ac);
+                call_drop_hooks(ac, *(transmission.packet));
             }
             return drop;
         });
@@ -155,8 +155,8 @@ void FlowControl::transmit(const DataRequest& request, std::unique_ptr<ChunkPack
     access_request.ether_type = request.ether_type;
     access_request.access_category = map_profile_onto_ac(request.dcc_profile);
 
+    call_transmit_hooks(access_request.access_category, *packet);
     m_access.request(access_request, std::move(packet));
-    m_packet_transmit_hook(access_request.access_category);
 }
 
 void FlowControl::set_packet_drop_hook(PacketDropHook::callback_type&& cb)
@@ -164,9 +164,19 @@ void FlowControl::set_packet_drop_hook(PacketDropHook::callback_type&& cb)
     m_packet_drop_hook = std::move(cb);
 }
 
+void FlowControl::set_packet_drop_hook(PacketDropHookPort::callback_type&& cb)
+{
+    m_packet_drop_hook_port = std::move(cb);
+}
+
 void FlowControl::set_packet_transmit_hook(PacketTransmitHook::callback_type&& cb)
 {
     m_packet_transmit_hook = std::move(cb);
+}
+
+void FlowControl::set_packet_transmit_hook(PacketTransmitHookPort::callback_type&& cb)
+{
+    m_packet_transmit_hook_port = std::move(cb);
 }
 
 void FlowControl::queue_length(std::size_t length)
@@ -181,6 +191,18 @@ void FlowControl::reschedule()
         m_runtime.cancel(this);
         schedule_trigger(*next);
     }
+}
+
+void FlowControl::call_drop_hooks(AccessCategory ac, ChunkPacket& packet) {
+    auto btp_header = vanetza::btp::parse_btp_b(packet);
+    m_packet_drop_hook(ac);
+    m_packet_drop_hook_port(btp_header.destination_port);
+}
+
+void FlowControl::call_transmit_hooks(AccessCategory ac, ChunkPacket& packet) {
+    auto btp_header = vanetza::btp::parse_btp_b(packet);
+    m_packet_transmit_hook(ac);
+    m_packet_transmit_hook_port(btp_header.destination_port);
 }
 
 } // namespace dcc

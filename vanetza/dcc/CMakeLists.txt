@@ -17,7 +17,7 @@ set(CXX_SOURCES
 )
 
 add_vanetza_component(dcc ${CXX_SOURCES})
-target_link_libraries(dcc PUBLIC access net)
+target_link_libraries(dcc PUBLIC access btp net)
 
 add_test_subdirectory(tests)
 
