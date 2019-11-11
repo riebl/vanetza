@@ -164,9 +164,9 @@ void FlowControl::set_packet_drop_hook(PacketDropHook::callback_type&& cb)
     m_packet_drop_hook = std::move(cb);
 }
 
-void FlowControl::set_packet_drop_hook(PacketDropHookPort::callback_type&& cb)
+void FlowControl::set_packet_drop_hook(PacketDropHookGeneric::callback_type&& cb)
 {
-    m_packet_drop_hook_port = std::move(cb);
+    m_packet_drop_hook_generic = std::move(cb);
 }
 
 void FlowControl::set_packet_transmit_hook(PacketTransmitHook::callback_type&& cb)
@@ -174,9 +174,9 @@ void FlowControl::set_packet_transmit_hook(PacketTransmitHook::callback_type&& c
     m_packet_transmit_hook = std::move(cb);
 }
 
-void FlowControl::set_packet_transmit_hook(PacketTransmitHookPort::callback_type&& cb)
+void FlowControl::set_packet_transmit_hook(PacketTransmitHookGeneric::callback_type&& cb)
 {
-    m_packet_transmit_hook_port = std::move(cb);
+    m_packet_transmit_hook_generic = std::move(cb);
 }
 
 void FlowControl::queue_length(std::size_t length)
@@ -193,16 +193,14 @@ void FlowControl::reschedule()
     }
 }
 
-void FlowControl::call_drop_hooks(AccessCategory ac, ChunkPacket& packet) {
-    auto btp_header = vanetza::btp::parse_btp_b(packet);
+void FlowControl::call_drop_hooks(AccessCategory ac, const ChunkPacket& packet) {
     m_packet_drop_hook(ac);
-    m_packet_drop_hook_port(btp_header.destination_port);
+    m_packet_drop_hook_generic(packet);
 }
 
-void FlowControl::call_transmit_hooks(AccessCategory ac, ChunkPacket& packet) {
-    auto btp_header = vanetza::btp::parse_btp_b(packet);
+void FlowControl::call_transmit_hooks(AccessCategory ac, const ChunkPacket& packet) {
     m_packet_transmit_hook(ac);
-    m_packet_transmit_hook_port(btp_header.destination_port);
+    m_packet_transmit_hook_generic(packet);
 }
 
 } // namespace dcc

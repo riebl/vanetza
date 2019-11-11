@@ -1,7 +1,6 @@
 #ifndef FLOW_CONTROL_HPP_PG7RKD8V
 #define FLOW_CONTROL_HPP_PG7RKD8V
 
-#include <vanetza/btp/header.hpp>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/hook.hpp>
 #include <vanetza/dcc/data_request.hpp>
@@ -39,9 +38,9 @@ class FlowControl : public RequestInterface
 {
 public:
     using PacketDropHook = Hook<AccessCategory>;
-    using PacketDropHookPort = Hook<vanetza::btp::port_type>;
+    using PacketDropHookGeneric = Hook<const ChunkPacket&>;
     using PacketTransmitHook = Hook<AccessCategory>;
-    using PacketTransmitHookPort = Hook<vanetza::btp::port_type>;
+    using PacketTransmitHookGeneric = Hook<const ChunkPacket&>;
 
     /**
      * Create FlowControl instance
@@ -69,7 +68,7 @@ public:
      * Set callback to be invoked at packet drop. Replaces any previous callback.
      * \param cb Callback
      */
-    void set_packet_drop_hook(PacketDropHookPort::callback_type&&);
+    void set_packet_drop_hook(PacketDropHookGeneric::callback_type&&);
 
     /**
      * Set callback to be invoked at packet transmission. Replaces any previous callback.
@@ -81,7 +80,7 @@ public:
      * Set callback to be invoked at packet transmission. Replaces any previous callback.
      * \param cb Callback
      */
-    void set_packet_transmit_hook(PacketTransmitHookPort::callback_type&&);
+    void set_packet_transmit_hook(PacketTransmitHookGeneric::callback_type&&);
 
     /**
      * Set length of each queue
@@ -124,8 +123,8 @@ private:
     void schedule_trigger(const Transmission&);
     PendingTransmission* next_transmission();
     Queue* next_queue();
-    void call_drop_hooks(AccessCategory ac, ChunkPacket& packet);
-    void call_transmit_hooks(AccessCategory ac, ChunkPacket& packet);
+    void call_drop_hooks(AccessCategory ac, const ChunkPacket& packet);
+    void call_transmit_hooks(AccessCategory ac, const ChunkPacket& packet);
 
     Runtime& m_runtime;
     TransmitRateControl& m_trc;
@@ -133,9 +132,9 @@ private:
     std::map<AccessCategory, Queue, std::greater<AccessCategory>> m_queues;
     std::size_t m_queue_length;
     PacketDropHook m_packet_drop_hook;
-    PacketDropHookPort m_packet_drop_hook_port;
+    PacketDropHookGeneric m_packet_drop_hook_generic;
     PacketTransmitHook m_packet_transmit_hook;
-    PacketTransmitHookPort m_packet_transmit_hook_port;
+    PacketTransmitHookGeneric m_packet_transmit_hook_generic;
 };
 
 } // namespace dcc
