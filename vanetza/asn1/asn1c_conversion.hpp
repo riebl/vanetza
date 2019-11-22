@@ -17,7 +17,7 @@ struct byte_buffer_impl : public byte_buffer
 public:
     using wrapper_type = T;
     static_assert(
-        std::is_base_of<asn1::asn1c_wrapper<typename T::asn1c_type>, T>::value,
+        std::is_base_of<asn1::asn1c_wrapper_common<typename T::asn1c_type>, T>::value,
         "Only asn1c_wrapper derivates are supported");
 
     byte_buffer_impl(wrapper_type&& t) :
