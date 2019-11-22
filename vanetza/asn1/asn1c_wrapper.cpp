@@ -81,7 +81,7 @@ bool validate(asn_TYPE_descriptor_t& td, const void* t, std::string& error)
     return ok;
 }
 
-std::size_t size(asn_TYPE_descriptor_t& td, const void* t)
+std::size_t size_per(asn_TYPE_descriptor_t& td, const void* t)
 {
     asn_enc_rval_t ec;
     ec = uper_encode(&td, nullptr, const_cast<void*>(t), write_null, nullptr);
@@ -97,7 +97,7 @@ std::size_t size(asn_TYPE_descriptor_t& td, const void* t)
     return (ec.encoded + 7) / 8;
 }
 
-ByteBuffer encode(asn_TYPE_descriptor_t& td, const void* t)
+ByteBuffer encode_per(asn_TYPE_descriptor_t& td, const void* t)
 {
     ByteBuffer buffer;
     asn_enc_rval_t ec = uper_encode(&td, nullptr, const_cast<void*>(t), write_buffer, &buffer);
@@ -111,17 +111,60 @@ ByteBuffer encode(asn_TYPE_descriptor_t& td, const void* t)
     return buffer;
 }
 
-bool decode(asn_TYPE_descriptor_t& td, void** t, const ByteBuffer& buffer)
+bool decode_per(asn_TYPE_descriptor_t& td, void** t, const ByteBuffer& buffer)
 {
-    return decode(td, t, buffer.data(), buffer.size());
+    return decode_per(td, t, buffer.data(), buffer.size());
 }
 
-bool decode(asn_TYPE_descriptor_t& td, void** t, const void* buffer, std::size_t size)
+bool decode_per(asn_TYPE_descriptor_t& td, void** t, const void* buffer, std::size_t size)
 {
     asn_codec_ctx_t ctx {};
     asn_dec_rval_t ec = uper_decode_complete(&ctx, &td, t, buffer, size);
     return ec.code == RC_OK;
 }
+
+std::size_t size_oer(asn_TYPE_descriptor_t& td, const void* t)
+{
+    asn_enc_rval_t ec;
+    ec = oer_encode(&td, const_cast<void*>(t), write_null, nullptr);
+    if (ec.encoded < 0) {
+        const char* failed_type = ec.failed_type ? ec.failed_type->name : "unknown";
+        const auto error_msg = boost::format(
+                "Can't determine size for OER encoding of type %1% because of %2% sub-type")
+                % td.name % failed_type;
+        throw std::runtime_error(error_msg.str());
+    }
+
+    // Caution! ec.encoded are bits not bytes!
+    return (ec.encoded + 7) / 8;
+}
+
+ByteBuffer encode_oer(asn_TYPE_descriptor_t& td, const void* t)
+{
+    ByteBuffer buffer;
+    asn_enc_rval_t ec = oer_encode(&td, const_cast<void*>(t), write_buffer, &buffer);
+    if (ec.encoded == -1) {
+        const char* failed_type = ec.failed_type ? ec.failed_type->name : "unknown";
+        const auto error_msg = boost::format(
+                "OER encoding of type %1% failed because of %2% sub-type")
+                % td.name % failed_type;
+        throw std::runtime_error(error_msg.str());
+    }
+    return buffer;
+}
+
+bool decode_oer(asn_TYPE_descriptor_t& td, void** t, const ByteBuffer& buffer)
+{
+    return decode_oer(td, t, buffer.data(), buffer.size());
+}
+
+bool decode_oer(asn_TYPE_descriptor_t& td, void** t, const void* buffer, std::size_t size)
+{
+    asn_codec_ctx_t ctx {};
+    asn_dec_rval_t ec = oer_decode(&ctx, &td, t, buffer, size);
+    return ec.code == RC_OK;
+}
+
 
 } // namespace asn1
 } // namespace vanetza

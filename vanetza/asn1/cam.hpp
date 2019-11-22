@@ -10,10 +10,11 @@ namespace vanetza
 namespace asn1
 {
 
-class Cam : public asn1c_wrapper<CAM_t>
+class Cam : public asn1c_per_wrapper<CAM_t>
 {
 public:
-    Cam() : asn1c_wrapper(asn_DEF_CAM) {}
+    using wrapper = asn1c_per_wrapper<CAM_t>;
+    Cam() : wrapper(asn_DEF_CAM) {}
 };
 
 } // namespace asn1
