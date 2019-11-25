@@ -107,11 +107,11 @@ file(STRINGS "${_support_asn1_source_file}" SUPPORT_ASN1C_SOURCES REGEX "^[^#]+"
 add_vanetza_component(asn1 ${CXX_SOURCES} ${ITS_ASN1C_SOURCES} ${SUPPORT_ASN1C_SOURCES})
 target_include_directories(asn1 PUBLIC
     $<BUILD_INTERFACE:${_support_asn1_dir}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/support}>)
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/support>)
 target_link_libraries(asn1 PUBLIC Boost::boost)
 set_target_properties(asn1 PROPERTIES C_STANDARD 11)
 
-install(DIRECTORY ${_support_asn1_dir} ${_its_asn1_dir}
+install(DIRECTORY ${_support_asn1_dir} ${_its_asn1_dir} ${_sec_asn1_dir}
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1
     FILES_MATCHING PATTERN "*.h")
 
