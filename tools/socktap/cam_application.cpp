@@ -16,15 +16,6 @@ using namespace vanetza;
 using namespace vanetza::facilities;
 using namespace std::chrono;
 
-auto microdegree = vanetza::units::degree * boost::units::si::micro;
-
-template<typename T, typename U>
-long round(const boost::units::quantity<T>& q, const U& u)
-{
-	boost::units::quantity<U> v { q };
-	return std::round(v.value());
-}
-
 CamApplication::CamApplication(PositionProvider& positioning, const Runtime& rt, boost::asio::steady_timer& timer, milliseconds cam_interval)
     : positioning_(positioning), runtime_(rt), cam_interval_(cam_interval), timer_(timer)
 {
@@ -81,18 +72,7 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
 
     BasicContainer_t& basic = cam.camParameters.basicContainer;
     basic.stationType = StationType_passengerCar;
-    basic.referencePosition.longitude = round(position.longitude, microdegree) * Longitude_oneMicrodegreeEast;
-    basic.referencePosition.latitude = round(position.latitude, microdegree) * Latitude_oneMicrodegreeNorth;
-    basic.referencePosition.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
-    basic.referencePosition.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_unavailable;
-    basic.referencePosition.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_unavailable;
-    if (position.altitude) {
-        basic.referencePosition.altitude.altitudeValue = to_altitude_value(position.altitude->value());
-        basic.referencePosition.altitude.altitudeConfidence = to_altitude_confidence(position.altitude->confidence());
-    } else {
-        basic.referencePosition.altitude.altitudeValue = AltitudeValue_unavailable;
-        basic.referencePosition.altitude.altitudeConfidence = AltitudeConfidence_unavailable;
-    }
+    copy(position, basic.referencePosition);
 
     cam.camParameters.highFrequencyContainer.present = HighFrequencyContainer_PR_basicVehicleContainerHighFrequency;
 
