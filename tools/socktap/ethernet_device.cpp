@@ -2,9 +2,7 @@
 #include <algorithm>
 #include <cstring>
 #include <system_error>
-#ifdef SOCKTAP_WITH_COHDA_LLC
 #include <linux/if_ether.h>
-#endif
 #include <linux/if_packet.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
@@ -35,9 +33,7 @@ EthernetDevice::protocol::endpoint EthernetDevice::endpoint(int family) const
 {
     sockaddr_ll socket_address = {0};
     socket_address.sll_family = family;
-#ifdef SOCKTAP_WITH_COHDA_LLC
     socket_address.sll_protocol = htons(ETH_P_ALL);
-#endif
     socket_address.sll_ifindex = index();
     return protocol::endpoint(&socket_address, sizeof(sockaddr_ll));
 }
