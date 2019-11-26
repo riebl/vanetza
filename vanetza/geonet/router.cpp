@@ -1179,7 +1179,9 @@ bool Router::detect_duplicate_packet(const Address& addr_so, SequenceNumber sn)
 std::unique_ptr<ShbPdu> Router::create_shb_pdu(const ShbDataRequest& request)
 {
     std::unique_ptr<ShbPdu> pdu { new ShbPdu(request, m_mib) };
+    pdu->basic().hop_limit = 1;
     pdu->common().header_type = HeaderType::TSB_Single_Hop;
+    pdu->common().maximum_hop_limit = 1;
     pdu->extended().source_position = m_local_position_vector;
     pdu->extended().dcc = m_dcc_field_generator->generate_dcc_field();
     return pdu;
