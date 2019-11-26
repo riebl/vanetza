@@ -11,15 +11,24 @@ Since you are reading this build how-to you most likely already possess one of t
 This how-to has been created for the Release 16 of the SDK.
 The following instructions are expected to be done within the virtual machine (VM) provided by Cohda.
 
+Please make sure that a recent GCC version for the *arm-linux-gnueabihf* target is installed in this VM.
+I recommend to deinstall `g++-4.8-arm-linux-gnueabihf` entirely as this version supports C++11 only poorly.
+`g++-5-arm-linux-gnueabihf` is known to work well.
 
 ## Vanetza build dependencies
 
 Compilation of Vanetza depends on several third-party libraries, e.g. Boost, GeographicLib and Crypto++ as mentioned in Vanetza's README.
-For the sake of simplicity, we provide the pre-compiled dependencies for Cohda MK5 as compressed archive.
-This archive contains *Boost 1.65.1*, *GeographicLib 1.49* and *Crypto++ 5.6.5*.
-The archive can be downloaded from [box.com](https://app.box.com/s/zu0q7i569xsuu0qno378axwnf5w5v3op).
-MD5 checksum of *vanetza-deps-20171129.tar.bz2* is `853a2833fde0266674d4a4dbe22fe7ef`.
-Extract the archive's content into `/home/duser/vanetza-deps`.
+Steps to compile those dependencies are described in our [cross-compile dependencies document](cross-compile-dependencies.md).
+For the sake of simplicity, we provide the pre-compiled dependencies for Cohda MK5 as compressed archives.
+
+| Archive | Content | MD5 checksum |
+| ------- | ------- | ------------ |
+| [vanetza-deps-20171129.tar.bz2](https://app.box.com/s/zu0q7i569xsuu0qno378axwnf5w5v3op) | Boost 1.65.1, GeographicLib 1.49, Crypto++ 5.6.5 | `853a2833fde0266674d4a4dbe22fe7ef` |
+| [vanetza-deps-20191126.tar.bz2](https://app.box.com/s/hrhdl4ydx24ruak3fsfk6hlh1m7fa4ox) | Boost 1.71.0, GeographicLib 1.50, Crypto++ 8.2.0 | `1d8832949673e3935f72aac6c00a132d` |
+
+At the moment, these archives are hosted on [box.com](https://www.box.com).
+We recommend to download the most recent archive in general.
+Before the next step, extract the archive's content into `/home/duser/vanetza-deps`.
 
 
 ## Compile Vanetza
@@ -32,14 +41,13 @@ Create a build directory and tell CMake to use the cross-compiler installed in t
     cmake $HOME/vanetza \
         -DCMAKE_TOOLCHAIN_FILE=$HOME/vanetza/cmake/Toolchain-Cohda-MK5.cmake \
         -DCMAKE_FIND_ROOT_PATH=$HOME/vanetza-deps \
-        -DCMAKE_EXE_LINKER_FLAGS=-pthread \
         -DCMAKE_INSTALL_RPATH=\$ORIGIN/../lib \
         -DCMAKE_INSTALL_PREFIX=$HOME/vanetza-dist
     make
 
 This builds the Vanetza libraries only. Enable the **BUILD_SOCKTAP** CMake option if you want to try *socktap* as well. Additionally, enable the **SOCKTAP_WITH_COHDA_LLC** CMake option if you want *socktap* to use 802.11p via Cohda's LLC network interface on your MK5.
 Fortunately, *socktap*'s additional *gpsd* dependency is already shipped with the Cohda SDK itself.
-You only need to specify its location by setting **GPS_LIBRARY** to `/home/duser/mk5/stack/v2x-lib/lib/mk5/libgps.a` and **GPS_INCLUDE_DIR** to `/home/duser/mk5/stack/v2x-lib/include`.
+You only need to specify its location by setting **GPS_LIBRARY** to `/home/duser/mk5/stack/v2x-lib/lib/mk5/libgps_static.a` and **GPS_INCLUDE_DIR** to `/home/duser/mk5/stack/v2x-lib/include`.
 Please note, that *socktap* does not make use of Cohda's socket API currently.
 We might provide a modified *socktap* application in the future.
 
