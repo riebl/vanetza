@@ -1,61 +1,128 @@
-#ifndef G5_LINK_LAYER
-#define G5_LINK_LAYER
+#ifndef G5_LINK_LAYER_HPP_CESAPUOW
+#define G5_LINK_LAYER_HPP_CESAPUOW
+
+#include <array>
 #include <cstdint>
-#include <cstring>
 #include <vanetza/access/access_category.hpp>
-#include <vanetza/geonet/router.hpp>
+#include <vanetza/common/bit_number.hpp>
+#include <vanetza/common/byte_order.hpp>
+#include <vanetza/common/serialization.hpp>
+#include <vanetza/net/mac_address.hpp>
 
-namespace vanetza {
-namespace access {
-namespace { // anonymous namespace for local constants
-/**
- * QoS Control subfields in these bits have predetermined values during transmission and the same expected values
- * during reception either because of 802.11p and the frame type (QoS data frame) used or because of the set of
- * supported features (Ack Policy: only No Ack is supported, A-MSDU present: no A-MSDU supported).
- */
-constexpr uint8_t qos_fixed_fields_mask = 0xE8;
-constexpr uint8_t qos_user_priority_mask = 0x07;
-} // namespace
+namespace vanetza
+{
+namespace access
+{
+namespace ieee802
+{
+namespace dot11
+{
 
-struct QOSControl {
+struct QosControl
+{
+    vanetza::uint16be_t raw { 0 };
+
+    void user_priority(AccessCategory);
+};
+
+struct FrameControl
+{
+    vanetza::uint16be_t raw { 0 };
+
+    using Protocol = BitNumber<std::uint16_t, 2>;
+    using Type = BitNumber<std::uint16_t, 2>;
+    using SubType = BitNumber<std::uint16_t, 4>;
+
+    Protocol protocol() const { return Protocol(raw.get()); }
+    Type type() const { return Type(raw.get() >> 2); }
+    SubType sub_type() const { return SubType(raw.get() >> 4); }
+    bool to_ds() const { return raw.get() & 0x0100; }
+    bool from_ds() const { return raw.get() & 0x0200; }
+    bool more_fragments() const { return raw.get() & 0x0400; }
+    bool retry() const { return raw.get() & 0x0800; }
+
     /**
-     * 1 bit A-MSDU present (not an A-MSDU = 0)
-     * 2 bits Ack Policy (No Ack = 1)
-     * 1 bit EOSP (not used)
-     * 1 bit MSB of TID, must be 0
-     * 3 bits other three bits of TID, used for user priority (according to traffic class)
-     */
-    uint8_t qos_flags = 0x20;
-    uint8_t txop = 0; // Not used
-
-    void user_priority(AccessCategory access_category) { qos_flags |= static_cast<int>(access_category) & qos_user_priority_mask; }
+     * create frame control for QoS data frame (without any flags)
+     * \return frame control for QoS data frame
+     **/
+    static FrameControl qos_data_frame();
 };
 
-struct IEEE802Dot11PHeader {
-    uint8_t frame_control_protocol_version_and_type = 0x88; // Only protocol version 0 and QoS data frames supported
-    uint8_t frame_control_flags = 0x00; // Not supported
-    uint16_t duration_or_id = 0; // Not used
-    uint8_t destination[6];
-    uint8_t source[6];
-    uint8_t bssid[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; // Operation outside of a BSS, must be set to wildcard (all bits 1)
-    uint16_t sequence_control = 0x0000; // 12 bits for sequence number, 4 bits for fragment number
-    QOSControl qos_control;
+struct SequenceControl
+{
+    vanetza::uint16be_t raw { 0 };
+
+    using SequenceNumber = BitNumber<std::uint16_t, 12>;
+    using FragmentNumber = BitNumber<std::uint16_t, 4>;
+
+    SequenceNumber sequence_number() const
+    {
+        return SequenceNumber(raw.get() >> 4);
+    }
+
+    FragmentNumber fragment_number() const
+    {
+        return FragmentNumber(raw.get());
+    }
 };
 
-constexpr uint8_t ieee802dot11p_fcs_length = 4;
+extern const MacAddress bssid_wildcard;
 
-struct LLCSNAPHeader {
-    uint8_t dsap = 0xAA;
-    uint8_t ssap = 0xAA;
-    uint8_t control_field = 0x03;
-    uint8_t oui[3] = { 0x00, 0x00, 0x00 };
-    uint16_t protocol_id = geonet::ether_type.net();
+struct QosDataHeader
+{
+    FrameControl frame_control = FrameControl::qos_data_frame();
+    uint16be_t duration_or_id;
+    MacAddress destination;
+    MacAddress source;
+    MacAddress bssid = bssid_wildcard;
+    SequenceControl sequence_control;
+    QosControl qos_control;
+
+    static constexpr std::size_t length_bytes = 26;
 };
 
-struct G5LinkLayer {
-    IEEE802Dot11PHeader ieee802dot11p_header;
-    LLCSNAPHeader llc_snap_header;
+static constexpr std::size_t fcs_length_bytes = 4;
+
+void serialize(OutputArchive&, const QosDataHeader&);
+void deserialize(InputArchive&, QosDataHeader&);
+
+} // namespace dot11
+
+struct LlcSnapHeader
+{
+    std::uint8_t dsap = 0xAA;
+    std::uint8_t ssap = 0xAA;
+    std::uint8_t control = 0x03;
+    std::array<std::uint8_t, 3> oui = {{ 0x00, 0x00, 0x00 }};
+    uint16be_t protocol_id;
+
+    LlcSnapHeader(uint16be_t protocol_id) : protocol_id(protocol_id) {}
+
+    static constexpr std::size_t length_bytes = 8;
 };
+
+bool operator==(const LlcSnapHeader&, const LlcSnapHeader&);
+bool operator!=(const LlcSnapHeader&, const LlcSnapHeader&);
+
+void serialize(OutputArchive&, const LlcSnapHeader&);
+void deserialize(InputArchive&, LlcSnapHeader&);
+
+} // namespace ieee802
+
+struct G5LinkLayer
+{
+    ieee802::dot11::QosDataHeader mac_header;
+    ieee802::LlcSnapHeader llc_snap_header;
+
+    G5LinkLayer();
+
+    static constexpr std::size_t length_bytes =
+        ieee802::dot11::QosDataHeader::length_bytes +
+        ieee802::LlcSnapHeader::length_bytes;
+};
+
+void serialize(OutputArchive&, const G5LinkLayer&);
+void deserialize(InputArchive&, G5LinkLayer&);
 
 /**
  * \brief Check whether some link layer header fields contain their expected values.
@@ -64,20 +131,9 @@ struct G5LinkLayer {
  * \param link_layer G5LinkLayer to check
  * \return whether all expected values are present
  */
-bool check_fixed_fields(const G5LinkLayer& link_layer) {
-    const IEEE802Dot11PHeader& mac_header = link_layer.ieee802dot11p_header;
-    const LLCSNAPHeader& llc_header = link_layer.llc_snap_header;
-    G5LinkLayer default_link_layer;
-    IEEE802Dot11PHeader& default_mac_header = default_link_layer.ieee802dot11p_header;
-    LLCSNAPHeader& default_llc_header = default_link_layer.llc_snap_header;
-    return mac_header.frame_control_protocol_version_and_type == default_mac_header.frame_control_protocol_version_and_type
-                && mac_header.frame_control_flags == default_mac_header.frame_control_flags
-                && !std::memcmp(mac_header.bssid, default_mac_header.bssid, sizeof(mac_header.bssid))
-                && (mac_header.qos_control.qos_flags & qos_fixed_fields_mask) == (default_mac_header.qos_control.qos_flags & qos_fixed_fields_mask)
-                && !std::memcmp(&llc_header, &default_llc_header, sizeof(llc_header));
-}
+bool check_fixed_fields(const G5LinkLayer& link_layer);
 
 } // namespace access
 } // namespace vanetza
 
-#endif /* G5_LINK_LAYER */
+#endif /* G5_LINK_LAYER_HPP_CESAPUOW */

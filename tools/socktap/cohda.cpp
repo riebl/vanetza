@@ -1,62 +1,74 @@
 #include "cohda.hpp"
-#include <llc-api.h>
 #include <vanetza/access/access_category.hpp>
 #include <vanetza/access/g5_link_layer.hpp>
+#include <vanetza/common/serialization_buffer.hpp>
 #include <vanetza/dcc/mapping.hpp>
+#include <cassert>
+#include <llc-api.h>
 
-namespace vanetza {
+namespace vanetza
+{
 
-void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket>& packet) {
+void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket>& packet)
+{
     access::G5LinkLayer link_layer;
-    access::IEEE802Dot11PHeader& mac_header = link_layer.ieee802dot11p_header;
-    std::copy(request.destination.octets.begin(), request.destination.octets.end(), mac_header.destination);
-    std::copy(request.source.octets.begin(), request.source.octets.end(), mac_header.source);
+    access::ieee802::dot11::QosDataHeader& mac_header = link_layer.mac_header;
+    mac_header.destination = request.destination;
+    mac_header.source = request.source;
     mac_header.qos_control.user_priority(dcc::map_profile_onto_ac(request.dcc_profile));
-    auto link_layer_ptr = reinterpret_cast<uint8_t*>(&link_layer);
-    packet->layer(OsiLayer::Link) = std::move(ByteBuffer(link_layer_ptr, link_layer_ptr + sizeof(access::G5LinkLayer)));
 
-    uint16_t payload_size = packet->size();
-    uint16_t total_size = sizeof(tMKxTxPacket) + payload_size;
+    ByteBuffer link_layer_buffer;
+    serialize_into_buffer(link_layer, link_layer_buffer);
+    assert(link_layer_buffer.size() == access::G5LinkLayer::length_bytes);
+    packet->layer(OsiLayer::Link) = std::move(link_layer_buffer);
 
-    tMKxTxPacket phy = {};
+    const std::size_t payload_size = packet->size();
+    const std::size_t total_size = sizeof(tMKxTxPacket) + payload_size;
+
+    tMKxTxPacket phy = { 0 };
     phy.Hdr.Type = MKXIF_TXPACKET;
     phy.Hdr.Len = total_size;
     phy.TxPacketData.TxAntenna = MKX_ANT_DEFAULT;
     phy.TxPacketData.TxFrameLength = payload_size;
-    auto phy_ptr = reinterpret_cast<uint8_t*>(&phy);
+    auto phy_ptr = reinterpret_cast<const uint8_t*>(&phy);
     packet->layer(OsiLayer::Physical) = std::move(ByteBuffer(phy_ptr, phy_ptr + sizeof(tMKxTxPacket)));
 }
 
-boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet) {
-    if (packet.size(OsiLayer::Physical) < sizeof(tMKxRxPacket) + sizeof(access::G5LinkLayer) + access::ieee802dot11p_fcs_length) {
+boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet)
+{
+    static const std::size_t min_length = sizeof(tMKxRxPacket) + access::G5LinkLayer::length_bytes +
+        access::ieee802::dot11::fcs_length_bytes;
+    if (packet.size(OsiLayer::Physical) < min_length) {
         return boost::none;
     }
-    packet.set_boundary(OsiLayer::Physical, sizeof(tMKxRxPacket));
 
-    tMKxRxPacket* phy = reinterpret_cast<tMKxRxPacket*>(&*packet[OsiLayer::Physical].begin());
+    packet.set_boundary(OsiLayer::Physical, sizeof(tMKxRxPacket));
+    auto phy = reinterpret_cast<const tMKxRxPacket*>(&*packet[OsiLayer::Physical].begin());
     if (phy->Hdr.Type != MKXIF_RXPACKET) {
         return boost::none;
     }
+
     // Sanity check that sizes reported by Cohda LLC are correct, since we rely on Cohda's FCS checking
     if (phy->Hdr.Len != packet.size() || phy->RxPacketData.RxFrameLength != packet.size() - sizeof(tMKxRxPacket)) {
         return boost::none;
     }
+
     if (!phy->RxPacketData.FCSPass) {
         return boost::none;
     }
-    packet.trim(OsiLayer::Link, packet.size() - access::ieee802dot11p_fcs_length);
-    packet.set_boundary(OsiLayer::Link, sizeof(access::G5LinkLayer));
 
-    access::G5LinkLayer* link_layer_ptr = reinterpret_cast<access::G5LinkLayer*>(&*packet[OsiLayer::Link].begin());
-    if (!access::check_fixed_fields(*link_layer_ptr)) {
+    packet.trim(OsiLayer::Link, packet.size() - access::ieee802::dot11::fcs_length_bytes);
+    packet.set_boundary(OsiLayer::Link, access::G5LinkLayer::length_bytes);
+    access::G5LinkLayer link_layer;
+    deserialize_from_range(link_layer, packet[OsiLayer::Link]);
+    if (!access::check_fixed_fields(link_layer)) {
         return boost::none;
     }
 
     EthernetHeader eth;
-    std::memcpy(eth.destination.octets.begin(), link_layer_ptr->ieee802dot11p_header.destination, MacAddress::length_bytes);
-    std::memcpy(eth.source.octets.begin(), link_layer_ptr->ieee802dot11p_header.source, MacAddress::length_bytes);
-    eth.type = host_cast<uint16_t>(ntoh(link_layer_ptr->llc_snap_header.protocol_id));
-
+    eth.destination = link_layer.mac_header.destination;
+    eth.source = link_layer.mac_header.source;
+    eth.type = link_layer.llc_snap_header.protocol_id;
     return eth;
 }
 
