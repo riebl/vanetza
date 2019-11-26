@@ -6,6 +6,7 @@
 #include <vanetza/geonet/destination_variant.hpp>
 #include <vanetza/geonet/interface.hpp>
 #include <vanetza/geonet/position_vector.hpp>
+#include <vanetza/security/basic_elements.hpp>
 #include <vanetza/security/decap_confirm.hpp>
 #include <boost/optional.hpp>
 
@@ -20,10 +21,10 @@ struct DataIndication
     TransportType transport_type;
     DestinationVariant destination;
     LongPositionVector source_position;
-    security::DecapReport security_report;
+    boost::optional<security::DecapReport> security_report;
     boost::optional<ItsAid> its_aid;
     boost::optional<ByteBuffer> permissions;
-    // TODO: certificate id is missing (optional)
+    boost::optional<security::HashedId8> certificate_id;
     TrafficClass traffic_class;
     boost::optional<Lifetime> remaining_packet_lifetime;
     boost::optional<unsigned> remaining_hop_limit;

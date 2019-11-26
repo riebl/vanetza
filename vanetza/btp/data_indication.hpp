@@ -8,6 +8,7 @@
 #include <vanetza/geonet/lifetime.hpp>
 #include <vanetza/geonet/position_vector.hpp>
 #include <vanetza/geonet/traffic_class.hpp>
+#include <vanetza/security/decap_confirm.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
 
@@ -26,6 +27,8 @@ struct DataIndication
     port_type destination_port;
     boost::optional<decltype(HeaderB::destination_port_info)> destination_port_info;
     decltype(geonet::DataIndication::destination) destination;
+    decltype(geonet::DataIndication::security_report) security_report;
+    decltype(geonet::DataIndication::certificate_id) certificate_id;
     decltype(geonet::DataIndication::its_aid) its_aid;
     decltype(geonet::DataIndication::permissions) permissions;
     geonet::LongPositionVector source_position;

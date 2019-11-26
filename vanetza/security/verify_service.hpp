@@ -53,10 +53,10 @@ struct VerifyRequest
 struct VerifyConfirm
 {
     VerificationReport report; // mandatory
+    boost::optional<HashedId8> certificate_id; // optional
     ItsAid its_aid; // mandatory
     ByteBuffer permissions; // mandatory
     CertificateValidity certificate_validity; // non-standard extension
-    boost::optional<HashedId8> certificate_id; // optional
 };
 
 /**

@@ -236,6 +236,7 @@ VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_pro
                     return confirm;
                     break;
             }
+            confirm.certificate_id = signer_hash;
         }
 
         if (possible_certificates.size() == 0) {
