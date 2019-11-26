@@ -27,6 +27,14 @@ void deserialize(InputArchive& ar, EndianType<T, ORDER>& value)
 
 template<typename T>
 typename std::enable_if<std::is_integral<T>::value>::type
+serialize(OutputArchive& ar, T value)
+{
+    auto tmp = hton(value);
+    ar << tmp;
+}
+
+template<typename T>
+typename std::enable_if<std::is_integral<T>::value>::type
 deserialize(InputArchive& ar, T& value)
 {
     T tmp;
