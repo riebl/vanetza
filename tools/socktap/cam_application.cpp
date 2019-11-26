@@ -41,7 +41,7 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
     asn1::PacketVisitor<asn1::Cam> visitor;
     std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(visitor, *packet);
 
-    std::cout << "CAM application received a packet with " << (cam ? "decodable" : "broken") << "content" << std::endl;
+    std::cout << "CAM application received a packet with " << (cam ? "decodable" : "broken") << " content" << std::endl;
 }
 
 void CamApplication::schedule_timer()
