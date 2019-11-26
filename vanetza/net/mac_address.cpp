@@ -84,5 +84,19 @@ std::ostream& operator<<(std::ostream& os, const MacAddress& addr)
     return os;
 }
 
+void serialize(OutputArchive& ar, const MacAddress& addr)
+{
+    for (std::uint8_t octet : addr.octets) {
+        ar << octet;
+    }
+}
+
+void deserialize(InputArchive& ar, MacAddress& addr)
+{
+    for (std::uint8_t& octet : addr.octets) {
+        ar >> octet;
+    }
+}
+
 } // namespace vanetza
 

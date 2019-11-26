@@ -1,6 +1,7 @@
 #ifndef MAC_ADDRESS_HPP_FDINBLBS
 #define MAC_ADDRESS_HPP_FDINBLBS
 
+#include <vanetza/common/serialization.hpp>
 #include <boost/operators.hpp>
 #include <boost/optional.hpp>
 #include <array>
@@ -60,6 +61,20 @@ MacAddress create_mac_address(T value)
     }
     return mac;
 }
+
+/**
+ * Serialize MAC address
+ * \param out output sink
+ * \param addr MAC address
+ */
+void serialize(OutputArchive& out, const MacAddress& addr);
+
+/**
+ * Deserialize MAC address
+ * \param in input source
+ * \param addr deserialize into this object
+ */
+void deserialize(InputArchive& in, MacAddress& addr);
 
 } // namespace vanetza
 

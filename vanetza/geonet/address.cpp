@@ -53,14 +53,7 @@ void serialize(const Address& addr, OutputArchive& ar)
     manuallyConfiguredAndTypeAndCountryCode |=
         addr.is_manually_configured() ? manually_configured_mask : 0x0000;
     serialize(host_cast(manuallyConfiguredAndTypeAndCountryCode), ar);
-    serialize(addr.mid(), ar);
-}
-
-void serialize(const MacAddress& addr, OutputArchive& ar)
-{
-    for (uint8_t octet : addr.octets) {
-        ar << octet;
-    }
+    serialize(ar, addr.mid());
 }
 
 void deserialize(Address& addr, InputArchive& ar)
@@ -71,15 +64,8 @@ void deserialize(Address& addr, InputArchive& ar)
     addr.country_code(tmp & country_code_mask);
     addr.station_type(static_cast<StationType>((tmp & station_type_mask) >> station_type_shift));
     MacAddress mid;
-    deserialize(mid, ar);
+    deserialize(ar, mid);
     addr.mid(mid);
-}
-
-void deserialize(MacAddress& addr, InputArchive& ar)
-{
-    for (uint8_t& octet : addr.octets) {
-        ar >> octet;
-    }
 }
 
 } // namespace geonet
