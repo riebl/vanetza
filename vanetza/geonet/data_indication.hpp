@@ -19,7 +19,7 @@ struct DataIndication
     UpperProtocol upper_protocol;
     TransportType transport_type;
     DestinationVariant destination;
-    ShortPositionVector source_position;
+    LongPositionVector source_position;
     security::DecapReport security_report;
     boost::optional<ItsAid> its_aid;
     boost::optional<ByteBuffer> permissions;

@@ -555,7 +555,7 @@ void Router::indicate_extended(IndicationContext& ctx, const CommonHeader& commo
         {
             DataIndication& indication = m_context.service_primitive();
             indication.transport_type = TransportType::SHB;
-            indication.source_position = static_cast<ShortPositionVector>(shb.source_position);
+            indication.source_position = shb.source_position;
 
             auto& pdu = m_context.pdu();
             ExtendedPduConstRefs<ShbHeader> shb_pdu(pdu.basic(), pdu.common(), shb, pdu.secured());
@@ -567,7 +567,7 @@ void Router::indicate_extended(IndicationContext& ctx, const CommonHeader& commo
         {
             DataIndication& indication = m_context.service_primitive();
             indication.transport_type = TransportType::GBC;
-            indication.source_position = static_cast<ShortPositionVector>(gbc.source_position);
+            indication.source_position = gbc.source_position;
             indication.destination = gbc.destination(m_context.pdu().common().header_type);
 
             auto& pdu = m_context.pdu();
