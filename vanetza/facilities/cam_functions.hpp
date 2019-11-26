@@ -5,6 +5,7 @@
 #include <vanetza/asn1/its/AltitudeValue.h>
 #include <vanetza/asn1/its/Heading.h>
 #include <vanetza/asn1/its/ReferencePosition.h>
+#include <vanetza/common/position_fix.hpp>
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
@@ -58,12 +59,17 @@ bool is_available(const Heading&);
 bool is_available(const ReferencePosition_t&);
 
 /**
+ * Copy position information into a ReferencePosition structure from CDD
+ */
+void copy(const PositionFix&, ReferencePosition&);
+
+/**
  * Convert altitude to AltitudeValue from CDD
  */
 AltitudeValue_t to_altitude_value(units::Length);
 
 /**
- * Convert altitude confidencet to AltitudeConfidence from CDD
+ * Convert altitude confidence to AltitudeConfidence from CDD
  */
 AltitudeConfidence_t to_altitude_confidence(units::Length);
 
