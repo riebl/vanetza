@@ -4,6 +4,7 @@
 #include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/hook.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/access/ethertype.hpp>
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/cbf_packet_buffer.hpp>
 #include <vanetza/geonet/common_header.hpp>
@@ -47,7 +48,7 @@ namespace dcc
 namespace geonet
 {
 
-extern const uint16be_t ether_type;
+extern const access::EtherType ether_type;
 
 class DccFieldGenerator;
 class IndicationContext;

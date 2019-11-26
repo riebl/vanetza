@@ -111,7 +111,7 @@ PDU& get_pdu(const std::tuple<std::unique_ptr<PDU>, std::unique_ptr<DownPacket>>
 using units::clock_cast;
 using PendingPacketGbc = PendingPacket<GbcPdu>;
 
-const uint16be_t ether_type = host_cast<uint16_t>(0x8947);
+const access::EtherType ether_type = access::ethertype::GeoNetworking;
 
 Router::Router(Runtime& rt, const MIB& mib) :
     m_mib(mib),
