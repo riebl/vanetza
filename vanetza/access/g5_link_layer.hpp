@@ -38,7 +38,7 @@ struct IEEE802Dot11PHeader {
     uint8_t destination[6];
     uint8_t source[6];
     uint8_t bssid[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }; // Operation outside of a BSS, must be set to wildcard (all bits 1)
-    uint16_t sequence_control = 0x0000; // 12 bits for sequence number, 4 bits for fragment number; will be set by Cohda LLC during transmission
+    uint16_t sequence_control = 0x0000; // 12 bits for sequence number, 4 bits for fragment number
     QOSControl qos_control;
 };
 
