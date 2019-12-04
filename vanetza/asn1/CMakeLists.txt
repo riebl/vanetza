@@ -121,7 +121,7 @@ if (SEC_ASN1C_SOURCES)
     add_library(asn1_security STATIC ${SEC_ASN1C_SOURCES})
     target_include_directories(asn1_security PUBLIC
         $<BUILD_INTERFACE:${_support_asn1_dir}>
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/support}>)
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/support>)
     set_target_properties(asn1_security PROPERTIES POSITION_INDEPENDENT_CODE ON C_STANDARD 11)
 else()
     message(AUTHOR_WARNING "source file ${_sec_asn1_source_file} is empty, fix this now!")
