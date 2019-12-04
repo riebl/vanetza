@@ -26,6 +26,7 @@ struct DataIndication
     boost::optional<port_type> source_port;
     port_type destination_port;
     boost::optional<decltype(HeaderB::destination_port_info)> destination_port_info;
+    decltype(geonet::DataIndication::transport_type) transport_type;
     decltype(geonet::DataIndication::destination) destination;
     decltype(geonet::DataIndication::security_report) security_report;
     decltype(geonet::DataIndication::certificate_id) certificate_id;
@@ -34,6 +35,7 @@ struct DataIndication
     geonet::LongPositionVector source_position;
     geonet::TrafficClass traffic_class;
     boost::optional<geonet::Lifetime> remaining_packet_lifetime;
+    boost::optional<unsigned> remaining_hop_limit;
 };
 
 } // namespace btp
