@@ -43,6 +43,7 @@ bool check_fixed_fields(const G5LinkLayer& link_layer)
     const bool qos_control_ok =
         (mac.qos_control.raw.get() & qos_control_fixed) == (default_qos_control.raw.get() & qos_control_fixed);
     return frame_control_ok && qos_control_ok &&
+                mac.sequence_control.fragment_number() == 0 &&
                 mac.bssid == ieee802::dot11::bssid_wildcard &&
                 link_layer.llc_snap_header == default_llc_header;
 }
