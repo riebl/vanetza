@@ -60,9 +60,9 @@ Compile and link *socktap* with correct RPATH, binaries are copied to `$HOME/van
 
 2. copy runtime dependencies
 
-Copy the shared object files (*.so) from `$HOME/vanetza-deps/libs` onto the MK5, e.g. to `/home/duser/vanetza/lib`.
+Copy the shared object files (*.so) from `$HOME/vanetza-deps/libs` onto the MK5, e.g. to `/home/user/vanetza/lib`.
 
 3. copy *socktap* onto MK5
 
-Copy the files from `$HOME/vanetza-dist` to `/home/duser/vanetza` on the MK5, i.e. Vanetza libraries and its dependency libraries are located in the same directory.
-You can execute *socktap* located at `/home/duser/vanetza/bin/socktap` and it will look up its shared objects in the sibling `lib` directory. If you have enabled the **SOCKTAP_WITH_COHDA_LLC** CMake option, make sure to give *socktap* the name of a Cohda LLC network interface via the command line option `--interface`/`-i` (e.g. cw-llc0).
+Copy the files from `$HOME/vanetza-dist` to `/home/user/vanetza` on the MK5, i.e. Vanetza libraries and its dependency libraries are located in the same directory.
+You can execute *socktap* located at `/home/user/vanetza/bin/socktap` and it will look up its shared objects in the sibling `lib` directory. If you have enabled the **SOCKTAP_WITH_COHDA_LLC** CMake option, make sure to give *socktap* the name of a Cohda LLC network interface via the command line option `--interface`/`-i` (e.g. cw-llc0).
