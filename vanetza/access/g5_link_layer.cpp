@@ -31,8 +31,8 @@ bool check_fixed_fields(const G5LinkLayer& link_layer)
     static const auto default_frame_control = ieee802::dot11::FrameControl::qos_data_frame();
     static const ieee802::dot11::QosControl default_qos_control;
 
-    // allow only different "More Fragments" and "Retry" flags
-    static const std::uint16_t frame_control_fixed = 0xF3FF;
+    // all frame control flags are fixed for now
+    static const std::uint16_t frame_control_fixed = 0xFFFF;
 
     // EOSP + A-MSDU + TXOP limit fixed, TID (LSB part = UP) and Ack policy are variable
     static const std::uint16_t qos_control_fixed = 0xFF98;
@@ -43,7 +43,7 @@ bool check_fixed_fields(const G5LinkLayer& link_layer)
     const bool qos_control_ok =
         (mac.qos_control.raw.get() & qos_control_fixed) == (default_qos_control.raw.get() & qos_control_fixed);
     return frame_control_ok && qos_control_ok &&
-                mac.bssid == ieee802::dot11::bssid_wildcard && 
+                mac.bssid == ieee802::dot11::bssid_wildcard &&
                 link_layer.llc_snap_header == default_llc_header;
 }
 
