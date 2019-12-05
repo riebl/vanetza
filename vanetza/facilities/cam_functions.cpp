@@ -1,6 +1,3 @@
-#ifndef CAM_FUNCTIONS_CPP_JQXFKSJP
-#define CAM_FUNCTIONS_CPP_JQXFKSJP
-
 #include <vanetza/asn1/cam.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <vanetza/facilities/path_history.hpp>
@@ -305,5 +302,3 @@ bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermi
 
 } // namespace facilities
 } // namespace vanetza
-
-#endif /* CAM_FUNCTIONS_CPP_JQXFKSJP */
