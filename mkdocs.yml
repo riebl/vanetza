@@ -1,0 +1,16 @@
+site_name: Vanetza - Your open-source ETSI C-ITS protocol stack
+site_dir: www
+docs_dir: doc
+theme:
+    name: readthedocs
+    custom_dir: mkdocs/
+    highlightjs: false
+extra_css:
+    - css/extra.css
+    - css/tango.css
+markdown_extensions:
+    - smarty
+    - sane_lists
+    - codehilite:
+        guess_lang: false
+        css_class: highlight
