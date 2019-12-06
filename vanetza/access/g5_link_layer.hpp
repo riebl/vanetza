@@ -18,18 +18,28 @@ namespace ieee802
 namespace dot11
 {
 
+/**
+ * \brief QoS Control field in IEEE 802.11 MAC header.
+ */
 struct QosControl
 {
     vanetza::uint16be_t raw { 0 };
 
-    void user_priority(AccessCategory);
+    /**
+     * Set user priority by access category
+     * \param ac map this AccessCategory to user priority
+     */
+    void user_priority(AccessCategory ac);
 };
 
+/**
+ * \brief Frame Control field in IEEE 802.11 MAC header
+ */
 struct FrameControl
 {
     vanetza::uint16be_t raw { 0 };
 
-    using Protocol = BitNumber<std::uint16_t, 2>;
+    using Protocol = BitNumber<std::uint16_t, 2>; /**< represents protocol version */
     using Type = BitNumber<std::uint16_t, 2>;
     using SubType = BitNumber<std::uint16_t, 4>;
 
@@ -42,12 +52,15 @@ struct FrameControl
     bool retry() const { return raw.get() & 0x0800; }
 
     /**
-     * create frame control for QoS data frame (without any flags)
-     * \return frame control for QoS data frame
+     * Create frame control for QoS data frame without any flags
+     * \return FrameControl field for QoS data frame
      **/
     static FrameControl qos_data_frame();
 };
 
+/**
+ * \brief Sequence Control field in IEEE 802.11 MAC header
+ */
 struct SequenceControl
 {
     vanetza::uint16be_t raw { 0 };
@@ -66,8 +79,12 @@ struct SequenceControl
     }
 };
 
+/** MAC address representing the BSSID wildcard (all bits set) */
 extern const MacAddress bssid_wildcard;
 
+/**
+ * \brief MAC header of QoS data frames
+ */
 struct QosDataHeader
 {
     FrameControl frame_control = FrameControl::qos_data_frame();
@@ -78,9 +95,11 @@ struct QosDataHeader
     SequenceControl sequence_control;
     QosControl qos_control;
 
+    /** length of serialized QoSDataHeader in bytes */
     static constexpr std::size_t length_bytes = 26;
 };
 
+/** length of frame check sequence in bytes */
 static constexpr std::size_t fcs_length_bytes = 4;
 
 void serialize(OutputArchive&, const QosDataHeader&);
@@ -88,6 +107,9 @@ void deserialize(InputArchive&, QosDataHeader&);
 
 } // namespace dot11
 
+/**
+ * \brief Logical Link Control header with SNAP extension
+ */
 struct LlcSnapHeader
 {
     std::uint8_t dsap = 0xAA;
@@ -109,6 +131,9 @@ void deserialize(InputArchive&, LlcSnapHeader&);
 
 } // namespace ieee802
 
+/**
+ * \brief Link layer header used by ITS-G5 stations
+ */
 struct G5LinkLayer
 {
     ieee802::dot11::QosDataHeader mac_header;
@@ -129,7 +154,7 @@ void deserialize(InputArchive&, G5LinkLayer&);
  * For most explicitly initialized link layer header fields, their (default) value is expected in received frames.
  *
  * \param link_layer G5LinkLayer to check
- * \return whether all expected values are present
+ * \return whether all fields are set as expected
  */
 bool check_fixed_fields(const G5LinkLayer& link_layer);
 
