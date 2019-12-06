@@ -24,7 +24,7 @@ public:
      * \param request containing payload to sign
      * \return confirmation containing signed SecuredMessage
      */
-    virtual EncapConfirm encapsulate_packet(EncapRequest&& encap_request) = 0;
+    virtual EncapConfirm encapsulate_packet(EncapRequest&& request) = 0;
 
     /**
      * \brief Decapsulates the payload within a SecuredMessage
@@ -34,7 +34,7 @@ public:
      * \param request containing a SecuredMessage
      * \return decapsulation confirmation including plaintext payload
      */
-    virtual DecapConfirm decapsulate_packet(DecapRequest&& decap_request) = 0;
+    virtual DecapConfirm decapsulate_packet(DecapRequest&& request) = 0;
 
     virtual ~SecurityEntity() = default;
 };
