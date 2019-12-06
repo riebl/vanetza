@@ -34,27 +34,27 @@ struct Certificate
 
     /**
      * Get subject attribute of a certain type (if present)
-     * \param sat type of subject attribute
+     * \param type of subject attribute
      */
     const SubjectAttribute* get_attribute(SubjectAttributeType type) const;
 
     /**
      * Get validity restriction of a certain type (if present)
-     * \param vrt type of validity restriction
+     * \param type of validity restriction
      */
-    const ValidityRestriction* get_restriction(ValidityRestrictionType vrt) const;
+    const ValidityRestriction* get_restriction(ValidityRestrictionType type) const;
 
     /**
      * Remove subject attribute of a certain type (if present)
-     * \param sat type of subject attribute
+     * \param type of subject attribute
      */
-    void remove_attribute(SubjectAttributeType sat);
+    void remove_attribute(SubjectAttributeType type);
 
     /**
      * Remove validity restriction of a certain type (if present)
-     * \param vrt type of validity restriction
+     * \param type of validity restriction
      */
-    void remove_restriction(ValidityRestrictionType vrt);
+    void remove_restriction(ValidityRestrictionType type);
 
     /**
      * Add ITS-AID to certificate's subject attributes
@@ -69,6 +69,11 @@ struct Certificate
      */
     void add_permission(ItsAid aid, const ByteBuffer& ssp);
 
+    /**
+     * Get subject attribute by type
+     * \tparam T subject attribute type
+     * \return subject attribute, nullptr if not found
+     */
     template<SubjectAttributeType T>
     const subject_attribute_type<T>* get_attribute() const
     {
@@ -77,6 +82,11 @@ struct Certificate
         return boost::get<type>(field);
     }
 
+    /**
+     * Get validity restriction by type
+     * \tparam T validity restriction type
+     * \return validity restriction, nullptr if not found
+     */
     template<ValidityRestrictionType T>
     const validity_restriction_type<T>* get_restriction() const
     {
