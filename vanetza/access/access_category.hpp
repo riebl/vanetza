@@ -8,13 +8,19 @@ namespace vanetza
 namespace access
 {
 
-/* See ETSI EN 302 663 V1.2.1 (2013-07), Table B.3 */
+/**
+ * \file
+ * \enum AccessCategory
+ * \brief AccessCategory represents packet priority at link layer
+ *
+ * See ETSI EN 302 663 V1.2.1 (2013-07), Table B.3
+ */
 enum class AccessCategory {
-    BK = 1,
-    BE = 3,
-    VI = 5,
-    VO = 7
-};
+    BK = 1, //!< Background (lowest priority)
+    BE = 3, //!< Best effort
+    VI = 5, //!< Video
+    VO = 7  //!< Voice (highest priority)
+}; /**< \enum */
 
 std::ostream& operator<<(std::ostream&, AccessCategory);
 
