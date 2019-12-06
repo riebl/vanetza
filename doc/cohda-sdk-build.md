@@ -36,6 +36,7 @@ Before the next step, extract the archive's content into `/home/duser/vanetza-de
 We assume you have copy of the Vanetza repository in your home directory at `/home/duser/vanetza`.
 Create a build directory and tell CMake to use the cross-compiler installed in the Cohda VM and to look up additional dependencies in `vanetza-deps`:
 
+    :::shell
     mkdir vanetza-build
     cd vanetza-build
     cmake $HOME/vanetza \

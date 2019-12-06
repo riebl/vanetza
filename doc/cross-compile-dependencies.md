@@ -24,6 +24,7 @@ A workaround for this issue is to remove following lines from `tools/build/src/t
 
 Then, the required libraries can be built and installed at given *prefix* path:
 
+    :::shell
     ./b2 --prefix=$HOME/vanetza-deps --with-date_time --with-program_options --with-system --no-samples --no-tests variant=release link=shared cxxstd=11 install
 
 
@@ -31,6 +32,7 @@ Then, the required libraries can be built and installed at given *prefix* path:
 
 Version 8.2 can be cross-compiled with the provided `GNUmakefile-cross` makefile.
 
+    :::shell
     export CXX=arm-linux-gnueabihf-g++
     export PREFIX=$HOME/vanetza-deps
     export HAS_SOLIB_VERSION=1
@@ -43,6 +45,7 @@ Version 8.2 can be cross-compiled with the provided `GNUmakefile-cross` makefile
 Following steps have been tested with version 1.50.
 `$VANETZA` refers to the root directory of this repository.
 
+    :::shell
     mkdir build.arm
     cd build.arm
     cmake .. -DCMAKE_TOOLCHAIN_FILE=$VANETZA/cmake/Toolchain-Cohda-MK5.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/vanetza-deps
