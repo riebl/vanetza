@@ -1,5 +1,6 @@
 site_name: Vanetza - Your open-source ETSI C-ITS protocol stack
 site_dir: www
+repo_url: https://github.com/riebl/vanetza
 theme:
     name: readthedocs
     custom_dir: mkdocs/
