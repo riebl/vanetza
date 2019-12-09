@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Cross compile dependencies - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link href="../../css/extra.css" rel="stylesheet">
+  <link href="../../css/tango.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Cross compile dependencies";
+    var mkdocs_page_input_path = "recipes/cross-compile-dependencies.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+<div class="logo">
+    <img src="../../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
+</div>
+
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Overview</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Recipes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../cohda-sdk-build/">Building Vanetza for Cohda MK5 using Cohda SDK</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Cross compile dependencies</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#boost">Boost</a></li>
+    
+
+    <li class="toctree-l3"><a href="#crypto">Crypto++</a></li>
+    
+
+    <li class="toctree-l3"><a href="#geographiclib">GeographicLib</a></li>
+    
+
+    </ul>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Vanetza - Your open-source ETSI C-ITS protocol stack</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Recipes &raquo;</li>
+        
+      
+    
+    <li>Cross compile dependencies</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/cross-compile-dependencies.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <p>This document summarises a few hints for cross-compiling Vanetza&rsquo;s dependencies.</p>
+<h1 id="boost">Boost</h1>
+<p>Create a configuration file for Boost.Build in your home directory at <code>$HOME/user-config.jam</code> and add following line to it:</p>
+<div class="highlight"><pre><span></span>using gcc : arm : arm-linux-gnueabihf-g++ ;
+</pre></div>
+
+
+<p>The <em>install</em> stage does not work in Boost 1.71.0 (and 1.70.0) when cross-compiling.
+A workaround for this issue is to remove following lines from <code>tools/build/src/tools/common.jam</code> (around line 976):</p>
+<div class="highlight"><pre><span></span># From GCC 5, versioning changes and minor becomes patch
+if $(tag) = gcc &amp;&amp; [ numbers.less 4 $(version[1]) ]
+{
+    version = $(version[1]) ;
+}
+
+# Ditto, from Clang 4
+if ( $(tag) = clang || $(tag) = clangw ) &amp;&amp; [ numbers.less 3 $(version[1]) ]
+{
+    version = $(version[1]) ;
+}
+</pre></div>
+
+
+<p>Then, the required libraries can be built and installed at given <em>prefix</em> path:</p>
+<div class="highlight"><pre><span></span>./b2 --prefix<span class="o">=</span><span class="nv">$HOME</span>/vanetza-deps --with-date_time --with-program_options --with-system --no-samples --no-tests <span class="nv">variant</span><span class="o">=</span>release <span class="nv">link</span><span class="o">=</span>shared <span class="nv">cxxstd</span><span class="o">=</span><span class="m">11</span> install
+</pre></div>
+
+
+<h1 id="crypto">Crypto++</h1>
+<p>Version 8.2 can be cross-compiled with the provided <code>GNUmakefile-cross</code> makefile.</p>
+<div class="highlight"><pre><span></span><span class="nb">export</span> <span class="nv">CXX</span><span class="o">=</span>arm-linux-gnueabihf-g++
+<span class="nb">export</span> <span class="nv">PREFIX</span><span class="o">=</span><span class="nv">$HOME</span>/vanetza-deps
+<span class="nb">export</span> <span class="nv">HAS_SOLIB_VERSION</span><span class="o">=</span><span class="m">1</span>
+make -f GNUmakefile-cross shared
+make -f GNUmakefile-cross install
+</pre></div>
+
+
+<h1 id="geographiclib">GeographicLib</h1>
+<p>Following steps have been tested with version 1.50.
+<code>$VANETZA</code> refers to the root directory of this repository.</p>
+<div class="highlight"><pre><span></span>mkdir build.arm
+<span class="nb">cd</span> build.arm
+cmake .. -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span><span class="nv">$VANETZA</span>/cmake/Toolchain-Cohda-MK5.cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/vanetza-deps
+make install
+</pre></div>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../cohda-sdk-build/" class="btn btn-neutral" title="Building Vanetza for Cohda MK5 using Cohda SDK"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../cohda-sdk-build/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>

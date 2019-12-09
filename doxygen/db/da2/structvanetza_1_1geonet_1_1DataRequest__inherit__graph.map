@@ -1,0 +1,10 @@
+<map id="vanetza::geonet::DataRequest" name="vanetza::geonet::DataRequest">
+<area shape="rect" id="node1" title=" " alt="" coords="335,5,535,171"/>
+<area shape="rect" id="node2" href="$d4/d96/structvanetza_1_1geonet_1_1DataRequestWithAddress.html" title=" " alt="" coords="5,219,205,311"/>
+<area shape="rect" id="node4" href="$d9/d1d/structvanetza_1_1geonet_1_1DataRequestWithArea.html" title=" " alt="" coords="229,219,429,311"/>
+<area shape="rect" id="node7" href="$d0/d57/structvanetza_1_1geonet_1_1ShbDataRequest.html" title=" " alt="" coords="454,219,629,311"/>
+<area shape="rect" id="node8" href="$d4/d19/structvanetza_1_1geonet_1_1TsbDataRequest.html" title=" " alt="" coords="653,219,824,311"/>
+<area shape="rect" id="node3" href="$d0/db3/structvanetza_1_1geonet_1_1GucDataRequest.html" title=" " alt="" coords="18,359,193,451"/>
+<area shape="rect" id="node5" href="$d7/d84/structvanetza_1_1geonet_1_1GacDataRequest.html" title=" " alt="" coords="229,359,403,451"/>
+<area shape="rect" id="node6" href="$de/d7b/structvanetza_1_1geonet_1_1GbcDataRequest.html" title=" " alt="" coords="427,359,602,451"/>
+</map>

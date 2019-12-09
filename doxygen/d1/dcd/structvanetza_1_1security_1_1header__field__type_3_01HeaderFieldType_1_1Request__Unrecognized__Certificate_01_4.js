@@ -1,0 +1,4 @@
+var structvanetza_1_1security_1_1header__field__type_3_01HeaderFieldType_1_1Request__Unrecognized__Certificate_01_4 =
+[
+    [ "type", "d1/dcd/structvanetza_1_1security_1_1header__field__type_3_01HeaderFieldType_1_1Request__Unrecognized__Certificate_01_4.html#acab15be402067ecc0d59238442a31767", null ]
+];

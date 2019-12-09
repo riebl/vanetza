@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="None">
+  
+  <link rel="shortcut icon" href="img/favicon.ico">
+  <title>Overview - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="css/theme_extra.css" type="text/css" />
+  <link href="css/extra.css" rel="stylesheet">
+  <link href="css/tango.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Overview";
+    var mkdocs_page_input_path = "index.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="js/jquery-2.1.1.min.js" defer></script>
+  <script src="js/modernizr-2.8.3.min.js" defer></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+<div class="logo">
+    <img src="img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
+</div>
+
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href=".">Overview</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#vanetza-in-a-nutshell">Vanetza in a nutshell</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#project-layout">Project layout</a></li>
+        
+            <li><a class="toctree-l3" href="#documentation">Documentation</a></li>
+        
+            <li><a class="toctree-l3" href="#deployments">Deployments</a></li>
+        
+        </ul>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Recipes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="recipes/cohda-sdk-build/">Building Vanetza for Cohda MK5 using Cohda SDK</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="recipes/cross-compile-dependencies/">Cross compile dependencies</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href=".">Vanetza - Your open-source ETSI C-ITS protocol stack</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Overview</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/riebl/vanetza/edit/master/docs/index.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="vanetza-in-a-nutshell">Vanetza in a nutshell</h1>
+<p>Vanetza is an open-source implementation of the ETSI C-ITS protocol suite.
+Among others, it comprises the following protocols and features:</p>
+<ul>
+<li>GeoNetworking (GN)</li>
+<li>Basic Transport Protocol (BTP)</li>
+<li>Decentralized Congestion Control (DCC)</li>
+<li>Security</li>
+<li>Support for ASN.1 messages (Facilities) such as CAM and DENM</li>
+</ul>
+<p>Though originally designed to operate on ITS-G5 channels in a Vehicular Ad Hoc Network (VANET) using IEEE 802.11p, Vanetza and its components can be combined with other communication technologies as well, e.g. GeoNetworking over IP multicast.</p>
+<h2 id="project-layout">Project layout</h2>
+<p>In the first place, Vanetza is a conglomerate of C++ libraries, some depending on others.
+Sources of these libraries, also known as Vanetza component, are bundled in their respective subdirectories.</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Depends on</th>
+<th>Features</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>access</td>
+<td>net</td>
+<td>Access layer, helpers for IEEE 802.11 PHY and MAC</td>
+</tr>
+<tr>
+<td>asn1</td>
+<td>-</td>
+<td>Generated code and wrappers for ASN.1 based messages, e.g. CAM and DENM</td>
+</tr>
+<tr>
+<td>btp</td>
+<td>geonet</td>
+<td>Headers and interfaces for BTP transport layer</td>
+</tr>
+<tr>
+<td>common</td>
+<td>-</td>
+<td>General purpose classes used across Vanetza components, including serialization and timing</td>
+</tr>
+<tr>
+<td>dcc</td>
+<td>access, net</td>
+<td>Algorithms for DCC cross-layer</td>
+</tr>
+<tr>
+<td>facilities</td>
+<td>asn1, geonet, security</td>
+<td>Helpers to generate and evaluate ITS messages</td>
+</tr>
+<tr>
+<td>geonet</td>
+<td>dcc, net, security</td>
+<td>GeoNetworking layer featuring geographical routing</td>
+</tr>
+<tr>
+<td>gnss</td>
+<td>-</td>
+<td>Satellite navigation integration for positioning</td>
+</tr>
+<tr>
+<td>net</td>
+<td>common</td>
+<td>Utilities for socket API and packet handling</td>
+</tr>
+<tr>
+<td>security</td>
+<td>common, net</td>
+<td>Security entity to sign and verify packets</td>
+</tr>
+</tbody>
+</table>
+<p>For most of the code unit tests exist. We are using <a href="https://github.com/google/googletest">Googletest</a> for those.
+Compilation of Vanetza unit tests can be enabled via the <code>BUILD_TESTS</code> CMake option.
+You can the run those tests in your build directory by executing <code>ctest</code>.</p>
+<p>Additionally, the <code>tools</code> directory contains several utilities making use of Vanetza libraries.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+<th>CMake option</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>benchmark</td>
+<td>Benchmarking security features, e.g. signing or validating a lot messages in a row</td>
+<td><code>BUILD_BENCHMARK</code></td>
+</tr>
+<tr>
+<td>certify</td>
+<td>Utility for generating and handling security certificates, authorization tickets etc.</td>
+<td><code>BUILD_CERTIFY</code></td>
+</tr>
+<tr>
+<td>socktap</td>
+<td>Example application using most of the Vanetza stack operating on sockets, i.e. either Linux packet sockets or optionally Cohda LLC sockets</td>
+<td><code>BUILD_SOCKTAP</code></td>
+</tr>
+</tbody>
+</table>
+<h2 id="documentation">Documentation</h2>
+<p>Besides these pages you are reading right now, you can also generate the API documentation from sources with Doxygen.
+A <code>Doxyfile</code> generating HTML pages to <code>doxygen/html</code> can be found in Vanetza&rsquo;s root directory.
+Just invoke <code>doxygen</code> from there.</p>
+<p>A copy of the API documentation is also hosted online.
+Of course, your locally generated HTML pages will be more up-to-date in most cases.</p>
+<h2 id="deployments">Deployments</h2>
+<p>Vanetza has been developed for network simulations and testing on embedded devices at <a href="https://www.thi.de">Technische Hochschule Ingolstadt</a> initially.
+Meanwhile, Vanetza is used by many more parties and for more use cases than anticipated in the beginning.</p>
+<ul>
+<li><a href="https://github.com/riebl/artery">Artery</a> is a V2X simulation framework based on <a href="https://www.omnetpp.org">OMNeT++</a>.
+   Vanetza is used in this network simulation as (quite detailed) model of ITS-G5 protocols.</li>
+<li>Various communication units (roadside units, vehicles and testbeds) in the <a href="https://www.thi.de/forschung/carissma/labore/car2x-labor">CARISSMA Car2X lab</a> are powered by Vanetza.</li>
+<li>Prototype motorcycles operated by the <a href="https://www.cmc-info.net">Connected Motorcycle Consortium</a> use Vanetza for evaluation of novel ITS applications to enhance rider safety.</li>
+</ul>
+<p>If you are using Vanetza, we would love to add your project to the list above.
+Please write an e-mail to <a href="mailto:raphael.riebl@thi.de">raphael.riebl@thi.de</a> or open a pull request.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="recipes/cohda-sdk-build/" class="btn btn-neutral float-right" title="Building Vanetza for Cohda MK5 using Cohda SDK">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+      
+        <span style="margin-left: 15px"><a href="recipes/cohda-sdk-build/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '.';</script>
+    <script src="js/theme.js" defer></script>
+      <script src="search/main.js" defer></script>
+
+</body>
+</html>
+
+<!--
+MkDocs version : 1.0.4
+Build Date UTC : 2019-12-09 11:27:24
+-->

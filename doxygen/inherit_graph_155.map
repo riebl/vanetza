@@ -1,0 +1,6 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="node1" href="$dd/d27/classvanetza_1_1security_1_1CertificateProvider.html" title=" " alt="" coords="5,71,136,112"/>
+<area shape="rect" id="node2" href="$d5/dda/classvanetza_1_1security_1_1NaiveCertificateProvider.html" title="A very simplistic certificate provider." alt="" coords="184,5,348,47"/>
+<area shape="rect" id="node3" href="$d6/d85/classvanetza_1_1security_1_1NullCertificateProvider.html" title=" " alt="" coords="189,71,343,112"/>
+<area shape="rect" id="node4" href="$d1/dd6/classvanetza_1_1security_1_1StaticCertificateProvider.html" title="A simple certificate provider." alt="" coords="184,136,348,177"/>
+</map>

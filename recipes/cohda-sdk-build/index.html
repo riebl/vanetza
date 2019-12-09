@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Building Vanetza for Cohda MK5 using Cohda SDK - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link href="../../css/extra.css" rel="stylesheet">
+  <link href="../../css/tango.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Building Vanetza for Cohda MK5 using Cohda SDK";
+    var mkdocs_page_input_path = "recipes/cohda-sdk-build.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+<div class="logo">
+    <img src="../../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
+</div>
+
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Overview</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Recipes</span>
+    <ul class="subnav">
+                <li class=" current">
+                    
+    <a class="current" href="./">Building Vanetza for Cohda MK5 using Cohda SDK</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#building-vanetza-for-cohda-mk5-using-cohda-sdk">Building Vanetza for Cohda MK5 using Cohda SDK</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#cohda-sdk">Cohda SDK</a></li>
+        
+            <li><a class="toctree-l4" href="#vanetza-build-dependencies">Vanetza build dependencies</a></li>
+        
+            <li><a class="toctree-l4" href="#compile-vanetza">Compile Vanetza</a></li>
+        
+            <li><a class="toctree-l4" href="#deployment">Deployment</a></li>
+        
+        </ul>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../cross-compile-dependencies/">Cross compile dependencies</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Vanetza - Your open-source ETSI C-ITS protocol stack</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Recipes &raquo;</li>
+        
+      
+    
+    <li>Building Vanetza for Cohda MK5 using Cohda SDK</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/cohda-sdk-build.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <h1 id="building-vanetza-for-cohda-mk5-using-cohda-sdk">Building Vanetza for Cohda MK5 using Cohda SDK</h1>
+<p>This document describes step-by-step how to build Vanetza using the Cohda SDK.
+At the end, we have Vanetza libraries and its <em>socktap</em> tool cross-compiled for Cohda MK5 devices.</p>
+<h2 id="cohda-sdk">Cohda SDK</h2>
+<p><a href="http://www.cohdawireless.com/solutions/sdk/">Cohda SDK</a> is provided by <a href="http://www.cohdawireless.com">Cohda Wireless</a> along with their <a href="http://www.cohdawireless.com/solutions/hardware/mk5-obu/">MK5</a> units.
+Since you are reading this build how-to you most likely already possess one of these units.
+This how-to has been created for the Release 16 of the SDK.
+The following instructions are expected to be done within the virtual machine (VM) provided by Cohda.</p>
+<p>Please make sure that a recent GCC version for the <em>arm-linux-gnueabihf</em> target is installed in this VM.
+I recommend to deinstall <code>g++-4.8-arm-linux-gnueabihf</code> entirely as this version supports C++11 only poorly.
+<code>g++-5-arm-linux-gnueabihf</code> is known to work well.</p>
+<h2 id="vanetza-build-dependencies">Vanetza build dependencies</h2>
+<p>Compilation of Vanetza depends on several third-party libraries, e.g. Boost, GeographicLib and Crypto++ as mentioned in Vanetza&rsquo;s README.
+Steps to compile those dependencies are described in our <a href="../cross-compile-dependencies/">cross-compile dependencies document</a>.
+For the sake of simplicity, we provide the pre-compiled dependencies for Cohda MK5 as compressed archives.</p>
+<table>
+<thead>
+<tr>
+<th>Archive</th>
+<th>Content</th>
+<th>MD5 checksum</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://app.box.com/s/zu0q7i569xsuu0qno378axwnf5w5v3op">vanetza-deps-20171129.tar.bz2</a></td>
+<td>Boost 1.65.1, GeographicLib 1.49, Crypto++ 5.6.5</td>
+<td><code>853a2833fde0266674d4a4dbe22fe7ef</code></td>
+</tr>
+<tr>
+<td><a href="https://app.box.com/s/hrhdl4ydx24ruak3fsfk6hlh1m7fa4ox">vanetza-deps-20191126.tar.bz2</a></td>
+<td>Boost 1.71.0, GeographicLib 1.50, Crypto++ 8.2.0</td>
+<td><code>1d8832949673e3935f72aac6c00a132d</code></td>
+</tr>
+</tbody>
+</table>
+<p>At the moment, these archives are hosted on <a href="https://www.box.com">box.com</a>.
+We recommend to download the most recent archive in general.
+Before the next step, extract the archive&rsquo;s content into <code>/home/duser/vanetza-deps</code>.</p>
+<h2 id="compile-vanetza">Compile Vanetza</h2>
+<p>We assume you have copy of the Vanetza repository in your home directory at <code>/home/duser/vanetza</code>.
+Create a build directory and tell CMake to use the cross-compiler installed in the Cohda VM and to look up additional dependencies in <code>vanetza-deps</code>:</p>
+<div class="highlight"><pre><span></span>mkdir vanetza-build
+<span class="nb">cd</span> vanetza-build
+cmake <span class="nv">$HOME</span>/vanetza <span class="se">\</span>
+    -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span><span class="nv">$HOME</span>/vanetza/cmake/Toolchain-Cohda-MK5.cmake <span class="se">\</span>
+    -DCMAKE_FIND_ROOT_PATH<span class="o">=</span><span class="nv">$HOME</span>/vanetza-deps <span class="se">\</span>
+    -DCMAKE_INSTALL_RPATH<span class="o">=</span><span class="se">\$</span>ORIGIN/../lib <span class="se">\</span>
+    -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/vanetza-dist
+make
+</pre></div>
+
+
+<p>This builds the Vanetza libraries only. Enable the <strong>BUILD_SOCKTAP</strong> CMake option if you want to try <em>socktap</em> as well. Additionally, enable the <strong>SOCKTAP_WITH_COHDA_LLC</strong> CMake option if you want <em>socktap</em> to use 802.11p via Cohda&rsquo;s LLC network interface on your MK5.
+Fortunately, <em>socktap</em>&lsquo;s additional <em>gpsd</em> dependency is already shipped with the Cohda SDK itself.
+You only need to specify its location by setting <strong>GPS_LIBRARY</strong> to <code>/home/duser/mk5/stack/v2x-lib/lib/mk5/libgps_static.a</code> and <strong>GPS_INCLUDE_DIR</strong> to <code>/home/duser/mk5/stack/v2x-lib/include</code>.
+Please note, that <em>socktap</em> does not make use of Cohda&rsquo;s socket API currently.
+We might provide a modified <em>socktap</em> application in the future.</p>
+<h2 id="deployment">Deployment</h2>
+<ol>
+<li><code>make install</code></li>
+</ol>
+<p>Compile and link <em>socktap</em> with correct RPATH, binaries are copied to <code>$HOME/vanetza-dist</code>.</p>
+<ol start="2">
+<li>copy runtime dependencies</li>
+</ol>
+<p>Copy the shared object files (*.so) from <code>$HOME/vanetza-deps/libs</code> onto the MK5, e.g. to <code>/home/user/vanetza/lib</code>.</p>
+<ol start="3">
+<li>copy <em>socktap</em> onto MK5</li>
+</ol>
+<p>Copy the files from <code>$HOME/vanetza-dist</code> to <code>/home/user/vanetza</code> on the MK5, i.e. Vanetza libraries and its dependency libraries are located in the same directory.
+You can execute <em>socktap</em> located at <code>/home/user/vanetza/bin/socktap</code> and it will look up its shared objects in the sibling <code>lib</code> directory. If you have enabled the <strong>SOCKTAP_WITH_COHDA_LLC</strong> CMake option, make sure to give <em>socktap</em> the name of a Cohda LLC network interface via the command line option <code>--interface</code>/<code>-i</code> (e.g. cw-llc0).</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../cross-compile-dependencies/" class="btn btn-neutral float-right" title="Cross compile dependencies">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../.." class="btn btn-neutral" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../.." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../cross-compile-dependencies/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>
