@@ -46,16 +46,6 @@ Additionally, the `tools` directory contains several utilities making use of Van
 | socktap | Example application using most of the Vanetza stack operating on sockets, i.e. either Linux packet sockets or optionally Cohda LLC sockets | `BUILD_SOCKTAP` |
 
 
-## Documentation
-
-Besides these pages you are reading right now, you can also generate the API documentation from sources with Doxygen.
-A `Doxyfile` generating HTML pages to `doxygen/html` can be found in Vanetza's root directory.
-Just invoke `doxygen` from there.
-
-A copy of the API documentation is also hosted online.
-Of course, your locally generated HTML pages will be more up-to-date in most cases.
-
-
 ## Deployments
 
 Vanetza has been developed for network simulations and testing on embedded devices at [Technische Hochschule Ingolstadt](https://www.thi.de) initially.

@@ -1,4 +1,5 @@
 This document summarises a few hints for cross-compiling Vanetza's dependencies.
+Please note, that cross-compiling is not relevant for you if you plan to use Vanetza on the same system you have built it on.
 
 
 # Boost

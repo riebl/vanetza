@@ -6,4 +6,5 @@ If Doxygen is installed on your system, you may simply call `doxygen` in the rep
 The generated HTML documentation can then be found at *doxygen/html/index.html*.
 
 We also maintain an [online copy](https://www.vanetza.org/doxygen/index.html) which is updated every now and then.
-Please generate the API documenation yourself if you need it to match a particular or more recent version of Vanetza.
+Of course, your locally generated documentation will be more up-to-date in most cases.
+Please consider to generate the documentation locally if you need it to match a particular or more recent version of Vanetza.
