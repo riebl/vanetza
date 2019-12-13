@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Socktap - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link href="../../css/extra.css" rel="stylesheet">
+  <link href="../../css/tango.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Socktap";
+    var mkdocs_page_input_path = "tools/socktap.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+<div class="logo">
+    <img src="../../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
+</div>
+
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Overview</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../api/">API Documentation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../how-to-build/">How to build</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Recipes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../../recipes/cohda-sdk-build/">Building Vanetza for Cohda MK5 using Cohda SDK</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../recipes/cross-compile-dependencies/">Cross compile dependencies</a>
+                </li>
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Tools</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../benchmark/">Benchmark</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../certify/">Certify</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Socktap</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#vanetza-tapping-on-sockets">Vanetza tapping on sockets</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#variants">Variants</a></li>
+        
+            <li><a class="toctree-l4" href="#permissions">Permissions</a></li>
+        
+            <li><a class="toctree-l4" href="#running">Running</a></li>
+        
+        </ul>
+    
+
+    <li class="toctree-l3"><a href="#acknowledgement">Acknowledgement</a></li>
+    
+
+    </ul>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Vanetza - Your open-source ETSI C-ITS protocol stack</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Tools &raquo;</li>
+        
+      
+    
+    <li>Socktap</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/riebl/vanetza/edit/master/docs/tools/socktap.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <p>Vanetza ships with a simple demo application called <em>socktap</em>.
+You can enable the build process for this application by the <code>BUILD_SOCKTAP</code> CMake option.
+When <em>socktap</em> is going to be built, <a href="http://catb.org/gpsd">gpsd</a> is required as an additional dependency.</p>
+<h1 id="vanetza-tapping-on-sockets">Vanetza tapping on sockets</h1>
+<p><em>socktap</em> runs Vanetza on top of Linux raw packet sockets and demonstrates the basic API usage.
+This enables tests on commodity hardware, i.e. no special V2X or Car2X hardware is required.
+However, raw packet sockets cannot replace such dedicated hardware entirly.
+Consider <em>socktap</em> as an experimental application showcasing some of Vanetza&rsquo;s features.</p>
+<p>If you have access to V2X hardware from Cohda Wireless, you can also run <em>socktap</em> on their units.
+A special CMake option <code>SOCKTAP_WITH_COHDA_LLC</code> exists to build <em>socktap</em> for operation on Cohda&rsquo;s LLC API.
+Please refer to our <a href="/recipes/cohda-sdk-build">Cohda SDK building recipe</a> for details.</p>
+<h2 id="variants">Variants</h2>
+<p>There are multiple variants of <em>socktap</em>.
+<em>socktap-hello</em> sends simple BTP-B messages with the binary payload <code>0xc0ffee</code>.
+<em>socktap-cam</em> sends vehicle CAM messages and optionally supports some security options.</p>
+<h2 id="permissions">Permissions</h2>
+<p>Since <em>socktap</em> builds upon raw packet sockets you need to run it with special privileges.
+Either run <em>socktap</em> as root user or set the <code>CAP_NET_RAW</code> capabilities on the executables.
+You can do this via <code>sudo setcap cap_net_raw+ep bin/socktap-&lt;variant&gt;</code>.
+When <code>CAP_NET_RAW</code> is attached to the <em>socktap</em> binary you can run it as ordinary user.</p>
+<h2 id="running">Running</h2>
+<p>You can locate <em>socktap</em> in your build directory at <strong>bin/socktap-<variant></strong>.
+It requires the network device name as startup argument on which <em>socktap</em> should send and receive packets.
+Usually, such devices are named <em>eth0</em> or <em>wlan0</em>.
+You can look up the available devices on your machine with the <code>ip link</code> command.
+If you want to use the local loopback device (usually <code>lo</code>) you need to override the used MAC address using <code>--mac-address</code> to receive packets.
+This is due to the MAC address being <code>00:00:00:00:00:00</code> for both sides and the router dropping incoming packets with its own address.</p>
+<h1 id="acknowledgement">Acknowledgement</h1>
+<p>This demo application has been initially developed as part of a student&rsquo;s project at Hochschule Darmstadt in summer term 2016.
+Participating students were in alphabetical order: Sachin Kashyap Bukkambudhi Satyanarayana, Alvita Marina Menezes, Mrunmayi Parchure, Subashini Rajan and Deeksha Venkadari Yogendra.
+Since then, <a href="https://github.com/kelunik">@kelunik</a> and <a href="https://github.com/glmax">@glmax</a> have contributed a lot to <em>socktap</em>.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../certify/" class="btn btn-neutral" title="Certify"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../certify/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>

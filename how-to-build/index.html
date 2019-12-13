@@ -8,7 +8,7 @@
   
   
   <link rel="shortcut icon" href="../img/favicon.ico">
-  <title>API Documentation - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+  <title>How to build - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
   <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="../css/theme.css" type="text/css" />
@@ -18,8 +18,8 @@
   
   <script>
     // Current page data
-    var mkdocs_page_name = "API Documentation";
-    var mkdocs_page_input_path = "api.md";
+    var mkdocs_page_name = "How to build";
+    var mkdocs_page_input_path = "how-to-build.md";
     var mkdocs_page_url = null;
   </script>
   
@@ -55,17 +55,29 @@
     <a class="" href="..">Overview</a>
 	    </li>
           
-            <li class="toctree-l1 current">
-		
-    <a class="current" href="./">API Documentation</a>
-    <ul class="subnav">
-            
-    </ul>
-	    </li>
-          
             <li class="toctree-l1">
 		
-    <a class="" href="../how-to-build/">How to build</a>
+    <a class="" href="../api/">API Documentation</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">How to build</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#prerequisites">Prerequisites</a></li>
+    
+
+    <li class="toctree-l2"><a href="#compilation">Compilation</a></li>
+    
+
+    <li class="toctree-l2"><a href="#unit-tests">Unit tests</a></li>
+    
+
+    <li class="toctree-l2"><a href="#integrating-vanetza">Integrating Vanetza</a></li>
+    
+
+    </ul>
 	    </li>
           
             <li class="toctree-l1">
@@ -124,10 +136,10 @@
     
       
     
-    <li>API Documentation</li>
+    <li>How to build</li>
     <li class="wy-breadcrumbs-aside">
       
-        <a href="https://github.com/riebl/vanetza/edit/master/docs/api.md"
+        <a href="https://github.com/riebl/vanetza/edit/master/docs/how-to-build.md"
           class="icon icon-github"> Edit on GitHub</a>
       
     </li>
@@ -137,12 +149,36 @@
           <div role="main">
             <div class="section">
               
-                <p>An API documentation can be generated directly from source code with <a href="http://www.doxygen.nl">Doxygen</a>.
-If Doxygen is installed on your system, you may simply call <code>doxygen</code> in the repository&rsquo;s root directory.
-The generated HTML documentation can then be found at <em>doxygen/html/index.html</em>.</p>
-<p>We also maintain an <a href="https://www.vanetza.org/doxygen/index.html">online copy</a> which is updated every now and then.
-Of course, your locally generated documentation will be more up-to-date in most cases.
-Please consider to generate the documentation locally if you need it to match a particular or more recent version of Vanetza.</p>
+                <p>Building Vanetza is accomplished by the <a href="https://cmake.org">CMake</a> build system. Hence, CMake needs to be available on the build host.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>You need following tools and libraries on your system for compiling Vanetza:</p>
+<ul>
+<li>C++11 compatible compiler, e.g. <a href="https://gcc.gnu.org">GNU GCC</a> or <a href="http://clang.llvm.org">Clang</a></li>
+<li><a href="https://cmake.org">CMake</a> 3.1 or higher</li>
+<li><a href="https://www.boost.org">Boost</a> 1.58 or higher</li>
+<li><a href="http://geographiclib.sourceforge.net">GeographicLib</a> 1.37 or higher</li>
+<li><a href="https://www.cryptopp.com">Crypto++</a> 5.6.1 or higher</li>
+</ul>
+<p>If OpenSSL (1.0 or 1.1) or LibreSSL is available on your system, an alternative security backend implementation is compiled along with the Crypto++ based backend.
+See <code>security::Backend</code> and <code>security::create_backend</code> for more details.</p>
+<h2 id="compilation">Compilation</h2>
+<p>Following command line snippet demonstrates the build process using a generated Makefile.
+Other CMake generators and build directory setups can be used as well.</p>
+<div class="highlight"><pre><span></span><span class="nb">cd</span> vanetza
+mkdir build <span class="o">&amp;&amp;</span> <span class="nb">cd</span> build
+cmake ..
+make
+</pre></div>
+
+
+<h2 id="unit-tests">Unit tests</h2>
+<p>Vanetza comes with many unit tests covering the most critical parts.
+When the CMake option <code>BUILD_TESTS</code> is enabled, the <a href="https://github.com/google/googletest/">Google Test</a> sources are downloaded by the build system automatically.
+The built test cases are standalone executables located in the <em>tests</em> subdirectory of your build directory.
+For running all test cases, I recommend to invoke <code>ctest</code> in your build directory.</p>
+<h2 id="integrating-vanetza">Integrating Vanetza</h2>
+<p>Vanetza is primarily a library project intended for integration by other projects, e.g. V2X simulation tools such as <a href="https://github.com/riebl/artery">Artery</a>.
+Projects using CMake can integrate Vanetza most easily by calling <code>find_package(Vanetza)</code> and then refer to the imported Vanetza targets, such as <code>Vanetza::vanetza</code>.</p>
               
             </div>
           </div>
@@ -150,10 +186,10 @@ Please consider to generate the documentation locally if you need it to match a 
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../how-to-build/" class="btn btn-neutral float-right" title="How to build">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../recipes/cohda-sdk-build/" class="btn btn-neutral float-right" title="Building Vanetza for Cohda MK5 using Cohda SDK">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
-        <a href=".." class="btn btn-neutral" title="Overview"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../api/" class="btn btn-neutral" title="API Documentation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
       
     </div>
   
@@ -181,10 +217,10 @@ Please consider to generate the documentation locally if you need it to match a 
           <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
       
       
-        <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+        <span><a href="../api/" style="color: #fcfcfc;">&laquo; Previous</a></span>
       
       
-        <span style="margin-left: 15px"><a href="../how-to-build/" style="color: #fcfcfc">Next &raquo;</a></span>
+        <span style="margin-left: 15px"><a href="../recipes/cohda-sdk-build/" style="color: #fcfcfc">Next &raquo;</a></span>
       
     </span>
 </div>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../../img/favicon.ico">
+  <title>Certify - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
+  <link href="../../css/extra.css" rel="stylesheet">
+  <link href="../../css/tango.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Certify";
+    var mkdocs_page_input_path = "tools/certify.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../../js/modernizr-2.8.3.min.js" defer></script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+<div class="logo">
+    <img src="../../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
+</div>
+
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../..">Overview</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../api/">API Documentation</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../../how-to-build/">How to build</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Recipes</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../../recipes/cohda-sdk-build/">Building Vanetza for Cohda MK5 using Cohda SDK</a>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../../recipes/cross-compile-dependencies/">Cross compile dependencies</a>
+                </li>
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <span class="caption-text">Tools</span>
+    <ul class="subnav">
+                <li class="">
+                    
+    <a class="" href="../benchmark/">Benchmark</a>
+                </li>
+                <li class=" current">
+                    
+    <a class="current" href="./">Certify</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l3"><a href="#installation">Installation</a></li>
+    
+
+    <li class="toctree-l3"><a href="#pki-setup">PKI Setup</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l4" href="#generating-keys">Generating Keys</a></li>
+        
+            <li><a class="toctree-l4" href="#generating-root-certificates">Generating Root Certificates</a></li>
+        
+            <li><a class="toctree-l4" href="#generating-authorization-authorities">Generating Authorization Authorities</a></li>
+        
+            <li><a class="toctree-l4" href="#generating-authorization-tickets">Generating Authorization Tickets</a></li>
+        
+        </ul>
+    
+
+    <li class="toctree-l3"><a href="#other-options">Other Options</a></li>
+    
+
+    <li class="toctree-l3"><a href="#acknowledgement">Acknowledgement</a></li>
+    
+
+    </ul>
+                </li>
+                <li class="">
+                    
+    <a class="" href="../socktap/">Socktap</a>
+                </li>
+    </ul>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../..">Vanetza - Your open-source ETSI C-ITS protocol stack</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../..">Docs</a> &raquo;</li>
+    
+      
+        
+          <li>Tools &raquo;</li>
+        
+      
+    
+    <li>Certify</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/riebl/vanetza/edit/master/docs/tools/certify.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <p><em>Certify</em> is a tool to create and view certificates and can be used to set up a test PKI for secured V2X communication based on TS 103 097 v1.2.1.</p>
+<h2 id="installation">Installation</h2>
+<p>You need to enable building this tool explicitly.
+Run <code>cmake -D BUILD_CERTIFY=ON ..</code> in your build directory and rebuild Vanetza.
+You should be able to find <code>bin/certify</code> in your build directory afterwards.</p>
+<h2 id="pki-setup">PKI Setup</h2>
+<p>The following section describe how to setup a test PKI.
+We will generate a root certificate, an authorization authority certificate and an authorization ticket.</p>
+<h3 id="generating-keys">Generating Keys</h3>
+<p>New private keys can be generated using <code>bin/certify generate-key root.key</code>.
+The corresponding public key can be extracted using <code>bin/certify extract-public-key --private-key root.key root.pub</code>, but this step usually isn&rsquo;t required.</p>
+<p>Please generate a <code>root.key</code> for the root certificate, a <code>aa.key</code> for the authorization authority and a <code>ticket.key</code> for the authorization ticket.</p>
+<h3 id="generating-root-certificates">Generating Root Certificates</h3>
+<p>A root certificate can be generated using <code>bin/certify generate-root --subject-key root.key root.cert</code>.</p>
+<h3 id="generating-authorization-authorities">Generating Authorization Authorities</h3>
+<p>An authorization authority certificate can be generated using <code>bin/certify generate-aa --sign-key root.key --sign-cert root.cert --subject-key aa.key aa.cert</code>.</p>
+<h3 id="generating-authorization-tickets">Generating Authorization Tickets</h3>
+<p>An authorization ticket can be generated using <code>bin/certify generate-ticket --sign-key aa.key --sign-cert aa.cert --subject-key ticket.key ticket.cert</code>.</p>
+<p>If you&rsquo;re generating a certificate for real V2X hardware, it will likely use a hardware security module (HSM), which will only expose the public key.
+You can export the given public key to a file and use <code>--subject-key</code> also with public keys.
+The public key needs to be encoded according to the rules specified by ETSI in TS 103 097 v1.2.1.</p>
+<h2 id="other-options">Other Options</h2>
+<p>This guide only uses the required options.
+Further options may be available for certain commands.
+Use <code>bin/certify &lt;command&gt; --help</code> for further information.</p>
+<h2 id="acknowledgement">Acknowledgement</h2>
+<p>This application has been initially developed <a href="https://github.com/kelunik">Niklas Keller</a>.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../socktap/" class="btn btn-neutral float-right" title="Socktap">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../benchmark/" class="btn btn-neutral" title="Benchmark"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../benchmark/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../socktap/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '../..';</script>
+    <script src="../../js/theme.js" defer></script>
+      <script src="../../search/main.js" defer></script>
+
+</body>
+</html>
