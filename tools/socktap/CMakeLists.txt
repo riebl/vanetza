@@ -30,6 +30,13 @@ add_executable(socktap-cam
     main_cam.cpp
 )
 
+# // ERIK added socktap-decode 
+add_executable(socktap-decode
+    decode_application.cpp
+    #cam_application.cpp
+    main_cam.cpp
+)
+
 add_executable(socktap-bench-in
     bench_in_application.cpp
     cam_application.cpp
@@ -39,14 +46,17 @@ add_executable(socktap-bench-in
 target_link_libraries(socktap-common PUBLIC Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
 target_link_libraries(socktap-hello socktap-common)
 target_link_libraries(socktap-cam socktap-common)
+# // ERIK added socktap-decode
+target_link_libraries(socktap-decode socktap-common)
 target_link_libraries(socktap-bench-in socktap-common)
 install(TARGETS socktap-hello EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(TARGETS socktap-cam EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+# // ERIK added socktap-decode
+install(TARGETS socktap-decode EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(TARGETS socktap-bench-in EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-option(SOCKTAP_WITH_COHDA_LLC "Use Cohda LLC API for socktap" ${COHDA_FOUND})
-if(SOCKTAP_WITH_COHDA_LLC)
-    target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_COHDA_LLC")
-    target_include_directories(socktap-common PUBLIC ${COHDA_INCLUDE_DIRS})
+if(TARGET Cohda::headers)
+    target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_COHDA_SDK")
+    target_include_directories(socktap-common PRIVATE "${COHDA_INCLUDE_DIRS}")
     target_sources(socktap-common PRIVATE cohda.cpp)
 endif()
