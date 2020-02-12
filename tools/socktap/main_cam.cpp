@@ -148,6 +148,7 @@ int main(int argc, const char** argv)
                 for (auto& chain_path : vm["certificate-chain"].as<std::vector<std::string> >()) {
                     auto chain_certificate = security::load_certificate_from_file(chain_path);
                     chain.push_back(chain_certificate);
+                    cert_cache.insert(chain_certificate);
 
                     // Only add root certificates to trust store, so certificate requests are visible for demo purposes.
                     if (chain_certificate.subject_info.subject_type == security::SubjectType::Root_CA) {
