@@ -43,6 +43,7 @@ int main(int argc, const char** argv)
         ("print-rx-cam", "Print received CAMs")
         ("print-tx-cam", "Print generated CAMs")
         ("benchmark", "Enable benchmarking")
+        ("non-strict", "Set MIB parameter ItsGnSnDecapResultHandling to NON_STRICT")
     ;
 
     po::positional_options_description positional_options;
@@ -107,6 +108,9 @@ int main(int argc, const char** argv)
         mib.itsGnLocalGnAddr.is_manually_configured(true);
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::Managed;
         mib.itsGnSecurity = false;
+        if (vm.count("non-strict")) {
+            mib.itsGnSnDecapResultHandling = vanetza::geonet::SecurityDecapHandling::Non_Strict;
+        }
         mib.itsGnProtocolVersion = vm["gn-version"].as<unsigned>();
 
         if (mib.itsGnProtocolVersion != 0 && mib.itsGnProtocolVersion != 1) {
