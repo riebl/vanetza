@@ -177,7 +177,7 @@ int main(int argc, const char** argv)
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, positioning);
 
         security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
-        RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
+        RouterContext context(raw_socket, mib, trigger, positioning, &security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
         CamApplication cam_app(positioning, trigger.runtime());

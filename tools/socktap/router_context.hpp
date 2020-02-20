@@ -19,7 +19,7 @@ class TimeTrigger;
 class RouterContext
 {
 public:
-    RouterContext(boost::asio::generic::raw_protocol::socket&, const vanetza::geonet::MIB&, TimeTrigger&, vanetza::PositionProvider&, vanetza::security::SecurityEntity&);
+    RouterContext(boost::asio::generic::raw_protocol::socket&, const vanetza::geonet::MIB&, TimeTrigger&, vanetza::PositionProvider&, vanetza::security::SecurityEntity*);
     ~RouterContext();
     void enable(Application*);
     void disable(Application*);

@@ -20,7 +20,7 @@ namespace asio = boost::asio;
 using boost::asio::generic::raw_protocol;
 using namespace vanetza;
 
-RouterContext::RouterContext(raw_protocol::socket& socket, const geonet::MIB& mib, TimeTrigger& trigger, vanetza::PositionProvider& positioning, vanetza::security::SecurityEntity& security_entity) :
+RouterContext::RouterContext(raw_protocol::socket& socket, const geonet::MIB& mib, TimeTrigger& trigger, vanetza::PositionProvider& positioning, vanetza::security::SecurityEntity* security_entity) :
     mib_(mib), router_(trigger.runtime(), mib_),
     socket_(socket), trigger_(trigger), positioning_(positioning),
     request_interface_(new DccPassthrough(socket, trigger)),
@@ -30,7 +30,7 @@ RouterContext::RouterContext(raw_protocol::socket& socket, const geonet::MIB& mi
     router_.set_address(mib_.itsGnLocalGnAddr);
     router_.set_access_interface(request_interface_.get());
     router_.set_transport_handler(geonet::UpperProtocol::BTP_B, &dispatcher_);
-    router_.set_security_entity(&security_entity);
+    router_.set_security_entity(security_entity);
     update_position_vector();
 
     do_receive();
