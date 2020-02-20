@@ -98,7 +98,7 @@ int main(int argc, const char** argv)
             security::dummy_verify_service(security::VerificationReport::Success, security::CertificateValidity::valid());
         security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
 
-        RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
+        RouterContext context(raw_socket, mib, trigger, positioning, &security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
         asio::steady_timer hello_timer(io_service);
