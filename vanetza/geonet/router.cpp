@@ -416,7 +416,6 @@ void Router::indicate_basic(IndicationContextBasic& ctx)
             indicate_secured(ctx, *basic);
         } else if (basic->next_header == NextHeaderBasic::Common) {
             if (!m_mib.itsGnSecurity || SecurityDecapHandling::Non_Strict == m_mib.itsGnSnDecapResultHandling) {
-                indication.security_report = security::DecapReport::Unsigned_Message,
                 indicate_common(ctx, *basic);
             } else {
                 packet_dropped(PacketDropReason::Decap_Unsuccessful_Strict);
