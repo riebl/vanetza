@@ -7,6 +7,8 @@
 #include <vanetza/btp/port_dispatcher.hpp>
 #include <vanetza/geonet/data_confirm.hpp>
 #include <vanetza/geonet/router.hpp>
+// ERIK 
+#include <vanetza/asn1/cam.hpp>
 
 class Application : public vanetza::btp::IndicationInterface
 {
@@ -26,6 +28,7 @@ public:
 
     virtual PortType port() = 0;
     virtual PromiscuousHook* promiscuous_hook();
+    virtual void Printcam(vanetza::asn1::Cam message);
 
 protected:
     DataConfirm request(const DataRequest&, DownPacketPtr);

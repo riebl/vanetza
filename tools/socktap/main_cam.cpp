@@ -39,6 +39,9 @@ int main(int argc, const char** argv)
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
         ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
         ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
+	// ERIK added --print or --p boolean option
+	("print,p", "Print CAM content?")
+
     ;
 
     po::positional_options_description positional_options;
@@ -65,6 +68,10 @@ int main(int argc, const char** argv)
         std::cout << options << std::endl;
         return 1;
     }
+
+    // ERIK added check if print is true
+    bool print; 
+    vm.count("print") > 0 ? print = true : print = false;  
 
     try {
         asio::io_service io_service;
@@ -172,7 +179,8 @@ int main(int argc, const char** argv)
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
         asio::steady_timer cam_timer(io_service);
-        CamApplication cam_app(positioning, trigger.runtime(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+	// ERIK added print
+        CamApplication cam_app(positioning, trigger.runtime(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()),print);
         context.enable(&cam_app);
 
         io_service.run();

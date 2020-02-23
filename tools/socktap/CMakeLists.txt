@@ -1,4 +1,4 @@
-if(NOT TARGET Boost::system)
+f(NOT TARGET Boost::system)
     message(STATUS "Skip build of socktap because of missing Boost::system dependency")
     return()
 endif()
@@ -30,13 +30,6 @@ add_executable(socktap-cam
     main_cam.cpp
 )
 
-# // ERIK added socktap-decode 
-add_executable(socktap-decode
-    decode_application.cpp
-    #cam_application.cpp
-    main_cam.cpp
-)
-
 add_executable(socktap-bench-in
     bench_in_application.cpp
     cam_application.cpp
@@ -46,13 +39,9 @@ add_executable(socktap-bench-in
 target_link_libraries(socktap-common PUBLIC Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
 target_link_libraries(socktap-hello socktap-common)
 target_link_libraries(socktap-cam socktap-common)
-# // ERIK added socktap-decode
-target_link_libraries(socktap-decode socktap-common)
 target_link_libraries(socktap-bench-in socktap-common)
 install(TARGETS socktap-hello EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(TARGETS socktap-cam EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
-# // ERIK added socktap-decode
-install(TARGETS socktap-decode EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(TARGETS socktap-bench-in EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 if(TARGET Cohda::headers)

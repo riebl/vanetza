@@ -9,15 +9,14 @@
 #include <exception>
 #include <functional>
 #include <iostream>
-
 // This is rather simple application that sends CAMs in a regular interval.
 
 using namespace vanetza;
 using namespace vanetza::facilities;
 using namespace std::chrono;
 
-CamApplication::CamApplication(PositionProvider& positioning, const Runtime& rt, boost::asio::steady_timer& timer, milliseconds cam_interval)
-    : positioning_(positioning), runtime_(rt), cam_interval_(cam_interval), timer_(timer)
+CamApplication::CamApplication(PositionProvider& positioning, const Runtime& rt, boost::asio::steady_timer& timer, milliseconds cam_interval, bool print)
+    : positioning_(positioning), runtime_(rt), cam_interval_(cam_interval), timer_(timer), print_(print)
 {
     schedule_timer();
 }
@@ -40,7 +39,7 @@ void CamApplication::schedule_timer()
     timer_.expires_from_now(cam_interval_);
     timer_.async_wait(std::bind(&CamApplication::on_timer, this, std::placeholders::_1));
 }
-
+ 
 void CamApplication::on_timer(const boost::system::error_code& ec)
 {
     if (ec == boost::asio::error::operation_aborted) {
@@ -100,6 +99,9 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
     if (!message.validate(error)) {
         throw std::runtime_error("Invalid high frequency CAM: %s" + error);
     }
+
+    // ERIK
+    if (print_) Application::Printcam(message); 
 
     DownPacketPtr packet { new DownPacket() };
     packet->layer(OsiLayer::Application) = std::move(message);
