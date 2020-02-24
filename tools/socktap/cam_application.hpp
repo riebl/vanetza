@@ -13,6 +13,8 @@ public:
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
     void set_interval(vanetza::Clock::duration);
+    void print_received_message(bool flag);
+    void print_generated_message(bool flag);
 
 private:
     void schedule_timer();
@@ -21,6 +23,8 @@ private:
     vanetza::PositionProvider& positioning_;
     vanetza::Runtime& runtime_;
     vanetza::Clock::duration cam_interval_;
+    bool print_rx_msg_ = false;
+    bool print_tx_msg_ = false;
 };
 
 #endif /* CAM_APPLICATION_HPP_EUIC2VFR */

@@ -29,6 +29,16 @@ void CamApplication::set_interval(Clock::duration interval)
     schedule_timer();
 }
 
+void CamApplication::print_generated_message(bool flag)
+{
+    print_tx_msg_ = flag;
+}
+
+void CamApplication::print_received_message(bool flag)
+{
+    print_rx_msg_ = flag;
+}
+
 CamApplication::PortType CamApplication::port()
 {
     return btp::ports::CAM;
@@ -40,6 +50,10 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
     std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(visitor, *packet);
 
     std::cout << "CAM application received a packet with " << (cam ? "decodable" : "broken") << " content" << std::endl;
+    if (cam && print_rx_msg_) {
+        std::cout << "Received CAM contains\n";
+        print_indented(std::cout, *cam, "  ", 1);
+    }
 }
 
 void CamApplication::schedule_timer()
@@ -99,6 +113,11 @@ void CamApplication::on_timer(Clock::time_point)
     std::string error;
     if (!message.validate(error)) {
         throw std::runtime_error("Invalid high frequency CAM: %s" + error);
+    }
+
+    if (print_tx_msg_) {
+        std::cout << "Generated CAM contains\n";
+        print_indented(std::cout, message, "  ", 1);
     }
 
     DownPacketPtr packet { new DownPacket() };
