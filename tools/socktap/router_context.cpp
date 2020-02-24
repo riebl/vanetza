@@ -3,6 +3,7 @@
 #include "ethernet_device.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
+#include <vanetza/access/ethertype.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/net/ethernet_header.hpp>
@@ -82,7 +83,7 @@ void RouterContext::pass_up(CohesivePacket&& packet)
         auto link_range = packet[OsiLayer::Link];
         EthernetHeader hdr = decode_ethernet_header(link_range.begin(), link_range.end());
 #endif
-        if (hdr.source != mib_.itsGnLocalGnAddr.mid()) {
+        if (hdr.source != mib_.itsGnLocalGnAddr.mid() && hdr.type == access::ethertype::GeoNetworking) {
             std::cout << "received packet from " << hdr.source << " (" << packet.size() << " bytes)\n";
             std::unique_ptr<PacketVariant> up { new PacketVariant(std::move(packet)) };
             trigger_.schedule(); // ensure the clock is up-to-date for the security entity
