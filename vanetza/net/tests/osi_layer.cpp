@@ -96,4 +96,7 @@ TEST(OsiLayer, run_time_range) {
     auto r3 = osi_layer_range(OsiLayer::Application, OsiLayer::Application);
     ASSERT_EQ(1, r3.size());
     EXPECT_EQ(OsiLayer::Application, r3[0]);
+
+    auto r4 = osi_layer_range(OsiLayer::Application, OsiLayer::Transport);
+    EXPECT_EQ(0, r4.size());
 }

@@ -65,10 +65,13 @@ std::array<OsiLayer, num_osi_layers(FROM, TO)> osi_layer_range()
 inline boost::iterator_range<decltype(osi_layers)::const_iterator>
 osi_layer_range(OsiLayer from, OsiLayer to)
 {
-    assert(from <= to);
-    auto begin = osi_layers.cbegin() + distance(min_osi_layer(), from);
-    auto end = osi_layers.cend() - distance(to, max_osi_layer());
-    return boost::make_iterator_range(begin, end);
+    if (from <= to) {
+        auto begin = osi_layers.cbegin() + distance(min_osi_layer(), from);
+        auto end = osi_layers.cend() - distance(to, max_osi_layer());
+        return boost::make_iterator_range(begin, end);
+    } else {
+        return boost::make_iterator_range(osi_layers.cend(), osi_layers.cend());
+    }
 }
 
 } // namespace vanetza
