@@ -21,7 +21,7 @@ byte_view_range::byte_view_range(ByteBuffer&& _buffer) :
 ByteBuffer::const_pointer byte_view_range::data() const
 {
     auto begin = this->begin();
-    return &(*begin);
+    return begin != this->end() ? &(*begin) : nullptr;
 }
 
 ByteBuffer::value_type byte_view_range::operator[](size_type pos) const
