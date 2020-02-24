@@ -40,7 +40,7 @@ RouterContext::RouterContext(raw_protocol::socket& socket, const geonet::MIB& mi
 RouterContext::~RouterContext()
 {
     for (auto* app : applications_) {
-        app->router_ = nullptr;
+        disable(app);
     }
 }
 
@@ -101,6 +101,16 @@ void RouterContext::enable(Application* app)
     if (app->port() != btp::port_type(0)) {
         dispatcher_.set_non_interactive_handler(app->port(), app);
     }
+}
+
+void RouterContext::disable(Application* app)
+{
+    if (app->port() != btp::port_type(0)) {
+        dispatcher_.set_non_interactive_handler(app->port(), nullptr);
+    }
+    dispatcher_.remove_promiscuous_hook(app->promiscuous_hook());
+
+    app->router_ = nullptr;
 }
 
 void RouterContext::require_position_fix(bool flag)
