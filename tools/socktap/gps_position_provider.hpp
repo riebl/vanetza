@@ -38,8 +38,8 @@ private:
 namespace gpsd
 {
 
-constexpr char* default_port = DEFAULT_GPSD_PORT;
-constexpr char* shared_memory = GPSD_SHARED_MEMORY;
+constexpr const char* default_port = DEFAULT_GPSD_PORT;
+constexpr const char* shared_memory = GPSD_SHARED_MEMORY;
 
 } // namespace gpsd
 
