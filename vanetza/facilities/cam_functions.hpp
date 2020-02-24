@@ -81,6 +81,18 @@ AltitudeConfidence_t to_altitude_confidence(units::Length);
  */
 bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermissions ssp);
 
+/**
+ * Print CAM content with indentation of nested fields
+ * \param os output stream
+ * \param cam CA message
+ * \param indent indentation marker, by default one tab per level
+ * \param start initial level of indentation
+ *
+ * This function is an idea of Erik de Britto e Silva (erikbritto@github)
+ * from University of Antwerp - erik.debrittoesilva@uantwerpen.be
+ */
+void print_indented(std::ostream& os, const asn1::Cam& cam, const std::string& indent = "\t", unsigned start = 0);
+
 } // namespace facilities
 } // namespace vanetza
 

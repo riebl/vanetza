@@ -300,5 +300,74 @@ bool check_service_specific_permissions(const asn1::Cam& cam, security::CamPermi
     return ssp.has(required_permissions);
 }
 
+void print_indented(std::ostream& os, const asn1::Cam& message, const std::string& indent, unsigned level)
+{
+    auto prefix = [&](const char* field) -> std::ostream& {
+        for (unsigned i = 0; i < level; ++i) {
+            os << indent;
+        }
+        os << field << ": ";
+        return os;
+    };
+
+    const ItsPduHeader_t& header = message->header;
+    prefix("ITS PDU Header") << "\n";
+    ++level;
+    prefix("Protocol Version") << header.protocolVersion << "\n";
+    prefix("Message ID") << header.messageID << "\n";
+    prefix("Station ID") << header.stationID << "\n";
+    --level;
+
+    const CoopAwareness_t& cam = message->cam;
+    prefix("CoopAwarensess") << "\n";
+    ++level;
+    prefix("Generation Delta Time") << cam.generationDeltaTime << "\n";
+
+    prefix("Basic Container") << "\n";
+    ++level;
+    const BasicContainer_t& basic = cam.camParameters.basicContainer;
+    prefix("Station Type") << basic.stationType << "\n";
+    prefix("Reference Position") << "\n";
+    ++level;
+    prefix("Longitude") << basic.referencePosition.longitude << "\n";
+    prefix("Latitude") << basic.referencePosition.latitude << "\n";
+    prefix("Semi Major Orientation") << basic.referencePosition.positionConfidenceEllipse.semiMajorOrientation << "\n";
+    prefix("Semi Major Confidence") << basic.referencePosition.positionConfidenceEllipse.semiMajorConfidence << "\n";
+    prefix("Semi Minor Confidence") << basic.referencePosition.positionConfidenceEllipse.semiMinorConfidence << "\n";
+    prefix("Altitude [Confidence]") << basic.referencePosition.altitude.altitudeValue
+        << " [" << basic.referencePosition.altitude.altitudeConfidence << "]\n";
+    --level;
+    --level;
+
+    if (cam.camParameters.highFrequencyContainer.present == HighFrequencyContainer_PR_basicVehicleContainerHighFrequency) {
+        prefix("High Frequency Container [Basic Vehicle]") << "\n";
+        ++level;
+        const BasicVehicleContainerHighFrequency& bvc =
+            cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency;
+        prefix("Heading [Confidence]") << bvc.heading.headingValue
+            << " [" << bvc.heading.headingConfidence << "]\n";
+        prefix("Speed [Confidence]") << bvc.speed.speedValue
+            << " [" << bvc.speed.speedConfidence << "]\n";
+        prefix("Drive Direction") << bvc.driveDirection << "\n";
+        prefix("Longitudinal Acceleration") << bvc.longitudinalAcceleration.longitudinalAccelerationValue << "\n";
+        prefix("Vehicle Length [Confidence Indication]") << bvc.vehicleLength.vehicleLengthValue
+            << " [" << bvc.vehicleLength.vehicleLengthConfidenceIndication << "]\n";
+        prefix("Vehicle Width") << bvc.vehicleWidth << "\n";
+        prefix("Curvature [Confidence]") << bvc.curvature.curvatureValue
+            << " [" << bvc.curvature.curvatureConfidence << "]\n";
+        prefix("Curvature Calculation Mode") << bvc.curvatureCalculationMode << "\n";
+        prefix("Yaw Rate [Confidence]") << bvc.yawRate.yawRateValue
+            << " [" << bvc.yawRate.yawRateConfidence << "]\n";
+        --level;
+    } else {
+        prefix("High Frequency Container") << cam.camParameters.highFrequencyContainer.present << "\n";
+    }
+
+    prefix("Low Frequency Container") << (cam.camParameters.lowFrequencyContainer ? "yes" : "no") << "\n";
+    // TODO: print basic vehicle low frequency container in detail
+    // TODO: print special vehicle container
+    --level;
+}
+
 } // namespace facilities
 } // namespace vanetza
