@@ -36,6 +36,22 @@ TEST(PacketVisitor, deserialize_buffer)
     EXPECT_EQ((*result)->field, 23);
 }
 
+TEST(PacketVisitor, deserialize_start)
+{
+    PacketVariant packet;
+    {
+        TestWrapper wrapper;
+        wrapper->field = 23;
+        CohesivePacket cohesive { wrapper.encode(), OsiLayer::Session };
+        packet = std::move(cohesive);
+    }
+
+    asn1::PacketVisitor<TestWrapper> visitor;
+    EXPECT_TRUE(boost::apply_visitor(visitor, packet));
+    visitor.start_deserialization_at(OsiLayer::Application);
+    EXPECT_FALSE(boost::apply_visitor(visitor, packet));
+}
+
 TEST(PacketVisitor, cast_chunk)
 {
     PacketVariant packet;
@@ -67,10 +83,12 @@ TEST(PacketVisitor, deserialize_chunk)
         packet = std::move(chunk);
     }
 
-    asn1::PacketVisitor<TestWrapper, true> deserializing_visitor;
-    asn1::PacketVisitor<TestWrapper, false> cast_only_visitor;
-    EXPECT_FALSE(boost::apply_visitor(cast_only_visitor, packet));
-    EXPECT_TRUE(boost::apply_visitor(deserializing_visitor, packet));
+    asn1::PacketVisitor<TestWrapper> visitor;
+    visitor.allow_chunk_deserialization(false);
+    EXPECT_FALSE(boost::apply_visitor(visitor, packet));
+
+    visitor.allow_chunk_deserialization(true);
+    EXPECT_TRUE(boost::apply_visitor(visitor, packet));
 }
 
 TEST(PacketVisitor, failed)
