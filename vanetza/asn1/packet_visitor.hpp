@@ -1,5 +1,5 @@
 #ifndef PACKET_VISITOR_HPP_UYSI8HXZ
-#define PACKET_VISITOR_HPP_UYSI8
+#define PACKET_VISITOR_HPP_UYSI8HXZ
 
 #include <vanetza/asn1/asn1c_conversion.hpp>
 #include <vanetza/common/byte_buffer.hpp>
