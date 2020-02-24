@@ -40,6 +40,9 @@ void initialize_request(const Application::DataRequest& generic, geonet::DataReq
     if (generic.maximum_lifetime) {
         geonet.maximum_lifetime = generic.maximum_lifetime.get();
     }
+    if (generic.maximum_hop_limit) {
+        geonet.max_hop_limit = generic.maximum_hop_limit.get();
+    }
     geonet.repetition = generic.repetition;
     geonet.traffic_class = generic.traffic_class;
 }
