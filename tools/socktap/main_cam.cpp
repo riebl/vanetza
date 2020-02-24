@@ -173,8 +173,8 @@ int main(int argc, const char** argv)
         RouterContext context(raw_socket, mib, trigger, positioning, security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
 
-        asio::steady_timer cam_timer(io_service);
-        CamApplication cam_app(positioning, trigger.runtime(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+        CamApplication cam_app(positioning, trigger.runtime());
+        cam_app.set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
         context.enable(&cam_app);
 
         BenchmarkApplication benchmark_app(io_service);

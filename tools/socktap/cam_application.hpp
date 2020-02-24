@@ -2,26 +2,25 @@
 #define CAM_APPLICATION_HPP_EUIC2VFR
 
 #include "application.hpp"
+#include <vanetza/common/clock.hpp>
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/common/runtime.hpp>
-#include <boost/asio/steady_timer.hpp>
-#include <chrono>
 
 class CamApplication : public Application
 {
 public:
-    CamApplication(vanetza::PositionProvider& positioning, const vanetza::Runtime& rt, boost::asio::steady_timer&, std::chrono::milliseconds cam_interval);
+    CamApplication(vanetza::PositionProvider& positioning, vanetza::Runtime& rt);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
+    void set_interval(vanetza::Clock::duration);
 
 private:
     void schedule_timer();
-    void on_timer(const boost::system::error_code& ec);
+    void on_timer(vanetza::Clock::time_point);
 
     vanetza::PositionProvider& positioning_;
-    const vanetza::Runtime& runtime_;
-    std::chrono::milliseconds cam_interval_;
-    boost::asio::steady_timer& timer_;
+    vanetza::Runtime& runtime_;
+    vanetza::Clock::duration cam_interval_;
 };
 
 #endif /* CAM_APPLICATION_HPP_EUIC2VFR */

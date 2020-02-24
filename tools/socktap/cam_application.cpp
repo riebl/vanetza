@@ -10,15 +10,22 @@
 #include <functional>
 #include <iostream>
 
-// This is rather simple application that sends CAMs in a regular interval.
+// This is a very simple CA application sending CAMs at a fixed rate.
 
 using namespace vanetza;
 using namespace vanetza::facilities;
 using namespace std::chrono;
 
-CamApplication::CamApplication(PositionProvider& positioning, const Runtime& rt, boost::asio::steady_timer& timer, milliseconds cam_interval)
-    : positioning_(positioning), runtime_(rt), cam_interval_(cam_interval), timer_(timer)
+CamApplication::CamApplication(PositionProvider& positioning, Runtime& rt) :
+    positioning_(positioning), runtime_(rt), cam_interval_(seconds(1))
 {
+    schedule_timer();
+}
+
+void CamApplication::set_interval(Clock::duration interval)
+{
+    cam_interval_ = interval;
+    runtime_.cancel(this);
     schedule_timer();
 }
 
@@ -37,16 +44,12 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
 
 void CamApplication::schedule_timer()
 {
-    timer_.expires_from_now(cam_interval_);
-    timer_.async_wait(std::bind(&CamApplication::on_timer, this, std::placeholders::_1));
+    runtime_.schedule(cam_interval_, std::bind(&CamApplication::on_timer, this, std::placeholders::_1), this);
 }
 
-void CamApplication::on_timer(const boost::system::error_code& ec)
+void CamApplication::on_timer(Clock::time_point)
 {
-    if (ec == boost::asio::error::operation_aborted) {
-        return;
-    }
-
+    schedule_timer();
     vanetza::asn1::Cam message;
 
     ItsPduHeader_t& header = message->header;
@@ -63,10 +66,7 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
     auto position = positioning_.position_fix();
 
     if (!position.confidence) {
-        schedule_timer();
-
         std::cerr << "Skipping CAM, because no good position is available, yet." << std::endl;
-
         return;
     }
 
@@ -113,6 +113,4 @@ void CamApplication::on_timer(const boost::system::error_code& ec)
     if (!confirm.accepted()) {
         throw std::runtime_error("CAM application data request failed");
     }
-
-    schedule_timer();
 }
