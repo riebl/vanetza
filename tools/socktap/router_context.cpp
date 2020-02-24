@@ -10,6 +10,7 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <boost/optional/optional.hpp>
 #include <iostream>
+#include <sstream>
 #include <vanetza/common/byte_order.hpp>
 
 #ifdef SOCKTAP_WITH_COHDA_LLC
@@ -47,7 +48,9 @@ RouterContext::~RouterContext()
 void RouterContext::log_packet_drop(geonet::Router::PacketDropReason reason)
 {
     auto reason_string = stringify(reason);
-    std::cout << "Router dropped packet because of " << reason_string << " (" << static_cast<int>(reason) << ")\n";
+    std::ostringstream ostream;
+    ostream << "Router dropped packet because of " << reason_string << " (" << static_cast<int>(reason) << ")\n";
+    std::cout << ostream.str();
 }
 
 void RouterContext::do_receive()
@@ -84,7 +87,10 @@ void RouterContext::pass_up(CohesivePacket&& packet)
         EthernetHeader hdr = decode_ethernet_header(link_range.begin(), link_range.end());
 #endif
         if (hdr.source != mib_.itsGnLocalGnAddr.mid() && hdr.type == access::ethertype::GeoNetworking) {
-            std::cout << "received packet from " << hdr.source << " (" << packet.size() << " bytes)\n";
+            std::ostringstream ostream;
+            ostream << "received packet from " << hdr.source << " (" << packet.size() << " bytes)\n";
+            std::cout << ostream.str();
+
             std::unique_ptr<PacketVariant> up { new PacketVariant(std::move(packet)) };
             trigger_.schedule(); // ensure the clock is up-to-date for the security entity
             router_.indicate(std::move(up), hdr.source, hdr.destination);

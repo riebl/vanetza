@@ -6,6 +6,7 @@
 #include <vanetza/net/chunk_packet.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <iostream>
+#include <sstream>
 
 #ifdef SOCKTAP_WITH_COHDA_LLC
 #include "cohda.hpp"
@@ -43,7 +44,9 @@ void DccPassthrough::request(const dcc::DataRequest& request, std::unique_ptr<Ch
         const_buffers[i] = asio::buffer(buffers_[i]);
     }
     auto bytes_sent = socket_.send(const_buffers);
-    std::cout << "sent packet to " << request.destination << " (" << bytes_sent << " bytes)\n";
+    std::ostringstream ostream;
+    ostream << "sent packet to " << request.destination << " (" << bytes_sent << " bytes)\n";
+    std::cout << ostream.str();
 }
 
 void DccPassthrough::allow_packet_flow(bool allow)
