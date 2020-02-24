@@ -62,6 +62,7 @@ private:
  * \param byte buffer or byte buffer convertible
  * \return byte view representing passed byte buffer
  */
+byte_view_range create_byte_view(ByteBuffer&&);
 byte_view_range create_byte_view(const ByteBuffer&);
 byte_view_range create_byte_view(const ByteBufferConvertible&);
 

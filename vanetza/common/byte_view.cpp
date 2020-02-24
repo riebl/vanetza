@@ -31,6 +31,11 @@ ByteBuffer::value_type byte_view_range::operator[](size_type pos) const
     return data()[pos];
 }
 
+byte_view_range create_byte_view(ByteBuffer&& buffer)
+{
+    return byte_view_range { std::move(buffer) };
+}
+
 byte_view_range create_byte_view(const ByteBuffer& buffer)
 {
     return byte_view_range { buffer.begin(), buffer.end() };
