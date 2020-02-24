@@ -29,7 +29,7 @@ void DccPassthrough::request(const dcc::DataRequest& request, std::unique_ptr<Ch
 #ifdef SOCKTAP_WITH_COHDA_LLC
     insert_cohda_tx_header(request, packet);
 #else
-    packet->layer(OsiLayer::Link) = std::move(create_ethernet_header(request.destination, request.source, request.ether_type));
+    packet->layer(OsiLayer::Link) = create_ethernet_header(request.destination, request.source, request.ether_type);
 #endif
     for (auto& layer : osi_layer_range<OsiLayer::Physical, OsiLayer::Application>()) {
         const auto index = distance(OsiLayer::Physical, layer);
