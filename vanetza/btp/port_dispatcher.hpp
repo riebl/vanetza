@@ -55,6 +55,11 @@ public:
      */
     void add_promiscuous_hook(PromiscuousHook*);
 
+    /**
+     * Remove a hook
+     */
+    void remove_promiscuous_hook(PromiscuousHook*);
+
     // Implementation of geonet::TransportInterface
     void indicate(const geonet::DataIndication&, std::unique_ptr<UpPacket>) override;
 

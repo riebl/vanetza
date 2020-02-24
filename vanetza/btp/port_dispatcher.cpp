@@ -38,6 +38,13 @@ void PortDispatcher::add_promiscuous_hook(PromiscuousHook* hook)
     }
 }
 
+void PortDispatcher::remove_promiscuous_hook(PromiscuousHook* hook)
+{
+    if (hook != nullptr) {
+        m_promiscuous_hooks.remove(hook);
+    }
+}
+
 void PortDispatcher::set_interactive_handler(
         port_type port,
         IndicationInterface* handler)
