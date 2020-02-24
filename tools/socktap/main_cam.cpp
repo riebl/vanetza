@@ -1,5 +1,6 @@
 #include "ethernet_device.hpp"
 #include "gps_position_provider.hpp"
+#include "benchmark_application.hpp"
 #include "cam_application.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
@@ -39,6 +40,7 @@ int main(int argc, const char** argv)
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
         ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
         ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
+        ("benchmark", "Enable benchmarking")
     ;
 
     po::positional_options_description positional_options;
@@ -174,6 +176,11 @@ int main(int argc, const char** argv)
         asio::steady_timer cam_timer(io_service);
         CamApplication cam_app(positioning, trigger.runtime(), cam_timer, std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
         context.enable(&cam_app);
+
+        BenchmarkApplication benchmark_app(io_service);
+        if (vm.count("benchmark") > 0) {
+            context.enable(&benchmark_app);
+        }
 
         io_service.run();
     } catch (GpsPositionProvider::gps_error& e) {

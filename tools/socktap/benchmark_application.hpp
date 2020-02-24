@@ -1,16 +1,15 @@
-#ifndef BENCH_IN_APPLICATION_HPP_EUIC2VFR
-#define BENCH_IN_APPLICATION_HPP_EUIC2VFR
+#ifndef BENCHMARK_APPLICATION_HPP_EUIC2VFR
+#define BENCHMARK_APPLICATION_HPP_EUIC2VFR
 
 #include "application.hpp"
-#include <vanetza/common/position_provider.hpp>
-#include <vanetza/common/clock.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <chrono>
 
-class BenchInApplication : public Application, private Application::PromiscuousHook
+class BenchmarkApplication : public Application, private Application::PromiscuousHook
 {
 public:
-    BenchInApplication(const vanetza::Runtime& rt, boost::asio::steady_timer&, std::chrono::milliseconds interval);
+    BenchmarkApplication(boost::asio::io_service&);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
     Application::PromiscuousHook* promiscuous_hook() override;
@@ -20,10 +19,9 @@ private:
     void on_timer(const boost::system::error_code& ec);
     void tap_packet(const DataIndication&, const vanetza::UpPacket&) override;
 
-    const vanetza::Runtime& m_runtime;
+    boost::asio::steady_timer m_timer;
     std::chrono::milliseconds m_interval;
-    boost::asio::steady_timer& m_timer;
     unsigned m_received_messages;
 };
 
-#endif /* BENCH_IN_APPLICATION_HPP_EUIC2VFR */
+#endif /* BENCHMARK_APPLICATION_HPP_EUIC2VFR */
