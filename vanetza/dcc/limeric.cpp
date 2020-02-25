@@ -57,6 +57,12 @@ UnitInterval Limeric::calculate_duty_cycle() const
     }
     UnitInterval delta = m_params.alpha.complement() * m_duty_cycle + delta_offset;
     delta = std::min(std::max(delta, m_params.delta_min), m_params.delta_max);
+
+    if(m_params.useDualAlpha && m_duty_cycle - delta > m_params.th) {
+        delta = m_params.alphaHigh.complement() * m_duty_cycle + delta_offset;
+        delta = std::min(std::max(delta, m_params.delta_min), m_params.delta_max);
+    }
+
     return delta;
 }
 

@@ -28,6 +28,8 @@ class Limeric : public DutyCyclePermit
 public:
     /**
      * Limeric paremeters as given by TS 102 687 v1.2.1, Table 3
+     *  Reference for Dual-alpha Limeric:
+     *     "Strength and Weaknesses of the ETSI Adaptive DCC Algorithm: A Proposal for Improvement"
      */
     struct Parameters
     {
@@ -39,6 +41,9 @@ public:
         double g_minus_max = -0.00025;
         ChannelLoad cbr_target { 0.68 };
         Clock::duration cbr_interval = std::chrono::milliseconds(100); /*< algorithm is scheduled every second interval */
+        bool useDualAlpha = false;
+        UnitInterval alphaHigh { 0.1 }; /*< Alpha used when delta is decreasing between two updating steps */
+        UnitInterval th { 0.00001 }; /*<  Determined heuristically */
     };
 
     Limeric(Runtime&);
