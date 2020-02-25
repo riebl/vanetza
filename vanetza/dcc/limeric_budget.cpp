@@ -44,13 +44,20 @@ void LimericBudget::notify(Clock::duration tx_on)
 
 void LimericBudget::update()
 {
-    // Apply equation B.2 of TS 102 687 v1.2.1
     using std::chrono::duration_cast;
     using FloatingPointDuration = std::chrono::duration<double, Clock::period>;
     const FloatingPointDuration delay = m_tx_start + m_interval - m_runtime.now();
-    const auto duty_cycle = m_duty_cycle_permit.permitted_duty_cycle();
-    const FloatingPointDuration interval = (m_tx_on / duty_cycle.value()) * (delay / m_interval);
-    m_interval = clamp_interval(duration_cast<Clock::duration>(interval) + m_runtime.now() - m_tx_start);
+    const double duty_cycle = m_duty_cycle_permit.permitted_duty_cycle().value();
+
+    if (delay.count() > 0.0) {
+        // Apply equation B.2 of TS 102 687 v1.2.1 if gate is closed at the moment
+        const FloatingPointDuration interval = (m_tx_on / duty_cycle) * (delay / m_interval);
+        m_interval = clamp_interval(duration_cast<Clock::duration>(interval) + m_runtime.now() - m_tx_start);
+    } else {
+        // use equation B.1 otherwise
+        const FloatingPointDuration interval = m_tx_on / duty_cycle;
+        m_interval = clamp_interval(duration_cast<Clock::duration>(interval));
+    }
 }
 
 Clock::duration LimericBudget::clamp_interval(Clock::duration interval) const
