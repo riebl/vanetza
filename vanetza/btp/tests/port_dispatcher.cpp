@@ -170,7 +170,7 @@ TEST_F(BtpPortDispatcherTest, promiscuous_hook) {
 
     dispatcher.add_promiscuous_hook(&hook);
     dispatcher.indicate(ind, create_btp_packet(ports::TOPO));
-    EXPECT_EQ(5, hook.counter);
+    EXPECT_EQ(4, hook.counter);
 }
 
 TEST_F(BtpPortDispatcherTest, remove_promiscuous_hook) {
