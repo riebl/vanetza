@@ -173,6 +173,18 @@ TEST_F(BtpPortDispatcherTest, promiscuous_hook) {
     EXPECT_EQ(5, hook.counter);
 }
 
+TEST_F(BtpPortDispatcherTest, remove_promiscuous_hook) {
+    CounterPromiscuousHook hook;
+    const auto ind = create_gn_indication(UpperProtocol::BTP_B);
+
+    dispatcher.add_promiscuous_hook(&hook);
+    dispatcher.indicate(ind, create_btp_packet(ports::CAM));
+    EXPECT_EQ(1, hook.counter);
+
+    dispatcher.remove_promiscuous_hook(&hook);
+    dispatcher.indicate(ind, create_btp_packet(ports::CAM));
+    EXPECT_EQ(1, hook.counter);
+}
 
 std::unique_ptr<UpPacket> BtpPortDispatcherTest::create_btp_packet(port_type destination)
 {
