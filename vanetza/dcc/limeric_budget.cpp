@@ -17,7 +17,8 @@ constexpr Clock::duration max_interval = std::chrono::seconds(1);
 
 LimericBudget::LimericBudget(const DutyCyclePermit& dcp, const Runtime& rt) :
     m_duty_cycle_permit(dcp), m_runtime(rt),
-    m_interval(min_interval), m_tx_start(Clock::time_point::min())
+    m_interval(min_interval), m_tx_start(Clock::time_point::min()),
+    m_tx_on(Clock::duration::zero())
 {
     update();
 }
