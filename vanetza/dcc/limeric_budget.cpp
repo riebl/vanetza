@@ -56,14 +56,19 @@ void LimericBudget::update()
     const FloatingPointDuration delay = m_tx_start + m_interval - m_runtime.now();
     const double duty_cycle = m_duty_cycle_permit.permitted_duty_cycle().value();
 
-    if (delay.count() > 0.0) {
-        // Apply equation B.2 of TS 102 687 v1.2.1 if gate is closed at the moment
-        const FloatingPointDuration interval = (m_tx_on / duty_cycle) * (delay / m_interval);
-        m_interval = clamp_interval(duration_cast<Clock::duration>(interval) + m_runtime.now() - m_tx_start);
+    if (duty_cycle > 0.0) {
+        if (delay.count() > 0.0) {
+            // Apply equation B.2 of TS 102 687 v1.2.1 if gate is closed at the moment
+            const FloatingPointDuration interval = (m_tx_on / duty_cycle) * (delay / m_interval);
+            m_interval = clamp_interval(duration_cast<Clock::duration>(interval) + m_runtime.now() - m_tx_start);
+        } else {
+            // use equation B.1 otherwise
+            const FloatingPointDuration interval = m_tx_on / duty_cycle;
+            m_interval = clamp_interval(duration_cast<Clock::duration>(interval));
+        }
     } else {
-        // use equation B.1 otherwise
-        const FloatingPointDuration interval = m_tx_on / duty_cycle;
-        m_interval = clamp_interval(duration_cast<Clock::duration>(interval));
+        // bail out with maximum interval if duty cycle is not positive
+        m_interval = max_interval;
     }
 }
 
