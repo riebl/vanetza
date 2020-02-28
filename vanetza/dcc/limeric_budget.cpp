@@ -9,8 +9,15 @@ namespace vanetza
 namespace dcc
 {
 
+namespace
+{
+constexpr Clock::duration min_interval = std::chrono::milliseconds(25);
+constexpr Clock::duration max_interval = std::chrono::seconds(1);
+} // namespace
+
 LimericBudget::LimericBudget(const DutyCyclePermit& dcp, const Runtime& rt) :
-    m_duty_cycle_permit(dcp), m_runtime(rt), m_tx_start(Clock::time_point::min())
+    m_duty_cycle_permit(dcp), m_runtime(rt),
+    m_interval(min_interval), m_tx_start(Clock::time_point::min())
 {
     update();
 }
@@ -62,9 +69,6 @@ void LimericBudget::update()
 
 Clock::duration LimericBudget::clamp_interval(Clock::duration interval) const
 {
-    static const Clock::duration min_interval = std::chrono::milliseconds(25);
-    static const Clock::duration max_interval = std::chrono::seconds(1);
-
     return std::min(std::max(interval, min_interval), max_interval);
 }
 
