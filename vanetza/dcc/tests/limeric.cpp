@@ -92,3 +92,29 @@ TEST_F(LimericTest, scheduling)
     runtime.trigger(milliseconds(33)); // 1000 ms
     EXPECT_EQ(2, invocation_count);
 }
+
+TEST_F(LimericTest, dual_alpha)
+{
+    Limeric::DualAlphaParameters dual_params;
+    Limeric limeric_dual(runtime);
+    limeric_dual.configure_dual_alpha(dual_params);
+
+    auto update_cbr = [&](double cbr) {
+        limeric.update_cbr(ChannelLoad { cbr });
+        limeric_dual.update_cbr(ChannelLoad { cbr });
+    };
+
+    // set average CBR to 0.8
+    update_cbr(0.8);
+    update_cbr(0.8);
+
+    EXPECT_EQ(limeric.permitted_duty_cycle(), limeric_dual.permitted_duty_cycle());
+    runtime.trigger(milliseconds(200));
+    EXPECT_EQ(limeric.permitted_duty_cycle(), limeric_dual.permitted_duty_cycle());
+
+    // Limeric with dual-alpha is expected to converge earlier towards target CBR
+    for (int i = 0; i < 30; ++i) {
+        runtime.trigger(milliseconds(200));
+    }
+    EXPECT_GT(limeric.permitted_duty_cycle(), limeric_dual.permitted_duty_cycle());
+}

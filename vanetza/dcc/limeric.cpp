@@ -57,6 +57,13 @@ UnitInterval Limeric::calculate_duty_cycle() const
     }
     UnitInterval delta = m_params.alpha.complement() * m_duty_cycle + delta_offset;
     delta = std::min(std::max(delta, m_params.delta_min), m_params.delta_max);
+
+    if (m_dual_alpha) {
+        if (m_duty_cycle - delta > m_dual_alpha->threshold) {
+            delta = m_dual_alpha->alternate_alpha.complement() * m_duty_cycle + delta_offset;
+            delta = std::min(std::max(delta, m_params.delta_min), m_params.delta_max);
+        }
+    }
     return delta;
 }
 
@@ -82,6 +89,11 @@ void Limeric::schedule()
     m_runtime.schedule(tp, [this](Clock::time_point tp) {
         this->calculate(tp);
     });
+}
+
+void Limeric::configure_dual_alpha(const boost::optional<DualAlphaParameters>& params)
+{
+    m_dual_alpha = params;
 }
 
 } // namespace dcc
