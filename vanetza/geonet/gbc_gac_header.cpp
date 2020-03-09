@@ -16,7 +16,7 @@ public:
     void operator()(const Circle& circle)
     {
         m_header.distance_a = circle.r;
-        m_header.distance_b = circle.r;
+        m_header.distance_b = 0;
     }
 
     void operator()(const Rectangle& rect)
