@@ -24,14 +24,14 @@ struct GbcGacHeader
     static constexpr std::size_t length_bytes = 20 + LongPositionVector::length_bytes;
 
     SequenceNumber sequence_number;
-    uint16_t reserved1;
+    uint16_t reserved1 = 0;
     LongPositionVector source_position;
     geo_angle_i32t geo_area_pos_latitude;
     geo_angle_i32t geo_area_pos_longitude;
     distance_u16t distance_a;
     distance_u16t distance_b;
     angle_u16t angle;
-    uint16_t reserved2;
+    uint16_t reserved2 = 0;
 
     void destination(const Area&);
     GeodeticPosition position() const;
