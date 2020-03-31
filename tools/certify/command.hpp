@@ -9,6 +9,7 @@ class Command
 public:
     virtual int execute() = 0;
     virtual bool parse(const std::vector<std::string>&) = 0;
+    virtual ~Command() = default;
 };
 
 #endif /* CERTIFY_COMMAND_HPP */

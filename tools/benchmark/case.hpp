@@ -12,6 +12,7 @@ public:
     virtual bool parse(const std::vector<std::string>&) = 0;
     virtual void prepare() = 0;
     virtual int execute() = 0;
+    virtual ~Case() = default;
 };
 
 #endif /* BENCHMARK_CASE_HPP */
