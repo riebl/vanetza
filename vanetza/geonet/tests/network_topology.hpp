@@ -90,7 +90,7 @@ public:
     void send(Router&, const MacAddress&, const MacAddress&);
     void repeat(const MacAddress&, const MacAddress&);
     void set_position(const MacAddress&, CartesianPosition);
-    void advance_time(Clock::duration);
+    void advance_time(Clock::duration t, Clock::duration max_step = std::chrono::milliseconds(500));
     void reset_counters();
     void set_duplication_mode(PacketDuplicationMode);
 

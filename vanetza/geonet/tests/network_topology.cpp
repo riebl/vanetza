@@ -238,9 +238,8 @@ void NetworkTopology::set_position(const MacAddress& addr, CartesianPosition c)
     }
 }
 
-void NetworkTopology::advance_time(Clock::duration t)
+void NetworkTopology::advance_time(Clock::duration t, Clock::duration max_step)
 {
-    const Clock::duration max_step = std::chrono::milliseconds(500);
     do {
         const auto step = std::min(t, max_step);
         now += step;
