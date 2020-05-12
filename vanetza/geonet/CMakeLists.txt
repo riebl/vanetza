@@ -16,6 +16,7 @@ set(CXX_SOURCES
     duplicate_packet_list.cpp
     gbc_gac_header.cpp
     gbc_header.cpp
+    gbc_memory.cpp
     header_type.cpp
     header_variant.cpp
     indication_context.cpp
