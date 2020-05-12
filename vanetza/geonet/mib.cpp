@@ -53,7 +53,8 @@ ManagementInformationBase::ManagementInformationBase() :
     vanetzaDeferInitialBeacon(false),
     vanetzaDisableBeaconing(false),
     vanetzaFadingCbfCounter(false),
-    vanetzaNeighbourFlagExpiry(Clock::duration::zero())
+    vanetzaNeighbourFlagExpiry(Clock::duration::zero()),
+    vanetzaGbcMemoryCapacity(0)
 {
 }
 

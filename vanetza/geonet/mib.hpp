@@ -98,6 +98,7 @@ struct ManagementInformationBase
     bool vanetzaDisableBeaconing; /*< disable transmission of beacons entirely */
     bool vanetzaFadingCbfCounter; /*< use fading counters for CBF packet buffer */
     Clock::duration vanetzaNeighbourFlagExpiry; /*< reset LocTE neighbour state without explicit updates */
+    std::size_t vanetzaGbcMemoryCapacity; /*< do not pass up duplicate GBC packets (0 to disable this filter) */
 };
 
 // This name is too clumsy to write it out every time

@@ -10,6 +10,7 @@
 #include <vanetza/geonet/common_header.hpp>
 #include <vanetza/geonet/extended_pdu.hpp>
 #include <vanetza/geonet/gbc_header.hpp>
+#include <vanetza/geonet/gbc_memory.hpp>
 #include <vanetza/geonet/interface.hpp>
 #include <vanetza/geonet/location_table.hpp>
 #include <vanetza/geonet/mib.hpp>
@@ -535,6 +536,7 @@ private:
     SequenceNumber m_local_sequence_number;
     Repeater m_repeater;
     std::mt19937 m_random_gen;
+    GbcMemory m_gbc_memory;
 };
 
 /**

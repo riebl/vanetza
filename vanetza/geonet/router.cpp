@@ -155,6 +155,8 @@ Router::Router(Runtime& rt, const MIB& mib) :
             reset_beacon_timer(clock_cast(first_beacon));
         }
     }
+
+    m_gbc_memory.capacity(m_mib.vanetzaGbcMemoryCapacity);
 }
 
 Router::~Router()
@@ -1146,8 +1148,15 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
         fwd_packet.process();
     }
 
-    // return pass up decision (step 7)
-    return within_destination;
+    if (m_mib.vanetzaGbcMemoryCapacity == 0) {
+        // return pass up decision (step 7)
+        return within_destination;
+    } else if (within_destination) {
+        // modified pass up: suppress passing up duplicate GBC packets
+        return !m_gbc_memory.remember(std::make_tuple(gbc.source_position.gn_addr, gbc.sequence_number));
+    } else {
+        return false;
+    }
 }
 
 void Router::flush_broadcast_forwarding_buffer()
