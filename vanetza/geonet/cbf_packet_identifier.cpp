@@ -22,12 +22,11 @@ CbfPacketIdentifier identifier(const Address& source, SequenceNumber sn)
 namespace std
 {
 
-using Identifier = vanetza::geonet::CbfPacketIdentifier;
-size_t hash<Identifier>::operator()(const Identifier& id) const
+size_t hash<vanetza::geonet::CbfPacketIdentifier>::operator()(const vanetza::geonet::CbfPacketIdentifier& id) const
 {
     using vanetza::geonet::Address;
     using vanetza::geonet::SequenceNumber;
-    static_assert(tuple_size<Identifier>::value == 2, "Unexpected identifier tuple");
+    static_assert(tuple_size<vanetza::geonet::CbfPacketIdentifier>::value == 2, "Unexpected identifier tuple");
 
     std::size_t seed = 0;
     const Address& source = get<0>(id);
