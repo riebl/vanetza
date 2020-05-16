@@ -91,11 +91,13 @@ public:
     void dispatch();
     void send(Router&, const MacAddress&, const MacAddress&, const ChunkPacket&);
     void set_position(const MacAddress&, CartesianPosition);
-    void advance_time(Clock::duration t, Clock::duration max_step = std::chrono::milliseconds(500));
+    void advance_time(Clock::duration t);
     void reset_counters();
     void set_duplication_mode(PacketDuplicationMode);
 
 private:
+    Clock::time_point next_event() const;
+
     std::unordered_map<MacAddress, unsigned> counter_requests;
     std::unordered_map<MacAddress, std::unique_ptr<RouterContext>> hosts;
     std::unordered_map<MacAddress, std::set<MacAddress>> reachability;

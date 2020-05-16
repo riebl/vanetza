@@ -112,7 +112,7 @@ TEST(GbcMemory, router_filter)
     EXPECT_EQ(1, net.get_transport(car2)->counter);
 
     // spend some time for packet forwarding operations
-    net.advance_time(std::chrono::seconds(1), std::chrono::milliseconds(10));
+    net.advance_time(std::chrono::seconds(1));
     // explicitly repeat the last transmission of car1
     net.get_interface(car1)->transmit();
     net.dispatch();

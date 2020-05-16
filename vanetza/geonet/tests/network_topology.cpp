@@ -238,10 +238,11 @@ void NetworkTopology::set_position(const MacAddress& addr, CartesianPosition c)
     }
 }
 
-void NetworkTopology::advance_time(Clock::duration t, Clock::duration max_step)
+void NetworkTopology::advance_time(Clock::duration t)
 {
     do {
-        const auto step = std::min(t, max_step);
+        auto next = next_event();
+        const auto step = std::min(t, next - now);
         now += step;
         t -= step;
         // update timestamp for every router
@@ -253,6 +254,20 @@ void NetworkTopology::advance_time(Clock::duration t, Clock::duration max_step)
         }
         dispatch();
     } while (t.count() > 0);
+}
+
+Clock::time_point NetworkTopology::next_event() const
+{
+    Clock::time_point next = Clock::time_point::max();
+
+    for (auto& kv : hosts) {
+        RouterContext& host = *kv.second;
+        if (host.runtime.next() > now && host.runtime.next() < next) {
+            next = host.runtime.next();
+        }
+    }
+
+    return next;
 }
 
 void NetworkTopology::reset_counters()
