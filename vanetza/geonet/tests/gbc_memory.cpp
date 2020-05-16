@@ -108,15 +108,16 @@ TEST(GbcMemory, router_filter)
     ASSERT_TRUE(gbc_confirm.accepted());
 
     net.dispatch();
-    EXPECT_EQ(1, net.get_interface(car1)->counter);
+    EXPECT_EQ(1, net.get_interface(car1)->transmissions);
     EXPECT_EQ(1, net.get_transport(car2)->counter);
 
     // spend some time for packet forwarding operations
     net.advance_time(std::chrono::seconds(1), std::chrono::milliseconds(10));
-    // explicitly repeat the last transmission from car1 to car2
-    net.repeat(car1, car2);
+    // explicitly repeat the last transmission of car1
+    net.get_interface(car1)->transmit();
+    net.dispatch();
     // no duplicate passed to transport layer
     EXPECT_EQ(1, net.get_transport(car2)->counter);
     // though more packets have been transmitted on link layer
-    EXPECT_LE(2, net.get_interface(car1)->counter);
+    EXPECT_LE(2, net.get_interface(car1)->transmissions);
 }

@@ -39,8 +39,10 @@ public:
         RequestInterface(NetworkTopology&, const MacAddress&);
         void request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>) override;
         void reset();
+        void transmit();
 
-        unsigned counter = 0;
+        unsigned requests = 0;
+        unsigned transmissions = 0;
         dcc::DataRequest last_request;
         std::unique_ptr<ChunkPacket> last_packet;
 
@@ -87,8 +89,7 @@ public:
     void add_reachability(const MacAddress&, std::initializer_list<MacAddress>);
     void save_request(const dcc::DataRequest&, std::unique_ptr<ChunkPacket>);
     void dispatch();
-    void send(Router&, const MacAddress&, const MacAddress&);
-    void repeat(const MacAddress&, const MacAddress&);
+    void send(Router&, const MacAddress&, const MacAddress&, const ChunkPacket&);
     void set_position(const MacAddress&, CartesianPosition);
     void advance_time(Clock::duration t, Clock::duration max_step = std::chrono::milliseconds(500));
     void reset_counters();

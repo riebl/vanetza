@@ -47,18 +47,27 @@ NetworkTopology::RequestInterface::RequestInterface(NetworkTopology& network, co
 
 void NetworkTopology::RequestInterface::request(const dcc::DataRequest& req, std::unique_ptr<ChunkPacket> packet)
 {
-    ++counter;
+    ++requests;
     last_request = req;
-    last_packet.reset(new ChunkPacket(*packet));
     last_request.source = address;
-    network.save_request(last_request, std::move(packet));
+    last_packet = std::move(packet);
+    transmit();
 }
 
 void NetworkTopology::RequestInterface::reset()
 {
-    counter = 0;
+    requests = 0;
+    transmissions = 0;
     last_request = dcc::DataRequest {};
     last_packet.reset();
+}
+
+void NetworkTopology::RequestInterface::transmit()
+{
+    if (last_packet) {
+        ++transmissions;
+        network.save_request(last_request, std::unique_ptr<ChunkPacket> { new ChunkPacket(*last_packet) });
+    }
 }
 
 void NetworkTopology::TransportHandler::indicate(const DataIndication& ind, std::unique_ptr<UpPacket> packet)
@@ -184,8 +193,8 @@ void NetworkTopology::dispatch()
     std::swap(current_requests, requests);
     for (auto& tuple: current_requests) {
         // extract request and packet from tuple
-        auto req = std::get<0>(tuple);
-        get_interface(req.source)->last_packet.reset(new ChunkPacket(*std::get<1>(tuple)));
+        auto& req = std::get<0>(tuple);
+        auto& packet = std::get<1>(tuple);
 
         auto neighbours = reachability[req.source];
         // broadcast packet to all reachable routers
@@ -193,7 +202,7 @@ void NetworkTopology::dispatch()
             for (auto& mac: neighbours) {
                 auto router = get_router(mac);
                 if (router) {
-                    send(*router, req.source, req.destination);
+                    send(*router, req.source, req.destination, *packet);
                 }
             }
         }
@@ -201,27 +210,18 @@ void NetworkTopology::dispatch()
         else if (neighbours.find(req.destination) != neighbours.end()) {
             auto router = get_router(req.destination);
             if (router) {
-                send(*router, req.source, req.destination);
+                send(*router, req.source, req.destination, *packet);
             }
         }
     }
 }
 
-void NetworkTopology::send(Router& receiver, const MacAddress& sender, const MacAddress& destination)
+void NetworkTopology::send(Router& receiver, const MacAddress& sender, const MacAddress& destination, const ChunkPacket& packet)
 {
     assert(sender != destination);
     counter_indications++;
-    std::unique_ptr<UpPacket> packet_up = fn_duplicate(*get_interface(sender)->last_packet);
+    std::unique_ptr<UpPacket> packet_up = fn_duplicate(packet);
     receiver.indicate(std::move(packet_up), sender, destination);
-}
-
-void NetworkTopology::repeat(const MacAddress& sender, const MacAddress& destination)
-{
-    assert(destination != cBroadcastMacAddress);
-    auto receiver = get_router(destination);
-    if (receiver) {
-        send(*receiver, sender, destination);
-    }
 }
 
 void NetworkTopology::set_position(const MacAddress& addr, CartesianPosition c)
