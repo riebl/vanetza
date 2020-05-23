@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/geonet/sequence_number.hpp>
+#include <vanetza/geonet/tests/serialization.hpp>
 
 using namespace vanetza::geonet;
 
@@ -56,3 +57,8 @@ TEST(SequenceNumber, increment) {
     EXPECT_EQ(static_cast<uint16_t>(a), 349);
 }
 
+TEST(SequenceNumber, serialization) {
+    const SequenceNumber a(321);
+    SequenceNumber b = serialize_roundtrip(a);
+    EXPECT_EQ(a, b);
+}

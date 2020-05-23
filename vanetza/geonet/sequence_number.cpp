@@ -27,7 +27,7 @@ void deserialize(SequenceNumber& sn, InputArchive& ar)
 {
     SequenceNumber::value_type tmp = 0;
     deserialize(tmp, ar);
-    sn = SequenceNumber(ntoh(tmp));
+    sn = SequenceNumber(tmp);
 }
 
 } // namespace geonet
