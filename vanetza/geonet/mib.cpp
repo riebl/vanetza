@@ -52,6 +52,7 @@ ManagementInformationBase::ManagementInformationBase() :
     vanetzaCbfMaxCounter(1),
     vanetzaDeferInitialBeacon(false),
     vanetzaDisableBeaconing(false),
+    vanetzaMultiHopDuplicateAddressDetection(false),
     vanetzaFadingCbfCounter(false),
     vanetzaNeighbourFlagExpiry(Clock::duration::zero()),
     vanetzaGbcMemoryCapacity(0)

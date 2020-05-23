@@ -1067,7 +1067,10 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     }
 
     // step 4: execute DAD
-    detect_duplicate_address(source_addr, ll.sender);
+    if (m_mib.vanetzaMultiHopDuplicateAddressDetection) {
+        // Be careful, DAD is broken with address mode AUTO for multi-hop communication
+        detect_duplicate_address(source_addr, ll.sender);
+    }
 
     // step 5 & step 6 (make sure IS_NEIGHBOUR is false for new location table entry)
     const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
