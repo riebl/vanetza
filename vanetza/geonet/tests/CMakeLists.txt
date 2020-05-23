@@ -11,6 +11,7 @@ add_gtest(DataConfirm data_confirm.cpp)
 add_gtest(DataRequest data_request.cpp)
 add_gtest(DccMcoField dcc_mco_field.cpp)
 add_gtest(DuplicatePacketList duplicate_packet_list.cpp)
+add_gtest(GbcGacHeader gbc_gac_header.cpp)
 add_gtest(GbcMemory
     SOURCES gbc_memory.cpp network_topology.cpp
     LINK_LIBRARIES GeographicLib::GeographicLib)
