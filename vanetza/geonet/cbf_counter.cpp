@@ -45,6 +45,7 @@ CbfCounterFading::CbfCounterFading(Runtime& rt, Clock::duration lifetime) :
 void CbfCounterFading::add(const id_type& id)
 {
     ++m_counters.refresh(id);
+    m_counters.drop_expired();
 }
 
 void CbfCounterFading::increment(const id_type& id)
