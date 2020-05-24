@@ -94,14 +94,17 @@ public:
     void advance_time(Clock::duration t);
     void reset_counters();
     void set_duplication_mode(PacketDuplicationMode);
+    void set_network_delay(Clock::duration delay);
 
 private:
     Clock::time_point next_event() const;
+    using PendingTransmission = std::tuple<Clock::time_point, dcc::DataRequest, std::unique_ptr<ChunkPacket>>;
 
     std::unordered_map<MacAddress, unsigned> counter_requests;
     std::unordered_map<MacAddress, std::unique_ptr<RouterContext>> hosts;
     std::unordered_map<MacAddress, std::set<MacAddress>> reachability;
-    std::list<std::tuple<dcc::DataRequest, std::unique_ptr<ChunkPacket>>> requests;
+    std::list<PendingTransmission> requests;
+    Clock::duration network_delay = Clock::duration::zero();
     Clock::time_point now;
     ManagementInformationBase mib;
     unsigned counter_indications;

@@ -180,7 +180,7 @@ void NetworkTopology::add_reachability(const MacAddress& addr, std::initializer_
 void NetworkTopology::save_request(const dcc::DataRequest& req, std::unique_ptr<ChunkPacket> packet)
 {
     // save request with packet in list requests
-    requests.emplace_back(req, std::move(packet));
+    requests.emplace_back(now + network_delay, req, std::move(packet));
 
     // increment request counter
     counter_requests[req.source]++;
@@ -191,10 +191,19 @@ void NetworkTopology::dispatch()
     // process a stable sequence of saved requests
     decltype(requests) current_requests;
     std::swap(current_requests, requests);
+    decltype(requests) skipped_requests;
+
     for (auto& tuple: current_requests) {
+        // postpone transmission if its time has not yet come
+        auto& timepoint = std::get<0>(tuple);
+        if (timepoint > now) {
+            skipped_requests.emplace_back(std::move(tuple));
+            continue;
+        }
+
         // extract request and packet from tuple
-        auto& req = std::get<0>(tuple);
-        auto& packet = std::get<1>(tuple);
+        auto& req = std::get<1>(tuple);
+        auto& packet = std::get<2>(tuple);
 
         auto neighbours = reachability[req.source];
         // broadcast packet to all reachable routers
@@ -214,6 +223,9 @@ void NetworkTopology::dispatch()
             }
         }
     }
+
+    // move all skipped requests to head of pending requests
+    requests.splice(requests.begin(), std::move(skipped_requests));
 }
 
 void NetworkTopology::send(Router& receiver, const MacAddress& sender, const MacAddress& destination, const ChunkPacket& packet)
@@ -258,7 +270,8 @@ void NetworkTopology::advance_time(Clock::duration t)
 
 Clock::time_point NetworkTopology::next_event() const
 {
-    Clock::time_point next = Clock::time_point::max();
+    // next event may be pending link layer request
+    Clock::time_point next = requests.empty() ? Clock::time_point::max() : std::get<0>(requests.front());
 
     for (auto& kv : hosts) {
         RouterContext& host = *kv.second;
@@ -296,6 +309,11 @@ void NetworkTopology::set_duplication_mode(PacketDuplicationMode mode)
             throw std::runtime_error("Invalid PacketDuplicationMode");
             break;
     }
+}
+
+void NetworkTopology::set_network_delay(Clock::duration delay)
+{
+    network_delay = delay;
 }
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)
