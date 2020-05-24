@@ -82,21 +82,32 @@ TEST(GbcMemory, remember)
     EXPECT_FALSE(mem.knows(make_identifier(2, 8)));
 }
 
-TEST(GbcMemory, router_filter)
+TEST(GbcMemory, network)
 {
     NetworkTopology net;
     net.get_mib().vanetzaGbcMemoryCapacity = 10;
     net.get_mib().vanetzaDisableBeaconing = true;
     net.get_mib().vanetzaFadingCbfCounter = true;
+    net.set_network_delay(std::chrono::milliseconds(4));
 
     MacAddress car1 = create_mac_address(1);
-    MacAddress car2 = create_mac_address(2);
     net.add_router(car1);
     net.set_position(car1, CartesianPosition(0.0_m, 0.0_m));
+
+    MacAddress car2 = create_mac_address(2);
     net.add_router(car2);
     net.set_position(car2, CartesianPosition(0.0_m, 100.0_m));
-    net.add_reachability(car1, { car2 });
-    net.add_reachability(car2, { car1 });
+
+    MacAddress car3 = create_mac_address(3);
+    net.add_router(car3);
+    net.set_position(car3, CartesianPosition(0.0_m, 50.0_m));
+
+    MacAddress car4 = create_mac_address(4);
+    net.add_router(car4);
+    net.set_position(car4, CartesianPosition(0.0_m, -75.0_m));
+
+    net.build_fully_meshed_reachability();
+    EXPECT_EQ(0, net.get_interface(car1)->transmissions);
     EXPECT_EQ(0, net.get_transport(car2)->counter);
 
     GbcDataRequest gbc_request(net.get_mib());
@@ -107,13 +118,14 @@ TEST(GbcMemory, router_filter)
     auto gbc_confirm = net.get_router(car1)->request(gbc_request, std::move(gbc_payload));
     ASSERT_TRUE(gbc_confirm.accepted());
 
-    net.dispatch();
+    net.advance_time(std::chrono::milliseconds(5));
     EXPECT_EQ(1, net.get_interface(car1)->transmissions);
     EXPECT_EQ(1, net.get_transport(car2)->counter);
 
     // spend some time for packet forwarding operations
     net.advance_time(std::chrono::seconds(1));
-    // explicitly repeat the last transmission of car1
+    // explicitly repeat the last transmission of car1 without delay
+    //net.set_network_delay(std::chrono::seconds(0));
     net.get_interface(car1)->transmit();
     net.dispatch();
     // no duplicate passed to transport layer
