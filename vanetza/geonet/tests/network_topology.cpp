@@ -316,6 +316,18 @@ void NetworkTopology::set_network_delay(Clock::duration delay)
     network_delay = delay;
 }
 
+void NetworkTopology::build_fully_meshed_reachability()
+{
+    reachability.clear();
+    for (auto& outer : hosts) {
+        for (auto& inner : hosts) {
+            if (outer != inner) {
+                reachability[outer.first].insert(inner.first);
+            }
+        }
+    }
+}
+
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)
 {
     using namespace vanetza::units;

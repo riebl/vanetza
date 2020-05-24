@@ -95,6 +95,7 @@ public:
     void reset_counters();
     void set_duplication_mode(PacketDuplicationMode);
     void set_network_delay(Clock::duration delay);
+    void build_fully_meshed_reachability();
 
 private:
     Clock::time_point next_event() const;
