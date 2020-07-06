@@ -1,3 +1,5 @@
+# Certify
+
 *Certify* is a tool to create and view certificates and can be used to set up a test PKI for secured V2X communication based on TS 103 097 v1.2.1.
 
 ## Installation

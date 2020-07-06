@@ -57,6 +57,22 @@ a:visited {
     color: #0d1f2d;
 }
 
+.wy-menu-vertical p.caption {
+    padding: 0 0.6em;
+}
+
+.wy-menu-vertical .caption-text {
+    color: #d0d0d0;
+}
+
+.wy-menu-vertical .toctree-expand::before {
+    color: #d0d0d0;
+}
+
+.wy-menu-vertical li.current .toctree-expand::before {
+    color: #0d1f2d;
+}
+
 .wy-menu-vertical li.current a {
     color: #394753;
 }
@@ -71,8 +87,4 @@ a:visited {
 
 .wy-menu-vertical a:hover {
     background-color: #51637d;
-}
-
-pre, code {
-    font-size: 16px;
 }

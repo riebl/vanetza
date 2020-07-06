@@ -5,15 +5,18 @@ theme:
     name: readthedocs
     custom_dir: mkdocs/
     highlightjs: false
+    collapse_navigation: false
 extra_css:
     - css/extra.css
     - css/tango.css
+extra_javascript:
+    - js/extra.js
 markdown_extensions:
+    - admonition
     - smarty
     - sane_lists
     - codehilite:
         guess_lang: false
-        css_class: highlight
 plugins:
     - awesome-pages:
         collapse_single_pages: true

@@ -1,9 +1,8 @@
+# Socktap
+
 Vanetza ships with a simple demo application called *socktap*.
 You can enable the build process for this application by the `BUILD_SOCKTAP` CMake option.
 When *socktap* is going to be built, [gpsd](http://catb.org/gpsd) is required as an additional dependency.
-
-
-# Vanetza tapping on sockets
 
 *socktap* runs Vanetza on top of Linux raw packet sockets and demonstrates the basic API usage.
 This enables tests on commodity hardware, i.e. no special V2X or Car2X hardware is required.

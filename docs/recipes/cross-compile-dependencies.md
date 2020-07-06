@@ -1,8 +1,10 @@
+# Cross-Compilation of Dependencies
+
 This document summarises a few hints for cross-compiling Vanetza's dependencies.
 Please note, that cross-compiling is not relevant for you if you plan to use Vanetza on the same system you have built it on.
 
 
-# Boost
+## Boost
 
 Create a configuration file for Boost.Build in your home directory at `$HOME/user-config.jam` and add following line to it:
 
@@ -29,7 +31,7 @@ Then, the required libraries can be built and installed at given *prefix* path:
     ./b2 --prefix=$HOME/vanetza-deps --with-date_time --with-program_options --with-system --no-samples --no-tests variant=release link=shared cxxstd=11 install
 
 
-# Crypto++
+## Crypto++
 
 Version 8.2 can be cross-compiled with the provided `GNUmakefile-cross` makefile.
 
@@ -41,7 +43,7 @@ Version 8.2 can be cross-compiled with the provided `GNUmakefile-cross` makefile
     make -f GNUmakefile-cross install
 
 
-# GeographicLib
+## GeographicLib
 
 Following steps have been tested with version 1.50.
 `$VANETZA` refers to the root directory of this repository.

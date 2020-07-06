@@ -1,5 +1,4 @@
-Title: How to build
-
+# How to build
 
 Building Vanetza is accomplished by the [CMake](https://cmake.org) build system. Hence, CMake needs to be available on the build host.
 
