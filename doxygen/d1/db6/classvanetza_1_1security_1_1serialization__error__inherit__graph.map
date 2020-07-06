@@ -1,5 +1,5 @@
 <map id="vanetza::security::serialization_error" name="vanetza::security::serialization_error">
-<area shape="rect" id="node1" title="thrown when a serialization error occurred" alt="" coords="5,256,136,348"/>
-<area shape="rect" id="node2" title="STL class." alt="" coords="9,131,133,208"/>
-<area shape="rect" id="node3" title="STL class." alt="" coords="19,5,123,83"/>
+<area shape="rect" id="node1" title="thrown when a serialization error occurred" alt="" coords="5,256,133,348"/>
+<area shape="rect" id="node2" title="STL class." alt="" coords="7,131,131,208"/>
+<area shape="rect" id="node3" title="STL class." alt="" coords="18,5,121,83"/>
 </map>

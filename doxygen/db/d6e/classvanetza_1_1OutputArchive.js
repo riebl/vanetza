@@ -6,7 +6,7 @@ var classvanetza_1_1OutputArchive =
     [ "OutputArchive", "db/d6e/classvanetza_1_1OutputArchive.html#a870917419e0f4986a5868dfba71a632d", null ],
     [ "OutputArchive", "db/d6e/classvanetza_1_1OutputArchive.html#ad2420965cce01a97a1e7f63b1a9db901", null ],
     [ "operator<<", "db/d6e/classvanetza_1_1OutputArchive.html#ae54600f677877ef33f8322a2a569dd03", null ],
-    [ "save_binary", "db/d6e/classvanetza_1_1OutputArchive.html#a4cf1ff445f05f4f01726ae75b4d1c5af", null ],
     [ "save_binary", "db/d6e/classvanetza_1_1OutputArchive.html#a803b190cec156ea954afeda7163f4070", null ],
+    [ "save_binary", "db/d6e/classvanetza_1_1OutputArchive.html#a4cf1ff445f05f4f01726ae75b4d1c5af", null ],
     [ "m_stream_buffer", "db/d6e/classvanetza_1_1OutputArchive.html#aba3274fc876a1e812520500704587a4d", null ]
 ];

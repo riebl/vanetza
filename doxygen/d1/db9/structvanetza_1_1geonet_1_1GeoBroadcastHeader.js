@@ -1,8 +1,8 @@
 var structvanetza_1_1geonet_1_1GeoBroadcastHeader =
 [
-    [ "destination", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html#a0dae203c61fa4aeba17582fa40a9ebe6", null ],
     [ "destination", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html#aee73fa15bee8f8137d79f59b6ed8c8f0", null ],
     [ "destination", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html#ac64cbbd61ce8e9445ae0e1434bfdbcf9", null ],
+    [ "destination", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html#a0dae203c61fa4aeba17582fa40a9ebe6", null ],
     [ "position", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html#a46419bec6b85293069d5b5fd8a4d1e15", null ],
     [ "position", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html#a0211c01f170aaaf75a37cb7170aa8dec", null ],
     [ "angle", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html#a3783e57b354fd692f10d4a62b06b7832", null ],

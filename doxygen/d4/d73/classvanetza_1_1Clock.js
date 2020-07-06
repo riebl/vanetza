@@ -6,8 +6,8 @@ var classvanetza_1_1Clock =
     [ "rep", "d4/d73/classvanetza_1_1Clock.html#aa5ffc7420becd5249a053db1802a74b9", null ],
     [ "time_point", "d4/d73/classvanetza_1_1Clock.html#a0c3752be13c8206886bef785cc756dcd", null ],
     [ "at", "d4/d73/classvanetza_1_1Clock.html#ad200a0fdc4d0474f0fc0a0d2f859bec7", null ],
-    [ "at", "d4/d73/classvanetza_1_1Clock.html#a3d4c3a6f846a5a1e3663b34bdf5616ed", null ],
     [ "at", "d4/d73/classvanetza_1_1Clock.html#aa617f0c1800fc8955ec2905ec31d6d9c", null ],
+    [ "at", "d4/d73/classvanetza_1_1Clock.html#a3d4c3a6f846a5a1e3663b34bdf5616ed", null ],
     [ "epoch", "d4/d73/classvanetza_1_1Clock.html#a236dc3ea33b582fa4b805416025501db", null ],
     [ "is_steady", "d4/d73/classvanetza_1_1Clock.html#a243c3baece05f01d811a2e9f8fe6f00d", null ]
 ];

@@ -1,5 +1,5 @@
 <map id="vanetza::dcc::Transmission" name="vanetza::dcc::Transmission">
-<area shape="rect" id="node1" title=" " alt="" coords="108,5,291,141"/>
+<area shape="rect" id="node1" title=" " alt="" coords="109,5,290,141"/>
 <area shape="rect" id="node2" href="$d2/d56/structvanetza_1_1dcc_1_1FlowControl_1_1PendingTransmission.html" title=" " alt="" coords="5,189,180,355"/>
-<area shape="rect" id="node3" href="$dc/da1/structvanetza_1_1dcc_1_1TransmissionLite.html" title=" " alt="" coords="204,197,408,347"/>
+<area shape="rect" id="node3" href="$dc/da1/structvanetza_1_1dcc_1_1TransmissionLite.html" title=" " alt="" coords="205,197,407,347"/>
 </map>

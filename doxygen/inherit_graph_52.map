@@ -1,3 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$d2/dfe/structvanetza_1_1detail_1_1EndianConverter_3_01T_00_01ByteOrder_1_1BigEndian_00_01ByteOrder_1_1LittleEndian_01_4.html" title=" " alt="" coords="5,5,217,61"/>
+<area shape="rect" id="node1" href="$df/dd5/classvanetza_1_1dcc_1_1Transmission.html" title=" " alt="" coords="5,42,187,69"/>
+<area shape="rect" id="node2" href="$d2/d56/structvanetza_1_1dcc_1_1FlowControl_1_1PendingTransmission.html" title=" " alt="" coords="249,5,423,47"/>
+<area shape="rect" id="node3" href="$dc/da1/structvanetza_1_1dcc_1_1TransmissionLite.html" title=" " alt="" coords="235,71,437,98"/>
 </map>

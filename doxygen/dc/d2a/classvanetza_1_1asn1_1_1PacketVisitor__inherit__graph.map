@@ -1,4 +1,4 @@
-<map id="vanetza::asn1::PacketVisitor&lt; T, DeserializeChunk &gt;" name="vanetza::asn1::PacketVisitor&lt; T, DeserializeChunk &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="11,145,201,281"/>
-<area shape="rect" id="node2" title=" " alt="" coords="5,5,207,97"/>
+<map id="vanetza::asn1::PacketVisitor&lt; T &gt;" name="vanetza::asn1::PacketVisitor&lt; T &gt;">
+<area shape="rect" id="node1" title=" " alt="" coords="5,145,225,325"/>
+<area shape="rect" id="node2" title=" " alt="" coords="15,5,216,97"/>
 </map>

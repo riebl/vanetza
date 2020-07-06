@@ -1,5 +1,6 @@
 var dir_ce407276b81b6cc94fee3f5e0d561f0a =
 [
+    [ "v3", "dir_50ae7c981675e518d16d33761e008d1f.html", "dir_50ae7c981675e518d16d33761e008d1f" ],
     [ "backend.cpp", "d6/d84/backend_8cpp_source.html", null ],
     [ "backend.hpp", "d6/d5e/backend_8hpp_source.html", null ],
     [ "backend_cryptopp.cpp", "d8/d70/backend__cryptopp_8cpp_source.html", null ],
@@ -59,6 +60,8 @@ var dir_ce407276b81b6cc94fee3f5e0d561f0a =
     [ "region.hpp", "d4/da4/region_8hpp_source.html", null ],
     [ "secured_message.cpp", "d5/dbe/secured__message_8cpp_source.html", null ],
     [ "secured_message.hpp", "dc/dfd/secured__message_8hpp_source.html", null ],
+    [ "secured_message_v3.cpp", "dc/dc0/secured__message__v3_8cpp_source.html", null ],
+    [ "secured_message_v3.hpp", "da/db4/secured__message__v3_8hpp_source.html", null ],
     [ "security_entity.hpp", "d3/df4/security__entity_8hpp_source.html", null ],
     [ "serialization.cpp", "d6/d5a/serialization_8cpp_source.html", null ],
     [ "serialization.hpp", "db/d89/security_2serialization_8hpp_source.html", null ],

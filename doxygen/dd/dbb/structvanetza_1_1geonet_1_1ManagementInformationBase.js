@@ -39,5 +39,9 @@ var structvanetza_1_1geonet_1_1ManagementInformationBase =
     [ "vanetzaCbfMaxCounter", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#aeadab70ceba5bf022b9594fa9e9e36f8", null ],
     [ "vanetzaDefaultSeed", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#a1aa5b10703d1e83ee2813b7a9f974fae", null ],
     [ "vanetzaDeferInitialBeacon", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#a59937e9cbd69fe6109e14e4b22d15e46", null ],
-    [ "vanetzaDisableBeaconing", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#a992b684588a16316be85f4433da48b6d", null ]
+    [ "vanetzaDisableBeaconing", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#a992b684588a16316be85f4433da48b6d", null ],
+    [ "vanetzaFadingCbfCounter", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#a6f125b9fd715599ab0e38a9526c5a278", null ],
+    [ "vanetzaGbcMemoryCapacity", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#aff94dd7cdd309d0ada20a0a846e0bbf8", null ],
+    [ "vanetzaMultiHopDuplicateAddressDetection", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#a2e6151d1aa2ca7775ca4f9d48c8dcec5", null ],
+    [ "vanetzaNeighbourFlagExpiry", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html#a23ca3481d56a4867294dd09aec108c9b", null ]
 ];

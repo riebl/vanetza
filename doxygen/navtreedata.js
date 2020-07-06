@@ -1,18 +1,17 @@
 /*
-@ @licstart  The following is the entire license notice for the
+@licstart  The following is the entire license notice for the
 JavaScript code in this file.
 
-Copyright (C) 1997-2017 by Dimitri van Heesch
+Copyright (C) 1997-2019 by Dimitri van Heesch
 
 This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation; either version 2 of the License, or
-(at your option) any later version.
+it under the terms of version 2 of the GNU General Public License as published by
+the Free Software Foundation
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
@@ -50,16 +49,18 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 ".html",
-"d1/d1a/structvanetza_1_1detail_1_1EndianConverter.html#a8eaf33ea2f1fdd6d54b90452dcad30d8",
-"d2/d35/classvanetza_1_1ConfidentQuantity.html#a37237a45d6f910b4e12bb8cb3f89e7f3",
-"d3/dac/classvanetza_1_1security_1_1NullCertificateValidator.html#ad3b62ea178dc22adb7b6ce6f6b85b893",
-"d5/db0/structvanetza_1_1geonet_1_1BasicHeader.html#aa50648e008f969f96d3c0e0463e97488",
-"d7/d62/packet__variant_8hpp_source.html",
-"d9/d1d/structvanetza_1_1geonet_1_1DataRequestWithArea.html#aaf1b27390a1ccccab09b1f9b1b670ca4",
-"da/d6a/manual__runtime_8cpp_source.html",
-"db/d97/classvanetza_1_1geonet_1_1IndicationContextSecured.html#acf06d3cc80d80fc5e32cc5562ecd9dc7",
-"dd/d77/classvanetza_1_1security_1_1Duration.html#a56ddbaef020cae20d12713169196ccdcaf670ea66cfb0e90bd6090472ad692694",
-"de/d8f/classvanetza_1_1geonet_1_1SequenceNumber.html#a84b59e649e65565ce45893289637d300"
+"d1/d19/structvanetza_1_1security_1_1SubjectAssurance.html",
+"d2/d10/recipient__info_8hpp_source.html",
+"d3/d65/structvanetza_1_1security_1_1ThreeDLocation.html#a607c43e57608663ce54039be047e1bd4",
+"d4/dca/sign__service_8cpp_source.html",
+"d6/d47/classvanetza_1_1asn1_1_1Cam.html#aa347dc129a55eba4fd46f7c4575a0240",
+"d7/deb/structvanetza_1_1convertible_1_1byte__buffer__impl.html#ab85acda866064ec5dcb2b95fcbb72c36",
+"d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504a069382f113ed87cd9e9a2ec39ffd92e1",
+"da/dbc/classvanetza_1_1asn1_1_1Denm.html#a6b80bb46e24b308f5b38d90ce59125e2",
+"db/db0/subject__info_8cpp_source.html",
+"dd/d5e/classvanetza_1_1HookRegistry.html#a1a61485546f3ffd89d9ae9f0f4f002ca",
+"de/d48/classvanetza_1_1geonet_1_1PacketBuffer.html",
+"functions_vars.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

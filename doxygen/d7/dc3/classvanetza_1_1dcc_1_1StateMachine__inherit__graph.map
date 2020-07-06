@@ -1,5 +1,5 @@
 <map id="vanetza::dcc::StateMachine" name="vanetza::dcc::StateMachine">
-<area shape="rect" id="node1" title=" " alt="" coords="123,5,308,112"/>
+<area shape="rect" id="node1" title=" " alt="" coords="123,5,307,112"/>
 <area shape="rect" id="node2" href="$d2/d3b/classvanetza_1_1dcc_1_1FullyMeshedStateMachine.html" title=" " alt="" coords="5,160,209,413"/>
-<area shape="rect" id="node3" href="$df/dd9/classvanetza_1_1dcc_1_1GradualStateMachine.html" title=" " alt="" coords="234,197,415,377"/>
+<area shape="rect" id="node3" href="$df/dd9/classvanetza_1_1dcc_1_1GradualStateMachine.html" title=" " alt="" coords="233,197,413,377"/>
 </map>

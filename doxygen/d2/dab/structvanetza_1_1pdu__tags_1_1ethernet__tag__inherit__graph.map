@@ -1,5 +1,5 @@
 <map id="vanetza::pdu_tags::ethernet_tag" name="vanetza::pdu_tags::ethernet_tag">
-<area shape="rect" id="node1" title=" " alt="" coords="5,285,143,377"/>
-<area shape="rect" id="node2" href="$d0/df3/structvanetza_1_1pdu__tags_1_1mac__tag.html" title=" " alt="" coords="5,145,143,237"/>
-<area shape="rect" id="node3" href="$d5/d0a/structvanetza_1_1pdu__tags_1_1pdu__tag.html" title=" " alt="" coords="5,5,143,97"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,285,141,377"/>
+<area shape="rect" id="node2" href="$d0/df3/structvanetza_1_1pdu__tags_1_1mac__tag.html" title=" " alt="" coords="5,145,141,237"/>
+<area shape="rect" id="node3" href="$d5/d0a/structvanetza_1_1pdu__tags_1_1pdu__tag.html" title=" " alt="" coords="5,5,141,97"/>
 </map>

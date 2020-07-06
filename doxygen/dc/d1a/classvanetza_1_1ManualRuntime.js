@@ -13,11 +13,11 @@ var classvanetza_1_1ManualRuntime =
     [ "next", "dc/d1a/classvanetza_1_1ManualRuntime.html#a8b7120dc35a37ae5ff5f29d82107d390", null ],
     [ "now", "dc/d1a/classvanetza_1_1ManualRuntime.html#ae46652230aa2803cf4d7380e020a59d6", null ],
     [ "reset", "dc/d1a/classvanetza_1_1ManualRuntime.html#aade08dc78a4d96e7be9dca6b0579af47", null ],
-    [ "schedule", "dc/d1a/classvanetza_1_1ManualRuntime.html#aed1032dcb8c88ae1a907dd79b92856d5", null ],
     [ "schedule", "dc/d1a/classvanetza_1_1ManualRuntime.html#a34756756fd46c84c537609ee115c97b3", null ],
-    [ "trigger", "dc/d1a/classvanetza_1_1ManualRuntime.html#a46eead36ba8ad1e4040b6a543fdf2726", null ],
-    [ "trigger", "dc/d1a/classvanetza_1_1ManualRuntime.html#a6c3d26561c9d80b47acf6ee52d814e36", null ],
+    [ "schedule", "dc/d1a/classvanetza_1_1ManualRuntime.html#aed1032dcb8c88ae1a907dd79b92856d5", null ],
     [ "trigger", "dc/d1a/classvanetza_1_1ManualRuntime.html#a222d579e1eb1a695a67673bc5b69380c", null ],
+    [ "trigger", "dc/d1a/classvanetza_1_1ManualRuntime.html#a6c3d26561c9d80b47acf6ee52d814e36", null ],
+    [ "trigger", "dc/d1a/classvanetza_1_1ManualRuntime.html#a46eead36ba8ad1e4040b6a543fdf2726", null ],
     [ "m_now", "dc/d1a/classvanetza_1_1ManualRuntime.html#af4fd6f7f60e059c3d0fe74939019debf", null ],
     [ "m_queue", "dc/d1a/classvanetza_1_1ManualRuntime.html#aea61044979c73ffcae369e83ca13949c", null ]
 ];

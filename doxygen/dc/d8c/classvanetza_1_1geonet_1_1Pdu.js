@@ -12,6 +12,6 @@ var classvanetza_1_1geonet_1_1Pdu =
     [ "secured", "dc/d8c/classvanetza_1_1geonet_1_1Pdu.html#a64a90ed201428ca245721cd53c70982c", null ],
     [ "secured", "dc/d8c/classvanetza_1_1geonet_1_1Pdu.html#a53440dae1908f6d31ceb6c7e72982ffd", null ],
     [ "secured", "dc/d8c/classvanetza_1_1geonet_1_1Pdu.html#a32c290acf267fb70dcf721f506bc8c84", null ],
-    [ "secured", "dc/d8c/classvanetza_1_1geonet_1_1Pdu.html#aec93af5d4e290671eb94aae50e17ad2d", null ],
-    [ "secured", "dc/d8c/classvanetza_1_1geonet_1_1Pdu.html#ae16d77195952cc6987e034bc008e3bdd", null ]
+    [ "secured", "dc/d8c/classvanetza_1_1geonet_1_1Pdu.html#ae16d77195952cc6987e034bc008e3bdd", null ],
+    [ "secured", "dc/d8c/classvanetza_1_1geonet_1_1Pdu.html#aec93af5d4e290671eb94aae50e17ad2d", null ]
 ];

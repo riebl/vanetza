@@ -11,9 +11,15 @@ var hierarchy =
       ] ],
       [ "vanetza::UnitInterval", "d4/d40/classvanetza_1_1UnitInterval.html", null ]
     ] ],
+    [ "asn1c_oer_wrapper", null, [
+      [ "vanetza::security::SecuredMessageV3::Wrapper", "dd/d7d/classvanetza_1_1security_1_1SecuredMessageV3_1_1Wrapper.html", null ]
+    ] ],
     [ "vanetza::asn1::asn1c_wrapper< T >", "d2/de7/classvanetza_1_1asn1_1_1asn1c__wrapper.html", null ],
     [ "vanetza::asn1::asn1c_wrapper< CAM_t >", "d2/de7/classvanetza_1_1asn1_1_1asn1c__wrapper.html", [
       [ "vanetza::asn1::Cam", "d6/d47/classvanetza_1_1asn1_1_1Cam.html", null ]
+    ] ],
+    [ "vanetza::asn1::asn1c_wrapper< CPM_t >", "d2/de7/classvanetza_1_1asn1_1_1asn1c__wrapper.html", [
+      [ "vanetza::asn1::Cpm", "d3/d6a/classvanetza_1_1asn1_1_1Cpm.html", null ]
     ] ],
     [ "vanetza::asn1::asn1c_wrapper< DENM_t >", "d2/de7/classvanetza_1_1asn1_1_1asn1c__wrapper.html", [
       [ "vanetza::asn1::Denm", "da/dbc/classvanetza_1_1asn1_1_1Denm.html", null ]
@@ -28,6 +34,8 @@ var hierarchy =
     [ "vanetza::BufferPacket", "d7/d97/classvanetza_1_1BufferPacket.html", null ],
     [ "vanetza::dcc::BurstBudget", "db/db1/classvanetza_1_1dcc_1_1BurstBudget.html", null ],
     [ "vanetza::ManualRuntime::by_deadline", "dd/da2/structvanetza_1_1ManualRuntime_1_1by__deadline.html", null ],
+    [ "vanetza::geonet::GbcMemory::by_packet", "de/d0e/structvanetza_1_1geonet_1_1GbcMemory_1_1by__packet.html", null ],
+    [ "vanetza::geonet::GbcMemory::by_queue", "d5/d70/structvanetza_1_1geonet_1_1GbcMemory_1_1by__queue.html", null ],
     [ "vanetza::ManualRuntime::by_scope", "d9/dfe/structvanetza_1_1ManualRuntime_1_1by__scope.html", null ],
     [ "vanetza::convertible::byte_buffer", "d4/dce/structvanetza_1_1convertible_1_1byte__buffer.html", [
       [ "vanetza::convertible::byte_buffer_impl< T >", "d7/deb/structvanetza_1_1convertible_1_1byte__buffer__impl.html", null ],
@@ -42,6 +50,13 @@ var hierarchy =
     [ "vanetza::security::CertificateCache::CachedCertificate", "d5/de3/structvanetza_1_1security_1_1CertificateCache_1_1CachedCertificate.html", null ],
     [ "vanetza::security::CamPermissions", "df/df3/classvanetza_1_1security_1_1CamPermissions.html", null ],
     [ "vanetza::geonet::CartesianPosition", "dd/db0/structvanetza_1_1geonet_1_1CartesianPosition.html", null ],
+    [ "vanetza::geonet::CbfCounter", "db/d2d/classvanetza_1_1geonet_1_1CbfCounter.html", [
+      [ "vanetza::geonet::CbfCounterContending", "da/d5f/classvanetza_1_1geonet_1_1CbfCounterContending.html", null ],
+      [ "vanetza::geonet::CbfCounterFading", "d4/d50/classvanetza_1_1geonet_1_1CbfCounterFading.html", null ],
+      [ "vanetza::geonet::CbfCounterImmortal", "db/d11/classvanetza_1_1geonet_1_1CbfCounterImmortal.html", [
+        [ "vanetza::geonet::CbfCounterContending", "da/d5f/classvanetza_1_1geonet_1_1CbfCounterContending.html", null ]
+      ] ]
+    ] ],
     [ "vanetza::geonet::CbfPacket", "d6/dc2/classvanetza_1_1geonet_1_1CbfPacket.html", null ],
     [ "vanetza::geonet::CbfPacketBuffer", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html", null ],
     [ "vanetza::geonet::CbrAggregator", "d4/db1/classvanetza_1_1geonet_1_1CbrAggregator.html", null ],
@@ -63,6 +78,22 @@ var hierarchy =
         [ "vanetza::dcc::SmoothingChannelProbeProcessor", "d2/d7c/classvanetza_1_1dcc_1_1SmoothingChannelProbeProcessor.html", null ]
       ] ]
     ] ],
+    [ "vanetza::security::v3::Choice< Extensible >", "d2/d53/structvanetza_1_1security_1_1v3_1_1Choice.html", null ],
+    [ "vanetza::security::v3::choice< T, E >", "dd/dba/structvanetza_1_1security_1_1v3_1_1choice.html", null ],
+    [ "vanetza::security::v3::Choice< false >", "d2/d53/structvanetza_1_1security_1_1v3_1_1Choice.html", [
+      [ "vanetza::security::v3::Duration", "d2/d33/structvanetza_1_1security_1_1v3_1_1Duration.html", null ],
+      [ "vanetza::security::v3::EncryptionKey", "dc/d4d/structvanetza_1_1security_1_1v3_1_1EncryptionKey.html", null ]
+    ] ],
+    [ "vanetza::security::v3::Choice< true >", "d2/d53/structvanetza_1_1security_1_1v3_1_1Choice.html", [
+      [ "vanetza::security::v3::CertificateId", "db/d2d/structvanetza_1_1security_1_1v3_1_1CertificateId.html", null ],
+      [ "vanetza::security::v3::GeographicRegion", "d1/d42/structvanetza_1_1security_1_1v3_1_1GeographicRegion.html", null ],
+      [ "vanetza::security::v3::IssuerIdentifier", "dc/dd7/structvanetza_1_1security_1_1v3_1_1IssuerIdentifier.html", null ],
+      [ "vanetza::security::v3::Signature", "d7/dc5/structvanetza_1_1security_1_1v3_1_1Signature.html", null ]
+    ] ],
+    [ "vanetza::security::v3::Choice<>", "d2/d53/structvanetza_1_1security_1_1v3_1_1Choice.html", [
+      [ "vanetza::security::v3::Foo", "d8/d60/structvanetza_1_1security_1_1v3_1_1Foo.html", null ]
+    ] ],
+    [ "vanetza::security::v3::ChoicePair< N, T >", "d1/de1/structvanetza_1_1security_1_1v3_1_1ChoicePair.html", null ],
     [ "vanetza::ChunkPacket", "d1/d98/classvanetza_1_1ChunkPacket.html", null ],
     [ "vanetza::geonet::Circle", "d3/d68/structvanetza_1_1geonet_1_1Circle.html", null ],
     [ "vanetza::security::CircularRegion", "da/d86/structvanetza_1_1security_1_1CircularRegion.html", null ],
@@ -111,7 +142,10 @@ var hierarchy =
     [ "vanetza::geonet::DccMcoField", "d0/d60/classvanetza_1_1geonet_1_1DccMcoField.html", null ],
     [ "vanetza::security::DecapConfirm", "de/dd6/structvanetza_1_1security_1_1DecapConfirm.html", null ],
     [ "vanetza::security::DecapRequest", "d7/df7/structvanetza_1_1security_1_1DecapRequest.html", null ],
+    [ "vanetza::dcc::Limeric::DualAlphaParameters", "d5/d9f/structvanetza_1_1dcc_1_1Limeric_1_1DualAlphaParameters.html", null ],
+    [ "vanetza::security::v3::DummyChoice", "d3/dee/structvanetza_1_1security_1_1v3_1_1DummyChoice.html", null ],
     [ "vanetza::geonet::DuplicatePacketList", "d9/d84/classvanetza_1_1geonet_1_1DuplicatePacketList.html", null ],
+    [ "vanetza::security::v3::names::duration", "dc/de5/structvanetza_1_1security_1_1v3_1_1names_1_1duration.html", null ],
     [ "vanetza::security::Duration", "dd/d77/classvanetza_1_1security_1_1Duration.html", null ],
     [ "vanetza::dcc::DutyCyclePermit", "de/d04/classvanetza_1_1dcc_1_1DutyCyclePermit.html", [
       [ "vanetza::dcc::Limeric", "d0/dc9/classvanetza_1_1dcc_1_1Limeric.html", null ]
@@ -121,6 +155,10 @@ var hierarchy =
     [ "vanetza::security::EcdsaSignatureFuture", "dd/d5d/classvanetza_1_1security_1_1EcdsaSignatureFuture.html", null ],
     [ "vanetza::security::ecies_nistp256", "d4/d1b/structvanetza_1_1security_1_1ecies__nistp256.html", null ],
     [ "vanetza::security::EciesEncryptedKey", "d1/de8/structvanetza_1_1security_1_1EciesEncryptedKey.html", null ],
+    [ "vanetza::security::v3::DummyChoice::elem1", "dc/d6e/structvanetza_1_1security_1_1v3_1_1DummyChoice_1_1elem1.html", null ],
+    [ "vanetza::security::v3::Foo::elem1", "d0/dc3/structvanetza_1_1security_1_1v3_1_1Foo_1_1elem1.html", null ],
+    [ "vanetza::security::v3::DummyChoice::elem2", "dd/d5e/structvanetza_1_1security_1_1v3_1_1DummyChoice_1_1elem2.html", null ],
+    [ "vanetza::security::v3::Foo::elem2", "dd/d69/structvanetza_1_1security_1_1v3_1_1Foo_1_1elem2.html", null ],
     [ "vanetza::geonet::Ellipse", "d2/d2e/structvanetza_1_1geonet_1_1Ellipse.html", null ],
     [ "vanetza::security::EncapConfirm", "d6/d82/structvanetza_1_1security_1_1EncapConfirm.html", null ],
     [ "vanetza::security::EncapRequest", "d4/d09/structvanetza_1_1security_1_1EncapRequest.html", null ],
@@ -153,6 +191,7 @@ var hierarchy =
     [ "vanetza::geonet::detail::GbcGacHeader", "dc/dc6/structvanetza_1_1geonet_1_1detail_1_1GbcGacHeader.html", [
       [ "vanetza::geonet::GeoBroadcastHeader", "d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html", null ]
     ] ],
+    [ "vanetza::geonet::GbcMemory", "d1/d8e/classvanetza_1_1geonet_1_1GbcMemory.html", null ],
     [ "vanetza::geonet::GeodeticPosition", "d0/da6/structvanetza_1_1geonet_1_1GeodeticPosition.html", null ],
     [ "vanetza::geonet::GeoUnicastHeader", "d2/d16/structvanetza_1_1geonet_1_1GeoUnicastHeader.html", null ],
     [ "vanetza::security::header_field_type< HeaderFieldType >", "dc/dfc/structvanetza_1_1security_1_1header__field__type.html", null ],
@@ -167,6 +206,7 @@ var hierarchy =
     [ "vanetza::security::header_field_type< HeaderFieldType::Signer_Info >", "de/d24/structvanetza_1_1security_1_1header__field__type_3_01HeaderFieldType_1_1Signer__Info_01_4.html", null ],
     [ "vanetza::btp::HeaderA", "d4/d2d/structvanetza_1_1btp_1_1HeaderA.html", null ],
     [ "vanetza::btp::HeaderB", "d2/d5f/structvanetza_1_1btp_1_1HeaderB.html", null ],
+    [ "vanetza::security::v3::HeaderInfo", "da/d90/structvanetza_1_1security_1_1v3_1_1HeaderInfo.html", null ],
     [ "vanetza::Hook< Args >", "d7/d3f/classvanetza_1_1Hook.html", null ],
     [ "vanetza::Hook< access::AccessCategory, const ChunkPacket * >", "d7/d3f/classvanetza_1_1Hook.html", null ],
     [ "vanetza::Hook< const vanetza::dcc::Limeric *, Clock::time_point >", "d7/d3f/classvanetza_1_1Hook.html", null ],
@@ -179,7 +219,11 @@ var hierarchy =
     [ "vanetza::HookRegistry< const vanetza::dcc::Limeric *, Clock::time_point >", "dd/d5e/classvanetza_1_1HookRegistry.html", null ],
     [ "vanetza::HookRegistry< const vanetza::geonet::CbrAggregator & >", "dd/d5e/classvanetza_1_1HookRegistry.html", null ],
     [ "vanetza::HookRegistry< vanetza::dcc::ChannelLoad >", "dd/d5e/classvanetza_1_1HookRegistry.html", null ],
+    [ "vanetza::security::v3::names::hours", "d3/dc2/structvanetza_1_1security_1_1v3_1_1names_1_1hours.html", null ],
     [ "vanetza::security::IdentifiedRegion", "d8/db6/structvanetza_1_1security_1_1IdentifiedRegion.html", null ],
+    [ "vanetza::security::v3::Ieee1609Dot2Data", "d9/d48/structvanetza_1_1security_1_1v3_1_1Ieee1609Dot2Data.html", [
+      [ "vanetza::security::v3::MessageData", "db/d76/structvanetza_1_1security_1_1v3_1_1MessageData.html", null ]
+    ] ],
     [ "vanetza::geonet::IndicationContext", "d0/db4/classvanetza_1_1geonet_1_1IndicationContext.html", [
       [ "vanetza::geonet::IndicationContextBasic", "d6/d4a/classvanetza_1_1geonet_1_1IndicationContextBasic.html", [
         [ "vanetza::geonet::IndicationContextCast", "dc/dad/classvanetza_1_1geonet_1_1IndicationContextCast.html", null ],
@@ -192,6 +236,29 @@ var hierarchy =
     ] ],
     [ "vanetza::btp::IndicationInterface", "df/dd3/classvanetza_1_1btp_1_1IndicationInterface.html", null ],
     [ "vanetza::InputArchive", "d9/dea/classvanetza_1_1InputArchive.html", null ],
+    [ "vanetza::security::v3::Integer", "d5/d5c/structvanetza_1_1security_1_1v3_1_1Integer.html", [
+      [ "vanetza::security::v3::IntegerFixed< int32_t >", "d3/d3c/structvanetza_1_1security_1_1v3_1_1IntegerFixed.html", [
+        [ "vanetza::security::v3::NinetyDegreeInt", "d1/d1f/structvanetza_1_1security_1_1v3_1_1NinetyDegreeInt.html", null ],
+        [ "vanetza::security::v3::OneEightyDegreeInt", "dc/d21/structvanetza_1_1security_1_1v3_1_1OneEightyDegreeInt.html", null ]
+      ] ],
+      [ "vanetza::security::v3::IntegerFixed< uint16_t >", "d3/d3c/structvanetza_1_1security_1_1v3_1_1IntegerFixed.html", [
+        [ "vanetza::security::v3::Uint16", "d9/d2c/structvanetza_1_1security_1_1v3_1_1Uint16.html", null ]
+      ] ],
+      [ "vanetza::security::v3::IntegerFixed< uint32_t >", "d3/d3c/structvanetza_1_1security_1_1v3_1_1IntegerFixed.html", [
+        [ "vanetza::security::v3::Uint32", "d4/d50/structvanetza_1_1security_1_1v3_1_1Uint32.html", null ]
+      ] ],
+      [ "vanetza::security::v3::IntegerFixed< uint64_t >", "d3/d3c/structvanetza_1_1security_1_1v3_1_1IntegerFixed.html", [
+        [ "vanetza::security::v3::Uint64", "d1/d4a/structvanetza_1_1security_1_1v3_1_1Uint64.html", null ]
+      ] ],
+      [ "vanetza::security::v3::IntegerFixed< uint8_t >", "d3/d3c/structvanetza_1_1security_1_1v3_1_1IntegerFixed.html", [
+        [ "vanetza::security::v3::Uint3", "d3/da9/structvanetza_1_1security_1_1v3_1_1Uint3.html", null ],
+        [ "vanetza::security::v3::Uint8", "d5/d61/structvanetza_1_1security_1_1v3_1_1Uint8.html", null ]
+      ] ],
+      [ "vanetza::security::v3::IntegerFixed< uintmax_t >", "d3/d3c/structvanetza_1_1security_1_1v3_1_1IntegerFixed.html", [
+        [ "vanetza::security::v3::Psid", "dd/ddf/structvanetza_1_1security_1_1v3_1_1Psid.html", null ]
+      ] ],
+      [ "vanetza::security::v3::IntegerFixed< T >", "d3/d3c/structvanetza_1_1security_1_1v3_1_1IntegerFixed.html", null ]
+    ] ],
     [ "vanetza::access::Interface", "de/d85/classvanetza_1_1access_1_1Interface.html", null ],
     [ "vanetza::IoVector", "d0/d0a/classvanetza_1_1IoVector.html", null ],
     [ "iterator_range", null, [
@@ -216,6 +283,9 @@ var hierarchy =
     [ "vanetza::geonet::LsReplyHeader", "d9/dcc/structvanetza_1_1geonet_1_1LsReplyHeader.html", null ],
     [ "vanetza::geonet::LsRequestHeader", "d5/de0/structvanetza_1_1geonet_1_1LsRequestHeader.html", null ],
     [ "vanetza::geonet::ManagementInformationBase", "dd/dbb/structvanetza_1_1geonet_1_1ManagementInformationBase.html", null ],
+    [ "vanetza::security::v3::names::microseconds", "dd/d49/structvanetza_1_1security_1_1v3_1_1names_1_1microseconds.html", null ],
+    [ "vanetza::security::v3::names::milliseconds", "d3/d8a/structvanetza_1_1security_1_1v3_1_1names_1_1milliseconds.html", null ],
+    [ "vanetza::security::v3::names::minutes", "d5/d25/structvanetza_1_1security_1_1v3_1_1names_1_1minutes.html", null ],
     [ "vanetza::geonet::NextHop", "db/dd9/classvanetza_1_1geonet_1_1NextHop.html", null ],
     [ "noncopyable", null, [
       [ "vanetza::security::openssl::BigNumber", "d1/d9d/classvanetza_1_1security_1_1openssl_1_1BigNumber.html", null ],
@@ -227,6 +297,12 @@ var hierarchy =
     [ "vanetza::security::NoneRegion", "d7/de0/structvanetza_1_1security_1_1NoneRegion.html", null ],
     [ "vanetza::ObjectContainer::object_handle", "d7/d89/structvanetza_1_1ObjectContainer_1_1object__handle.html", null ],
     [ "vanetza::ObjectContainer", "d1/db6/classvanetza_1_1ObjectContainer.html", null ],
+    [ "vanetza::security::v3::OctetString", "db/d3e/structvanetza_1_1security_1_1v3_1_1OctetString.html", [
+      [ "vanetza::security::v3::OctetStringFixedSize< 3 >", "d0/d47/structvanetza_1_1security_1_1v3_1_1OctetStringFixedSize.html", null ],
+      [ "vanetza::security::v3::OctetStringFixedSize< 8 >", "d0/d47/structvanetza_1_1security_1_1v3_1_1OctetStringFixedSize.html", null ],
+      [ "vanetza::security::v3::OctetStringFixedSize< SIZE >", "d0/d47/structvanetza_1_1security_1_1v3_1_1OctetStringFixedSize.html", null ],
+      [ "vanetza::security::v3::OctetStringProxy", "d4/ddd/structvanetza_1_1security_1_1v3_1_1OctetStringProxy.html", null ]
+    ] ],
     [ "vanetza::security::OpaqueKey", "d8/d9d/structvanetza_1_1security_1_1OpaqueKey.html", null ],
     [ "vanetza::OutputArchive", "db/d6e/classvanetza_1_1OutputArchive.html", null ],
     [ "vanetza::geonet::PacketBuffer", "de/d48/classvanetza_1_1geonet_1_1PacketBuffer.html", null ],
@@ -274,24 +350,42 @@ var hierarchy =
       [ "vanetza::ManualRuntime", "dc/d1a/classvanetza_1_1ManualRuntime.html", null ]
     ] ],
     [ "vanetza::ManualRuntime::ScheduledCallback", "d2/d1d/structvanetza_1_1ManualRuntime_1_1ScheduledCallback.html", null ],
-    [ "vanetza::security::SecuredMessageV2", "de/de7/structvanetza_1_1security_1_1SecuredMessageV2.html", null ],
+    [ "vanetza::security::v3::names::seconds", "d8/dbe/structvanetza_1_1security_1_1v3_1_1names_1_1seconds.html", null ],
+    [ "vanetza::security::SecuredMessageV2", "de/de7/structvanetza_1_1security_1_1SecuredMessageV2.html", [
+      [ "vanetza::security::SecuredMessageV3", "d9/d14/classvanetza_1_1security_1_1SecuredMessageV3.html", null ]
+    ] ],
     [ "vanetza::geonet::SecuredPdu", "d6/d63/classvanetza_1_1geonet_1_1SecuredPdu.html", null ],
     [ "vanetza::security::SecurityEntity", "d9/dd4/classvanetza_1_1security_1_1SecurityEntity.html", [
       [ "vanetza::security::DelegatingSecurityEntity", "d0/dff/classvanetza_1_1security_1_1DelegatingSecurityEntity.html", null ]
     ] ],
+    [ "vanetza::security::v3::Sequence< Extensible >", "d3/df0/structvanetza_1_1security_1_1v3_1_1Sequence.html", null ],
+    [ "vanetza::security::v3::Sequence< false >", "d3/df0/structvanetza_1_1security_1_1v3_1_1Sequence.html", [
+      [ "vanetza::security::v3::CertificateBase", "db/d79/structvanetza_1_1security_1_1v3_1_1CertificateBase.html", null ]
+    ] ],
+    [ "vanetza::security::v3::Sequence< true >", "d3/df0/structvanetza_1_1security_1_1v3_1_1Sequence.html", [
+      [ "vanetza::security::v3::MissingCrlIdentifier", "d4/db8/structvanetza_1_1security_1_1v3_1_1MissingCrlIdentifier.html", null ],
+      [ "vanetza::security::v3::ToBeSignedCertificate", "d1/d4d/structvanetza_1_1security_1_1v3_1_1ToBeSignedCertificate.html", null ]
+    ] ],
     [ "vanetza::access::ieee802::dot11::SequenceControl", "d3/d27/structvanetza_1_1access_1_1ieee802_1_1dot11_1_1SequenceControl.html", null ],
+    [ "vanetza::security::v3::SequenceOf< T >", "db/d0e/structvanetza_1_1security_1_1v3_1_1SequenceOf.html", null ],
     [ "vanetza::geonet::ShbHeader", "d0/d9f/structvanetza_1_1geonet_1_1ShbHeader.html", null ],
     [ "vanetza::geonet::ShortPositionVector", "d1/dec/classvanetza_1_1geonet_1_1ShortPositionVector.html", null ],
     [ "vanetza::security::SignConfirm", "d2/d89/structvanetza_1_1security_1_1SignConfirm.html", null ],
+    [ "vanetza::security::v3::SignedData", "d8/de6/structvanetza_1_1security_1_1v3_1_1SignedData.html", null ],
+    [ "vanetza::security::v3::SignedDataPayload", "dd/dbf/structvanetza_1_1security_1_1v3_1_1SignedDataPayload.html", null ],
     [ "vanetza::security::SignHeaderPolicy", "d5/dad/classvanetza_1_1security_1_1SignHeaderPolicy.html", [
       [ "vanetza::security::DefaultSignHeaderPolicy", "d0/de7/classvanetza_1_1security_1_1DefaultSignHeaderPolicy.html", null ]
     ] ],
     [ "vanetza::security::SignRequest", "d0/df9/structvanetza_1_1security_1_1SignRequest.html", null ],
+    [ "vanetza::security::v3::names::sixtyHours", "da/dd0/structvanetza_1_1security_1_1v3_1_1names_1_1sixtyHours.html", null ],
     [ "vanetza::socket_layer_pdu< SOCKET, LAYER >", "db/d92/structvanetza_1_1socket__layer__pdu.html", null ],
     [ "vanetza::socket_layers< SOCKET >", "d0/dd7/structvanetza_1_1socket__layers.html", null ],
     [ "vanetza::geonet::SoftStateDefaultCreator< VALUE >", "db/dd8/structvanetza_1_1geonet_1_1SoftStateDefaultCreator.html", null ],
+    [ "vanetza::geonet::SoftStateDefaultCreator< counter_type >", "db/dd8/structvanetza_1_1geonet_1_1SoftStateDefaultCreator.html", null ],
     [ "vanetza::geonet::SoftStateMap< KEY, VALUE, CTOR >", "dd/dab/classvanetza_1_1geonet_1_1SoftStateMap.html", null ],
+    [ "vanetza::geonet::SoftStateMap< id_type, counter_type >", "dd/dab/classvanetza_1_1geonet_1_1SoftStateMap.html", null ],
     [ "vanetza::geonet::SoftStateMap< MacAddress, LocationTableEntry, LocationTableEntryCreator >", "dd/dab/classvanetza_1_1geonet_1_1SoftStateMap.html", null ],
+    [ "vanetza::security::v3::names::start", "d3/dc0/structvanetza_1_1security_1_1v3_1_1names_1_1start.html", null ],
     [ "vanetza::security::StartAndDurationValidity", "d6/da7/structvanetza_1_1security_1_1StartAndDurationValidity.html", null ],
     [ "vanetza::security::StartAndEndValidity", "d0/db4/structvanetza_1_1security_1_1StartAndEndValidity.html", null ],
     [ "vanetza::dcc::State", "d9/d97/classvanetza_1_1dcc_1_1State.html", [
@@ -306,7 +400,7 @@ var hierarchy =
     ] ],
     [ "vanetza::dcc::StateMachineBudget", "d0/d6b/classvanetza_1_1dcc_1_1StateMachineBudget.html", null ],
     [ "static_visitor", null, [
-      [ "vanetza::asn1::PacketVisitor< T, DeserializeChunk >", "d5/d3f/classvanetza_1_1asn1_1_1PacketVisitor.html", null ],
+      [ "vanetza::asn1::PacketVisitor< T >", "d5/d3f/classvanetza_1_1asn1_1_1PacketVisitor.html", null ],
       [ "vanetza::geonet::RepetitionDispatcher", "dc/ddc/classvanetza_1_1geonet_1_1RepetitionDispatcher.html", null ]
     ] ],
     [ "vanetza::security::detail::subject_attribute_type< SubjectAttributeType >", "df/d81/structvanetza_1_1security_1_1detail_1_1subject__attribute__type.html", null ],
@@ -318,13 +412,16 @@ var hierarchy =
     [ "vanetza::security::detail::subject_attribute_type< SubjectAttributeType::Verification_Key >", "da/df8/structvanetza_1_1security_1_1detail_1_1subject__attribute__type_3_01SubjectAttributeType_1_1Verification__Key_01_4.html", null ],
     [ "vanetza::security::SubjectAssurance", "d1/d19/structvanetza_1_1security_1_1SubjectAssurance.html", null ],
     [ "vanetza::security::SubjectInfo", "d7/d54/structvanetza_1_1security_1_1SubjectInfo.html", null ],
+    [ "vanetza::security::v3::Integer::Symbol", "dd/d78/structvanetza_1_1security_1_1v3_1_1Integer_1_1Symbol.html", null ],
     [ "vanetza::security::ThreeDLocation", "d3/d65/structvanetza_1_1security_1_1ThreeDLocation.html", null ],
+    [ "vanetza::security::v3::ThreeDLocation", "d6/da1/structvanetza_1_1security_1_1v3_1_1ThreeDLocation.html", null ],
     [ "vanetza::security::Time64WithStandardDeviation", "dd/dd9/structvanetza_1_1security_1_1Time64WithStandardDeviation.html", null ],
     [ "time_point", null, [
       [ "vanetza::geonet::SoftStateMap< KEY, VALUE, CTOR >::ExpiryWithKey", "dd/df9/classvanetza_1_1geonet_1_1SoftStateMap_1_1ExpiryWithKey.html", null ],
       [ "vanetza::security::CertificateCache::Expiry", "d0/d5f/structvanetza_1_1security_1_1CertificateCache_1_1Expiry.html", null ]
     ] ],
     [ "vanetza::geonet::CbfPacketBuffer::Timer", "db/d41/structvanetza_1_1geonet_1_1CbfPacketBuffer_1_1Timer.html", null ],
+    [ "vanetza::security::v3::ToBeSignedData", "da/dee/structvanetza_1_1security_1_1v3_1_1ToBeSignedData.html", null ],
     [ "totally_ordered", null, [
       [ "vanetza::BitNumber< unsigned, 10 >", "dd/dba/classvanetza_1_1BitNumber.html", null ],
       [ "vanetza::BitNumber< unsigned, 4 >", "dd/dba/classvanetza_1_1BitNumber.html", null ],
@@ -365,10 +462,12 @@ var hierarchy =
     [ "vanetza::security::detail::validity_restriction_type< ValidityRestrictionType::Time_End >", "da/d12/structvanetza_1_1security_1_1detail_1_1validity__restriction__type_3_01ValidityRestrictionType_1_1Time__End_01_4.html", null ],
     [ "vanetza::security::detail::validity_restriction_type< ValidityRestrictionType::Time_Start_And_Duration >", "dd/d8c/structvanetza_1_1security_1_1detail_1_1validity__restriction__type_3_01ValidityRestrictionType_110ffbde126a6e3f210790987e2371478.html", null ],
     [ "vanetza::security::detail::validity_restriction_type< ValidityRestrictionType::Time_Start_And_End >", "d1/d8b/structvanetza_1_1security_1_1detail_1_1validity__restriction__type_3_01ValidityRestrictionType_1_1Time__Start__And__End_01_4.html", null ],
+    [ "vanetza::security::v3::ValidityPeriod", "dd/de3/structvanetza_1_1security_1_1v3_1_1ValidityPeriod.html", null ],
     [ "vanetza::geonet::SoftStateMap< KEY, VALUE, CTOR >::ValueWithHandle", "d9/df1/structvanetza_1_1geonet_1_1SoftStateMap_1_1ValueWithHandle.html", null ],
     [ "vanetza::security::VerificationKey", "dc/d87/structvanetza_1_1security_1_1VerificationKey.html", null ],
     [ "vanetza::security::VerifyConfirm", "d5/dbe/structvanetza_1_1security_1_1VerifyConfirm.html", null ],
     [ "vanetza::security::VerifyRequest", "dc/d48/structvanetza_1_1security_1_1VerifyRequest.html", null ],
     [ "vanetza::Wgs84Point", "d3/d7f/structvanetza_1_1Wgs84Point.html", null ],
-    [ "vanetza::security::X_Coordinate_Only", "d0/d50/structvanetza_1_1security_1_1X__Coordinate__Only.html", null ]
+    [ "vanetza::security::X_Coordinate_Only", "d0/d50/structvanetza_1_1security_1_1X__Coordinate__Only.html", null ],
+    [ "vanetza::security::v3::names::years", "d7/d7a/structvanetza_1_1security_1_1v3_1_1names_1_1years.html", null ]
 ];
