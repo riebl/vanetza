@@ -7,14 +7,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   
+  
   <link rel="shortcut icon" href="../img/favicon.ico">
   <title>Legal Notice - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
-  <link href="../css/extra.css" rel="stylesheet">
-  <link href="../css/tango.css" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" />
+  <link href="../css/extra.css" rel="stylesheet" />
+  <link href="../css/tango.css" rel="stylesheet" />
   
   <script>
     // Current page data
@@ -34,6 +35,7 @@
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
 <div class="logo">
     <img src="../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
@@ -47,75 +49,116 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-	<ul class="current">
-	  
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="..">Overview</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../api/">API Documentation</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../how-to-build/">How to build</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <span class="caption-text">Recipes</span>
-    <ul class="subnav">
-                <li class="">
-                    
-    <a class="" href="../recipes/cohda-sdk-build/">Building Vanetza for Cohda MK5 using Cohda SDK</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../recipes/cross-compile-dependencies/">Cross compile dependencies</a>
-                </li>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="..">Overview</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="..#project-layout">Project layout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="..#deployments">Deployments</a>
+    </li>
     </ul>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <span class="caption-text">Tools</span>
-    <ul class="subnav">
-                <li class="">
-                    
-    <a class="" href="../tools/benchmark/">Benchmark</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../tools/certify/">Certify</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../tools/socktap/">Socktap</a>
-                </li>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../api/">API Documentation</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../how-to-build/">How to build</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../how-to-build/#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../how-to-build/#compilation">Compilation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../how-to-build/#unit-tests">Unit tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../how-to-build/#integrating-vanetza">Integrating Vanetza</a>
+    </li>
     </ul>
-	    </li>
-          
-            <li class="toctree-l1 current">
-		
-    <a class="current" href="./">Legal Notice</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l2"><a href="#contact">Contact</a></li>
-    
-
-    <li class="toctree-l2"><a href="#privacy-statement">Privacy Statement</a></li>
-    
-
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Recipes</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../recipes/cohda-sdk-build/">Building for Cohda MK5</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../recipes/cohda-sdk-build/#cohda-sdk">Cohda SDK</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../recipes/cohda-sdk-build/#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../recipes/cohda-sdk-build/#compile-vanetza">Compile Vanetza</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../recipes/cohda-sdk-build/#deployment">Deployment</a>
+    </li>
     </ul>
-	    </li>
-          
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../recipes/cross-compile-dependencies/">Cross-Compilation of Dependencies</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../recipes/cross-compile-dependencies/#boost">Boost</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../recipes/cross-compile-dependencies/#crypto">Crypto++</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../recipes/cross-compile-dependencies/#geographiclib">GeographicLib</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Tools</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../tools/benchmark/">Benchmark</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/benchmark/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/benchmark/#running">Running</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/benchmark/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../tools/certify/">Certify</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/certify/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/certify/#pki-setup">PKI Setup</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../tools/certify/#generating-keys">Generating Keys</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../tools/certify/#generating-root-certificates">Generating Root Certificates</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../tools/certify/#generating-authorization-authorities">Generating Authorization Authorities</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../tools/certify/#generating-authorization-tickets">Generating Authorization Tickets</a>
+    </li>
         </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/certify/#other-options">Other Options</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/certify/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../tools/socktap/">Socktap</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/socktap/#variants">Variants</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/socktap/#permissions">Permissions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../tools/socktap/#running">Running</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Legal Notice</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#contact">Contact</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#privacy-statement">Privacy Statement</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
       </div>
-      &nbsp;
+    </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
@@ -143,27 +186,29 @@
       
     </li>
   </ul>
+  
   <hr/>
 </div>
           <div role="main">
             <div class="section">
               
-                <p>As maintainer of Vanetza, I am responsible for this website&rsquo;s content under German Law.
+                <h1 id="legal-notice">Legal Notice</h1>
+<p>As maintainer of Vanetza, I am responsible for this website&rsquo;s content under German Law.
 Following contact details are given to comply with § 5 TMG and § 55 Abs. 2 RStV.<br />
 Feel free to send me a postcard if you like Vanetza :-)</p>
-<h1 id="contact">Contact</h1>
-<div class="highlight"><pre><span></span>Raphael Riebl
+<h2 id="contact">Contact</h2>
+<div class="codehilite"><pre><span></span><code>Raphael Riebl
 Bergstraße 9
 85129 Unterdolling
 Germany
 
 E-mail: raphael@riebl.net
-</pre></div>
+</code></pre></div>
 
 
 <p>I will not answer support requests via e-mail.
 Please open an <a href="https://github.com/riebl/vanetza/issues">issue ticket</a> instead.</p>
-<h1 id="privacy-statement">Privacy Statement</h1>
+<h2 id="privacy-statement">Privacy Statement</h2>
 <p>I do not collect, store or process any information about visitors of this website.
 Please note that the API documentation generated by Doxygen sets a non-essential cookie storing your preferred width of its navigation&rsquo;s sidebar.</p>
 <p>This website is hosted by GitHub.
@@ -191,7 +236,7 @@ Google has added a section to their FAQ about <a href="https://developers.google
     
   </div>
 
-  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
       
         </div>
@@ -201,7 +246,7 @@ Google has added a section to their FAQ about <a href="https://developers.google
 
   </div>
 
-  <div class="rst-versions" role="note" style="cursor: pointer">
+  <div class="rst-versions" role="note" aria-label="versions">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
           <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
@@ -214,7 +259,13 @@ Google has added a section to their FAQ about <a href="https://developers.google
 </div>
     <script>var base_url = '..';</script>
     <script src="../js/theme.js" defer></script>
+      <script src="../js/extra.js" defer></script>
       <script src="../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
 
 </body>
 </html>

@@ -7,18 +7,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   
+  
   <link rel="shortcut icon" href="../../img/favicon.ico">
-  <title>Building Vanetza for Cohda MK5 using Cohda SDK - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
-  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+  <title>Building for Cohda MK5 - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700" />
 
-  <link rel="stylesheet" href="../../css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../css/theme_extra.css" type="text/css" />
-  <link href="../../css/extra.css" rel="stylesheet">
-  <link href="../../css/tango.css" rel="stylesheet">
+  <link rel="stylesheet" href="../../css/theme.css" />
+  <link rel="stylesheet" href="../../css/theme_extra.css" />
+  <link href="../../css/extra.css" rel="stylesheet" />
+  <link href="../../css/tango.css" rel="stylesheet" />
   
   <script>
     // Current page data
-    var mkdocs_page_name = "Building Vanetza for Cohda MK5 using Cohda SDK";
+    var mkdocs_page_name = "Building for Cohda MK5";
     var mkdocs_page_input_path = "recipes/cohda-sdk-build.md";
     var mkdocs_page_url = null;
   </script>
@@ -34,6 +35,7 @@
 
     
     <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
       <div class="wy-side-nav-search">
 <div class="logo">
     <img src="../../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
@@ -47,84 +49,116 @@
       </div>
 
       <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
-	<ul class="current">
-	  
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../..">Overview</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../../api/">API Documentation</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../../how-to-build/">How to build</a>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <span class="caption-text">Recipes</span>
-    <ul class="subnav">
-                <li class=" current">
-                    
-    <a class="current" href="./">Building Vanetza for Cohda MK5 using Cohda SDK</a>
-    <ul class="subnav">
-            
-    <li class="toctree-l3"><a href="#building-vanetza-for-cohda-mk5-using-cohda-sdk">Building Vanetza for Cohda MK5 using Cohda SDK</a></li>
-    
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../..">Overview</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../..#project-layout">Project layout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../..#deployments">Deployments</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../api/">API Documentation</a>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../how-to-build/">How to build</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#compilation">Compilation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#unit-tests">Unit tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#integrating-vanetza">Integrating Vanetza</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Recipes</span></p>
+                <ul class="current">
+                    <li class="toctree-l1 current"><a class="reference internal current" href="./">Building for Cohda MK5</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#cohda-sdk">Cohda SDK</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#compile-vanetza">Compile Vanetza</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#deployment">Deployment</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../cross-compile-dependencies/">Cross-Compilation of Dependencies</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#boost">Boost</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#crypto">Crypto++</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#geographiclib">GeographicLib</a>
+    </li>
+    </ul>
+                    </li>
+                </ul>
+                <p class="caption"><span class="caption-text">Tools</span></p>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../tools/benchmark/">Benchmark</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#running">Running</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../../tools/certify/">Certify</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#pki-setup">PKI Setup</a>
         <ul>
-        
-            <li><a class="toctree-l4" href="#cohda-sdk">Cohda SDK</a></li>
-        
-            <li><a class="toctree-l4" href="#vanetza-build-dependencies">Vanetza build dependencies</a></li>
-        
-            <li><a class="toctree-l4" href="#compile-vanetza">Compile Vanetza</a></li>
-        
-            <li><a class="toctree-l4" href="#deployment">Deployment</a></li>
-        
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-keys">Generating Keys</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-root-certificates">Generating Root Certificates</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-authorization-authorities">Generating Authorization Authorities</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-authorization-tickets">Generating Authorization Tickets</a>
+    </li>
         </ul>
-    
-
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#other-options">Other Options</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#acknowledgement">Acknowledgement</a>
+    </li>
     </ul>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../cross-compile-dependencies/">Cross compile dependencies</a>
-                </li>
+                    </li>
+                    <li class="toctree-l1"><a class="reference internal" href="../../tools/socktap/">Socktap</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#variants">Variants</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#permissions">Permissions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#running">Running</a>
+    </li>
     </ul>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <span class="caption-text">Tools</span>
-    <ul class="subnav">
-                <li class="">
-                    
-    <a class="" href="../../tools/benchmark/">Benchmark</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../../tools/certify/">Certify</a>
-                </li>
-                <li class="">
-                    
-    <a class="" href="../../tools/socktap/">Socktap</a>
-                </li>
+                    </li>
+                </ul>
+                <ul>
+                    <li class="toctree-l1"><a class="reference internal" href="../../legal/">Legal Notice</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../legal/#contact">Contact</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../legal/#privacy-statement">Privacy Statement</a>
+    </li>
     </ul>
-	    </li>
-          
-            <li class="toctree-l1">
-		
-    <a class="" href="../../legal/">Legal Notice</a>
-	    </li>
-          
-        </ul>
+                    </li>
+                </ul>
       </div>
-      &nbsp;
+    </div>
     </nav>
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
@@ -148,7 +182,7 @@
         
       
     
-    <li>Building Vanetza for Cohda MK5 using Cohda SDK</li>
+    <li>Building for Cohda MK5</li>
     <li class="wy-breadcrumbs-aside">
       
         <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/cohda-sdk-build.md"
@@ -156,6 +190,7 @@
       
     </li>
   </ul>
+  
   <hr/>
 </div>
           <div role="main">
@@ -203,7 +238,7 @@ Before the next step, extract the archive&rsquo;s content into <code>/home/duser
 <h2 id="compile-vanetza">Compile Vanetza</h2>
 <p>We assume you have copy of the Vanetza repository in your home directory at <code>/home/duser/vanetza</code>.
 Create a build directory and tell CMake to use the cross-compiler installed in the Cohda VM and to look up additional dependencies in <code>vanetza-deps</code>:</p>
-<div class="highlight"><pre><span></span>mkdir vanetza-build
+<div class="codehilite"><pre><span></span><code>mkdir vanetza-build
 <span class="nb">cd</span> vanetza-build
 cmake <span class="nv">$HOME</span>/vanetza <span class="se">\</span>
     -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span><span class="nv">$HOME</span>/vanetza/cmake/Toolchain-Cohda-MK5.cmake <span class="se">\</span>
@@ -211,7 +246,7 @@ cmake <span class="nv">$HOME</span>/vanetza <span class="se">\</span>
     -DCMAKE_INSTALL_RPATH<span class="o">=</span><span class="se">\$</span>ORIGIN/../lib <span class="se">\</span>
     -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/vanetza-dist
 make
-</pre></div>
+</code></pre></div>
 
 
 <p>This builds the Vanetza libraries only. Enable the <strong>BUILD_SOCKTAP</strong> CMake option if you want to try <em>socktap</em> as well. Additionally, enable the <strong>SOCKTAP_WITH_COHDA_LLC</strong> CMake option if you want <em>socktap</em> to use 802.11p via Cohda&rsquo;s LLC network interface on your MK5.
@@ -240,7 +275,7 @@ You can execute <em>socktap</em> located at <code>/home/user/vanetza/bin/socktap
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../cross-compile-dependencies/" class="btn btn-neutral float-right" title="Cross compile dependencies">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../cross-compile-dependencies/" class="btn btn-neutral float-right" title="Cross-Compilation of Dependencies">Next <span class="icon icon-circle-arrow-right"></span></a>
       
       
         <a href="../../how-to-build/" class="btn btn-neutral" title="How to build"><span class="icon icon-circle-arrow-left"></span> Previous</a>
@@ -255,7 +290,7 @@ You can execute <em>socktap</em> located at <code>/home/user/vanetza/bin/socktap
     
   </div>
 
-  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
 </footer>
       
         </div>
@@ -265,7 +300,7 @@ You can execute <em>socktap</em> located at <code>/home/user/vanetza/bin/socktap
 
   </div>
 
-  <div class="rst-versions" role="note" style="cursor: pointer">
+  <div class="rst-versions" role="note" aria-label="versions">
     <span class="rst-current-version" data-toggle="rst-current-version">
       
           <a href="https://github.com/riebl/vanetza/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
@@ -280,7 +315,13 @@ You can execute <em>socktap</em> located at <code>/home/user/vanetza/bin/socktap
 </div>
     <script>var base_url = '../..';</script>
     <script src="../../js/theme.js" defer></script>
+      <script src="../../js/extra.js" defer></script>
       <script src="../../search/main.js" defer></script>
+    <script defer>
+        window.onload = function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        };
+    </script>
 
 </body>
 </html>
