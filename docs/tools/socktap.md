@@ -1,13 +1,17 @@
 # Socktap
 
-Vanetza ships with a simple demo application called *socktap*.
+*socktap* runs Vanetza on top of Linux raw packet sockets and demonstrates the basic API usage.
+This enables tests on commodity hardware, i.e. no special V2X or Car2X hardware is required.
+However, raw packet sockets cannot replace such dedicated hardware entirely.
+Consider *socktap* as an experimental application showcasing some of Vanetza's features.
+
 You can enable the build process for this application by the `BUILD_SOCKTAP` CMake option.
 When *socktap* is going to be built, [gpsd](http://catb.org/gpsd) is required as an additional dependency.
 
-*socktap* runs Vanetza on top of Linux raw packet sockets and demonstrates the basic API usage.
-This enables tests on commodity hardware, i.e. no special V2X or Car2X hardware is required.
-However, raw packet sockets cannot replace such dedicated hardware entirly.
-Consider *socktap* as an experimental application showcasing some of Vanetza's features.
+!!! warning
+    A bug in gpsd<=3.15 causes a segmentation fault when *socktap* tries to fetch GPS data.
+    More recent versions include a bugfix, e.g. gpsd>=3.17 is known to work.
+    See also the corresponding [issue ticket #69](https://github.com/riebl/vanetza/issues/69).
 
 If you have access to V2X hardware from Cohda Wireless, you can also run *socktap* on their units.
 A special CMake option `SOCKTAP_WITH_COHDA_LLC` exists to build *socktap* for operation on Cohda's LLC API.
