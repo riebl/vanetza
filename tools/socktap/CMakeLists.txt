@@ -40,6 +40,7 @@ install(TARGETS socktap-cam EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_B
 
 option(SOCKTAP_WITH_COHDA_LLC "Use Cohda LLC API for socktap" ${COHDA_FOUND})
 if(SOCKTAP_WITH_COHDA_LLC)
+    find_package(Cohda MODULE REQUIRED)
     target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_COHDA_LLC")
     target_include_directories(socktap-common PUBLIC ${COHDA_INCLUDE_DIRS})
     target_sources(socktap-common PRIVATE cohda.cpp)

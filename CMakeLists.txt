@@ -51,7 +51,7 @@ find_package(Boost 1.58 QUIET OPTIONAL_COMPONENTS ${Boost_OPTIONAL_COMPONENTS})
 include(CompatBoostTargets)
 find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
-find_package(Cohda MODULE)
+find_package(Cohda MODULE QUIET)
 
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
 if (VANETZA_WITH_OPENSSL)
