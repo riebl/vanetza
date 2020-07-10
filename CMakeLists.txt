@@ -99,6 +99,7 @@ endif()
 # interface library for convenience
 get_property(_components GLOBAL PROPERTY VANETZA_COMPONENTS)
 add_library(vanetza INTERFACE)
+add_library(Vanetza::vanetza ALIAS vanetza)
 foreach(_component IN LISTS _components)
   target_link_libraries(vanetza INTERFACE ${_component})
 endforeach()

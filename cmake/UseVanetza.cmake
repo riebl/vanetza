@@ -5,6 +5,7 @@ function(add_vanetza_component name)
     set(sources ${ARGN})
 
     add_library(${name} ${sources})
+    add_library(Vanetza::${name} ALIAS ${name})
     target_include_directories(${name} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>)
