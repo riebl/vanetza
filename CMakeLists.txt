@@ -129,9 +129,12 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vanetza
   FILES_MATCHING PATTERN "*.hpp" PATTERN "/tests/*.hpp" EXCLUDE)
 
 # export build tree (allows import by outside projects)
-export(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaExports.cmake)
-file(COPY ${CMAKECONFIG_BUILD_DIR}/VanetzaConfigVersion.cmake
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-configure_file(cmake/VanetzaExportsConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/VanetzaConfig.cmake @ONLY)
-export(PACKAGE ${PROJECT_NAME})
+option(VANETZA_EXPORT_PACKAGE "Export Vanetza build directory to CMake package registry" ON)
+if(VANETZA_EXPORT_PACKAGE)
+  export(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaExports.cmake)
+  file(COPY ${CMAKECONFIG_BUILD_DIR}/VanetzaConfigVersion.cmake
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+  configure_file(cmake/VanetzaExportsConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/VanetzaConfig.cmake @ONLY)
+  export(PACKAGE ${PROJECT_NAME})
+endif()
