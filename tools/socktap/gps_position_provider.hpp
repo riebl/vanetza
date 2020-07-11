@@ -28,7 +28,6 @@ public:
 private:
     void schedule_timer();
     void on_timer(const boost::system::error_code& ec);
-    vanetza::Clock::time_point convert(timestamp_t) const;
 
     boost::asio::steady_timer& timer_;
     gps_data_t gps_data;
