@@ -66,4 +66,4 @@ auto values = ::testing::Values(
     "CryptoPP"
 );
 
-INSTANTIATE_TEST_CASE_P(EccPointDecompression, EccPointDecompressionTest, values);
+INSTANTIATE_TEST_SUITE_P(EccPointDecompression, EccPointDecompressionTest, values);

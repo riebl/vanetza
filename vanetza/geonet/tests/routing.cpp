@@ -552,4 +552,4 @@ std::string printPacketHandlingValue(const ::testing::TestParamInfo<Routing::Par
     print += std::get<1>(value.param) ? "WithSecurity" : "WithoutSecurity";
     return print;
 }
-INSTANTIATE_TEST_CASE_P(RoutingPacketHandling, Routing, PacketHandlingValues, printPacketHandlingValue);
+INSTANTIATE_TEST_SUITE_P(RoutingPacketHandling, Routing, PacketHandlingValues, printPacketHandlingValue);
