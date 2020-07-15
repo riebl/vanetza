@@ -11,7 +11,9 @@ function(add_vanetza_component name)
         $<INSTALL_INTERFACE:include>)
     set_target_properties(${name} PROPERTIES
         OUTPUT_NAME vanetza_${name})
-    install(TARGETS ${name} EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    if(VANETZA_INSTALL)
+      install(TARGETS ${name} EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    endif()
     set_property(GLOBAL APPEND PROPERTY VANETZA_COMPONENTS ${name})
 endfunction()
 
