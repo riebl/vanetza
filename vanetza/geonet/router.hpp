@@ -396,6 +396,16 @@ private:
     void pass_up(const DataIndication&, UpPacketPtr);
 
     /**
+     * \brief Decide if GBC packet shall be passed up to transport layer.
+     *
+     * \param within_destination is router located within destination area
+     * \param gbc GeoBroadcast header
+     *
+     * \return true if packet shall be passed up
+     */
+    bool decide_pass_up(bool within_destination, const GeoBroadcastHeader& gbc);
+
+    /**
      * \brief Helper method to handle duplicate addresses.
      * If own address collides with the address of a received packet
      * Router's address is set to a new random address.

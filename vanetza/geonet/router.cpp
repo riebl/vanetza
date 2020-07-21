@@ -1090,16 +1090,16 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
     // step 9: discard packet (no forwarding) if hop limit is reached
     if (pdu.basic().hop_limit <= 1) {
         forwarding_stopped(ForwardingStopReason::Hop_Limit);
-        return within_destination; // discard packet (step 9a)
+        return decide_pass_up(within_destination, gbc); // discard packet (step 9a)
     } else if (m_mib.itsGnMaxPacketDataRate < std::numeric_limits<decltype(m_mib.itsGnMaxPacketDataRate)>::max()) {
         // do packet data rate checks (annex B.2) if set maximum rate is not "infinity" (i.e. max unsigned value)
         if (source_entry.get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
             forwarding_stopped(ForwardingStopReason::Source_PDR);
-            return within_destination; // omit forwarding, source exceeds PDR limit
+            return decide_pass_up(within_destination, gbc); // omit forwarding, source exceeds PDR limit
         } else if (const auto* sender_entry = m_location_table.get_entry(ll.sender)) {
             if (sender_entry->get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
                 forwarding_stopped(ForwardingStopReason::Sender_PDR);
-                return within_destination; // omit forwarding, sender exceeds PDR limit
+                return decide_pass_up(within_destination, gbc); // omit forwarding, sender exceeds PDR limit
             }
         }
     }
@@ -1151,8 +1151,14 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
         fwd_packet.process();
     }
 
+    // step 7: pass up decision
+    return decide_pass_up(within_destination, gbc);
+}
+
+bool Router::decide_pass_up(bool within_destination, const GeoBroadcastHeader& gbc)
+{
     if (m_mib.vanetzaGbcMemoryCapacity == 0) {
-        // return pass up decision (step 7)
+        // classic pass up: suppress only GBCs outside of destination area
         return within_destination;
     } else if (within_destination) {
         // modified pass up: suppress passing up duplicate GBC packets
