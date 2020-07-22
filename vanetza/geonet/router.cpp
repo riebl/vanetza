@@ -111,7 +111,7 @@ std::unique_ptr<CbfCounter> create_cbf_counter(Runtime& rt, const MIB& mib)
 {
     std::unique_ptr<CbfCounter> counter;
     if (mib.vanetzaFadingCbfCounter) {
-        counter.reset(new CbfCounterFading(rt, units::clock_cast(2.0 * mib.itsGnCbfMaxTime)));
+        counter.reset(new CbfCounterFading(rt, units::clock_cast(mib.vanetzaFadingCbfCounterLifetime)));
     } else {
         counter.reset(new CbfCounterContending());
     }
