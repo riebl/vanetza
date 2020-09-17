@@ -167,7 +167,7 @@ SEQUENCE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 		}
 
 		if(ctx->left >= 0)
-			ctx->left += rval.consumed; /* ?Substracted below! */
+			ctx->left += rval.consumed; /* ?Subtracted below! */
 		ADVANCE(rval.consumed);
 
 		NEXT_PHASE(ctx);
@@ -1641,6 +1641,10 @@ SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 		ASN_DEBUG("Read in extensions bitmap for %s of %ld bits (%x..)",
 		          td->name, bmlength, *epres);
 
+		/* Deal with padding */
+ 		if (aper_get_align(pd) < 0)
+ 			ASN__DECODE_STARVED;
+ 			
 		/* Go over extensions and read them in */
 		for(edx = specs->first_extension; edx < td->elements_count; edx++) {
 			asn_TYPE_member_t *elm = &td->elements[edx];
@@ -1835,7 +1839,7 @@ SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
 
 		/* Eliminate default values */
 		if(present && elm->default_value_cmp
-		        && elm->default_value_cmp(memb_ptr2) == 0)
+		        && elm->default_value_cmp(*memb_ptr2) == 0)
 			present = 0;
 
 		ASN_DEBUG("Element %s %s %s->%s is %s",
@@ -1881,7 +1885,7 @@ SEQUENCE_encode_aper(const asn_TYPE_descriptor_t *td,
 		}
 
 		/* Eliminate default values */
-		if(elm->default_value_cmp && elm->default_value_cmp(memb_ptr2) == 0)
+		if(elm->default_value_cmp && elm->default_value_cmp(*memb_ptr2) == 0)
 			continue;
 
 		ASN_DEBUG("Encoding %s->%s", td->name, elm->name);

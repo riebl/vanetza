@@ -123,7 +123,7 @@ asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
 /*
  * The main reason why ASN.1 is still alive is that too much time and effort
  * is necessary for learning it more or less adequately, thus creating a gut
- * necessity to demonstrate that aquired skill everywhere afterwards.
+ * necessity to demonstrate that acquired skill everywhere afterwards.
  * No, I am not going to explain what the following stuff is.
  */
 struct _stack_el {
@@ -1753,7 +1753,8 @@ OCTET_STRING_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 	/* X.691, #16.7: long fixed length encoding (up to 64K octets) */
 	if(csiz->effective_bits == 0) {
 		int ret;
-		if (st->size > 2) { /* X.691 #16 NOTE 1 */
+		/* X.691 #16 NOTE 1 for fixed length (<= 16 bits) strings */
+		if (st->size > 2 || csiz->range_bits != 0) {
 			if (aper_get_align(pd) < 0)
 				RETURN(RC_FAIL);
 		}
@@ -1802,7 +1803,9 @@ OCTET_STRING_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 			(long)csiz->effective_bits, (long)raw_len,
 			repeat ? "repeat" : "once", td->name);
 
-		if ((raw_len > 2) || (csiz->upper_bound > 2)) { /* X.691 #16 NOTE 1 */
+		/* X.691 #16 NOTE 1  for fixed length (<=16 bits) strings */
+		if ((raw_len > 2) || (csiz->upper_bound > 2) || (csiz->range_bits != 0)) 
+		{ 
 			if (aper_get_align(pd) < 0)
 				RETURN(RC_FAIL);
 		}
@@ -1953,10 +1956,14 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
 				st->size, sizeinunits - csiz->lower_bound,
 				csiz->effective_bits);
 		if (csiz->effective_bits > 0) {
-		        ret = aper_put_length(po, csiz->upper_bound - csiz->lower_bound + 1, sizeinunits - csiz->lower_bound);
+		        ret = aper_put_length(po, csiz->upper_bound - csiz->lower_bound + 1, sizeinunits - csiz->lower_bound, 0);
 		        if(ret) ASN__ENCODE_FAILED;
 		}
-		if ((st->size > 2) || (csiz->upper_bound > 2)) { /* X.691 #16 NOTE 1 */
+		if (csiz->effective_bits > 0 || (st->size > 2) 
+			|| (csiz->upper_bound > (2 * 8 / unit_bits))
+			|| (csiz->range_bits != 0)
+			) 
+		{ /* X.691 #16 NOTE 1 for fixed length (<=16 bits) strings*/
 			if (aper_put_align(po) < 0)
 				ASN__ENCODE_FAILED;
 		}
@@ -1975,14 +1982,15 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
 	ASN_DEBUG("Encoding %lu bytes", st->size);
 
 	if(sizeinunits == 0) {
-		if(aper_put_length(po, -1, 0))
+		if(aper_put_length(po, -1, 0, 0))
 			ASN__ENCODE_FAILED;
 		ASN__ENCODED_OK(er);
 	}
 
 	buf = st->buf;
 	while(sizeinunits) {
-		ssize_t maySave = aper_put_length(po, -1, sizeinunits);
+        int need_eom = 0;
+		ssize_t maySave = aper_put_length(po, -1, sizeinunits, &need_eom);
 
 		if(maySave < 0) ASN__ENCODE_FAILED;
 
@@ -2004,6 +2012,8 @@ OCTET_STRING_encode_aper(const asn_TYPE_descriptor_t *td,
 			buf += maySave >> 3;
 		sizeinunits -= maySave;
 		assert(!(maySave & 0x07) || !sizeinunits);
+        if(need_eom && aper_put_length(po, -1, 0, 0))
+            ASN__ENCODE_FAILED; /* End of Message length */
 	}
 
 	ASN__ENCODED_OK(er);

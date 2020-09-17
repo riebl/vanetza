@@ -123,7 +123,7 @@ SET_OF_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 		}
 
 		if(ctx->left >= 0)
-			ctx->left += rval.consumed; /* ?Substracted below! */
+			ctx->left += rval.consumed; /* ?Subtracted below! */
 		ADVANCE(rval.consumed);
 
 		ASN_DEBUG("Structure consumes %ld bytes, "
@@ -1157,7 +1157,7 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                             ct->effective_bits))
             ASN__ENCODE_FAILED;*/
 
-        if (aper_put_length(po, ct->upper_bound - ct->lower_bound + 1, list->count - ct->lower_bound) < 0) {
+        if (aper_put_length(po, ct->upper_bound - ct->lower_bound + 1, list->count - ct->lower_bound, 0) < 0) {
             ASN__ENCODE_FAILED;
 	}
     }
@@ -1170,11 +1170,12 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
 
     for(seq = 0; seq < list->count;) {
         ssize_t may_encode;
+        int need_eom = 0;
         if(ct && ct->effective_bits >= 0) {
             may_encode = list->count;
         } else {
             may_encode =
-                aper_put_length(po, -1, list->count - seq);
+                aper_put_length(po, -1, list->count - seq, &need_eom);
             if(may_encode < 0) ASN__ENCODE_FAILED;
         }
 
@@ -1185,6 +1186,8 @@ SET_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                 break;
             }
 	}
+        if(need_eom && aper_put_length(po, -1, 0, 0))
+            ASN__ENCODE_FAILED; /* End of Message length */
     }
 
     SET_OF__encode_sorted_free(encoded_els, list->count);

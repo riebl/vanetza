@@ -81,8 +81,10 @@ typedef struct asn_bit_outp_s asn_per_outp_t;
  *  -1: Conversion failed due to range problems.
  *   0: Conversion was successful.
  */
+int per_long_range_rebase(long, intmax_t lb, intmax_t ub, unsigned long *output);
 int per_imax_range_rebase(intmax_t v, intmax_t lb, intmax_t ub, uintmax_t *output);
 /* The inverse operation: restores the value by the offset and its bounds. */
+int per_long_range_unrebase(unsigned long inp, intmax_t lb, intmax_t ub, long *outp);
 int per_imax_range_unrebase(uintmax_t inp, intmax_t lb, intmax_t ub, intmax_t *outp);
 
 /* X.691-2008/11, #11.5 */
@@ -99,7 +101,8 @@ int uper_put_constrained_whole_number_u(asn_per_outp_t *po, unsigned long v, int
 ssize_t uper_put_length(asn_per_outp_t *po, size_t whole_length,
                         int *opt_need_eom);
 
-ssize_t aper_put_length(asn_per_outp_t *po, int range, size_t length);
+ssize_t aper_put_length(asn_per_outp_t *po, int range, size_t length,
+                        int *opt_need_eom);
 
 /* Align the current bit position to octet bundary */
 int aper_put_align(asn_per_outp_t *po);

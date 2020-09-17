@@ -65,7 +65,7 @@
 static unsigned _fetch_present_idx(const void *struct_ptr, unsigned off,
                                    unsigned size);
 static void _set_present_idx(void *sptr, unsigned offset, unsigned size,
-                             unsigned pres);
+                             unsigned present);
 static const void *_get_member_ptr(const asn_TYPE_descriptor_t *,
                                    const void *sptr, asn_TYPE_member_t **elm,
                                    unsigned *present);
@@ -162,7 +162,7 @@ CHOICE_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
 			}
 
 			if(ctx->left >= 0) {
-				/* ?Substracted below! */
+				/* ?Subtracted below! */
 				ctx->left += rval.consumed;
 			}
 			ADVANCE(rval.consumed);
@@ -1083,7 +1083,7 @@ CHOICE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
 		rv = elm->type->op->aper_decoder(opt_codec_ctx, elm->type,
 		                                 elm->encoding_constraints.per_constraints, memb_ptr2, pd);
 	} else {
-		rv = uper_open_type_get(opt_codec_ctx, elm->type,
+		rv = aper_open_type_get(opt_codec_ctx, elm->type,
 		                        elm->encoding_constraints.per_constraints, memb_ptr2, pd);
 	}
 
@@ -1166,7 +1166,11 @@ CHOICE_encode_aper(const asn_TYPE_descriptor_t *td,
 		asn_enc_rval_t rval = {0,0,0};
 		if(specs->ext_start == -1)
 			ASN__ENCODE_FAILED;
-		if(aper_put_nsnnwn(po, ct->range_bits, present - specs->ext_start))
+		int n = present - specs->ext_start;
+		if(n <= 63) {
+			if(n < 0) ASN__ENCODE_FAILED;
+			if(per_put_few_bits(po, n, 7)) ASN__ENCODE_FAILED;
+		} else
 			ASN__ENCODE_FAILED;
 		if(aper_open_type_put(elm->type, elm->encoding_constraints.per_constraints,
 		                      memb_ptr, po))

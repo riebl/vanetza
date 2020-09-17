@@ -269,17 +269,20 @@ SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
 				 ct->effective_bits))
 			 ASN__ENCODE_FAILED;
 */
-		if (aper_put_length(po, ct->upper_bound - ct->lower_bound + 1, list->count - ct->lower_bound) < 0)
+        if (ct->lower_bound == ct->upper_bound && ct->upper_bound < 65536) {
+            /* No length determinant */
+        } else if (aper_put_length(po, ct->upper_bound - ct->lower_bound + 1, list->count - ct->lower_bound, 0) < 0)
 			ASN__ENCODE_FAILED;
 	}
 
 	for(seq = -1; seq < list->count;) {
 		ssize_t mayEncode;
+        int need_eom = 0;
 		if(seq < 0) seq = 0;
 		if(ct && ct->effective_bits >= 0) {
 			mayEncode = list->count;
 		} else {
-			mayEncode = aper_put_length(po, -1, list->count - seq);
+			mayEncode = aper_put_length(po, -1, list->count - seq, &need_eom);
 			if(mayEncode < 0) ASN__ENCODE_FAILED;
 		}
 
@@ -291,6 +294,9 @@ SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
 			if(er.encoded == -1)
 				ASN__ENCODE_FAILED;
 		}
+
+        if(need_eom && aper_put_length(po, -1, 0, 0))
+            ASN__ENCODE_FAILED; /* End of Message length */
 	}
 
 	ASN__ENCODED_OK(er);
