@@ -138,6 +138,11 @@ public:
         return vanetza::asn1::decode_per(base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end));
     }
 
+    bool decode(const void* buffer, std::size_t len)
+    {
+        return vanetza::asn1::decode_per(base::m_type, (void**)&(base::m_struct), buffer, len);
+    }
+
     /**
      * Get size of encoded ASN.1 struct
      * \return size in bytes
@@ -182,6 +187,11 @@ public:
     bool decode(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end)
     {
         return vanetza::asn1::decode_oer(base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end));
+    }
+
+    bool decode(const void* buffer, std::size_t len)
+    {
+        return vanetza::asn1::decode_oer(base::m_type, (void**)&(base::m_struct), buffer, len);
     }
 
     /**
