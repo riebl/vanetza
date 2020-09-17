@@ -1,0 +1,138 @@
+EtsiTs102941TrustLists
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) trustLists(6) version2(2) }
+
+DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+IMPORTS
+
+  EtsiTs103097Certificate, EtsiTs103097Data-SignedAndEncrypted, EtsiTs103097Data-Signed
+FROM EtsiTs103097Module {itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(103097) securedMessageV1(0)}
+
+  HashedId8, Time32, Version --, CertificateAuthorityConstraints
+FROM EtsiTs102941BaseTypes {itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) version2(2)}
+;
+
+/************
+-- CRL
+************/
+ToBeSignedCrl ::= SEQUENCE {
+  version    Version,
+  thisUpdate Time32,
+  nextUpdate Time32,
+  entries SEQUENCE OF CrlEntry,
+  ...
+}
+
+CrlEntry ::= HashedId8
+
+/************
+-- TLM CTL
+************/
+
+ToBeSignedTlmCtl ::= CtlFormat (FullCtl | DeltaCtl) (WITH COMPONENTS {...,
+  ctlCommands ( WITH COMPONENT(
+    ( WITH COMPONENTS {...,
+      add ( WITH COMPONENTS {...,
+        ea ABSENT,
+        aa ABSENT
+      })
+    })
+  ))
+})
+
+/************
+-- RCA CTL
+************/
+
+ToBeSignedRcaCtl ::= CtlFormat (FullCtl | DeltaCtl) ( WITH COMPONENTS {...,
+  ctlCommands ( WITH COMPONENT(
+    ( WITH COMPONENTS {...,
+      add ( WITH COMPONENTS {...,
+        rca ABSENT,
+        tlm ABSENT
+      })
+    })
+  ))
+})
+
+/************
+-- CTL
+************/
+
+FullCtl::= CtlFormat ( WITH COMPONENTS {...,
+  isFullCtl ( TRUE ),
+  ctlCommands ( WITH COMPONENT(
+    ( WITH COMPONENTS {...,
+      delete ABSENT
+    })
+  ))
+})
+
+DeltaCtl::= CtlFormat (WITH COMPONENTS {...,
+  isFullCtl(FALSE)
+})
+
+
+CtlFormat ::= SEQUENCE {
+  version     Version,
+  nextUpdate  Time32,
+  isFullCtl   BOOLEAN,
+  ctlSequence INTEGER (0..255),
+  ctlCommands SEQUENCE OF CtlCommand,
+  ...
+}
+
+CtlCommand ::= CHOICE {
+  add 	  CtlEntry,
+  delete  CtlDelete,
+  ...
+}
+
+CtlEntry ::= CHOICE {
+  rca   RootCaEntry,
+  ea    EaEntry,
+  aa    AaEntry,
+  dc    DcEntry,
+  tlm   TlmEntry,
+  ...
+}
+
+CtlDelete ::= CHOICE {
+  cert  HashedId8,
+  dc    DcDelete,
+  ...
+}
+
+TlmEntry::= SEQUENCE {
+  selfSignedTLMCertificate EtsiTs103097Certificate,
+  linkTLMCertificate       EtsiTs103097Certificate OPTIONAL,
+  accessPoint              Url
+}
+
+RootCaEntry ::= SEQUENCE {
+  selfsignedRootCa      EtsiTs103097Certificate,
+  linkRootCaCertificate EtsiTs103097Certificate OPTIONAL
+}
+
+EaEntry ::= SEQUENCE {
+  eaCertificate     EtsiTs103097Certificate,
+  aaAccessPoint     Url,
+  itsAccessPoint    Url OPTIONAL
+}
+
+AaEntry ::= SEQUENCE {
+  aaCertificate EtsiTs103097Certificate,
+  accessPoint Url
+}
+
+DcEntry ::= SEQUENCE {
+  url   Url,
+  cert  SEQUENCE OF HashedId8
+}
+
+DcDelete ::= Url
+
+Url::= IA5String
+
+END

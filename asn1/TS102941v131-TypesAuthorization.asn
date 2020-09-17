@@ -1,0 +1,80 @@
+EtsiTs102941TypesAuthorization
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) authorization(5) version2(2) }
+
+DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+IMPORTS
+  EtsiTs103097Certificate, EtsiTs103097Data-Signed
+FROM EtsiTs103097Module { itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(103097) securedMessageV1(0)}
+
+  CertificateFormat, CertificateSubjectAttributes, EcSignature, HashedId8, PublicKeys, Version
+FROM EtsiTs102941BaseTypes { itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) version2(2) }
+;
+
+/************
+-- AuthorizationRequest/Response
+************/
+
+AuthorizationResponseCode ::= ENUMERATED {
+  ok(0),
+  -- ITS->AA
+  its-aa-cantparse, -- valid for any structure
+  its-aa-badcontenttype, -- not encrypted, not signed, not authorizationrequest
+  its-aa-imnottherecipient, -- the "recipients" of the outermost encrypted data doesn't include me
+  its-aa-unknownencryptionalgorithm, -- either kexalg or contentencryptionalgorithm
+  its-aa-decryptionfailed, -- works for ECIES-HMAC and AES-CCM
+  its-aa-keysdontmatch, -- HMAC keyTag verification fails
+  its-aa-incompleterequest, -- some elements are missing
+  its-aa-invalidencryptionkey, -- the responseEncryptionKey is bad
+  its-aa-outofsyncrequest, -- signingTime is outside acceptable limits
+  its-aa-unknownea, -- the EA identified by eaId is unknown to me
+  its-aa-invalidea, -- the EA certificate is revoked
+  its-aa-deniedpermissions, -- I, the AA, deny the requested permissions
+  -- AA->EA
+  aa-ea-cantreachea, -- the EA is unreachable (network error?)
+  -- EA->AA
+  ea-aa-cantparse, -- valid for any structure
+  ea-aa-badcontenttype, -- not encrypted, not signed, not authorizationrequest
+  ea-aa-imnottherecipient, -- the "recipients" of the outermost encrypted data doesn't include me
+  ea-aa-unknownencryptionalgorithm, -- either kexalg or contentencryptionalgorithm
+  ea-aa-decryptionfailed, -- works for ECIES-HMAC and AES-CCM
+  -- TODO: to be continued...
+  invalidaa, -- the AA certificate presented is invalid/revoked/whatever
+  invalidaasignature, -- the AA certificate presented can't validate the request signature
+  wrongea, -- the encrypted signature doesn't designate me as the EA
+  unknownits, -- can't retrieve the EC/ITS in my DB
+  invalidsignature, -- signature verification of the request by the EC fails
+  invalidencryptionkey, -- signature is good, but the key is bad
+  deniedpermissions, -- permissions not granted
+  deniedtoomanycerts, -- parallel limit
+... }
+
+
+InnerAtRequest ::= SEQUENCE {
+  publicKeys                    PublicKeys,
+  hmacKey                       OCTET STRING (SIZE(32)),
+  sharedAtRequest               SharedAtRequest,
+  ecSignature                   EcSignature,
+  ...
+}
+
+SharedAtRequest ::= SEQUENCE {
+  eaId                          HashedId8,
+  keyTag                        OCTET STRING (SIZE(16)),
+  certificateFormat             CertificateFormat,
+  requestedSubjectAttributes    CertificateSubjectAttributes (WITH COMPONENTS{..., certIssuePermissions ABSENT}),
+  ...
+}
+
+InnerAtResponse ::= SEQUENCE {
+  requestHash                   OCTET STRING (SIZE(16)),
+  responseCode                  AuthorizationResponseCode,
+  certificate                   EtsiTs103097Certificate OPTIONAL,
+  ...
+}
+  (WITH COMPONENTS { responseCode (ok), certificate PRESENT }
+  | WITH COMPONENTS { responseCode (ALL EXCEPT ok), certificate ABSENT }
+  )
+
+END

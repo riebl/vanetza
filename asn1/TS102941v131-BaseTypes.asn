@@ -1,0 +1,73 @@
+EtsiTs102941BaseTypes
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) version2(2) }
+
+DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+IMPORTS
+  HashedId8, Time32, PublicEncryptionKey, PublicVerificationKey, Signature
+FROM
+  IEEE1609dot2BaseTypes {iso(1) identified-organization(3) ieee(111) standards-association-numbered-series-standards(2) wave-stds(1609) dot2(2) base(1) base-types(2) major-version-2(2)}
+
+  CertificateId, SubjectAssurance, SequenceOfPsidSsp, SequenceOfPsidGroupPermissions,
+  ValidityPeriod, GeographicRegion
+FROM
+  IEEE1609dot2 {iso(1) identified-organization(3) ieee(111) standards-association-numbered-series-standards(2) wave-stds(1609) dot2(2) base (1) schema (1) major-version-2(2)}
+
+  EtsiTs103097Data, EtsiTs103097Data-Encrypted, EtsiTs103097Data-Signed, EtsiTs103097Data-SignedExternalPayload
+FROM
+  EtsiTs103097Module {itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(103097) securedMessageV1(0)}
+;
+
+CertificateFormat::= INTEGER {
+  ts103097v131 (1)
+}(1..255)
+
+CertificateSubjectAttributes ::= SEQUENCE {
+  id                    CertificateId OPTIONAL,
+  validityPeriod        ValidityPeriod OPTIONAL,
+  region                GeographicRegion OPTIONAL,
+  assuranceLevel        SubjectAssurance OPTIONAL,
+  appPermissions        SequenceOfPsidSsp OPTIONAL,
+  certIssuePermissions  SequenceOfPsidGroupPermissions OPTIONAL,
+  ...
+}(WITH COMPONENTS { ..., appPermissions PRESENT} | WITH COMPONENTS { ..., certIssuePermissions PRESENT})
+
+EcSignature::= CHOICE {
+  encryptedEcSignature  EtsiTs103097Data-Encrypted{EtsiTs103097Data-SignedExternalPayload},
+  ecSignature           EtsiTs103097Data-SignedExternalPayload
+}
+
+PublicKeys ::= SEQUENCE {
+  verificationKey       PublicVerificationKey,
+  encryptionKey         PublicEncryptionKey OPTIONAL
+}
+
+Version ::= INTEGER {v1(1)}
+
+EtsiTs103097Data-Unsecured {ToBeSentDataContent} ::= EtsiTs103097Data
+(WITH COMPONENTS {...,
+  content (WITH COMPONENTS {
+    unsecuredData (CONTAINING ToBeSentDataContent)
+  })
+})
+
+EtsiTs103097Data-Encrypted-Unicast {ToBeEncryptedDataContent} ::= EtsiTs103097Data-Encrypted { EtsiTs103097Data-Unsecured{ToBeEncryptedDataContent}}
+(WITH COMPONENTS {...,
+  content (WITH COMPONENTS {
+    encryptedData (WITH COMPONENTS {...,
+       recipients (SIZE(1))
+    })
+  })
+})
+
+EtsiTs103097Data-SignedAndEncrypted-Unicast {ToBesignedAndEncryptedDataContent} ::= EtsiTs103097Data-Encrypted {EtsiTs103097Data-Signed {ToBesignedAndEncryptedDataContent}}
+(WITH COMPONENTS {...,
+  content (WITH COMPONENTS {
+    encryptedData (WITH COMPONENTS {...,
+       recipients (SIZE(1))
+    })
+  })
+})
+
+END
