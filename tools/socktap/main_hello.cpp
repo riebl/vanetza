@@ -93,8 +93,7 @@ int main(int argc, const char** argv)
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::Managed;
         mib.itsGnSecurity = false;
 
-        asio::steady_timer gps_timer(io_service);
-        GpsPositionProvider positioning(gps_timer, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
+        GpsPositionProvider positioning(asio::steady_timer(io_service), vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
 
         security::SignService sign_service = security::dummy_sign_service(trigger.runtime(), nullptr);
         security::VerifyService verify_service =

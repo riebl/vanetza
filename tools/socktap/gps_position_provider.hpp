@@ -18,8 +18,8 @@ public:
         friend class GpsPositionProvider;
     };
 
-    GpsPositionProvider(boost::asio::steady_timer& timer);
-    GpsPositionProvider(boost::asio::steady_timer& timer, const std::string& hostname, const std::string& port);
+    GpsPositionProvider(boost::asio::steady_timer&& timer);
+    GpsPositionProvider(boost::asio::steady_timer&& timer, const std::string& hostname, const std::string& port);
     ~GpsPositionProvider();
 
     const vanetza::PositionFix& position_fix() override;
@@ -29,7 +29,7 @@ private:
     void schedule_timer();
     void on_timer(const boost::system::error_code& ec);
 
-    boost::asio::steady_timer& timer_;
+    boost::asio::steady_timer timer_;
     gps_data_t gps_data;
     vanetza::PositionFix fetched_position_fix;
 };

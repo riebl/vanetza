@@ -10,6 +10,7 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
+#include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
@@ -37,8 +38,12 @@ int main(int argc, const char** argv)
         ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
         ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed. Root certificates in the chain are automatically trusted.")
+        ("positioning,p", po::value<std::string>()->default_value("gpsd"), "Select positioning provider")
         ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
+        ("latitude", po::value<double>()->default_value(48.7668616), "Latitude of static position")
+        ("longitude", po::value<double>()->default_value(11.432068), "Longitude of static position")
+        ("pos_confidence", po::value<double>()->default_value(5.0), "95% circular confidence of static position")
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
         ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
         ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
@@ -123,8 +128,25 @@ int main(int argc, const char** argv)
             throw std::runtime_error("Unsupported GeoNetworking version, only version 0 and 1 are supported.");
         }
 
-        asio::steady_timer gps_timer(io_service);
-        GpsPositionProvider positioning(gps_timer, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
+        std::unique_ptr<vanetza::PositionProvider> positioning;
+        if (vm["positioning"].as<std::string>() == "gpsd") {
+            asio::steady_timer gps_timer(io_service);
+            positioning.reset(new GpsPositionProvider { std::move(gps_timer),
+                    vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>() });
+        } else if (vm["positioning"].as<std::string>() == "static") {
+            std::unique_ptr<StoredPositionProvider> stored { new StoredPositionProvider() };
+            PositionFix fix;
+            fix.timestamp = trigger.runtime().now();
+            fix.latitude = vm["latitude"].as<double>() * units::degree;
+            fix.longitude = vm["longitude"].as<double>() * units::degree;
+            fix.confidence.semi_major = vm["pos_confidence"].as<double>() * units::si::meter;
+            fix.confidence.semi_minor = fix.confidence.semi_major;
+            stored->position_fix(fix);
+            positioning = std::move(stored);
+        } else {
+            std::cerr << "Unknown positioning method, use either gpsd or static\n";
+            return 1;
+        }
 
         // We always use the same ceritificate manager and crypto services for now.
         // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
@@ -178,12 +200,12 @@ int main(int argc, const char** argv)
                 new security::DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store) };
         }
 
-        security::DefaultSignHeaderPolicy sign_header_policy(trigger.runtime(), positioning);
+        security::DefaultSignHeaderPolicy sign_header_policy(trigger.runtime(), *positioning);
         security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
-        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, positioning);
+        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, *positioning);
 
         security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
-        RouterContext context(mib, trigger, positioning, &security_entity);
+        RouterContext context(mib, trigger, *positioning, &security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
         context.set_link_layer(link_layer.get());
 
@@ -196,7 +218,7 @@ int main(int argc, const char** argv)
 
             if (app_name == "ca") {
                 std::unique_ptr<CamApplication> ca {
-                    new CamApplication(positioning, trigger.runtime())
+                    new CamApplication(*positioning, trigger.runtime())
                 };
                 ca->set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
                 ca->print_received_message(vm.count("print-rx-cam") > 0);
