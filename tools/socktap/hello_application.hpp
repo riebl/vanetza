@@ -7,7 +7,7 @@
 class HelloApplication : public Application
 {
 public:
-    HelloApplication(boost::asio::steady_timer&, std::chrono::milliseconds interval);
+    HelloApplication(boost::asio::steady_timer&&, std::chrono::milliseconds interval);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
 
@@ -15,7 +15,7 @@ private:
     void schedule_timer();
     void on_timer(const boost::system::error_code& ec);
 
-    boost::asio::steady_timer& timer_;
+    boost::asio::steady_timer timer_;
     std::chrono::milliseconds interval_;
 };
 

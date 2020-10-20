@@ -2,6 +2,7 @@
 #include "gps_position_provider.hpp"
 #include "benchmark_application.hpp"
 #include "cam_application.hpp"
+#include "hello_application.hpp"
 #include "link_layer.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
@@ -44,6 +45,7 @@ int main(int argc, const char** argv)
         ("print-rx-cam", "Print received CAMs")
         ("print-tx-cam", "Print generated CAMs")
         ("benchmark", "Enable benchmarking")
+        ("applications,a", po::value<std::vector<std::string>>()->default_value({"ca"}, "ca")->multitoken(), "Run applications [ca,hello,benchmark]")
         ("non-strict", "Set MIB parameter ItsGnSnDecapResultHandling to NON_STRICT")
     ;
 
@@ -185,15 +187,44 @@ int main(int argc, const char** argv)
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
         context.set_link_layer(link_layer.get());
 
-        CamApplication cam_app(positioning, trigger.runtime());
-        cam_app.set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
-        cam_app.print_received_message(vm.count("print-rx-cam") > 0);
-        cam_app.print_generated_message(vm.count("print-tx-cam") > 0);
-        context.enable(&cam_app);
+        std::map<std::string, std::unique_ptr<Application>> apps;
+        for (const std::string& app_name : vm["applications"].as<std::vector<std::string>>()) {
+            if (apps.find(app_name) != apps.end()) {
+                std::cerr << "application '" << app_name << "' requested multiple times, skip\n";
+                continue;
+            }
 
-        BenchmarkApplication benchmark_app(io_service);
-        if (vm.count("benchmark") > 0) {
-            context.enable(&benchmark_app);
+            if (app_name == "ca") {
+                std::unique_ptr<CamApplication> ca {
+                    new CamApplication(positioning, trigger.runtime())
+                };
+                ca->set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+                ca->print_received_message(vm.count("print-rx-cam") > 0);
+                ca->print_generated_message(vm.count("print-tx-cam") > 0);
+                apps.emplace(app_name, std::move(ca));
+            } else if (app_name == "hello") {
+                asio::steady_timer timer(io_service);
+                std::unique_ptr<HelloApplication> hello {
+                    new HelloApplication(std::move(timer), std::chrono::milliseconds(800))
+                };
+                apps.emplace(app_name, std::move(hello));
+            } else if (app_name == "benchmark") {
+                std::unique_ptr<BenchmarkApplication> benchmark {
+                    new BenchmarkApplication(io_service)
+                };
+                apps.emplace(app_name, std::move(benchmark));
+            } else {
+                std::cerr << "skip unknown application '" << app_name << "'\n";
+            }
+        }
+
+        if (apps.empty()) {
+            std::cerr << "Warning: No applications are configured, only GN beacons will be exchanged\n";
+        }
+
+        for (const auto& app : apps) {
+            std::cout << "Enable application '" << app.first << "'...\n";
+            context.enable(app.second.get());
         }
 
         io_service.run();

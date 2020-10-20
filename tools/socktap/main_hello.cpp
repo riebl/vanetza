@@ -105,8 +105,7 @@ int main(int argc, const char** argv)
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
         context.set_link_layer(link_layer.get());
 
-        asio::steady_timer hello_timer(io_service);
-        HelloApplication hello_app(hello_timer, std::chrono::milliseconds(800));
+        HelloApplication hello_app(asio::steady_timer(io_service), std::chrono::milliseconds(800));
         context.enable(&hello_app);
 
         io_service.run();

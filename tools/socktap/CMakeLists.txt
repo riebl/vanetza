@@ -30,6 +30,7 @@ add_executable(socktap-hello
 add_executable(socktap-cam
     benchmark_application.cpp
     cam_application.cpp
+    hello_application.cpp
     main_cam.cpp
 )
 
