@@ -27,19 +27,19 @@ add_executable(socktap-hello
     main_hello.cpp
 )
 
-add_executable(socktap-cam
+add_executable(socktap
     benchmark_application.cpp
     cam_application.cpp
     hello_application.cpp
-    main_cam.cpp
+    main.cpp
 )
 
 
 target_link_libraries(socktap-common PUBLIC Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
 target_link_libraries(socktap-hello socktap-common)
-target_link_libraries(socktap-cam socktap-common)
+target_link_libraries(socktap socktap-common)
 install(TARGETS socktap-hello EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(TARGETS socktap-cam EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(TARGETS socktap EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 option(SOCKTAP_WITH_COHDA_LLC "Use Cohda LLC API for socktap" ${COHDA_FOUND})
 if(SOCKTAP_WITH_COHDA_LLC)
