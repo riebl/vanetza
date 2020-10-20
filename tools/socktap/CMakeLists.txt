@@ -16,6 +16,8 @@ add_library(socktap-common STATIC
     dcc_passthrough.cpp
     ethernet_device.cpp
     gps_position_provider.cpp
+    link_layer.cpp
+    raw_socket_link.cpp
     router_context.cpp
     time_trigger.cpp
 )
@@ -43,5 +45,5 @@ if(SOCKTAP_WITH_COHDA_LLC)
     find_package(Cohda MODULE REQUIRED)
     target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_COHDA_LLC")
     target_include_directories(socktap-common PUBLIC ${COHDA_INCLUDE_DIRS})
-    target_sources(socktap-common PRIVATE cohda.cpp)
+    target_sources(socktap-common PRIVATE cohda.cpp cohda_link.cpp)
 endif()

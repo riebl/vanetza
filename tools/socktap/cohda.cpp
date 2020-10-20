@@ -9,13 +9,13 @@
 namespace vanetza
 {
 
-void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket>& packet)
+void insert_cohda_tx_header(const access::DataRequest& request, std::unique_ptr<ChunkPacket>& packet)
 {
     access::G5LinkLayer link_layer;
     access::ieee802::dot11::QosDataHeader& mac_header = link_layer.mac_header;
-    mac_header.destination = request.destination;
-    mac_header.source = request.source;
-    mac_header.qos_control.user_priority(dcc::map_profile_onto_ac(request.dcc_profile));
+    mac_header.destination = request.destination_addr;
+    mac_header.source = request.source_addr;
+    mac_header.qos_control.user_priority(request.access_category);
 
     ByteBuffer link_layer_buffer;
     serialize_into_buffer(link_layer, link_layer_buffer);
@@ -31,7 +31,7 @@ void insert_cohda_tx_header(const dcc::DataRequest& request, std::unique_ptr<Chu
     phy.TxPacketData.TxAntenna = MKX_ANT_DEFAULT;
     phy.TxPacketData.TxFrameLength = payload_size;
     auto phy_ptr = reinterpret_cast<const uint8_t*>(&phy);
-    packet->layer(OsiLayer::Physical) = std::move(ByteBuffer(phy_ptr, phy_ptr + sizeof(tMKxTxPacket)));
+    packet->layer(OsiLayer::Physical) = ByteBuffer { phy_ptr, phy_ptr + sizeof(tMKxTxPacket) };
 }
 
 boost::optional<EthernetHeader> strip_cohda_rx_header(CohesivePacket& packet)

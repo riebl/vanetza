@@ -2,11 +2,11 @@
 #include "gps_position_provider.hpp"
 #include "benchmark_application.hpp"
 #include "cam_application.hpp"
+#include "link_layer.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
-#include <boost/asio/generic/raw_protocol.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <vanetza/security/certificate_cache.hpp>
@@ -29,6 +29,7 @@ int main(int argc, const char** argv)
     po::options_description options("Allowed options");
     options.add_options()
         ("help", "Print out available options.")
+        ("link-layer,l", po::value<std::string>()->default_value("ethernet"), "Link layer type")
         ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
         ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
         ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
@@ -88,9 +89,12 @@ int main(int argc, const char** argv)
             }
         }
 
-        asio::generic::raw_protocol raw_protocol(AF_PACKET, gn::ether_type.net());
-        asio::generic::raw_protocol::socket raw_socket(io_service, raw_protocol);
-        raw_socket.bind(device.endpoint(AF_PACKET));
+        const std::string link_layer_name = vm["link-layer"].as<std::string>();
+        auto link_layer =  create_link_layer(io_service, device, link_layer_name);
+        if (!link_layer) {
+            std::cerr << "No link layer '" << link_layer_name << "' found." << std::endl;
+            return 1;
+        }
 
         auto signal_handler = [&io_service](const boost::system::error_code& ec, int signal_number) {
             if (!ec) {
@@ -177,8 +181,9 @@ int main(int argc, const char** argv)
         security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, positioning);
 
         security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
-        RouterContext context(raw_socket, mib, trigger, positioning, &security_entity);
+        RouterContext context(mib, trigger, positioning, &security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
+        context.set_link_layer(link_layer.get());
 
         CamApplication cam_app(positioning, trigger.runtime());
         cam_app.set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));

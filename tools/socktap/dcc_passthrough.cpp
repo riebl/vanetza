@@ -1,22 +1,16 @@
 #include "dcc_passthrough.hpp"
 #include "time_trigger.hpp"
+#include <vanetza/access/data_request.hpp>
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
-#include <vanetza/net/ethernet_header.hpp>
+#include <vanetza/dcc/mapping.hpp>
 #include <vanetza/net/chunk_packet.hpp>
-#include <boost/asio/generic/raw_protocol.hpp>
 #include <iostream>
 
-#ifdef SOCKTAP_WITH_COHDA_LLC
-#include "cohda.hpp"
-#endif
-
-namespace asio = boost::asio;
-using boost::asio::generic::raw_protocol;
 using namespace vanetza;
 
-DccPassthrough::DccPassthrough(raw_protocol::socket& socket, TimeTrigger& trigger) :
-        socket_(socket), trigger_(trigger) {}
+DccPassthrough::DccPassthrough(access::Interface& access, TimeTrigger& trigger) :
+        access_(access), trigger_(trigger) {}
 
 
 void DccPassthrough::request(const dcc::DataRequest& request, std::unique_ptr<ChunkPacket> packet)
@@ -26,24 +20,14 @@ void DccPassthrough::request(const dcc::DataRequest& request, std::unique_ptr<Ch
         return;
     }
 
-#ifdef SOCKTAP_WITH_COHDA_LLC
-    insert_cohda_tx_header(request, packet);
-#else
-    packet->layer(OsiLayer::Link) = create_ethernet_header(request.destination, request.source, request.ether_type);
-#endif
-    for (auto& layer : osi_layer_range<OsiLayer::Physical, OsiLayer::Application>()) {
-        const auto index = distance(OsiLayer::Physical, layer);
-        packet->layer(layer).convert(buffers_[index]);
-    }
-
     trigger_.schedule();
 
-    std::array<asio::const_buffer, layers_> const_buffers;
-    for (unsigned i = 0; i < const_buffers.size(); ++i) {
-        const_buffers[i] = asio::buffer(buffers_[i]);
-    }
-    auto bytes_sent = socket_.send(const_buffers);
-    std::cout << "sent packet to " << request.destination << " (" << bytes_sent << " bytes)\n";
+    access::DataRequest acc_req;
+    acc_req.ether_type = request.ether_type;
+    acc_req.source_addr = request.source;
+    acc_req.destination_addr = request.destination;
+    acc_req.access_category = dcc::map_profile_onto_ac(request.dcc_profile);
+    access_.request(acc_req, std::move(packet));
 }
 
 void DccPassthrough::allow_packet_flow(bool allow)
