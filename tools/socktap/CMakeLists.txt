@@ -20,6 +20,7 @@ add_library(socktap-common STATIC
     raw_socket_link.cpp
     router_context.cpp
     time_trigger.cpp
+    udp_link.cpp
 )
 
 add_executable(socktap-hello

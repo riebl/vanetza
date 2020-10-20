@@ -1,5 +1,6 @@
 #include "link_layer.hpp"
 #include "raw_socket_link.hpp"
+#include "udp_link.hpp"
 #include <vanetza/access/ethertype.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
 
@@ -24,6 +25,10 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
             link_layer.reset(new CohdaLink { std::move(raw_socket) });
 #endif
         }
+    } else if (name == "udp") {
+        namespace ip = boost::asio::ip;
+        ip::udp::endpoint multicast(ip::make_address("239.118.122.97"), 8947);
+        link_layer.reset(new UdpLink { io_service, multicast });
     }
 
     return link_layer;
