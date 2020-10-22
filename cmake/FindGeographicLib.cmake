@@ -1,3 +1,15 @@
+option(GeographicLib_PREFER_PACKAGE_CONFIG "Prefer CMake config mode" ON)
+mark_as_advanced(GeographicLib_PREFER_PACKAGE_CONFIG)
+
+if(GeographicLib_PREFER_PACKAGE_CONFIG)
+    find_package(GeographicLib ${GeographicLib_FIND_VERSION} CONFIG)
+    if (GeographicLib_FOUND)
+        message(STATUS "GeographicLib: using found CMake configuration")
+        return()
+    endif()
+endif()
+message(STATUS "GeographicLib: using lookup code by Vanetza")
+
 find_path(GeographicLib_INCLUDE_DIR NAMES GeographicLib/Config.h DOC "GeographicLib include directory")
 find_library(GeographicLib_LIBRARY_RELEASE NAMES Geographic DOC "GeographicLib library (release)")
 find_library(GeographicLib_LIBRARY_DEBUG NAMES Geographic_d DOC "GeographicLib library (debug)")
