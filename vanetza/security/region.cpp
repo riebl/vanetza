@@ -681,14 +681,21 @@ ThreeDLocation::Elevation to_elevation(units::Length altitude)
     ThreeDLocation::Elevation elevation { ThreeDLocation::unknown_elevation };
 
     if (!isnan(altitude)) {
-        // see TS 103 097 v1.2.1, section 4.2.19
-        static constexpr double min_elevation = -4095.0;
-        static constexpr double max_elevation = 61439.0;
-        const double altitude_dm = 10.0 * (altitude / vanetza::units::si::meter);
-        std::int16_t altitude_int = boost::algorithm::clamp(std::round(altitude_dm), min_elevation, max_elevation);
+        using boost::algorithm::clamp;
 
-        elevation[0] = altitude_int >> 8;
-        elevation[1] = altitude_int & 0xFF;
+        // see TS 103 097 v1.2.1, section 4.2.19
+        double altitude_dm = std::round(10.0 * (altitude / vanetza::units::si::meter));
+        if (altitude_dm >= 0.0) {
+            altitude_dm = clamp(altitude_dm, 0.0, 61439.0);
+            auto altitude_int = static_cast<std::uint16_t>(altitude_dm);
+            elevation[0] = altitude_int >> 8;
+            elevation[1] = altitude_int & 0xFF;
+        } else {
+            altitude_dm = clamp(altitude_dm, -4095.0, -1.0);
+            auto altitude_int = static_cast<std::int16_t>(altitude_dm);
+            elevation[0] = altitude_int >> 8 | 0xF0;
+            elevation[1] = altitude_int & 0xFF;
+        }
     }
 
     return elevation;
