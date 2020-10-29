@@ -2,12 +2,13 @@
 #define HELLO_APPLICATION_HPP_EUIC2VFR
 
 #include "application.hpp"
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 
 class HelloApplication : public Application
 {
 public:
-    HelloApplication(boost::asio::steady_timer&&, std::chrono::milliseconds interval);
+    HelloApplication(boost::asio::io_service&, std::chrono::milliseconds interval);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
 

@@ -130,9 +130,9 @@ int main(int argc, const char** argv)
 
         std::unique_ptr<vanetza::PositionProvider> positioning;
         if (vm["positioning"].as<std::string>() == "gpsd") {
-            asio::steady_timer gps_timer(io_service);
-            positioning.reset(new GpsPositionProvider { std::move(gps_timer),
-                    vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>() });
+            positioning.reset(new GpsPositionProvider {
+                io_service, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>()
+            });
         } else if (vm["positioning"].as<std::string>() == "static") {
             std::unique_ptr<StoredPositionProvider> stored { new StoredPositionProvider() };
             PositionFix fix;
@@ -225,9 +225,8 @@ int main(int argc, const char** argv)
                 ca->print_generated_message(vm.count("print-tx-cam") > 0);
                 apps.emplace(app_name, std::move(ca));
             } else if (app_name == "hello") {
-                asio::steady_timer timer(io_service);
                 std::unique_ptr<HelloApplication> hello {
-                    new HelloApplication(std::move(timer), std::chrono::milliseconds(800))
+                    new HelloApplication(io_service, std::chrono::milliseconds(800))
                 };
                 apps.emplace(app_name, std::move(hello));
             } else if (app_name == "benchmark") {

@@ -7,8 +7,8 @@
 
 using namespace vanetza;
 
-HelloApplication::HelloApplication(boost::asio::steady_timer&& timer, std::chrono::milliseconds interval) :
-    timer_(std::move(timer)), interval_(interval)
+HelloApplication::HelloApplication(boost::asio::io_service& io, std::chrono::milliseconds interval) :
+    timer_(io), interval_(interval)
 {
     schedule_timer();
 }

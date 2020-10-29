@@ -3,6 +3,7 @@
 
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/position_provider.hpp>
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <stdexcept>
 #include <string>
@@ -18,8 +19,8 @@ public:
         friend class GpsPositionProvider;
     };
 
-    GpsPositionProvider(boost::asio::steady_timer&& timer);
-    GpsPositionProvider(boost::asio::steady_timer&& timer, const std::string& hostname, const std::string& port);
+    GpsPositionProvider(boost::asio::io_service& io);
+    GpsPositionProvider(boost::asio::io_service& io, const std::string& hostname, const std::string& port);
     ~GpsPositionProvider();
 
     const vanetza::PositionFix& position_fix() override;

@@ -39,12 +39,12 @@ void RouterContext::log_packet_drop(geonet::Router::PacketDropReason reason)
 
 void RouterContext::set_link_layer(LinkLayer* link_layer)
 {
-    using namespace std::placeholders;
+    namespace dummy = std::placeholders;
 
     if (link_layer) {
         request_interface_.reset(new DccPassthrough { *link_layer, trigger_ });
         router_.set_access_interface(request_interface_.get());
-        link_layer->indicate(std::bind(&RouterContext::indicate, this, _1, _2));
+        link_layer->indicate(std::bind(&RouterContext::indicate, this, dummy::_1, dummy::_2));
         update_packet_flow(router_.get_local_position_vector());
     } else {
         router_.set_access_interface(nullptr);

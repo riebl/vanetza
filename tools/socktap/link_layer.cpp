@@ -27,7 +27,7 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
         }
     } else if (name == "udp") {
         namespace ip = boost::asio::ip;
-        ip::udp::endpoint multicast(ip::make_address("239.118.122.97"), 8947);
+        ip::udp::endpoint multicast(ip::address::from_string("239.118.122.97"), 8947);
         link_layer.reset(new UdpLink { io_service, multicast });
     }
 
