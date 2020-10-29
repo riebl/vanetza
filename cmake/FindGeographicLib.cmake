@@ -2,7 +2,7 @@ option(GeographicLib_PREFER_PACKAGE_CONFIG "Prefer CMake config mode" ON)
 mark_as_advanced(GeographicLib_PREFER_PACKAGE_CONFIG)
 
 if(GeographicLib_PREFER_PACKAGE_CONFIG)
-    find_package(GeographicLib ${GeographicLib_FIND_VERSION} CONFIG)
+    find_package(GeographicLib ${GeographicLib_FIND_VERSION} QUIET CONFIG)
     if (GeographicLib_FOUND)
         message(STATUS "GeographicLib: using found CMake configuration")
         return()
