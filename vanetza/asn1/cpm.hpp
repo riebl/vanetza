@@ -10,10 +10,10 @@ namespace vanetza
 namespace asn1
 {
 
-class Cpm : public asn1c_wrapper<CPM_t>
+class Cpm : public asn1c_per_wrapper<CPM_t>
 {
 public:
-    Cpm() : asn1c_wrapper(asn_DEF_CPM) {}
+    Cpm() : asn1c_per_wrapper(asn_DEF_CPM) {}
 };
 
 } // namespace asn1
