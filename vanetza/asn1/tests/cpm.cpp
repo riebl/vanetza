@@ -47,5 +47,25 @@ TEST(Cpm, decode_one_perceived_object)
 
     asn1::Cpm cpm;
     ASSERT_TRUE(cpm.decode(cpm_uper));
+
+    ASSERT_TRUE(cpm->cpm.cpmParameters.perceivedObjectContainer);
+    EXPECT_EQ(1, cpm->cpm.cpmParameters.perceivedObjectContainer->list.count);
+
+    const PerceivedObject_t* object = cpm->cpm.cpmParameters.perceivedObjectContainer->list.array[0];
+    ASSERT_TRUE(object);
+    EXPECT_EQ(12, object->objectID);
+    EXPECT_EQ(300, object->timeOfMeasurement);
+    ASSERT_TRUE(object->objectAge);
+    EXPECT_EQ(500, *object->objectAge);
+    EXPECT_EQ(20, object->objectConfidence);
+    EXPECT_EQ(50000, object->xDistance.value);
+    EXPECT_EQ(100, object->xDistance.confidence);
+    EXPECT_EQ(25000, object->yDistance.value);
+    EXPECT_EQ(50, object->yDistance.confidence);
+    EXPECT_FALSE(object->zDistance);
+    EXPECT_EQ(15, object->xSpeed.value);
+    EXPECT_EQ(127, object->xSpeed.confidence);
+    EXPECT_EQ(30, object->ySpeed.value);
+    EXPECT_EQ(127, object->ySpeed.confidence);
 }
 
