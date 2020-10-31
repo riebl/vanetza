@@ -12,7 +12,7 @@ static asn_oer_constraints_t asn_OER_type_SensorIdList_constr_1 CC_NOTUSED = {
 	-1	/* (SIZE(1..128)) */};
 asn_per_constraints_t asn_PER_type_SensorIdList_constr_1 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_CONSTRAINED,	 7,  7,  1,  128 }	/* (SIZE(1..128)) */,
+	{ APC_CONSTRAINED | APC_EXTENSIBLE,	 7,  7,  1,  128 }	/* (SIZE(1..128)) */,
 	0, 0	/* No PER value map */
 };
 asn_TYPE_member_t asn_MBR_SensorIdList_1[] = {
