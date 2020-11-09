@@ -5,7 +5,7 @@
 #include <vanetza/units/length.hpp>
 #include <cmath>
 
-static_assert(GPSD_API_MAJOR_VERSION >= 5 && GPSD_API_MAJOR_VERSION <= 9, "libgps has incompatible API");
+static_assert(GPSD_API_MAJOR_VERSION >= 5 && GPSD_API_MAJOR_VERSION <= 10, "libgps has incompatible API");
 
 namespace
 {
@@ -15,6 +15,25 @@ using gpsd_timestamp = timestamp_t;
 #else
 using gpsd_timestamp = timespec_t;
 #endif
+
+int gpsd_read(gps_data_t& data)
+{
+#if GPSD_API_MAJOR_VERSION < 7
+    return gps_read(&data);
+#else
+    return gps_read(&data, nullptr, 0);
+#endif
+}
+
+constexpr int gpsd_status(const gps_data_t& data)
+{
+#if GPSD_API_MAJOR_VERSION < 10
+    return data.status;
+#else
+    return data.fix.status;
+#endif
+}
+
 
 vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
 {
@@ -88,18 +107,14 @@ void GpsPositionProvider::fetch_position_fix()
 {
     int gps_read_rc = 0;
     do {
-#if GPSD_API_MAJOR_VERSION < 7
-        gps_read_rc = gps_read(&gps_data);
-#else
-        gps_read_rc = gps_read(&gps_data, nullptr, 0);
-#endif
+        gps_read_rc = gpsd_read(gps_data);
     } while (gps_read_rc > 0 && gps_data.devices.ndevices > 0);
 
     if (gps_read_rc < 0) {
         throw gps_error(errno);
     }
 
-    if (gps_data.status == STATUS_FIX && gps_data.fix.mode >= MODE_2D) {
+    if (gpsd_status(gps_data) == STATUS_FIX && gps_data.fix.mode >= MODE_2D) {
         using namespace vanetza::units;
         static const TrueNorth north = TrueNorth::from_value(0.0);
 
