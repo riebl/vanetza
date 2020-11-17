@@ -122,7 +122,7 @@ bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
 
 } // namespace
 
-VerifyService straight_verify_service(Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy, PositionProvider& positioning)
+VerifyService straight_verify_service(const Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy, PositionProvider& positioning)
 {
     return [&](VerifyRequest&& request) -> VerifyConfirm {
         // TODO check if certificates in chain have been revoked for all CA certificates, ATs are never revoked

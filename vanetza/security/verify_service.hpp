@@ -74,7 +74,7 @@ using VerifyService = std::function<VerifyConfirm(VerifyRequest&&)>;
  * \param sign_header_policy sign header policy to report unknown certificates
  * \return callable verify service
  */
-VerifyService straight_verify_service(Runtime&, CertificateProvider&, CertificateValidator&, Backend&, CertificateCache&, SignHeaderPolicy&, PositionProvider&);
+VerifyService straight_verify_service(const Runtime&, CertificateProvider&, CertificateValidator&, Backend&, CertificateCache&, SignHeaderPolicy&, PositionProvider&);
 
 /**
  * Get insecure dummy verify service without any checks
