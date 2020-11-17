@@ -9,14 +9,13 @@ if(NOT TARGET Boost::program_options)
 endif()
 
 find_package(Threads REQUIRED)
-find_package(GPS REQUIRED)
 
 add_library(socktap-common STATIC
     application.cpp
     dcc_passthrough.cpp
     ethernet_device.cpp
-    gps_position_provider.cpp
     link_layer.cpp
+    positioning.cpp
     raw_socket_link.cpp
     router_context.cpp
     time_trigger.cpp
@@ -36,7 +35,7 @@ add_executable(socktap
 )
 
 
-target_link_libraries(socktap-common PUBLIC Boost::system Boost::program_options Threads::Threads GPS::GPS vanetza)
+target_link_libraries(socktap-common PUBLIC Boost::system Boost::program_options Threads::Threads vanetza)
 target_link_libraries(socktap-hello socktap-common)
 target_link_libraries(socktap socktap-common)
 install(TARGETS socktap-hello EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -48,4 +47,13 @@ if(SOCKTAP_WITH_COHDA_LLC)
     target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_COHDA_LLC")
     target_include_directories(socktap-common PUBLIC ${COHDA_INCLUDE_DIRS})
     target_sources(socktap-common PRIVATE cohda.cpp cohda_link.cpp)
+endif()
+
+find_package(GPS QUIET)
+option(SOCKTAP_WITH_GPSD "Enable gpsd positioning for socktap" ${GPS_FOUND})
+if(SOCKTAP_WITH_GPSD)
+    find_package(GPS REQUIRED)
+    target_compile_definitions(socktap-common PUBLIC "SOCKTAP_WITH_GPSD")
+    target_link_libraries(socktap-common PUBLIC GPS::GPS)
+    target_sources(socktap-common PRIVATE gps_position_provider.cpp)
 endif()

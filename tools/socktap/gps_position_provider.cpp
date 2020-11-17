@@ -65,7 +65,7 @@ GpsPositionProvider::GpsPositionProvider(boost::asio::io_service& io, const std:
     timer_(io)
 {
     if (gps_open(hostname.c_str(), port.c_str(), &gps_data)) {
-        throw gps_error(errno);
+        throw GpsPositioningException(errno);
     }
     gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, nullptr);
     schedule_timer();
@@ -77,8 +77,8 @@ GpsPositionProvider::~GpsPositionProvider()
     gps_close(&gps_data);
 }
 
-GpsPositionProvider::gps_error::gps_error(int err) :
-    std::runtime_error(gps_errstr(err))
+GpsPositionProvider::GpsPositioningException::GpsPositioningException(int err) :
+    PositioningException(gps_errstr(err))
 {
 }
 
@@ -111,7 +111,7 @@ void GpsPositionProvider::fetch_position_fix()
     } while (gps_read_rc > 0 && gps_data.devices.ndevices > 0);
 
     if (gps_read_rc < 0) {
-        throw gps_error(errno);
+        throw GpsPositioningException(errno);
     }
 
     if (gpsd_status(gps_data) == STATUS_FIX && gps_data.fix.mode >= MODE_2D) {

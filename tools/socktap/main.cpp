@@ -1,16 +1,15 @@
 #include "ethernet_device.hpp"
-#include "gps_position_provider.hpp"
 #include "benchmark_application.hpp"
 #include "cam_application.hpp"
 #include "hello_application.hpp"
 #include "link_layer.hpp"
+#include "positioning.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/certificate_cache.hpp>
 #include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
@@ -38,12 +37,6 @@ int main(int argc, const char** argv)
         ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
         ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed. Root certificates in the chain are automatically trusted.")
-        ("positioning,p", po::value<std::string>()->default_value("gpsd"), "Select positioning provider")
-        ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
-        ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
-        ("latitude", po::value<double>()->default_value(48.7668616), "Latitude of static position")
-        ("longitude", po::value<double>()->default_value(11.432068), "Longitude of static position")
-        ("pos_confidence", po::value<double>()->default_value(5.0), "95% circular confidence of static position")
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
         ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
         ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
@@ -53,6 +46,7 @@ int main(int argc, const char** argv)
         ("applications,a", po::value<std::vector<std::string>>()->default_value({"ca"}, "ca")->multitoken(), "Run applications [ca,hello,benchmark]")
         ("non-strict", "Set MIB parameter ItsGnSnDecapResultHandling to NON_STRICT")
     ;
+    add_positioning_options(options);
 
     po::positional_options_description positional_options;
     positional_options.add("interface", 1);
@@ -128,23 +122,9 @@ int main(int argc, const char** argv)
             throw std::runtime_error("Unsupported GeoNetworking version, only version 0 and 1 are supported.");
         }
 
-        std::unique_ptr<vanetza::PositionProvider> positioning;
-        if (vm["positioning"].as<std::string>() == "gpsd") {
-            positioning.reset(new GpsPositionProvider {
-                io_service, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>()
-            });
-        } else if (vm["positioning"].as<std::string>() == "static") {
-            std::unique_ptr<StoredPositionProvider> stored { new StoredPositionProvider() };
-            PositionFix fix;
-            fix.timestamp = trigger.runtime().now();
-            fix.latitude = vm["latitude"].as<double>() * units::degree;
-            fix.longitude = vm["longitude"].as<double>() * units::degree;
-            fix.confidence.semi_major = vm["pos_confidence"].as<double>() * units::si::meter;
-            fix.confidence.semi_minor = fix.confidence.semi_major;
-            stored->position_fix(fix);
-            positioning = std::move(stored);
-        } else {
-            std::cerr << "Unknown positioning method, use either gpsd or static\n";
+        auto positioning = create_position_provider(io_service, vm, trigger.runtime());
+        if (!positioning) {
+            std::cerr << "Requested positioning method is not available\n";
             return 1;
         }
 
@@ -249,8 +229,8 @@ int main(int argc, const char** argv)
         }
 
         io_service.run();
-    } catch (GpsPositionProvider::gps_error& e) {
-        std::cerr << "Exit because of GPS error: " << e.what() << std::endl;
+    } catch (PositioningException& e) {
+        std::cerr << "Exit because of positioning error: " << e.what() << std::endl;
         return 1;
     } catch (std::exception& e) {
         std::cerr << "Exit: " << e.what() << std::endl;

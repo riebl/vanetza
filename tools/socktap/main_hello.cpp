@@ -1,5 +1,5 @@
 #include "ethernet_device.hpp"
-#include "gps_position_provider.hpp"
+#include "positioning.hpp"
 #include "hello_application.hpp"
 #include "router_context.hpp"
 #include "time_trigger.hpp"
@@ -22,10 +22,9 @@ int main(int argc, const char** argv)
         ("link-layer,l", po::value<std::string>()->default_value("ethernet"), "Link layer type")
         ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
         ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
-        ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
-        ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
     ;
+    add_positioning_options(options);
 
     po::positional_options_description positional_options;
     positional_options.add("interface", 1);
@@ -93,14 +92,18 @@ int main(int argc, const char** argv)
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::Managed;
         mib.itsGnSecurity = false;
 
-        GpsPositionProvider positioning(io_service, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>());
+        auto positioning = create_position_provider(io_service, vm, trigger.runtime());
+        if (!positioning) {
+            std::cerr << "Requested positioning method is not available." << std::endl;
+            return 1;
+        }
 
         security::SignService sign_service = security::dummy_sign_service(trigger.runtime(), nullptr);
         security::VerifyService verify_service =
             security::dummy_verify_service(security::VerificationReport::Success, security::CertificateValidity::valid());
         security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
 
-        RouterContext context(mib, trigger, positioning, &security_entity);
+        RouterContext context(mib, trigger, *positioning, &security_entity);
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
         context.set_link_layer(link_layer.get());
 
@@ -108,8 +111,8 @@ int main(int argc, const char** argv)
         context.enable(&hello_app);
 
         io_service.run();
-    } catch (GpsPositionProvider::gps_error& e) {
-        std::cerr << "Exit because of GPS error: " << e.what() << std::endl;
+    } catch (PositioningException& e) {
+        std::cerr << "Exit because of positioning error: " << e.what() << std::endl;
         return 1;
     } catch (std::exception& e) {
         std::cerr << "Exit: " << e.what() << std::endl;

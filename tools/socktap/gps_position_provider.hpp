@@ -1,21 +1,21 @@
 #ifndef GPS_POSITION_PROVIDER_HPP_GYN3GVQA
 #define GPS_POSITION_PROVIDER_HPP_GYN3GVQA
 
+#include "positioning.hpp"
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/position_provider.hpp>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/steady_timer.hpp>
-#include <stdexcept>
 #include <string>
 #include <gps.h>
 
 class GpsPositionProvider : public vanetza::PositionProvider
 {
 public:
-    class gps_error : public std::runtime_error
+    class GpsPositioningException : public PositioningException
     {
     protected:
-        gps_error(int);
+        GpsPositioningException(int);
         friend class GpsPositionProvider;
     };
 
