@@ -5,20 +5,12 @@
 #include "link_layer.hpp"
 #include "positioning.hpp"
 #include "router_context.hpp"
+#include "security.hpp"
 #include "time_trigger.hpp"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-#include <vanetza/security/certificate_cache.hpp>
-#include <vanetza/security/default_certificate_validator.hpp>
-#include <vanetza/security/delegating_security_entity.hpp>
-#include <vanetza/security/naive_certificate_provider.hpp>
-#include <vanetza/security/null_certificate_validator.hpp>
-#include <vanetza/security/persistence.hpp>
-#include <vanetza/security/sign_header_policy.hpp>
-#include <vanetza/security/static_certificate_provider.hpp>
-#include <vanetza/security/trust_store.hpp>
 
 namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
@@ -33,10 +25,6 @@ int main(int argc, const char** argv)
         ("link-layer,l", po::value<std::string>()->default_value("ethernet"), "Link layer type")
         ("interface,i", po::value<std::string>()->default_value("lo"), "Network interface to use.")
         ("mac-address", po::value<std::string>(), "Override the network interface's MAC address.")
-        ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
-        ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
-        ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
-        ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed. Root certificates in the chain are automatically trusted.")
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
         ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
         ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
@@ -47,6 +35,7 @@ int main(int argc, const char** argv)
         ("non-strict", "Set MIB parameter ItsGnSnDecapResultHandling to NON_STRICT")
     ;
     add_positioning_options(options);
+    add_security_options(options);
 
     po::positional_options_description positional_options;
     positional_options.add("interface", 1);
@@ -128,64 +117,12 @@ int main(int argc, const char** argv)
             return 1;
         }
 
-        // We always use the same ceritificate manager and crypto services for now.
-        // If itsGnSecurity is false, no signing will be performed, but receiving of signed messages works as expected.
-        auto certificate_provider = std::unique_ptr<security::CertificateProvider> {
-            new security::NaiveCertificateProvider(trigger.runtime()) };
-        auto certificate_validator = std::unique_ptr<security::CertificateValidator> {
-            new security::NullCertificateValidator() };
-        auto crypto_backend = security::create_backend("default");
-        security::TrustStore trust_store;
-        security::CertificateCache cert_cache(trigger.runtime());
-
-        if (vm.count("certificate") ^ vm.count("certificate-key")) {
-            std::cerr << "Either --certificate and --certificate-key must be present or none.";
-            return 1;
-        }
-
-        if (vm.count("certificate") && vm.count("certificate-key")) {
-            const std::string& certificate_path = vm["certificate"].as<std::string>();
-            const std::string& certificate_key_path = vm["certificate-key"].as<std::string>();
-
-            auto authorization_ticket = security::load_certificate_from_file(certificate_path);
-            auto authorization_ticket_key = security::load_private_key_from_file(certificate_key_path);
-
-            std::list<security::Certificate> chain;
-
-            if (vm.count("certificate-chain")) {
-                for (auto& chain_path : vm["certificate-chain"].as<std::vector<std::string> >()) {
-                    auto chain_certificate = security::load_certificate_from_file(chain_path);
-                    chain.push_back(chain_certificate);
-                    cert_cache.insert(chain_certificate);
-
-                    // Only add root certificates to trust store, so certificate requests are visible for demo purposes.
-                    if (chain_certificate.subject_info.subject_type == security::SubjectType::Root_CA) {
-                        trust_store.insert(chain_certificate);
-                    }
-                }
-            }
-
-            if (vm.count("trusted-certificate")) {
-                for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
-                    auto trusted_certificate = security::load_certificate_from_file(cert_path);
-                    trust_store.insert(trusted_certificate);
-                }
-            }
-
+        auto security = create_security_entity(vm, trigger.runtime(), *positioning);
+        if (security) {
             mib.itsGnSecurity = true;
-
-            certificate_provider = std::unique_ptr<security::CertificateProvider> {
-                new security::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key, chain) };
-            certificate_validator = std::unique_ptr<security::CertificateValidator> {
-                new security::DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store) };
         }
 
-        security::DefaultSignHeaderPolicy sign_header_policy(trigger.runtime(), *positioning);
-        security::SignService sign_service = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
-        security::VerifyService verify_service = straight_verify_service(trigger.runtime(), *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, *positioning);
-
-        security::DelegatingSecurityEntity security_entity(sign_service, verify_service);
-        RouterContext context(mib, trigger, *positioning, &security_entity);
+        RouterContext context(mib, trigger, *positioning, security.get());
         context.require_position_fix(vm.count("require-gnss-fix") > 0);
         context.set_link_layer(link_layer.get());
 

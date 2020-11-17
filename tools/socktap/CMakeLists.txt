@@ -18,6 +18,7 @@ add_library(socktap-common STATIC
     positioning.cpp
     raw_socket_link.cpp
     router_context.cpp
+    security.cpp
     time_trigger.cpp
     udp_link.cpp
 )
