@@ -57,7 +57,11 @@ public:
     // move semantics
     asn1c_wrapper_common(asn1c_wrapper_common&& other) noexcept :
         m_struct(nullptr), m_type(other.m_type) { swap(other); }
-    asn1c_wrapper_common& operator=(asn1c_wrapper_common&& other) noexcept { swap(other); }
+    asn1c_wrapper_common& operator=(asn1c_wrapper_common&& other) noexcept
+    {
+        swap(other);
+        return *this;
+    }
 
     // dereferencing
     asn1c_type& operator*() { return *m_struct; }
