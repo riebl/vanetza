@@ -7,6 +7,7 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 #include <vanetza/net/cohesive_packet.hpp>
+#include <vanetza/net/ethernet_header.hpp>
 
 namespace vanetza
 {
