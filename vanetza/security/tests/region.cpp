@@ -253,4 +253,9 @@ TEST(Region, Altitude_To_Elevation)
 
     auto altitude_above_max = 6150.0 * meter;
     EXPECT_EQ(to_elevation(altitude_above_max), ThreeDLocation::max_elevation);
+
+    // examples given in TS 103 097 V1.2.1 (section 4.2.19)
+    EXPECT_EQ(to_elevation(0.0 * meter), (Elevation { 0x00, 0x00 }));
+    EXPECT_EQ(to_elevation(100.0 * meter), (Elevation { 0x03, 0xe8 }));
+    EXPECT_EQ(to_elevation(-209.5 * meter), (Elevation { 0xf7, 0xd1 }));
 }
