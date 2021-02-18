@@ -1,35 +1,58 @@
-from conans import ConanFile, CMake
+from conans import ConanFile, CMake, tools
 
 
 class VanetzaConan(ConanFile):
     name = "Vanetza"
-    version = "master"
     url = "https://github.com/riebl/vanetza"
-    license = "GNU Lesser General Public License (LGPL) v3"
+    license = "LGPL-3.0-or-later"
     settings = "os", "compiler", "build_type", "arch"
-    requires = "Boost/1.60.0@lasote/stable", "OpenSSL/1.0.2j@lasote/stable", "cryptopp/5.6.5@riebl/testing", "GeographicLib/1.46@riebl/testing"
+    requires = \
+        "boost/1.75.0", \
+        "cryptopp/8.4.0", \
+        "geographiclib/1.51", \
+        "openssl/1.1.1i"
     generators = "cmake"
-    exports = "cmake/*", "tools/*", "vanetza/*", "CMakeLists.txt"
-    options = {"static": [True, False]}
-    default_options = "static=False", "OpenSSL:no_electric_fence=True", "OpenSSL:no_zlib=True"
+    options = {
+        "fPIC": [True, False],
+        "shared": [True, False],
+        "testing": [True, False],
+    }
+    default_options = {
+        "fPIC": True,
+        "shared": False,
+        "testing": True,
+    }
+
+    def _configure_cmake(self):
+        cmake = CMake(self)
+        cmake.configure(defs={
+            "BUILD_SHARED_LIBS": self.options.shared,
+            "BUILD_TESTS": self.options.testing,
+        })
+        return cmake
+
+    def set_version(self):
+        git = tools.Git(folder=self.recipe_folder)
+        self.version = git.get_commit()[0:8]
+        if not git.is_pristine():
+            self.version += "-dirty"
+
+    def configure(self):
+        tools.check_min_cppstd(self, "11")
+        if self.settings.compiler == 'Visual Studio':
+            del self.options.fPIC
 
     def build(self):
-        cmake = CMake(self.settings)
-        build = "-DBUILD_USING_CONAN=ON -DBUILD_SHARED_LIBS=%s"
-        if self.options.static:
-            build = build % ('OFF')
-        else:
-            build = build % ('ON')
-        self.run('cmake "%s" %s %s' % (self.conanfile_directory, cmake.command_line, build))
-        self.run('cmake --build . %s' % cmake.build_config)
+        cmake = self._configure_cmake()
+        cmake.build()
+        if self.options.testing:
+            cmake.test()
 
     def package(self):
-        self.copy(pattern="*.hpp", dst="include/vanetza", src="vanetza")
-        self.copy(pattern="*.h", dst="include/vanetza/asn1/gen", src="vanetza/asn1/gen")
-        self.copy(pattern="*.a", dst="lib", src="lib", keep_path=False)
-        self.copy(pattern="*.so", dst="lib", src="lib", keep_path=False)
+        cmake = self._configure_cmake()
+        cmake.install()
 
     def package_info(self):
-        libs = ['asn1', 'btp', 'common', 'dcc', 'facilities',
-                'geonet', 'gnss', 'net', 'security']
+        libs = ['access', 'asn1', 'asn1_its', 'asn1_pki', 'asn1_security', 'asn1_support',
+                'btp', 'common', 'dcc', 'facilities', 'geonet', 'gnss', 'net', 'security']
         self.cpp_info.libs = ['vanetza_' + lib for lib in libs]

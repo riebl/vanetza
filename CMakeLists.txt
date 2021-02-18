@@ -16,18 +16,19 @@ endif()
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Load conan configuration if available
+if(EXISTS ${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
+    include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup(TARGETS)
+    set(Boost_NO_SYSTEM_PATHS ON)
+endif()
+
 # Look up threading library (usually pthread)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
 find_package(Threads MODULE)
 
-# Build configuration
-option(BUILD_USING_CONAN "Build with conan package manager" OFF)
-if(BUILD_USING_CONAN)
-    include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
-    conan_basic_setup()
-endif()
-
+# Build configuration options
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
 option(BUILD_TESTS "Build unit tests" OFF)
@@ -47,13 +48,12 @@ include(UseVanetza)
 # Enable usage of targets' folder property (good for Visual Studio)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-# Mandatory and optional project dependencies
-set(Boost_COMPONENTS date_time)
-set(Boost_OPTIONAL_COMPONENTS system program_options)
-find_package(Boost 1.58 REQUIRED COMPONENTS ${Boost_COMPONENTS})
-include(CompatBoostTargets)
-# optional components need to be queried seperately (FindBoost bails out when one is missing)
-find_package(Boost 1.58 QUIET OPTIONAL_COMPONENTS ${Boost_OPTIONAL_COMPONENTS})
+# Find project dependencies
+find_package(Boost 1.58 REQUIRED COMPONENTS date_time)
+# query optional Boost components one by one quietly
+foreach(component IN ITEMS program_options system)
+  find_package(Boost 1.58 QUIET COMPONENTS ${component})
+endforeach()
 include(CompatBoostTargets)
 find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
