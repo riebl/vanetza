@@ -1,0 +1,9 @@
+name: unit tests
+on: [push, pull_request]
+jobs:
+  docker-unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: docker build --tag vanetza/docker-ci ${{github.workspace}}/tools/docker
+      - run: docker run --rm -v${{github.workspace}}:/home/build-user/workspace:ro vanetza/docker-ci
