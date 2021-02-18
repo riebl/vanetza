@@ -271,7 +271,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
 {
     // change the subject info
     Certificate certificate = certificate_provider.get()->own_certificate();
-    HashedId8 faulty_hash {{ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 }};
+    HashedId8 faulty_hash ({ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 });
     certificate.signer_info = faulty_hash;
 
     // verify message
