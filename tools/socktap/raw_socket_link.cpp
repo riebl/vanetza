@@ -21,8 +21,8 @@ void RawSocketLink::request(const access::DataRequest& request, std::unique_ptr<
 std::size_t RawSocketLink::transmit(std::unique_ptr<ChunkPacket> packet)
 {
     std::array<boost::asio::const_buffer, layers_> const_buffers;
-    for (auto& layer : osi_layer_range<OsiLayer::Link, OsiLayer::Application>()) {
-        const auto index = distance(OsiLayer::Link, layer);
+    for (auto& layer : osi_layer_range<OsiLayer::Physical, OsiLayer::Application>()) {
+        const auto index = distance(OsiLayer::Physical, layer);
         packet->layer(layer).convert(buffers_[index]);
         const_buffers[index] = boost::asio::buffer(buffers_[index]);
     }
