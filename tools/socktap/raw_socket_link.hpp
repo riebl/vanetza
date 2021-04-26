@@ -25,7 +25,7 @@ private:
     void on_read(const boost::system::error_code&, std::size_t);
     void pass_up(vanetza::CohesivePacket&&);
 
-    static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Link, vanetza::OsiLayer::Application);
+    static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Physical, vanetza::OsiLayer::Application);
 
     boost::asio::generic::raw_protocol::socket socket_;
     std::array<vanetza::ByteBuffer, layers_> buffers_;
