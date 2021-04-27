@@ -39,6 +39,37 @@ public:
     virtual ~SecurityEntity() = default;
 };
 
+class SecurityEntityV3
+{
+public:
+    /**
+     * \brief Creates a security envelope covering the given payload.
+     *
+     * The payload consists of the CommonHeader, ExtendedHeader and the payload of
+     * the layers above the network layer. The entire security envelope is used
+     * to calculate a signature which gets added to the resulting SecuredMessage.
+     *
+     * \param request containing payload to sign
+     * \return confirmation containing signed SecuredMessage
+     */
+    virtual EncapConfirmV3 encapsulate_packet(EncapRequest&& request) = 0;
+
+    /**
+     * \brief Decapsulates the payload within a SecuredMessage
+     *
+     * Verifies the Signature and SignerInfo of a SecuredMessage.
+     *
+     * \param request containing a SecuredMessage
+     * \return decapsulation confirmation including plaintext payload
+     */
+    virtual DecapConfirm decapsulate_packet(DecapRequestV3&& request) = 0;
+
+    virtual ~SecurityEntityV3() = default;
+};
+
+
+
+
 } // namespace security
 } // namespace vanetza
 

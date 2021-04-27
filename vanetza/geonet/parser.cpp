@@ -48,7 +48,7 @@ std::size_t Parser::parse_common(CommonHeader& common)
     return bytes;
 }
 
-std::size_t Parser::parse_secured(security::SecuredMessageV2& secured)
+std::size_t Parser::parse_secured(security::SecuredMessageVariant& secured)
 {
     std::size_t bytes = 0;
     try {

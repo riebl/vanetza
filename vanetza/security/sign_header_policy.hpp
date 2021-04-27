@@ -19,6 +19,8 @@ namespace security
 // forward declarations
 class CertificateProvider;
 struct SignRequest;
+class SecuredMessageV3;
+class CertificateProviderV3;
 
 /**
  * SignHeaderPolicy is used while signing messages
@@ -76,6 +78,31 @@ private:
     bool m_cert_requested;
     bool m_chain_requested;
 };
+
+class DefaultSignHeaderPolicyV3 : public SignHeaderPolicy
+{
+public:
+    DefaultSignHeaderPolicyV3(const Runtime&, PositionProvider& positioning);
+    // <Shall not be used>
+    std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override;
+    // </Shall not be used>
+    void prepare_headers(const SignRequest& request, CertificateProviderV3& certificate_provider, SecuredMessageV3& secured_message);
+    void request_unrecognized_certificate(HashedId8 id) override;
+    void request_certificate() override;
+    void request_certificate_chain() override;
+
+private:
+    const Runtime& m_runtime;
+    PositionProvider& m_positioning;
+    Clock::time_point m_cam_next_certificate;
+    std::set<HashedId3> m_unknown_certificates;
+    bool m_cert_requested;
+    bool m_chain_requested;
+};
+
+
+
+
 
 } // namespace security
 } // namespace vanetza

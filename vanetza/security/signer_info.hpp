@@ -15,6 +15,7 @@ namespace security
 {
 
 struct Certificate;
+struct CertificateV3;
 
 /// described in TS 103 097 v1.2.1, section 4.2.11
 enum class SignerInfoType : uint8_t
@@ -42,12 +43,21 @@ using SignerInfo = boost::variant<
     CertificateDigestWithOtherAlgorithm
 >;
 
+using SignerInfoV3 = boost::variant<
+    std::nullptr_t,
+    HashedId8,
+    boost::recursive_wrapper<CertificateV3>,
+    std::list<CertificateV3>,
+    CertificateDigestWithOtherAlgorithm
+>;
+
 /**
  * \brief Determines SignerInfoType of SignerInfo
  * \param SignerInfo
  * \return SignerInfoType
  */
 SignerInfoType get_type(const SignerInfo&);
+SignerInfoType get_type(const SignerInfoV3& info);
 
 /**
  * \brief Calculates size of an CertificateDigestWithOtherAlgorithm

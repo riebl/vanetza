@@ -63,6 +63,56 @@ public:
     security::DefaultCertificateValidator cert_validator;
 };
 
+class SecurityContextV3 : public security::SecurityEntityV3
+{
+public:
+    SecurityContextV3(const Runtime& runtime, PositionProvider& positioning) :
+        runtime(runtime), positioning(positioning),
+        backend(security::create_backend("default")),
+        sign_header_policy(runtime, positioning),
+        cert_cache(runtime),
+        cert_validator(*backend, cert_cache, trust_store)
+    {
+    }
+
+    security::EncapConfirmV3 encapsulate_packet(security::EncapRequest&& request) override
+    {
+        if (!entity) {
+            throw std::runtime_error("security entity is not ready");
+        }
+        return entity->encapsulate_packet(std::move(request));
+    }
+
+    security::DecapConfirm decapsulate_packet(security::DecapRequestV3&& request) override
+    {
+        if (!entity) {
+            throw std::runtime_error("security entity is not ready");
+        }
+        return entity->decapsulate_packet(std::move(request));
+    }
+
+    void build_entity()
+    {
+        if (!cert_provider) {
+            throw std::runtime_error("certificate provider is missing");
+        }
+        security::SignServiceV3 sign_service = straight_sign_serviceV3(*cert_provider, *backend, sign_header_policy);
+        security::VerifyServiceV3 verify_service = straight_verify_serviceV3(runtime, *cert_provider, cert_validator,
+                *backend, cert_cache, sign_header_policy, positioning);
+        entity.reset(new security::DelegatingSecurityEntityV3 { sign_service, verify_service });
+    }
+
+    const Runtime& runtime;
+    PositionProvider& positioning;
+    std::unique_ptr<security::Backend> backend;
+    std::unique_ptr<security::SecurityEntityV3> entity;
+    std::unique_ptr<security::CertificateProviderV3> cert_provider;
+    security::DefaultSignHeaderPolicyV3 sign_header_policy;
+    security::TrustStoreV3 trust_store;
+    security::CertificateCacheV3 cert_cache;
+    security::DefaultCertificateValidatorV3 cert_validator;
+};
+
 
 std::unique_ptr<security::SecurityEntity>
 create_security_entity(const po::variables_map& vm, const Runtime& runtime, PositionProvider& positioning)
@@ -138,3 +188,68 @@ void add_security_options(po::options_description& options)
     ;
 }
 
+std::unique_ptr<security::SecurityEntityV3>
+create_security_entity_v3(const po::variables_map& vm, const Runtime& runtime, PositionProvider& positioning)
+{
+    std::unique_ptr<security::SecurityEntityV3> security;
+    const std::string name = vm["security"].as<std::string>();
+
+    if (name.empty() || name == "none") {
+        // no operation
+    } else if (name == "dummy") {
+        security::SignServiceV3 sign_service = security::dummy_sign_serviceV3(runtime, nullptr);
+        security::VerifyServiceV3 verify_service = security::dummy_verify_serviceV3(
+                security::VerificationReport::Success, security::CertificateValidity::valid());
+        security.reset(new security::DelegatingSecurityEntityV3 { sign_service, verify_service });
+    } else if (name == "certs") {
+        std::unique_ptr<SecurityContextV3> context { new SecurityContextV3(runtime, positioning) };
+
+        if (vm.count("certificate") ^ vm.count("certificate-key")) {
+            throw std::runtime_error("Either --certificate and --certificate-key must be present or none.");
+        }
+
+        if (vm.count("certificate") && vm.count("certificate-key")) {
+            const std::string& certificate_path = vm["certificate"].as<std::string>();
+            const std::string& certificate_key_path = vm["certificate-key"].as<std::string>();
+
+            auto authorization_ticket = security::load_certificate_from_file_v3(certificate_path);
+            auto authorization_ticket_key = security::load_private_key_from_file(certificate_key_path);
+
+            std::list<security::CertificateV3> chain;
+
+            if (vm.count("certificate-chain")) {
+                for (auto& chain_path : vm["certificate-chain"].as<std::vector<std::string> >()) {
+                    auto chain_certificate = security::load_certificate_from_file_v3(chain_path);
+                    chain.push_back(chain_certificate);
+                    context->cert_cache.insert(chain_certificate);
+
+                    // Only add root certificates to trust store, so certificate requests are visible for demo purposes.
+                    // SUBJECT INFO HAS DISAPPEARED IN THE 3rd VERSION SO STILL THERE IS NO WAY TO FIND OUT
+                    // if (chain_certificate.subject_info.subject_type == security::SubjectType::Root_CA) {
+                    //     context->trust_store.insert(chain_certificate);
+                    // }
+                }
+            }
+
+            context->cert_provider.reset(new security::StaticCertificateProviderV3(authorization_ticket, authorization_ticket_key.private_key, chain));
+        } else {
+            // Not implemented yet
+            // context->cert_provider.reset(new security::NaiveCertificateProvider(runtime));
+            throw "Naive certificate provider is not implemented yet for the 3rd version!";
+        }
+
+        if (vm.count("trusted-certificate")) {
+            for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
+                auto trusted_certificate = security::load_certificate_from_file_v3(cert_path);
+                context->trust_store.insert(trusted_certificate);
+            }
+        }
+
+        context->build_entity();
+        security = std::move(context);
+    } else {
+        throw std::runtime_error("Unknown security entity requested");
+    }
+
+    return security;
+}

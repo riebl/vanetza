@@ -16,6 +16,10 @@ struct EncapConfirm {
     SecuredMessage sec_packet; // mandatory
 };
 
+struct EncapConfirmV3 {
+    SecuredMessageV3 sec_packet; // mandatory
+};
+
 } // namespace security
 } // namespace vanetza
 #endif // ENCAP_CONFIRM_HPP

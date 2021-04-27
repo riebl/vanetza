@@ -33,6 +33,31 @@ private:
     std::multimap<HashedId8, Certificate> m_certificates;
 };
 
+class TrustStoreV3
+{
+public:
+    TrustStoreV3() = default;
+
+    /**
+     * Lookup certificates based on the passed HashedId8.
+     *
+     * \param id hash identifier of the certificate
+     * \return all stored certificates matching the passed identifier
+     */
+    std::list<CertificateV3> lookup(HashedId8 id) const;
+
+    /**
+     * Insert a certificate into store, i.e. consider it as trustworthy.
+     * \param trusted_certificate a trustworthy certificate copied into TrustStore
+     */
+    void insert(const CertificateV3& trusted_certificate);
+
+private:
+    std::multimap<HashedId8, CertificateV3> m_certificates;
+};
+
+
+
 } // namespace security
 } // namespace vanetza
 

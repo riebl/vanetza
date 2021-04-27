@@ -23,6 +23,8 @@ namespace security
 class Backend;
 class CertificateProvider;
 class SignHeaderPolicy;
+class CertificateProviderV3;
+class DefaultSignHeaderPolicyV3;
 
 // mandatory SN-SIGN.request parameters
 struct SignRequest
@@ -38,10 +40,17 @@ struct SignConfirm
     SecuredMessage secured_message;
 };
 
+struct SignConfirmV3
+{
+    SecuredMessageV3 secured_message;
+};
+
 /**
  * Equivalant of SN-SIGN service in TS 102 723-8 v1.1.1
  */
 using SignService = std::function<SignConfirm(SignRequest&&)>;
+
+using SignServiceV3 = std::function<SignConfirmV3(SignRequest&&)>;
 
 /*
  * SignService immediately signing the message using given
@@ -70,6 +79,35 @@ SignService deferred_sign_service(CertificateProvider&, Backend&, SignHeaderPoli
  * \return callable sign service
  */
 SignService dummy_sign_service(const Runtime& rt, const SignerInfo& si);
+
+/*
+ * SignService immediately signing the message using given
+ * \param rt runtime
+ * \param cert certificate provider
+ * \param backend cryptographic backend
+ * \param sign_header_policy sign header policy
+ * \return callable sign service
+ */
+SignServiceV3 straight_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy);
+
+/**
+ * SignService deferring actually signature calculation using EcdsaSignatureFuture
+ * \param rt runtime
+ * \param cert certificate provider
+ * \param backend cryptographic backend
+ * \param sign_header_policy sign header policy
+ * \return callable sign service
+ */
+SignServiceV3 deferred_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy);
+
+/**
+ * SignService without real cryptography but dummy signature
+ * \param rt runtime for appropriate generation time
+ * \param si signer info attached to header fields of secured message
+ * \return callable sign service
+ */
+SignServiceV3 dummy_sign_serviceV3(const Runtime& rt, const SignerInfoV3& si);
+
 
 } // namespace security
 } // namespace vanetza

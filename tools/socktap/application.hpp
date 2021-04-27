@@ -32,6 +32,7 @@ protected:
 
 private:
     friend class RouterContext;
+    friend class RouterContextV3;
     vanetza::geonet::GbcDataRequest request_gbc(const DataRequest&);
     vanetza::geonet::ShbDataRequest request_shb(const DataRequest&);
     vanetza::geonet::Router* router_;

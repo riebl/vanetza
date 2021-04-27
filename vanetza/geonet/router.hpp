@@ -183,6 +183,13 @@ public:
     void set_security_entity(security::SecurityEntity* entity);
 
     /**
+     * \brief Register security entity (V1.3.1) used when itsGnSecurity is enabled
+     *
+     * \param entity security entity
+     */
+    void set_security_entity(security::SecurityEntityV3* entity);
+
+    /**
      * \brief Register access layer interface
      *
      * \param ifc interface used for passing packets down to access layer
@@ -537,6 +544,7 @@ private:
     dcc::RequestInterface* m_request_interface;
     DccFieldGenerator* m_dcc_field_generator;
     security::SecurityEntity* m_security_entity;
+    security::SecurityEntityV3* m_security_entity_v3;
     transport_map_t m_transport_ifcs;
     LocationTable m_location_table;
     PacketBuffer m_bc_forward_buffer;

@@ -16,7 +16,7 @@ namespace geonet
 class VariantPdu : public Pdu
 {
 public:
-    using SecuredMessage = security::SecuredMessage;
+    using SecuredMessage = security::SecuredMessageVariant;
 
     VariantPdu() = default;
     VariantPdu(const Pdu&);

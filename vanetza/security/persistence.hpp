@@ -37,6 +37,8 @@ void save_public_key_to_file(const std::string& key_path, const PublicKey& publi
  */
 Certificate load_certificate_from_file(const std::string& certificate_path);
 
+CertificateV3 load_certificate_from_file_v3(const std::string& certificate_path);
+
 /**
  * \brief Saves a certificate to a file
  * \param certificate_path file to save the certificate to

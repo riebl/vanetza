@@ -31,7 +31,7 @@ find_package(Threads MODULE)
 # Build configuration options
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
-option(BUILD_TESTS "Build unit tests" OFF)
+option(BUILD_TESTS "Build unit tests" ON)
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(gtest)
@@ -82,7 +82,7 @@ if(TARGET Cohda::headers)
   add_subdirectory(tools/cohda_proxy)
 endif()
 
-option(BUILD_SOCKTAP "Build socktap application" OFF)
+option(BUILD_SOCKTAP "Build socktap application" ON)
 if(BUILD_SOCKTAP)
   add_subdirectory(tools/socktap)
 endif()

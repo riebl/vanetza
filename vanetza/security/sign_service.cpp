@@ -90,5 +90,84 @@ SignService dummy_sign_service(const Runtime& rt, const SignerInfo& signer_info)
     };
 }
 
+
+
+
+SignServiceV3 straight_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy)
+{
+    return [&](SignRequest&& request) -> SignConfirmV3 {
+        SignConfirmV3 confirm;
+        confirm.secured_message = SecuredMessageV3();
+        
+
+        sign_header_policy.prepare_headers(request, certificate_provider, confirm.secured_message);
+        confirm.secured_message.set_payload(convert_to_payload(request.plain_message));
+        // confirm.secured_message.payload.type = PayloadType::Signed;
+        // confirm.secured_message.payload.data = std::move(request.plain_message);
+        // confirm.secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
+
+
+        const auto& private_key = certificate_provider.own_private_key();
+        // static const Signature placeholder = signature_placeholder();
+        // static const std::list<TrailerField> trailer_fields = { placeholder };
+
+        ByteBuffer data_buffer = confirm.secured_message.convert_for_signing();
+        Signature signature = backend.sign_data(private_key, data_buffer);
+
+        confirm.secured_message.set_signature(signature);
+
+        // TrailerField trailer_field = backend.sign_data(private_key, data_buffer);
+        // confirm.secured_message.trailer_fields.push_back(trailer_field);
+        return confirm;
+    };
+}
+
+SignServiceV3 deferred_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy)
+{
+    return [&](SignRequest&& request) -> SignConfirmV3 {
+        SignConfirmV3 confirm;
+        confirm.secured_message = SecuredMessageV3();
+        sign_header_policy.prepare_headers(request, certificate_provider, confirm.secured_message);
+        confirm.secured_message.set_payload(convert_to_payload(request.plain_message));
+        // SignConfirm confirm;
+        // confirm.secured_message.payload.type = PayloadType::Signed;
+        // confirm.secured_message.payload.data = std::move(request.plain_message);
+        // confirm.secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
+
+        const auto& private_key = certificate_provider.own_private_key();
+        static const Signature placeholder = signature_placeholder();
+        static const size_t signature_size = get_size(placeholder);
+        // static const std::list<TrailerField> trailer_fields = { placeholder };
+
+        const SecuredMessageV3& secured_message = confirm.secured_message;
+        auto future = std::async(std::launch::deferred, [&backend, secured_message, private_key]() {
+            ByteBuffer data = secured_message.convert_for_signing();
+            return backend.sign_data(private_key, data);
+        });
+
+        EcdsaSignatureFuture signature(future.share(), signature_size);
+        confirm.secured_message.set_signature(signature);
+        // confirm.secured_message.trailer_fields.push_back(signature);
+        return confirm;
+    };
+}
+
+SignServiceV3 dummy_sign_serviceV3(const Runtime& rt, const SignerInfoV3& signer_info)
+{
+    return [&rt, signer_info](SignRequest&& request) -> SignConfirmV3 {
+        SignConfirmV3 confirm;
+        confirm.secured_message = SecuredMessageV3();
+        confirm.secured_message.set_payload(convert_to_payload(request.plain_message));
+        confirm.secured_message.set_generation_time(convert_time64(rt.now()));
+        confirm.secured_message.set_psid(request.its_aid);
+        confirm.secured_message.set_signer_info(signer_info);
+        return confirm;
+    };
+}
+
+
+
+
+
 } // namespace security
 } // namespace vanetza

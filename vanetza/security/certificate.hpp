@@ -15,6 +15,8 @@
 #include <vanetza/security/validity_restriction.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/variant/get.hpp>
+#include <vanetza/asn1/etsi_certificate.hpp>
+#include <vanetza/asn1/security/Certificate.h>
 
 namespace vanetza
 {
@@ -213,6 +215,46 @@ boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate&, Backend&
  * \return hash
  */
 HashedId8 calculate_hash(const Certificate&);
+
+// described in TS 103 097 v1.3.1 (2017-10)
+class CertificateV3{
+    public:
+        CertificateV3();
+        CertificateV3(vanetza::asn1::EtsiTs103097Certificate& certificate);
+        CertificateV3(vanetza::ByteBuffer coer_certificate);
+        CertificateV3(const Certificate_t& certificate);
+        CertificateV3(const CertificateV3& certificate);
+
+        vanetza::ByteBuffer serialize() const;
+        Certificate_t as_plain_certificate() const;
+
+        vanetza::security::StartAndEndValidity get_start_and_end_validity() const;
+        Clock::duration get_time_to_expire() const;
+        std::shared_ptr<GeographicRegion> get_geographic_region() const;
+        std::list<PsidSsp_t> get_app_permissions() const;
+        vanetza::ByteBuffer convert_for_signing() const;
+        HashedId8 calculate_hash() const;
+        HashedId8 get_issuer_identifier() const;
+        Signature get_signature() const;
+        std::shared_ptr<SubjectAssurance> get_subject_assurance() const;
+
+        boost::optional<ecdsa256::PublicKey> get_public_key(Backend& backend) const;
+        boost::optional<Uncompressed> get_uncompressed_public_key(Backend& backend) const;
+
+
+        uint8_t version() const { return 3; }
+        static EccPoint EccP256CurvePoint_to_EccPoint(const EccP256CurvePoint_t& curve_point);
+        static GeographicRegion GeographicRegionAsn_to_GeographicRegion(const GeographicRegion_t& region);
+        static TwoDLocation TwoDLocationAsn_to_TwoDLocation(const TwoDLocation_t& location);
+        static ByteBuffer OCTET_STRING_to_ByteBuffer(const OCTET_STRING_t& octet);
+        static HashedId8 HashedId8_asn_to_HashedId8(const HashedId8_t& hashed);
+        static HashedId3 HashedId3_asn_to_HashedId3(const HashedId3_t& hashed);
+    private:
+        void EccP256CurvePoint_to_x_only(EccP256CurvePoint_t& curve_point) const; //Needed to calculate hash
+        
+        vanetza::asn1::EtsiTs103097Certificate certificate;
+
+};
 
 } // namespace security
 } // namespace vanetza

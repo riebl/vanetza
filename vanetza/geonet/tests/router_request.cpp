@@ -78,7 +78,7 @@ TEST_F(RouterRequest, router_request)
     // check if packet has secured part
     EXPECT_EQ(NextHeaderBasic::Secured, pdu->basic().next_header);
     EXPECT_TRUE(pdu_ext->secured());
-    auto secured = *pdu_ext->secured();
+    auto secured = boost::get<security::SecuredMessageV2>(*pdu_ext->secured());
 
     // check payload of packet
     EXPECT_EQ(security::PayloadType::Signed, secured.payload.type);

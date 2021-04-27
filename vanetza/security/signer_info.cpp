@@ -38,6 +38,37 @@ SignerInfoType get_type(const SignerInfo& info)
     return boost::apply_visitor(visit, info);
 }
 
+SignerInfoType get_type(const SignerInfoV3& info)
+{
+    struct SignerInfoV3_visitor : public boost::static_visitor<SignerInfoType>
+    {
+        SignerInfoType operator()(const std::nullptr_t)
+        {
+            return SignerInfoType::Self;
+        }
+        SignerInfoType operator()(const HashedId8& id)
+        {
+            return SignerInfoType::Certificate_Digest_With_SHA256;
+        }
+        SignerInfoType operator()(const CertificateV3& cert)
+        {
+            return SignerInfoType::Certificate;
+        }
+        SignerInfoType operator()(const std::list<CertificateV3>& list)
+        {
+            return SignerInfoType::Certificate_Chain;
+        }
+        SignerInfoType operator()(const CertificateDigestWithOtherAlgorithm& cert)
+        {
+            return SignerInfoType::Certificate_Digest_With_Other_Algorithm;
+        }
+    };
+
+    SignerInfoV3_visitor visit;
+    return boost::apply_visitor(visit, info);
+}
+
+
 size_t get_size(const CertificateDigestWithOtherAlgorithm& cert)
 {
     size_t size = cert.digest.size();

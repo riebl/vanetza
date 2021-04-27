@@ -71,6 +71,16 @@ Certificate load_certificate_from_file(const std::string& certificate_path)
     return certificate;
 }
 
+CertificateV3 load_certificate_from_file_v3(const std::string& certificate_path)
+{
+    std::ifstream certificate_src;
+    certificate_src.open(certificate_path, std::ios::in | std::ios::binary);
+    vanetza::ByteBuffer buffer(std::istreambuf_iterator<char>(certificate_src), {});
+    CertificateV3 certificate(buffer);
+
+    return certificate;
+}
+
 void save_certificate_to_file(const std::string& certificate_path, const Certificate& certificate)
 {
     std::ofstream dest;

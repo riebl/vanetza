@@ -72,6 +72,59 @@ private:
     void refresh(heap_type::handle_type&, Clock::duration);
 };
 
+class CertificateCacheV3
+{
+public:
+    CertificateCacheV3(const Runtime& rt);
+
+    /**
+     * Puts a (validated) certificate into the cache.
+     *
+     * \param certificate certificate to add to the cache
+     */
+    void insert(const CertificateV3& certificate);
+
+    /**
+     * Lookup certificates based on the passed HashedId8.
+     *
+     * \param id hash identifier of the certificate
+     * \return all stored certificates matching the passed identifier
+     */
+    std::list<CertificateV3> lookup(const HashedId8& id);
+
+    /**
+     * Number of currently stored certificates
+     * \return cache size
+     */
+    std::size_t size() const { return m_certificates.size(); }
+
+private:
+    struct CachedCertificateV3;
+    using map_type = std::multimap<HashedId8, CachedCertificateV3>;
+
+    struct Expiry : public Clock::time_point
+    {
+        Expiry(Clock::time_point, map_type::iterator);
+        const map_type::iterator certificate;
+    };
+
+    using heap_type = boost::heap::binomial_heap<Expiry, boost::heap::compare<std::greater<Expiry>>>;
+
+    struct CachedCertificateV3
+    {
+        CertificateV3 certificate;
+        heap_type::handle_type handle;
+    };
+
+    const Runtime& m_runtime;
+    heap_type m_expiries;
+    map_type m_certificates;
+
+    void drop_expired();
+    bool is_expired(const Expiry&) const;
+    void refresh(heap_type::handle_type&, Clock::duration);
+};
+
 } // namespace security
 } // namespace vanetza
 

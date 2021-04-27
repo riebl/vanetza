@@ -5,9 +5,23 @@
 
 using namespace vanetza::security;
 
+vanetza::ByteBuffer from_hexstring(std::string hex_string)
+{
+    size_t len = hex_string.length();
+    vanetza::ByteBuffer out;
+    for (size_t i = 0; i < len; i += 2)
+    {
+        std::istringstream strm(hex_string.substr(i, 2));
+        uint8_t x;
+        strm >> std::hex >> x;
+        out.push_back(x);
+    }
+    return out;
+}
+
 TEST(Certificate, WebValidator_RootCA_v2)
 {
-const char str[] =
+    const char str[] =
         "0200040C547275737465645F526F6F74808D000004F1817DD05116B855A853F80DB171A3A470D431"
         "70EA7EEFD8EF392D66ECEFBE501CEBA19963C9B6447574424FFF1BB89485743F4D09A72B715FC73C"
         "87E5F70A110101000441279A383B80C812B72B1A5F5C3C590E5041C634A1ADCC4CE58393CA046D3C"
@@ -61,5 +75,37 @@ TEST(Certificate, WebValidator_AuthorizationTicket1_v2)
     Certificate c;
     deserialize_from_hexstring(str, c);
     check(c, serialize_roundtrip(c));
+}
+
+TEST(Certificate, CertificateV3_constructor_and_serializer)
+{
+    //std::string xer_certificate = "<EtsiTs103097Certificate><version>3</version><type><explicit/></type><issuer><self><sha256/></self></issuer><toBeSigned><id><name>rootca.test.com</name></id><cracaId>000000</cracaId><crlSeries>0</crlSeries><validityPeriod><start>470833944</start><duration><years>35</years></duration></validityPeriod><appPermissions><PsidSsp><psid>622</psid><ssp><opaque>01</opaque></ssp></PsidSsp><PsidSsp><psid>624</psid><ssp><opaque>0138</opaque></ssp></PsidSsp></appPermissions><certIssuePermissions><PsidGroupPermissions><subjectPermissions><all/></subjectPermissions><minChainLength>3</minChainLength><chainLengthRange>-1</chainLengthRange><eeType>11</eeType></PsidGroupPermissions></certIssuePermissions><encryptionKey><supportedSymmAlg><aes128Ccm/></supportedSymmAlg><publicKey><eciesNistP256><compressed-y-0>6c8231eb1842c4c4f17db00152e0276b693d49c5e062ddfeb3d46ac5fc9e4994</compressed-y-0></eciesNistP256></publicKey></encryptionKey><verifyKeyIndicator><verificationKey><ecdsaNistP256><compressed-y-0>6c8231eb1842c4c4f17db00152e0276b693d49c5e062ddfeb3d46ac5fc9e4994</compressed-y-0></ecdsaNistP256></verificationKey></verifyKeyIndicator></toBeSigned><signature><ecdsaNistP256Signature><rSig><x-only>65177d3779ad57285e144aa85a39b28bb5c7177e99d63d253b487c9d2202f3a8</x-only></rSig><sSig>7693322b5dd9e348631802188b8d5334df89b32351d5ebd1d2c70703123f8635</sSig></ecdsaNistP256Signature></signature></EtsiTs103097Certificate>";
+    std::string hex_string = "0380810019000f816f72746f6163742e73652e746f63006d00000000101c185b0086012380020202806e01010280700202803801010181e00301ff0100c08280826ceb314218c4c47df101b0e0526b273d69c54962e0feddd4b3c56a9efc944980806c82318218ebc442f1c4b07d520127e0696b493de0c5dd62b3fe6ad4fcc5499e809465807d17793757ad5e284a145aa8b239b58b17c7997e3dd63b257c48229df30276a832935d2be3d9634802188b18538ddf34b3895123ebd5d2d107c71203863f0035";
+    vanetza::ByteBuffer given = from_hexstring(
+        hex_string);
+    CertificateV3 certificate(given);
+    // vanetza::ByteBuffer when = certificate.serialize();
+    
+    // ASSERT_EQ(when, given);
+}
+
+TEST(Certificate, CertificateV3_get_start_and_end_validity){
+    std::string hex_string = "0380810019000f816f72746f6163742e73652e746f63006d00000000101c185b0086012380020202806e01010280700202803801010181e00301ff0100c08280826ceb314218c4c47df101b0e0526b273d69c54962e0feddd4b3c56a9efc944980806c82318218ebc442f1c4b07d520127e0696b493de0c5dd62b3fe6ad4fcc5499e809465807d17793757ad5e284a145aa8b239b58b17c7997e3dd63b257c48229df30276a832935d2be3d9634802188b18538ddf34b3895123ebd5d2d107c71203863f0035";
+    vanetza::ByteBuffer given = from_hexstring(
+        hex_string);
+    CertificateV3 certificate(given);
+
+    vanetza::security::StartAndEndValidity when = certificate.get_start_and_end_validity();
+
+    ASSERT_EQ(when.start_validity, 470833944);
+    ASSERT_EQ(when.end_validity, 1574593944);
+}
+
+TEST(Certificate, CertificateV3_get_geographic_region){
+    std::string hex_string = "0380810019000f816f72746f6163742e73652e746f63006d00000000101c185b0086012380020202806e01010280700202803801010181e00301ff0100c08280826ceb314218c4c47df101b0e0526b273d69c54962e0feddd4b3c56a9efc944980806c82318218ebc442f1c4b07d520127e0696b493de0c5dd62b3fe6ad4fcc5499e809465807d17793757ad5e284a145aa8b239b58b17c7997e3dd63b257c48229df30276a832935d2be3d9634802188b18538ddf34b3895123ebd5d2d107c71203863f0035";
+    vanetza::ByteBuffer given = from_hexstring(
+        hex_string);
+    CertificateV3 certificate(given);
+    //TODO
 }
 

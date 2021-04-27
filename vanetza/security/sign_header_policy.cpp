@@ -92,5 +92,77 @@ void DefaultSignHeaderPolicy::request_certificate_chain()
     m_chain_requested = true;
 }
 
+DefaultSignHeaderPolicyV3::DefaultSignHeaderPolicyV3(const Runtime& rt, PositionProvider& positioning) :
+    m_runtime(rt), m_positioning(positioning), m_cam_next_certificate(m_runtime.now()), m_cert_requested(false), m_chain_requested(false)
+{
+}
+
+std::list<HeaderField> DefaultSignHeaderPolicyV3::prepare_header(const SignRequest& request, CertificateProvider& certificate_provider)
+{
+    std::list<HeaderField> header_fields;
+    return header_fields;
+}
+
+void DefaultSignHeaderPolicyV3::prepare_headers(const SignRequest& request, CertificateProviderV3& certificate_provider, SecuredMessageV3& secured_message){
+    secured_message.set_generation_time(convert_time64(m_runtime.now()));
+    secured_message.set_psid(request.its_aid);
+
+    if (request.its_aid == aid::CA) {
+        // section 7.1.1 in TS 103 097 v1.3.1
+        SignerInfoV3 signer_info = std::nullptr_t();
+        if (m_chain_requested) {
+            std::list<CertificateV3> full_chain;
+            full_chain.splice(full_chain.end(), certificate_provider.own_chain());
+            full_chain.push_back(certificate_provider.own_certificate());
+            // Has to be reversed because the following lines from the standard (IEEE 1609.2):
+            /* The structure contains one or more Certificate structures, in order
+             * such that the first certificate is the authorization certificate and each
+             * subsequent certificate is the issuer of the one before it. */
+            full_chain.reverse();
+            signer_info = full_chain;
+            
+            m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
+        } else if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
+            signer_info = certificate_provider.own_certificate().calculate_hash();
+        } else {
+            
+            m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
+        }
+        secured_message.set_signer_info(signer_info);
+
+        if (m_unknown_certificates.size() > 0) {
+            std::list<HashedId3> unknown_certificates(m_unknown_certificates.begin(), m_unknown_certificates.end());
+            secured_message.set_inline_p2pcd_request(unknown_certificates);
+            m_unknown_certificates.clear();
+        }
+
+        m_cert_requested = false;
+        m_chain_requested = false;
+    } else {
+        auto position = m_positioning.position_fix();
+        if (position.altitude) {
+            secured_message.set_generation_location(ThreeDLocation(position.latitude, position.longitude, to_elevation(position.altitude->value())));
+        } else {
+            secured_message.set_generation_location(ThreeDLocation(position.latitude, position.longitude));
+        }
+    }
+}
+
+void DefaultSignHeaderPolicyV3::request_unrecognized_certificate(HashedId8 id)
+{
+    m_unknown_certificates.insert(truncate(id));
+}
+
+void DefaultSignHeaderPolicyV3::request_certificate()
+{
+    m_cert_requested = true;
+}
+
+void DefaultSignHeaderPolicyV3::request_certificate_chain()
+{
+    m_chain_requested = true;
+}
+
+
 } // namespace security
 } // namespace vanetza

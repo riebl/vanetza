@@ -19,6 +19,12 @@ struct DecapRequest
     const SecuredMessage& sec_packet;
 };
 
+struct DecapRequestV3
+{
+    DecapRequestV3(const SecuredMessageV3& secmsg) : sec_packet(secmsg) {}
+    const SecuredMessageV3& sec_packet;
+};
+
 } // namespace security
 } // namespace vanetza
 #endif // DECAP_REQUEST_HPP_WH8O09MB

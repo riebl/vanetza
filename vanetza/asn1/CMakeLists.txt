@@ -169,6 +169,6 @@ add_asn1_component(security)
 add_asn1_component(pki)
 
 add_vanetza_component(asn1 asn1c_wrapper.cpp)
-target_link_libraries(asn1 PUBLIC asn1_its Boost::boost)
+target_link_libraries(asn1 PUBLIC asn1_its asn1_security Boost::boost)
 
 add_test_subdirectory(tests)
