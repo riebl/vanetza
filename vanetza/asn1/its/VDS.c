@@ -15,7 +15,7 @@ static int check_permitted_alphabet_1(const void *sptr) {
 	
 	for(; ch < end; ch++) {
 		uint8_t cv = *ch;
-		if(!(cv <= 127)) return -1;
+		if(!(cv <= 127UL)) return -1;
 	}
 	return 0;
 }
@@ -35,7 +35,7 @@ VDS_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 6)
+	if((size == 6UL)
 		 && !check_permitted_alphabet_1(st)) {
 		/* Constraint check succeeded */
 		return 0;
@@ -51,14 +51,18 @@ VDS_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * This type is implemented using IA5String,
  * so here we adjust the DEF accordingly.
  */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_VDS_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	6	/* (SIZE(6..6)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_VDS_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_CONSTRAINED,	 0,  0,  6,  6 }	/* (SIZE(6..6)) */,
 	0, 0	/* No PER character map necessary */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_VDS_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (22 << 2))
 };
@@ -72,7 +76,15 @@ asn_TYPE_descriptor_t asn_DEF_VDS = {
 	asn_DEF_VDS_tags_1,	/* Same as above */
 	sizeof(asn_DEF_VDS_tags_1)
 		/sizeof(asn_DEF_VDS_tags_1[0]), /* 1 */
-	{ &asn_OER_type_VDS_constr_1, &asn_PER_type_VDS_constr_1, VDS_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_VDS_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_VDS_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		VDS_constraint
+	},
 	0, 0,	/* No members */
 	0	/* No specifics */
 };

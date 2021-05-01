@@ -26,21 +26,33 @@ memb_nodeOffsetPointxy_constraint_1(const asn_TYPE_descriptor_t *td, const void 
 	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_nodeOffsetPointxy_constr_2 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_nodeOffsetPointxy_constr_2 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  7 }	/* (0..7) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_OffsetPoint_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct OffsetPoint, nodeOffsetPointxy),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_NodeOffsetPointXY,
 		0,
-		{ &asn_OER_memb_nodeOffsetPointxy_constr_2, &asn_PER_memb_nodeOffsetPointxy_constr_2,  memb_nodeOffsetPointxy_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_nodeOffsetPointxy_constr_2,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_nodeOffsetPointxy_constr_2,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_nodeOffsetPointxy_constraint_1
+		},
 		0, 0, /* No default value */
 		"nodeOffsetPointxy"
 		},
@@ -49,7 +61,15 @@ asn_TYPE_member_t asn_MBR_OffsetPoint_1[] = {
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_NodeOffsetPointZ,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"nodeOffsetPointZ"
 		},
@@ -81,7 +101,15 @@ asn_TYPE_descriptor_t asn_DEF_OffsetPoint = {
 	asn_DEF_OffsetPoint_tags_1,	/* Same as above */
 	sizeof(asn_DEF_OffsetPoint_tags_1)
 		/sizeof(asn_DEF_OffsetPoint_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_OffsetPoint_1,
 	2,	/* Elements count */
 	&asn_SPC_OffsetPoint_specs_1	/* Additional specs */

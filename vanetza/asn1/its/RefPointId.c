@@ -21,7 +21,7 @@ RefPointId_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	value = *(const long *)sptr;
 	
-	if((value >= 0 && value <= 255)) {
+	if((value >= 0L && value <= 255L)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -36,14 +36,18 @@ RefPointId_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * This type is implemented using NativeInteger,
  * so here we adjust the DEF accordingly.
  */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_RefPointId_constr_1 CC_NOTUSED = {
 	{ 1, 1 }	/* (0..255) */,
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_RefPointId_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_RefPointId_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
 };
@@ -57,7 +61,15 @@ asn_TYPE_descriptor_t asn_DEF_RefPointId = {
 	asn_DEF_RefPointId_tags_1,	/* Same as above */
 	sizeof(asn_DEF_RefPointId_tags_1)
 		/sizeof(asn_DEF_RefPointId_tags_1[0]), /* 1 */
-	{ &asn_OER_type_RefPointId_constr_1, &asn_PER_type_RefPointId_constr_1, RefPointId_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_RefPointId_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_RefPointId_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		RefPointId_constraint
+	},
 	0, 0,	/* No members */
 	0	/* No specifics */
 };

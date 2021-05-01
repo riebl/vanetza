@@ -24,7 +24,15 @@ asn_TYPE_descriptor_t asn_DEF_Opaque = {
 	asn_DEF_Opaque_tags_1,	/* Same as above */
 	sizeof(asn_DEF_Opaque_tags_1)
 		/sizeof(asn_DEF_Opaque_tags_1[0]), /* 1 */
-	{ 0, 0, OCTET_STRING_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		OCTET_STRING_constraint
+	},
 	0, 0,	/* No members */
 	&asn_SPC_OCTET_STRING_specs	/* Additional specs */
 };

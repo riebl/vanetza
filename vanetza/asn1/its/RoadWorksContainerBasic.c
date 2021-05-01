@@ -13,7 +13,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerBasic_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_RoadworksSubCauseCode,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"roadworksSubCauseCode"
 		},
@@ -22,7 +30,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerBasic_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_LightBarSirenInUse,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"lightBarSirenInUse"
 		},
@@ -31,7 +47,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerBasic_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ClosedLanes,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"closedLanes"
 		},
@@ -64,7 +88,15 @@ asn_TYPE_descriptor_t asn_DEF_RoadWorksContainerBasic = {
 	asn_DEF_RoadWorksContainerBasic_tags_1,	/* Same as above */
 	sizeof(asn_DEF_RoadWorksContainerBasic_tags_1)
 		/sizeof(asn_DEF_RoadWorksContainerBasic_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_RoadWorksContainerBasic_1,
 	3,	/* Elements count */
 	&asn_SPC_RoadWorksContainerBasic_specs_1	/* Additional specs */

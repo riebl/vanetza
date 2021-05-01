@@ -27,14 +27,18 @@ Uint32_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * This type is implemented using NativeInteger,
  * so here we adjust the DEF accordingly.
  */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_Uint32_constr_1 CC_NOTUSED = {
 	{ 4, 1 }	/* (0..4294967295) */,
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_Uint32_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 32, -1,  0,  4294967295 }	/* (0..4294967295) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 const asn_INTEGER_specifics_t asn_SPC_Uint32_specs_1 = {
 	0,	0,	0,	0,	0,
 	0,	/* Native long size */
@@ -53,7 +57,15 @@ asn_TYPE_descriptor_t asn_DEF_Uint32 = {
 	asn_DEF_Uint32_tags_1,	/* Same as above */
 	sizeof(asn_DEF_Uint32_tags_1)
 		/sizeof(asn_DEF_Uint32_tags_1[0]), /* 1 */
-	{ &asn_OER_type_Uint32_constr_1, &asn_PER_type_Uint32_constr_1, Uint32_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_Uint32_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_Uint32_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		Uint32_constraint
+	},
 	0, 0,	/* No members */
 	&asn_SPC_Uint32_specs_1	/* Additional specs */
 };

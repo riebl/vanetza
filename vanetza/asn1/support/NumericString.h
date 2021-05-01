@@ -16,19 +16,43 @@ typedef OCTET_STRING_t NumericString_t;	/* Implemented via OCTET STRING */
 extern asn_TYPE_descriptor_t asn_DEF_NumericString;
 extern asn_TYPE_operation_t asn_OP_NumericString;
 
+#define NumericString_free OCTET_STRING_free
+
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+#define NumericString_print OCTET_STRING_print_utf8
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
+#define NumericString_compare OCTET_STRING_compare
+
 asn_constr_check_f NumericString_constraint;
 
-#define NumericString_free          OCTET_STRING_free
-#define NumericString_print         OCTET_STRING_print_utf8
-#define NumericString_compare       OCTET_STRING_compare
-#define NumericString_decode_ber    OCTET_STRING_decode_ber
-#define NumericString_encode_der    OCTET_STRING_encode_der
-#define NumericString_decode_xer    OCTET_STRING_decode_xer_utf8
-#define NumericString_encode_xer    OCTET_STRING_encode_xer_utf8
-#define NumericString_decode_uper   OCTET_STRING_decode_uper
-#define NumericString_encode_uper   OCTET_STRING_encode_uper
-#define NumericString_decode_aper   OCTET_STRING_decode_aper
-#define NumericString_encode_aper   OCTET_STRING_encode_aper
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+#define NumericString_decode_ber OCTET_STRING_decode_ber
+#define NumericString_encode_der OCTET_STRING_encode_der
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
+#define NumericString_decode_xer OCTET_STRING_decode_xer_utf8
+#define NumericString_encode_xer OCTET_STRING_encode_xer_utf8
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+#define NumericString_decode_oer OCTET_STRING_decode_oer
+#define NumericString_encode_oer OCTET_STRING_encode_oer
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+#define NumericString_decode_uper OCTET_STRING_decode_uper
+#define NumericString_encode_uper OCTET_STRING_encode_uper
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+#define NumericString_decode_aper OCTET_STRING_decode_aper
+#define NumericString_encode_aper OCTET_STRING_encode_aper
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+#define NumericString_random_fill OCTET_STRING_random_fill
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 #ifdef __cplusplus
 }

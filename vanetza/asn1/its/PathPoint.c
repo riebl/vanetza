@@ -13,7 +13,15 @@ asn_TYPE_member_t asn_MBR_PathPoint_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_DeltaReferencePosition,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"pathPosition"
 		},
@@ -22,7 +30,15 @@ asn_TYPE_member_t asn_MBR_PathPoint_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PathDeltaTime,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"pathDeltaTime"
 		},
@@ -54,7 +70,15 @@ asn_TYPE_descriptor_t asn_DEF_PathPoint = {
 	asn_DEF_PathPoint_tags_1,	/* Same as above */
 	sizeof(asn_DEF_PathPoint_tags_1)
 		/sizeof(asn_DEF_PathPoint_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_PathPoint_1,
 	2,	/* Elements count */
 	&asn_SPC_PathPoint_specs_1	/* Additional specs */

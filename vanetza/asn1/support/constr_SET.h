@@ -46,17 +46,39 @@ typedef struct asn_SET_specifics_s {
  * A set specialized functions dealing with the SET type.
  */
 asn_struct_free_f SET_free;
+
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
 asn_struct_print_f SET_print;
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
 asn_struct_compare_f SET_compare;
+
 asn_constr_check_f SET_constraint;
+
+#if !defined(ASN_DISABLE_BER_SUPPORT)
 ber_type_decoder_f SET_decode_ber;
 der_type_encoder_f SET_encode_der;
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
 xer_type_decoder_f SET_decode_xer;
 xer_type_encoder_f SET_encode_xer;
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f SET_decode_uper;
 per_type_encoder_f SET_encode_uper;
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
 asn_random_fill_f  SET_random_fill;
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+
 extern asn_TYPE_operation_t asn_OP_SET;
+
+
+/* Check that all the mandatory members are present */
+int _SET_is_populated(const asn_TYPE_descriptor_t *td, const void *st);
 
 /***********************
  * Some handy helpers. *

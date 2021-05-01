@@ -22,7 +22,7 @@ memb_binaryId_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size >= 1 && size <= 64)) {
+	if((size >= 1UL && size <= 64UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -33,29 +33,45 @@ memb_binaryId_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_binaryId_constr_4 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(1..64)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_binaryId_constr_4 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 6,  6,  1,  64 }	/* (SIZE(1..64)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_CertificateId_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_CertificateId_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED | APC_EXTENSIBLE,  2,  2,  0,  3 }	/* (0..3,...) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_CertificateId_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct CertificateId, choice.linkageData),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_LinkageData,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"linkageData"
 		},
@@ -64,7 +80,15 @@ asn_TYPE_member_t asn_MBR_CertificateId_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Hostname,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"name"
 		},
@@ -73,7 +97,15 @@ asn_TYPE_member_t asn_MBR_CertificateId_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_binaryId_constr_4, &asn_PER_memb_binaryId_constr_4,  memb_binaryId_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_binaryId_constr_4,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_binaryId_constr_4,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_binaryId_constraint_1
+		},
 		0, 0, /* No default value */
 		"binaryId"
 		},
@@ -82,7 +114,15 @@ asn_TYPE_member_t asn_MBR_CertificateId_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NULL,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"none"
 		},
@@ -111,7 +151,15 @@ asn_TYPE_descriptor_t asn_DEF_CertificateId = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	{ &asn_OER_type_CertificateId_constr_1, &asn_PER_type_CertificateId_constr_1, CHOICE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_CertificateId_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_CertificateId_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		CHOICE_constraint
+	},
 	asn_MBR_CertificateId_1,
 	4,	/* Elements count */
 	&asn_SPC_CertificateId_specs_1	/* Additional specs */

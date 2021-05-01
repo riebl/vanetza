@@ -21,7 +21,7 @@ memb_protocolVersion_constraint_1(const asn_TYPE_descriptor_t *td, const void *s
 	
 	value = *(const long *)sptr;
 	
-	if((value >= 0 && value <= 255)) {
+	if((value >= 0L && value <= 255L)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -46,7 +46,7 @@ memb_messageID_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	value = *(const long *)sptr;
 	
-	if((value >= 0 && value <= 255)) {
+	if((value >= 0L && value <= 255L)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -57,29 +57,45 @@ memb_messageID_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_protocolVersion_constr_2 CC_NOTUSED = {
 	{ 1, 1 }	/* (0..255) */,
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_protocolVersion_constr_2 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_messageID_constr_3 CC_NOTUSED = {
 	{ 1, 1 }	/* (0..255) */,
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_messageID_constr_3 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 8,  8,  0,  255 }	/* (0..255) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_ItsPduHeader_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct ItsPduHeader, protocolVersion),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		0,
-		{ &asn_OER_memb_protocolVersion_constr_2, &asn_PER_memb_protocolVersion_constr_2,  memb_protocolVersion_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_protocolVersion_constr_2,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_protocolVersion_constr_2,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_protocolVersion_constraint_1
+		},
 		0, 0, /* No default value */
 		"protocolVersion"
 		},
@@ -88,7 +104,15 @@ asn_TYPE_member_t asn_MBR_ItsPduHeader_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		0,
-		{ &asn_OER_memb_messageID_constr_3, &asn_PER_memb_messageID_constr_3,  memb_messageID_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_messageID_constr_3,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_messageID_constr_3,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_messageID_constraint_1
+		},
 		0, 0, /* No default value */
 		"messageID"
 		},
@@ -97,7 +121,15 @@ asn_TYPE_member_t asn_MBR_ItsPduHeader_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_StationID,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"stationID"
 		},
@@ -128,7 +160,15 @@ asn_TYPE_descriptor_t asn_DEF_ItsPduHeader = {
 	asn_DEF_ItsPduHeader_tags_1,	/* Same as above */
 	sizeof(asn_DEF_ItsPduHeader_tags_1)
 		/sizeof(asn_DEF_ItsPduHeader_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_ItsPduHeader_1,
 	3,	/* Elements count */
 	&asn_SPC_ItsPduHeader_specs_1	/* Additional specs */

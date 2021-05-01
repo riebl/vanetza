@@ -46,7 +46,7 @@ PhoneNumber_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size >= 1 && size <= 16)
+	if((size >= 1UL && size <= 16UL)
 		 && !check_permitted_alphabet_1(st)) {
 		/* Constraint check succeeded */
 		return 0;
@@ -72,15 +72,19 @@ static int asn_PER_MAP_PhoneNumber_1_c2v(unsigned int code) {
  * This type is implemented using NumericString,
  * so here we adjust the DEF accordingly.
  */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_PhoneNumber_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(1..16)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_PhoneNumber_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 4,  4,  32,  57 }	/* (32..57) */,
 	{ APC_CONSTRAINED,	 4,  4,  1,  16 }	/* (SIZE(1..16)) */,
 	asn_PER_MAP_PhoneNumber_1_v2c,	/* Value to PER code map */
 	asn_PER_MAP_PhoneNumber_1_c2v	/* PER code to value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_PhoneNumber_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (18 << 2))
 };
@@ -94,7 +98,15 @@ asn_TYPE_descriptor_t asn_DEF_PhoneNumber = {
 	asn_DEF_PhoneNumber_tags_1,	/* Same as above */
 	sizeof(asn_DEF_PhoneNumber_tags_1)
 		/sizeof(asn_DEF_PhoneNumber_tags_1[0]), /* 1 */
-	{ &asn_OER_type_PhoneNumber_constr_1, &asn_PER_type_PhoneNumber_constr_1, PhoneNumber_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_PhoneNumber_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_PhoneNumber_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		PhoneNumber_constraint
+	},
 	0, 0,	/* No members */
 	0	/* No specifics */
 };

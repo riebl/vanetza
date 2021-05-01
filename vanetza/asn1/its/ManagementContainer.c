@@ -35,7 +35,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ActionID,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"actionID"
 		},
@@ -44,7 +52,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_TimestampIts,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"detectionTime"
 		},
@@ -53,7 +69,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_TimestampIts,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"referenceTime"
 		},
@@ -62,7 +86,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Termination,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"termination"
 		},
@@ -71,7 +103,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ReferencePosition,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"eventPosition"
 		},
@@ -80,7 +120,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_RelevanceDistance,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"relevanceDistance"
 		},
@@ -89,7 +137,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_RelevanceTrafficDirection,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"relevanceTrafficDirection"
 		},
@@ -98,7 +154,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ValidityDuration,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		&asn_DFL_9_cmp_600,	/* Compare DEFAULT 600 */
 		&asn_DFL_9_set_600,	/* Set DEFAULT 600 */
 		"validityDuration"
@@ -108,7 +172,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_TransmissionInterval,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"transmissionInterval"
 		},
@@ -117,7 +189,15 @@ asn_TYPE_member_t asn_MBR_ManagementContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_StationType,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"stationType"
 		},
@@ -157,7 +237,15 @@ asn_TYPE_descriptor_t asn_DEF_ManagementContainer = {
 	asn_DEF_ManagementContainer_tags_1,	/* Same as above */
 	sizeof(asn_DEF_ManagementContainer_tags_1)
 		/sizeof(asn_DEF_ManagementContainer_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_ManagementContainer_1,
 	10,	/* Elements count */
 	&asn_SPC_ManagementContainer_specs_1	/* Additional specs */

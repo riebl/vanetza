@@ -21,9 +21,10 @@ extern "C" {
 /* Dependencies */
 typedef enum LanePosition {
 	LanePosition_offTheRoad	= -1,
-	LanePosition_hardShoulder	= 0,
-	LanePosition_outermostDrivingLane	= 1,
-	LanePosition_secondLaneFromOutside	= 2
+	LanePosition_innerHardShoulder	= 0,
+	LanePosition_innermostDrivingLane	= 1,
+	LanePosition_secondLaneFromOutside	= 2,
+	LanePosition_outerHardShoulder	= 14
 } e_LanePosition;
 
 /* LanePosition */

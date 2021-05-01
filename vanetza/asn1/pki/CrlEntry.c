@@ -22,7 +22,7 @@ CrlEntry_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 8)) {
+	if((size == 8UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -37,14 +37,18 @@ CrlEntry_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * This type is implemented using HashedId8,
  * so here we adjust the DEF accordingly.
  */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_CrlEntry_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	8	/* (SIZE(8..8)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_CrlEntry_constr_1 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  8,  8 }	/* (SIZE(8..8)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_CrlEntry_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (4 << 2))
 };
@@ -58,7 +62,15 @@ asn_TYPE_descriptor_t asn_DEF_CrlEntry = {
 	asn_DEF_CrlEntry_tags_1,	/* Same as above */
 	sizeof(asn_DEF_CrlEntry_tags_1)
 		/sizeof(asn_DEF_CrlEntry_tags_1[0]), /* 1 */
-	{ &asn_OER_type_CrlEntry_constr_1, &asn_PER_type_CrlEntry_constr_1, CrlEntry_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_CrlEntry_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_CrlEntry_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		CrlEntry_constraint
+	},
 	0, 0,	/* No members */
 	&asn_SPC_OCTET_STRING_specs	/* Additional specs */
 };

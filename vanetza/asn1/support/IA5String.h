@@ -19,19 +19,34 @@ typedef OCTET_STRING_t IA5String_t;  /* Implemented via OCTET STRING */
 extern asn_TYPE_descriptor_t asn_DEF_IA5String;
 extern asn_TYPE_operation_t asn_OP_IA5String;
 
+#define IA5String_free OCTET_STRING_free
+
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+#define IA5String_print OCTET_STRING_print_utf8
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
+#define IA5String_compare OCTET_STRING_compare
+
 asn_constr_check_f IA5String_constraint;
 
-#define IA5String_free          OCTET_STRING_free
-#define IA5String_print         OCTET_STRING_print_utf8
-#define IA5String_compare       OCTET_STRING_compare
-#define IA5String_decode_ber    OCTET_STRING_decode_ber
-#define IA5String_encode_der    OCTET_STRING_encode_der
-#define IA5String_decode_xer    OCTET_STRING_decode_xer_utf8
-#define IA5String_encode_xer    OCTET_STRING_encode_xer_utf8
-#define IA5String_decode_uper   OCTET_STRING_decode_uper
-#define IA5String_encode_uper   OCTET_STRING_encode_uper
-#define IA5String_decode_aper   OCTET_STRING_decode_aper
-#define IA5String_encode_aper   OCTET_STRING_encode_aper
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+#define IA5String_decode_ber OCTET_STRING_decode_ber
+#define IA5String_encode_der OCTET_STRING_encode_der
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
+#define IA5String_decode_xer OCTET_STRING_decode_xer_utf8
+#define IA5String_encode_xer OCTET_STRING_encode_xer_utf8
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+#define IA5String_decode_uper OCTET_STRING_decode_uper
+#define IA5String_encode_uper OCTET_STRING_encode_uper
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+#define IA5String_decode_aper OCTET_STRING_decode_aper
+#define IA5String_encode_aper OCTET_STRING_encode_aper
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
 
 #ifdef __cplusplus
 }

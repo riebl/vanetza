@@ -22,7 +22,7 @@ memb_hmacKey_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 32)) {
+	if((size == 32UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -33,21 +33,33 @@ memb_hmacKey_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_hmacKey_constr_3 CC_NOTUSED = {
 	{ 0, 0 },
 	32	/* (SIZE(32..32)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_hmacKey_constr_3 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  32,  32 }	/* (SIZE(32..32)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_InnerAtRequest_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct InnerAtRequest, publicKeys),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PublicKeys,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"publicKeys"
 		},
@@ -56,7 +68,15 @@ asn_TYPE_member_t asn_MBR_InnerAtRequest_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_hmacKey_constr_3, &asn_PER_memb_hmacKey_constr_3,  memb_hmacKey_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_hmacKey_constr_3,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_hmacKey_constr_3,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_hmacKey_constraint_1
+		},
 		0, 0, /* No default value */
 		"hmacKey"
 		},
@@ -65,7 +85,15 @@ asn_TYPE_member_t asn_MBR_InnerAtRequest_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_SharedAtRequest,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"sharedAtRequest"
 		},
@@ -74,7 +102,15 @@ asn_TYPE_member_t asn_MBR_InnerAtRequest_1[] = {
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_EcSignature,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"ecSignature"
 		},
@@ -106,7 +142,15 @@ asn_TYPE_descriptor_t asn_DEF_InnerAtRequest = {
 	asn_DEF_InnerAtRequest_tags_1,	/* Same as above */
 	sizeof(asn_DEF_InnerAtRequest_tags_1)
 		/sizeof(asn_DEF_InnerAtRequest_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_InnerAtRequest_1,
 	4,	/* Elements count */
 	&asn_SPC_InnerAtRequest_specs_1	/* Additional specs */

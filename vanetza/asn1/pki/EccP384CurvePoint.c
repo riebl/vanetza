@@ -22,7 +22,7 @@ memb_x_constraint_6(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 48)) {
+	if((size == 48UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -48,7 +48,7 @@ memb_y_constraint_6(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 48)) {
+	if((size == 48UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -74,7 +74,7 @@ memb_x_only_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 48)) {
+	if((size == 48UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -100,7 +100,7 @@ memb_compressed_y_0_constraint_1(const asn_TYPE_descriptor_t *td, const void *sp
 	
 	size = st->size;
 	
-	if((size == 48)) {
+	if((size == 48UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -126,7 +126,7 @@ memb_compressed_y_1_constraint_1(const asn_TYPE_descriptor_t *td, const void *sp
 	
 	size = st->size;
 	
-	if((size == 48)) {
+	if((size == 48UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -137,61 +137,93 @@ memb_compressed_y_1_constraint_1(const asn_TYPE_descriptor_t *td, const void *sp
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_x_constr_7 CC_NOTUSED = {
 	{ 0, 0 },
 	48	/* (SIZE(48..48)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_x_constr_7 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  48,  48 }	/* (SIZE(48..48)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_y_constr_8 CC_NOTUSED = {
 	{ 0, 0 },
 	48	/* (SIZE(48..48)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_y_constr_8 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  48,  48 }	/* (SIZE(48..48)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_x_only_constr_2 CC_NOTUSED = {
 	{ 0, 0 },
 	48	/* (SIZE(48..48)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_x_only_constr_2 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  48,  48 }	/* (SIZE(48..48)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_compressed_y_0_constr_4 CC_NOTUSED = {
 	{ 0, 0 },
 	48	/* (SIZE(48..48)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_compressed_y_0_constr_4 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  48,  48 }	/* (SIZE(48..48)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_compressed_y_1_constr_5 CC_NOTUSED = {
 	{ 0, 0 },
 	48	/* (SIZE(48..48)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_compressed_y_1_constr_5 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  48,  48 }	/* (SIZE(48..48)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_EccP384CurvePoint_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_EccP384CurvePoint_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  4 }	/* (0..4) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static asn_TYPE_member_t asn_MBR_uncompressedP384_6[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EccP384CurvePoint__uncompressedP384, x),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_x_constr_7, &asn_PER_memb_x_constr_7,  memb_x_constraint_6 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_x_constr_7,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_x_constr_7,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_x_constraint_6
+		},
 		0, 0, /* No default value */
 		"x"
 		},
@@ -200,7 +232,15 @@ static asn_TYPE_member_t asn_MBR_uncompressedP384_6[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_y_constr_8, &asn_PER_memb_y_constr_8,  memb_y_constraint_6 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_y_constr_8,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_y_constr_8,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_y_constraint_6
+		},
 		0, 0, /* No default value */
 		"y"
 		},
@@ -232,7 +272,15 @@ asn_TYPE_descriptor_t asn_DEF_uncompressedP384_6 = {
 	asn_DEF_uncompressedP384_tags_6,	/* Same as above */
 	sizeof(asn_DEF_uncompressedP384_tags_6)
 		/sizeof(asn_DEF_uncompressedP384_tags_6[0]), /* 2 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_uncompressedP384_6,
 	2,	/* Elements count */
 	&asn_SPC_uncompressedP384_specs_6	/* Additional specs */
@@ -244,7 +292,15 @@ asn_TYPE_member_t asn_MBR_EccP384CurvePoint_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_x_only_constr_2, &asn_PER_memb_x_only_constr_2,  memb_x_only_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_x_only_constr_2,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_x_only_constr_2,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_x_only_constraint_1
+		},
 		0, 0, /* No default value */
 		"x-only"
 		},
@@ -253,7 +309,15 @@ asn_TYPE_member_t asn_MBR_EccP384CurvePoint_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NULL,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"fill"
 		},
@@ -262,7 +326,15 @@ asn_TYPE_member_t asn_MBR_EccP384CurvePoint_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_compressed_y_0_constr_4, &asn_PER_memb_compressed_y_0_constr_4,  memb_compressed_y_0_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_compressed_y_0_constr_4,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_compressed_y_0_constr_4,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_compressed_y_0_constraint_1
+		},
 		0, 0, /* No default value */
 		"compressed-y-0"
 		},
@@ -271,7 +343,15 @@ asn_TYPE_member_t asn_MBR_EccP384CurvePoint_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_compressed_y_1_constr_5, &asn_PER_memb_compressed_y_1_constr_5,  memb_compressed_y_1_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_compressed_y_1_constr_5,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_compressed_y_1_constr_5,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_compressed_y_1_constraint_1
+		},
 		0, 0, /* No default value */
 		"compressed-y-1"
 		},
@@ -280,7 +360,15 @@ asn_TYPE_member_t asn_MBR_EccP384CurvePoint_1[] = {
 		0,
 		&asn_DEF_uncompressedP384_6,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"uncompressedP384"
 		},
@@ -310,7 +398,15 @@ asn_TYPE_descriptor_t asn_DEF_EccP384CurvePoint = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	{ &asn_OER_type_EccP384CurvePoint_constr_1, &asn_PER_type_EccP384CurvePoint_constr_1, CHOICE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_EccP384CurvePoint_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_EccP384CurvePoint_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		CHOICE_constraint
+	},
 	asn_MBR_EccP384CurvePoint_1,
 	5,	/* Elements count */
 	&asn_SPC_EccP384CurvePoint_specs_1	/* Additional specs */

@@ -35,7 +35,15 @@ asn_TYPE_member_t asn_MBR_FreeSpaceAddendum_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_FreeSpaceConfidence,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"freeSpaceConfidence"
 		},
@@ -44,7 +52,15 @@ asn_TYPE_member_t asn_MBR_FreeSpaceAddendum_1[] = {
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_FreeSpaceArea,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"freeSpaceArea"
 		},
@@ -53,7 +69,15 @@ asn_TYPE_member_t asn_MBR_FreeSpaceAddendum_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_SensorIdList,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"sensorIDList"
 		},
@@ -62,7 +86,15 @@ asn_TYPE_member_t asn_MBR_FreeSpaceAddendum_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ShadowingApplies,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		&asn_DFL_5_cmp_1,	/* Compare DEFAULT 1 */
 		&asn_DFL_5_set_1,	/* Set DEFAULT 1 */
 		"shadowingApplies"
@@ -97,7 +129,15 @@ asn_TYPE_descriptor_t asn_DEF_FreeSpaceAddendum = {
 	asn_DEF_FreeSpaceAddendum_tags_1,	/* Same as above */
 	sizeof(asn_DEF_FreeSpaceAddendum_tags_1)
 		/sizeof(asn_DEF_FreeSpaceAddendum_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_FreeSpaceAddendum_1,
 	4,	/* Elements count */
 	&asn_SPC_FreeSpaceAddendum_specs_1	/* Additional specs */

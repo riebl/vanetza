@@ -22,7 +22,7 @@ memb_c_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 16)) {
+	if((size == 16UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -48,7 +48,7 @@ memb_t_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	size = st->size;
 	
-	if((size == 16)) {
+	if((size == 16UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -59,29 +59,45 @@ memb_t_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_c_constr_3 CC_NOTUSED = {
 	{ 0, 0 },
 	16	/* (SIZE(16..16)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_c_constr_3 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  16,  16 }	/* (SIZE(16..16)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_t_constr_4 CC_NOTUSED = {
 	{ 0, 0 },
 	16	/* (SIZE(16..16)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_t_constr_4 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 0,  0,  16,  16 }	/* (SIZE(16..16)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_EciesP256EncryptedKey_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EciesP256EncryptedKey, v),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_EccP256CurvePoint,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"v"
 		},
@@ -90,7 +106,15 @@ asn_TYPE_member_t asn_MBR_EciesP256EncryptedKey_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_c_constr_3, &asn_PER_memb_c_constr_3,  memb_c_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_c_constr_3,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_c_constr_3,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_c_constraint_1
+		},
 		0, 0, /* No default value */
 		"c"
 		},
@@ -99,7 +123,15 @@ asn_TYPE_member_t asn_MBR_EciesP256EncryptedKey_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_t_constr_4, &asn_PER_memb_t_constr_4,  memb_t_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_t_constr_4,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_t_constr_4,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_t_constraint_1
+		},
 		0, 0, /* No default value */
 		"t"
 		},
@@ -130,7 +162,15 @@ asn_TYPE_descriptor_t asn_DEF_EciesP256EncryptedKey = {
 	asn_DEF_EciesP256EncryptedKey_tags_1,	/* Same as above */
 	sizeof(asn_DEF_EciesP256EncryptedKey_tags_1)
 		/sizeof(asn_DEF_EciesP256EncryptedKey_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_EciesP256EncryptedKey_1,
 	3,	/* Elements count */
 	&asn_SPC_EciesP256EncryptedKey_specs_1	/* Additional specs */

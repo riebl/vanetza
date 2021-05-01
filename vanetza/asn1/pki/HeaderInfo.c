@@ -13,7 +13,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Psid,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"psid"
 		},
@@ -22,7 +30,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Time64,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"generationTime"
 		},
@@ -31,7 +47,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Time64,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"expiryTime"
 		},
@@ -40,7 +64,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ThreeDLocation,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"generationLocation"
 		},
@@ -49,7 +81,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_HashedId3,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"p2pcdLearningRequest"
 		},
@@ -58,7 +98,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_MissingCrlIdentifier,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"missingCrlIdentifier"
 		},
@@ -67,7 +115,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_EncryptionKey,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"encryptionKey"
 		},
@@ -76,7 +132,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_SequenceOfHashedId3,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"inlineP2pcdRequest"
 		},
@@ -85,7 +149,15 @@ asn_TYPE_member_t asn_MBR_HeaderInfo_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Certificate,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"requestedCertificate"
 		},
@@ -124,7 +196,15 @@ asn_TYPE_descriptor_t asn_DEF_HeaderInfo = {
 	asn_DEF_HeaderInfo_tags_1,	/* Same as above */
 	sizeof(asn_DEF_HeaderInfo_tags_1)
 		/sizeof(asn_DEF_HeaderInfo_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_HeaderInfo_1,
 	9,	/* Elements count */
 	&asn_SPC_HeaderInfo_specs_1	/* Additional specs */

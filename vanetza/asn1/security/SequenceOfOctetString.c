@@ -28,29 +28,45 @@ memb_OCTET_STRING_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr
 	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_Member_constr_2 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(0..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_Member_constr_2 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_SEMI_CONSTRAINED,	-1, -1,  0,  0 }	/* (SIZE(0..MAX)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_SequenceOfOctetString_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(0..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_SequenceOfOctetString_constr_1 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_SEMI_CONSTRAINED,	-1, -1,  0,  0 }	/* (SIZE(0..MAX)) */,
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_SequenceOfOctetString_1[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),
 		0,
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ &asn_OER_memb_Member_constr_2, &asn_PER_memb_Member_constr_2,  memb_OCTET_STRING_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_Member_constr_2,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_Member_constr_2,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_OCTET_STRING_constraint_1
+		},
 		0, 0, /* No default value */
 		""
 		},
@@ -73,7 +89,15 @@ asn_TYPE_descriptor_t asn_DEF_SequenceOfOctetString = {
 	asn_DEF_SequenceOfOctetString_tags_1,	/* Same as above */
 	sizeof(asn_DEF_SequenceOfOctetString_tags_1)
 		/sizeof(asn_DEF_SequenceOfOctetString_tags_1[0]), /* 1 */
-	{ &asn_OER_type_SequenceOfOctetString_constr_1, &asn_PER_type_SequenceOfOctetString_constr_1, SEQUENCE_OF_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_SequenceOfOctetString_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_SequenceOfOctetString_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_OF_constraint
+	},
 	asn_MBR_SequenceOfOctetString_1,
 	1,	/* Single element */
 	&asn_SPC_SequenceOfOctetString_specs_1	/* Additional specs */

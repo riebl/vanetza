@@ -7,21 +7,33 @@
 
 #include "EcSignature.h"
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_EcSignature_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_EcSignature_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 1,  1,  0,  1 }	/* (0..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_EcSignature_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EcSignature, choice.encryptedEcSignature),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_EtsiTs103097Data_Encrypted_85P0,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"encryptedEcSignature"
 		},
@@ -30,7 +42,15 @@ asn_TYPE_member_t asn_MBR_EcSignature_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_EtsiTs103097Data_SignedExternalPayload,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"ecSignature"
 		},
@@ -57,7 +77,15 @@ asn_TYPE_descriptor_t asn_DEF_EcSignature = {
 	0,	/* No effective tags (count) */
 	0,	/* No tags (pointer) */
 	0,	/* No tags (count) */
-	{ &asn_OER_type_EcSignature_constr_1, &asn_PER_type_EcSignature_constr_1, CHOICE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		&asn_OER_type_EcSignature_constr_1,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		&asn_PER_type_EcSignature_constr_1,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		CHOICE_constraint
+	},
 	asn_MBR_EcSignature_1,
 	2,	/* Elements count */
 	&asn_SPC_EcSignature_specs_1	/* Additional specs */

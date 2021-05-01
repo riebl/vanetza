@@ -10,51 +10,80 @@
  * UTF8String basic type description.
  */
 static const ber_tlv_tag_t asn_DEF_UTF8String_tags[] = {
-	(ASN_TAG_CLASS_UNIVERSAL | (12 << 2)),	/* [UNIVERSAL 12] IMPLICIT ...*/
-	(ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),	/* ... OCTET STRING */
+    (ASN_TAG_CLASS_UNIVERSAL | (12 << 2)),  /* [UNIVERSAL 12] IMPLICIT ...*/
+    (ASN_TAG_CLASS_UNIVERSAL | (4 << 2)),   /* ... OCTET STRING */
 };
 asn_TYPE_operation_t asn_OP_UTF8String = {
-	OCTET_STRING_free,
-	UTF8String_print,
-	OCTET_STRING_compare,
-	OCTET_STRING_decode_ber,    /* Implemented in terms of OCTET STRING */
-	OCTET_STRING_encode_der,
-	OCTET_STRING_decode_xer_utf8,
-	OCTET_STRING_encode_xer_utf8,
-#ifdef	ASN_DISABLE_OER_SUPPORT
-	0,
-	0,
+    OCTET_STRING_free,
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+    UTF8String_print,
 #else
-	OCTET_STRING_decode_oer,
-	OCTET_STRING_encode_oer,
-#endif  /* ASN_DISABLE_OER_SUPPORT */
-#ifdef	ASN_DISABLE_PER_SUPPORT
-	0,
-	0,
-	0,
-	0,
+    0,
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+    OCTET_STRING_compare,
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+    OCTET_STRING_decode_ber,  /* Implemented in terms of OCTET STRING */
+    OCTET_STRING_encode_der,
 #else
-	OCTET_STRING_decode_uper,
-	OCTET_STRING_encode_uper,
-	OCTET_STRING_decode_aper,
-	OCTET_STRING_encode_aper,
-#endif	/* ASN_DISABLE_PER_SUPPORT */
-	UTF8String_random_fill,
-	0	/* Use generic outmost tag fetcher */
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+#if !defined(ASN_DISABLE_XER_SUPPORT)
+    OCTET_STRING_decode_xer_utf8,
+    OCTET_STRING_encode_xer_utf8,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+    OCTET_STRING_decode_oer,
+    OCTET_STRING_encode_oer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+    OCTET_STRING_decode_uper,
+    OCTET_STRING_encode_uper,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+    OCTET_STRING_decode_aper,
+    OCTET_STRING_encode_aper,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+    UTF8String_random_fill,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+    0  /* Use generic outmost tag fetcher */
 };
 asn_TYPE_descriptor_t asn_DEF_UTF8String = {
-	"UTF8String",
-	"UTF8String",
-	&asn_OP_UTF8String,
-	asn_DEF_UTF8String_tags,
-	sizeof(asn_DEF_UTF8String_tags)
-	  / sizeof(asn_DEF_UTF8String_tags[0]) - 1,
-	asn_DEF_UTF8String_tags,
-	sizeof(asn_DEF_UTF8String_tags)
-	  / sizeof(asn_DEF_UTF8String_tags[0]),
-	{ 0, 0, UTF8String_constraint },
-	0, 0,	/* No members */
-	0	/* No specifics */
+    "UTF8String",
+    "UTF8String",
+    &asn_OP_UTF8String,
+    asn_DEF_UTF8String_tags,
+    sizeof(asn_DEF_UTF8String_tags)
+      / sizeof(asn_DEF_UTF8String_tags[0]) - 1,
+    asn_DEF_UTF8String_tags,
+    sizeof(asn_DEF_UTF8String_tags)
+      / sizeof(asn_DEF_UTF8String_tags[0]),
+    {
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+        UTF8String_constraint
+    },
+    0, 0,  /* No members */
+    0  /* No specifics */
 };
 
 /*
@@ -188,107 +217,3 @@ UTF8String_to_wcs(const UTF8String_t *st, uint32_t *dst, size_t dstlen) {
 	}
 }
 
-int
-UTF8String_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                 asn_app_consume_bytes_f *cb, void *app_key) {
-    const UTF8String_t *st = (const UTF8String_t *)sptr;
-
-	(void)td;	/* Unused argument */
-	(void)ilevel;	/* Unused argument */
-
-	if(st && st->buf) {
-		return (cb(st->buf, st->size, app_key) < 0) ? -1 : 0;
-	} else {
-		return (cb("<absent>", 8, app_key) < 0) ? -1 : 0;
-	}
-}
-
-
-/*
- * Biased function for randomizing UTF-8 sequences.
- */
-static size_t
-UTF8String__random_char(uint8_t *b, size_t size) {
-    static const struct rnd_value {
-        const char *value;
-        size_t size;
-    } values[] = {{"\0", 1},
-                  {"\x01", 1},
-                  {"\x7f", 1},
-                  {"\xc2\xa2", 2},
-                  {"\xe2\x82\xac", 3},
-                  {"\xf0\x90\x8d\x88", 4},
-                  {"\xf4\x8f\xbf\xbf", 4}};
-
-    const struct rnd_value *v;
-    size_t max_idx = 0;
-
-    switch(size) {
-    case 0:
-        assert(size != 0);
-        return 0;
-    case 1:
-        max_idx = 2;
-        break;
-    case 2:
-        max_idx = 3;
-        break;
-    default:
-    case 4:
-        max_idx = sizeof(values) / sizeof(values[0]) - 1;
-        break;
-    }
-
-    v = &values[asn_random_between(0, max_idx)];
-    memcpy(b, v->value, v->size);
-    return v->size;
-}
-
-asn_random_fill_result_t
-UTF8String_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
-                       const asn_encoding_constraints_t *constraints,
-                       size_t max_length) {
-    asn_random_fill_result_t result_ok = {ARFILL_OK, 1};
-    asn_random_fill_result_t result_failed = {ARFILL_FAILED, 0};
-    asn_random_fill_result_t result_skipped = {ARFILL_SKIPPED, 0};
-    uint8_t *buf;
-    uint8_t *bend;
-    uint8_t *b;
-    size_t rnd_len;
-    size_t idx;
-    UTF8String_t *st;
-
-    if(max_length == 0 && !*sptr) return result_skipped;
-
-    /* Figure out how far we should go */
-    rnd_len = OCTET_STRING_random_length_constrained(td, constraints,
-                                                     max_length / 4);
-
-    buf = CALLOC(4, rnd_len + 1);
-    if(!buf) return result_failed;
-
-    bend = &buf[4 * rnd_len];
-
-    for(b = buf, idx = 0; idx < rnd_len; idx++) {
-        b += UTF8String__random_char(b, (bend - b));
-    }
-    *(uint8_t *)b = 0;
-
-    if(*sptr) {
-        st = *sptr;
-        FREEMEM(st->buf);
-    } else {
-        st = (OCTET_STRING_t *)(*sptr = CALLOC(1, sizeof(UTF8String_t)));
-        if(!st) {
-            FREEMEM(buf);
-            return result_failed;
-        }
-    }
-
-    st->buf = buf;
-    st->size = b - buf;
-
-    assert(UTF8String_length(st) == (ssize_t)rnd_len);
-
-    return result_ok;
-}
