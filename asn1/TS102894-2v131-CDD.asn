@@ -213,7 +213,7 @@ HeadingValue ::= INTEGER {wgs84North(0), wgs84East(900), wgs84South(1800), wgs84
 
 HeadingConfidence ::= INTEGER {equalOrWithinZeroPointOneDegree (1), equalOrWithinOneDegree (10), outOfRange(126), unavailable(127)} (1..127)
 
-LanePosition ::= INTEGER {offTheRoad(-1), innerHardShoulder(0), innermostDrivingLane(1), secondLaneFromOutside(2), outerHardShoulder(14)} (-1..14)
+LanePosition ::= INTEGER {offTheRoad(-1), innerHardShoulder(0), innermostDrivingLane(1), secondLaneFromInside(2), outerHardShoulder(14)} (-1..14)
 
 ClosedLanes ::= SEQUENCE {
     innerhardShoulderStatus HardShoulderStatus OPTIONAL,
