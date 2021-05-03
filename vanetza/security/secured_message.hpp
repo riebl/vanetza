@@ -88,6 +88,7 @@ using SecuredMessage = SecuredMessageV2;
 class SecuredMessageV3{
     public:
         SecuredMessageV3();
+        ~SecuredMessageV3();
         SecuredMessageV3(vanetza::ByteBuffer secured_message);
         SecuredMessageV3(const SecuredMessageV3& message);
         uint8_t protocol_version() const { return 3; }

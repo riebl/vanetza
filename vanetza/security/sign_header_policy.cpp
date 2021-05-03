@@ -125,17 +125,16 @@ void DefaultSignHeaderPolicyV3::prepare_headers(const SignRequest& request, Cert
         } else if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
             signer_info = certificate_provider.own_certificate().calculate_hash();
         } else {
-            
+            signer_info = certificate_provider.own_certificate();
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         }
         secured_message.set_signer_info(signer_info);
-
         if (m_unknown_certificates.size() > 0) {
             std::list<HashedId3> unknown_certificates(m_unknown_certificates.begin(), m_unknown_certificates.end());
             secured_message.set_inline_p2pcd_request(unknown_certificates);
+            
             m_unknown_certificates.clear();
         }
-
         m_cert_requested = false;
         m_chain_requested = false;
     } else {
@@ -146,6 +145,7 @@ void DefaultSignHeaderPolicyV3::prepare_headers(const SignRequest& request, Cert
             secured_message.set_generation_location(ThreeDLocation(position.latitude, position.longitude));
         }
     }
+
 }
 
 void DefaultSignHeaderPolicyV3::request_unrecognized_certificate(HashedId8 id)

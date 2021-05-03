@@ -213,8 +213,8 @@ create_security_entity_v3(const po::variables_map& vm, const Runtime& runtime, P
             const std::string& certificate_key_path = vm["certificate-key"].as<std::string>();
 
             auto authorization_ticket = security::load_certificate_from_file_v3(certificate_path);
-            auto authorization_ticket_key = security::load_private_key_from_file(certificate_key_path);
-
+            auto authorization_ticket_key = security::load_private_key_from_file_v3(certificate_key_path);
+            
             std::list<security::CertificateV3> chain;
 
             if (vm.count("certificate-chain")) {
@@ -250,6 +250,5 @@ create_security_entity_v3(const po::variables_map& vm, const Runtime& runtime, P
     } else {
         throw std::runtime_error("Unknown security entity requested");
     }
-
     return security;
 }

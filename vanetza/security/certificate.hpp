@@ -220,13 +220,14 @@ HashedId8 calculate_hash(const Certificate&);
 class CertificateV3{
     public:
         CertificateV3();
+        ~CertificateV3();
         CertificateV3(vanetza::asn1::EtsiTs103097Certificate& certificate);
         CertificateV3(vanetza::ByteBuffer coer_certificate);
         CertificateV3(const Certificate_t& certificate);
         CertificateV3(const CertificateV3& certificate);
 
         vanetza::ByteBuffer serialize() const;
-        Certificate_t as_plain_certificate() const;
+        void as_plain_certificate(Certificate_t* cert) const;
 
         vanetza::security::StartAndEndValidity get_start_and_end_validity() const;
         Clock::duration get_time_to_expire() const;

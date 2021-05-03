@@ -31,7 +31,7 @@ find_package(Threads MODULE)
 # Build configuration options
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
-option(BUILD_TESTS "Build unit tests" ON)
+option(BUILD_TESTS "Build unit tests" OFF)
 if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(gtest)

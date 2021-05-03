@@ -498,7 +498,7 @@ VerifyServiceV3 straight_verify_serviceV3(const Runtime& rt, CertificateProvider
         VerifyConfirm confirm;
         const SecuredMessageV3& secured_message = request.secured_message;
 
-        if (secured_message.is_signed_message()) {
+        if (!secured_message.is_signed_message()) {
             confirm.report = VerificationReport::Unsigned_Message;
             return confirm;
         }
