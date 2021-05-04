@@ -69,3 +69,43 @@ TEST(Cpm, decode_one_perceived_object)
     EXPECT_EQ(127, object->ySpeed.confidence);
 }
 
+TEST(Cpm, roundtrip)
+{
+    // same payload as in decode_one_perceived_object test
+    static const ByteBuffer cpm_uper = {
+      0x01, 0xff, 0x00, 0x00, 0x05, 0x39, 0x00, 0x2a, 0x10, 0x03, 0x49, 0x04,
+      0x84, 0x01, 0xc7, 0x61, 0x26, 0x00, 0x7d, 0x03, 0xe8, 0xe1, 0x36, 0xee,
+      0x87, 0xc0, 0x0c, 0x00, 0x01, 0x8e, 0x10, 0x7d, 0x0a, 0x2c, 0x9f, 0x0c,
+      0x89, 0xa1, 0x21, 0x94, 0x00, 0xef, 0xd0, 0x07, 0x7f, 0x01, 0x80
+    };
+    asn1::Cpm cpm;
+    EXPECT_TRUE(cpm.decode(cpm_uper));
+    EXPECT_EQ(cpm_uper, cpm.encode());
+}
+
+TEST(Cpm, encode_one_perceived_object)
+{
+    asn1::Cpm cpm;
+    cpm->cpm.cpmParameters.numberOfPerceivedObjects = 1;
+    cpm->cpm.cpmParameters.perceivedObjectContainer = asn1::allocate<PerceivedObjectContainer_t>();
+
+    auto object = asn1::allocate<PerceivedObject_t>();
+    EXPECT_EQ(0, ASN_SEQUENCE_ADD(cpm->cpm.cpmParameters.perceivedObjectContainer, object));
+    EXPECT_EQ(1, cpm->cpm.cpmParameters.perceivedObjectContainer->list.count);
+    EXPECT_EQ(object, cpm->cpm.cpmParameters.perceivedObjectContainer->list.array[0]);
+
+    object->objectID = 1;
+    object->timeOfMeasurement = TimeOfMeasurement_oneMilliSecond;
+    object->xDistance.value = DistanceValue_oneMeter;
+    object->xDistance.confidence = DistanceConfidence_unavailable;
+    object->yDistance.value = DistanceValue_oneMeter;
+    object->yDistance.confidence = DistanceConfidence_unavailable;
+    object->xSpeed.value = SpeedValueExtended_unavailable;
+    object->xSpeed.confidence = SpeedConfidence_unavailable;
+    object->ySpeed.value = SpeedValueExtended_unavailable;
+    object->ySpeed.confidence = SpeedConfidence_unavailable;
+
+    EXPECT_TRUE(cpm.validate());
+    EXPECT_FALSE(cpm.encode().empty());
+}
+
