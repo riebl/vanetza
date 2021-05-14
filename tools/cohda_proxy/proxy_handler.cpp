@@ -83,7 +83,7 @@ void ProxyHandler::handle_ota_receive(system::error_code ec, size_t bytes_receiv
 {
     if (!ec && bytes_received >= sizeof(tMK2RxDescriptor)) {
         tMK2RxDescriptor* mk2_rx = reinterpret_cast<tMK2RxDescriptor*>(&m_ota2udp_buffer[0]);
-        const double signalpower_dbm = mk2_rx->RxPowerA / 2.0;
+        const double signalpower_dbm = mk2_rx->RxPowerAnt1 / 2.0;
         const void* payload = &m_ota2udp_buffer[sizeof(tMK2RxDescriptor)];
         const unsigned fcs_length = 4; // FCS checksum bytes
         // TODO: Don't merely skip FCS bytes, but check for correctness
