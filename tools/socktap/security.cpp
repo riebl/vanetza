@@ -9,7 +9,6 @@
 #include <vanetza/security/static_certificate_provider.hpp>
 #include <vanetza/security/trust_store.hpp>
 #include <stdexcept>
-#include <iostream>
 
 using namespace vanetza;
 namespace po = boost::program_options;
@@ -31,7 +30,6 @@ public:
         if (!entity) {
             throw std::runtime_error("security entity is not ready");
         }
-        std::cout << "Encapsulating packet" << std::endl;
         return entity->encapsulate_packet(std::move(request));
     }
 
@@ -40,7 +38,6 @@ public:
         if (!entity) {
             throw std::runtime_error("security entity is not ready");
         }
-        std::cout << "Decapsulate packet" << std::endl;
         return entity->decapsulate_packet(std::move(request));
     }
 

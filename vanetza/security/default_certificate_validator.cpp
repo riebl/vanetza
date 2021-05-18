@@ -477,37 +477,14 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     return CertificateInvalidReason::Unknown_Signer;
 }
 
-// DefaultCertificateValidatorV3::DefaultCertificateValidatorV3(Backend& backend, CertificateCacheV3& cert_cache, const TrustStoreV3& trust_store) :
-//     m_crypto_backend(backend),
-//     m_cert_cache(cert_cache),
-//     m_trust_store(trust_store)
-// {
-// }
-
 CertificateValidity DefaultCertificateValidator::check_certificate(const CertificateV3& certificate)
 {
-    // if (!extract_validity_time(certificate)) {
-    //     return CertificateInvalidReason::Broken_Time_Period;
-    // }
-
-    // if (!certificate.get_attribute<SubjectAttributeType::Assurance_Level>()) {
-    //     return CertificateInvalidReason::Missing_Subject_Assurance;
-    // }
-
-    // SubjectType subject_type = certificate.subject_info.subject_type;
-
-    // // check if subject_name is empty if certificate is authorization ticket
-    // if (subject_type == SubjectType::Authorization_Ticket && 0 != certificate.subject_info.subject_name.size()) {
-    //     return CertificateInvalidReason::Invalid_Name;
-    // }
 
     HashedId8 signer_hash = certificate.get_issuer_identifier();
 
     if (signer_hash == HashedId8{{0,0,0,0,0,0,0,0}}) {
         return CertificateInvalidReason::Invalid_Signer;
     }
-
-    //HashedId8 signer_hash = boost::get<HashedId8>(certificate.signer_info);
 
     // try to extract ECDSA signature
     boost::optional<EcdsaSignature> sig = extract_ecdsa_signature(certificate.get_signature());
@@ -534,7 +511,6 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
             return CertificateValidity::valid();
         }
     }
-    
 
     // authorization authorities may only be signed by root CAs
     // Note: There's no clear specification about this, but there's a test for it in 5.2.7.12.4 of TS 103 096-2 V1.3.1

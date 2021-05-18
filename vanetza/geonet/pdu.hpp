@@ -9,10 +9,6 @@
 
 namespace vanetza
 {
-// forward declarations
-// namespace security {
-//     struct SecuredMessageVariant;
-// }
 
 namespace geonet
 {
