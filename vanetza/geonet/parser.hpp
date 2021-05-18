@@ -13,8 +13,6 @@
 namespace vanetza
 {
 
-// forward declaration
-// namespace security { class SecuredMessageVariant; }
 
 namespace geonet
 {

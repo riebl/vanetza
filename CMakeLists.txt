@@ -82,7 +82,7 @@ if(TARGET Cohda::headers)
   add_subdirectory(tools/cohda_proxy)
 endif()
 
-option(BUILD_SOCKTAP "Build socktap application" ON)
+option(BUILD_SOCKTAP "Build socktap application" OFF)
 if(BUILD_SOCKTAP)
   add_subdirectory(tools/socktap)
 endif()

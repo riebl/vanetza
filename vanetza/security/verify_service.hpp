@@ -25,10 +25,6 @@ class CertificateCache;
 class CertificateProvider;
 class CertificateValidator;
 class SignHeaderPolicy;
-class CertificateCacheV3;
-class CertificateProviderV3;
-class CertificateValidatorV3;
-class DefaultSignHeaderPolicyV3;
 
 enum class VerificationReport
 {

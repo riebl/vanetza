@@ -55,7 +55,6 @@ bool check_generation_time(const SecuredMessageV3& message, Clock::time_point no
 
     bool valid = false;
     std::shared_ptr<Time64> generation_time = message.get_generation_time();
-    //message.header_field<HeaderFieldType::Generation_Time>();
     if (generation_time) {
         // Values are picked from C2C-CC Basic System Profile v1.1.0, see RS_BSP_168
         static const auto generation_time_future = milliseconds(40);
@@ -78,7 +77,7 @@ bool check_generation_time(const SecuredMessageV3& message, Clock::time_point no
     }
 
     return valid;
-} // Test to be written
+}
 
 bool check_generation_location(const SecuredMessageV2& message, const Certificate& cert)
 {
@@ -103,7 +102,6 @@ bool check_generation_location(const SecuredMessageV2& message, const Certificat
 
 bool check_generation_location(const SecuredMessageV3& message, const CertificateV3& cert)
 {
-    //const IntX* its_aid = message.header_field<HeaderFieldType::Its_Aid>();
     const Psid_t psid = message.get_psid();
     if (aid::CA == psid) {
         return true; // no check required for CAMs, field not even allowed
@@ -120,7 +118,7 @@ bool check_generation_location(const SecuredMessageV3& message, const Certificat
     }
 
     return false;
-} // Test to be written
+}
 
 bool check_generation_location(const SecuredMessageVariant& message, const CertificateVariant& cert)
 {
@@ -318,7 +316,7 @@ bool assign_permissions(const CertificateV3& certificate, VerifyConfirm& confirm
         }
     }
     return false;
-}// To be tested
+}
 
 bool assign_permissions(const vanetza::security::CertificateVariant& certificate, vanetza::security::VerifyConfirm& confirm)
 {
@@ -393,11 +391,6 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
     
 
     const IntX its_aid = IntX(secured_message.get_psid());
-    // if (!its_aid) {
-    //     // ITS-AID is required to be present, report as incompatible protocol, as that's the closest match
-    //     confirm.report = VerificationReport::Incompatible_Protocol;
-    //     return confirm;
-    // }
     confirm.its_aid = its_aid.get();
 
     /* REALLY IMPORTANT TO CHECK IF THIS WORKS */
@@ -495,8 +488,6 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
     // TODO check Duplicate_Message, Invalid_Mobility_Data, Unencrypted_Message, Decryption_Error
 
     // check signature
-    // const TrailerField* signature_field = secured_message.trailer_field(TrailerFieldType::Signature);
-    // const Signature* signature = boost::get<Signature>(signature_field);
     std::unique_ptr<Signature> signature = std::unique_ptr<Signature>(new Signature(secured_message.get_signature()));
     if (!signature) {
         confirm.report = VerificationReport::Unsigned_Message;
@@ -520,16 +511,8 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
 
     for (const auto& cert : possible_certificates) {
         // The Subject type disappears on the V1.3.1
-        // SubjectType subject_type = cert.subject_info.subject_type;
-        // if (subject_type != SubjectType::Authorization_Ticket) {
-        //     confirm.report = VerificationReport::Invalid_Certificate;
-        //     confirm.certificate_validity = CertificateInvalidReason::Invalid_Signer;
-        //     return confirm;
-        // }
-        
         boost::optional<ecdsa256::PublicKey> public_key = get_public_key(cert, backend);
 
-        // public key could not be extracted
         if (!public_key) {
             confirm.report = VerificationReport::Invalid_Certificate;
             confirm.certificate_validity = CertificateInvalidReason::Missing_Public_Key;
