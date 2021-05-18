@@ -35,29 +35,6 @@ private:
     VerifyService m_verify_service;
 };
 
-class DelegatingSecurityEntityV3 : public SecurityEntityV3
-{
-public:
-    /**
-     * \brief Create security entity from primitive services.
-     *
-     * A std::invalid_argument exception is thrown at construction
-     * if any given service is not callable.
-     *
-     * \param sign SN-SIGN service
-     * \param verify SN-VERIFY service
-     */
-    DelegatingSecurityEntityV3(SignServiceV3 sign, VerifyServiceV3 verify);
-
-    EncapConfirmV3 encapsulate_packet(EncapRequest&& encap_request) override;
-    DecapConfirm decapsulate_packet(DecapRequestV3&& decap_request) override;
-
-private:
-    SignServiceV3 m_sign_service;
-    VerifyServiceV3 m_verify_service;
-};
-
-
 
 } // namespace security
 } // namespace vanetza

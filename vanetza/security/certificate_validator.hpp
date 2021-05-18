@@ -16,24 +16,10 @@ public:
      * \param certificate given certificate
      * \return validity result
      */
-    virtual CertificateValidity check_certificate(const Certificate& certificate) = 0;
+    virtual CertificateValidity check_certificate(const CertificateVariant& certificate) = 0;
 
     virtual ~CertificateValidator() = default;
 };
-
-class CertificateValidatorV3
-{
-public:
-    /**
-     * Check validity of given certificate and consistency with parent certificates.
-     * \param certificate given certificate
-     * \return validity result
-     */
-    virtual CertificateValidity check_certificate(const CertificateV3& certificate) = 0;
-
-    virtual ~CertificateValidatorV3() = default;
-};
-
 
 } // namespace security
 } // namespace vanetza

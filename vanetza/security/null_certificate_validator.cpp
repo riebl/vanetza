@@ -9,7 +9,7 @@ NullCertificateValidator::NullCertificateValidator() : m_check_result(Certificat
 {
 }
 
-CertificateValidity NullCertificateValidator::check_certificate(const Certificate&)
+CertificateValidity NullCertificateValidator::check_certificate(const CertificateVariant&)
 {
     return m_check_result;
 }

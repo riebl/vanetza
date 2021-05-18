@@ -33,38 +33,25 @@ public:
      * \param certificate to verify
      * \return certificate status
      */
-    CertificateValidity check_certificate(const Certificate& certificate) override;
+    CertificateValidity check_certificate(const CertificateVariant& certificate) override;
+    /**
+     * \brief check certificate
+     * \param certificate to verify
+     * \return certificate status
+     */
+    CertificateValidity check_certificate(const Certificate& certificate);
+    /**
+     * \brief check certificate
+     * \param certificate to verify
+     * \return certificate status
+     */
+    CertificateValidity check_certificate(const CertificateV3& certificate);
 
 private:
     Backend& m_crypto_backend;
     CertificateCache& m_cert_cache;
     const TrustStore& m_trust_store;
 };
-
-/**
- * \brief The default certificate validator with the version 1.3.1
- *
- * This certificate validator is reasonably secure! It just doesn't implement revocation checks for CA certificates.
- */
-class DefaultCertificateValidatorV3 : public CertificateValidatorV3
-{
-public:
-    DefaultCertificateValidatorV3(Backend&, CertificateCacheV3&, const TrustStoreV3&);
-
-    /**
-     * \brief check certificate
-     * \param certificate to verify
-     * \return certificate status
-     */
-    CertificateValidity check_certificate(const CertificateV3& certificate) override;
-
-private:
-    Backend& m_crypto_backend;
-    CertificateCacheV3& m_cert_cache;
-    const TrustStoreV3& m_trust_store;
-};
-
-
 
 } // namespace security
 } // namespace vanetza

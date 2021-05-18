@@ -132,7 +132,6 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_request_interface(get_default_request_interface()),
     m_dcc_field_generator(get_default_dcc_field_generator()),
     m_security_entity(nullptr),
-    m_security_entity_v3(nullptr),
     m_location_table(mib, m_runtime),
     m_bc_forward_buffer(mib.itsGnBcForwardingPacketBufferSize * 1024),
     m_uc_forward_buffer(mib.itsGnUcForwardingPacketBufferSize * 1024),
@@ -193,14 +192,8 @@ void Router::set_transport_handler(UpperProtocol proto, TransportInterface* ifc)
 void Router::set_security_entity(security::SecurityEntity* entity)
 {
     m_security_entity = entity;
-    m_security_entity_v3 = nullptr;
 }
 
-void Router::set_security_entity(security::SecurityEntityV3* entity)
-{
-    m_security_entity = nullptr;
-    m_security_entity_v3 = entity;
-}
 
 void Router::set_access_interface(dcc::RequestInterface* ifc)
 {
@@ -503,48 +496,10 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
     auto secured_message = ctx.parse_secured();
     if (!secured_message) {
         packet_dropped(PacketDropReason::Parse_Secured_Header);
-    } else if (m_security_entity || m_security_entity_v3) {
+    } else if (m_security_entity) {
         // Decap packet
         using namespace vanetza::security;
-        class secured_message_to_decapsulate_visitor : public boost::static_visitor<DecapConfirm>
-        {
-        public:
-            secured_message_to_decapsulate_visitor(SecurityEntity* entity): entity_(entity){}
-            secured_message_to_decapsulate_visitor(SecurityEntityV3* entity): entity_v3_(entity){}
-            DecapConfirm operator()(const SecuredMessageV2& message) const
-            {
-                if (entity_){
-                    return entity_->decapsulate_packet(DecapRequest(message));
-                }
-                return DecapConfirm();
-            }
-            
-            DecapConfirm operator()(const SecuredMessageV3& message) const
-            {
-                if(entity_v3_){
-                    return entity_v3_->decapsulate_packet(DecapRequestV3(message));
-                }
-                return DecapConfirm();
-            }
-            SecurityEntity* entity_;
-            SecurityEntityV3* entity_v3_;
-        };
-        DecapConfirm decap_confirm;
-        if(m_security_entity)
-        {
-            secured_message_to_decapsulate_visitor temp(m_security_entity);
-            decap_confirm = boost::apply_visitor(temp, *secured_message);
-        }
-        else if(m_security_entity_v3)
-        {
-            secured_message_to_decapsulate_visitor temp(m_security_entity_v3);
-            decap_confirm = boost::apply_visitor(temp, *secured_message);
-        }
-
-        //DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(DecapRequest(*secured_message));
-
-
-
+        DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(DecapRequest(*secured_message));
         ctx.service_primitive().security_report = decap_confirm.report;
         ctx.service_primitive().its_aid = decap_confirm.its_aid;
         ctx.service_primitive().permissions = decap_confirm.permissions;
@@ -1300,18 +1255,9 @@ Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, Pdu& pdu, DownPacketP
     encap_request.plaintext_payload = std::move(sec_payload);
     encap_request.its_aid = its_aid;
 
-    if (m_security_entity || m_security_entity_v3) {
-        security::SecuredMessageVariant message;
-        // security::EncapConfirm confirm;
-        if (m_security_entity)
-        {
-            message = m_security_entity->encapsulate_packet(std::move(encap_request)).sec_packet;
-        }
-        else if (m_security_entity_v3)
-        {
-            message = m_security_entity_v3->encapsulate_packet(std::move(encap_request)).sec_packet;
-        }
-        pdu.secured(std::move(message));
+    if (m_security_entity) {
+        security::EncapConfirm confirm = m_security_entity->encapsulate_packet(std::move(encap_request));
+        pdu.secured(std::move(confirm.sec_packet));
     } else {
         throw std::runtime_error("security entity unavailable");
     }

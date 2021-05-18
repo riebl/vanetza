@@ -36,17 +36,18 @@ SignService straight_sign_service(CertificateProvider& certificate_provider, Bac
 {
     return [&](SignRequest&& request) -> SignConfirm {
         SignConfirm confirm;
-        confirm.secured_message.payload.type = PayloadType::Signed;
-        confirm.secured_message.payload.data = std::move(request.plain_message);
-        confirm.secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
+        SecuredMessageV2& secured_message = boost::get<SecuredMessageV2>(confirm.secured_message);
+        secured_message.payload.type = PayloadType::Signed;
+        secured_message.payload.data = std::move(request.plain_message);
+        secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
 
         const auto& private_key = certificate_provider.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const std::list<TrailerField> trailer_fields = { placeholder };
 
-        ByteBuffer data_buffer = convert_for_signing(confirm.secured_message, trailer_fields);
+        ByteBuffer data_buffer = convert_for_signing(secured_message, trailer_fields);
         TrailerField trailer_field = backend.sign_data(private_key, data_buffer);
-        confirm.secured_message.trailer_fields.push_back(trailer_field);
+        secured_message.trailer_fields.push_back(trailer_field);
         return confirm;
     };
 }
@@ -55,22 +56,22 @@ SignService deferred_sign_service(CertificateProvider& certificate_provider, Bac
 {
     return [&](SignRequest&& request) -> SignConfirm {
         SignConfirm confirm;
-        confirm.secured_message.payload.type = PayloadType::Signed;
-        confirm.secured_message.payload.data = std::move(request.plain_message);
-        confirm.secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
+        SecuredMessageV2& secured_message = boost::get<SecuredMessageV2>(confirm.secured_message);
+        secured_message.payload.type = PayloadType::Signed;
+        secured_message.payload.data = std::move(request.plain_message);
+        secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
 
         const auto& private_key = certificate_provider.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const size_t signature_size = get_size(placeholder);
         static const std::list<TrailerField> trailer_fields = { placeholder };
 
-        const SecuredMessage& secured_message = confirm.secured_message;
         auto future = std::async(std::launch::deferred, [&backend, secured_message, private_key]() {
             ByteBuffer data = convert_for_signing(secured_message, trailer_fields);
             return backend.sign_data(private_key, data);
         });
         EcdsaSignatureFuture signature(future.share(), signature_size);
-        confirm.secured_message.trailer_fields.push_back(signature);
+        secured_message.trailer_fields.push_back(signature);
         return confirm;
     };
 }
@@ -80,87 +81,71 @@ SignService dummy_sign_service(const Runtime& rt, const SignerInfo& signer_info)
     return [&rt, signer_info](SignRequest&& request) -> SignConfirm {
         static const Signature null_signature = signature_placeholder();
         SignConfirm confirm;
-        confirm.secured_message.payload.type = PayloadType::Signed;
-        confirm.secured_message.payload.data = std::move(request.plain_message);
-        confirm.secured_message.header_fields.push_back(convert_time64(rt.now()));
-        confirm.secured_message.header_fields.push_back(request.its_aid);
-        confirm.secured_message.header_fields.push_back(signer_info);
-        confirm.secured_message.trailer_fields.push_back(null_signature);
+        SecuredMessageV2& secured_message = boost::get<SecuredMessageV2>(confirm.secured_message);
+        secured_message.payload.type = PayloadType::Signed;
+        secured_message.payload.data = std::move(request.plain_message);
+        secured_message.header_fields.push_back(convert_time64(rt.now()));
+        secured_message.header_fields.push_back(request.its_aid);
+        secured_message.header_fields.push_back(signer_info);
+        secured_message.trailer_fields.push_back(null_signature);
         return confirm;
     };
 }
 
-
-
-
-SignServiceV3 straight_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy)
+SignService straight_sign_serviceV3(CertificateProvider& certificate_provider, Backend& backend, SignHeaderPolicy& sign_header_policy)
 {
-    return [&](SignRequest&& request) -> SignConfirmV3 {
-        SignConfirmV3 confirm;
+    return [&](SignRequest&& request) -> SignConfirm {
+        SignConfirm confirm;
         confirm.secured_message = SecuredMessageV3();
-        
+        SecuredMessageV3& secured_message = boost::get<SecuredMessageV3>(confirm.secured_message);
 
-        sign_header_policy.prepare_headers(request, certificate_provider, confirm.secured_message);
-        confirm.secured_message.set_payload(convert_to_payload(request.plain_message));
-        // confirm.secured_message.payload.type = PayloadType::Signed;
-        // confirm.secured_message.payload.data = std::move(request.plain_message);
-        // confirm.secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
-
+        sign_header_policy.prepare_headers(request, certificate_provider, secured_message);
+        secured_message.set_payload(convert_to_payload(request.plain_message));
 
         const auto& private_key = certificate_provider.own_private_key();
-        // static const Signature placeholder = signature_placeholder();
-        // static const std::list<TrailerField> trailer_fields = { placeholder };
 
-        ByteBuffer data_buffer = confirm.secured_message.convert_for_signing();
+        ByteBuffer data_buffer = secured_message.convert_for_signing();
         Signature signature = backend.sign_data(private_key, data_buffer);
 
-        confirm.secured_message.set_signature(signature);
+        secured_message.set_signature(signature);
 
-        // TrailerField trailer_field = backend.sign_data(private_key, data_buffer);
-        // confirm.secured_message.trailer_fields.push_back(trailer_field);
         return confirm;
     };
 }
 
-SignServiceV3 deferred_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy)
+SignService deferred_sign_serviceV3(CertificateProvider& certificate_provider, Backend& backend, SignHeaderPolicy& sign_header_policy)
 {
-    return [&](SignRequest&& request) -> SignConfirmV3 {
-        SignConfirmV3 confirm;
-        confirm.secured_message = SecuredMessageV3();
-        sign_header_policy.prepare_headers(request, certificate_provider, confirm.secured_message);
-        confirm.secured_message.set_payload(convert_to_payload(request.plain_message));
-        // SignConfirm confirm;
-        // confirm.secured_message.payload.type = PayloadType::Signed;
-        // confirm.secured_message.payload.data = std::move(request.plain_message);
-        // confirm.secured_message.header_fields = sign_header_policy.prepare_header(request, certificate_provider);
+    return [&](SignRequest&& request) -> SignConfirm {
+        SignConfirm confirm;
+        SecuredMessageV3& secured_message = boost::get<SecuredMessageV3>(confirm.secured_message);
+        sign_header_policy.prepare_headers(request, certificate_provider, secured_message);
+        secured_message.set_payload(convert_to_payload(request.plain_message));
 
         const auto& private_key = certificate_provider.own_private_key();
         static const Signature placeholder = signature_placeholder();
         static const size_t signature_size = get_size(placeholder);
-        // static const std::list<TrailerField> trailer_fields = { placeholder };
 
-        const SecuredMessageV3& secured_message = confirm.secured_message;
         auto future = std::async(std::launch::deferred, [&backend, secured_message, private_key]() {
             ByteBuffer data = secured_message.convert_for_signing();
             return backend.sign_data(private_key, data);
         });
 
         EcdsaSignatureFuture signature(future.share(), signature_size);
-        confirm.secured_message.set_signature(signature);
-        // confirm.secured_message.trailer_fields.push_back(signature);
+        secured_message.set_signature(signature);
         return confirm;
     };
 }
 
-SignServiceV3 dummy_sign_serviceV3(const Runtime& rt, const SignerInfoV3& signer_info)
+SignService dummy_sign_serviceV3(const Runtime& rt, const SignerInfo& signer_info)
 {
-    return [&rt, signer_info](SignRequest&& request) -> SignConfirmV3 {
-        SignConfirmV3 confirm;
-        confirm.secured_message = SecuredMessageV3();
-        confirm.secured_message.set_payload(convert_to_payload(request.plain_message));
-        confirm.secured_message.set_generation_time(convert_time64(rt.now()));
-        confirm.secured_message.set_psid(request.its_aid);
-        confirm.secured_message.set_signer_info(signer_info);
+    return [&rt, signer_info](SignRequest&& request) -> SignConfirm {
+        SignConfirm confirm;
+        SecuredMessageV3& secured_message = boost::get<SecuredMessageV3>(confirm.secured_message);
+        secured_message.set_payload(convert_to_payload(request.plain_message));
+        secured_message.set_generation_time(convert_time64(rt.now()));
+        secured_message.set_psid(request.its_aid);
+        secured_message.set_signer_info(signer_info);
+        confirm.secured_message = secured_message;
         return confirm;
     };
 }

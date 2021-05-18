@@ -16,7 +16,6 @@
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <iostream>
 
 namespace vanetza
 {
@@ -275,8 +274,10 @@ CertificateV3::CertificateV3(){
     };
     this->certificate.decode(white_cert_buffer);
 }
+
 CertificateV3::~CertificateV3(){
 }
+
 CertificateV3::CertificateV3(vanetza::ByteBuffer certificate){
     this->certificate.decode(certificate);
 }
@@ -298,7 +299,7 @@ CertificateV3::CertificateV3(const Certificate_t& certificate){
 void CertificateV3::as_plain_certificate(Certificate_t* cert) const{
     vanetza::ByteBuffer cert_buffer = this->certificate.encode();
     vanetza::asn1::decode_oer(asn_DEF_Certificate, (void**)(&cert), cert_buffer);
-}// TODO
+}
 
 vanetza::ByteBuffer CertificateV3::serialize() const {
     return this->certificate.encode();
@@ -356,8 +357,7 @@ std::shared_ptr<GeographicRegion> CertificateV3::get_geographic_region() const
     )));
     }
     return to_return;
-}// Test to be written
-
+}
 
 std::list<PsidSsp_t> CertificateV3::get_app_permissions() const{
     std::list<PsidSsp_t> to_return{};
@@ -368,14 +368,12 @@ std::list<PsidSsp_t> CertificateV3::get_app_permissions() const{
         }
     }
     return to_return;
-}// Test to be written
+}
 
 void CertificateV3::EccP256CurvePoint_to_x_only(EccP256CurvePoint_t& curve_point) const{
     switch(curve_point.present){
 	    case EccP256CurvePoint_PR_compressed_y_0:
             curve_point.choice.x_only = curve_point.choice.compressed_y_0;
-            //curve_point.choice.x_only = vanetza::asn1::copy(asn_DEF_OCTET_STRING, &curve_point.choice.compressed_y_0);
-            //vanetza::asn1::free(asn_DEF_OCTET_STRING, &curve_point.choice.compressed_y_0);
             break;
 	    case EccP256CurvePoint_PR_compressed_y_1:
             curve_point.choice.x_only = curve_point.choice.compressed_y_1;
@@ -385,7 +383,7 @@ void CertificateV3::EccP256CurvePoint_to_x_only(EccP256CurvePoint_t& curve_point
             break;
     }
     curve_point.present = EccP256CurvePoint_PR_x_only;
-}//Tests to be written
+}
 
 ByteBuffer CertificateV3::convert_for_signing() const {
     // The hash is calculated over the ToBeSignedCertificate 
@@ -421,7 +419,7 @@ ByteBuffer CertificateV3::convert_for_signing() const {
     bytes = vanetza::asn1::encode_oer(asn_DEF_ToBeSignedCertificate, to_be_signed.get());
     vanetza::asn1::free(asn_DEF_ToBeSignedCertificate, to_be_signed.release());
     return bytes;
-}// Test to be written
+}
 
 HashedId8 CertificateV3::calculate_hash() const {
     vanetza::ByteBuffer bytes = this->convert_for_signing();
@@ -430,7 +428,7 @@ HashedId8 CertificateV3::calculate_hash() const {
     assert(digest.size() >= id.size());
     std::copy(digest.end() - id.size(), digest.end(), id.begin());
     return id;
-} // Test to be written
+}
 
 HashedId8 CertificateV3::get_issuer_identifier() const{
     HashedId8 to_return = {0,0,0,0,0,0,0,0};
@@ -450,7 +448,7 @@ HashedId8 CertificateV3::get_issuer_identifier() const{
         break;
     }
     return to_return;
-} // To be completed
+}
 
 Signature CertificateV3::get_signature() const {
     EcdsaSignature to_return;
@@ -472,13 +470,11 @@ Signature CertificateV3::get_signature() const {
         *eccP256 = this->certificate->signature->choice.ecdsaBrainpoolP256r1Signature.rSig;
         break;
 	case Signature_PR_ecdsaBrainpoolP384r1Signature:
-        //this->certificate->signature->choice.ecdsaBrainpoolP384r1Signature.
-        
+        // TODO
         break;
     default:
         break;
     }
-    // This has to be checked if works
     if (eccP256){
         switch (eccP256->present)
         {
@@ -523,8 +519,7 @@ Signature CertificateV3::get_signature() const {
         }
     }
     return to_return;
-} // To be test
-
+}
 
 std::shared_ptr<SubjectAssurance> CertificateV3::get_subject_assurance() const{
     std::shared_ptr<SubjectAssurance> to_return;
@@ -541,7 +536,6 @@ TwoDLocation CertificateV3::TwoDLocationAsn_to_TwoDLocation(const TwoDLocation_t
             vanetza::units::GeoAngle((location.latitude/10000000)*boost::units::degree::degrees));
     return to_return;
 }
-
 
 GeographicRegion CertificateV3::GeographicRegionAsn_to_GeographicRegion(const GeographicRegion_t& region){
     GeographicRegion to_return = NoneRegion();
@@ -650,7 +644,6 @@ boost::optional<ecdsa256::PublicKey>  CertificateV3::get_public_key(Backend& bac
     return result;
 }
 
-
 HashedId8 CertificateV3::HashedId8_asn_to_HashedId8(const HashedId8_t& hashed){
     HashedId8 to_return = HashedId8{0,0,0,0,0,0,0,0};
     if (hashed.size == 8){
@@ -670,6 +663,134 @@ HashedId3 CertificateV3::HashedId3_asn_to_HashedId3(const HashedId3_t& hashed){
     }
     return to_return;
 }
+
+size_t get_size(const CertificateVariant& certificate){
+    struct canonical_visitor : public boost::static_visitor<size_t>
+        {
+            size_t operator()(const Certificate& cert) const
+            {
+                return get_size(cert);
+            }
+            size_t operator()(const CertificateV3& cert) const
+            {
+                // The get_size is not used in the V1.3.1
+                return 0;
+            }
+        };
+    return boost::apply_visitor(canonical_visitor(), certificate);
+}
+
+void serialize(OutputArchive& ar, const CertificateV3& certificate) {
+    vanetza::ByteBuffer buffer = certificate.serialize();
+    for (auto& temp_byte : buffer){
+        ar << temp_byte;
+    }
+}
+
+void serialize(OutputArchive& ar, const CertificateVariant& certificate){
+    struct canonical_visitor : public boost::static_visitor<>
+        {
+            canonical_visitor(OutputArchive& ar): ar_(ar){}
+            void operator()(const Certificate& cert) const
+            {
+                serialize(ar_, cert);
+            }
+            void operator()(const CertificateV3& cert) const
+            {
+                serialize(ar_, cert);
+            }
+            OutputArchive& ar_;
+        };
+    boost::apply_visitor(canonical_visitor(ar), certificate);
+}
+
+size_t deserialize(InputArchive& ar, const CertificateVariant& certificate){
+    struct canonical_visitor : public boost::static_visitor<size_t>
+        {
+            canonical_visitor(InputArchive& ar): ar_(ar){}
+            size_t operator()(const Certificate& cert) const
+            {
+                return deserialize(ar_, cert);
+            }
+            size_t operator()(const CertificateV3& cert) const
+            {
+                // Not used for V1.3.1
+                return 0;
+            }
+            InputArchive& ar_;
+        };
+    return boost::apply_visitor(canonical_visitor(ar), certificate);
+}
+
+ByteBuffer convert_for_signing(const CertificateVariant& cert){
+    struct canonical_visitor : public boost::static_visitor<ByteBuffer>
+        {
+            ByteBuffer operator()(const Certificate& cert) const
+            {
+                return convert_for_signing(cert);
+            }
+            ByteBuffer operator()(const CertificateV3& cert) const
+            {
+                return cert.convert_for_signing();
+            }
+        };
+    return boost::apply_visitor(canonical_visitor(), cert);
+}
+
+boost::optional<Uncompressed> get_uncompressed_public_key(const CertificateVariant& certificate, Backend& backend){
+    struct canonical_visitor : public boost::static_visitor<boost::optional<Uncompressed>>
+        {
+            canonical_visitor(Backend& backend): backend_(backend){}
+            boost::optional<Uncompressed> operator()(const Certificate& cert) const
+            {
+                return get_uncompressed_public_key(cert, backend_);
+            }
+            boost::optional<Uncompressed> operator()(const CertificateV3& cert) const
+            {
+                //Not used in V1.3.1
+                return boost::optional<Uncompressed>();
+            }
+            Backend& backend_;
+        };
+    return boost::apply_visitor(canonical_visitor(backend), certificate);
+}
+
+boost::optional<ecdsa256::PublicKey> get_public_key(const CertificateVariant& cert, Backend& backend)
+{
+    class canonical_visitor : public boost::static_visitor<boost::optional<ecdsa256::PublicKey>>
+        {
+            public:
+                canonical_visitor(Backend& backend): backend_(backend){}
+                boost::optional<ecdsa256::PublicKey> operator()(const Certificate& cert) const
+                {
+                    return get_public_key(cert, backend_);
+                }
+                boost::optional<ecdsa256::PublicKey> operator()(const CertificateV3& cert) const
+                {
+                    return cert.get_public_key(backend_);
+                }
+            private:
+                Backend& backend_;
+
+        };
+    return boost::apply_visitor(canonical_visitor(backend), cert);
+}
+
+HashedId8 calculate_hash(const CertificateVariant& cert){
+    struct canonical_visitor : public boost::static_visitor<HashedId8>
+        {
+            HashedId8 operator()(const Certificate& cert) const
+            {
+                return calculate_hash(cert);
+            }
+            HashedId8 operator()(const CertificateV3& cert) const
+            {
+                return cert.calculate_hash();
+            }
+        };
+    return boost::apply_visitor(canonical_visitor(), cert);
+}
+
 
 
 } // ns security

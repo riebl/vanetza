@@ -15,7 +15,7 @@ namespace vanetza
 namespace security
 {
 
-HeaderField* SecuredMessage::header_field(HeaderFieldType type)
+HeaderField* SecuredMessageV2::header_field(HeaderFieldType type)
 {
     HeaderField* match = nullptr;
     for (auto& field : header_fields) {
@@ -27,7 +27,7 @@ HeaderField* SecuredMessage::header_field(HeaderFieldType type)
     return match;
 }
 
-const HeaderField* SecuredMessage::header_field(HeaderFieldType type) const
+const HeaderField* SecuredMessageV2::header_field(HeaderFieldType type) const
 {
     const HeaderField* match = nullptr;
     for (auto& field : header_fields) {
@@ -39,7 +39,7 @@ const HeaderField* SecuredMessage::header_field(HeaderFieldType type) const
     return match;
 }
 
-TrailerField* SecuredMessage::trailer_field(TrailerFieldType type)
+TrailerField* SecuredMessageV2::trailer_field(TrailerFieldType type)
 {
     TrailerField* match = nullptr;
     for (auto& field : trailer_fields) {
@@ -51,7 +51,7 @@ TrailerField* SecuredMessage::trailer_field(TrailerFieldType type)
     return match;
 }
 
-const TrailerField* SecuredMessage::trailer_field(TrailerFieldType type) const
+const TrailerField* SecuredMessageV2::trailer_field(TrailerFieldType type) const
 {
     const TrailerField* match = nullptr;
     for (auto& field : trailer_fields) {
@@ -63,7 +63,7 @@ const TrailerField* SecuredMessage::trailer_field(TrailerFieldType type) const
     return match;
 }
 
-size_t get_size(const SecuredMessage& message)
+size_t get_size(const SecuredMessageV2& message)
 {
     size_t size = sizeof(uint8_t); // protocol version
     size += get_size(message.header_fields);
@@ -95,8 +95,7 @@ size_t get_size(const SecuredMessageVariant& message){
     return boost::apply_visitor(canonical_visitor(), message);
 }
 
-
-void serialize(OutputArchive& ar, const SecuredMessage& message)
+void serialize(OutputArchive& ar, const SecuredMessageV2& message)
 {
     const uint8_t protocol_version = message.protocol_version();
     ar << protocol_version;
@@ -133,8 +132,7 @@ void serialize(OutputArchive& ar, const SecuredMessageVariant& message)
     boost::apply_visitor(visitor, message);
 }
 
-
-size_t deserialize(InputArchive& ar, SecuredMessage& message)
+size_t deserialize(InputArchive& ar, SecuredMessageV2& message)
 {
     uint8_t protocol_version = 0;
     ar >> protocol_version;
@@ -163,7 +161,6 @@ size_t deserialize(InputArchive& ar, SecuredMessageV3& message)
     return message.get_size();
 }
 
-
 size_t deserialize(InputArchive& ar, SecuredMessageVariant& message)
 {
     class canonical_visitor : public boost::static_visitor<size_t>
@@ -186,9 +183,7 @@ size_t deserialize(InputArchive& ar, SecuredMessageVariant& message)
     return boost::apply_visitor(visitor, message);
 }
 
-
-
-ByteBuffer convert_for_signing(const SecuredMessage& message, const std::list<TrailerField>& trailer_fields)
+ByteBuffer convert_for_signing(const SecuredMessageV2& message, const std::list<TrailerField>& trailer_fields)
 {
     ByteBuffer buf;
     byte_buffer_sink sink(buf);
@@ -231,7 +226,6 @@ ByteBuffer convert_to_payload(vanetza::DownPacket packet)
     stream.close();
     return buf;
 }
-
 
 SecuredMessageV3::SecuredMessageV3(){
     vanetza::ByteBuffer white_message_buffer{
@@ -296,7 +290,6 @@ std::shared_ptr<ThreeDLocation> SecuredMessageV3::get_generation_location() cons
     return three_d_location;
 }
 
-
 bool SecuredMessageV3::is_signed_message() const {
     if (this->message->content->present == Ieee1609Dot2Content_PR_signedData){
         return true;
@@ -304,8 +297,8 @@ bool SecuredMessageV3::is_signed_message() const {
     return false;
 }
 
-SignerInfoV3 SecuredMessageV3::get_signer_info() const{
-    SignerInfoV3 to_return = std::nullptr_t();
+SignerInfo SecuredMessageV3::get_signer_info() const{
+    SignerInfo to_return = std::nullptr_t();
     if (this->is_signed_message()){
         this->message->content->choice.signedData->signer;
         switch (this->message->content->choice.signedData->signer.present)
@@ -316,14 +309,11 @@ SignerInfoV3 SecuredMessageV3::get_signer_info() const{
             break;
         case SignerIdentifier_PR_certificate:
             SequenceOfCertificate_t certificates = this->message->content->choice.signedData->signer.choice.certificate;
-            // if (certificates.list.size==1){
-            //     Certificate_t* temp = reinterpret_cast<Certificate_t*>(certificates.list.array[0]);
-            //     to_return = boost::recursive_wrapper<CertificateV3>(*temp);
-            // }else 
             if (certificates.list.size > 0){
-                std::list<CertificateV3> before_to_return = std::list<CertificateV3>();
+                std::list<CertificateVariant> before_to_return = std::list<CertificateVariant>();
                 for (int i=0;i<certificates.list.count; i++){
                     Certificate_t* temp = reinterpret_cast<Certificate_t*>(certificates.list.array[i]);
+                    xer_fprint(stdout, &asn_DEF_Certificate, temp);
                     vanetza::ByteBuffer temp_buffer = vanetza::asn1::encode_oer(asn_DEF_Certificate, temp);
                     before_to_return.push_back(CertificateV3(temp_buffer));
                 }
@@ -333,7 +323,7 @@ SignerInfoV3 SecuredMessageV3::get_signer_info() const{
         }        
     }
     return to_return;
-} // To be completed!
+}
 
 bool SecuredMessageV3::is_signer_digest() const{
     bool to_return = false;
@@ -357,7 +347,7 @@ std::list<HashedId3> SecuredMessageV3::get_inline_p2pcd_Request() const{
         }
     }
     return to_return;
-}// Test to be written
+}
 
 vanetza::security::Signature SecuredMessageV3::get_signature() const{
     vanetza::security::Signature to_return{};
@@ -417,7 +407,7 @@ vanetza::security::Signature SecuredMessageV3::get_signature() const{
         }
     }
     return to_return;
-} // Function to be tested!
+}
 
 vanetza::ByteBuffer SecuredMessageV3::get_payload() const{
     vanetza::ByteBuffer to_return;
@@ -428,7 +418,6 @@ vanetza::ByteBuffer SecuredMessageV3::get_payload() const{
     }
     return to_return;
 }
-
 
 vanetza::ByteBuffer SecuredMessageV3::convert_for_signing() const{
     vanetza::ByteBuffer to_return;
@@ -463,7 +452,6 @@ void SecuredMessageV3::set_certificate_digest(HashedId8 digest){
         );
 }
 
-
 void SecuredMessageV3::set_inline_p2pcd_request(std::list<HashedId3> requests){
     ASN_STRUCT_FREE_CONTENTS_ONLY(
         asn_DEF_SequenceOfHashedId3,
@@ -481,8 +469,7 @@ void SecuredMessageV3::set_inline_p2pcd_request(std::list<HashedId3> requests){
             temp
         );
     }
-} // TO BE TESTED
-
+}
 
 void SecuredMessageV3::set_generation_location(ThreeDLocation location){
     ThreeDLocation_t* new_location = static_cast<ThreeDLocation_t*>(vanetza::asn1::allocate(sizeof(ThreeDLocation_t)));
@@ -497,8 +484,7 @@ void SecuredMessageV3::set_generation_location(ThreeDLocation location){
         &(this->message->content->choice.signedData->tbsData->headerInfo.generationLocation)
     );
     this->message->content->choice.signedData->tbsData->headerInfo.generationLocation = new_location;
-} // TO BE TESTED
-
+}
 
 void SecuredMessageV3::set_payload(const vanetza::ByteBuffer& payload){
     convert_bytebuffer_to_octet_string(
@@ -585,7 +571,7 @@ void SecuredMessageV3::set_signature(const Signature& signature){
     this->message->content->choice.signedData->signature = boost::apply_visitor(signature_visitor(), signature);
 }
 
-void SecuredMessageV3::set_signer_info(const SignerInfoV3& signer_info){
+void SecuredMessageV3::set_signer_info(const SignerInfo& signer_info){
     struct signer_info_visitor : public boost::static_visitor<SignerIdentifier_t*>
         {
             SignerIdentifier_t* operator()(const std::nullptr_t& pnullptr ) const
@@ -605,24 +591,28 @@ void SecuredMessageV3::set_signer_info(const SignerInfoV3& signer_info){
                 return signer;
             }
 
-            SignerIdentifier_t* operator()(const boost::recursive_wrapper<CertificateV3>& certificate) const
+            SignerIdentifier_t* operator()(const CertificateVariant& certificate_variant) const
             {
                 SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
-                signer->present = SignerIdentifier_PR_certificate;
-                Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                certificate.get().as_plain_certificate(certi);
-                ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
+                if(CertificateVariantVersion(certificate_variant.which())== CertificateVariantVersion::Three){
+                    signer->present = SignerIdentifier_PR_certificate;
+                    Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
+                    boost::get<CertificateV3>(certificate_variant).as_plain_certificate(certi);
+                    ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
+                }
                 return signer;
             }
 
-            SignerIdentifier_t* operator()(const std::list<CertificateV3>& certificates) const
+            SignerIdentifier_t* operator()(const std::list<CertificateVariant>& certificates) const
             {
                 SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
                 signer->present = SignerIdentifier_PR_certificate;
                 for (auto const& cert : certificates){
-                    Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                    cert.as_plain_certificate(certi);
-                    ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
+                    if(CertificateVariantVersion(cert.which())== CertificateVariantVersion::Three){
+                        Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
+                        boost::get<CertificateV3&>(cert).as_plain_certificate(certi);
+                        ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
+                    }
                 }
                 return signer;
             }

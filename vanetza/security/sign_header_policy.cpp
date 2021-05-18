@@ -26,15 +26,22 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
     if (request.its_aid == aid::CA) {
         // section 7.1 in TS 103 097 v1.2.1
         if (m_chain_requested) {
-            std::list<Certificate> full_chain;
-            full_chain.splice(full_chain.end(), certificate_provider.own_chain());
-            full_chain.push_back(certificate_provider.own_certificate());
+            std::list<CertificateVariant> full_chain;
+            std::list<CertificateVariant> temp_variant_chain = certificate_provider.own_chain();
+            for(auto& cert: temp_variant_chain){
+                if(CertificateVariantVersion(cert.which())==CertificateVariantVersion::Two)
+                {
+                    full_chain.push_back(boost::get<Certificate>(cert));
+                }
+            }
+            // full_chain.splice(full_chain.end(), certificate_provider.own_chain());
+            full_chain.push_back(boost::get<Certificate>(certificate_provider.own_certificate()));
             header_fields.push_back(SignerInfo { std::move(full_chain) });
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         } else if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
-            header_fields.push_back(SignerInfo { calculate_hash(certificate_provider.own_certificate()) });
+            header_fields.push_back(SignerInfo { calculate_hash(boost::get<Certificate>(certificate_provider.own_certificate())) });
         } else {
-            header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
+            header_fields.push_back(SignerInfo { boost::get<Certificate>(certificate_provider.own_certificate()) });
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         }
 
@@ -53,7 +60,7 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
         } else {
             header_fields.push_back(ThreeDLocation(position.latitude, position.longitude));
         }
-        header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
+        header_fields.push_back(SignerInfo { boost::get<Certificate>(certificate_provider.own_certificate()) });
     }
 
     // ensure correct serialization order, see TS 103 097 v1.2.1
@@ -92,28 +99,27 @@ void DefaultSignHeaderPolicy::request_certificate_chain()
     m_chain_requested = true;
 }
 
-DefaultSignHeaderPolicyV3::DefaultSignHeaderPolicyV3(const Runtime& rt, PositionProvider& positioning) :
-    m_runtime(rt), m_positioning(positioning), m_cam_next_certificate(m_runtime.now()), m_cert_requested(false), m_chain_requested(false)
-{
-}
-
-std::list<HeaderField> DefaultSignHeaderPolicyV3::prepare_header(const SignRequest& request, CertificateProvider& certificate_provider)
-{
-    std::list<HeaderField> header_fields;
-    return header_fields;
-}
-
-void DefaultSignHeaderPolicyV3::prepare_headers(const SignRequest& request, CertificateProviderV3& certificate_provider, SecuredMessageV3& secured_message){
+void DefaultSignHeaderPolicy::prepare_headers(const SignRequest& request, CertificateProvider& certificate_provider, SecuredMessageV3& secured_message){
     secured_message.set_generation_time(convert_time64(m_runtime.now()));
     secured_message.set_psid(request.its_aid);
 
     if (request.its_aid == aid::CA) {
         // section 7.1.1 in TS 103 097 v1.3.1
-        SignerInfoV3 signer_info = std::nullptr_t();
+        SignerInfo signer_info = std::nullptr_t();
         if (m_chain_requested) {
-            std::list<CertificateV3> full_chain;
-            full_chain.splice(full_chain.end(), certificate_provider.own_chain());
-            full_chain.push_back(certificate_provider.own_certificate());
+            std::list<CertificateVariant> full_chain;
+            std::list<CertificateVariant> temp_variant_chain = certificate_provider.own_chain();
+            for(auto& cert: temp_variant_chain){
+                if(CertificateVariantVersion(cert.which())==CertificateVariantVersion::Three)
+                {
+                    full_chain.push_back(boost::get<CertificateV3>(cert));
+                }
+            }
+
+            //full_chain.splice(full_chain.end(), certificate_provider.own_chain());
+            if (certificate_provider.own_certificate().which()==1) {
+                full_chain.push_back(boost::get<CertificateV3>(certificate_provider.own_certificate()));
+            }
             // Has to be reversed because the following lines from the standard (IEEE 1609.2):
             /* The structure contains one or more Certificate structures, in order
              * such that the first certificate is the authorization certificate and each
@@ -123,7 +129,7 @@ void DefaultSignHeaderPolicyV3::prepare_headers(const SignRequest& request, Cert
             
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         } else if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
-            signer_info = certificate_provider.own_certificate().calculate_hash();
+            signer_info = boost::get<CertificateV3>(certificate_provider.own_certificate()).calculate_hash();
         } else {
             signer_info = certificate_provider.own_certificate();
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
@@ -146,21 +152,6 @@ void DefaultSignHeaderPolicyV3::prepare_headers(const SignRequest& request, Cert
         }
     }
 
-}
-
-void DefaultSignHeaderPolicyV3::request_unrecognized_certificate(HashedId8 id)
-{
-    m_unknown_certificates.insert(truncate(id));
-}
-
-void DefaultSignHeaderPolicyV3::request_certificate()
-{
-    m_cert_requested = true;
-}
-
-void DefaultSignHeaderPolicyV3::request_certificate_chain()
-{
-    m_chain_requested = true;
 }
 
 

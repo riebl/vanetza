@@ -32,13 +32,21 @@ class SignHeaderPolicy
 {
 public:
     /**
-     * Prepare header fields for next secured message.
+     * Prepare header fields for next secured message (V1.2.1).
      *
      * \param req signing request (including ITS-AID for example)
      * \param certprvd available certificates
      * \return header fields
      */
     virtual std::list<HeaderField> prepare_header(const SignRequest& req, CertificateProvider& certprvd) = 0;
+    /**
+     * Prepare header fields for next secured message (V1.3.1).
+     *
+     * \param req signing request (including ITS-AID for example)
+     * \param certprvd available certificates
+     * \param secured_message Secured message (V1.3.1) that will get it's headers prepared
+     */
+    virtual void prepare_headers(const SignRequest& req, CertificateProvider& certprvd, SecuredMessageV3& secured_message) = 0;
 
     /**
      * Mark certificate as unrecognized in next secured message
@@ -66,6 +74,7 @@ public:
     DefaultSignHeaderPolicy(const Runtime&, PositionProvider& positioning);
 
     std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override;
+    void prepare_headers(const SignRequest& request, CertificateProvider& certificate_provider, SecuredMessageV3& secured_message) override;
     void request_unrecognized_certificate(HashedId8 id) override;
     void request_certificate() override;
     void request_certificate_chain() override;
@@ -78,31 +87,6 @@ private:
     bool m_cert_requested;
     bool m_chain_requested;
 };
-
-class DefaultSignHeaderPolicyV3 : public SignHeaderPolicy
-{
-public:
-    DefaultSignHeaderPolicyV3(const Runtime&, PositionProvider& positioning);
-    // <Shall not be used>
-    std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override;
-    // </Shall not be used>
-    void prepare_headers(const SignRequest& request, CertificateProviderV3& certificate_provider, SecuredMessageV3& secured_message);
-    void request_unrecognized_certificate(HashedId8 id) override;
-    void request_certificate() override;
-    void request_certificate_chain() override;
-
-private:
-    const Runtime& m_runtime;
-    PositionProvider& m_positioning;
-    Clock::time_point m_cam_next_certificate;
-    std::set<HashedId3> m_unknown_certificates;
-    bool m_cert_requested;
-    bool m_chain_requested;
-};
-
-
-
-
 
 } // namespace security
 } // namespace vanetza

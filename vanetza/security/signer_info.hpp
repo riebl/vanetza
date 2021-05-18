@@ -15,7 +15,10 @@ namespace security
 {
 
 struct Certificate;
-struct CertificateV3;
+class CertificateV3;
+using CertificateVariant = boost::variant<boost::recursive_wrapper<Certificate>, boost::recursive_wrapper<CertificateV3>>;
+size_t deserialize(InputArchive&, CertificateVariant&);
+
 
 /// described in TS 103 097 v1.2.1, section 4.2.11
 enum class SignerInfoType : uint8_t
@@ -38,16 +41,8 @@ struct CertificateDigestWithOtherAlgorithm
 using SignerInfo = boost::variant<
     std::nullptr_t,
     HashedId8,
-    boost::recursive_wrapper<Certificate>,
-    std::list<Certificate>,
-    CertificateDigestWithOtherAlgorithm
->;
-
-using SignerInfoV3 = boost::variant<
-    std::nullptr_t,
-    HashedId8,
-    boost::recursive_wrapper<CertificateV3>,
-    std::list<CertificateV3>,
+    CertificateVariant,
+    std::list<CertificateVariant>,
     CertificateDigestWithOtherAlgorithm
 >;
 
@@ -57,7 +52,6 @@ using SignerInfoV3 = boost::variant<
  * \return SignerInfoType
  */
 SignerInfoType get_type(const SignerInfo&);
-SignerInfoType get_type(const SignerInfoV3& info);
 
 /**
  * \brief Calculates size of an CertificateDigestWithOtherAlgorithm

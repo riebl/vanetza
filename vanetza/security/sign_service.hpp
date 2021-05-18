@@ -37,20 +37,14 @@ struct SignRequest
 // mandatory SN-SIGN.confirm parameters
 struct SignConfirm
 {
-    SecuredMessage secured_message;
+    SecuredMessageVariant secured_message;
 };
 
-struct SignConfirmV3
-{
-    SecuredMessageV3 secured_message;
-};
 
 /**
  * Equivalant of SN-SIGN service in TS 102 723-8 v1.1.1
  */
 using SignService = std::function<SignConfirm(SignRequest&&)>;
-
-using SignServiceV3 = std::function<SignConfirmV3(SignRequest&&)>;
 
 /*
  * SignService immediately signing the message using given
@@ -88,7 +82,7 @@ SignService dummy_sign_service(const Runtime& rt, const SignerInfo& si);
  * \param sign_header_policy sign header policy
  * \return callable sign service
  */
-SignServiceV3 straight_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy);
+SignService straight_sign_serviceV3(CertificateProvider& certificate_provider, Backend& backend, SignHeaderPolicy& sign_header_policy);
 
 /**
  * SignService deferring actually signature calculation using EcdsaSignatureFuture
@@ -98,7 +92,7 @@ SignServiceV3 straight_sign_serviceV3(CertificateProviderV3& certificate_provide
  * \param sign_header_policy sign header policy
  * \return callable sign service
  */
-SignServiceV3 deferred_sign_serviceV3(CertificateProviderV3& certificate_provider, Backend& backend, DefaultSignHeaderPolicyV3& sign_header_policy);
+SignService deferred_sign_serviceV3(CertificateProvider& certificate_provider, Backend& backend, SignHeaderPolicy& sign_header_policy);
 
 /**
  * SignService without real cryptography but dummy signature
@@ -106,7 +100,7 @@ SignServiceV3 deferred_sign_serviceV3(CertificateProviderV3& certificate_provide
  * \param si signer info attached to header fields of secured message
  * \return callable sign service
  */
-SignServiceV3 dummy_sign_serviceV3(const Runtime& rt, const SignerInfoV3& si);
+SignService dummy_sign_serviceV3(const Runtime& rt, const SignerInfo& si);
 
 
 } // namespace security

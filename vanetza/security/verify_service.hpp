@@ -49,14 +49,8 @@ enum class VerificationReport
 // mandatory parameters of SN-VERIFY.request (TS 102 723-8 V1.1.1)
 struct VerifyRequest
 {
-    VerifyRequest(const SecuredMessage& msg) : secured_message(msg) {}
-    const SecuredMessage& secured_message; /*< contains security header and payload */
-};
-
-struct VerifyRequestV3
-{
-    VerifyRequestV3(const SecuredMessageV3& msg) : secured_message(msg) {}
-    const SecuredMessageV3& secured_message; /*< contains security header and payload */
+    VerifyRequest(const SecuredMessageVariant& msg) : secured_message(msg) {}
+    const SecuredMessageVariant& secured_message; /*< contains security header and payload */
 };
 
 // parameters of SN-VERIFY.confirm (TS 102 723-8 V1.1.1)
@@ -73,9 +67,6 @@ struct VerifyConfirm
  * Equivalent of SN-VERIFY service in TS 102 723-8 V1.1.1
  */
 using VerifyService = std::function<VerifyConfirm(VerifyRequest&&)>;
-// The third version compatibility
-using VerifyServiceV3 = std::function<VerifyConfirm(VerifyRequestV3&&)>;
-
 
 /**
  * Get verify service with basic certificate and signature checks
@@ -99,7 +90,6 @@ VerifyService straight_verify_service(const Runtime&, CertificateProvider&, Cert
  * \param sign_header_policy sign header policy to report unknown certificates
  * \return callable verify service
  */
-VerifyServiceV3 straight_verify_serviceV3(const Runtime& rt, CertificateProviderV3& cert_provider, CertificateValidatorV3& certs, Backend& backend, CertificateCacheV3& cert_cache, DefaultSignHeaderPolicyV3& sign_policy, PositionProvider& positioning);
 
 /**
  * Get insecure dummy verify service without any checks
@@ -108,8 +98,6 @@ VerifyServiceV3 straight_verify_serviceV3(const Runtime& rt, CertificateProvider
  * \return callable verify service
  */
 VerifyService dummy_verify_service(VerificationReport report, CertificateValidity validity);
-
-VerifyServiceV3 dummy_verify_serviceV3(VerificationReport report, CertificateValidity validity);
 
 } // namespace security
 } // namespace vanetza

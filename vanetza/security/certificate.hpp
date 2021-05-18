@@ -219,36 +219,138 @@ HashedId8 calculate_hash(const Certificate&);
 // described in TS 103 097 v1.3.1 (2017-10)
 class CertificateV3{
     public:
+        /**
+         * \brief Constructor for the V1.3.1 Certificate. By default constructs the certificate with all values set to 0.
+         */
         CertificateV3();
         ~CertificateV3();
+        /**
+         * \brief Constructor for the V1.3.1 Certificate.
+         * \param certificate EtsiTs103097Certificate wrapper
+         */
         CertificateV3(vanetza::asn1::EtsiTs103097Certificate& certificate);
+        /**
+         * \brief Constructor for the V1.3.1 Certificate.
+         * \param coer_certificate ByteBuffer with a COER encoded certificate
+         */
         CertificateV3(vanetza::ByteBuffer coer_certificate);
+        /**
+         * \brief Constructor for the V1.3.1 Certificate.
+         * \param certificate Asn1c V1.3.1 certificate object
+         */
         CertificateV3(const Certificate_t& certificate);
+        /**
+         * \brief Copy constructor for V1.3.1 Certificate
+         * \param certificate Own object
+         */
         CertificateV3(const CertificateV3& certificate);
-
+        /**
+         * \brief Serialize the v1.3.1 Certificate as specified in the standard
+         * \return ByteBuffer with Certificate encoded in COER
+         */
         vanetza::ByteBuffer serialize() const;
+        /**
+         * \brief Copies the Certificate to the pointer given to the function (as a Ieee1609.2)
+         * \param cert Certificate pointer (Memory should be allocated)
+         */
         void as_plain_certificate(Certificate_t* cert) const;
-
+        /**
+         * \brief The start and the end validity of the Certificate as it were a V1.2.1 Certificate
+         * \return Start and end validity object
+         */
         vanetza::security::StartAndEndValidity get_start_and_end_validity() const;
+        /**
+         * \brief The duration until the certificate expires
+         * \return The duration 
+         */
         Clock::duration get_time_to_expire() const;
+        /**
+         * \brief Gives back the geographic region where the Certificate is valid
+         * \return Shared pointer to the Geographic Region object
+         */
         std::shared_ptr<GeographicRegion> get_geographic_region() const;
+        /**
+         * \brief Returns the list of the app permissions that the certificate has
+         * \return List of ITS-AID (in V1.3.1 called PsidSsp_t)
+         */
         std::list<PsidSsp_t> get_app_permissions() const;
+        /**
+         * \brief Returns the buffer of the serialized part on which then can be computed the signature
+         * \return The serialization of the ToBeSigned part of the Certificate
+         */
         vanetza::ByteBuffer convert_for_signing() const;
+        /**
+         * \brief Calculates the hash of the certificate
+         * \return HashedId8 of the certificate
+         */
         HashedId8 calculate_hash() const;
+        /**
+         * \brief Returns the issuer identifier
+         * \return The hashedId8 of the issuer
+         */
         HashedId8 get_issuer_identifier() const;
+        /**
+         * \brief Returns the signature of the Certificate
+         * \return Signature object
+         */
         Signature get_signature() const;
+        /**
+         * \brief Getter of the Subject Assurance
+         * \return Shared pointer to the subject assurance
+         */
         std::shared_ptr<SubjectAssurance> get_subject_assurance() const;
-
+        /**
+         * \brief Getter of the public key
+         * \param backend Backend
+         * \return optional of the public key
+         */
         boost::optional<ecdsa256::PublicKey> get_public_key(Backend& backend) const;
+        /**
+         * \brief Getter of the public key (in uncompressed format)
+         * \param backend Backend
+         * \return public key (if available)
+         */
         boost::optional<Uncompressed> get_uncompressed_public_key(Backend& backend) const;
-
-
+        /**
+         * \brief The version of the standard of the certificate
+         * \return version (3)
+         */
         uint8_t version() const { return 3; }
+        /**
+         * \brief Conversor between Asn1c object to vanetza object (EccPoint)
+         * \param curve_point asn1c curve_point
+         * \return Vanetza EccPoint
+         */
         static EccPoint EccP256CurvePoint_to_EccPoint(const EccP256CurvePoint_t& curve_point);
+        /**
+         * \brief Conversor between Asn1c object to vanetza object (GeographicRegion)
+         * \param curve_point asn1c GeographicRegion
+         * \return Vanetza GeographicRegion
+         */
         static GeographicRegion GeographicRegionAsn_to_GeographicRegion(const GeographicRegion_t& region);
+        /**
+         * \brief Conversor between Asn1c object to vanetza object (TwoDLocation)
+         * \param curve_point asn1c TwoDLocation
+         * \return Vanetza TwoDLocation
+         */
         static TwoDLocation TwoDLocationAsn_to_TwoDLocation(const TwoDLocation_t& location);
+        /**
+         * \brief Conversor between Asn1c object to vanetza object (OCTET_STRING)
+         * \param curve_point asn1c OCTET_STRING
+         * \return Vanetza ByteBuffer
+         */
         static ByteBuffer OCTET_STRING_to_ByteBuffer(const OCTET_STRING_t& octet);
+        /**
+         * \brief Conversor between Asn1c object to vanetza object (HashedId8)
+         * \param curve_point asn1c HashedId8
+         * \return Vanetza HashedId8
+         */
         static HashedId8 HashedId8_asn_to_HashedId8(const HashedId8_t& hashed);
+        /**
+         * \brief Conversor between Asn1c object to vanetza object (HashedId3)
+         * \param curve_point asn1c HashedId3
+         * \return Vanetza HashedId3
+         */
         static HashedId3 HashedId3_asn_to_HashedId3(const HashedId3_t& hashed);
     private:
         void EccP256CurvePoint_to_x_only(EccP256CurvePoint_t& curve_point) const; //Needed to calculate hash
@@ -256,6 +358,78 @@ class CertificateV3{
         vanetza::asn1::EtsiTs103097Certificate certificate;
 
 };
+
+void serialize(OutputArchive& ar, const CertificateV3& certificate);
+
+
+// using CertificateVariant = boost::variant<boost::recursive_wrapper<Certificate>, boost::recursive_wrapper<CertificateV3>>;
+
+enum class CertificateVariantVersion
+{
+    Two,
+    Three
+};
+
+/**
+ * \brief Calculates size of an certificate object
+ *
+ * \param cert
+ * \return number of octets needed to serialize the object
+ */
+size_t get_size(const CertificateVariant&);
+
+/**
+ * \brief Serializes an object into a binary archive
+ *
+ * \param ar archive to serialize in
+ * \param cert to serialize
+ */
+void serialize(OutputArchive&, const CertificateVariant&);
+
+/**
+ * \brief Deserializes an object from a binary archive
+ *
+ * \param ar archive with a serialized object at the beginning
+ * \param cert to deserialize
+ * \return size of the deserialized object
+ */
+size_t deserialize(InputArchive&, CertificateVariant&);
+
+/**
+* \brief Serialize parts of a Certificate (independent of the version) for signature calculation
+*
+* Depending on the version of the certificate will call one function or another.
+*
+* \param cert certificate to be converted (CertificateVariant)
+* \return binary representation
+*/
+ByteBuffer convert_for_signing(const CertificateVariant&);
+
+
+/**
+ * \brief Extract public key from certificate
+ * \param cert Certificate
+ * \param backend Backend
+ * \return Uncompressed public key (if available)
+ */
+boost::optional<Uncompressed> get_uncompressed_public_key(const CertificateVariant&, Backend& backend);
+
+/**
+ * \brief Extract public ECDSA256 key from any certificate
+ * \param cert CertificateVariant
+ * \param backend Backend
+ * \return public key (if available)
+ */
+boost::optional<ecdsa256::PublicKey> get_public_key(const CertificateVariant& cert, Backend& backend);
+
+/**
+ * Calculate hash id of any certificate
+ * \param cert Certificate
+ * \return hash
+ */
+HashedId8 calculate_hash(const CertificateVariant&);
+
+
 
 } // namespace security
 } // namespace vanetza
