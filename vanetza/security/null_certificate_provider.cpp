@@ -42,14 +42,14 @@ Certificate create_null_certificate()
 
 NullCertificateProvider::NullCertificateProvider() { }
 
-const Certificate& NullCertificateProvider::own_certificate()
+const CertificateVariant& NullCertificateProvider::own_certificate()
 {
     return null_certificate();
 }
 
-std::list<Certificate> NullCertificateProvider::own_chain()
+std::list<CertificateVariant> NullCertificateProvider::own_chain()
 {
-    return std::list<Certificate> {};
+    return std::list<CertificateVariant> {};
 }
 
 const ecdsa256::PrivateKey& NullCertificateProvider::own_private_key()

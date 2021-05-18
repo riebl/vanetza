@@ -1,6 +1,7 @@
 #ifndef SECURED_MESSAGE_HPP_MO3HBSXG
 #define SECURED_MESSAGE_HPP_MO3HBSXG
 
+#include <vanetza/asn1/etsi_secured_data.hpp>
 #include <vanetza/security/header_field.hpp>
 #include <vanetza/security/trailer_field.hpp>
 #include <vanetza/security/payload.hpp>
@@ -82,24 +83,198 @@ struct SecuredMessageV2
     }
 };
 
-using SecuredMessage = SecuredMessageV2;
+class SecuredMessageV3{
+    public:
+         /**
+         * \brief Constructor of SecuredMessage V1.3.1 (Creates a white message completely empty)
+         */
+        SecuredMessageV3();
+        ~SecuredMessageV3();
+        /**
+         * \brief Constructor of SecuredMessage V1.3.1 (Deserializes the COER encoded Secured Message)
+         */
+        SecuredMessageV3(vanetza::ByteBuffer secured_message);
+        /**
+         * \brief Constructor of SecuredMessage V1.3.1 (Copy Constructor)
+         */
+        SecuredMessageV3(const SecuredMessageV3& message);
+        /**
+         * \brief Returns the version of the standard
+         * \return integer version (3)
+         */
+        uint8_t protocol_version() const { return 3; }
+        /**
+         * \brief Returns the serialized version of the SecuredMessage V1.3.1 in COER format
+         * \return Buffer with the serialized message
+         */
+        vanetza::ByteBuffer serialize() const;
+        /**
+         * \brief Returns the size of serialized version of the SecuredMessage V1.3.1 in COER format
+         * \return size 
+         */
+        size_t get_size() const;
+        /**
+         * \brief Getter of the generation time of the SecuredMessage V1.3.1
+         * \return Shared pointer to Time 
+         */
+        std::shared_ptr<Time64> get_generation_time() const;
+        /**
+         * \brief Returns the PSID (ITS-AID) (Getter)
+         * \return Psid (ITS-AID) 
+         */
+        Psid_t get_psid() const;
+        /**
+         * \brief Getter for the generation location (ThreeDLocation)
+         * \return Shared Pointer ThreeDLocation
+         */
+        std::shared_ptr<ThreeDLocation> get_generation_location() const; // Test to be written
+        /**
+         * \brief Returns if the message is Signed
+         * \return boolean
+         */
+        bool is_signed_message() const;
+        /**
+         * \brief Returns the signer info
+         * \return Signer info
+         */
+        SignerInfo get_signer_info() const;
+        /**
+         * \brief Returns if the message is Signed with a digest
+         * \return boolean
+         */
+        bool is_signer_digest() const;
+
+        /**
+         * \brief Returns a list with the unknown certificates demanded
+         * 
+         * \return List of hashedId3 with all the unkown certificates. 
+         * (if the field is not present the list is returned empty)
+         */
+        std::list<HashedId3> get_inline_p2pcd_Request() const;
+        /**
+         * \brief Getter of the signature
+         * \return Signature
+         */
+        vanetza::security::Signature get_signature() const;
+        /**
+         * \brief Getter of the payload of the message
+         * \return Bytebuffer of payload
+         */
+        vanetza::ByteBuffer get_payload() const;
+        /**
+         * \brief Getter of the part of the to be signed part of the message
+         * \return ByteBuffer
+         */
+        vanetza::ByteBuffer convert_for_signing() const;
+        /**
+         * \brief Setter of the generation of the time
+         * \param time Time of the generation of the message
+         */
+        void set_generation_time(Time64 time);
+        /**
+         * \brief Setter of ITS-AID Psid
+         * \param psid App permissions
+         */
+        void set_psid(Psid_t psid);
+        /**
+         * \brief Setter of the digest of the signer certificate
+         * \param digest digest
+         */
+        void set_certificate_digest(HashedId8 digest);
+        /**
+         * \brief Setter of the request of unknown certificates
+         * \param requests List of requested certificates
+         */
+        void set_inline_p2pcd_request(std::list<HashedId3> requests);
+        /**
+         * \brief Setter of the Location of the message
+         * \param location ThreeDLocation 
+         */
+        void set_generation_location(ThreeDLocation location);
+        /**
+         * \brief Setter of payload
+         * \param payload Buffer with the payload
+         */
+        void set_payload(const vanetza::ByteBuffer& payload);
+        /**
+         * \brief Setter of the signature of the message
+         * \param signature Signature
+         */
+        void set_signature(const Signature& signature);
+        /**
+         * \brief Setter of the signer info
+         * \param signer_info Signer Info
+         */
+        void set_signer_info(const SignerInfo& signer_info);
+
+    private:
+        vanetza::asn1::EtsiTs103097Data message;
+
+};
+
+
+using SecuredMessageVariant = boost::variant<SecuredMessageV2, SecuredMessageV3>;
+using SecuredMessage = SecuredMessageVariant;
+
+enum class SecuredMessageVersion
+{
+    Two,
+    Three
+};
 
 /**
  * \brief Calculates size of a SecuredMessage object
  * \return size_t containing the number of octets needed to serialize the object
  */
-size_t get_size(const SecuredMessage&);
+size_t get_size(const SecuredMessageV2&);
+
+/**
+ * \brief Calculates size of a SecuredMessageV3 object
+ * \return size_t containing the number of octets needed to serialize the object
+ */
+size_t get_size(const SecuredMessageV3&);
+
+/**
+ * \brief Calculates size of a SecuredMessage object (The version doesn't matter)
+ * \return size_t containing the number of octets needed to serialize the object
+ */
+size_t get_size(const SecuredMessageVariant&);
+
 
 /**
  * \brief Serializes a SecuredMessage into a binary archive
  */
-void serialize(OutputArchive& ar, const SecuredMessage& message);
+void serialize(OutputArchive& ar, const SecuredMessageV2& message);
+
+/**
+ * \brief Serializes a SecuredMessageV3 into a binary archive
+ */
+void serialize(OutputArchive& ar, const SecuredMessageV3& message);
+
+/**
+ * \brief Serializes a SecuredMessageV3 into a binary archive
+ */
+void serialize(OutputArchive& ar, const SecuredMessageVariant& message);
+
 
 /**
  * \brief Deserializes a SecuredMessage from a binary archive
  * \return size of deserialized SecuredMessage
  */
-size_t deserialize(InputArchive& ar, SecuredMessage& message);
+size_t deserialize(InputArchive& ar, SecuredMessageV2& message);
+
+/**
+ * \brief Deserializes a SecuredMessageV3 from a binary archive
+ * \return size of deserialized SecuredMessage
+ */
+size_t deserialize(InputArchive& ar, SecuredMessageV3& message);
+
+/**
+ * \brief Deserializes a SecuredMessageV3 from a binary archive
+ * \return size of deserialized SecuredMessage
+ */
+size_t deserialize(InputArchive& ar, SecuredMessageVariant& message);
+
 
 /**
  * \brief Create ByteBuffer equivalent of SecuredMessage suitable for signature creation
@@ -111,7 +286,9 @@ size_t deserialize(InputArchive& ar, SecuredMessage& message);
  * \param trailer_fields only trailer fields up to signature will be included in byte buffer
  * \return serialized data fields relevant for signature creation
  */
-ByteBuffer convert_for_signing(const SecuredMessage& message, const std::list<TrailerField>& trailer_fields);
+ByteBuffer convert_for_signing(const SecuredMessageV2& message, const std::list<TrailerField>& trailer_fields);
+
+ByteBuffer convert_to_payload(vanetza::DownPacket packet);
 
 } // namespace security
 } // namespace vanetza

@@ -2,6 +2,8 @@
 #define BASIC_ELEMENTS_HPP_RALCTYHI
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/asn1/support/OCTET_STRING.h>
+#include <vanetza/common/byte_buffer.hpp>
 #include <array>
 #include <cstdint>
 
@@ -38,6 +40,8 @@ Time32 convert_time32(const Clock::time_point& tp);
  * \return time stamp with microsecond accuracy
  */
 Time64 convert_time64(const Clock::time_point& tp);
+
+void convert_bytebuffer_to_octet_string(OCTET_STRING_t* octet, const vanetza::ByteBuffer& buffer);
 
 } // namespace security
 } // namespace vanetza

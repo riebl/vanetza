@@ -15,8 +15,8 @@ namespace security
 */
 struct DecapRequest
 {
-    DecapRequest(const SecuredMessage& secmsg) : sec_packet(secmsg) {}
-    const SecuredMessage& sec_packet;
+    DecapRequest(const SecuredMessageVariant& secmsg) : sec_packet(secmsg) {}
+    const SecuredMessageVariant& sec_packet;
 };
 
 } // namespace security

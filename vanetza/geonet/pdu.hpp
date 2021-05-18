@@ -3,13 +3,16 @@
 
 #include <vanetza/geonet/header_variant.hpp>
 #include <vanetza/geonet/serialization.hpp>
+#include <vanetza/security/secured_message.hpp>
 #include <cstddef>
 #include <memory>
 
 namespace vanetza
 {
 // forward declarations
-namespace security { struct SecuredMessageV2; }
+// namespace security {
+//     struct SecuredMessageVariant;
+// }
 
 namespace geonet
 {
@@ -22,7 +25,7 @@ class Pdu;
 class ConstAccessiblePdu
 {
 public:
-    using SecuredMessage = security::SecuredMessageV2;
+    using SecuredMessage = security::SecuredMessageVariant;
 
     virtual const BasicHeader& basic() const = 0;
     virtual const CommonHeader& common() const = 0;

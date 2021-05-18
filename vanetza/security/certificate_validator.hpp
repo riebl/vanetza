@@ -16,7 +16,7 @@ public:
      * \param certificate given certificate
      * \return validity result
      */
-    virtual CertificateValidity check_certificate(const Certificate& certificate) = 0;
+    virtual CertificateValidity check_certificate(const CertificateVariant& certificate) = 0;
 
     virtual ~CertificateValidator() = default;
 };

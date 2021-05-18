@@ -23,7 +23,7 @@ template<class HEADER>
 class ExtendedPdu : public Pdu
 {
 public:
-    using SecuredMessage = security::SecuredMessage;
+    using SecuredMessage = security::SecuredMessageVariant;
     using ExtendedHeader = HEADER;
 
     ExtendedPdu() = default;
@@ -72,7 +72,7 @@ template<class HEADER>
 class ExtendedPduConstRefs : public ConstAccessiblePdu
 {
 public:
-    using SecuredMessage = security::SecuredMessage;
+    using SecuredMessage = security::SecuredMessageVariant;
     using ExtendedHeader = HEADER;
 
     ExtendedPduConstRefs(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended) :

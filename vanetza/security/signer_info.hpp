@@ -15,6 +15,10 @@ namespace security
 {
 
 struct Certificate;
+class CertificateV3;
+using CertificateVariant = boost::variant<boost::recursive_wrapper<Certificate>, boost::recursive_wrapper<CertificateV3>>;
+size_t deserialize(InputArchive&, CertificateVariant&);
+
 
 /// described in TS 103 097 v1.2.1, section 4.2.11
 enum class SignerInfoType : uint8_t
@@ -37,8 +41,8 @@ struct CertificateDigestWithOtherAlgorithm
 using SignerInfo = boost::variant<
     std::nullptr_t,
     HashedId8,
-    boost::recursive_wrapper<Certificate>,
-    std::list<Certificate>,
+    CertificateVariant,
+    std::list<CertificateVariant>,
     CertificateDigestWithOtherAlgorithm
 >;
 

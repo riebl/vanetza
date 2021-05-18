@@ -194,6 +194,7 @@ void Router::set_security_entity(security::SecurityEntity* entity)
     m_security_entity = entity;
 }
 
+
 void Router::set_access_interface(dcc::RequestInterface* ifc)
 {
     m_request_interface = (ifc == nullptr ? get_default_request_interface() : ifc);

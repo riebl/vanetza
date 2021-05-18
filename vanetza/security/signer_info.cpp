@@ -20,11 +20,11 @@ SignerInfoType get_type(const SignerInfo& info)
         {
             return SignerInfoType::Certificate_Digest_With_SHA256;
         }
-        SignerInfoType operator()(const Certificate& cert)
+        SignerInfoType operator()(const CertificateVariant& cert)
         {
             return SignerInfoType::Certificate;
         }
-        SignerInfoType operator()(const std::list<Certificate>& list)
+        SignerInfoType operator()(const std::list<CertificateVariant>& list)
         {
             return SignerInfoType::Certificate_Chain;
         }
@@ -58,11 +58,11 @@ size_t get_size(const SignerInfo& info)
         {
             return id.size();
         }
-        size_t operator()(const Certificate& cert)
+        size_t operator()(const CertificateVariant& cert)
         {
             return get_size(cert);
         }
-        size_t operator()(const std::list<Certificate>& list)
+        size_t operator()(const std::list<CertificateVariant>& list)
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
@@ -108,12 +108,12 @@ void serialize(OutputArchive& ar, const SignerInfo& info)
             }
         }
 
-        void operator()(const Certificate& cert)
+        void operator()(const CertificateVariant& cert)
         {
             serialize(m_archive, cert);
         }
 
-        void operator()(const std::list<Certificate>& list)
+        void operator()(const std::list<CertificateVariant>& list)
         {
             serialize(m_archive, list);
         }
@@ -150,16 +150,23 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
     size += sizeof(SignerInfoType);
     switch (type) {
         case SignerInfoType::Certificate: {
+            // Only used for V1.2.1
             Certificate cert;
             size += deserialize(ar, cert);
             info = cert;
             break;
         }
         case SignerInfoType::Certificate_Chain: {
+            // Only used for V1.2.1
             std::list<Certificate> list;
             size += deserialize(ar, list);
             size += length_coding_size(size);
-            info = list;
+            std::list<CertificateVariant> temp;
+            for(auto& t_cert : list)
+            {
+                temp.push_back(CertificateVariant(t_cert));
+            }
+            info = temp;
             break;
         }
         case SignerInfoType::Certificate_Digest_With_SHA256: {

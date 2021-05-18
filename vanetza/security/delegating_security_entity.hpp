@@ -35,6 +35,7 @@ private:
     VerifyService m_verify_service;
 };
 
+
 } // namespace security
 } // namespace vanetza
 

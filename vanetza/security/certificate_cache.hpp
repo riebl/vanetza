@@ -28,7 +28,9 @@ public:
      *
      * \param certificate certificate to add to the cache
      */
-    void insert(const Certificate& certificate);
+    void insert(const CertificateVariant& certificate);
+    void insert_v2(const Certificate& certificate);
+    void insert_v3(const CertificateV3& certificate);
 
     /**
      * Lookup certificates based on the passed HashedId8.
@@ -37,8 +39,9 @@ public:
      * \param type type of certificate to lookup
      * \return all stored certificates matching the passed identifier and type
      */
-    std::list<Certificate> lookup(const HashedId8& id, SubjectType type);
-
+    std::list<CertificateVariant> lookup(const HashedId8& id, SubjectType type);
+    std::list<CertificateVariant> lookup(const HashedId8& id);
+    
     /**
      * Number of currently stored certificates
      * \return cache size
@@ -59,7 +62,7 @@ private:
 
     struct CachedCertificate
     {
-        Certificate certificate;
+        CertificateVariant certificate;
         heap_type::handle_type handle;
     };
 

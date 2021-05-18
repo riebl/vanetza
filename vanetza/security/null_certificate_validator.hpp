@@ -13,7 +13,7 @@ class NullCertificateValidator : public CertificateValidator
 public:
     NullCertificateValidator();
 
-    CertificateValidity check_certificate(const Certificate&) override;
+    CertificateValidity check_certificate(const CertificateVariant&) override;
 
     /**
      * Set predefined result of check_certificate() calls

@@ -32,9 +32,22 @@ EncapConfirm DelegatingSecurityEntity::encapsulate_packet(EncapRequest&& encap_r
 
 DecapConfirm DelegatingSecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
 {
+    struct canonical_visitor : public boost::static_visitor<PacketVariant>
+        {
+            PacketVariant operator()(const SecuredMessageV2& message) const
+            {
+                return std::move(message.payload.data);
+            }
+
+            PacketVariant operator()(const SecuredMessageV3& message) const
+            {
+                return std::move(CohesivePacket(message.get_payload(), OsiLayer::Session));
+            }
+
+        };
     VerifyConfirm verify_confirm = m_verify_service(VerifyRequest { decap_request.sec_packet });
     DecapConfirm decap_confirm;
-    decap_confirm.plaintext_payload = std::move(decap_request.sec_packet.payload.data);
+    decap_confirm.plaintext_payload = std::move(boost::apply_visitor(canonical_visitor(), decap_request.sec_packet));
     decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
     decap_confirm.certificate_validity = verify_confirm.certificate_validity;
     decap_confirm.its_aid = verify_confirm.its_aid;
