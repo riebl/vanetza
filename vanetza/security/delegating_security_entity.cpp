@@ -20,14 +20,20 @@ DelegatingSecurityEntity::DelegatingSecurityEntity(SignService sign, VerifyServi
 
 EncapConfirm DelegatingSecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
 {
-    SignRequest sign_request;
-    sign_request.plain_message = std::move(encap_request.plaintext_payload);
-    sign_request.its_aid = encap_request.its_aid;
-
-    SignConfirm sign_confirm = m_sign_service(std::move(sign_request));
     EncapConfirm encap_confirm;
-    encap_confirm.sec_packet = std::move(sign_confirm.secured_message);
-    return encap_confirm;
+    // Use Sign as default profile
+    if (encap_request.sec_services &&
+            (*encap_request.sec_services == SecurityProfile::Default
+            || *encap_request.sec_services == SecurityProfile::Sign)) {
+        SignRequest sign_request;
+        sign_request.plain_message = std::move(encap_request.plaintext_payload);
+        sign_request.its_aid = encap_request.its_aid;
+        sign_request.permissions = encap_request.permissions;
+
+        SignConfirm sign_confirm = m_sign_service(std::move(sign_request));
+        encap_confirm.sec_packet = std::move(sign_confirm.secured_message);
+    }
+    return std::move(encap_confirm);
 }
 
 DecapConfirm DelegatingSecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
@@ -37,6 +43,7 @@ DecapConfirm DelegatingSecurityEntity::decapsulate_packet(DecapRequest&& decap_r
     decap_confirm.plaintext_payload = std::move(decap_request.sec_packet.payload.data);
     decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
     decap_confirm.certificate_validity = verify_confirm.certificate_validity;
+    decap_confirm.certificate_id = verify_confirm.certificate_id;
     decap_confirm.its_aid = verify_confirm.its_aid;
     decap_confirm.permissions = verify_confirm.permissions;
     return decap_confirm;

@@ -56,7 +56,9 @@ void copy_request_parameters(const btp::DataRequestB& btp, DataRequest& gn)
 {
     gn.upper_protocol = geonet::UpperProtocol::BTP_B;
     gn.communication_profile = btp.gn.communication_profile;
+    gn.security_profile = btp.gn.security_profile;
     gn.its_aid = btp.gn.its_aid;
+    gn.permissions = btp.gn.permissions;
     if (btp.gn.maximum_lifetime) {
         gn.maximum_lifetime = *btp.gn.maximum_lifetime;
     }

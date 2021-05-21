@@ -24,6 +24,7 @@ TEST(BtpDataIndication, construct_from_header_b) {
     EXPECT_FALSE(btp_ind.source_port);
     EXPECT_EQ(hdr.destination_port, btp_ind.destination_port);
     EXPECT_EQ(hdr.destination_port_info, btp_ind.destination_port_info);
+    EXPECT_EQ(gn_ind.transport_type, btp_ind.transport_type);
     EXPECT_EQ(boost::get<geonet::Address>(gn_ind.destination),
             boost::get<geonet::Address>(btp_ind.destination));
     EXPECT_EQ(gn_ind.source_position, btp_ind.source_position);

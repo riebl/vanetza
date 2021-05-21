@@ -2,6 +2,7 @@
 #define DATA_REQUEST_HPP_BSJC1VFV
 
 #include <vanetza/btp/header.hpp>
+#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/geonet/data_request.hpp>
 #include <vanetza/geonet/destination_variant.hpp>
@@ -19,7 +20,11 @@ struct DataRequestGeoNetParams
     geonet::TransportType transport_type;
     geonet::DestinationVariant destination;
     geonet::CommunicationProfile communication_profile;
+    decltype(geonet::DataRequest::security_profile) security_profile;
     ItsAid its_aid;
+    boost::optional<ByteBuffer> permissions;
+    // TODO: Security context information (optional), Security target ID list (optional):
+    // Encryption is currently not supported
     boost::optional<geonet::Lifetime> maximum_lifetime;
     boost::optional<unsigned> maximum_hop_limit;
     boost::optional<geonet::DataRequest::Repetition> repetition;

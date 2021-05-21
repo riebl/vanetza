@@ -2,6 +2,7 @@
 #include <vanetza/btp/ports.hpp>
 #include <vanetza/asn1/cam.hpp>
 #include <vanetza/asn1/packet_visitor.hpp>
+#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
@@ -125,6 +126,8 @@ void CamApplication::on_timer(Clock::time_point)
 
     DataRequest request;
     request.its_aid = aid::CA;
+    request.permissions = ByteBuffer {1, 0, 0};
+    request.security_profile = security::SecurityProfile::Default;
     request.transport_type = geonet::TransportType::SHB;
     request.communication_profile = geonet::CommunicationProfile::ITS_G5;
 

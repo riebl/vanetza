@@ -8,6 +8,7 @@
 #include <vanetza/security/int_x.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signer_info.hpp>
+#include <boost/optional.hpp>
 #include <functional>
 
 namespace vanetza
@@ -35,7 +36,7 @@ struct SignRequest
 // mandatory SN-SIGN.confirm parameters
 struct SignConfirm
 {
-    SecuredMessage secured_message;
+    boost::optional<SecuredMessage> secured_message; // signing may fail
 };
 
 /**

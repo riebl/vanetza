@@ -34,9 +34,14 @@ void initialize_request(const Application::DataRequest& generic, geonet::DataReq
 {
     geonet.upper_protocol = geonet::UpperProtocol::BTP_B;
     geonet.communication_profile = generic.communication_profile;
+    geonet.security_profile = generic.security_profile;
     geonet.its_aid = generic.its_aid;
+    geonet.permissions = generic.permissions;
     if (generic.maximum_lifetime) {
         geonet.maximum_lifetime = generic.maximum_lifetime.get();
+    }
+    if (generic.maximum_hop_limit) {
+        geonet.max_hop_limit = generic.maximum_hop_limit.get();
     }
     geonet.repetition = generic.repetition;
     geonet.traffic_class = generic.traffic_class;

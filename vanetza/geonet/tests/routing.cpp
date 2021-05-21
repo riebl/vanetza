@@ -121,7 +121,9 @@ TEST_P(Routing, disabled_beaconing)
  */
 TEST_P(Routing, advanced_forwarding_source_inside_destination)
 {
-    GbcDataRequest gbc_request(net.get_mib());
+    GbcDataRequest gbc_request(net.get_mib(), aid::DEN);
+    gbc_request.permissions = ByteBuffer {1, 0, 0, 0};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(3.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -140,6 +142,8 @@ TEST_P(Routing, advanced_forwarding_source_inside_destination)
 TEST_P(Routing, advanced_forwarding_receiver_inside_destination_cbf)
 {
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(5.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[1])->request(gbc_request, create_packet());
@@ -192,6 +196,8 @@ TEST_P(Routing, advanced_forwarding_receiver_inside_destination_cbf)
 TEST_P(Routing, advanced_forwarding_max_counter_exceeded)
 {
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(2.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -240,6 +246,8 @@ TEST_P(Routing, advanced_forwarding_avoid_double_broadcast)
     ASSERT_FALSE(car1_cbf.find(identifier(Address { cars[0] }, SequenceNumber(0))));
 
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -274,6 +282,8 @@ TEST_P(Routing, advanced_forwarding_inside_sectorial_area)
     EXPECT_FALSE(net.get_router(cars[5])->outside_sectorial_contention_area(cars[0], cars[2]));
 
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(7.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -313,6 +323,8 @@ TEST_P(Routing, advanced_forwarding_outside_sectorial_area)
     EXPECT_TRUE(net.get_router(cars[5])->outside_sectorial_contention_area(cars[0], cars[2]));
 
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(7.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -351,6 +363,8 @@ TEST_P(Routing, advanced_routing_distinct_sender_sectorial_area)
     EXPECT_FALSE(net.get_router(cars[5])->outside_sectorial_contention_area(cars[2], cars[0]));
 
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(4.5_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[1])->request(gbc_request, create_packet());
@@ -385,6 +399,8 @@ TEST_P(Routing, advanced_routing_distinct_sender_sectorial_area)
 TEST_P(Routing, greedy_forwarding_unicast)
 {
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(1.0_m, 2.0_m, 2.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -423,6 +439,8 @@ TEST_P(Routing, greedy_forwarding_broadcast)
 {
     net.get_mib().itsGnDefaultTrafficClass.store_carry_forward(false);
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     gbc_request.destination = circle_dest_area(1.0_m, -2.0_m, 0.0_m);
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -441,6 +459,8 @@ TEST_P(Routing, greedy_forwarding_scf)
 {
     net.get_mib().itsGnDefaultTrafficClass.store_carry_forward(true);
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     gbc_request.destination = circle_dest_area(1.0_m, -2.0_m, 0.0_m);
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -454,6 +474,8 @@ TEST_P(Routing, greedy_forwarding_scf)
     // move one station to become a forwarder and propagate its new position via SHB
     net.set_position(cars[5], CartesianPosition(-1.0_m, 0.0_m));
     ShbDataRequest shb_request(net.get_mib(), aid::IPV6_ROUTING);
+    shb_request.permissions = ByteBuffer {};
+    shb_request.security_profile = security::SecurityProfile::Sign;
     shb_request.upper_protocol = UpperProtocol::IPv6;
     ASSERT_TRUE(net.get_router(cars[5])->request(shb_request, create_packet()).accepted());
 
@@ -479,6 +501,8 @@ TEST_P(Routing, greedy_forwarding_scf)
 TEST_P(Routing, forwarding_selection_discard)
 {
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(3.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
@@ -516,6 +540,8 @@ TEST_P(Routing, forwarding_selection_inaccurate_position)
     net.reset_counters();
 
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
+    gbc_request.permissions = ByteBuffer {};
+    gbc_request.security_profile = security::SecurityProfile::Sign;
     gbc_request.destination = circle_dest_area(3.0_m, 0.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());

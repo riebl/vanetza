@@ -60,6 +60,8 @@ protected:
 
         // create ShbDataRequest
         geonet::ShbDataRequest request(mib, aid::CA);
+        request.permissions = ByteBuffer {1, 0, 0};
+        request.security_profile = security::SecurityProfile::Sign;
         request.upper_protocol = geonet::UpperProtocol::IPv6;
 
         // Router handles request
