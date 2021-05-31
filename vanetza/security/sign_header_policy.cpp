@@ -57,7 +57,6 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
             for(auto& cert: temp_variant_chain){
                 boost::apply_visitor(chain_visitor, cert);
             }
-            // full_chain.splice(full_chain.end(), certificate_provider.own_chain());
             full_chain.push_back(boost::get<Certificate>(certificate_provider.own_certificate()));
             header_fields.push_back(SignerInfo { std::move(full_chain) });
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);

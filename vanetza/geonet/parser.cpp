@@ -67,19 +67,6 @@ std::size_t Parser::parse_secured(security::SecuredMessageVariant& secured)
     default:
         break;
     }
-    // try {
-    //     secured = security::SecuredMessageV3();
-    //     bytes = deserialize(m_archive, secured);
-    // } catch (InputArchive::Exception&) {
-    // } catch (security::deserialization_error&) {
-    //     try{
-    //         secured = security::SecuredMessageV2();
-    //         bytes = deserialize(m_archive, secured);
-    //     }catch (InputArchive::Exception&) {
-    //     } catch (security::deserialization_error&) {
-    //     }
-    // }
-
     m_read_bytes += bytes;
     return bytes;
 }
