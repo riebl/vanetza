@@ -13,7 +13,6 @@ namespace vanetza
 namespace security
 {
 
-
 /**
  * CertificateCache remembers validated certificates for some time.
  * This is necessary for certificate lookup when only its digest is known.
@@ -28,7 +27,9 @@ public:
      *
      * \param certificate certificate to add to the cache
      */
-    void insert(const Certificate& certificate);
+    void insert(const CertificateVariant& certificate);
+    void insert_v2(const Certificate& certificate);
+    void insert_v3(const CertificateV3& certificate);
 
     /**
      * Lookup certificates based on the passed HashedId8.
@@ -37,8 +38,9 @@ public:
      * \param type type of certificate to lookup
      * \return all stored certificates matching the passed identifier and type
      */
-    std::list<Certificate> lookup(const HashedId8& id, SubjectType type);
-
+    std::list<CertificateVariant> lookup(const HashedId8& id, SubjectType type);
+    std::list<CertificateVariant> lookup(const HashedId8& id);
+    
     /**
      * Number of currently stored certificates
      * \return cache size
@@ -59,9 +61,10 @@ private:
 
     struct CachedCertificate
     {
-        Certificate certificate;
+        CertificateVariant certificate;
         heap_type::handle_type handle;
     };
+    class certificate_variant_matches_visitor;
 
     const Runtime& m_runtime;
     heap_type m_expiries;
@@ -70,6 +73,7 @@ private:
     void drop_expired();
     bool is_expired(const Expiry&) const;
     void refresh(heap_type::handle_type&, Clock::duration);
+    friend class certificate_variant_matches_visitor;
 };
 
 } // namespace security

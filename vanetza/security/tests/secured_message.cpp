@@ -16,8 +16,8 @@ TEST(SecuredMessage, Serialization)
     m.header_fields.push_back(Time64 { 0x4711 });
     m.payload = {PayloadType::Unsecured, CohesivePacket({ 5, 10, 15, 25, 40 }, OsiLayer::Application)};
     std::list<TrailerField> list;
-    list.push_back(Signature { create_random_ecdsa_signature(44) });
-    list.push_back(Signature { create_random_ecdsa_signature(45) });
+    list.push_back(vanetza::security::Signature { create_random_ecdsa_signature(44) });
+    list.push_back(vanetza::security::Signature { create_random_ecdsa_signature(45) });
     m.trailer_fields = list;
 
     check(m, serialize_roundtrip(m));
@@ -53,8 +53,8 @@ TEST(SecuredMessage, trailer_field_extractor)
     auto empty = m.trailer_field(TrailerFieldType::Signature);
     EXPECT_FALSE(!!empty);
 
-    m.trailer_fields.push_back(Signature {});
-    m.trailer_fields.push_back(Signature {});
+    m.trailer_fields.push_back(vanetza::security::Signature {});
+    m.trailer_fields.push_back(vanetza::security::Signature {});
     auto first = m.trailer_field(TrailerFieldType::Signature);
     ASSERT_TRUE(!!first);
     EXPECT_EQ(&m.trailer_fields.front(), first);
@@ -131,4 +131,28 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_3)
     deserialize_from_hexstring(str, m);
     check(m, serialize_roundtrip(m));
 }
+//This has to be merged with the certificate.cpp one
+vanetza::ByteBuffer from_hexstring(std::string hex_string)
+{
+    size_t len = hex_string.length();
+    vanetza::ByteBuffer out;
+    for (size_t i = 0; i < len; i += 2)
+    {
+        std::istringstream strm(hex_string.substr(i, 2));
+        uint8_t x;
+        strm >> std::hex >> x;
+        out.push_back(x);
+    }
+    return out;
+}
 
+
+TEST(SecuredMessage, SecuredMessageV3_constructor_and_serializer){
+    std::string message = "810340008003205100500080012d8000aa00ccbb2211e3333f0d19f5911b013320a5802d000000000000070000d1020000020000eb0700cdd809470f9dad46deb6e680653a0054fde100c01f7d00e9bf07edfe37ffe900fa01400001000000000000800a95a41b99527855b880801765377dad792857145ea84a395a8bb2c7b57e17d699253d483b9d7c0222a8f393762b32d95d48e3186318028d8b345389df23b3d551d1ebc7d203073f123586";
+    vanetza::ByteBuffer given = from_hexstring(message);
+    SecuredMessageV3 secured_message(given);
+    vanetza::ByteBuffer when = secured_message.serialize();
+
+    ASSERT_EQ(given, when);
+
+}

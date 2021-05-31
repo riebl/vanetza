@@ -14,16 +14,22 @@ class CertificateProvider
 {
 public:
     /**
+     * Get the version of the provided certificates: 2 for v1.2.1 and 3 for v1.3.1
+     * \return own certificate
+     */
+    virtual int version() = 0;
+
+    /**
      * Get own certificate to use for signing
      * \return own certificate
      */
-    virtual const Certificate& own_certificate() = 0;
+    virtual const CertificateVariant& own_certificate() = 0;
 
     /**
      * Get own certificate chain in root CA → AA → AT order, excluding the AT and root certificate
      * \return own certificate chain
      */
-    virtual std::list<Certificate> own_chain() = 0;
+    virtual std::list<CertificateVariant> own_chain() = 0;
 
     /**
      * Get private key associated with own certificate

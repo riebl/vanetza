@@ -22,7 +22,7 @@ class IndicationContext
 {
 public:
     using UpPacketPtr = std::unique_ptr<UpPacket>;
-    using SecuredMessage = security::SecuredMessageV2;
+    using SecuredMessage = security::SecuredMessageVariant;
     using LinkLayer = geonet::LinkLayer;
 
     // parser commands

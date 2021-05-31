@@ -28,13 +28,13 @@ public:
      * \brief get own certificate for signing
      * \return own certificate
      */
-    const Certificate& own_certificate() override;
+    const CertificateVariant& own_certificate() override;
 
     /**
      * Get own certificate chain, excluding the leaf certificate and root CA
      * \return own certificate chain
      */
-    std::list<Certificate> own_chain() override;
+    std::list<CertificateVariant> own_chain() override;
 
     /**
      * \brief get own private key

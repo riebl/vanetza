@@ -13,7 +13,7 @@ namespace security
 * TS 102 636-4-1 v1.2.3 (2015-01)
 */
 struct EncapConfirm {
-    SecuredMessage sec_packet; // mandatory
+    SecuredMessageVariant sec_packet; // mandatory
 };
 
 } // namespace security

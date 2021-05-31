@@ -110,7 +110,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_start_and_duration)
 
     StartAndDurationValidity restriction;
     restriction.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-    restriction.duration = Duration(23, Duration::Units::Hours);
+    restriction.duration = vanetza::security::Duration(23, vanetza::security::Duration::Units::Hours);
     cert.validity_restriction.push_back(restriction);
 
     cert_provider.sign_authorization_ticket(cert);
@@ -149,7 +149,7 @@ TEST_F(DefaultCertificateValidatorTest, validity_time_two_constraints)
     // add second constraint
     StartAndDurationValidity start_and_duration_validity;
     start_and_duration_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
-    start_and_duration_validity.duration = Duration(23, Duration::Units::Hours);
+    start_and_duration_validity.duration = vanetza::security::Duration(23, vanetza::security::Duration::Units::Hours);
     cert.validity_restriction.push_back(start_and_duration_validity);
     // re-sign certificate
     cert_provider.sign_authorization_ticket(cert);

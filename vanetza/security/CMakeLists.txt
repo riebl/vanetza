@@ -36,7 +36,7 @@ add_vanetza_component(security
     validity_restriction.cpp
     verify_service.cpp
 )
-target_link_libraries(security PUBLIC common net)
+target_link_libraries(security PUBLIC common net asn1)
 target_link_libraries(security PRIVATE GeographicLib::GeographicLib)
 
 # crypto++ is a public mandatory dependency because of "NaiveCertificateProvider"
