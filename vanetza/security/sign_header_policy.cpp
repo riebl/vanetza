@@ -11,6 +11,31 @@ namespace vanetza
 namespace security
 {
 
+class push_back_visitor : public boost::static_visitor<void>
+{
+    public:
+        push_back_visitor(int expected_version, std::list<CertificateVariant>& full_chain):
+            full_chain_(full_chain),
+            expected_version_(expected_version) {}
+        
+        void operator()(const Certificate& cert) const
+        {
+            if(expected_version_==2){
+                full_chain_.push_back(cert);
+            }
+        }
+
+        void operator()(const CertificateV3& cert) const
+        {
+            if(expected_version_==3){
+                full_chain_.push_back(cert);
+            }
+        }
+    private:
+        std::list<CertificateVariant>& full_chain_;
+        const int expected_version_;
+};
+
 DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning) :
     m_runtime(rt), m_positioning(positioning), m_cam_next_certificate(m_runtime.now()), m_cert_requested(false), m_chain_requested(false)
 {
@@ -28,11 +53,9 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
         if (m_chain_requested) {
             std::list<CertificateVariant> full_chain;
             std::list<CertificateVariant> temp_variant_chain = certificate_provider.own_chain();
+            push_back_visitor chain_visitor = push_back_visitor(2, full_chain);
             for(auto& cert: temp_variant_chain){
-                if(CertificateVariantVersion(cert.which())==CertificateVariantVersion::Two)
-                {
-                    full_chain.push_back(boost::get<Certificate>(cert));
-                }
+                boost::apply_visitor(chain_visitor, cert);
             }
             // full_chain.splice(full_chain.end(), certificate_provider.own_chain());
             full_chain.push_back(boost::get<Certificate>(certificate_provider.own_certificate()));
@@ -109,17 +132,13 @@ void DefaultSignHeaderPolicy::prepare_headers(const SignRequest& request, Certif
         if (m_chain_requested) {
             std::list<CertificateVariant> full_chain;
             std::list<CertificateVariant> temp_variant_chain = certificate_provider.own_chain();
+            push_back_visitor chain_visitor = push_back_visitor(3, full_chain);
             for(auto& cert: temp_variant_chain){
-                if(CertificateVariantVersion(cert.which())==CertificateVariantVersion::Three)
-                {
-                    full_chain.push_back(boost::get<CertificateV3>(cert));
-                }
+                boost::apply_visitor(chain_visitor, cert);
             }
 
-            //full_chain.splice(full_chain.end(), certificate_provider.own_chain());
-            if (certificate_provider.own_certificate().which()==1) {
-                full_chain.push_back(boost::get<CertificateV3>(certificate_provider.own_certificate()));
-            }
+            boost::apply_visitor(chain_visitor, certificate_provider.own_certificate());
+
             // Has to be reversed because the following lines from the standard (IEEE 1609.2):
             /* The structure contains one or more Certificate structures, in order
              * such that the first certificate is the authorization certificate and each

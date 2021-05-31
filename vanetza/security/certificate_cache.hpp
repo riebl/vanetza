@@ -13,7 +13,6 @@ namespace vanetza
 namespace security
 {
 
-
 /**
  * CertificateCache remembers validated certificates for some time.
  * This is necessary for certificate lookup when only its digest is known.
@@ -65,6 +64,7 @@ private:
         CertificateVariant certificate;
         heap_type::handle_type handle;
     };
+    class certificate_variant_matches_visitor;
 
     const Runtime& m_runtime;
     heap_type m_expiries;
@@ -73,6 +73,7 @@ private:
     void drop_expired();
     bool is_expired(const Expiry&) const;
     void refresh(heap_type::handle_type&, Clock::duration);
+    friend class certificate_variant_matches_visitor;
 };
 
 } // namespace security

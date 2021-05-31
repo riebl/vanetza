@@ -193,7 +193,6 @@ create_security_entity_v3(const po::variables_map& vm, const Runtime& runtime, P
                 context->trust_store.insert(trusted_certificate);
             }
         }
-        std::cout << "Ending the process of creating the security entity" << std::endl;
         context->build_entity_v3();
         security = std::move(context);
     } else {
@@ -209,7 +208,6 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
     if(version==2){
         return create_security_entity_v2(vm, runtime, positioning);
     }else if(version ==3){
-        std::cout << "Creating security entity V3" << std::endl;
         return create_security_entity_v3(vm, runtime, positioning);
     }else{
         throw std::runtime_error("Invalid Security Version");

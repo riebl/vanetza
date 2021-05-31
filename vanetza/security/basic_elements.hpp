@@ -41,8 +41,6 @@ Time32 convert_time32(const Clock::time_point& tp);
  */
 Time64 convert_time64(const Clock::time_point& tp);
 
-void convert_bytebuffer_to_octet_string(OCTET_STRING_t* octet, const vanetza::ByteBuffer& buffer);
-
 } // namespace security
 } // namespace vanetza
 

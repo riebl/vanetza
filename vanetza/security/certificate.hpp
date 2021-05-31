@@ -253,7 +253,7 @@ class CertificateV3{
          * \brief Copies the Certificate to the pointer given to the function (as a Ieee1609.2)
          * \param cert Certificate pointer (Memory should be allocated)
          */
-        void as_plain_certificate(Certificate_t* cert) const;
+        void copy_into(Certificate_t* cert) const;
         /**
          * \brief The start and the end validity of the Certificate as it were a V1.2.1 Certificate
          * \return Start and end validity object
@@ -263,7 +263,7 @@ class CertificateV3{
          * \brief The duration until the certificate expires
          * \return The duration 
          */
-        Clock::duration get_time_to_expire() const;
+        Clock::duration get_validity_duration() const;
         /**
          * \brief Gives back the geographic region where the Certificate is valid
          * \return Shared pointer to the Geographic Region object
@@ -316,42 +316,6 @@ class CertificateV3{
          * \return version (3)
          */
         uint8_t version() const { return 3; }
-        /**
-         * \brief Conversor between Asn1c object to vanetza object (EccPoint)
-         * \param curve_point asn1c curve_point
-         * \return Vanetza EccPoint
-         */
-        static EccPoint EccP256CurvePoint_to_EccPoint(const EccP256CurvePoint_t& curve_point);
-        /**
-         * \brief Conversor between Asn1c object to vanetza object (GeographicRegion)
-         * \param curve_point asn1c GeographicRegion
-         * \return Vanetza GeographicRegion
-         */
-        static GeographicRegion GeographicRegionAsn_to_GeographicRegion(const GeographicRegion_t& region);
-        /**
-         * \brief Conversor between Asn1c object to vanetza object (TwoDLocation)
-         * \param curve_point asn1c TwoDLocation
-         * \return Vanetza TwoDLocation
-         */
-        static TwoDLocation TwoDLocationAsn_to_TwoDLocation(const TwoDLocation_t& location);
-        /**
-         * \brief Conversor between Asn1c object to vanetza object (OCTET_STRING)
-         * \param curve_point asn1c OCTET_STRING
-         * \return Vanetza ByteBuffer
-         */
-        static ByteBuffer OCTET_STRING_to_ByteBuffer(const OCTET_STRING_t& octet);
-        /**
-         * \brief Conversor between Asn1c object to vanetza object (HashedId8)
-         * \param curve_point asn1c HashedId8
-         * \return Vanetza HashedId8
-         */
-        static HashedId8 HashedId8_asn_to_HashedId8(const HashedId8_t& hashed);
-        /**
-         * \brief Conversor between Asn1c object to vanetza object (HashedId3)
-         * \param curve_point asn1c HashedId3
-         * \return Vanetza HashedId3
-         */
-        static HashedId3 HashedId3_asn_to_HashedId3(const HashedId3_t& hashed);
     private:
         void EccP256CurvePoint_to_x_only(EccP256CurvePoint_t& curve_point) const; //Needed to calculate hash
         
@@ -360,9 +324,6 @@ class CertificateV3{
 };
 
 void serialize(OutputArchive& ar, const CertificateV3& certificate);
-
-
-// using CertificateVariant = boost::variant<boost::recursive_wrapper<Certificate>, boost::recursive_wrapper<CertificateV3>>;
 
 enum class CertificateVariantVersion
 {

@@ -11,6 +11,7 @@
 #include <boost/variant/static_visitor.hpp>
 #include <vanetza/asn1/etsi_certificate.hpp>
 #include <vanetza/asn1/ieee1609dot2_certificate.hpp>
+#include <vanetza/asn1/utils.hpp>
 #include <vanetza/geonet/units.hpp>
 #include <memory>
 #include <algorithm>
@@ -296,7 +297,7 @@ CertificateV3::CertificateV3(const Certificate_t& certificate){
     }
 }
 
-void CertificateV3::as_plain_certificate(Certificate_t* cert) const{
+void CertificateV3::copy_into(Certificate_t* cert) const{
     vanetza::ByteBuffer cert_buffer = this->certificate.encode();
     vanetza::asn1::decode_oer(asn_DEF_Certificate, (void**)(&cert), cert_buffer);
 }
@@ -341,7 +342,7 @@ vanetza::security::StartAndEndValidity CertificateV3::get_start_and_end_validity
     return start_and_end;
 }
 
-Clock::duration CertificateV3::get_time_to_expire() const {
+Clock::duration CertificateV3::get_validity_duration() const {
     vanetza::security::StartAndEndValidity start_and_end = this->get_start_and_end_validity();
     vanetza::Clock::duration time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time()).time_since_epoch();
     vanetza::Clock::duration end_time = std::chrono::seconds(start_and_end.end_validity);
@@ -352,7 +353,7 @@ std::shared_ptr<GeographicRegion> CertificateV3::get_geographic_region() const
 {
     std::shared_ptr<GeographicRegion> to_return;
     if (this->certificate->toBeSigned.region){
-        to_return.reset(new GeographicRegion(CertificateV3::GeographicRegionAsn_to_GeographicRegion(
+        to_return.reset(new GeographicRegion(vanetza::asn1::GeographicRegionAsn_to_GeographicRegion(
         *this->certificate->toBeSigned.region
     )));
     }
@@ -438,7 +439,7 @@ HashedId8 CertificateV3::get_issuer_identifier() const{
 
         break;
 	case IssuerIdentifier_PR_sha256AndDigest:
-        to_return = CertificateV3::HashedId8_asn_to_HashedId8(this->certificate->issuer.choice.sha256AndDigest);
+        to_return = vanetza::asn1::HashedId8_asn_to_HashedId8(this->certificate->issuer.choice.sha256AndDigest);
         break;
 	case IssuerIdentifier_PR_self:
         break;
@@ -458,13 +459,13 @@ Signature CertificateV3::get_signature() const {
     case Signature_PR_NOTHING:
         break;
 	case Signature_PR_ecdsaNistP256Signature:
-        to_return.s = CertificateV3::OCTET_STRING_to_ByteBuffer(
+        to_return.s = vanetza::asn1::OCTET_STRING_to_ByteBuffer(
             this->certificate->signature->choice.ecdsaNistP256Signature.sSig
         );
         *eccP256 = this->certificate->signature->choice.ecdsaNistP256Signature.rSig;
         break;
 	case Signature_PR_ecdsaBrainpoolP256r1Signature:
-        to_return.s = CertificateV3::OCTET_STRING_to_ByteBuffer(
+        to_return.s = vanetza::asn1::OCTET_STRING_to_ByteBuffer(
             this->certificate->signature->choice.ecdsaBrainpoolP256r1Signature.sSig
         );
         *eccP256 = this->certificate->signature->choice.ecdsaBrainpoolP256r1Signature.rSig;
@@ -482,7 +483,7 @@ Signature CertificateV3::get_signature() const {
             break;
     	case EccP256CurvePoint_PR_x_only:
             to_return.R = X_Coordinate_Only{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(
+                .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(
                     eccP256->choice.x_only
                 )
                 };
@@ -492,24 +493,24 @@ Signature CertificateV3::get_signature() const {
             break;
     	case EccP256CurvePoint_PR_compressed_y_0:
             to_return.R = Compressed_Lsb_Y_0{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(
+                .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(
                     eccP256->choice.compressed_y_0
                 )
             };
             break;
     	case EccP256CurvePoint_PR_compressed_y_1:
             to_return.R = Compressed_Lsb_Y_1{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(
+                .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(
                     eccP256->choice.compressed_y_1
                 )
             };
             break;
     	case EccP256CurvePoint_PR_uncompressedP256:
             to_return.R = Uncompressed{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(
+                .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(
                     eccP256->choice.uncompressedP256.x
                 ),
-                .y=CertificateV3::OCTET_STRING_to_ByteBuffer(
+                .y=vanetza::asn1::OCTET_STRING_to_ByteBuffer(
                     eccP256->choice.uncompressedP256.y
                 )
             };
@@ -531,87 +532,6 @@ std::shared_ptr<SubjectAssurance> CertificateV3::get_subject_assurance() const{
 
 }
 
-TwoDLocation CertificateV3::TwoDLocationAsn_to_TwoDLocation(const TwoDLocation_t& location){
-    TwoDLocation to_return = TwoDLocation(vanetza::units::GeoAngle((location.latitude/10000000)*boost::units::degree::degrees),
-            vanetza::units::GeoAngle((location.latitude/10000000)*boost::units::degree::degrees));
-    return to_return;
-}
-
-GeographicRegion CertificateV3::GeographicRegionAsn_to_GeographicRegion(const GeographicRegion_t& region){
-    GeographicRegion to_return = NoneRegion();
-    std::list<RectangularRegion> to_return_list;
-    PolygonalRegion polygon;
-    switch(region.present){
-        case GeographicRegion_PR_circularRegion:
-            to_return = CircularRegion(
-                CertificateV3::TwoDLocationAsn_to_TwoDLocation(
-                    region.choice.circularRegion.center
-                ),
-                geonet::distance_u16t::from_value(region.choice.circularRegion.radius)
-            );
-            break;
-	    case GeographicRegion_PR_rectangularRegion:
-            for (int i=0; i<region.choice.rectangularRegion.list.count; i++){
-                    to_return_list.push_back(
-                        RectangularRegion{
-                            .northwest = CertificateV3::TwoDLocationAsn_to_TwoDLocation(
-                                region.choice.rectangularRegion.list.array[i]->northWest
-                            ),
-                            .southeast = CertificateV3::TwoDLocationAsn_to_TwoDLocation(
-                                region.choice.rectangularRegion.list.array[i]->southEast)
-                        }
-                    );
-            }
-            to_return = to_return_list;
-            break;
-	    case GeographicRegion_PR_polygonalRegion:
-            for (int i=0; i<region.choice.polygonalRegion.list.count; i++){
-                polygon.push_back(
-                    CertificateV3::TwoDLocationAsn_to_TwoDLocation(
-                        *region.choice.polygonalRegion.list.array[i]
-                    )
-                );
-            }
-            to_return = polygon;
-            break;
-	    case GeographicRegion_PR_identifiedRegion:
-            // TODO: There is no reason for retrocompatibility whilst the region identification is not programmed
-            break;
-    }
-    return to_return;
-}
-
-ByteBuffer CertificateV3::OCTET_STRING_to_ByteBuffer(const OCTET_STRING_t& octet){
-    return ByteBuffer(octet.buf, octet.buf+octet.size);
-}
-
-EccPoint CertificateV3::EccP256CurvePoint_to_EccPoint(const EccP256CurvePoint_t& curve_point){
-    EccPoint to_return;
-    switch(curve_point.present){
-        case EccP256CurvePoint_PR_x_only:
-            to_return = X_Coordinate_Only{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(curve_point.choice.x_only)
-                };
-            break;
-	    case EccP256CurvePoint_PR_compressed_y_0:
-            to_return = Compressed_Lsb_Y_0{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(curve_point.choice.compressed_y_0)
-                };
-            break;
-	    case EccP256CurvePoint_PR_compressed_y_1:
-            to_return = Compressed_Lsb_Y_1{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(curve_point.choice.compressed_y_1)
-                };
-            break;
-	    case EccP256CurvePoint_PR_uncompressedP256:
-            to_return = Uncompressed{
-                .x=CertificateV3::OCTET_STRING_to_ByteBuffer(curve_point.choice.uncompressedP256.x),
-                .y=CertificateV3::OCTET_STRING_to_ByteBuffer(curve_point.choice.uncompressedP256.y)};
-            break;
-    }
-    return to_return;
-}
-
 boost::optional<Uncompressed> CertificateV3::get_uncompressed_public_key(Backend& backend) const
 {
     boost::optional<Uncompressed> public_key_coordinates;
@@ -619,10 +539,10 @@ boost::optional<Uncompressed> CertificateV3::get_uncompressed_public_key(Backend
     if (this->certificate->toBeSigned.verifyKeyIndicator.present == VerificationKeyIndicator_PR_verificationKey){
         switch (this->certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.present){
             case PublicVerificationKey_PR_ecdsaNistP256:
-                ecc_point = CertificateV3::EccP256CurvePoint_to_EccPoint(this->certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256);
+                ecc_point = vanetza::asn1::EccP256CurvePoint_to_EccPoint(this->certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256);
                 break;
 	        case PublicVerificationKey_PR_ecdsaBrainpoolP256r1:
-                ecc_point = CertificateV3::EccP256CurvePoint_to_EccPoint(this->certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaBrainpoolP256r1);
+                ecc_point = vanetza::asn1::EccP256CurvePoint_to_EccPoint(this->certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaBrainpoolP256r1);
                 break;
         }
         public_key_coordinates = backend.decompress_point(ecc_point);
@@ -642,26 +562,6 @@ boost::optional<ecdsa256::PublicKey>  CertificateV3::get_public_key(Backend& bac
         result = std::move(pub);
     }
     return result;
-}
-
-HashedId8 CertificateV3::HashedId8_asn_to_HashedId8(const HashedId8_t& hashed){
-    HashedId8 to_return = HashedId8{0,0,0,0,0,0,0,0};
-    if (hashed.size == 8){
-        for(int i =0; i<hashed.size; i++){
-            to_return[i] = hashed.buf[i];
-        }
-    }
-    return to_return;
-}
-
-HashedId3 CertificateV3::HashedId3_asn_to_HashedId3(const HashedId3_t& hashed){
-    HashedId3 to_return = HashedId3{0,0,0};
-    if (hashed.size == 3){
-        for(int i =0; i<hashed.size; i++){
-            to_return[i] = hashed.buf[i];
-        }
-    }
-    return to_return;
 }
 
 size_t get_size(const CertificateVariant& certificate){

@@ -32,15 +32,6 @@ Time64 convert_time64(const Clock::time_point& tp)
     return duration_cast<microseconds>(tp.time_since_epoch()).count();
 }
 
-void convert_bytebuffer_to_octet_string(OCTET_STRING_t* octet, const vanetza::ByteBuffer& buffer)
-{
-    OCTET_STRING_fromBuf(
-        octet,
-        reinterpret_cast<const char *>(buffer.data()),
-        buffer.size()
-    );
-}
-
 
 } // namespace security
 } // namespace vanetza

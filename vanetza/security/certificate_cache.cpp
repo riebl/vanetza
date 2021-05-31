@@ -69,7 +69,7 @@ void CertificateCache::insert_v3(const CertificateV3& certificate)
         }
     }
 
-    Clock::duration lifetime = certificate.get_time_to_expire();
+    Clock::duration lifetime = certificate.get_validity_duration();
 
     if (lifetime > Clock::duration::zero()) {
         CachedCertificate entry;
@@ -104,35 +104,58 @@ void CertificateCache::insert(const CertificateVariant& certificate){
     boost::apply_visitor(certificate_variant_visitor(*this), certificate);
 }
 
+class CertificateCache::certificate_variant_matches_visitor
+    : public boost::static_visitor<>
+{
+public:
+    certificate_variant_matches_visitor(std::list<CertificateVariant>& matches, SubjectType& type, CertificateCache& cache, heap_type::handle_type& handle):
+        matches_(matches), type_(type), cache_(cache), handle_(handle){}
+
+    void set_handle(heap_type::handle_type& handle){
+        handle_ = handle;
+    }
+
+    void operator()(const Certificate& cert) const
+    {
+        auto subject_type = cert.subject_info.subject_type;
+        if (subject_type == type_) {
+
+            matches_.push_back(cert);
+
+            // renew cached certificate
+            if (subject_type == SubjectType::Authorization_Ticket) {
+                cache_.refresh(handle_, std::chrono::seconds(2));
+            } else if (subject_type == SubjectType::Authorization_Authority) {
+                cache_.refresh(handle_, std::chrono::seconds(3600));
+            }
+        }
+    }
+
+    void operator()(const CertificateV3& cert) const
+    {
+        matches_.push_back(cert);
+    }
+private:
+    std::list<CertificateVariant>& matches_;
+    heap_type::handle_type& handle_;
+    CertificateCache& cache_;
+    SubjectType& type_;
+
+};
+
 std::list<CertificateVariant> CertificateCache::lookup(const HashedId8& id, SubjectType type)
 {
     drop_expired();
 
     using iterator = std::multimap<HashedId8, CachedCertificate>::iterator;
     std::pair<iterator, iterator> range = m_certificates.equal_range(id);
-
+    
     std::list<CertificateVariant> matches;
+    certificate_variant_matches_visitor visitor_matches = certificate_variant_matches_visitor(matches, type, *this, range.first->second.handle);
     for (auto item = range.first; item != range.second; ++item) {
         const CertificateVariant& cert_variant = item->second.certificate;
-        if(cert_variant.which()==0){
-            Certificate cert = boost::get<Certificate>(cert_variant);
-            auto subject_type = cert.subject_info.subject_type;
-            if (subject_type != type) {
-                continue;
-            }
-
-            matches.push_back(cert);
-
-            // renew cached certificate
-            if (subject_type == SubjectType::Authorization_Ticket) {
-                refresh(item->second.handle, std::chrono::seconds(2));
-            } else if (subject_type == SubjectType::Authorization_Authority) {
-                refresh(item->second.handle, std::chrono::seconds(3600));
-            }
-        }else if(cert_variant.which()==1){
-            CertificateV3 cert = boost::get<CertificateV3>(cert_variant);
-            matches.push_back(cert);
-        }
+        visitor_matches.set_handle(item->second.handle);
+        boost::apply_visitor(visitor_matches, cert_variant);
     }
 
     return matches;

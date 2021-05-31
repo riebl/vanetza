@@ -4,6 +4,7 @@
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/serialization.hpp>
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/asn1/utils.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <iomanip>
@@ -243,6 +244,9 @@ SecuredMessageV3::~SecuredMessageV3(){
 }
 
 SecuredMessageV3::SecuredMessageV3(vanetza::ByteBuffer secured_message){
+    if(secured_message[0] != 3){
+        secured_message.insert(secured_message.begin(), 3);
+    }
     bool encoded = this->message.decode(secured_message);
     if (!encoded){
         throw security::deserialization_error("Message not correct!");
@@ -305,7 +309,7 @@ SignerInfo SecuredMessageV3::get_signer_info() const{
         {
         
         case SignerIdentifier_PR_digest:
-            to_return = CertificateV3::HashedId8_asn_to_HashedId8(this->message->content->choice.signedData->signer.choice.digest);
+            to_return = vanetza::asn1::HashedId8_asn_to_HashedId8(this->message->content->choice.signedData->signer.choice.digest);
             break;
         case SignerIdentifier_PR_certificate:
             SequenceOfCertificate_t certificates = this->message->content->choice.signedData->signer.choice.certificate;
@@ -313,14 +317,13 @@ SignerInfo SecuredMessageV3::get_signer_info() const{
                 std::list<CertificateVariant> before_to_return = std::list<CertificateVariant>();
                 for (int i=0;i<certificates.list.count; i++){
                     Certificate_t* temp = reinterpret_cast<Certificate_t*>(certificates.list.array[i]);
-                    xer_fprint(stdout, &asn_DEF_Certificate, temp);
                     vanetza::ByteBuffer temp_buffer = vanetza::asn1::encode_oer(asn_DEF_Certificate, temp);
                     before_to_return.push_back(CertificateV3(temp_buffer));
                 }
                 to_return = before_to_return;
             }
             break;
-        }        
+        }
     }
     return to_return;
 }
@@ -341,7 +344,7 @@ std::list<HashedId3> SecuredMessageV3::get_inline_p2pcd_Request() const{
         SequenceOfHashedId3_t * inlineP2pcdRequest = this->message->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest;
         if (inlineP2pcdRequest){
             for (int i=0; i<inlineP2pcdRequest->list.count; i++){
-                HashedId3 new_elem = CertificateV3::HashedId3_asn_to_HashedId3(*inlineP2pcdRequest->list.array[i]);
+                HashedId3 new_elem = vanetza::asn1::HashedId3_asn_to_HashedId3(*inlineP2pcdRequest->list.array[i]);
                 to_return.push_back(new_elem);
             }
         }
@@ -376,29 +379,29 @@ vanetza::security::Signature SecuredMessageV3::get_signature() const{
             }
 
             if (assigned){
-                signature.s = CertificateV3::OCTET_STRING_to_ByteBuffer(nsignature.sSig);
+                signature.s = vanetza::asn1::OCTET_STRING_to_ByteBuffer(nsignature.sSig);
                 switch(nsignature.rSig.present){
                     case EccP256CurvePoint_PR_x_only:
                         signature.R = X_Coordinate_Only{
-                            .x=CertificateV3::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.x_only)
+                            .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.x_only)
                         };
                         break;
                     case EccP256CurvePoint_PR_fill:
                         break;
                     case EccP256CurvePoint_PR_compressed_y_0:
                         signature.R = Compressed_Lsb_Y_0{
-                            .x=CertificateV3::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.compressed_y_0)
+                            .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.compressed_y_0)
                         };
                         break;
                     case EccP256CurvePoint_PR_compressed_y_1:
                         signature.R = Compressed_Lsb_Y_1{
-                            .x=CertificateV3::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.compressed_y_1)
+                            .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.compressed_y_1)
                         };
                         break;
                     case EccP256CurvePoint_PR_uncompressedP256:
                         signature.R = Uncompressed{
-                            .x=CertificateV3::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.uncompressedP256.x),
-                            .y=CertificateV3::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.uncompressedP256.y)
+                            .x=vanetza::asn1::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.uncompressedP256.x),
+                            .y=vanetza::asn1::OCTET_STRING_to_ByteBuffer(nsignature.rSig.choice.uncompressedP256.y)
                         };
                         break;
                 }
@@ -412,7 +415,7 @@ vanetza::security::Signature SecuredMessageV3::get_signature() const{
 vanetza::ByteBuffer SecuredMessageV3::get_payload() const{
     vanetza::ByteBuffer to_return;
     if (this->is_signed_message()){
-        to_return = CertificateV3::OCTET_STRING_to_ByteBuffer(
+        to_return = vanetza::asn1::OCTET_STRING_to_ByteBuffer(
             this->message->content->choice.signedData->tbsData->payload->data->content->choice.unsecuredData
         );
     }
@@ -425,7 +428,6 @@ vanetza::ByteBuffer SecuredMessageV3::convert_for_signing() const{
         try{
             to_return = vanetza::asn1::encode_oer(asn_DEF_ToBeSignedData, this->message->content->choice.signedData->tbsData);
         }catch(std::runtime_error& er){
-            // std::cout << er.what();
         }
     }
     return to_return;
@@ -487,7 +489,7 @@ void SecuredMessageV3::set_generation_location(ThreeDLocation location){
 }
 
 void SecuredMessageV3::set_payload(const vanetza::ByteBuffer& payload){
-    convert_bytebuffer_to_octet_string(
+    vanetza::asn1::convert_bytebuffer_to_octet_string(
         &(this->message->content->choice.signedData->tbsData->payload->data->content->choice.unsecuredData),
         payload
     );
@@ -499,7 +501,7 @@ void SecuredMessageV3::set_signature(const Signature& signature){
             {
                 EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
                 to_return->present = EccP256CurvePoint_PR_x_only;
-                convert_bytebuffer_to_octet_string(
+                vanetza::asn1::convert_bytebuffer_to_octet_string(
                     &(to_return->choice.x_only),
                     x_only.x
                 );
@@ -510,7 +512,7 @@ void SecuredMessageV3::set_signature(const Signature& signature){
             {
                 EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
                 to_return->present = EccP256CurvePoint_PR_compressed_y_0;
-                convert_bytebuffer_to_octet_string(
+                vanetza::asn1::convert_bytebuffer_to_octet_string(
                     &(to_return->choice.compressed_y_0),
                     y0.x
                 );
@@ -521,7 +523,7 @@ void SecuredMessageV3::set_signature(const Signature& signature){
             {
                 EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
                 to_return->present = EccP256CurvePoint_PR_compressed_y_1;
-                convert_bytebuffer_to_octet_string(
+                vanetza::asn1::convert_bytebuffer_to_octet_string(
                     &(to_return->choice.compressed_y_1),
                     y1.x
                 );
@@ -532,11 +534,11 @@ void SecuredMessageV3::set_signature(const Signature& signature){
             {
                 EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
                 to_return->present = EccP256CurvePoint_PR_uncompressedP256;
-                convert_bytebuffer_to_octet_string(
+                vanetza::asn1::convert_bytebuffer_to_octet_string(
                     &(to_return->choice.uncompressedP256.x),
                     unc.x
                 );
-                convert_bytebuffer_to_octet_string(
+                vanetza::asn1::convert_bytebuffer_to_octet_string(
                     &(to_return->choice.uncompressedP256.y),
                     unc.y
                 );
@@ -549,7 +551,7 @@ void SecuredMessageV3::set_signature(const Signature& signature){
             {
                 Signature_t* final_signature = static_cast<Signature_t*>(vanetza::asn1::allocate(sizeof(Signature_t)));
                 final_signature->present = Signature_PR_ecdsaNistP256Signature;
-                convert_bytebuffer_to_octet_string(
+                vanetza::asn1::convert_bytebuffer_to_octet_string(
                     &(final_signature->choice.ecdsaNistP256Signature.sSig),
                     signature.s
                 );
@@ -597,7 +599,7 @@ void SecuredMessageV3::set_signer_info(const SignerInfo& signer_info){
                 if(CertificateVariantVersion(certificate_variant.which())== CertificateVariantVersion::Three){
                     signer->present = SignerIdentifier_PR_certificate;
                     Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                    boost::get<CertificateV3>(certificate_variant).as_plain_certificate(certi);
+                    boost::get<CertificateV3>(certificate_variant).copy_into(certi);
                     ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
                 }
                 return signer;
@@ -610,7 +612,7 @@ void SecuredMessageV3::set_signer_info(const SignerInfo& signer_info){
                 for (auto const& cert : certificates){
                     if(CertificateVariantVersion(cert.which())== CertificateVariantVersion::Three){
                         Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                        boost::get<CertificateV3&>(cert).as_plain_certificate(certi);
+                        boost::get<CertificateV3&>(cert).copy_into(certi);
                         ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
                     }
                 }

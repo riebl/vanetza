@@ -357,12 +357,12 @@ bool assign_permissions(const vanetza::security::CertificateVariant& certificate
 VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificateProvider& cert_provider, CertificateValidator& certs, Backend& backend, CertificateCache& cert_cache, SignHeaderPolicy& sign_policy, PositionProvider& positioning){
     VerifyConfirm confirm;
     const SecuredMessageV3 secured_message = boost::get<SecuredMessageV3>(request.secured_message);
-    
+
     if (cert_provider.version() != 3){
         confirm.report = VerificationReport::Incompatible_Protocol;
         return confirm;
     }
-    
+
     if (!secured_message.is_signed_message()) {
         confirm.report = VerificationReport::Unsigned_Message;
         return confirm;
@@ -373,7 +373,7 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
         return confirm;
     }
     
-    // TODO: Has to be implemented a Certificate Provider class
+
     std::list<HashedId3> requested_certs = secured_message.get_inline_p2pcd_Request();
     if (requested_certs.size() > 0) {
         for (auto& requested_cert : requested_certs) {
@@ -393,8 +393,6 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
     const IntX its_aid = IntX(secured_message.get_psid());
     confirm.its_aid = its_aid.get();
 
-    /* REALLY IMPORTANT TO CHECK IF THIS WORKS */
-    // TODO: Implement the signer Info (getter)
     const std::unique_ptr<SignerInfo> signer_info(new SignerInfo(secured_message.get_signer_info()));
     std::list<CertificateVariant> possible_certificates;
     bool possible_certificates_from_cache = false;
@@ -406,6 +404,7 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
     std::list<CertificateVariant> temp_variant_cache;
     
     if (signer_info) {
+        std::list<CertificateVariant> chain;
         switch (get_type(*signer_info)) {
             case SignerInfoType::Certificate:
                 possible_certificates.push_back(boost::get<CertificateVariant>(*signer_info));
@@ -424,13 +423,21 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
                 for (const auto& cert: temp_variant_cache){
                     possible_certificates.push_back(boost::get<CertificateV3>(cert));
                 }
-                //possible_certificates.splice(possible_certificates.end(), cert_cache.lookup(signer_hash));
                 possible_certificates_from_cache = true;
                 break;
             case SignerInfoType::Certificate_Chain:
-            {
-                std::list<CertificateVariant> chain = boost::get<std::list<CertificateVariant>>(*signer_info);
-                if (chain.size() == 0) {
+                chain = boost::get<std::list<CertificateVariant>>(*signer_info);
+                if (chain.size() == 1){
+                    possible_certificates.push_back(chain.front());
+                    signer_hash = calculate_hash(chain.front());
+
+                    if (confirm.its_aid == aid::CA && cert_cache.lookup(signer_hash).size() == 0) {
+                        // Previously unknown certificate, send own certificate in next CAM
+                        // See TS 103 097 v1.2.1, section 7.1, 1st bullet, 3rd dash
+                        sign_policy.request_certificate();
+                    }
+
+                } else if (chain.size() == 0) {
                     confirm.report = VerificationReport::Signer_Certificate_Not_Found;
                     return confirm;
                 } else if (chain.size() > 3) {
@@ -438,9 +445,8 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
                     // AT → AA → Root and no other signatures are allowed, sending the Root is optional
                     confirm.report = VerificationReport::Invalid_Certificate;
                     return confirm;
-                }
-                // pre-check chain certificates, otherwise they're not available for the ticket check
-                if (chain.size()>1){
+                } else if (chain.size()>1){
+                    // pre-check chain certificates, otherwise they're not available for the ticket check
                     // The second certificate will always have to be the AA
                     std::list<CertificateVariant>::iterator it = chain.begin();
                     std::advance(it, 1);
@@ -467,7 +473,6 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
                 // first certificate must be the authorization ticket
                 signer_hash =  calculate_hash(chain.front());
                 possible_certificates.push_back(chain.front());
-            }
                 break;
             default:
                 confirm.report = VerificationReport::Unsupported_Signer_Identifier_Type;
@@ -524,7 +529,7 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
             break;
         }
     }
-    
+
     if (!signer) {
         // HashedId8 of authorization tickets is not guaranteed to be globally unique.
         // The collision probability is rather low, but it might happen.
@@ -540,7 +545,7 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
         sign_policy.request_unrecognized_certificate(signer_hash);
         return confirm;
     }
-    
+
     // we can only check the generation location after we have identified the correct certificate
     if (!check_generation_location(secured_message, *signer)) {
         confirm.report = VerificationReport::Invalid_Certificate;
@@ -569,7 +574,7 @@ VerifyConfirm verify_v3(VerifyRequest& request, const Runtime& rt, CertificatePr
 
         return confirm;
     }
-    
+
     if (!check_certificate_time(*signer, rt.now())) {
         confirm.report = VerificationReport::Invalid_Certificate;
         confirm.certificate_validity = CertificateInvalidReason::Off_Time_Period;
