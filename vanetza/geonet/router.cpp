@@ -700,7 +700,7 @@ void Router::pass_down(const MacAddress& addr, PduPtr pdu, DownPacketPtr payload
     request.source = m_local_position_vector.gn_addr.mid();
     request.dcc_profile = map_tc_onto_profile(pdu->common().traffic_class);
     request.ether_type = geonet::ether_type;
-    request.lifetime = std::chrono::seconds(pdu->basic().lifetime.decode() / units::si::seconds);
+    request.lifetime = clock_cast(pdu->basic().lifetime.decode());
 
     pass_down(request, std::move(pdu), std::move(payload));
 }
@@ -1126,7 +1126,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
         request.source = m_local_position_vector.gn_addr.mid();
         request.dcc_profile = dcc::Profile::DP3;
         request.ether_type = geonet::ether_type;
-        request.lifetime = std::chrono::seconds(pdu->basic().lifetime.decode() / units::si::seconds);
+        request.lifetime = clock_cast(pdu->basic().lifetime.decode());
 
         pass_down(request, std::move(pdu), std::move(payload));
     };
