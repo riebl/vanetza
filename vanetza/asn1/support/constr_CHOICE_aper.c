@@ -52,11 +52,14 @@ CHOICE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
     } else {
         if(specs->ext_start == -1)
             ASN__DECODE_FAILED;
-        value = aper_get_nsnnwn(pd, ct->upper_bound - ct->lower_bound + 1);
-        if(value < 0) ASN__DECODE_STARVED;
-        value += specs->ext_start;
-        if((unsigned)value >= td->elements_count)
-            ASN__DECODE_FAILED;
+
+        if (ct && ct->upper_bound >= ct->lower_bound) {
+            value = aper_get_nsnnwn(pd, ct->upper_bound - ct->lower_bound + 1);
+            if(value < 0) ASN__DECODE_STARVED;
+            value += specs->ext_start;
+            if((unsigned)value >= td->elements_count)
+                ASN__DECODE_FAILED;
+        }
     }
 
     /* Adjust if canonical order is different from natural order */
