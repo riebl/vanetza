@@ -1,0 +1,157 @@
+ 
+
+-- ############################################################################
+-- ^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-
+-- 
+-- Begin module: REG-D
+-- 
+-- ^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-^-
+-- ############################################################################
+REG-D DEFINITIONS AUTOMATIC TAGS::= BEGIN 
+
+-- -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+-- 
+-- Imports from Modules:
+-- ITS-Container: ETSI common Data Dictionary
+-- DSRC:          Basic definition of SPAT and MapData dictionary
+-- 
+-- -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_
+ 
+IMPORTS
+	Altitude, StationID
+	FROM ITS-Container { itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) version (2) }
+	
+	PrioritizationResponseStatus, SignalGroupID, NodeOffsetPoint,
+	Offset-B11, LaneID
+	FROM DSRC { iso (1) standard (0) signalizedIntersection (19091) profilec(2) dsrc (2) version2 (2) };
+
+
+-- =============================================================================
+-- DE_EmissionType_RegD (Desc Name) Record 10
+-- From source: AMENDMENT Regional Data J2735 (REG-D)
+EmissionType ::= ENUMERATED {
+     typeA,  -- check for proper restrictions
+     typeB,  -- 
+     typeC,  -- 
+     typeD,  -- 
+     typeE,  -- 
+     ... -- # LOCAL_CONTENT
+     }
+
+	 
+-- =============================================================================
+-- DF_PrioritizationResponse_RegD (Desc Name) Record 34
+-- From source: AMENDMENT Regional Data J2735 (REG-D)
+PrioritizationResponse ::=  SEQUENCE {
+   stationID      StationID,
+                  -- Id of requesting vehicle
+                  -- Note that the stationID has to remain unchanged 
+                  -- during the whole prioritisation process.
+				  
+   priorState     PrioritizationResponseStatus,
+                  -- State of prioritization request.
+				  
+   signalGroup    SignalGroupID,
+                  -- id of prioritized LaneSet, which will 
+                  -- be given free way.
+				  
+   ... -- # LOCAL_CONTENT
+   }
+
+   
+-- =============================================================================
+-- DF_PrioritizationResponseList_RegD (Desc Name) Record 35
+-- From source: AMENDMENT Regional Data J2735 (REG-D)
+PrioritizationResponseList ::=  SEQUENCE SIZE(1..10) OF PrioritizationResponse
+
+
+-- =============================================================================
+-- DF_Reg-ConnectionManeuverAssist_RegD (Desc Name) Record 38
+-- From source: AMENDMENT Regional Data J2735 (REG-D)
+Reg-ConnectionManeuverAssist ::=  SEQUENCE {
+   ...,
+   -- version 1
+   [[
+   vehicleToLanePositions  VehicleToLanePositionList,
+   rsuDistanceFromAnchor   NodeOffsetPoint OPTIONAL
+   ]]
+   }
+
+	
+-- =============================================================================
+-- DF_REG_IntersectionState_RegD (Desc Name) Record 42
+-- From source: AMENDMENT Regional Data J2735 (REG-D)
+Reg-IntersectionState ::=  SEQUENCE { 
+   ...,
+   -- version 1
+   [[
+   activePrioritizations PrioritizationResponseList OPTIONAL
+   ]]
+   }
+
+   
+-- =============================================================================
+-- DF_REG_MapData_Base_RegD   NEW (Desc Name) Record 48
+-- From source: AMENDMENT Regional Data J2735 (REG-D)
+Reg-MapData ::=  SEQUENCE { 
+   ...,
+   -- version 1
+   [[
+   signalHeadLocations   SignalHeadLocationList OPTIONAL
+   ]]
+   }
+
+   
+-- =============================================================================
+-- DF_REG_Position3D_RegD (Desc Name) Record 57
+Reg-Position3D ::=  SEQUENCE {
+   ...,
+   -- version 1
+   [[
+   altitude    Altitude
+   ]]
+   }
+
+   
+-- =============================================================================
+-- DF_REG_RestrictionUserType_RegD (Desc Name) Record 58
+Reg-RestrictionUserType ::=  SEQUENCE {
+   ...,
+   -- version 1
+   [[
+   emission   EmissionType OPTIONAL
+   ]]
+   }
+
+   
+-- =============================================================================
+-- DF_SignalHeadLocation_RegD    NEW (Desc Name) Record 66
+SignalHeadLocation ::=  SEQUENCE {
+   node             NodeOffsetPoint, -- the location
+   elevation        Offset-B11,      -- elevation up to 10 meters 
+   signalGroupID    SignalGroupID,   
+   ...
+   }
+
+   
+-- =============================================================================
+-- DF_SignalHeadLocationList_RegD   NEW (Desc Name) Record 67
+SignalHeadLocationList ::=  SEQUENCE (SIZE(1..20)) OF  SignalHeadLocation
+
+
+-- =============================================================================
+-- DF_VehicleToLanePosition_RegD (Desc Name) Record 73
+VehicleToLanePosition ::=  SEQUENCE {
+    stationID   StationID, 
+    laneID      LaneID,
+    ...
+    }
+
+	
+-- =============================================================================
+-- DF_VehicleToLanePositionList_RegD (Desc Name) Record 74
+VehicleToLanePositionList ::=  SEQUENCE SIZE(1..5) OF VehicleToLanePosition
+
+
+END
+-- End of the REG-D module.
