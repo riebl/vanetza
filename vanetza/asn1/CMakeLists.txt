@@ -20,9 +20,11 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/EN302637-2v141-CAM.asn
         ${PROJECT_SOURCE_DIR}/asn1/EN302637-3v131-DENM.asn
         ${PROJECT_SOURCE_DIR}/asn1/TR103562v211.asn
-        ${PROJECT_SOURCE_DIR}/asn1/DSRC_REG_D.asn
-        ${PROJECT_SOURCE_DIR}/asn1/MAP_SPAT_ETSI.asn
-        ${PROJECT_SOURCE_DIR}/asn1/MAP_SPAT_REG_D.asn
+        ${PROJECT_SOURCE_DIR}/asn1/MAPEM-PDU-Descriptions.asn
+        ${PROJECT_SOURCE_DIR}/asn1/SPATEM-PDU-Descriptions.asn
+        ${PROJECT_SOURCE_DIR}/asn1/ISO24534-3_ElectronicRegistrationIdentificationVehicleDataModule-patched.asn
+        ${PROJECT_SOURCE_DIR}/asn1/ISO-TS-19091-addgrp-C-2018-patched.asn
+        ${PROJECT_SOURCE_DIR}/asn1/ISO14816_AVIAEINumberingAndDataStructures.asn
     )
     set(_pki_asn1_files
         ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-BaseTypes.asn
