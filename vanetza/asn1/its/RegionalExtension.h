@@ -19,16 +19,17 @@
 #include "OPEN_TYPE.h"
 #include "constr_CHOICE.h"
 #include "constr_SEQUENCE.h"
-#include "ConnectionManeuverAssist-addGrpC.h"
-#include "ConnectionTrajectory-addGrpC.h"
-#include "IntersectionState-addGrpC.h"
-#include "LaneAttributes-addGrpC.h"
-#include "MovementEvent-addGrpC.h"
-#include "NodeAttributeSet-addGrpC.h"
-#include "Position3D-addGrpC.h"
-#include "RequestorDescription-addGrpC.h"
-#include "RestrictionUserType-addGrpC.h"
-#include "SignalStatusPackage-addGrpC.h"
+
+struct ConnectionManeuverAssist_addGrpC_t;
+struct ConnectionTrajectory_addGrpC_t;
+struct IntersectionState_addGrpC_t;
+struct LaneAttributes_addGrpC_t;
+struct MovementEvent_addGrpC_t;
+struct NodeAttributeSet_addGrpC_t;
+struct Position3D_addGrpC_t;
+struct RequestorDescription_addGrpC_t;
+struct RestrictionUserType_addGrpC_t;
+struct SignalStatusPackage_addGrpC_t;
 
 #ifdef __cplusplus
 extern "C" {
@@ -249,7 +250,7 @@ typedef struct Reg_ConnectionManeuverAssist {
 	struct Reg_ConnectionManeuverAssist__regExtValue {
 		Reg_ConnectionManeuverAssist__regExtValue_PR present;
 		union Reg_ConnectionManeuverAssist__regExtValue_u {
-			ConnectionManeuverAssist_addGrpC_t	 ConnectionManeuverAssist_addGrpC;
+			struct ConnectionManeuverAssist_addGrpC_t*	 ConnectionManeuverAssist_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -264,7 +265,7 @@ typedef struct Reg_GenericLane {
 	struct Reg_GenericLane__regExtValue {
 		Reg_GenericLane__regExtValue_PR present;
 		union Reg_GenericLane__regExtValue_u {
-			ConnectionTrajectory_addGrpC_t	 ConnectionTrajectory_addGrpC;
+            struct ConnectionTrajectory_addGrpC_t*	 ConnectionTrajectory_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -293,7 +294,7 @@ typedef struct Reg_IntersectionState {
 	struct Reg_IntersectionState__regExtValue {
 		Reg_IntersectionState__regExtValue_PR present;
 		union Reg_IntersectionState__regExtValue_u {
-			IntersectionState_addGrpC_t	 IntersectionState_addGrpC;
+            struct IntersectionState_addGrpC_t*	 IntersectionState_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -308,7 +309,7 @@ typedef struct Reg_LaneAttributes {
 	struct Reg_LaneAttributes__regExtValue {
 		Reg_LaneAttributes__regExtValue_PR present;
 		union Reg_LaneAttributes__regExtValue_u {
-			LaneAttributes_addGrpC_t	 LaneAttributes_addGrpC;
+            struct LaneAttributes_addGrpC_t*	 LaneAttributes_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -337,7 +338,7 @@ typedef struct Reg_MovementEvent {
 	struct Reg_MovementEvent__regExtValue {
 		Reg_MovementEvent__regExtValue_PR present;
 		union Reg_MovementEvent__regExtValue_u {
-			MovementEvent_addGrpC_t	 MovementEvent_addGrpC;
+            struct MovementEvent_addGrpC_t*	 MovementEvent_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -366,7 +367,7 @@ typedef struct Reg_NodeAttributeSetXY {
 	struct Reg_NodeAttributeSetXY__regExtValue {
 		Reg_NodeAttributeSetXY__regExtValue_PR present;
 		union Reg_NodeAttributeSetXY__regExtValue_u {
-			NodeAttributeSet_addGrpC_t	 NodeAttributeSet_addGrpC;
+			struct NodeAttributeSet_addGrpC_t*	 NodeAttributeSet_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -395,7 +396,7 @@ typedef struct Reg_Position3D {
 	struct Reg_Position3D__regExtValue {
 		Reg_Position3D__regExtValue_PR present;
 		union Reg_Position3D__regExtValue_u {
-			Position3D_addGrpC_t	 Position3D_addGrpC;
+            struct Position3D_addGrpC_t*	 Position3D_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -410,7 +411,7 @@ typedef struct Reg_RequestorDescription {
 	struct Reg_RequestorDescription__regExtValue {
 		Reg_RequestorDescription__regExtValue_PR present;
 		union Reg_RequestorDescription__regExtValue_u {
-			RequestorDescription_addGrpC_t	 RequestorDescription_addGrpC;
+            struct RequestorDescription_addGrpC_t*	 RequestorDescription_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -439,7 +440,7 @@ typedef struct Reg_RestrictionUserType {
 	struct Reg_RestrictionUserType__regExtValue {
 		Reg_RestrictionUserType__regExtValue_PR present;
 		union Reg_RestrictionUserType__regExtValue_u {
-			RestrictionUserType_addGrpC_t	 RestrictionUserType_addGrpC;
+            struct RestrictionUserType_addGrpC_t*	 RestrictionUserType_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -524,7 +525,7 @@ typedef struct Reg_SignalStatusPackage {
 	struct Reg_SignalStatusPackage__regExtValue {
 		Reg_SignalStatusPackage__regExtValue_PR present;
 		union Reg_SignalStatusPackage__regExtValue_u {
-			SignalStatusPackage_addGrpC_t	 SignalStatusPackage_addGrpC;
+			struct SignalStatusPackage_addGrpC_t*	 SignalStatusPackage_addGrpC;
 		} choice;
 		
 		/* Context for parsing across buffer boundaries */
@@ -621,6 +622,17 @@ extern asn_TYPE_member_t asn_MBR_Reg_SignalStatusPackage_79[2];
 #ifdef __cplusplus
 }
 #endif
+
+#include "ConnectionManeuverAssist-addGrpC.h"
+#include "ConnectionTrajectory-addGrpC.h"
+#include "IntersectionState-addGrpC.h"
+#include "LaneAttributes-addGrpC.h"
+#include "MovementEvent-addGrpC.h"
+#include "NodeAttributeSet-addGrpC.h"
+#include "Position3D-addGrpC.h"
+#include "RequestorDescription-addGrpC.h"
+#include "RestrictionUserType-addGrpC.h"
+#include "SignalStatusPackage-addGrpC.h"
 
 #endif	/* _RegionalExtension_H_ */
 #include "asn_internal.h"
