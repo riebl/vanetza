@@ -11,7 +11,7 @@ set(_support_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/support")
 option(VANETZA_ASN1_WITH_ASN1C "Enable asn1c targets" OFF)
 if(VANETZA_ASN1_WITH_ASN1C)
     find_package(ASN1C 0.9.29 REQUIRED MODULE)
-    set(ASN1C_FLAGS "-fcompound-names -fincludes-quoted -no-gen-example" CACHE STRING "asn1c compiler options")
+    set(ASN1C_FLAGS "-fcompound-names -fno-include-deps -fincludes-quoted -no-gen-example" CACHE STRING "asn1c compiler options")
     mark_as_advanced(ASN1C_FLAGS)
     string(REPLACE " " ";" _asn1c_flags "${ASN1C_FLAGS}")
 

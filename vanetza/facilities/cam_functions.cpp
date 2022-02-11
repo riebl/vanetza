@@ -10,6 +10,9 @@
 #include <boost/units/systems/angle/degrees.hpp>
 #include <algorithm>
 #include <limits>
+#include <vanetza/asn1/its/PathPoint.h>
+#include <vanetza/asn1/its/SpecialVehicleContainer.h>
+
 #undef min
 
 namespace vanetza
@@ -22,7 +25,7 @@ using vanetza::units::Angle;
 static const auto microdegree = units::degree * units::si::micro;
 
 // TODO:  C2C-CC BSP allows up to 500m history for CAMs, we provide just minimal required history
-void copy(const facilities::PathHistory& ph, BasicVehicleContainerLowFrequency& container)
+void copy(const facilities::PathHistory& ph, BasicVehicleContainerLowFrequency_t& container)
 {
     static const std::size_t scMaxPathPoints = 23;
     static const boost::posix_time::time_duration scMaxDeltaTime = boost::posix_time::millisec(655350);
@@ -38,7 +41,7 @@ void copy(const facilities::PathHistory& ph, BasicVehicleContainerLowFrequency& 
         auto delta_longitude = point.longitude - ref.longitude; // positive: point is east
 
         while (!delta_time.is_negative() && path_points < scMaxPathPoints) {
-            ::PathPoint* path_point = asn1::allocate<::PathPoint>();
+            auto path_point = asn1::allocate<PathPoint_t>();
             path_point->pathDeltaTime = asn1::allocate<PathDeltaTime_t>();
             *(path_point->pathDeltaTime) = std::min(delta_time, scMaxDeltaTime).total_milliseconds() /
                 10 * PathDeltaTime::PathDeltaTime_tenMilliSecondsInPast;

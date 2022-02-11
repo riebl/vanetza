@@ -9,9 +9,7 @@
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
-
-// forward declaration of asn1c generated struct
-struct BasicVehicleContainerLowFrequency;
+#include <vanetza/asn1/its/BasicVehicleContainerLowFrequency.h>
 
 namespace vanetza
 {
@@ -29,7 +27,7 @@ class PathHistory;
  * \param Facilities' path history object (source)
  * \param ASN.1 CAM container (destination)
  */
-void copy(const PathHistory&, BasicVehicleContainerLowFrequency&);
+void copy(const PathHistory&, BasicVehicleContainerLowFrequency_t&);
 
 /**
  * Check if difference of two given heading values is within a limit
