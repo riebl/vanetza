@@ -12,7 +12,6 @@ its/AdvisorySpeedList.c
 its/AdvisorySpeedType.c
 its/AlacarteContainer.c
 its/AllowedManeuvers.c
-its/AlphabetIndicator.c
 its/Altitude.c
 its/AltitudeConfidence.c
 its/AltitudeValue.c
@@ -27,7 +26,6 @@ its/AreaEllipse.c
 its/AreaPolygon.c
 its/AreaRadial.c
 its/AreaRectangle.c
-its/AviEriDateTime.c
 its/BasicContainer.c
 its/BasicVehicleContainerHighFrequency.c
 its/BasicVehicleContainerLowFrequency.c
@@ -35,13 +33,6 @@ its/BasicVehicleRole.c
 its/BatteryStatus.c
 its/CAM.c
 its/CPM.c
-its/CS1.c
-its/CS2.c
-its/CS3.c
-its/CS4.c
-its/CS5.c
-its/CS7.c
-its/CS8.c
 its/CamParameters.c
 its/CartesianAngle.c
 its/CartesianAngleValue.c
@@ -61,7 +52,6 @@ its/ConnectionManeuverAssist.c
 its/ConnectionTrajectory-addGrpC.c
 its/ConnectsToList.c
 its/CoopAwareness.c
-its/CountryCode.c
 its/CpmManagementContainer.c
 its/CpmParameters.c
 its/Curvature.c
@@ -123,14 +113,12 @@ its/FreeSpaceAddendum.c
 its/FreeSpaceAddendumContainer.c
 its/FreeSpaceArea.c
 its/FreeSpaceConfidence.c
-its/FreightContainerData.c
 its/FrontOverhang.c
 its/FuelType.c
 its/FullPositionVector.c
 its/GNSSstatus.c
 its/GenerationDeltaTime.c
 its/GenericLane.c
-its/GeoGraphicalLimit.c
 its/HardShoulderStatus.c
 its/HazardousLocation-AnimalOnTheRoadSubCauseCode.c
 its/HazardousLocation-DangerousCurveSubCauseCode.c
@@ -159,7 +147,6 @@ its/IntersectionState.c
 its/IntersectionStateList.c
 its/IntersectionStatusObject.c
 its/Iso3833VehicleType.c
-its/IssuerIdentifier.c
 its/ItineraryPath.c
 its/ItsPduHeader.c
 its/ItsStationPosition.c
@@ -189,7 +176,6 @@ its/LateralAccelerationValue.c
 its/Latitude.c
 its/LayerID.c
 its/LayerType.c
-its/LicPlateNumber.c
 its/LightBarSirenInUse.c
 its/LocationContainer.c
 its/Longitude.c
@@ -202,7 +188,6 @@ its/LowFrequencyContainer.c
 its/MAPEM.c
 its/ManagementContainer.c
 its/ManeuverAssistList.c
-its/ManufacturerIdentifier.c
 its/MapData-addGrpC.c
 its/MapData.c
 its/MatchedPosition.c
@@ -364,8 +349,6 @@ its/SensorInformation.c
 its/SensorInformationContainer.c
 its/SensorType.c
 its/SequenceNumber.c
-its/ServiceApplicationLimit.c
-its/ServiceNumber.c
 its/ShadowingApplies.c
 its/SignalControlZone.c
 its/SignalGroupID.c
@@ -399,7 +382,6 @@ its/SpeedLimitType.c
 its/SpeedValue.c
 its/SpeedValueExtended.c
 its/SpeedandHeadingandThrottleConfidence.c
-its/StartTime.c
 its/StationDataContainer.c
 its/StationID.c
 its/StationType.c
@@ -409,9 +391,7 @@ its/StationaryVehicleSubCauseCode.c
 its/SteeringWheelAngle.c
 its/SteeringWheelAngleConfidence.c
 its/SteeringWheelAngleValue.c
-its/StopTime.c
 its/SubCauseCodeType.c
-its/TaxCode.c
 its/Temperature.c
 its/TemporaryID.c
 its/Termination.c

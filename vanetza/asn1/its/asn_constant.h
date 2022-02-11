@@ -10,7 +10,6 @@ extern "C" {
 #endif
 
 #define defaultValidity (600)
-#define version (1)
 
 
 #ifdef __cplusplus
