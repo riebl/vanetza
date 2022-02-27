@@ -5,7 +5,7 @@
 #include <vanetza/units/length.hpp>
 #include <cmath>
 
-static_assert(GPSD_API_MAJOR_VERSION >= 5 && GPSD_API_MAJOR_VERSION <= 11, "libgps has incompatible API");
+static_assert(GPSD_API_MAJOR_VERSION >= 5 && GPSD_API_MAJOR_VERSION <= 12, "libgps has incompatible API");
 
 namespace
 {
@@ -34,6 +34,16 @@ constexpr int gpsd_status(const gps_data_t& data)
 #endif
 }
 
+#if GPSD_API_MAJOR_VERSION < 12
+    constexpr int cStatusFix = STATUS_FIX;
+#else
+    constexpr int cStatusFix = STATUS_GPS;
+#endif
+
+constexpr bool gpsd_has_useful_fix(const gps_data_t& data)
+{
+    return gpsd_status(data) >= cStatusFix && data.fix.mode >= MODE_2D;
+}
 
 vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
 {
@@ -114,7 +124,7 @@ void GpsPositionProvider::fetch_position_fix()
         throw GpsPositioningException(errno);
     }
 
-    if (gpsd_status(gps_data) >= STATUS_FIX && gps_data.fix.mode >= MODE_2D) {
+    if (gpsd_has_useful_fix(gps_data)) {
         using namespace vanetza::units;
         static const TrueNorth north = TrueNorth::from_value(0.0);
 
