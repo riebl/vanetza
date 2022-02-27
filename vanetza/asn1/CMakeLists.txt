@@ -19,9 +19,28 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/TS102894-2v131-CDD.asn
         ${PROJECT_SOURCE_DIR}/asn1/EN302637-2v141-CAM.asn
         ${PROJECT_SOURCE_DIR}/asn1/EN302637-3v131-DENM.asn
-        ${PROJECT_SOURCE_DIR}/asn1/ISO_TS_19091_CPM.asn
-        ${PROJECT_SOURCE_DIR}/asn1/TR103562v211.asn
     )
+
+    set(_its_asn1_files_depending_on_iso
+        ${PROJECT_SOURCE_DIR}/asn1/TR103562v211-CPM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-MAPEM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-RTCMEM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-SPATEM.asn
+    )
+
+    option(VANETZA_ASN1_WITH_ISO "Fetch ISO ASN.1 files for a more complete ITS message set" OFF)
+    if(VANETZA_ASN1_WITH_ISO)
+        set(_iso_asn1_files ISO14816.asn ISO19091.asn ISO24534-3.asn)
+        list(TRANSFORM _iso_asn1_files PREPEND ${PROJECT_BINARY_DIR}/iso/)
+        add_custom_command(OUTPUT ${_iso_asn1_files}
+            COMMAND ${CMAKE_COMMAND} -DDIRECTORY=${PROJECT_BINARY_DIR}/iso -P fetch_iso_asn1_files.cmake
+            COMMENT "Fetch and patch ISO 19091 ASN.1 file"
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+            VERBATIM)
+
+        set(_its_asn1_files ${_iso_asn1_files} ${_its_asn1_files} ${_its_asn1_files_depending_on_iso})
+    endif()
+
     set(_pki_asn1_files
         ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-BaseTypes.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-MessagesCa.asn

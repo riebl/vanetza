@@ -1,0 +1,76 @@
+diff --git a/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.c b/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.c
+index dccb3d42..01dbf39f 100644
+--- a/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.c
++++ b/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.c
+@@ -6,6 +6,7 @@
+  */
+ 
+ #include "ConnectionManeuverAssist-addGrpC.h"
++#include "ItsStationPositionList.h"
+ 
+ static asn_TYPE_member_t asn_MBR_ConnectionManeuverAssist_addGrpC_1[] = {
+ 	{ ATF_POINTER, 1, offsetof(struct ConnectionManeuverAssist_addGrpC, itsStationPosition),
+diff --git a/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.h b/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.h
+index 07644b35..eaa7f0ca 100644
+--- a/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.h
++++ b/vanetza/asn1/its/ConnectionManeuverAssist-addGrpC.h
+@@ -41,7 +41,7 @@ extern asn_TYPE_descriptor_t asn_DEF_ConnectionManeuverAssist_addGrpC;
+ #endif
+ 
+ /* Referred external types */
+-#include "ItsStationPositionList.h"
++/* #include "ItsStationPositionList.h" */
+ 
+ #endif	/* _ConnectionManeuverAssist_addGrpC_H_ */
+ #include "asn_internal.h"
+diff --git a/vanetza/asn1/its/MapData-addGrpC.c b/vanetza/asn1/its/MapData-addGrpC.c
+index 9e0f762d..d8eee815 100644
+--- a/vanetza/asn1/its/MapData-addGrpC.c
++++ b/vanetza/asn1/its/MapData-addGrpC.c
+@@ -6,6 +6,7 @@
+  */
+ 
+ #include "MapData-addGrpC.h"
++#include "SignalHeadLocationList.h"
+ 
+ static asn_TYPE_member_t asn_MBR_MapData_addGrpC_1[] = {
+ 	{ ATF_POINTER, 1, offsetof(struct MapData_addGrpC, signalHeadLocations),
+diff --git a/vanetza/asn1/its/MapData-addGrpC.h b/vanetza/asn1/its/MapData-addGrpC.h
+index 4c1e6a1e..78102559 100644
+--- a/vanetza/asn1/its/MapData-addGrpC.h
++++ b/vanetza/asn1/its/MapData-addGrpC.h
+@@ -41,7 +41,7 @@ extern asn_TYPE_descriptor_t asn_DEF_MapData_addGrpC;
+ #endif
+ 
+ /* Referred external types */
+-#include "SignalHeadLocationList.h"
++/* #include "SignalHeadLocationList.h" */
+ 
+ #endif	/* _MapData_addGrpC_H_ */
+ #include "asn_internal.h"
+diff --git a/vanetza/asn1/its/NodeSetXY.c b/vanetza/asn1/its/NodeSetXY.c
+index 99e08a87..9769bc94 100644
+--- a/vanetza/asn1/its/NodeSetXY.c
++++ b/vanetza/asn1/its/NodeSetXY.c
+@@ -6,6 +6,7 @@
+  */
+ 
+ #include "NodeSetXY.h"
++#include "NodeXY.h"
+ 
+ #if !defined(ASN_DISABLE_OER_SUPPORT)
+ static asn_oer_constraints_t asn_OER_type_NodeSetXY_constr_1 CC_NOTUSED = {
+diff --git a/vanetza/asn1/its/NodeSetXY.h b/vanetza/asn1/its/NodeSetXY.h
+index a35c02cc..af775c4d 100644
+--- a/vanetza/asn1/its/NodeSetXY.h
++++ b/vanetza/asn1/its/NodeSetXY.h
+@@ -41,7 +41,7 @@ extern asn_per_constraints_t asn_PER_type_NodeSetXY_constr_1;
+ #endif
+ 
+ /* Referred external types */
+-#include "NodeXY.h"
++/* #include "NodeXY.h" */
+ 
+ #endif	/* _NodeSetXY_H_ */
+ #include "asn_internal.h"
+
