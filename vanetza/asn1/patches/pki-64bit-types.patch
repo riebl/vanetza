@@ -1,0 +1,135 @@
+diff --git a/vanetza/asn1/pki/Time64.c b/vanetza/asn1/pki/Time64.c
+index a5113b83..76b37fd2 100644
+--- a/vanetza/asn1/pki/Time64.c
++++ b/vanetza/asn1/pki/Time64.c
+@@ -11,7 +11,7 @@ int
+ Time64_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
+ 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+ 	const Uint64_t *st = (const Uint64_t *)sptr;
+-	long value;
++	uintmax_t value;
+ 	
+ 	if(!sptr) {
+ 		ASN__CTFAIL(app_key, td, sptr,
+@@ -20,14 +20,14 @@ Time64_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
+ 		return -1;
+ 	}
+ 	
+-	if(asn_INTEGER2long(st, &value)) {
++	if(asn_INTEGER2umax(st, &value)) {
+ 		ASN__CTFAIL(app_key, td, sptr,
+ 			"%s: value too large (%s:%d)",
+ 			td->name, __FILE__, __LINE__);
+ 		return -1;
+ 	}
+ 	
+-	if((value >= 0L && value <= 18446744073709551615L)) {
++	if((value >= 0UL && value <= 18446744073709551615UL)) {
+ 		/* Constraint check succeeded */
+ 		return 0;
+ 	} else {
+@@ -49,10 +49,15 @@ static asn_oer_constraints_t asn_OER_type_Time64_constr_1 CC_NOTUSED = {
+ #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+ #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+ asn_per_constraints_t asn_PER_type_Time64_constr_1 CC_NOTUSED = {
+-	{ APC_CONSTRAINED,	 64, -1,  0,  18446744073709551615 }	/* (0..18446744073709551615) */,
++	{ APC_CONSTRAINED,	 64, -1,  0,  18446744073709551615ul }	/* (0..18446744073709551615) */,
+ 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+ 	0, 0	/* No PER value map */
+ };
++const asn_INTEGER_specifics_t asn_SPC_Time64_specs_1 = {
++	0,	0,	0,	0,	0,
++	0,	/* Native long size */
++	1	/* Unsigned representation */
++};
+ #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+ static const ber_tlv_tag_t asn_DEF_Time64_tags_1[] = {
+ 	(ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
+@@ -77,6 +82,6 @@ asn_TYPE_descriptor_t asn_DEF_Time64 = {
+ 		Time64_constraint
+ 	},
+ 	0, 0,	/* No members */
+-	0	/* No specifics */
++	&asn_SPC_Time64_specs_1	/* Manually added specifics */
+ };
+ 
+diff --git a/vanetza/asn1/pki/Time64.h b/vanetza/asn1/pki/Time64.h
+index c34f9236..751096b1 100644
+--- a/vanetza/asn1/pki/Time64.h
++++ b/vanetza/asn1/pki/Time64.h
+@@ -24,6 +24,7 @@ typedef Uint64_t	 Time64_t;
+ /* Implementation */
+ extern asn_per_constraints_t asn_PER_type_Time64_constr_1;
+ extern asn_TYPE_descriptor_t asn_DEF_Time64;
++extern const asn_INTEGER_specifics_t asn_SPC_Time64_specs_1;
+ asn_struct_free_f Time64_free;
+ asn_struct_print_f Time64_print;
+ asn_constr_check_f Time64_constraint;
+diff --git a/vanetza/asn1/pki/Uint64.c b/vanetza/asn1/pki/Uint64.c
+index 054ab239..644c7640 100644
+--- a/vanetza/asn1/pki/Uint64.c
++++ b/vanetza/asn1/pki/Uint64.c
+@@ -11,7 +11,7 @@ int
+ Uint64_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
+ 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+ 	const INTEGER_t *st = (const INTEGER_t *)sptr;
+-	long value;
++	uintmax_t value;
+ 	
+ 	if(!sptr) {
+ 		ASN__CTFAIL(app_key, td, sptr,
+@@ -20,14 +20,14 @@ Uint64_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
+ 		return -1;
+ 	}
+ 	
+-	if(asn_INTEGER2long(st, &value)) {
++	if(asn_INTEGER2umax(st, &value)) {
+ 		ASN__CTFAIL(app_key, td, sptr,
+ 			"%s: value too large (%s:%d)",
+ 			td->name, __FILE__, __LINE__);
+ 		return -1;
+ 	}
+ 	
+-	if((value >= 0L && value <= 18446744073709551615L)) {
++	if((value >= 0UL && value <= 18446744073709551615UL)) {
+ 		/* Constraint check succeeded */
+ 		return 0;
+ 	} else {
+@@ -49,10 +49,15 @@ static asn_oer_constraints_t asn_OER_type_Uint64_constr_1 CC_NOTUSED = {
+ #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+ #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+ asn_per_constraints_t asn_PER_type_Uint64_constr_1 CC_NOTUSED = {
+-	{ APC_CONSTRAINED,	 64, -1,  0,  18446744073709551615 }	/* (0..18446744073709551615) */,
++	{ APC_CONSTRAINED,	 64, -1,  0,  18446744073709551615ul }	/* (0..18446744073709551615) */,
+ 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
+ 	0, 0	/* No PER value map */
+ };
++const asn_INTEGER_specifics_t asn_SPC_Uint64_specs_1 = {
++	0,	0,	0,	0,	0,
++	0,	/* Native long size */
++	1	/* Unsigned representation */
++};
+ #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+ static const ber_tlv_tag_t asn_DEF_Uint64_tags_1[] = {
+ 	(ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
+@@ -77,6 +82,6 @@ asn_TYPE_descriptor_t asn_DEF_Uint64 = {
+ 		Uint64_constraint
+ 	},
+ 	0, 0,	/* No members */
+-	0	/* No specifics */
++	&asn_SPC_Uint64_specs_1	/* Manually added specifics */
+ };
+ 
+diff --git a/vanetza/asn1/pki/Uint64.h b/vanetza/asn1/pki/Uint64.h
+index 34073918..944e79d0 100644
+--- a/vanetza/asn1/pki/Uint64.h
++++ b/vanetza/asn1/pki/Uint64.h
+@@ -24,6 +24,7 @@ typedef INTEGER_t	 Uint64_t;
+ /* Implementation */
+ extern asn_per_constraints_t asn_PER_type_Uint64_constr_1;
+ extern asn_TYPE_descriptor_t asn_DEF_Uint64;
++extern const asn_INTEGER_specifics_t asn_SPC_Uint64_specs_1;
+ asn_struct_free_f Uint64_free;
+ asn_struct_print_f Uint64_print;
+ asn_constr_check_f Uint64_constraint;
+
