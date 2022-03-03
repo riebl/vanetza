@@ -134,6 +134,8 @@ public:
     void operator()(const CertificateV3& cert) const
     {
         matches_.push_back(cert);
+        // Renew CertificateV3
+        cache_.refresh(handle_, std::chrono::seconds(60));
     }
 private:
     std::list<CertificateVariant>& matches_;
