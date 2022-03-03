@@ -3,11 +3,8 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef ASN_DISABLE_OER_SUPPORT
-
 #include "asn_internal.h"
 #include "NativeInteger.h"
-#include <errno.h>
 
 asn_dec_rval_t
 NativeInteger_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
@@ -95,5 +92,3 @@ NativeInteger_encode_oer(const asn_TYPE_descriptor_t *td,
         return er;
     }
 }
-
-#endif  /* ASN_DISABLE_OER_SUPPORT */

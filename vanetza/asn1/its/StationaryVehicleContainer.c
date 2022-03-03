@@ -13,7 +13,15 @@ asn_TYPE_member_t asn_MBR_StationaryVehicleContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_StationarySince,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"stationarySince"
 		},
@@ -22,7 +30,15 @@ asn_TYPE_member_t asn_MBR_StationaryVehicleContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_CauseCode,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"stationaryCause"
 		},
@@ -31,7 +47,15 @@ asn_TYPE_member_t asn_MBR_StationaryVehicleContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_DangerousGoodsExtended,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"carryingDangerousGoods"
 		},
@@ -40,7 +64,15 @@ asn_TYPE_member_t asn_MBR_StationaryVehicleContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NumberOfOccupants,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"numberOfOccupants"
 		},
@@ -49,7 +81,15 @@ asn_TYPE_member_t asn_MBR_StationaryVehicleContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_VehicleIdentification,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"vehicleIdentification"
 		},
@@ -58,7 +98,15 @@ asn_TYPE_member_t asn_MBR_StationaryVehicleContainer_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_EnergyStorageType,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"energyStorageType"
 		},
@@ -94,7 +142,15 @@ asn_TYPE_descriptor_t asn_DEF_StationaryVehicleContainer = {
 	asn_DEF_StationaryVehicleContainer_tags_1,	/* Same as above */
 	sizeof(asn_DEF_StationaryVehicleContainer_tags_1)
 		/sizeof(asn_DEF_StationaryVehicleContainer_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_StationaryVehicleContainer_1,
 	6,	/* Elements count */
 	&asn_SPC_StationaryVehicleContainer_specs_1	/* Additional specs */

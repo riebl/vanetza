@@ -49,10 +49,14 @@ include(UseVanetza)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find project dependencies
-find_package(Boost 1.58 REQUIRED COMPONENTS date_time)
+set(Boost_COMPONENTS date_time) # used by VanetzaConfig generator
+find_package(Boost 1.58 REQUIRED COMPONENTS ${Boost_COMPONENTS})
 # query optional Boost components one by one quietly
 foreach(component IN ITEMS program_options system)
   find_package(Boost 1.58 QUIET COMPONENTS ${component})
+  if (Boost_${component}_FOUND)
+    list(APPEND Boost_COMPONENTS ${component})
+  endif()
 endforeach()
 include(CompatBoostTargets)
 find_package(CryptoPP 5.6.1 REQUIRED)

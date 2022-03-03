@@ -532,6 +532,30 @@ TEST_P(Routing, forwarding_selection_inaccurate_position)
     EXPECT_EQ(cars[0], net.get_interface(cars[3])->last_request.destination);
 }
 
+/*
+ * Packet lifetime reported to access layer's request interface
+ * shall be reduced by GN forwarders as accurately as possible.
+ * Note: The reported lifetime is only as accurate as GN Lifetime field can encode it.
+ *       Even in the best case, lifetime is not reduced finer than in 50ms steps.
+ */
+TEST_P(Routing, forwarding_remaining_lifetime)
+{
+    GbcDataRequest gbc_request(net.get_mib(), aid::DEN);
+    gbc_request.destination = circle_dest_area(18.0_m, 20.0_m, 4.0_m);
+    gbc_request.upper_protocol = UpperProtocol::BTP_B;
+    gbc_request.maximum_lifetime = Lifetime { Lifetime::Base::One_Second, 3 };
+    auto confirm = net.get_router(cars[4])->request(gbc_request, create_packet());
+    ASSERT_TRUE(confirm.accepted());
+
+    EXPECT_EQ(std::chrono::seconds(3), net.get_interface(cars[4])->last_request.lifetime);
+    EXPECT_EQ(0, net.get_interface(cars[3])->requests);
+
+    net.advance_time(std::chrono::seconds(1));
+    EXPECT_EQ(1, net.get_interface(cars[3])->requests);
+    auto forwarding_remaining_lifetime = net.get_interface(cars[3])->last_request.lifetime;
+    EXPECT_GE(forwarding_remaining_lifetime, std::chrono::milliseconds(2900));
+    EXPECT_LT(forwarding_remaining_lifetime, std::chrono::seconds(3));
+}
 
 static const auto PacketHandlingValues = ::testing::Combine(
             ::testing::Values(

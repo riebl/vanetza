@@ -16,21 +16,38 @@ typedef OCTET_STRING_t UTF8String_t;	/* Implemented via OCTET STRING */
 extern asn_TYPE_descriptor_t asn_DEF_UTF8String;
 extern asn_TYPE_operation_t asn_OP_UTF8String;
 
-asn_struct_print_f UTF8String_print;
-asn_constr_check_f UTF8String_constraint;
-asn_random_fill_f  UTF8String_random_fill;
+#define UTF8String_free OCTET_STRING_free
 
-#define UTF8String_free         OCTET_STRING_free
-#define UTF8String_compare      OCTET_STRING_compare
-#define UTF8String_constraint   UTF8String_constraint
-#define UTF8String_decode_ber   OCTET_STRING_decode_ber
-#define UTF8String_encode_der   OCTET_STRING_encode_der
-#define UTF8String_decode_xer   OCTET_STRING_decode_xer_utf8
-#define UTF8String_encode_xer   OCTET_STRING_encode_xer_utf8
-#define UTF8String_decode_uper  OCTET_STRING_decode_uper
-#define UTF8String_encode_uper  OCTET_STRING_encode_uper
-#define UTF8String_decode_aper  OCTET_STRING_decode_aper
-#define UTF8String_encode_aper  OCTET_STRING_encode_aper
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+asn_struct_print_f UTF8String_print;
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
+#define UTF8String_compare OCTET_STRING_compare
+
+asn_constr_check_f UTF8String_constraint;
+
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+#define UTF8String_decode_ber OCTET_STRING_decode_ber
+#define UTF8String_encode_der OCTET_STRING_encode_der
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
+#define UTF8String_decode_xer OCTET_STRING_decode_xer_utf8
+#define UTF8String_encode_xer OCTET_STRING_encode_xer_utf8
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+#define UTF8String_decode_uper OCTET_STRING_decode_uper
+#define UTF8String_encode_uper OCTET_STRING_encode_uper
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+#define UTF8String_decode_aper OCTET_STRING_decode_aper
+#define UTF8String_encode_aper OCTET_STRING_encode_aper
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+asn_random_fill_f UTF8String_random_fill;
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 /*
  * Returns length of the given UTF-8 string in characters,

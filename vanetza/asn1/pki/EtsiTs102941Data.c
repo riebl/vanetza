@@ -21,7 +21,7 @@ memb_version_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	value = *(const long *)sptr;
 	
-	if((value == 1)) {
+	if((value == 1L)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -32,21 +32,33 @@ memb_version_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_version_constr_2 CC_NOTUSED = {
 	{ 1, 1 }	/* (1..1) */,
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_version_constr_2 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 0,  0,  1,  1 }	/* (1..1) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static asn_TYPE_member_t asn_MBR_EtsiTs102941Data_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EtsiTs102941Data, version),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Version,
 		0,
-		{ &asn_OER_memb_version_constr_2, &asn_PER_memb_version_constr_2,  memb_version_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_version_constr_2,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_version_constr_2,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_version_constraint_1
+		},
 		0, 0, /* No default value */
 		"version"
 		},
@@ -55,7 +67,15 @@ static asn_TYPE_member_t asn_MBR_EtsiTs102941Data_1[] = {
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_EtsiTs102941DataContent,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"content"
 		},
@@ -85,7 +105,15 @@ asn_TYPE_descriptor_t asn_DEF_EtsiTs102941Data = {
 	asn_DEF_EtsiTs102941Data_tags_1,	/* Same as above */
 	sizeof(asn_DEF_EtsiTs102941Data_tags_1)
 		/sizeof(asn_DEF_EtsiTs102941Data_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_EtsiTs102941Data_1,
 	2,	/* Elements count */
 	&asn_SPC_EtsiTs102941Data_specs_1	/* Additional specs */

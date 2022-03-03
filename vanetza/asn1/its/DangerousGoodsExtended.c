@@ -15,7 +15,7 @@ static int check_permitted_alphabet_7(const void *sptr) {
 	
 	for(; ch < end; ch++) {
 		uint8_t cv = *ch;
-		if(!(cv <= 127)) return -1;
+		if(!(cv <= 127UL)) return -1;
 	}
 	return 0;
 }
@@ -34,7 +34,7 @@ memb_unNumber_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	
 	value = *(const long *)sptr;
 	
-	if((value >= 0 && value <= 9999)) {
+	if((value >= 0L && value <= 9999L)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -60,7 +60,7 @@ memb_emergencyActionCode_constraint_1(const asn_TYPE_descriptor_t *td, const voi
 	
 	size = st->size;
 	
-	if((size >= 1 && size <= 24)
+	if((size >= 1UL && size <= 24UL)
 		 && !check_permitted_alphabet_7(st)) {
 		/* Constraint check succeeded */
 		return 0;
@@ -93,7 +93,7 @@ memb_companyName_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 		return -1;
 	}
 	
-	if((size >= 1 && size <= 24)) {
+	if((size >= 1UL && size <= 24UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -104,37 +104,57 @@ memb_companyName_constraint_1(const asn_TYPE_descriptor_t *td, const void *sptr,
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_unNumber_constr_3 CC_NOTUSED = {
 	{ 2, 1 }	/* (0..9999) */,
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_unNumber_constr_3 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 14,  14,  0,  9999 }	/* (0..9999) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_emergencyActionCode_constr_7 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(1..24)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_emergencyActionCode_constr_7 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 7,  7,  0,  127 }	/* (0..127) */,
 	{ APC_CONSTRAINED,	 5,  5,  1,  24 }	/* (SIZE(1..24)) */,
 	0, 0	/* No PER character map necessary */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_companyName_constr_9 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(0..MAX)) */};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_companyName_constr_9 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct DangerousGoodsExtended, dangerousGoodsType),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_DangerousGoodsBasic,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"dangerousGoodsType"
 		},
@@ -143,7 +163,15 @@ asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NativeInteger,
 		0,
-		{ &asn_OER_memb_unNumber_constr_3, &asn_PER_memb_unNumber_constr_3,  memb_unNumber_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_unNumber_constr_3,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_unNumber_constr_3,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_unNumber_constraint_1
+		},
 		0, 0, /* No default value */
 		"unNumber"
 		},
@@ -152,7 +180,15 @@ asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_BOOLEAN,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"elevatedTemperature"
 		},
@@ -161,7 +197,15 @@ asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_BOOLEAN,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"tunnelsRestricted"
 		},
@@ -170,7 +214,15 @@ asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_BOOLEAN,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"limitedQuantity"
 		},
@@ -179,7 +231,15 @@ asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_IA5String,
 		0,
-		{ &asn_OER_memb_emergencyActionCode_constr_7, &asn_PER_memb_emergencyActionCode_constr_7,  memb_emergencyActionCode_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_emergencyActionCode_constr_7,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_emergencyActionCode_constr_7,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_emergencyActionCode_constraint_1
+		},
 		0, 0, /* No default value */
 		"emergencyActionCode"
 		},
@@ -188,7 +248,15 @@ asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PhoneNumber,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"phoneNumber"
 		},
@@ -197,7 +265,15 @@ asn_TYPE_member_t asn_MBR_DangerousGoodsExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_UTF8String,
 		0,
-		{ &asn_OER_memb_companyName_constr_9, &asn_PER_memb_companyName_constr_9,  memb_companyName_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_companyName_constr_9,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_companyName_constr_9,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_companyName_constraint_1
+		},
 		0, 0, /* No default value */
 		"companyName"
 		},
@@ -235,7 +311,15 @@ asn_TYPE_descriptor_t asn_DEF_DangerousGoodsExtended = {
 	asn_DEF_DangerousGoodsExtended_tags_1,	/* Same as above */
 	sizeof(asn_DEF_DangerousGoodsExtended_tags_1)
 		/sizeof(asn_DEF_DangerousGoodsExtended_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_DangerousGoodsExtended_1,
 	8,	/* Elements count */
 	&asn_SPC_DangerousGoodsExtended_specs_1	/* Additional specs */

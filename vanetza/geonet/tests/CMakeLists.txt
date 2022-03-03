@@ -29,4 +29,4 @@ add_gtest(TrafficClass traffic_class.cpp)
 add_gtest(Routing
     SOURCES network_topology.cpp routing.cpp
     LINK_LIBRARIES GeographicLib::GeographicLib)
-add_gtest(RouterRequest router_request)
+add_gtest(RouterRequest router_request.cpp)

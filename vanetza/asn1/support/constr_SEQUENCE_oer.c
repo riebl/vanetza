@@ -3,12 +3,10 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef ASN_DISABLE_OER_SUPPORT
-
 #include "asn_internal.h"
 #include "constr_SEQUENCE.h"
+#include "asn_bit_data.h"
 #include "OPEN_TYPE.h"
-#include <errno.h>
 
 /*
  * This macro "eats" the part of the buffer which is definitely "consumed",
@@ -557,5 +555,3 @@ SEQUENCE_encode_oer(const asn_TYPE_descriptor_t *td,
         ASN__ENCODED_OK(er);
     }
 }
-
-#endif  /* ASN_DISABLE_OER_SUPPORT */

@@ -21,7 +21,7 @@ memb_protocolVersion_constraint_1(const asn_TYPE_descriptor_t *td, const void *s
 	
 	value = *(const long *)sptr;
 	
-	if((value == 3)) {
+	if((value == 3L)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -32,21 +32,33 @@ memb_protocolVersion_constraint_1(const asn_TYPE_descriptor_t *td, const void *s
 	}
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_protocolVersion_constr_2 CC_NOTUSED = {
 	{ 1, 1 }	/* (3..3) */,
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_protocolVersion_constr_2 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 0,  0,  3,  3 }	/* (3..3) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_Ieee1609Dot2Data_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Ieee1609Dot2Data, protocolVersion),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_Uint8,
 		0,
-		{ &asn_OER_memb_protocolVersion_constr_2, &asn_PER_memb_protocolVersion_constr_2,  memb_protocolVersion_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_protocolVersion_constr_2,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_protocolVersion_constr_2,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_protocolVersion_constraint_1
+		},
 		0, 0, /* No default value */
 		"protocolVersion"
 		},
@@ -55,7 +67,15 @@ asn_TYPE_member_t asn_MBR_Ieee1609Dot2Data_1[] = {
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_Ieee1609Dot2Content,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"content"
 		},
@@ -85,7 +105,15 @@ asn_TYPE_descriptor_t asn_DEF_Ieee1609Dot2Data = {
 	asn_DEF_Ieee1609Dot2Data_tags_1,	/* Same as above */
 	sizeof(asn_DEF_Ieee1609Dot2Data_tags_1)
 		/sizeof(asn_DEF_Ieee1609Dot2Data_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_Ieee1609Dot2Data_1,
 	2,	/* Elements count */
 	&asn_SPC_Ieee1609Dot2Data_specs_1	/* Additional specs */

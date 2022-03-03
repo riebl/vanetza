@@ -26,21 +26,33 @@ memb_requestedSubjectAttributes_constraint_1(const asn_TYPE_descriptor_t *td, co
 	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
 }
 
+#if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_requestedSubjectAttributes_constr_5 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 static asn_per_constraints_t asn_PER_memb_requestedSubjectAttributes_constr_5 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static asn_TYPE_member_t asn_MBR_InnerEcRequest_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct InnerEcRequest, itsId),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_OCTET_STRING,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"itsId"
 		},
@@ -49,7 +61,15 @@ static asn_TYPE_member_t asn_MBR_InnerEcRequest_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_CertificateFormat,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"certificateFormat"
 		},
@@ -58,7 +78,15 @@ static asn_TYPE_member_t asn_MBR_InnerEcRequest_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PublicKeys,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"publicKeys"
 		},
@@ -67,7 +95,15 @@ static asn_TYPE_member_t asn_MBR_InnerEcRequest_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_CertificateSubjectAttributes,
 		0,
-		{ &asn_OER_memb_requestedSubjectAttributes_constr_5, &asn_PER_memb_requestedSubjectAttributes_constr_5,  memb_requestedSubjectAttributes_constraint_1 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			&asn_OER_memb_requestedSubjectAttributes_constr_5,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			&asn_PER_memb_requestedSubjectAttributes_constr_5,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			memb_requestedSubjectAttributes_constraint_1
+		},
 		0, 0, /* No default value */
 		"requestedSubjectAttributes"
 		},
@@ -99,7 +135,15 @@ asn_TYPE_descriptor_t asn_DEF_InnerEcRequest = {
 	asn_DEF_InnerEcRequest_tags_1,	/* Same as above */
 	sizeof(asn_DEF_InnerEcRequest_tags_1)
 		/sizeof(asn_DEF_InnerEcRequest_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_InnerEcRequest_1,
 	4,	/* Elements count */
 	&asn_SPC_InnerEcRequest_specs_1	/* Additional specs */

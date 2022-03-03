@@ -3,11 +3,8 @@
  * All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#ifndef ASN_DISABLE_OER_SUPPORT
-
 #include "asn_internal.h"
 #include "constr_CHOICE.h"
-#include <errno.h>
 
 /*
  * Return a standardized complex structure.
@@ -376,5 +373,3 @@ CHOICE_encode_oer(const asn_TYPE_descriptor_t *td,
 
     return er;
 }
-
-#endif  /* ASN_DISABLE_OER_SUPPORT */

@@ -13,7 +13,15 @@ asn_TYPE_member_t asn_MBR_CpmParameters_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_CpmManagementContainer,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"managementContainer"
 		},
@@ -22,7 +30,15 @@ asn_TYPE_member_t asn_MBR_CpmParameters_1[] = {
 		+1,	/* EXPLICIT tag at current level */
 		&asn_DEF_StationDataContainer,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"stationDataContainer"
 		},
@@ -31,7 +47,15 @@ asn_TYPE_member_t asn_MBR_CpmParameters_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_SensorInformationContainer,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"sensorInformationContainer"
 		},
@@ -40,7 +64,15 @@ asn_TYPE_member_t asn_MBR_CpmParameters_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_PerceivedObjectContainer,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"perceivedObjectContainer"
 		},
@@ -49,7 +81,15 @@ asn_TYPE_member_t asn_MBR_CpmParameters_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_FreeSpaceAddendumContainer,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"freeSpaceAddendumContainer"
 		},
@@ -58,7 +98,15 @@ asn_TYPE_member_t asn_MBR_CpmParameters_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_NumberOfPerceivedObjects,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"numberOfPerceivedObjects"
 		},
@@ -94,7 +142,15 @@ asn_TYPE_descriptor_t asn_DEF_CpmParameters = {
 	asn_DEF_CpmParameters_tags_1,	/* Same as above */
 	sizeof(asn_DEF_CpmParameters_tags_1)
 		/sizeof(asn_DEF_CpmParameters_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_CpmParameters_1,
 	6,	/* Elements count */
 	&asn_SPC_CpmParameters_specs_1	/* Additional specs */

@@ -13,7 +13,15 @@ asn_TYPE_member_t asn_MBR_TrailerData_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_RefPointId,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"refPointId"
 		},
@@ -22,7 +30,15 @@ asn_TYPE_member_t asn_MBR_TrailerData_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_HitchPointOffset,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"hitchPointOffset"
 		},
@@ -31,7 +47,15 @@ asn_TYPE_member_t asn_MBR_TrailerData_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_FrontOverhang,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"frontOverhang"
 		},
@@ -40,7 +64,15 @@ asn_TYPE_member_t asn_MBR_TrailerData_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_RearOverhang,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"rearOverhang"
 		},
@@ -49,7 +81,15 @@ asn_TYPE_member_t asn_MBR_TrailerData_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_VehicleWidth,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"trailerWidth"
 		},
@@ -58,7 +98,15 @@ asn_TYPE_member_t asn_MBR_TrailerData_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_CartesianAngle,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"hitchAngle"
 		},
@@ -94,7 +142,15 @@ asn_TYPE_descriptor_t asn_DEF_TrailerData = {
 	asn_DEF_TrailerData_tags_1,	/* Same as above */
 	sizeof(asn_DEF_TrailerData_tags_1)
 		/sizeof(asn_DEF_TrailerData_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_TrailerData_1,
 	6,	/* Elements count */
 	&asn_SPC_TrailerData_specs_1	/* Additional specs */

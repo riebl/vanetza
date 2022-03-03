@@ -1,5 +1,6 @@
-FROM ubuntu:xenial
-RUN apt-get update && apt-get install -y --no-install-recommends \
+ARG UBUNTU_VERSION=xenial
+FROM ubuntu:${UBUNTU_VERSION}
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     git \

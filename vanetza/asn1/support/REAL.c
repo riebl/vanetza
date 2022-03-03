@@ -2,33 +2,21 @@
  * Copyright (c) 2004-2017 Lev Walkin <vlm@lionet.info>. All rights reserved.
  * Redistribution and modifications are permitted subject to BSD license.
  */
-#define	_ISOC99_SOURCE		/* For ilogb() and quiet NAN */
-#ifndef _BSD_SOURCE
-#define	_BSD_SOURCE		/* To reintroduce finite(3) */
-#endif
 #include "asn_internal.h"
-#if	defined(__alpha)
-#include <sys/resource.h>	/* For INFINITY */
-#endif
 #include <stdlib.h>	/* for strtod(3) */
-#include <math.h>
-#include <float.h>
 #include <errno.h>
 #include "REAL.h"
-#include "OCTET_STRING.h"
 
 #undef	INT_MAX
 #define	INT_MAX	((int)(((unsigned int)-1) >> 1))
 
-#if	!(defined(NAN) || defined(INFINITY))
-static volatile double real_zero CC_NOTUSED = 0.0;
-#endif
-#ifndef	NAN
-#define	NAN	(0.0/0.0)
-#endif
-#ifndef	INFINITY
-#define	INFINITY	(1.0/0.0)
-#endif
+struct specialRealValue_s specialRealValue[] = {
+#define SRV_SET(foo, val) { (char *)foo, sizeof(foo) - 1, val }
+    SRV_SET("<NOT-A-NUMBER/>", 0),
+    SRV_SET("<MINUS-INFINITY/>", -1),
+    SRV_SET("<PLUS-INFINITY/>", 1),
+#undef SRV_SET
+};
 
 #if defined(__clang__)
 /*
@@ -64,66 +52,77 @@ static int asn_isfinite(double d) {
  * REAL basic type description.
  */
 static const ber_tlv_tag_t asn_DEF_REAL_tags[] = {
-	(ASN_TAG_CLASS_UNIVERSAL | (9 << 2))
+    (ASN_TAG_CLASS_UNIVERSAL | (9 << 2))
 };
 asn_TYPE_operation_t asn_OP_REAL = {
-	ASN__PRIMITIVE_TYPE_free,
-	REAL_print,
-	REAL_compare,
-	ber_decode_primitive,
-	der_encode_primitive,
-	REAL_decode_xer,
-	REAL_encode_xer,
-#ifdef	ASN_DISABLE_OER_SUPPORT
-	0,
-	0,
+    ASN__PRIMITIVE_TYPE_free,
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+    REAL_print,
 #else
-	REAL_decode_oer,
-	REAL_encode_oer,
-#endif  /* ASN_DISABLE_OER_SUPPORT */
-#ifdef	ASN_DISABLE_PER_SUPPORT
-	0,
-	0,
-	0,
-	0,
+    0,
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+    REAL_compare,
+#if !defined(ASN_DISABLE_BER_SUPPORT)
+    ber_decode_primitive,
+    der_encode_primitive,
 #else
-	REAL_decode_uper,
-	REAL_encode_uper,
-	REAL_decode_aper,
-	REAL_encode_aper,
-#endif	/* ASN_DISABLE_PER_SUPPORT */
-	REAL_random_fill,
-	0	/* Use generic outmost tag fetcher */
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+#if !defined(ASN_DISABLE_XER_SUPPORT)
+    REAL_decode_xer,
+    REAL_encode_xer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+    REAL_decode_oer,
+    REAL_encode_oer,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+    REAL_decode_uper,
+    REAL_encode_uper,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+    REAL_decode_aper,
+    REAL_encode_aper,
+#else
+    0,
+    0,
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
+    REAL_random_fill,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
+    0  /* Use generic outmost tag fetcher */
 };
 asn_TYPE_descriptor_t asn_DEF_REAL = {
-	"REAL",
-	"REAL",
-	&asn_OP_REAL,
-	asn_DEF_REAL_tags,
-	sizeof(asn_DEF_REAL_tags) / sizeof(asn_DEF_REAL_tags[0]),
-	asn_DEF_REAL_tags, /* Same as above */
-	sizeof(asn_DEF_REAL_tags) / sizeof(asn_DEF_REAL_tags[0]),
-	{ 0, 0, asn_generic_no_constraint },
-	0,
-	0,	/* No members */
-	0	/* No specifics */
-};
-
-typedef enum specialRealValue {
-	SRV__NOT_A_NUMBER,
-	SRV__MINUS_INFINITY,
-	SRV__PLUS_INFINITY
-} specialRealValue_e;
-static struct specialRealValue_s {
-	char *string;
-	size_t length;
-	long dv;
-} specialRealValue[] = {
-#define	SRV_SET(foo, val)	{ foo, sizeof(foo) - 1, val }
-	SRV_SET("<NOT-A-NUMBER/>", 0),
-	SRV_SET("<MINUS-INFINITY/>", -1),
-	SRV_SET("<PLUS-INFINITY/>", 1),
-#undef	SRV_SET
+    "REAL",
+    "REAL",
+    &asn_OP_REAL,
+    asn_DEF_REAL_tags,
+    sizeof(asn_DEF_REAL_tags) / sizeof(asn_DEF_REAL_tags[0]),
+    asn_DEF_REAL_tags,  /* Same as above */
+    sizeof(asn_DEF_REAL_tags) / sizeof(asn_DEF_REAL_tags[0]),
+    {
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+        asn_generic_no_constraint
+    },
+    0, 0,  /* No members */
+    0  /* No specifics */
 };
 
 ssize_t
@@ -131,7 +130,6 @@ REAL__dump(double d, int canonical, asn_app_consume_bytes_f *cb, void *app_key) 
 	char local_buf[64];
 	char *buf = local_buf;
 	ssize_t buflen = sizeof(local_buf);
-	const char *fmt = canonical ? "%.17E" /* Precise */ : "%.15f" /* Pleasant*/;
 	ssize_t ret;
 
 	/*
@@ -166,7 +164,10 @@ REAL__dump(double d, int canonical, asn_app_consume_bytes_f *cb, void *app_key) 
 	 * Use the libc's double printing, hopefully they got it right.
 	 */
 	do {
-		ret = snprintf(buf, buflen, fmt, d);
+        ret = snprintf(buf,
+                       buflen,
+                       canonical ? "%.17E" /* Precise */ : "%.15f" /* Pleasant*/,
+                       d);
 		if(ret < 0) {
 			/* There are some old broken APIs. */
 			buflen <<= 1;
@@ -234,10 +235,11 @@ REAL__dump(double d, int canonical, asn_app_consume_bytes_f *cb, void *app_key) 
 
         assert(*s == 0x45);
         {
+            int sign;
             char *E = s;
             char *expptr = ++E;
-            char *s = expptr;
-            int sign;
+
+            s = expptr;
 
             if(*expptr == 0x2b /* '+' */) {
                 /* Skip the "+" */
@@ -310,26 +312,6 @@ REAL__dump(double d, int canonical, asn_app_consume_bytes_f *cb, void *app_key) 
 }
 
 int
-REAL_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-           asn_app_consume_bytes_f *cb, void *app_key) {
-    const REAL_t *st = (const REAL_t *)sptr;
-	ssize_t ret;
-	double d;
-
-	(void)td;	/* Unused argument */
-	(void)ilevel;	/* Unused argument */
-
-	if(!st || !st->buf)
-		ret = cb("<absent>", 8, app_key);
-	else if(asn_REAL2double(st, &d))
-		ret = cb("<error>", 7, app_key);
-	else
-		ret = REAL__dump(d, 0, cb, app_key);
-
-	return (ret < 0) ? -1 : 0;
-}
-
-int
 REAL_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
              const void *bptr) {
     const REAL_t *a = aptr;
@@ -370,104 +352,6 @@ REAL_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
     } else {
         return 1;
     }
-}
-
-asn_enc_rval_t
-REAL_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                enum xer_encoder_flags_e flags, asn_app_consume_bytes_f *cb,
-                void *app_key) {
-	const REAL_t *st = (const REAL_t *)sptr;
-	asn_enc_rval_t er = {0,0,0};
-	double d;
-
-	(void)ilevel;
-
-	if(!st || !st->buf || asn_REAL2double(st, &d))
-		ASN__ENCODE_FAILED;
-
-	er.encoded = REAL__dump(d, flags & XER_F_CANONICAL, cb, app_key);
-	if(er.encoded < 0) ASN__ENCODE_FAILED;
-
-	ASN__ENCODED_OK(er);
-}
-
-
-/*
- * Decode the chunk of XML text encoding REAL.
- */
-static enum xer_pbd_rval
-REAL__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
-                      const void *chunk_buf, size_t chunk_size) {
-    REAL_t *st = (REAL_t *)sptr;
-	double value;
-	const char *xerdata = (const char *)chunk_buf;
-	char *endptr = 0;
-	char *b;
-
-	(void)td;
-
-	if(!chunk_size) return XPBD_BROKEN_ENCODING;
-
-	/*
-	 * Decode an XMLSpecialRealValue: <MINUS-INFINITY>, etc.
-	 */
-	if(xerdata[0] == 0x3c /* '<' */) {
-		size_t i;
-		for(i = 0; i < sizeof(specialRealValue)
-				/ sizeof(specialRealValue[0]); i++) {
-			struct specialRealValue_s *srv = &specialRealValue[i];
-			double dv;
-
-			if(srv->length != chunk_size
-			|| memcmp(srv->string, chunk_buf, chunk_size))
-				continue;
-
-			/*
-			 * It could've been done using
-			 * (double)srv->dv / real_zero,
-			 * but it summons fp exception on some platforms.
-			 */
-			switch(srv->dv) {
-			case -1: dv = - INFINITY; break;
-			case 0: dv = NAN;	break;
-			case 1: dv = INFINITY;	break;
-			default: return XPBD_SYSTEM_FAILURE;
-			}
-
-			if(asn_double2REAL(st, dv))
-				return XPBD_SYSTEM_FAILURE;
-
-			return XPBD_BODY_CONSUMED;
-		}
-		ASN_DEBUG("Unknown XMLSpecialRealValue");
-		return XPBD_BROKEN_ENCODING;
-	}
-
-	/*
-	 * Copy chunk into the nul-terminated string, and run strtod.
-	 */
-	b = (char *)MALLOC(chunk_size + 1);
-	if(!b) return XPBD_SYSTEM_FAILURE;
-	memcpy(b, chunk_buf, chunk_size);
-	b[chunk_size] = 0;	/* nul-terminate */
-
-	value = strtod(b, &endptr);
-	FREEMEM(b);
-	if(endptr == b) return XPBD_BROKEN_ENCODING;
-
-	if(asn_double2REAL(st, value))
-		return XPBD_SYSTEM_FAILURE;
-
-	return XPBD_BODY_CONSUMED;
-}
-
-asn_dec_rval_t
-REAL_decode_xer(const asn_codec_ctx_t *opt_codec_ctx,
-                const asn_TYPE_descriptor_t *td, void **sptr,
-                const char *opt_mname, const void *buf_ptr, size_t size) {
-    return xer_decode_primitive(opt_codec_ctx, td,
-		sptr, sizeof(REAL_t), opt_mname,
-		buf_ptr, size, REAL__xer_body_decode);
 }
 
 int
@@ -843,186 +727,3 @@ asn_double2float(double d, float *outcome) {
         return -1;
     }
 }
-
-#ifndef ASN_DISABLE_OER_SUPPORT
-
-/*
- * Encode as Canonical OER
- */
-asn_enc_rval_t
-REAL_encode_oer(const asn_TYPE_descriptor_t *td,
-                const asn_oer_constraints_t *constraints, const void *sptr,
-                asn_app_consume_bytes_f *cb, void *app_key) {
-    const REAL_t *st = sptr;
-    asn_enc_rval_t er = {0,0,0};
-    ssize_t len_len;
-
-    if(!st || !st->buf || !td)
-        ASN__ENCODE_FAILED;
-
-    if(!constraints) constraints = td->encoding_constraints.oer_constraints;
-    if(constraints && constraints->value.width != 0) {
-        /* If we're constrained to a narrow float/double representation, we
-         * shouldn't have ended up using REAL. Expecting NativeReal. */
-        ASN__ENCODE_FAILED;
-    }
-
-    /* Encode a fake REAL */
-    len_len = oer_serialize_length(st->size, cb, app_key);
-    if(len_len < 0 || cb(st->buf, st->size, app_key) < 0) {
-        ASN__ENCODE_FAILED;
-    } else {
-        er.encoded = len_len + st->size;
-        ASN__ENCODED_OK(er);
-    }
-}
-
-asn_dec_rval_t
-REAL_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
-                const asn_TYPE_descriptor_t *td,
-                const asn_oer_constraints_t *constraints, void **sptr,
-                const void *ptr, size_t size) {
-    asn_dec_rval_t ok = {RC_OK, 0};
-    REAL_t *st;
-    uint8_t *buf;
-    ssize_t len_len;
-    size_t real_body_len;
-
-    (void)opt_codec_ctx;
-
-    if(!constraints) constraints = td->encoding_constraints.oer_constraints;
-    if(constraints && constraints->value.width != 0) {
-        /* If we're constrained to a narrow float/double representation, we
-         * shouldn't have ended up using REAL. Expecting NativeReal. */
-        ASN__DECODE_FAILED;
-    }
-
-    len_len = oer_fetch_length(ptr, size, &real_body_len);
-    if(len_len < 0) ASN__DECODE_FAILED;
-    if(len_len == 0) ASN__DECODE_STARVED;
-
-    ptr = (const char *)ptr + len_len;
-    size -= len_len;
-
-    if(real_body_len > size) ASN__DECODE_STARVED;
-
-    buf = CALLOC(1, real_body_len + 1);
-    if(!buf) ASN__DECODE_FAILED;
-
-    if(!(st = *sptr)) {
-        st = (*sptr = CALLOC(1, sizeof(REAL_t)));
-        if(!st) {
-            FREEMEM(buf);
-            ASN__DECODE_FAILED;
-        }
-    } else {
-        FREEMEM(st->buf);
-    }
-
-    memcpy(buf, ptr, real_body_len);
-    buf[real_body_len] = '\0';
-
-    st->buf = buf;
-    st->size = real_body_len;
-
-    ok.consumed = len_len + real_body_len;
-    return ok;
-}
-
-#endif  /* ASN_DISABLE_OER_SUPPORT */
-
-#ifndef ASN_DISABLE_PER_SUPPORT
-
-asn_dec_rval_t
-REAL_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
-                 const asn_TYPE_descriptor_t *td,
-                 const asn_per_constraints_t *constraints, void **sptr,
-                 asn_per_data_t *pd) {
-    (void)constraints;	/* No PER visible constraints */
-	return OCTET_STRING_decode_uper(opt_codec_ctx, td, 0, sptr, pd);
-}
-
-asn_enc_rval_t
-REAL_encode_uper(const asn_TYPE_descriptor_t *td,
-                 const asn_per_constraints_t *constraints, const void *sptr,
-                 asn_per_outp_t *po) {
-    (void)constraints;	/* No PER visible constraints */
-	return OCTET_STRING_encode_uper(td, 0, sptr, po);
-}
-
-asn_dec_rval_t
-REAL_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
-                 const asn_TYPE_descriptor_t *td,
-                 const asn_per_constraints_t *constraints,
-                 void **sptr, asn_per_data_t *pd) {
-	(void)constraints;	/* No PER visible constraints */
-	return OCTET_STRING_decode_aper(opt_codec_ctx, td, 0, sptr, pd);
-}
-
-asn_enc_rval_t
-REAL_encode_aper(const asn_TYPE_descriptor_t *td,
-                 const asn_per_constraints_t *constraints,
-                 const void *sptr, asn_per_outp_t *po) {
-	(void)constraints;	/* No PER visible constraints */
-	return OCTET_STRING_encode_aper(td, 0, sptr, po);
-}
-
-#endif  /* ASN_DISABLE_PER_SUPPORT */
-
-asn_random_fill_result_t
-REAL_random_fill(const asn_TYPE_descriptor_t *td, void **sptr,
-                       const asn_encoding_constraints_t *constraints,
-                       size_t max_length) {
-    asn_random_fill_result_t result_ok = {ARFILL_OK, 1};
-    asn_random_fill_result_t result_failed = {ARFILL_FAILED, 0};
-    asn_random_fill_result_t result_skipped = {ARFILL_SKIPPED, 0};
-    static const double values[] = {
-        0, -0.0, -1, 1, -M_E, M_E, -3.14, 3.14, -M_PI, M_PI, -255, 255,
-        /* 2^51 */
-        -2251799813685248.0, 2251799813685248.0,
-        /* 2^52 */
-        -4503599627370496.0, 4503599627370496.0,
-        /* 2^100 */
-        -1267650600228229401496703205376.0, 1267650600228229401496703205376.0,
-        -FLT_MIN, FLT_MIN,
-        -FLT_MAX, FLT_MAX,
-        -DBL_MIN, DBL_MIN,
-        -DBL_MAX, DBL_MAX,
-#ifdef  FLT_TRUE_MIN
-        -FLT_TRUE_MIN, FLT_TRUE_MIN,
-#endif
-#ifdef  DBL_TRUE_MIN
-        -DBL_TRUE_MIN, DBL_TRUE_MIN,
-#endif
-        INFINITY, -INFINITY, NAN};
-    REAL_t *st;
-    double d;
-
-    (void)constraints;
-
-    if(max_length == 0) return result_skipped;
-
-    d = values[asn_random_between(0, sizeof(values) / sizeof(values[0]) - 1)];
-
-    if(*sptr) {
-        st = *sptr;
-    } else {
-        st = (REAL_t*)(*sptr = CALLOC(1, sizeof(REAL_t)));
-        if(!st) {
-            return result_failed;
-        }
-    }
-
-    if(asn_double2REAL(st, d)) {
-        if(st == *sptr) {
-            ASN_STRUCT_RESET(*td, st);
-        } else {
-            ASN_STRUCT_FREE(*td, st);
-        }
-        return result_failed;
-    }
-
-    result_ok.length = st->size;
-    return result_ok;
-}
-

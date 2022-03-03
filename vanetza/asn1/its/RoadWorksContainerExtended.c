@@ -13,7 +13,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_LightBarSirenInUse,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"lightBarSirenInUse"
 		},
@@ -22,7 +30,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ClosedLanes,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"closedLanes"
 		},
@@ -31,7 +47,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_RestrictedTypes,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"restriction"
 		},
@@ -40,7 +64,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_SpeedLimit,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"speedLimit"
 		},
@@ -49,7 +81,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_CauseCode,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"incidentIndication"
 		},
@@ -58,7 +98,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ItineraryPath,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"recommendedPath"
 		},
@@ -67,7 +115,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_DeltaReferencePosition,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"startingPointSpeedLimit"
 		},
@@ -76,7 +132,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_TrafficRule,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"trafficFlowRule"
 		},
@@ -85,7 +149,15 @@ asn_TYPE_member_t asn_MBR_RoadWorksContainerExtended_1[] = {
 		-1,	/* IMPLICIT tag at current level */
 		&asn_DEF_ReferenceDenms,
 		0,
-		{ 0, 0, 0 },
+		{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+			0
+		},
 		0, 0, /* No default value */
 		"referenceDenms"
 		},
@@ -124,7 +196,15 @@ asn_TYPE_descriptor_t asn_DEF_RoadWorksContainerExtended = {
 	asn_DEF_RoadWorksContainerExtended_tags_1,	/* Same as above */
 	sizeof(asn_DEF_RoadWorksContainerExtended_tags_1)
 		/sizeof(asn_DEF_RoadWorksContainerExtended_tags_1[0]), /* 1 */
-	{ 0, 0, SEQUENCE_constraint },
+	{
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+#if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+		SEQUENCE_constraint
+	},
 	asn_MBR_RoadWorksContainerExtended_1,
 	9,	/* Elements count */
 	&asn_SPC_RoadWorksContainerExtended_specs_1	/* Additional specs */

@@ -16,22 +16,43 @@ typedef INTEGER_t ENUMERATED_t;		/* Implemented via INTEGER */
 extern asn_TYPE_descriptor_t asn_DEF_ENUMERATED;
 extern asn_TYPE_operation_t asn_OP_ENUMERATED;
 
-oer_type_decoder_f ENUMERATED_decode_oer;
-oer_type_encoder_f ENUMERATED_encode_oer;
-per_type_decoder_f ENUMERATED_decode_uper;
-per_type_encoder_f ENUMERATED_encode_uper;
-per_type_decoder_f ENUMERATED_decode_aper;
-per_type_encoder_f ENUMERATED_encode_aper;
+#define ENUMERATED_free ASN__PRIMITIVE_TYPE_free
 
-#define ENUMERATED_free       ASN__PRIMITIVE_TYPE_free
-#define ENUMERATED_print      INTEGER_print
-#define ENUMERATED_compare    INTEGER_compare
+#if !defined(ASN_DISABLE_PRINT_SUPPORT)
+#define ENUMERATED_print INTEGER_print
+#endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
+
+#define ENUMERATED_compare INTEGER_compare
+
 #define ENUMERATED_constraint asn_generic_no_constraint
+
+#if !defined(ASN_DISABLE_BER_SUPPORT)
 #define ENUMERATED_decode_ber ber_decode_primitive
 #define ENUMERATED_encode_der INTEGER_encode_der
+#endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_XER_SUPPORT)
 #define ENUMERATED_decode_xer INTEGER_decode_xer
 #define ENUMERATED_encode_xer INTEGER_encode_xer
+#endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_OER_SUPPORT)
+oer_type_decoder_f ENUMERATED_decode_oer;
+oer_type_encoder_f ENUMERATED_encode_oer;
+#endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_UPER_SUPPORT)
+per_type_decoder_f ENUMERATED_decode_uper;
+per_type_encoder_f ENUMERATED_encode_uper;
+#endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) */
+#if !defined(ASN_DISABLE_APER_SUPPORT)
+per_type_decoder_f ENUMERATED_decode_aper;
+per_type_encoder_f ENUMERATED_encode_aper;
+#endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
+
+#if !defined(ASN_DISABLE_RFILL_SUPPORT)
 #define ENUMERATED_random_fill INTEGER_random_fill
+#endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
 
 #ifdef __cplusplus
 }

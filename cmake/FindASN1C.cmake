@@ -1,7 +1,7 @@
 find_program(ASN1C_EXECUTABLE NAMES asn1c DOC "ASN.1 compiler")
 if(ASN1C_EXECUTABLE)
     execute_process(COMMAND ${ASN1C_EXECUTABLE} -version ERROR_VARIABLE _asn1c_version)
-    string(REGEX MATCH "[0-9]\\.[0-9]\\.[0-9]+" ASN1C_VERSION ${_asn1c_version})
+    string(REGEX MATCH "[0-9]\\.[0-9]\\.[0-9]+" ASN1C_VERSION "${_asn1c_version}")
     get_filename_component(_asn1c_executable_path ${ASN1C_EXECUTABLE} DIRECTORY)
 endif()
 
