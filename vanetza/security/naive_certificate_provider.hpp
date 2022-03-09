@@ -25,6 +25,12 @@ public:
     NaiveCertificateProvider(const Runtime&);
 
     /**
+     * Get the version of the provided certificates: 2 for v1.2.1 and 3 for v1.3.1
+     * \return certificates version
+     */
+    int version() override;
+
+    /**
      * \brief get own certificate for signing
      * \return own certificate
      */

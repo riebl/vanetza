@@ -11,7 +11,7 @@ using namespace vanetza::security;
 
 TEST(SignerInfo, Serialization)
 {
-    std::list<Certificate> certificates;
+    std::list<CertificateVariant> certificates;
     Certificate a;
     a.signature = create_random_ecdsa_signature(28);
     Certificate b;

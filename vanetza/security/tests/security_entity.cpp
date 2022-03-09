@@ -85,6 +85,44 @@ protected:
         EncapConfirm confirm = local_security.encapsulate_packet(create_encap_request());
         return confirm.sec_packet;
     }
+    /*
+     * Method that always returns a SecuredMessage in V2. The purpose of this method is retrocompatibility.
+     */
+    SecuredMessageV2 get_secured_message_v2(const SecuredMessage& secured_message_variant)
+    {
+        struct canonical_visitor : public boost::static_visitor<SecuredMessageV2>
+        {
+            SecuredMessageV2 operator()(const SecuredMessageV2& message) const
+            {
+                return message;
+            }
+            SecuredMessageV2 operator()(const SecuredMessageV3& message) const
+            {
+                SecuredMessageV2 empty_message;
+                return empty_message;
+            }
+        };
+        return boost::apply_visitor(canonical_visitor(), secured_message_variant);
+    }
+    /*
+     * Method that always returns a Certificate in V2. The purpose of this method is retrocompatibility.
+     */
+    vanetza::security::Certificate get_certificate_v2(const CertificateVariant& secured_message_variant)
+    {
+        struct canonical_visitor : public boost::static_visitor<vanetza::security::Certificate>
+        {
+            vanetza::security::Certificate operator()(const vanetza::security::Certificate& cert) const
+            {
+                return cert;
+            }
+            vanetza::security::Certificate operator()(const CertificateV3& cert) const
+            {
+                vanetza::security::Certificate empty_cert;
+                return empty_cert;
+            }
+        };
+        return boost::apply_visitor(canonical_visitor(), secured_message_variant);
+    }
 
     ManualRuntime runtime;
     StoredPositionProvider position_provider;
@@ -157,8 +195,9 @@ TEST_F(SecurityEntityTest, captured_acceptance)
             "765b6f5366837cda248d22f66da7d806e740810de221c6bd389c060bd02c48a9a574f32ec5a193ed2de21ef6d86de9e7c313d364f8"
             "91398776";
 
-    SecuredMessage message;
-    deserialize_from_hexstring(secured_cam, message);
+    SecuredMessageV2 tmessage;
+    deserialize_from_hexstring(secured_cam, tmessage);
+    SecuredMessage message(tmessage);
 
     runtime.reset(Clock::at("2018-02-15 16:28:30"));
 
@@ -177,7 +216,7 @@ TEST_F(SecurityEntityTest, signed_payload_equals_plaintext_payload)
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
 
     // check if sec_payload equals plaintext_payload
-    check(expected_payload, confirm.sec_packet.payload.data);
+    check(expected_payload, get_secured_message_v2(confirm.sec_packet).payload.data);
 }
 
 TEST_F(SecurityEntityTest, signature_is_ecdsa)
@@ -185,8 +224,9 @@ TEST_F(SecurityEntityTest, signature_is_ecdsa)
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
 
     // check if trailer_fields contain signature
-    EXPECT_EQ(1, confirm.sec_packet.trailer_fields.size());
-    auto signature = confirm.sec_packet.trailer_field(TrailerFieldType::Signature);
+    SecuredMessageV2 message = get_secured_message_v2(confirm.sec_packet);
+    EXPECT_EQ(1, message.trailer_fields.size());
+    auto signature = message.trailer_field(TrailerFieldType::Signature);
     ASSERT_TRUE(!!signature);
     auto signature_type = get_type(boost::get<vanetza::security::Signature>(*signature));
     EXPECT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, signature_type);
@@ -194,13 +234,13 @@ TEST_F(SecurityEntityTest, signature_is_ecdsa)
 
 TEST_F(SecurityEntityTest, signer_info_is_encoded_first)
 {
-    auto message = create_secured_message();
+    auto message = get_secured_message_v2(create_secured_message());
     EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(message.header_fields.front()));
 
     // cause inclusion of additional header field that should not change order of header fields
     sign_header_policy.request_unrecognized_certificate(HashedId8({ 0, 0, 0, 0, 0, 0, 0, 0 }));
 
-    message = create_secured_message();
+    message = get_secured_message_v2(create_secured_message());
     EXPECT_EQ(HeaderFieldType::Signer_Info, get_type(message.header_fields.front()));
 }
 
@@ -209,7 +249,7 @@ TEST_F(SecurityEntityTest, expected_header_field_size)
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
 
     // check header_field size
-    EXPECT_EQ(3, confirm.sec_packet.header_fields.size());
+    EXPECT_EQ(3, get_secured_message_v2(confirm.sec_packet).header_fields.size());
 }
 
 TEST_F(SecurityEntityTest, expected_payload)
@@ -217,7 +257,7 @@ TEST_F(SecurityEntityTest, expected_payload)
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
 
     // check payload
-    Payload payload = confirm.sec_packet.payload;
+    Payload payload = get_secured_message_v2(confirm.sec_packet).payload;
     EXPECT_EQ(expected_payload.size(), size(payload.data, min_osi_layer(), max_osi_layer()));
     EXPECT_EQ(PayloadType::Signed, get_type(payload));
 }
@@ -225,7 +265,7 @@ TEST_F(SecurityEntityTest, expected_payload)
 TEST_F(SecurityEntityTest, verify_message)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     // verify message
@@ -242,7 +282,7 @@ TEST_F(SecurityEntityTest, verify_message)
 TEST_F(SecurityEntityTest, verify_message_modified_message_type)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     IntX* its_aid = secured_message.header_field<HeaderFieldType::Its_Aid>();
@@ -258,7 +298,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_message_type)
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
 {
     // change the subject name
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.subject_info.subject_name = {42};
 
     // verify message
@@ -270,7 +310,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
 {
     // change the subject info
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     HashedId8 faulty_hash ({ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 });
     certificate.signer_info = faulty_hash;
 
@@ -283,7 +323,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
 {
     // change the subject info
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.subject_info.subject_type = SubjectType::Root_CA;
 
     // verify message
@@ -294,7 +334,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)
 {
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     for (auto& subject_attribute : certificate.subject_attributes) {
         if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
             SubjectAssurance& subject_assurance = boost::get<SubjectAssurance>(subject_attribute);
@@ -316,7 +356,7 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
     outdated_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
     outdated_validity.end_validity = convert_time32(runtime.now() - std::chrono::minutes(1));
 
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.validity_restriction.clear();
     certificate.validity_restriction.push_back(outdated_validity);
     certificate_provider->sign_authorization_ticket(certificate);
@@ -335,7 +375,7 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
     premature_validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(1));
     premature_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(5));
 
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.validity_restriction.clear();
     certificate.validity_restriction.push_back(premature_validity);
     certificate_provider->sign_authorization_ticket(certificate);
@@ -349,7 +389,7 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restriction)
 {
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     for (auto& validity_restriction : certificate.validity_restriction) {
         ValidityRestrictionType type = get_type(validity_restriction);
         ASSERT_EQ(type, ValidityRestrictionType::Time_Start_And_End);
@@ -368,7 +408,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restrict
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
 {
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.signature = create_random_ecdsa_signature(0);
 
     // verify message
@@ -380,7 +420,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
 TEST_F(SecurityEntityTest, verify_message_modified_signature)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     vanetza::security::Signature * signature = secured_message.trailer_field<TrailerFieldType::Signature>();
@@ -398,7 +438,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
 TEST_F(SecurityEntityTest, verify_message_modified_payload_type)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     // change the payload.type
@@ -413,7 +453,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload_type)
 TEST_F(SecurityEntityTest, verify_message_modified_payload)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     // modify payload buffer
@@ -428,7 +468,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload)
 TEST_F(SecurityEntityTest, verify_message_generation_time_before_current_time)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     // change the time, so the generation time of SecuredMessage is before current time
@@ -446,7 +486,7 @@ TEST_F(SecurityEntityTest, verify_message_generation_time_after_current_time)
     runtime.trigger(std::chrono::hours(12));
 
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     // change the time, so the current time is before generation time of SecuredMessage
@@ -461,7 +501,7 @@ TEST_F(SecurityEntityTest, verify_message_generation_time_after_current_time)
 TEST_F(SecurityEntityTest, verify_message_without_signer_info)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     DecapRequest decap_request(secured_message);
 
     // iterate through all header_fields
@@ -483,14 +523,14 @@ TEST_F(SecurityEntityTest, verify_message_without_signer_info)
 // See TS 103 096-2 v1.3.1, section 5.2.1
 TEST_F(SecurityEntityTest, verify_message_protocol_version)
 {
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     ASSERT_EQ(secured_message.protocol_version(), 2);
 }
 
 // See TS 103 096-2 v1.3.1, section 5.2.4.1
 TEST_F(SecurityEntityTest, verify_message_its_aid)
 {
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     auto aid_header = secured_message.header_field<HeaderFieldType::Its_Aid>();
     ASSERT_EQ(*aid_header, aid::CA);
 }
@@ -498,7 +538,7 @@ TEST_F(SecurityEntityTest, verify_message_its_aid)
 // See TS 103 096-2 v1.3.1, section 5.2.4.2
 TEST_F(SecurityEntityTest, verify_message_header_fields_cam)
 {
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Signer_Info>());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Its_Aid>());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time>());
@@ -532,7 +572,7 @@ TEST_F(SecurityEntityTest, verify_message_header_fields_denm)
 {
     its_aid = aid::DEN;
 
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Signer_Info>());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Its_Aid>());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time>());
@@ -564,7 +604,7 @@ TEST_F(SecurityEntityTest, verify_message_header_fields_other)
 {
     its_aid = aid::GN_MGMT;
 
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Signer_Info>());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Time>());
     EXPECT_NE(nullptr, secured_message.header_field<HeaderFieldType::Generation_Location>());
@@ -598,40 +638,40 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
     };
 
     // first message must be signed with certificate
-    auto secured_message = create_secured_message();
+    SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
     ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
 
     // next messages must be signed with certificate digest, until one second is over or certificate has been requested
     for (int i = 0; i < 5; i++) {
-        secured_message = create_secured_message();
+        secured_message = get_secured_message_v2(create_secured_message());
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
 
         // See TS 103 096-2 v1.3.1, section 5.2.2
         ASSERT_EQ(
             boost::get<HashedId8>(signer_info(secured_message)),
-            calculate_hash(certificate_provider->own_certificate())
+            calculate_hash(get_certificate_v2(certificate_provider->own_certificate()))
         );
     }
 
     // certificate has been requested by another party, send certificate
     sign_header_policy.request_certificate();
-    secured_message = create_secured_message();
+    secured_message = get_secured_message_v2(create_secured_message());
     ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
 
     // next messages must be signed with certificate digest, until one second is over or certificate has been requested
     for (int i = 0; i < 5; i++) {
-        secured_message = create_secured_message();
+        secured_message = get_secured_message_v2(create_secured_message());
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
     }
 
     // certificate chain has been requested by another party, send certificate chain
     sign_header_policy.request_certificate_chain();
-    secured_message = create_secured_message();
+    secured_message = get_secured_message_v2(create_secured_message());
     ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Chain);
 
     // next messages must be signed with certificate digest, until one second is over or certificate has been requested
     for (int i = 0; i < 5; i++) {
-        secured_message = create_secured_message();
+        secured_message = get_secured_message_v2(create_secured_message());
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
     }
 
@@ -639,12 +679,12 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
 
     // one second has passed, send certificate
     sign_header_policy.request_certificate();
-    secured_message = create_secured_message();
+    secured_message = get_secured_message_v2(create_secured_message());
     ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
 
     // next messages must be signed with certificate digest, until one second is over or certificate has been requested
     for (int i = 0; i < 5; i++) {
-        secured_message = create_secured_message();
+        secured_message = get_secured_message_v2(create_secured_message());
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate_Digest_With_SHA256);
     }
 }
@@ -661,7 +701,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_denm)
 
     // all message must be signed with certificate
     for (int i = 0; i < 3; i++) {
-        auto secured_message = create_secured_message();
+        SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
     }
 }
@@ -678,7 +718,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_other)
 
     // all message must be signed with certificate
     for (int i = 0; i < 3; i++) {
-        auto secured_message = create_secured_message();
+        SecuredMessageV2 secured_message = get_secured_message_v2(create_secured_message());
         ASSERT_EQ(get_type(signer_info(secured_message)), SignerInfoType::Certificate);
     }
 }
@@ -693,7 +733,7 @@ TEST_F(SecurityEntityTest, verify_message_without_position_and_with_restriction)
         geo_angle_i32t::from_value(84044460)
     };
 
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.validity_restriction.push_back(circle);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -743,7 +783,7 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_ok)
         geo_angle_i32t::from_value(84044460)
     };
 
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.validity_restriction.push_back(circle);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -765,7 +805,7 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_fail)
         geo_angle_i32t::from_value(84044460)
     };
 
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.validity_restriction.push_back(circle);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -778,7 +818,7 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_fail)
 
 TEST_F(SecurityEntityTest, verify_message_without_signature)
 {
-    auto message = create_secured_message();
+    auto message = get_secured_message_v2(create_secured_message());
     message.trailer_fields.clear();
 
     // verify message
@@ -788,8 +828,8 @@ TEST_F(SecurityEntityTest, verify_message_without_signature)
 
 TEST_F(SecurityEntityTest, verify_message_with_signer_info_hash)
 {
-    auto message_a = create_secured_message();
-    auto message_b = create_secured_message();
+    auto message_a = get_secured_message_v2(create_secured_message());
+    auto message_b = get_secured_message_v2(create_secured_message());
 
     auto signer_info = message_b.header_field<HeaderFieldType::Signer_Info>();
     ASSERT_EQ(get_type(*signer_info), SignerInfoType::Certificate_Digest_With_SHA256);
@@ -799,7 +839,7 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_hash)
     EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
     EXPECT_EQ(cert_cache.size(), 1);
 
-    cert_cache.insert(certificate_provider->own_certificate());
+    cert_cache.insert(get_certificate_v2(certificate_provider->own_certificate()));
 
     // verify message - certificate now known
     decap_confirm = security.decapsulate_packet(DecapRequest { message_b });
@@ -811,7 +851,7 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
 {
     sign_header_policy.request_certificate_chain();
 
-    auto message = create_secured_message();
+    auto message = get_secured_message_v2(create_secured_message());
 
     auto signer_info = message.header_field<HeaderFieldType::Signer_Info>();
     ASSERT_EQ(get_type(*signer_info), SignerInfoType::Certificate_Chain);
@@ -831,7 +871,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
     VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
     DelegatingSecurityEntity other_security(sign, verify);
 
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.remove_restriction(ValidityRestrictionType::Time_Start_And_End);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -845,7 +885,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
 
 TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
 {
-    vanetza::security::Certificate certificate = certificate_provider->own_certificate();
+    vanetza::security::Certificate certificate = get_certificate_v2(certificate_provider->own_certificate());
     certificate.remove_attribute(SubjectAttributeType::Verification_Key);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -872,12 +912,13 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
 
     // Security entity doesn't request certificate of other
     EncapConfirm encap_confirm = security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
+    ASSERT_EQ(nullptr, get_secured_message_v2(encap_confirm.sec_packet).header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
 
     // Create message with hash from other, thus two times
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(get_type(signer_info(encap_confirm.sec_packet)), SignerInfoType::Certificate_Digest_With_SHA256);
+    SecuredMessageV2 sec_message = get_secured_message_v2(encap_confirm.sec_packet);
+    ASSERT_EQ(get_type(signer_info(sec_message)), SignerInfoType::Certificate_Digest_With_SHA256);
 
     // Unknown certificate hash incoming from other
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
@@ -885,16 +926,19 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
 
     // Security entity does request certificate from other
     encap_confirm = security.encapsulate_packet(create_encap_request());
-    ASSERT_NE(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
+    sec_message = get_secured_message_v2(encap_confirm.sec_packet);
+    ASSERT_NE(nullptr, sec_message.header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
 
     // Other hasn't received certificate request, yet, so sends with hash
     EncapConfirm other_encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(get_type(signer_info(other_encap_confirm.sec_packet)), SignerInfoType::Certificate_Digest_With_SHA256);
+    sec_message = get_secured_message_v2(other_encap_confirm.sec_packet);
+    ASSERT_EQ(get_type(signer_info(sec_message)), SignerInfoType::Certificate_Digest_With_SHA256);
 
     // Other receives certificate request and sends certificate with next message
     decap_confirm = other_security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(get_type(signer_info(encap_confirm.sec_packet)), SignerInfoType::Certificate);
+    sec_message = get_secured_message_v2(encap_confirm.sec_packet);
+    ASSERT_EQ(get_type(signer_info(sec_message)), SignerInfoType::Certificate);
 }
 
 TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
@@ -956,9 +1000,9 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
 
     its_aid = aid::DEN;
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Its_Aid>());
+    ASSERT_EQ(nullptr, get_secured_message_v2(encap_confirm.sec_packet).header_field<HeaderFieldType::Its_Aid>());
 
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
+    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { get_secured_message_v2(encap_confirm.sec_packet) });
     EXPECT_EQ(DecapReport::Incompatible_Protocol, decap_confirm.report);
 }
 

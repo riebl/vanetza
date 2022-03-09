@@ -9,9 +9,9 @@ using namespace vanetza::security;
 
 // Note: WebValidator refers to https://werkzeug.dcaiti.tu-berlin.de/etsi/ts103097/
 
-TEST(SecuredMessage, Serialization)
+TEST(SecuredMessageV2, Serialization)
 {
-    SecuredMessage m;
+    SecuredMessageV2 m;
 
     m.header_fields.push_back(Time64 { 0x4711 });
     m.payload = {PayloadType::Unsecured, CohesivePacket({ 5, 10, 15, 25, 40 }, OsiLayer::Application)};
@@ -23,9 +23,9 @@ TEST(SecuredMessage, Serialization)
     check(m, serialize_roundtrip(m));
 }
 
-TEST(SecuredMessage, header_field_extractor)
+TEST(SecuredMessageV2, header_field_extractor)
 {
-    SecuredMessage m;
+    SecuredMessageV2 m;
     auto empty = m.header_field(HeaderFieldType::Generation_Time);
     EXPECT_FALSE(empty);
 
@@ -47,9 +47,9 @@ TEST(SecuredMessage, header_field_extractor)
     EXPECT_EQ(Time64 { 26 }, boost::get<Time64>(*time2));
 }
 
-TEST(SecuredMessage, trailer_field_extractor)
+TEST(SecuredMessageV2, trailer_field_extractor)
 {
-    SecuredMessage m;
+    SecuredMessageV2 m;
     auto empty = m.trailer_field(TrailerFieldType::Signature);
     EXPECT_FALSE(!!empty);
 
@@ -60,7 +60,7 @@ TEST(SecuredMessage, trailer_field_extractor)
     EXPECT_EQ(&m.trailer_fields.front(), first);
 }
 
-TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
+TEST(SecuredMessageV2, WebValidator_Serialize_SecuredMessageV2V2_1)
 {
     // SecuredMessage/v1 from FOKUS WebValidator adapted for v2
     const char str[] =
@@ -73,7 +73,7 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
         "785D7242647F7895ABFC0000009373931CD7580502011C983E690E5F6D755BD4871578A9427E7B"
         "C383903DC7DA3B560384013643010000FE8566BEA87B39E6411F80226E792D6E01E77B598F2BB1FC"
         "E7F2DD441185C07CEF0573FBFB9876B99FE811486F6F5D499E6114FC0724A67F8D71D2A897A7EB34";
-    SecuredMessage m;
+    SecuredMessageV2 m;
     deserialize_from_hexstring(str, m);
 
     EXPECT_EQ(358, get_size(m));
@@ -95,7 +95,7 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
     EXPECT_TRUE(!!m.trailer_field(TrailerFieldType::Signature));
 }
 
-TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_2)
+TEST(SecuredMessageV2, WebValidator_Serialize_SecuredMessageV2_2)
 {
     // SecuredMessage/v1 from FOKUS WebValidator adapted for v2
     const char str[] =
@@ -109,12 +109,12 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_2)
         "BABABAABAB98437985739845783974954301000081E7CDB6D2C741C1700822305C39E8E809622AF9"
         "FCA1C0786F762D08E80580C42F1FCC1D5499577210834C390BB4613E102DECB14F575A2820743DC9"
         "A66BBD7A";
-    SecuredMessage m;
+    SecuredMessageV2 m;
     deserialize_from_hexstring(str, m);
     check(m, serialize_roundtrip(m));
 }
 
-TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_3)
+TEST(SecuredMessageV2, WebValidator_Serialize_SecuredMessageV2V2_3)
 {
     // SecuredMessage/v1 from FOKUS WebValidator adapted for v2
     const char str[] =
@@ -127,7 +127,7 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_3)
         "98F7865709929A7C6E480000009373CF482D40050201080123456789ABCDEF43010000371423BB"
         "A0902D8AF2FB2226D73A7781D4D6B6772650A8BEE5A1AF198CEDABA2C9BF57540C629E6A1E629B88"
         "12AEBDDDBCAF472F6586F16C14B3DEFBE9B6ADB2";
-    SecuredMessage m;
+    SecuredMessageV2 m;
     deserialize_from_hexstring(str, m);
     check(m, serialize_roundtrip(m));
 }
@@ -147,7 +147,7 @@ vanetza::ByteBuffer from_hexstring(std::string hex_string)
 }
 
 
-TEST(SecuredMessage, SecuredMessageV3_constructor_and_serializer){
+TEST(SecuredMessageV3, SecuredMessageV3_constructor_and_serializer){
     std::string message = "810340008003205100500080012d8000aa00ccbb2211e3333f0d19f5911b013320a5802d000000000000070000d1020000020000eb0700cdd809470f9dad46deb6e680653a0054fde100c01f7d00e9bf07edfe37ffe900fa01400001000000000000800a95a41b99527855b880801765377dad792857145ea84a395a8bb2c7b57e17d699253d483b9d7c0222a8f393762b32d95d48e3186318028d8b345389df23b3d551d1ebc7d203073f123586";
     vanetza::ByteBuffer given = from_hexstring(message);
     SecuredMessageV3 secured_message(given);

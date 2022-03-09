@@ -15,7 +15,7 @@ class CertificateProvider
 public:
     /**
      * Get the version of the provided certificates: 2 for v1.2.1 and 3 for v1.3.1
-     * \return own certificate
+     * \return certificates version
      */
     virtual int version() = 0;
 

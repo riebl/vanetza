@@ -17,6 +17,12 @@ NaiveCertificateProvider::NaiveCertificateProvider(const Runtime& rt) :
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_authorization_ticket()) { }
 
+
+int NaiveCertificateProvider::version() 
+{
+    return 2;
+}
+
 const CertificateVariant& NaiveCertificateProvider::own_certificate()
 {
     // renew certificate if necessary

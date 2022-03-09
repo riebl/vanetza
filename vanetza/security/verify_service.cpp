@@ -320,35 +320,24 @@ bool assign_permissions(const CertificateV3& certificate, VerifyConfirm& confirm
 
 bool assign_permissions(const vanetza::security::CertificateVariant& certificate, vanetza::security::VerifyConfirm& confirm)
 {
-    // THis solution presented problems:
-    // class assign_visitor : public boost::static_visitor<bool>
-    //     {
-    //         public:
-    //             assign_visitor(vanetza::security::VerifyConfirm& confirm): confirm_(confirm){}
-    //             bool operator()(const vanetza::security::Certificate& certificate)
-    //             {
-    //                 return assign_permissions(certificate, confirm_);
-    //             }
+    
+    struct canonical_visitor : public boost::static_visitor<bool>
+    {
+        canonical_visitor(vanetza::security::VerifyConfirm& confirm): confirm_(confirm){}
+        bool operator()(const Certificate& cert) const
+        {
+            return assign_permissions(cert, confirm_);
+        }
+        bool operator()(const CertificateV3& cert) const
+        {
+            return assign_permissions(cert, confirm_);
+        }
+        vanetza::security::VerifyConfirm& confirm_;
+    };
 
-    //             bool operator()(const vanetza::security::CertificateV3& certificate)
-    //             {
-    //                 return assign_permissions(certificate, confirm_);
-    //             }
-    //         private:
-    //             vanetza::security::VerifyConfirm& confirm_;
-    //     };
-    // return boost::apply_visitor(assign_visitor(confirm), certificate);
-    if (CertificateVariantVersion(certificate.which())== CertificateVariantVersion::Two)
-    {
-        Certificate& cert = boost::get<Certificate&>(certificate);
-        return assign_permissions(cert, confirm);
-    }
-    else if (CertificateVariantVersion(certificate.which())== CertificateVariantVersion::Three)
-    {
-        CertificateV3& cert = boost::get<CertificateV3&>(certificate);
-        return assign_permissions(cert, confirm);
-    }
-    return false;
+    bool assigned = boost::apply_visitor(canonical_visitor(confirm), certificate);
+    return assigned;
+
 }
 
 

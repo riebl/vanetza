@@ -595,26 +595,44 @@ void SecuredMessageV3::set_signer_info(const SignerInfo& signer_info){
 
             SignerIdentifier_t* operator()(const CertificateVariant& certificate_variant) const
             {
+                struct canonical_visitor : public boost::static_visitor<void>
+                {
+                    canonical_visitor(SignerIdentifier_t* signer): signer_(signer){}
+                    void operator()(const Certificate& cert) const
+                    {}
+                    void operator()(const CertificateV3& cert) const
+                    {
+                        signer_->present = SignerIdentifier_PR_certificate;
+                        Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
+                        cert.copy_into(certi);
+                        ASN_SEQUENCE_ADD(&(signer_->choice.certificate), certi);
+                    }
+                    SignerIdentifier_t* signer_;
+                };
                 SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
-                if(CertificateVariantVersion(certificate_variant.which())== CertificateVariantVersion::Three){
-                    signer->present = SignerIdentifier_PR_certificate;
-                    Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                    boost::get<CertificateV3>(certificate_variant).copy_into(certi);
-                    ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
-                }
+                boost::apply_visitor(canonical_visitor(signer), certificate_variant);
                 return signer;
             }
 
             SignerIdentifier_t* operator()(const std::list<CertificateVariant>& certificates) const
             {
+                struct canonical_visitor : public boost::static_visitor<void>
+                {
+                    canonical_visitor(SignerIdentifier_t* signer): signer_(signer){}
+                    void operator()(const Certificate& cert) const
+                    {}
+                    void operator()(const CertificateV3& cert) const
+                    {
+                        Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
+                        cert.copy_into(certi);
+                        ASN_SEQUENCE_ADD(&(signer_->choice.certificate), certi);
+                    }
+                    SignerIdentifier_t* signer_;
+                };
                 SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
                 signer->present = SignerIdentifier_PR_certificate;
                 for (auto const& cert : certificates){
-                    if(CertificateVariantVersion(cert.which())== CertificateVariantVersion::Three){
-                        Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                        boost::get<CertificateV3&>(cert).copy_into(certi);
-                        ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
-                    }
+                    boost::apply_visitor(canonical_visitor(signer), cert);
                 }
                 return signer;
             }
