@@ -9,6 +9,7 @@
 extern "C" {
 #endif
 
+#define version (1)
 #define defaultValidity (600)
 
 

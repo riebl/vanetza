@@ -323,7 +323,7 @@ xer_decode_general(const asn_codec_ctx_t *opt_codec_ctx,
 size_t
 xer_whitespace_span(const void *chunk_buf, size_t chunk_size) {
 	const char *p = (const char *)chunk_buf;
-	const char *pend = p + chunk_size;
+	const char *pend = (p == NULL)? NULL : p + chunk_size;
 
 	for(; p < pend; p++) {
 		switch(*p) {

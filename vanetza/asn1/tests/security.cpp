@@ -2,6 +2,7 @@
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/Time64.h>
 #include <vanetza/asn1/security/Uint64.h>
+#include <algorithm>
 #include <cstdint>
 #include <limits>
 
@@ -31,4 +32,20 @@ TEST(SecuriyAsn1, Uint64)
 
     uint.encode();
     EXPECT_EQ(8, uint.size());
+}
+
+TEST(SecurityAsn1, Uint64_roundtrip_max_value)
+{
+    asn1c_wrapper<Uint64_t> tx { asn_DEF_Uint64 };
+    EXPECT_EQ(0, asn_umax2INTEGER(&*tx, std::numeric_limits<std::uint64_t>::max()));
+    const vanetza::ByteBuffer buffer = tx.encode();
+    EXPECT_EQ(8, buffer.size());
+    EXPECT_TRUE(std::all_of(buffer.begin(), buffer.end(),
+                [](std::uint8_t c) { return c == 0xff; }));
+
+    asn1c_wrapper<Uint64_t> rx { asn_DEF_Uint64 };
+    EXPECT_TRUE(rx.decode(buffer));
+    std::uint64_t value = 0;
+    EXPECT_EQ(0, asn_INTEGER2umax(&*rx, &value));
+    EXPECT_EQ(value, std::numeric_limits<std::uint64_t>::max());
 }

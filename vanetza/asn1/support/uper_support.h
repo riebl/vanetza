@@ -46,7 +46,7 @@ int per_long_range_unrebase(unsigned long inp, intmax_t lb, intmax_t ub, long *o
 int per_imax_range_unrebase(uintmax_t inp, intmax_t lb, intmax_t ub, intmax_t *outp);
 
 /* X.691-2008/11, #11.5 */
-int uper_put_constrained_whole_number_u(asn_per_outp_t *po, unsigned long v, int nbits);
+int uper_put_constrained_whole_number_u(asn_per_outp_t *po, uintmax_t v, int nbits);
 
 /*
  * X.691 (08/2015) #11.9 "General rules for encoding a length determinant"

@@ -148,7 +148,7 @@ int uper_get_constrained_whole_number(asn_per_data_t *pd, uintmax_t *out_value, 
 
 /* X.691-2008/11, #11.5.6 -> #11.3 */
 int
-uper_put_constrained_whole_number_u(asn_per_outp_t *po, unsigned long v,
+uper_put_constrained_whole_number_u(asn_per_outp_t *po, uintmax_t v,
                                     int nbits) {
     if(nbits <= 31) {
         return per_put_few_bits(po, v, nbits);

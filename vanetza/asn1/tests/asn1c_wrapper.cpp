@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
-#include <vanetza/asn1/denm.hpp>
 #include <vanetza/asn1/its/VanetzaTest.h>
 
 using namespace vanetza::asn1;
@@ -94,13 +93,4 @@ TEST(asn1c_wrapper, decode_range) {
     EXPECT_EQ(8, wrapper->field);
     EXPECT_EQ(4, wrapper->string.size);
     EXPECT_STREQ("1234", (const char*)(wrapper->string.buf));
-}
-
-TEST(asn1c_wrapper, encode_denm) {
-    Denm denm;
-    EXPECT_EQ(0, asn_uint642INTEGER(&denm->denm.management.detectionTime, TimestampIts_utcStartOf2004));
-    EXPECT_EQ(0, asn_uint642INTEGER(&denm->denm.management.referenceTime, TimestampIts_utcStartOf2004));
-    EXPECT_TRUE(denm.validate());
-    vanetza::ByteBuffer buf = denm.encode();
-    EXPECT_EQ(40, buf.size());
 }
