@@ -147,7 +147,11 @@ void GpsPositionProvider::fetch_position_fix()
             fetched_position_fix.confidence = vanetza::PositionConfidence();
         }
         if (gps_data.fix.mode == MODE_3D) {
+#if GPSD_API_MAJOR_VERSION > 8
+            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length>(gps_data.fix.altHAE * si::meter, gps_data.fix.epv * si::meter);
+#else
             fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length>(gps_data.fix.altitude * si::meter, gps_data.fix.epv * si::meter);
+#endif
         } else {
             fetched_position_fix.altitude = boost::none;
         }
