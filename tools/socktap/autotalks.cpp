@@ -38,6 +38,7 @@ static uint8_t v2x_rx_buffer[2048];
 
 int v2x_device_init(void)
 {
+  atlk_rc_t rc;
   const char* arg[] = {"./test", "enx0002ccf00006"};
   /** Reference system initialization */
 #ifdef CRATON_2
