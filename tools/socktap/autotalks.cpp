@@ -1,10 +1,3 @@
-/*
- * autotalks.cpp
- *
- *  Created on: Dec 22, 2021
- *      Author: karel
- */
-
 #include "autotalks.hpp"
 
 #include <vanetza/access/g5_link_layer.hpp>

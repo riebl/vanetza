@@ -1,10 +1,3 @@
-/*
- * autotalks_link.hpp
- *
- *  Created on: Dec 22, 2021
- *      Author: karel
- */
-
 #ifndef AUTOTALKS_LINK_HPP_
 #define AUTOTALKS_LINK_HPP_
 

@@ -1,10 +1,3 @@
-/*
- * autotalks_link.cpp
- *
- *  Created on: Dec 22, 2021
- *      Author: karel
- */
-
 #include "autotalks_link.hpp"
 #include "autotalks.hpp"
 #include <vanetza/net/osi_layer.hpp>
