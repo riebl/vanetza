@@ -8,6 +8,11 @@
 #   include "cohda_link.hpp"
 #endif
 
+#ifdef SOCKTAP_WITH_AUTOTALKS
+#    include "autotalks_link.hpp"
+#    include "autotalks.hpp"
+#endif
+
 std::unique_ptr<LinkLayer>
 create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& device, const std::string& name)
 {
@@ -29,6 +34,12 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
         namespace ip = boost::asio::ip;
         ip::udp::endpoint multicast(ip::address::from_string("239.118.122.97"), 8947);
         link_layer.reset(new UdpLink { io_service, multicast });
+    }
+    else if (name == "autotalks") {
+#ifdef SOCKTAP_WITH_AUTOTALKS
+        v2x_device_init();
+        link_layer.reset(new AutotalksLink { });
+#endif
     }
 
     return link_layer;
