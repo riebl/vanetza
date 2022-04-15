@@ -45,6 +45,15 @@ constexpr bool gpsd_has_useful_fix(const gps_data_t& data)
     return gpsd_status(data) >= cStatusFix && data.fix.mode >= MODE_2D;
 }
 
+constexpr double gpsd_get_altitude(const gps_data_t& data)
+{
+#if GPSD_API_MAJOR_VERSION > 8
+    return data.fix.altHAE;
+#else
+    return data.fix.altitude;
+#endif
+}
+
 vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
 {
     namespace posix = boost::posix_time;
@@ -147,11 +156,8 @@ void GpsPositionProvider::fetch_position_fix()
             fetched_position_fix.confidence = vanetza::PositionConfidence();
         }
         if (gps_data.fix.mode == MODE_3D) {
-#if GPSD_API_MAJOR_VERSION > 8
-            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length>(gps_data.fix.altHAE * si::meter, gps_data.fix.epv * si::meter);
-#else
-            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length>(gps_data.fix.altitude * si::meter, gps_data.fix.epv * si::meter);
-#endif
+            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length> {
+                gpsd_get_altitude(gps_data) * si::meter, gps_data.fix.epv * si::meter };
         } else {
             fetched_position_fix.altitude = boost::none;
         }
