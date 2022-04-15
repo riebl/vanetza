@@ -20,6 +20,8 @@ public:
      * \return position with latitude and longitude
      */
     virtual const PositionFix& position_fix() = 0;
+
+    virtual ~PositionProvider() = default;
 };
 
 } // namespace vanetza
