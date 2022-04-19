@@ -11,10 +11,6 @@
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
-#ifdef SOCKTAP_WITH_AUTOTALKS
-#    include "autotalks_link.hpp"
-#    include "autotalks.hpp"
-#endif
 
 namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
@@ -94,10 +90,6 @@ int main(int argc, const char** argv)
             if (!ec) {
                 std::cout << "Termination requested." << std::endl;
                 io_service.stop();
-#ifdef SOCKTAP_WITH_AUTOTALKS
-                if (nullptr != dynamic_cast<AutotalksLink*>(link_layer.get()))      // Deinitialize Autotalks device only if its link layer used
-                    autotalks_device_deinit();
-#endif
             }
         };
         asio::signal_set signals(io_service, SIGINT, SIGTERM);

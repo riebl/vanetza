@@ -2,11 +2,17 @@
 #include "autotalks.hpp"
 #include <vanetza/net/osi_layer.hpp>
 
-const unsigned SendBufferSize = 1000;
+const unsigned SendBufferSize = 2000;
 
 AutotalksLink::AutotalksLink(void)
 {
-    init_rx(this);
+    vanetza::autotalks::autotalks_device_init();
+    vanetza::autotalks::init_rx(this);
+}
+
+AutotalksLink::~AutotalksLink(void)
+{
+    vanetza::autotalks::autotalks_device_deinit();
 }
 
 void AutotalksLink::request(const vanetza::access::DataRequest& request, std::unique_ptr<vanetza::ChunkPacket> packet)
@@ -26,7 +32,7 @@ void AutotalksLink::request(const vanetza::access::DataRequest& request, std::un
     }
 
     uint16_t datalen = j;
-    insert_autotalks_header_transmit(request, packet, (uint8_t*) toSend, datalen);
+    vanetza::autotalks::insert_autotalks_header_transmit(request, packet, (uint8_t*) toSend, datalen);
 }
 
 void AutotalksLink::data_received(uint8_t* pBuf, uint16_t size, v2x_receive_params_t rx_params)
@@ -35,7 +41,7 @@ void AutotalksLink::data_received(uint8_t* pBuf, uint16_t size, v2x_receive_para
 	for (uint16_t i = 0; i < size; i++)
 		buffer[i] = pBuf[i];
 	vanetza::CohesivePacket packet(std::move(buffer), vanetza::OsiLayer::Physical);
-	boost::optional<vanetza::EthernetHeader> eth = strip_autotalks_rx_header(packet, rx_params);
+	boost::optional<vanetza::EthernetHeader> eth = vanetza::autotalks::strip_autotalks_rx_header(packet, rx_params);
 	if (callback_ && eth)
 		callback_(std::move(packet), *eth);
 }

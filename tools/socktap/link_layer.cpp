@@ -37,7 +37,6 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
     }
     else if (name == "autotalks") {
 #ifdef SOCKTAP_WITH_AUTOTALKS
-        v2x_device_init();
         link_layer.reset(new AutotalksLink { });
 #endif
     }

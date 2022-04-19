@@ -29,6 +29,11 @@ extern "C" {
 
 #include "autotalks_link.hpp"
 
+namespace vanetza
+{
+namespace autotalks
+{
+
 v2x_socket_t* v2x_socket_ptr;
 bool endRxThread = false;
 
@@ -36,7 +41,7 @@ static pthread_t v2x_rx_thread;
 static uint8_t v2x_rx_buffer[2048];
 
 
-int v2x_device_init(void)
+int autotalks_device_init(void)
 {
   atlk_rc_t rc;
   const char* arg[] = {"./test", "enx0002ccf00006"};
@@ -54,6 +59,7 @@ int v2x_device_init(void)
   // TODO                                                                     //
   // TODO: Take initialization from Autotalks basic example's main function   //
   // TODO                                                                     //
+#error "Autotalks device initialization code is missing"
     
   v2x_socket_t *v2x_if[IF_INDEX_MAX];
   // Assign the socket to the global parameter
@@ -226,4 +232,7 @@ void init_rx(AutotalksLink* link_layer)
     }
     printf("pthread_create success!\n");
 }
+
+} // namespace autotalks
+} // namespace vanetza
 

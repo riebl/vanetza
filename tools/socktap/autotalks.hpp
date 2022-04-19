@@ -12,10 +12,15 @@
 #include "atlk/v2x_service.h"
 #include "autotalks_link.hpp"
 
+namespace vanetza
+{
+namespace autotalks
+{
+
 /*
  * Device initialization.
  */
-int v2x_device_init(void);
+int autotalks_device_init(void);
 
 /*
  * Device deinitialization.
@@ -57,6 +62,9 @@ boost::optional<vanetza::EthernetHeader> strip_autotalks_rx_header(vanetza::Cohe
  */
 void init_rx(AutotalksLink*);
 
+
+} // namespace autotalks
+} // namespace vanetza
 
 
 #endif /* AUTOTALKS_HPP_ */

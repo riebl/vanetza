@@ -32,7 +32,7 @@ Create a build directory and tell CMake to use the cross-compiler installed on y
     mkdir vanetza/vanetza-build
     cd vanetza/vanetza-build
     cmake .. \
-        -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-Autotalks.cmake \
+        -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-Autotalks-Craton.cmake \
         -DCMAKE_FIND_ROOT_PATH=$HOME/vanetza-deps \
         -DCMAKE_INSTALL_RPATH=\$ORIGIN/../lib \
         -DCMAKE_INSTALL_PREFIX=$HOME/vanetza-dist \
@@ -46,6 +46,7 @@ This builds the Vanetza libraries and *socktap* example as well. When you do `ma
 We assume you have copy of the Vanetza repository in your home directory at `$HOME`.
 Furthermore, there should be a symbolic link named `autotalks_secton_api` in your home directory, that links to the root of Secton SDK (the directory where the API is compiled). The build steps are then identical with the ones described in [How to build](vanetza-build-dependencies.md). Just note that for using Autotalks SDK you should use enable compilation of socktap, e.g. like this:
 
+    :::shell
     cmake .. \
         -DBUILD_SOCKTAP=ON \
         -DSOCKTAP_WITH_AUTOTALKS=ON

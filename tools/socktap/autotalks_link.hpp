@@ -9,7 +9,15 @@ class AutotalksLink : public LinkLayer
 {
 public:
 
+    /*
+     * Constructor used for device and thread initialization.
+     */
     AutotalksLink(void);
+
+    /*
+     * Destructor used for deinitialization.
+     */
+    ~AutotalksLink(void);
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;
     void indicate(IndicationCallback callback) override;
     void data_received(uint8_t*, uint16_t, v2x_receive_params_t);
