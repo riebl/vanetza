@@ -1,5 +1,5 @@
 find_package(Git REQUIRED)
-file(GLOB PATCH_FILES vanetza/asn1/patches/*.patch)
+file(GLOB PATCH_FILES ${PATCH_DIRECTORY}/*.patch)
 foreach(PATCH_FILE IN LISTS PATCH_FILES)
     get_filename_component(PATCH_NAME "${PATCH_FILE}" NAME_WE)
     message(STATUS "Applying patch ${PATCH_NAME}")
