@@ -7,7 +7,7 @@ Building Vanetza is accomplished by the [CMake](https://cmake.org) build system.
 You need following tools and libraries on your system for compiling Vanetza:
 
 * C++11 compatible compiler, e.g. [GNU GCC](https://gcc.gnu.org) or [Clang](http://clang.llvm.org)
-* [CMake](https://cmake.org) 3.1 or higher
+* [CMake](https://cmake.org) 3.12 or higher
 * [Boost](https://www.boost.org) 1.58 or higher
 * [GeographicLib](http://geographiclib.sourceforge.net) 1.37 or higher
 * [Crypto++](https://www.cryptopp.com) 5.6.1 or higher
