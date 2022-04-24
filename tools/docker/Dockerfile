@@ -3,7 +3,7 @@ FROM ubuntu:${UBUNTU_VERSION}
 ARG DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 COPY update_cmake.sh /usr/local/bin/update_cmake.sh
-RUN update_cmake.sh && \
+RUN update_cmake.sh && apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
         cmake \
