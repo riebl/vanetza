@@ -14,6 +14,7 @@ You need following tools and libraries on your system for compiling Vanetza:
 
 If OpenSSL (1.0 or 1.1) or LibreSSL is available on your system, an alternative security backend implementation is compiled along with the Crypto++ based backend.
 See `security::Backend` and `security::create_backend` for more details.
+If you are building on Ubuntu 16.04 or 18.04, where CMake 3.5.1 is the newest version, you can run script located in `tools/docker/update_cmake.sh`, which will add kitware repository for you. You can then run `sudo apt-get install cmake`, which will install the newer version.
 
 
 ## Compilation
