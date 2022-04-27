@@ -14,7 +14,7 @@ namespace aid
 
 /**
  * ITS-AID assigned for ETSI ITS
- * \see TS 102 965 V1.5.1 Annex A
+ * \see TS 102 965 V2.1.1 Annex A
  */
 constexpr ItsAid CA = 36;
 constexpr ItsAid DEN = 37;
@@ -29,6 +29,7 @@ constexpr ItsAid SCR = 623;
 constexpr ItsAid CTL = 624;
 constexpr ItsAid VRU = 638;
 constexpr ItsAid CP = 639;
+constexpr ItsAid IMZ = 640;
 constexpr ItsAid SA = 540801;
 constexpr ItsAid GPC = 540802;
 constexpr ItsAid IPV6_ROUTING = 270549118;
