@@ -34,7 +34,7 @@ else() # Craton device
         CMAKE_FIND_ROOT_PATH_BOTH # Seems like this is not needed in newer CMake
     )
 
-    set(AUTOTALKS_INCLUDE_DIRS "${AUTOTALKS_ROOT}/include" "${AUTOTALKS_ROOT}/ref_src/include" "${AUTOTALKS_ROOT}/depend/device/include")
+    set(AUTOTALKS_INCLUDE_DIRS "${AUTOTALKS_ROOT}/include" "${AUTOTALKS_ROOT}/ref_src/include" "${AUTOTALKS_ROOT}/depend/device/include" "${AUTOTALKS_ROOT}/src/include" "${AUTOTALKS_ROOT}/src/core/include")
 
     set(AUTOTALKS_LIBS_DIR ${AUTOTALKS_ROOT}/output.cr2_lnx/armv7-32/lib)
     set(AUTOTALKS_OBJ_DIR ${AUTOTALKS_ROOT}/output.cr2_lnx/armv7-32/obj)
