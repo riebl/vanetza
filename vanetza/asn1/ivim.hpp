@@ -1,5 +1,5 @@
 #ifndef IVIM_HPP_D5N8Q2JO
-#define IVIM_HPP_G458S63A
+#define IVIM_HPP_D5N8Q2JO
 
 #include <vanetza/asn1/asn1c_conversion.hpp>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
@@ -20,4 +20,4 @@ public:
 } // namespace asn1
 } // namespace vanetza
 
-#endif // IVIM_HPP_G458S63A
+#endif // IVIM_HPP_D5N8Q2JO
