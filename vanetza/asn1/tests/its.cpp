@@ -56,10 +56,10 @@ TEST(ItsAsn1, create_spatem)
 
 TEST(ItsAsn1, create_srem)
 {
-    asn1::Spatem srem;
+    asn1::Srem srem;
 }
 
 TEST(ItsAsn1, create_ssem)
 {
-    asn1::Spatem ssem;
+    asn1::Ssem ssem;
 }
