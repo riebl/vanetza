@@ -1,5 +1,5 @@
-#ifndef SSEM_HPP_DFK546SZ
-#define SSEM_HPP_DFK546SZ
+#ifndef SSEM_HPP_524FMRX6
+#define SSEM_HPP_524FMRX6
 
 #include <vanetza/asn1/asn1c_conversion.hpp>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
@@ -20,4 +20,4 @@ public:
 } // namespace asn1
 } // namespace vanetza
 
-#endif // SSEM_HPP_DFK546SZ
+#endif /* SSEM_HPP_524FMRX6 */

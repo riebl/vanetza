@@ -55,6 +55,16 @@ TEST(ItsAsn1, create_spatem)
     asn1::Spatem spatem;
 }
 
+TEST(ItsAsn1, create_srem)
+{
+    asn1::Srem srem;
+}
+
+TEST(ItsAsn1, create_ssem)
+{
+    asn1::Ssem ssem;
+}
+
 TEST(ItsAsn1, create_ivim)
 {
     asn1::Ivim ivim;

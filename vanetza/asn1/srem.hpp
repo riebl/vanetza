@@ -1,5 +1,5 @@
-#ifndef SREM_HPP_G458S63A
-#define SREM_HPP_G458S63A
+#ifndef SREM_HPP_AWEH4562
+#define SREM_HPP_AWEH4562
 
 #include <vanetza/asn1/asn1c_conversion.hpp>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
@@ -20,4 +20,4 @@ public:
 } // namespace asn1
 } // namespace vanetza
 
-#endif // SREM_HPP_DFK546SZ
+#endif /* SREM_HPP_AWEH4562 */
