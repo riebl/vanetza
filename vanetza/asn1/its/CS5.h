@@ -31,6 +31,8 @@ typedef struct CS5 {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_CS5;
+extern asn_SEQUENCE_specifics_t asn_SPC_CS5_specs_1;
+extern asn_TYPE_member_t asn_MBR_CS5_1[2];
 
 #ifdef __cplusplus
 }

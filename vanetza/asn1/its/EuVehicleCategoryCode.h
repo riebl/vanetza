@@ -52,6 +52,9 @@ typedef struct EuVehicleCategoryCode {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_EuVehicleCategoryCode;
+extern asn_CHOICE_specifics_t asn_SPC_EuVehicleCategoryCode_specs_1;
+extern asn_TYPE_member_t asn_MBR_EuVehicleCategoryCode_1[6];
+extern asn_per_constraints_t asn_PER_type_EuVehicleCategoryCode_constr_1;
 
 #ifdef __cplusplus
 }

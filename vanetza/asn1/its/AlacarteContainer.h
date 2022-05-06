@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "LanePosition.h"
-#include "Temperature.h"
+#include "ITS-Container_Temperature.h"
 #include "PositioningSolutionType.h"
 #include "constr_SEQUENCE.h"
 
@@ -30,7 +30,7 @@ struct StationaryVehicleContainer;
 typedef struct AlacarteContainer {
 	LanePosition_t	*lanePosition;	/* OPTIONAL */
 	struct ImpactReductionContainer	*impactReduction;	/* OPTIONAL */
-	Temperature_t	*externalTemperature;	/* OPTIONAL */
+	ITS_Container_Temperature_t	*externalTemperature;	/* OPTIONAL */
 	struct RoadWorksContainerExtended	*roadWorks;	/* OPTIONAL */
 	PositioningSolutionType_t	*positioningSolution;	/* OPTIONAL */
 	struct StationaryVehicleContainer	*stationaryVehicle;	/* OPTIONAL */

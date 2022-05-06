@@ -13,13 +13,13 @@ static asn_oer_constraints_t asn_OER_type_EuVehicleCategoryCode_constr_1 CC_NOTU
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_type_EuVehicleCategoryCode_constr_1 CC_NOTUSED = {
+asn_per_constraints_t asn_PER_type_EuVehicleCategoryCode_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 3,  3,  0,  5 }	/* (0..5) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-static asn_TYPE_member_t asn_MBR_EuVehicleCategoryCode_1[] = {
+asn_TYPE_member_t asn_MBR_EuVehicleCategoryCode_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct EuVehicleCategoryCode, choice.euVehicleCategoryL),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
@@ -131,7 +131,7 @@ static const asn_TYPE_tag2member_t asn_MAP_EuVehicleCategoryCode_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 }, /* euVehilcleCategoryT */
     { (ASN_TAG_CLASS_CONTEXT | (5 << 2)), 5, 0, 0 } /* euVehilcleCategoryG */
 };
-static asn_CHOICE_specifics_t asn_SPC_EuVehicleCategoryCode_specs_1 = {
+asn_CHOICE_specifics_t asn_SPC_EuVehicleCategoryCode_specs_1 = {
 	sizeof(struct EuVehicleCategoryCode),
 	offsetof(struct EuVehicleCategoryCode, _asn_ctx),
 	offsetof(struct EuVehicleCategoryCode, present),

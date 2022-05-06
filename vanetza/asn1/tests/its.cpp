@@ -4,6 +4,7 @@
 #include <vanetza/asn1/denm.hpp>
 #include <vanetza/asn1/mapem.hpp>
 #include <vanetza/asn1/spatem.hpp>
+#include <vanetza/asn1/ivim.hpp>
 #include <vanetza/asn1/its/TimestampIts.h>
 
 using namespace vanetza;
@@ -51,3 +52,9 @@ TEST(ItsAsn1, create_spatem)
 {
     asn1::Spatem spatem;
 }
+
+TEST(ItsAsn1, create_ivim)
+{
+    asn1::Ivim ivim;
+}
+
