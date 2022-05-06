@@ -45,7 +45,7 @@ asn_TYPE_member_t asn_MBR_AlacarteContainer_1[] = {
 	{ ATF_POINTER, 4, offsetof(struct AlacarteContainer, externalTemperature),
 		(ASN_TAG_CLASS_CONTEXT | (2 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_Temperature,
+		&asn_DEF_ITS_Container_Temperature,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
