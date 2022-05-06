@@ -52,6 +52,8 @@ typedef struct SignalRequestMessage {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_SignalRequestMessage;
+extern asn_SEQUENCE_specifics_t asn_SPC_SignalRequestMessage_specs_1;
+extern asn_TYPE_member_t asn_MBR_SignalRequestMessage_1[6];
 
 #ifdef __cplusplus
 }

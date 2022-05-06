@@ -349,6 +349,8 @@ its/RoadwayCrownAngle.c
 its/RoadworksSubCauseCode.c
 its/SPAT.c
 its/SPATEM.c
+its/SREM.c
+its/SSEM.c
 its/SafetyCarContainer.c
 its/Scale-B12.c
 its/SegmentAttributeXY.c
