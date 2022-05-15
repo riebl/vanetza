@@ -1,29 +1,34 @@
 /*
-@licstart  The following is the entire license notice for the
-JavaScript code in this file.
+ @licstart  The following is the entire license notice for the JavaScript code in this file.
 
-Copyright (C) 1997-2019 by Dimitri van Heesch
+ The MIT License (MIT)
 
-This program is free software; you can redistribute it and/or modify
-it under the terms of version 2 of the GNU General Public License as published by
-the Free Software Foundation
+ Copyright (C) 1997-2020 by Dimitri van Heesch
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-GNU General Public License for more details.
+ Permission is hereby granted, free of charge, to any person obtaining a copy of this software
+ and associated documentation files (the "Software"), to deal in the Software without restriction,
+ including without limitation the rights to use, copy, modify, merge, publish, distribute,
+ sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
 
-You should have received a copy of the GNU General Public License along
-with this program; if not, write to the Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ The above copyright notice and this permission notice shall be included in all copies or
+ substantial portions of the Software.
 
-@licend  The above is the entire license notice
-for the JavaScript code in this file
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING
+ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+ @licend  The above is the entire license notice for the JavaScript code in this file
 */
 var NAVTREE =
 [
   [ "Vanetza", "index.html", [
     [ "Deprecated List", "da/d58/deprecated.html", null ],
+    [ "Namespaces", "namespaces.html", [
+      [ "Namespace List", "namespaces.html", "namespaces_dup" ]
+    ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
@@ -48,19 +53,17 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-".html",
-"d1/d19/structvanetza_1_1security_1_1SubjectAssurance.html",
-"d2/d10/recipient__info_8hpp_source.html",
-"d3/d65/structvanetza_1_1security_1_1ThreeDLocation.html#a607c43e57608663ce54039be047e1bd4",
-"d4/dca/sign__service_8cpp_source.html",
-"d6/d47/classvanetza_1_1asn1_1_1Cam.html#aa347dc129a55eba4fd46f7c4575a0240",
-"d7/deb/structvanetza_1_1convertible_1_1byte__buffer__impl.html#ab85acda866064ec5dcb2b95fcbb72c36",
-"d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504a069382f113ed87cd9e9a2ec39ffd92e1",
-"da/dbc/classvanetza_1_1asn1_1_1Denm.html#a6b80bb46e24b308f5b38d90ce59125e2",
-"db/db0/subject__info_8cpp_source.html",
-"dd/d5e/classvanetza_1_1HookRegistry.html#a1a61485546f3ffd89d9ae9f0f4f002ca",
-"de/d48/classvanetza_1_1geonet_1_1PacketBuffer.html",
-"functions_vars.html"
+"annotated.html",
+"d1/d98/classvanetza_1_1ChunkPacket.html#a2b77ea04834f7aecb1ce9bc4966605fa",
+"d2/dd0/dcc__information__sharing_8hpp_source.html",
+"d4/db1/classvanetza_1_1geonet_1_1CbrAggregator.html#a35c8c59e26573e0b42ce567cb2419134",
+"d6/d47/classvanetza_1_1asn1_1_1Cam.html#a1e68e8d3b989b962c39354dff2a46582",
+"d7/dff/classvanetza_1_1security_1_1v2_1_1NaiveCertificateProvider.html#ae403fb8e4cefcd7e57193b299b50a130",
+"d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504afaafc1fbfd449d71c021629dbae09d6e",
+"db/d0c/classvanetza_1_1geonet_1_1IndicationContextSecuredCast.html#a71926befe4792b1769c0ae10fd18c3db",
+"dc/d6c/length__coding_8hpp_source.html",
+"dd/dc1/CtlEntry_8h_source.html",
+"df/d73/HashedId10_8c_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

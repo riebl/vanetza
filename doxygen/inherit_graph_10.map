@@ -1,3 +1,8 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$d5/d62/classvanetza_1_1asio_1_1linklayer__endpoint.html" title=" " alt="" coords="5,5,160,47"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,143,139,170"/>
+<area shape="rect" id="node2" href="$d1/d9d/classvanetza_1_1security_1_1openssl_1_1BigNumber.html" title=" " alt="" coords="210,5,350,47"/>
+<area shape="rect" id="node3" href="$d3/d61/classvanetza_1_1security_1_1openssl_1_1BigNumberContext.html" title=" " alt="" coords="187,71,373,112"/>
+<area shape="rect" id="node4" href="$d0/dd1/classvanetza_1_1security_1_1openssl_1_1Group.html" title=" " alt="" coords="216,136,344,177"/>
+<area shape="rect" id="node5" href="$d2/d5b/classvanetza_1_1security_1_1openssl_1_1Point.html" title=" " alt="" coords="216,201,344,243"/>
+<area shape="rect" id="node6" href="$d2/def/classvanetza_1_1security_1_1openssl_1_1Signature.html" title=" " alt="" coords="215,267,345,308"/>
 </map>

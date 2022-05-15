@@ -1,5 +1,5 @@
 <map id="vanetza::dcc::RequestInterface" name="vanetza::dcc::RequestInterface">
-<area shape="rect" id="node1" title=" " alt="" coords="105,5,309,97"/>
-<area shape="rect" id="node2" href="$d8/da4/classvanetza_1_1dcc_1_1FlowControl.html" title=" " alt="" coords="5,145,200,545"/>
-<area shape="rect" id="node3" href="$d3/d6b/classvanetza_1_1dcc_1_1NullRequestInterface.html" title=" " alt="" coords="225,299,399,391"/>
+<area shape="rect" id="node1" title=" " alt="" coords="89,5,293,97"/>
+<area shape="rect" id="node2" href="$d8/da4/classvanetza_1_1dcc_1_1FlowControl.html" title=" " alt="" coords="5,145,180,560"/>
+<area shape="rect" id="node3" href="$d3/d6b/classvanetza_1_1dcc_1_1NullRequestInterface.html" title=" " alt="" coords="204,307,379,399"/>
 </map>

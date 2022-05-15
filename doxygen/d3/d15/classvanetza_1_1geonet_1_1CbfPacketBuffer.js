@@ -1,11 +1,7 @@
 var classvanetza_1_1geonet_1_1CbfPacketBuffer =
 [
-    [ "Timer", "db/d41/structvanetza_1_1geonet_1_1CbfPacketBuffer_1_1Timer.html", "db/d41/structvanetza_1_1geonet_1_1CbfPacketBuffer_1_1Timer" ],
-    [ "Identifier", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#aa51f05fe881442980d2048bafec90bf0", null ],
-    [ "timer_bimap", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a125826a3103eecb1d377bbcfd32f0b63", null ],
-    [ "TimerCallback", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a65a6d6ec8bcc493c5926082bdc345004", null ],
+    [ "Timer", "db/d41/structvanetza_1_1geonet_1_1CbfPacketBuffer_1_1Timer.html", null ],
     [ "CbfPacketBuffer", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#aa71edbfcb04dd5c0d1a57436c585f2a4", null ],
-    [ "~CbfPacketBuffer", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#af24a8c8ec6a8ca7d01d9dc0889cfae25", null ],
     [ "add", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#aecfa78d48658c958d2b27d9e3e16f2ff", null ],
     [ "counter", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a6f236051c1e921e763b4f43ba977eb13", null ],
     [ "fetch", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a7ac563e6ee4f721908591f65c1aba69a", null ],
@@ -15,12 +11,5 @@ var classvanetza_1_1geonet_1_1CbfPacketBuffer =
     [ "remove", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a9709ba78a14490de3e0a9af4854fb865", null ],
     [ "remove_timer", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a8129c5adff2df55eab2c56164555b6ac", null ],
     [ "schedule_timer", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a5cc5f7005471bb1b1ae6b461c3c0a06d", null ],
-    [ "update", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#ae506628ebada4cc101e948604a329ea9", null ],
-    [ "m_capacity_bytes", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#aa6591693383b1105d33a635538b07e73", null ],
-    [ "m_counter", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a9bb6129725cddce96f9fefcbefa02be7", null ],
-    [ "m_packets", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a0610786fc58f9849499ded014633600e", null ],
-    [ "m_runtime", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a0644d8065710c57b9bce7468894bafe7", null ],
-    [ "m_stored_bytes", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#a092282d2f14f0d664c01b1349552b392", null ],
-    [ "m_timer_callback", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#ae6a4e5bc86ca192d686b39e705be29fa", null ],
-    [ "m_timers", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#aec33609fae8f69c070eb93152045251d", null ]
+    [ "update", "d3/d15/classvanetza_1_1geonet_1_1CbfPacketBuffer.html#ae506628ebada4cc101e948604a329ea9", null ]
 ];

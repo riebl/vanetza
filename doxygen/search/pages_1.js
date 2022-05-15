@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['vanetza_1196',['Vanetza',['../index.html',1,'']]]
+  ['vanetza_0',['Vanetza',['../index.html',1,'']]]
 ];

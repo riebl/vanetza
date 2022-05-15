@@ -1,9 +1,9 @@
 <map id="vanetza::convertible::byte_buffer" name="vanetza::convertible::byte_buffer">
 <area shape="rect" id="node1" title=" " alt="" coords="803,5,942,141"/>
 <area shape="rect" id="node2" href="$d7/deb/structvanetza_1_1convertible_1_1byte__buffer__impl.html" title=" " alt="" coords="5,189,164,355"/>
-<area shape="rect" id="node3" href="$d2/d99/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01btp_1_1HeaderA_01_4.html" title=" " alt="" coords="188,204,344,340"/>
-<area shape="rect" id="node4" href="$d8/dda/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01btp_1_1HeaderB_01_4.html" title=" " alt="" coords="368,204,524,340"/>
-<area shape="rect" id="node5" href="$d9/d3a/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01ByteBuffer_01_4.html" title=" " alt="" coords="548,211,760,333"/>
+<area shape="rect" id="node3" href="$d9/d3a/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01ByteBuffer_01_4.html" title=" " alt="" coords="188,211,400,333"/>
+<area shape="rect" id="node4" href="$d2/d99/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01btp_1_1HeaderA_01_4.html" title=" " alt="" coords="424,204,580,340"/>
+<area shape="rect" id="node5" href="$d8/dda/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01btp_1_1HeaderB_01_4.html" title=" " alt="" coords="604,204,760,340"/>
 <area shape="rect" id="node6" href="$da/dac/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01geonet_1_1SecuredPdu_01_4.html" title=" " alt="" coords="784,197,961,347"/>
 <area shape="rect" id="node7" title=" " alt="" coords="985,219,1141,325"/>
 <area shape="rect" id="node8" title=" " alt="" coords="1165,219,1321,325"/>

@@ -1,25 +1,11 @@
 var classvanetza_1_1CohesivePacket =
 [
-    [ "buffer_const_range", "d8/db4/classvanetza_1_1CohesivePacket.html#a04d0aada9c17ee48c502958f836a119d", null ],
-    [ "buffer_range", "d8/db4/classvanetza_1_1CohesivePacket.html#a057a42ed3462a7d34d5eb82c7f2d5b6c", null ],
     [ "CohesivePacket", "d8/db4/classvanetza_1_1CohesivePacket.html#a8ac0199c67f98530bdff306e0e911690", null ],
-    [ "CohesivePacket", "d8/db4/classvanetza_1_1CohesivePacket.html#adbe99386e34aaa038bb9c1552da69d4c", null ],
-    [ "CohesivePacket", "d8/db4/classvanetza_1_1CohesivePacket.html#a9327f9f6a1c4dbd46dba0ac63d6223ef", null ],
-    [ "CohesivePacket", "d8/db4/classvanetza_1_1CohesivePacket.html#a31cbcbfab94169dfa37f83a9803f6a4f", null ],
-    [ "buffer", "d8/db4/classvanetza_1_1CohesivePacket.html#a2a419b021be0ae4f3f0c3af34d82926a", null ],
-    [ "get", "d8/db4/classvanetza_1_1CohesivePacket.html#af6fc5990f58117eae2b3fd72074c3379", null ],
-    [ "get", "d8/db4/classvanetza_1_1CohesivePacket.html#a4cc7ba6aa0fe4f3baa4ee19aa341b50e", null ],
-    [ "operator=", "d8/db4/classvanetza_1_1CohesivePacket.html#a5da84fd3e0bd0406b62880651fa21dcb", null ],
-    [ "operator=", "d8/db4/classvanetza_1_1CohesivePacket.html#a5de02b2b91770afb15d9328af652cac5", null ],
-    [ "operator[]", "d8/db4/classvanetza_1_1CohesivePacket.html#ab5f1a00ba62862028f6417bd92a5c304", null ],
+    [ "buffer", "d8/db4/classvanetza_1_1CohesivePacket.html#a87269d087b30fa8effcb21019d2add41", null ],
     [ "operator[]", "d8/db4/classvanetza_1_1CohesivePacket.html#a2fe2e9cf162ba62a06e2d071dd59f1df", null ],
-    [ "rebuild_iterators", "d8/db4/classvanetza_1_1CohesivePacket.html#a5772abde768a0baf5aabed0f5ac96a0f", null ],
-    [ "reset_iterators", "d8/db4/classvanetza_1_1CohesivePacket.html#a1856f247032b462090c3af49a2547841", null ],
     [ "set_boundary", "d8/db4/classvanetza_1_1CohesivePacket.html#a4f4d517a14b9ee2f6c36e53ff3fb5b9a", null ],
     [ "size", "d8/db4/classvanetza_1_1CohesivePacket.html#a3de3488cdc0015fe38e31b5a7309f918", null ],
     [ "size", "d8/db4/classvanetza_1_1CohesivePacket.html#a2b38bbda3fe025fb6db4b90d0b47f932", null ],
     [ "size", "d8/db4/classvanetza_1_1CohesivePacket.html#ad50d40d6d61ea0cb2158f1ad05301cf2", null ],
-    [ "trim", "d8/db4/classvanetza_1_1CohesivePacket.html#acddf5abd1499645380ffb497397e179b", null ],
-    [ "m_buffer", "d8/db4/classvanetza_1_1CohesivePacket.html#aa1b18f434985c424807359b30e33e004", null ],
-    [ "m_iterators", "d8/db4/classvanetza_1_1CohesivePacket.html#a1efc32cc8a83c21e8acdf089d47206cb", null ]
+    [ "trim", "d8/db4/classvanetza_1_1CohesivePacket.html#acddf5abd1499645380ffb497397e179b", null ]
 ];
