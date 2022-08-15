@@ -81,10 +81,6 @@ add_subdirectory(vanetza/net)
 add_subdirectory(vanetza/security)
 add_subdirectory(vanetza/units)
 
-if(TARGET Cohda::headers)
-  add_subdirectory(tools/cohda_proxy)
-endif()
-
 option(BUILD_SOCKTAP "Build socktap application" OFF)
 if(BUILD_SOCKTAP)
   add_subdirectory(tools/socktap)
