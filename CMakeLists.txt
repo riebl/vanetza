@@ -80,7 +80,6 @@ add_subdirectory(vanetza/gnss)
 add_subdirectory(vanetza/net)
 add_subdirectory(vanetza/security)
 add_subdirectory(vanetza/units)
-add_subdirectory(tools/proxy_fake_feed)
 
 if(TARGET Cohda::headers)
   add_subdirectory(tools/cohda_proxy)
