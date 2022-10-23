@@ -1,11 +1,13 @@
 #ifndef CHECK_REGION_HPP_UFSV2RZ5
 #define CHECK_REGION_HPP_UFSV2RZ5
 
-#include <vanetza/security/region.hpp>
+#include <vanetza/security/v2/region.hpp>
 
 namespace vanetza
 {
 namespace security
+{
+namespace v2
 {
 
 /** \brief check two TwoDLocations
@@ -56,6 +58,7 @@ void check(const IdentifiedRegion& expected, const IdentifiedRegion& actual);
  */
 void check(const GeographicRegion& expected, const GeographicRegion& actual);
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
 

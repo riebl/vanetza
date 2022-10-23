@@ -9,6 +9,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const VerificationKey& expected, const VerificationKey& actual)
 {
@@ -69,5 +71,6 @@ ItsAidSsp create_random_its_aid_ssp(int seed)
     return result;
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

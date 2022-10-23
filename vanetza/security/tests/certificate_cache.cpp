@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/manual_runtime.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/security/certificate_cache.hpp>
+#include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 class CertificateCacheTest : public ::testing::Test
 {

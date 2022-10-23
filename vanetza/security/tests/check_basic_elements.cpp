@@ -4,6 +4,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const Time64WithStandardDeviation& expected, const Time64WithStandardDeviation& actual)
 {
@@ -16,5 +18,6 @@ void check(const IntX& expected, const IntX& actual)
     EXPECT_EQ(expected, actual);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

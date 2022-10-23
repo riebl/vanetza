@@ -7,6 +7,7 @@
 #include <vanetza/geonet/parser.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/geonet/variant_pdu.hpp>
+#include <vanetza/security/secured_message.hpp>
 #include <boost/optional/optional.hpp>
 
 namespace vanetza
@@ -22,7 +23,7 @@ class IndicationContext
 {
 public:
     using UpPacketPtr = std::unique_ptr<UpPacket>;
-    using SecuredMessage = security::SecuredMessageV2;
+    using SecuredMessage = security::SecuredMessage;
     using LinkLayer = geonet::LinkLayer;
 
     // parser commands

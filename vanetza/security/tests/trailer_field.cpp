@@ -1,13 +1,18 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/trailer_field.hpp>
+#include <vanetza/security/v2/trailer_field.hpp>
 #include <vanetza/security/tests/check_list.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/check_trailer_field.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza;
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
+using vanetza::security::buffer_from_hexstring;
+using vanetza::security::create_random_ecdsa_signature;
+using vanetza::security::EccPoint;
+using vanetza::security::EcdsaSignature;
+using vanetza::security::X_Coordinate_Only;
 
 TEST(TrailerField, Serialization)
 {

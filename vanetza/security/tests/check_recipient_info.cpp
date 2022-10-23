@@ -7,6 +7,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const RecipientInfo& expected, const RecipientInfo& actual)
 {
@@ -32,6 +34,6 @@ void check(const Key& expected, const Key& actual)
     boost::apply_visitor(check_visitor<Key>(), expected, actual);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
-

@@ -1,40 +1,46 @@
 add_vanetza_component(security
     backend.cpp
     backend_null.cpp
-    basic_elements.cpp
     cam_ssp.cpp
-    certificate.cpp
-    certificate_cache.cpp
-    default_certificate_validator.cpp
     delegating_security_entity.cpp
     ecc_point.cpp
     ecdsa256.cpp
-    encryption_parameter.cpp
-    header_field.cpp
-    int_x.cpp
-    length_coding.cpp
-    naive_certificate_provider.cpp
-    null_certificate_provider.cpp
-    null_certificate_validator.cpp
-    payload.cpp
-    persistence.cpp
-    public_key.cpp
-    recipient_info.cpp
-    region.cpp
+    hashed_id.cpp
     secured_message.cpp
-    serialization.cpp
     sha.cpp
-    signature.cpp
-    sign_header_policy.cpp
     sign_service.cpp
-    signer_info.cpp
-    static_certificate_provider.cpp
-    subject_attribute.cpp
-    subject_info.cpp
-    trailer_field.cpp
-    trust_store.cpp
-    validity_restriction.cpp
+    signature.cpp
     verify_service.cpp
+    v2/basic_elements.cpp
+    v2/certificate.cpp
+    v2/certificate_cache.cpp
+    v2/default_certificate_validator.cpp
+    v2/ecc_point.cpp
+    v2/encryption_parameter.cpp
+    v2/header_field.cpp
+    v2/int_x.cpp
+    v2/length_coding.cpp
+    v2/naive_certificate_provider.cpp
+    v2/null_certificate_provider.cpp
+    v2/null_certificate_validator.cpp
+    v2/payload.cpp
+    v2/persistence.cpp
+    v2/public_key.cpp
+    v2/recipient_info.cpp
+    v2/region.cpp
+    v2/secured_message.cpp
+    v2/serialization.cpp
+    v2/sign_header_policy.cpp
+    v2/signature.cpp
+    v2/signer_info.cpp
+    v2/sign_service.cpp
+    v2/static_certificate_provider.cpp
+    v2/subject_attribute.cpp
+    v2/subject_info.cpp
+    v2/trailer_field.cpp
+    v2/trust_store.cpp
+    v2/validity_restriction.cpp
+    v2/verify_service.cpp
 )
 target_link_libraries(security PUBLIC common net)
 target_link_libraries(security PRIVATE GeographicLib::GeographicLib)

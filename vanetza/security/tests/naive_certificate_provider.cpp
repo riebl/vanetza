@@ -1,12 +1,13 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/manual_runtime.hpp>
-#include <vanetza/security/default_certificate_validator.hpp>
-#include <vanetza/security/naive_certificate_provider.hpp>
+#include <vanetza/security/v2/default_certificate_validator.hpp>
+#include <vanetza/security/v2/naive_certificate_provider.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 
 using namespace vanetza;
 using namespace vanetza::security;
+using namespace vanetza::security::v2;
 using boost::get;
 
 class NaiveCertificateProviderTest : public ::testing::Test
@@ -27,7 +28,7 @@ TEST_F(NaiveCertificateProviderTest, own_certificate)
 
     // Check signature
     EXPECT_EQ(2 * field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256),
-              extract_signature_buffer(signed_certificate.signature).size());
+              extract_signature_buffer(signed_certificate.signature.some_ecdsa).size());
     EXPECT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(signed_certificate.signature));
 
     // Check signer_info and subject_info

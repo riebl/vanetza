@@ -1,7 +1,7 @@
 #include <vanetza/security/backend_openssl.hpp>
 #include <vanetza/security/openssl_wrapper.hpp>
-#include <vanetza/security/public_key.hpp>
-#include <vanetza/security/signature.hpp>
+#include <vanetza/security/v2/public_key.hpp>
+#include <vanetza/security/v2/signature.hpp>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/ecdsa.h>
@@ -43,7 +43,7 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
     X_Coordinate_Only coordinate;
 
     if (sig_r && sig_s) {
-        const size_t len = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
+        const size_t len = field_size(v2::PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
 
         const auto num_bytes_s = BN_num_bytes(sig_s);
         assert(len >= static_cast<size_t>(num_bytes_s));

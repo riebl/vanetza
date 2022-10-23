@@ -1,13 +1,14 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/header_field.hpp>
+#include <vanetza/security/v2/header_field.hpp>
 #include <vanetza/security/tests/check_header_field.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 #include <algorithm>
 
-using namespace vanetza::security;
 using namespace vanetza;
+using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 TEST(HeaderField, Serialize)
 {

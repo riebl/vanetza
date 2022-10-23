@@ -3,16 +3,18 @@
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
-#include <vanetza/security/certificate_cache.hpp>
-#include <vanetza/security/default_certificate_validator.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
-#include <vanetza/security/naive_certificate_provider.hpp>
-#include <vanetza/security/null_certificate_validator.hpp>
 #include <vanetza/security/security_entity.hpp>
-#include <vanetza/security/sign_header_policy.hpp>
-#include <vanetza/security/signer_info.hpp>
-#include <vanetza/security/static_certificate_provider.hpp>
-#include <vanetza/security/trust_store.hpp>
+#include <vanetza/security/v2/certificate_cache.hpp>
+#include <vanetza/security/v2/default_certificate_validator.hpp>
+#include <vanetza/security/v2/naive_certificate_provider.hpp>
+#include <vanetza/security/v2/null_certificate_validator.hpp>
+#include <vanetza/security/v2/sign_header_policy.hpp>
+#include <vanetza/security/v2/signer_info.hpp>
+#include <vanetza/security/v2/sign_service.hpp>
+#include <vanetza/security/v2/static_certificate_provider.hpp>
+#include <vanetza/security/v2/trust_store.hpp>
+#include <vanetza/security/v2/verify_service.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/serialization.hpp>
@@ -21,6 +23,7 @@
 
 using namespace vanetza;
 using namespace vanetza::security;
+using namespace vanetza::security::v2;
 using vanetza::geonet::distance_u16t;
 using vanetza::geonet::geo_angle_i32t;
 using vanetza::units::si::meter;
@@ -35,9 +38,7 @@ protected:
         cert_cache(runtime),
         certificate_validator(new DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store)),
         sign_header_policy(runtime, position_provider),
-        sign_service(straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy)),
-        verify_service(straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider)),
-        security(sign_service, verify_service),
+        security(create_sign_service(), create_verify_service()),
         its_aid(aid::CA)
     {
         trust_store.insert(certificate_provider->root_certificate());
@@ -60,6 +61,21 @@ protected:
         }
     }
 
+    std::unique_ptr<SignService> create_sign_service()
+    {
+        return std::unique_ptr<SignService> {
+            new StraightSignService(*certificate_provider, *crypto_backend, sign_header_policy)
+        };
+    }
+
+    std::unique_ptr<VerifyService> create_verify_service()
+    {
+        return std::unique_ptr<VerifyService> {
+            new StraightVerifyService(runtime, *certificate_provider, *certificate_validator,
+                *crypto_backend, cert_cache, sign_header_policy, position_provider)
+        };
+    }
+
     EncapRequest create_encap_request()
     {
         EncapRequest encap_request;
@@ -68,22 +84,22 @@ protected:
         return encap_request;
     }
 
-    SecuredMessage create_secured_message()
+    v2::SecuredMessage create_secured_message()
     {
         EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
-        return confirm.sec_packet;
+        return boost::get<v2::SecuredMessage>(confirm.sec_packet);
     }
 
-    SecuredMessage create_secured_message(Certificate& modified_certificate)
+    v2::SecuredMessage create_secured_message(Certificate& modified_certificate)
     {
         // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider->own_private_key());
         DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
-        SignService local_sign_service(straight_sign_service(local_cert_provider, *crypto_backend, sign_header_policy));
-        DelegatingSecurityEntity local_security(local_sign_service, verify_service);
+        std::unique_ptr<SignService> local_sign_service { new StraightSignService(local_cert_provider, *crypto_backend, sign_header_policy) };
+        DelegatingSecurityEntity local_security(std::move(local_sign_service), create_verify_service());
 
         EncapConfirm confirm = local_security.encapsulate_packet(create_encap_request());
-        return confirm.sec_packet;
+        return boost::get<v2::SecuredMessage>(confirm.sec_packet);
     }
 
     ManualRuntime runtime;
@@ -95,8 +111,6 @@ protected:
     CertificateCache cert_cache;
     std::unique_ptr<CertificateValidator> certificate_validator;
     DefaultSignHeaderPolicy sign_header_policy;
-    SignService sign_service;
-    VerifyService verify_service;
     DelegatingSecurityEntity security;
     ChunkPacket expected_payload;
     ItsAid its_aid;
@@ -105,9 +119,9 @@ protected:
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
     DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
-    SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
-    VerifyService verify = straight_verify_service(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
-    DelegatingSecurityEntity other_security(sign, verify);
+    std::unique_ptr<SignService> sign { new StraightSignService(*certificate_provider, *crypto_backend, sign_header_policy) };
+    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider) };
+    DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
@@ -123,11 +137,17 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     DefaultSignHeaderPolicy sign_header_policy_openssl(runtime, position_provider);
     DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime, position_provider);
     DelegatingSecurityEntity cryptopp_security {
-            straight_sign_service(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl),
-            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl, position_provider) };
+        std::unique_ptr<SignService> {
+            new StraightSignService(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl) },
+        std::unique_ptr<VerifyService> {
+            new StraightVerifyService(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl, position_provider) }
+    };
     DelegatingSecurityEntity openssl_security {
-            straight_sign_service(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp),
-            straight_verify_service(runtime, *certificate_provider, *certificate_validator, *openssl_backend, cert_cache, sign_header_policy_cryptopp, position_provider) };
+        std::unique_ptr<SignService> {
+            new StraightSignService(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp) },
+        std::unique_ptr<VerifyService> {
+            new StraightVerifyService(runtime, *certificate_provider, *certificate_validator, *openssl_backend, cert_cache, sign_header_policy_cryptopp, position_provider) }
+    };
 
     // OpenSSL to Crypto++
     EncapConfirm encap_confirm = openssl_security.encapsulate_packet(create_encap_request());
@@ -157,15 +177,15 @@ TEST_F(SecurityEntityTest, captured_acceptance)
             "765b6f5366837cda248d22f66da7d806e740810de221c6bd389c060bd02c48a9a574f32ec5a193ed2de21ef6d86de9e7c313d364f8"
             "91398776";
 
-    SecuredMessage message;
+    v2::SecuredMessage message;
     deserialize_from_hexstring(secured_cam, message);
 
     runtime.reset(Clock::at("2018-02-15 16:28:30"));
 
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
-    VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
-    DelegatingSecurityEntity dummy_security(sign_service, verify);
+    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider) };
+    DelegatingSecurityEntity dummy_security(create_sign_service(), std::move(verify));
 
     // We only care about the message signature here to be valid, the certificate isn't validated.
     DecapConfirm decap_confirm = dummy_security.decapsulate_packet(DecapRequest { message });
@@ -177,16 +197,17 @@ TEST_F(SecurityEntityTest, signed_payload_equals_plaintext_payload)
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
 
     // check if sec_payload equals plaintext_payload
-    check(expected_payload, confirm.sec_packet.payload.data);
+    check(expected_payload, boost::get<v2::SecuredMessage>(confirm.sec_packet).payload.data);
 }
 
 TEST_F(SecurityEntityTest, signature_is_ecdsa)
 {
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
+    auto msg = boost::get<v2::SecuredMessage>(confirm.sec_packet);
 
     // check if trailer_fields contain signature
-    EXPECT_EQ(1, confirm.sec_packet.trailer_fields.size());
-    auto signature = confirm.sec_packet.trailer_field(TrailerFieldType::Signature);
+    EXPECT_EQ(1, msg.trailer_fields.size());
+    auto signature = msg.trailer_field(TrailerFieldType::Signature);
     ASSERT_TRUE(!!signature);
     auto signature_type = get_type(boost::get<Signature>(*signature));
     EXPECT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, signature_type);
@@ -207,17 +228,19 @@ TEST_F(SecurityEntityTest, signer_info_is_encoded_first)
 TEST_F(SecurityEntityTest, expected_header_field_size)
 {
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
+    auto msg = boost::get<v2::SecuredMessage>(confirm.sec_packet);
 
     // check header_field size
-    EXPECT_EQ(3, confirm.sec_packet.header_fields.size());
+    EXPECT_EQ(3, msg.header_fields.size());
 }
 
 TEST_F(SecurityEntityTest, expected_payload)
 {
     EncapConfirm confirm = security.encapsulate_packet(create_encap_request());
+    auto msg = boost::get<v2::SecuredMessage>(confirm.sec_packet);
 
     // check payload
-    Payload payload = confirm.sec_packet.payload;
+    Payload payload = msg.payload;
     EXPECT_EQ(expected_payload.size(), size(payload.data, min_osi_layer(), max_osi_layer()));
     EXPECT_EQ(PayloadType::Signed, get_type(payload));
 }
@@ -386,7 +409,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
     Signature* signature = secured_message.trailer_field<TrailerFieldType::Signature>();
     ASSERT_TRUE(signature);
     ASSERT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(*signature));
-    EcdsaSignature& ecdsa_signature = boost::get<EcdsaSignature>(*signature);
+    EcdsaSignature& ecdsa_signature = boost::get<EcdsaSignature>(signature->some_ecdsa);
     ecdsa_signature.s = {8, 15, 23};
 
     // verify message
@@ -592,7 +615,7 @@ TEST_F(SecurityEntityTest, verify_message_header_fields_other)
 // See TS 103 096-2 v1.3.1, section 5.2.4.3 + 5.2.4.5 + 5.2.4.6 + 5.2.4.7
 TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
 {
-    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](v2::SecuredMessage& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
     };
@@ -652,7 +675,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
 // See TS 103 096-2 v1.3.1, section 5.2.5.3
 TEST_F(SecurityEntityTest, verify_message_signer_info_denm)
 {
-    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](v2::SecuredMessage& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
     };
@@ -669,7 +692,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_denm)
 // See TS 103 096-2 v1.3.1, section 5.2.6.3
 TEST_F(SecurityEntityTest, verify_message_signer_info_other)
 {
-    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](v2::SecuredMessage& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
     };
@@ -825,11 +848,11 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
 TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_verify)
 {
     DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
-    SignService sign = straight_sign_service(*certificate_provider, *crypto_backend, sign_header_policy);
+    std::unique_ptr<SignService> sign { new StraightSignService(*certificate_provider, *crypto_backend, sign_header_policy) };
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
-    VerifyService verify = straight_verify_service(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider);
-    DelegatingSecurityEntity other_security(sign, verify);
+    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider) };
+    DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
     Certificate certificate = certificate_provider->own_certificate();
     certificate.remove_restriction(ValidityRestrictionType::Time_Start_And_End);
@@ -859,25 +882,29 @@ TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
 
 TEST_F(SecurityEntityTest, verify_message_certificate_requests)
 {
-    auto signer_info = [](SecuredMessageV2& secured_message) -> SignerInfo {
+    auto signer_info = [](v2::SecuredMessage& secured_message) -> SignerInfo {
         auto signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
         return *signer_info;
+    };
+    auto msg = [](EncapConfirm& confirm) -> v2::SecuredMessage& {
+        return boost::get<v2::SecuredMessage>(confirm.sec_packet);
     };
 
     NaiveCertificateProvider other_provider(runtime);
     DefaultSignHeaderPolicy other_policy(runtime, position_provider);
-    SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
-    VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
-    DelegatingSecurityEntity other_security(sign, verify);
+    std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
+    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider) };
+    DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
+
 
     // Security entity doesn't request certificate of other
     EncapConfirm encap_confirm = security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
+    ASSERT_EQ(nullptr, msg(encap_confirm).header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
 
     // Create message with hash from other, thus two times
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(get_type(signer_info(encap_confirm.sec_packet)), SignerInfoType::Certificate_Digest_With_SHA256);
+    ASSERT_EQ(get_type(signer_info(msg(encap_confirm))), SignerInfoType::Certificate_Digest_With_SHA256);
 
     // Unknown certificate hash incoming from other
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
@@ -885,16 +912,16 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
 
     // Security entity does request certificate from other
     encap_confirm = security.encapsulate_packet(create_encap_request());
-    ASSERT_NE(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
+    ASSERT_NE(nullptr, msg(encap_confirm).header_field<HeaderFieldType::Request_Unrecognized_Certificate>());
 
     // Other hasn't received certificate request, yet, so sends with hash
     EncapConfirm other_encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(get_type(signer_info(other_encap_confirm.sec_packet)), SignerInfoType::Certificate_Digest_With_SHA256);
+    ASSERT_EQ(get_type(signer_info(msg(encap_confirm))), SignerInfoType::Certificate_Digest_With_SHA256);
 
     // Other receives certificate request and sends certificate with next message
     decap_confirm = other_security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(get_type(signer_info(encap_confirm.sec_packet)), SignerInfoType::Certificate);
+    ASSERT_EQ(get_type(signer_info(msg(encap_confirm))), SignerInfoType::Certificate);
 }
 
 TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
@@ -907,7 +934,7 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
         NoLocationHeaderPolicy(const Runtime& rt, PositionProvider& positioning) :
             DefaultSignHeaderPolicy(rt, positioning), m_runtime(rt) {}
 
-        std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override
+        std::list<HeaderField> prepare_header(const SignRequest& request, v2::CertificateProvider& certificate_provider) override
         {
             std::list<HeaderField> header_fields;
 
@@ -922,9 +949,9 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
         const Runtime& m_runtime;
     } other_policy(runtime, position_provider);
 
-    SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
-    VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
-    DelegatingSecurityEntity other_security(sign, verify);
+    std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
+    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider) };
+    DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
     its_aid = aid::DEN;
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
@@ -943,20 +970,21 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
     public:
         using DefaultSignHeaderPolicy::DefaultSignHeaderPolicy;
 
-        std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override
+        std::list<HeaderField> prepare_header(const SignRequest& request, v2::CertificateProvider& certificate_provider) override
         {
             std::list<HeaderField> header_fields;
             return header_fields;
         }
     } other_policy(runtime, position_provider);
 
-    SignService sign = straight_sign_service(other_provider, *crypto_backend, other_policy);
-    VerifyService verify = straight_verify_service(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider);
-    DelegatingSecurityEntity other_security(sign, verify);
+    std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
+    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider) };
+    DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
     its_aid = aid::DEN;
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    ASSERT_EQ(nullptr, encap_confirm.sec_packet.header_field<HeaderFieldType::Its_Aid>());
+    auto msg = boost::get<v2::SecuredMessage>(encap_confirm.sec_packet);
+    ASSERT_EQ(nullptr, msg.header_field<HeaderFieldType::Its_Aid>());
 
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Incompatible_Protocol, decap_confirm.report);

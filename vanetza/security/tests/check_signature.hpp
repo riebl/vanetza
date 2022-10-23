@@ -1,7 +1,7 @@
 #ifndef CHECK_SIGNATURE_HPP_7RESWTUO
 #define CHECK_SIGNATURE_HPP_7RESWTUO
 
-#include <vanetza/security/signature.hpp>
+#include <vanetza/security/v2/signature.hpp>
 
 namespace vanetza
 {
@@ -10,7 +10,6 @@ namespace security
 
 void check(const EcdsaSignature&, const EcdsaSignature&);
 void check(const EcdsaSignatureFuture&, const EcdsaSignatureFuture&);
-void check(const Signature&, const Signature&);
 
 /**
  * \brief create a random EcdsaSignature
@@ -19,6 +18,12 @@ void check(const Signature&, const Signature&);
  */
 EcdsaSignature create_random_ecdsa_signature(int seed = 0);
 
+namespace v2
+{
+
+void check(const Signature&, const Signature&);
+
+} // namespace v2
 } // namespace security
 } // namespace vanetza
 

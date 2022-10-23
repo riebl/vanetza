@@ -6,7 +6,7 @@
 #include <vanetza/geonet/header_variant.hpp>
 #include <vanetza/geonet/pdu.hpp>
 #include <vanetza/security/secured_message.hpp>
-#include <boost/optional.hpp>
+#include <boost/optional/optional.hpp>
 
 namespace vanetza
 {
@@ -19,6 +19,8 @@ public:
     using SecuredMessage = security::SecuredMessage;
 
     VariantPdu() = default;
+    VariantPdu(const VariantPdu&);
+    VariantPdu& operator=(const VariantPdu&);
     VariantPdu(const Pdu&);
     VariantPdu& operator=(const Pdu&);
 
@@ -30,8 +32,7 @@ public:
     HeaderConstRefVariant extended_variant() const override;
     SecuredMessage* secured() override;
     const SecuredMessage* secured() const override;
-    void secured(SecuredMessage*) override;
-    void secured(SecuredMessage&&) override;
+    void secured(const SecuredMessage&) override;
     std::unique_ptr<Pdu> clone() const override;
 
 private:

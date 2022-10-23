@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/encryption_parameter.hpp>
+#include <vanetza/security/v2/encryption_parameter.hpp>
 #include <vanetza/security/tests/check_encryption_parameter.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 #include <algorithm>
 
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 TEST(EncryptionParameter, Nonce)
 {

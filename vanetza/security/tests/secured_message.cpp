@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include <vanetza/security/secured_message.hpp>
+#include <vanetza/security/v2/secured_message.hpp>
 #include <vanetza/security/tests/check_secured_message.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/serialization.hpp>
@@ -11,13 +11,13 @@ using namespace vanetza::security;
 
 TEST(SecuredMessage, Serialization)
 {
-    SecuredMessage m;
+    v2::SecuredMessage m;
 
-    m.header_fields.push_back(Time64 { 0x4711 });
-    m.payload = {PayloadType::Unsecured, CohesivePacket({ 5, 10, 15, 25, 40 }, OsiLayer::Application)};
-    std::list<TrailerField> list;
-    list.push_back(Signature { create_random_ecdsa_signature(44) });
-    list.push_back(Signature { create_random_ecdsa_signature(45) });
+    m.header_fields.push_back(v2::Time64 { 0x4711 });
+    m.payload = { v2::PayloadType::Unsecured, CohesivePacket({ 5, 10, 15, 25, 40 }, OsiLayer::Application) };
+    std::list<v2::TrailerField> list;
+    list.push_back(v2::Signature { create_random_ecdsa_signature(44) });
+    list.push_back(v2::Signature { create_random_ecdsa_signature(45) });
     m.trailer_fields = list;
 
     check(m, serialize_roundtrip(m));
@@ -25,37 +25,37 @@ TEST(SecuredMessage, Serialization)
 
 TEST(SecuredMessage, header_field_extractor)
 {
-    SecuredMessage m;
-    auto empty = m.header_field(HeaderFieldType::Generation_Time);
+    v2::SecuredMessage m;
+    auto empty = m.header_field(v2::HeaderFieldType::Generation_Time);
     EXPECT_FALSE(empty);
 
-    m.header_fields.push_back(Time64 { 25 });
-    m.header_fields.push_back(IntX { 23 });
+    m.header_fields.push_back(v2::Time64 { 25 });
+    m.header_fields.push_back(v2::IntX { 23 });
 
-    auto time = m.header_field(HeaderFieldType::Generation_Time);
+    auto time = m.header_field(v2::HeaderFieldType::Generation_Time);
     ASSERT_TRUE(time);
-    EXPECT_EQ(25, boost::get<Time64>(*time));
+    EXPECT_EQ(25, boost::get<v2::Time64>(*time));
 
-    auto msg = m.header_field(HeaderFieldType::Its_Aid);
+    auto msg = m.header_field(v2::HeaderFieldType::Its_Aid);
     ASSERT_TRUE(msg);
-    EXPECT_EQ(23, boost::get<IntX>(*msg).get());
+    EXPECT_EQ(23, boost::get<v2::IntX>(*msg).get());
 
     // field modifications should pass through
-    boost::get<Time64>(*time) = 26;
-    auto time2 = m.header_field(HeaderFieldType::Generation_Time);
+    boost::get<v2::Time64>(*time) = 26;
+    auto time2 = m.header_field(v2::HeaderFieldType::Generation_Time);
     ASSERT_TRUE(time2);
-    EXPECT_EQ(Time64 { 26 }, boost::get<Time64>(*time2));
+    EXPECT_EQ(v2::Time64 { 26 }, boost::get<v2::Time64>(*time2));
 }
 
 TEST(SecuredMessage, trailer_field_extractor)
 {
-    SecuredMessage m;
-    auto empty = m.trailer_field(TrailerFieldType::Signature);
+    v2::SecuredMessage m;
+    auto empty = m.trailer_field(v2::TrailerFieldType::Signature);
     EXPECT_FALSE(!!empty);
 
-    m.trailer_fields.push_back(Signature {});
-    m.trailer_fields.push_back(Signature {});
-    auto first = m.trailer_field(TrailerFieldType::Signature);
+    m.trailer_fields.push_back(v2::Signature {});
+    m.trailer_fields.push_back(v2::Signature {});
+    auto first = m.trailer_field(v2::TrailerFieldType::Signature);
     ASSERT_TRUE(!!first);
     EXPECT_EQ(&m.trailer_fields.front(), first);
 }
@@ -73,26 +73,26 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_1)
         "785D7242647F7895ABFC0000009373931CD7580502011C983E690E5F6D755BD4871578A9427E7B"
         "C383903DC7DA3B560384013643010000FE8566BEA87B39E6411F80226E792D6E01E77B598F2BB1FC"
         "E7F2DD441185C07CEF0573FBFB9876B99FE811486F6F5D499E6114FC0724A67F8D71D2A897A7EB34";
-    SecuredMessage m;
+    v2::SecuredMessage m;
     deserialize_from_hexstring(str, m);
 
     EXPECT_EQ(358, get_size(m));
     EXPECT_EQ(2, m.protocol_version());
 
     EXPECT_EQ(3, m.header_fields.size());
-    auto signer_info = m.header_field(HeaderFieldType::Signer_Info);
+    auto signer_info = m.header_field(v2::HeaderFieldType::Signer_Info);
     ASSERT_TRUE(!!signer_info);
-    auto generation_time = m.header_field(HeaderFieldType::Generation_Time);
+    auto generation_time = m.header_field(v2::HeaderFieldType::Generation_Time);
     ASSERT_TRUE(!!generation_time);
-    auto its_aid = m.header_field(HeaderFieldType::Its_Aid);
+    auto its_aid = m.header_field(v2::HeaderFieldType::Its_Aid);
     ASSERT_TRUE(!!its_aid);
-    EXPECT_EQ(IntX {2}, boost::get<IntX>(*its_aid));
+    EXPECT_EQ(v2::IntX {2}, boost::get<v2::IntX>(*its_aid));
 
-    EXPECT_EQ(PayloadType::Signed, m.payload.type);
+    EXPECT_EQ(v2::PayloadType::Signed, m.payload.type);
     EXPECT_EQ(28, size(m.payload.data, min_osi_layer(), max_osi_layer()));
 
     EXPECT_EQ(1, m.trailer_fields.size());
-    EXPECT_TRUE(!!m.trailer_field(TrailerFieldType::Signature));
+    EXPECT_TRUE(!!m.trailer_field(v2::TrailerFieldType::Signature));
 }
 
 TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_2)
@@ -109,7 +109,7 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_2)
         "BABABAABAB98437985739845783974954301000081E7CDB6D2C741C1700822305C39E8E809622AF9"
         "FCA1C0786F762D08E80580C42F1FCC1D5499577210834C390BB4613E102DECB14F575A2820743DC9"
         "A66BBD7A";
-    SecuredMessage m;
+    v2::SecuredMessage m;
     deserialize_from_hexstring(str, m);
     check(m, serialize_roundtrip(m));
 }
@@ -127,7 +127,7 @@ TEST(SecuredMessage, WebValidator_Serialize_SecuredMessageV2_3)
         "98F7865709929A7C6E480000009373CF482D40050201080123456789ABCDEF43010000371423BB"
         "A0902D8AF2FB2226D73A7781D4D6B6772650A8BEE5A1AF198CEDABA2C9BF57540C629E6A1E629B88"
         "12AEBDDDBCAF472F6586F16C14B3DEFBE9B6ADB2";
-    SecuredMessage m;
+    v2::SecuredMessage m;
     deserialize_from_hexstring(str, m);
     check(m, serialize_roundtrip(m));
 }

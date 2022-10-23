@@ -48,11 +48,13 @@ std::size_t Parser::parse_common(CommonHeader& common)
     return bytes;
 }
 
-std::size_t Parser::parse_secured(security::SecuredMessageV2& secured)
+std::size_t Parser::parse_secured(boost::optional<security::SecuredMessage>& secured)
 {
     std::size_t bytes = 0;
     try {
-        bytes = deserialize(m_archive, secured);
+        security::SecuredMessage tmp;
+        bytes = security::deserialize(m_archive, tmp);
+        secured = std::move(tmp);
     } catch (InputArchive::Exception&) {
     } catch (security::deserialization_error&) {
     }

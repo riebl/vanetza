@@ -27,7 +27,7 @@ boost::optional<Uncompressed> BackendNull::decompress_point(const EccPoint& ecc_
 
 EcdsaSignature BackendNull::fake_signature() const
 {
-    const std::size_t size = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
+    constexpr std::size_t size = 32;
     EcdsaSignature signature;
     X_Coordinate_Only coordinate;
     coordinate.x = random_byte_sequence(size, 0xdead);

@@ -2,7 +2,7 @@
 #define CHECK_ECC_POINT_HPP_UQH2R8WK
 
 #include <gtest/gtest.h>
-#include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/v2/ecc_point.hpp>
 #include <vanetza/security/tests/check_visitor.hpp>
 #include <boost/variant/apply_visitor.hpp>
 
@@ -59,7 +59,7 @@ inline void check(const Uncompressed& expected, const Uncompressed& actual)
  */
 inline void check(const EccPoint& expected, const EccPoint& actual)
 {
-    ASSERT_EQ(get_type(expected), get_type(actual));
+    ASSERT_EQ(v2::get_type(expected), v2::get_type(actual));
     boost::apply_visitor(check_visitor<EccPoint>(), expected, actual);
 }
 

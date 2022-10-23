@@ -9,6 +9,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const TrailerField& expected, const TrailerField& actual)
 {
@@ -17,6 +19,6 @@ void check(const TrailerField& expected, const TrailerField& actual)
     check(boost::get<Signature>(expected), boost::get<Signature>(actual));
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
-

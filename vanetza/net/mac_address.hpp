@@ -22,6 +22,10 @@ public:
 
     MacAddress();
     MacAddress(std::initializer_list<uint8_t> args);
+    MacAddress(const MacAddress&) = default;
+    MacAddress& operator=(const MacAddress&) = default;
+    MacAddress(MacAddress&&) = default;
+    MacAddress& operator=(MacAddress&&) = default;
 
     std::array<uint8_t, length_bytes> octets;
 };

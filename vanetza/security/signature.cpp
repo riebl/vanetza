@@ -1,6 +1,8 @@
-#include <vanetza/security/exception.hpp>
+#ifndef FA909143_0CE7_4397_A42B_5CDA56AB4716
+#define FA909143_0CE7_4397_A42B_5CDA56AB4716
+
+#include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/signature.hpp>
-#include <boost/iostreams/stream.hpp>
 #include <cassert>
 
 namespace vanetza
@@ -8,133 +10,31 @@ namespace vanetza
 namespace security
 {
 
-PublicKeyAlgorithm get_type(const Signature& sig)
+EcdsaSignatureFuture::EcdsaSignatureFuture(std::shared_future<EcdsaSignature> future,
+        EcdsaSignature placeholder) :
+    m_future(future), m_placeholder(std::move(placeholder))
 {
-    struct Signature_visitor : public boost::static_visitor<PublicKeyAlgorithm>
-    {
-        PublicKeyAlgorithm operator()(const EcdsaSignature& sig)
-        {
-            return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
-        }
-
-        PublicKeyAlgorithm operator()(const EcdsaSignatureFuture& sig)
-        {
-            return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
-        }
-    };
-    Signature_visitor visit;
-    return boost::apply_visitor(visit, sig);
-}
-
-size_t get_size(const EcdsaSignature& sig)
-{
-    size_t size = sig.s.size();
-    size += get_size(sig.R);
-    return size;
-}
-
-size_t get_size(const EcdsaSignatureFuture& sig)
-{
-    return sig.size();
-}
-
-size_t get_size(const Signature& sig)
-{
-    size_t size = sizeof(PublicKeyAlgorithm);
-    struct Signature_visitor : public boost::static_visitor<size_t>
-    {
-        size_t operator()(const EcdsaSignature& sig)
-        {
-            return get_size(sig);
-        }
-
-        size_t operator()(const EcdsaSignatureFuture& sig)
-        {
-            return get_size(sig);
-        }
-    };
-    Signature_visitor visit;
-    size += boost::apply_visitor(visit, sig);
-    return size;
-}
-
-void serialize(OutputArchive& ar, const Signature& sig)
-{
-    struct signature_visitor : public boost::static_visitor<>
-    {
-        signature_visitor(OutputArchive& ar) : m_archive(ar) {}
-
-        void operator()(const EcdsaSignature& sig)
-        {
-            serialize(m_archive, sig);
-        }
-
-        void operator()(const EcdsaSignatureFuture& sig)
-        {
-            serialize(m_archive, sig);
-        }
-
-        OutputArchive& m_archive;
-    };
-
-    PublicKeyAlgorithm algo = get_type(sig);
-    serialize(ar, algo);
-    signature_visitor visitor(ar);
-    boost::apply_visitor(visitor, sig);
-}
-
-void serialize(OutputArchive& ar, const EcdsaSignature& sig)
-{
-    const PublicKeyAlgorithm algo = PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
-    assert(field_size(algo) == sig.s.size());
-
-    serialize(ar, sig.R, algo);
-    for (auto& byte : sig.s) {
-        ar << byte;
+    if (!m_future.valid()) {
+        throw std::invalid_argument("EcdsaSignature future has to be valid");
     }
 }
 
-void serialize(OutputArchive& ar, const EcdsaSignatureFuture& sig)
+const EcdsaSignature& EcdsaSignatureFuture::get() const
 {
-    auto& ecdsa = sig.get();
-    serialize(ar, ecdsa);
+    assert(m_future.valid());
+    const EcdsaSignature& signature = m_future.get();
+    assert(signature.s.size() == m_placeholder.s.size());
+    assert(signature.R.which() == m_placeholder.R.which());
+    assert(get_length(signature.R) == get_length(m_placeholder.R));
+    return signature;
 }
 
-size_t deserialize(InputArchive& ar, EcdsaSignature& sig, const PublicKeyAlgorithm& algo)
+std::size_t EcdsaSignatureFuture::size() const
 {
-    EccPoint point;
-    ByteBuffer buf;
-    deserialize(ar, point, algo);
-    for (size_t i = 0; i < field_size(algo); i++) {
-        uint8_t byte;
-        ar >> byte;
-        buf.push_back(byte);
-    }
-    sig.R = point;
-    sig.s = buf;
-    return get_size(sig);
+    return get_length(m_placeholder.R) + m_placeholder.s.size();
 }
 
-size_t deserialize(InputArchive& ar, Signature& sig)
-{
-    PublicKeyAlgorithm algo;
-    size_t size = 0;
-    deserialize(ar, algo);
-    size += sizeof(algo);
-    switch (algo) {
-        case PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256: {
-            EcdsaSignature signature;
-            size += deserialize(ar, signature, algo);
-            sig = signature;
-            break;
-        }
-        default:
-            throw deserialization_error("Unknown PublicKeyAlgorithm");
-    }
-    return size;
-}
-
-ByteBuffer extract_signature_buffer(const Signature& sig)
+ByteBuffer extract_signature_buffer(const SomeEcdsaSignature& sig)
 {
     struct extraction_visitor : public boost::static_visitor<>
     {
@@ -159,46 +59,7 @@ ByteBuffer extract_signature_buffer(const Signature& sig)
     return visitor.m_buffer;
 }
 
-EcdsaSignatureFuture::EcdsaSignatureFuture(const std::shared_future<EcdsaSignature>& future, std::size_t bytes) :
-    m_future(future), m_bytes(bytes)
-{
-    if (!m_future.valid()) {
-        throw std::invalid_argument("EcdsaSignature future has to be valid");
-    }
-}
-
-const EcdsaSignature& EcdsaSignatureFuture::get() const
-{
-    assert(m_future.valid());
-    const EcdsaSignature& signature = m_future.get();
-    assert(get_size(signature) == m_bytes);
-    return signature;
-}
-
-std::size_t EcdsaSignatureFuture::size() const
-{
-    return m_bytes;
-}
-
-boost::optional<EcdsaSignature> extract_ecdsa_signature(const Signature& sig)
-{
-    struct signature_visitor : public boost::static_visitor<const EcdsaSignature*>
-    {
-        const EcdsaSignature* operator()(const EcdsaSignature& sig)
-        {
-            return &sig;
-        }
-
-        const EcdsaSignature* operator()(const EcdsaSignatureFuture& sig)
-        {
-            return &sig.get();
-        }
-    };
-
-    signature_visitor visitor;
-    const EcdsaSignature* ecdsa = boost::apply_visitor(visitor, sig);
-    return boost::optional<EcdsaSignature>(ecdsa != nullptr, *ecdsa);
-}
-
 } // namespace security
 } // namespace vanetza
+
+#endif /* FA909143_0CE7_4397_A42B_5CDA56AB4716 */

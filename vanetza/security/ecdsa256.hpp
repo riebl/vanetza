@@ -3,7 +3,7 @@
 
 #include <array>
 #include <cstdint>
-#include <utility>
+#include <functional>
 
 namespace vanetza
 {

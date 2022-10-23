@@ -6,11 +6,11 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
-#include <vanetza/security/basic_elements.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/security/persistence.hpp>
-#include <vanetza/security/subject_attribute.hpp>
-#include <vanetza/security/subject_info.hpp>
+#include <vanetza/security/v2/basic_elements.hpp>
+#include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/persistence.hpp>
+#include <vanetza/security/v2/subject_attribute.hpp>
+#include <vanetza/security/v2/subject_info.hpp>
 
 namespace aid = vanetza::aid;
 namespace po = boost::program_options;
@@ -56,22 +56,22 @@ int GenerateRootCommand::execute()
     BackendCryptoPP crypto_backend;
 
     std::cout << "Loading key... ";
-    auto subject_key = load_private_key_from_file(subject_key_path);
+    auto subject_key = v2::load_private_key_from_file(subject_key_path);
     std::cout << "OK" << std::endl;
 
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
 
     // create certificate
-    Certificate certificate;
-    std::list<IntX> certificate_aids;
+    v2::Certificate certificate;
+    std::list<v2::IntX> certificate_aids;
 
     if (aids.size()) {
         for (unsigned aid : aids) {
-            certificate_aids.push_back(IntX(aid));
+            certificate_aids.push_back(v2::IntX(aid));
         }
     } else {
-        certificate_aids.push_back(IntX(aid::CA));
-        certificate_aids.push_back(IntX(aid::DEN));
+        certificate_aids.push_back(v2::IntX(aid::CA));
+        certificate_aids.push_back(v2::IntX(aid::DEN));
     }
     certificate.subject_attributes.push_back(certificate_aids);
 
@@ -79,14 +79,14 @@ int GenerateRootCommand::execute()
     certificate.signer_info = nullptr; /* self */
 
     // section 6.3 in TS 103 097 v1.2.1
-    certificate.subject_info.subject_type = SubjectType::Root_CA;
+    certificate.subject_info.subject_type = v2::SubjectType::Root_CA;
 
     // section 7.4.2 in TS 103 097 v1.2.1
     std::vector<unsigned char> subject(subject_name.begin(), subject_name.end());
     certificate.subject_info.subject_name = subject;
 
     // section 6.6 in TS 103 097 v1.2.1 - levels currently undefined
-    certificate.subject_attributes.push_back(SubjectAssurance(0x00));
+    certificate.subject_attributes.push_back(v2::SubjectAssurance(0x00));
 
     // section 7.4.1 in TS 103 097 v1.2.1
     // set subject attributes
@@ -95,17 +95,17 @@ int GenerateRootCommand::execute()
     coordinates.x.assign(subject_key.public_key.x.begin(), subject_key.public_key.x.end());
     coordinates.y.assign(subject_key.public_key.y.begin(), subject_key.public_key.y.end());
     EccPoint ecc_point = coordinates;
-    ecdsa_nistp256_with_sha256 ecdsa;
+    v2::ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = ecc_point;
-    VerificationKey verification_key;
+    v2::VerificationKey verification_key;
     verification_key.key = ecdsa;
     certificate.subject_attributes.push_back(verification_key);
 
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
-    StartAndEndValidity start_and_end;
-    start_and_end.start_validity = convert_time32(time_now - std::chrono::hours(1));
-    start_and_end.end_validity = convert_time32(time_now + std::chrono::hours(24 * validity_days));
+    v2::StartAndEndValidity start_and_end;
+    start_and_end.start_validity = v2::convert_time32(time_now - std::chrono::hours(1));
+    start_and_end.end_validity = v2::convert_time32(time_now + std::chrono::hours(24 * validity_days));
     certificate.validity_restriction.push_back(start_and_end);
 
     std::cout << "Signing certificate... ";

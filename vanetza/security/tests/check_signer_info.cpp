@@ -9,6 +9,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const std::nullptr_t&, const std::nullptr_t&)
 {
@@ -31,5 +33,6 @@ void check(const SignerInfo& expected, const SignerInfo& actual)
     boost::apply_visitor(check_visitor<SignerInfo>(), expected, actual);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

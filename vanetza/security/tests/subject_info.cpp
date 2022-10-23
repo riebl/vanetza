@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/subject_info.hpp>
+#include <vanetza/security/v2/subject_info.hpp>
 #include <vanetza/security/tests/check_subject_info.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 TEST(SubjectInfo, Serialization)
 {

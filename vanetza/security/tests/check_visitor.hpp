@@ -22,6 +22,7 @@ struct check_visitor : public boost::static_visitor<>
     template<typename R>
     void operator()(const R& lhs, const R& rhs) const
     {
+        using namespace vanetza::security::v2;
         check(lhs, rhs);
     }
 };
@@ -30,4 +31,3 @@ struct check_visitor : public boost::static_visitor<>
 } // namespace vanetza
 
 #endif /* CHECK_VISITOR_HPP_YJ7UPXCB */
-

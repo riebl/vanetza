@@ -5,16 +5,13 @@
 #include <vanetza/common/byte_buffer_source.hpp>
 #include <vanetza/geonet/header_type.hpp>
 #include <vanetza/geonet/header_variant.hpp>
+#include <vanetza/security/secured_message.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <cstdint>
 
 namespace vanetza
 {
-
-// forward declaration
-namespace security { struct SecuredMessageV2; }
-
 namespace geonet
 {
 
@@ -30,7 +27,7 @@ public:
 
     std::size_t parse_basic(BasicHeader&);
     std::size_t parse_common(CommonHeader&);
-    std::size_t parse_secured(security::SecuredMessageV2&);
+    std::size_t parse_secured(boost::optional<security::SecuredMessage>&);
     std::size_t parse_extended(HeaderVariant&, HeaderType);
     std::size_t parsed_bytes() const;
 
