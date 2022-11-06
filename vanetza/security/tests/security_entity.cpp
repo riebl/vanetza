@@ -247,11 +247,9 @@ TEST_F(SecurityEntityTest, expected_payload)
 
 TEST_F(SecurityEntityTest, verify_message)
 {
-    // prepare decap request
+    // build valid message
     auto secured_message = create_secured_message();
     DecapRequest decap_request(secured_message);
-
-    // verify message
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
 
     // check if verify was successful
@@ -264,15 +262,14 @@ TEST_F(SecurityEntityTest, verify_message)
 
 TEST_F(SecurityEntityTest, verify_message_modified_message_type)
 {
-    // prepare decap request
+    // build message with wrong ITS-AID
     auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
     IntX* its_aid = secured_message.header_field<HeaderFieldType::Its_Aid>();
     ASSERT_TRUE(its_aid);
     its_aid->set(42);
 
     // verify message
+    DecapRequest decap_request(std::move(secured_message));
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
@@ -402,10 +399,8 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
 
 TEST_F(SecurityEntityTest, verify_message_modified_signature)
 {
-    // prepare decap request
+    // hamper with signature
     auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
     Signature* signature = secured_message.trailer_field<TrailerFieldType::Signature>();
     ASSERT_TRUE(signature);
     ASSERT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(*signature));
@@ -413,6 +408,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
     ecdsa_signature.s = {8, 15, 23};
 
     // verify message
+    DecapRequest decap_request(std::move(secured_message));
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
@@ -420,14 +416,12 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
 
 TEST_F(SecurityEntityTest, verify_message_modified_payload_type)
 {
-    // prepare decap request
+    // change the payload type (should break signature)
     auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
-    // change the payload.type
     secured_message.payload.type = PayloadType::Unsecured;
 
     // verify message
+    DecapRequest decap_request(std::move(secured_message));
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::Unsigned_Message, decap_confirm.report);
@@ -435,14 +429,12 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload_type)
 
 TEST_F(SecurityEntityTest, verify_message_modified_payload)
 {
-    // prepare decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
     // modify payload buffer
+    auto secured_message = create_secured_message();
     secured_message.payload.data = CohesivePacket({42, 42, 42}, OsiLayer::Session);
 
     // verify message
+    DecapRequest decap_request(std::move(secured_message));
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
@@ -451,8 +443,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload)
 TEST_F(SecurityEntityTest, verify_message_generation_time_before_current_time)
 {
     // prepare decap request
-    auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
+    DecapRequest decap_request(create_secured_message());
 
     // change the time, so the generation time of SecuredMessage is before current time
     runtime.trigger(std::chrono::hours(12));
@@ -470,7 +461,7 @@ TEST_F(SecurityEntityTest, verify_message_generation_time_after_current_time)
 
     // prepare decap request
     auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
+    DecapRequest decap_request(std::move(secured_message));
 
     // change the time, so the current time is before generation time of SecuredMessage
     runtime.reset(runtime.now() - std::chrono::hours(12));
@@ -483,10 +474,7 @@ TEST_F(SecurityEntityTest, verify_message_generation_time_after_current_time)
 
 TEST_F(SecurityEntityTest, verify_message_without_signer_info)
 {
-    // prepare decap request
     auto secured_message = create_secured_message();
-    DecapRequest decap_request(secured_message);
-
     // iterate through all header_fields
     auto& header_fields = secured_message.header_fields;
     for (auto field = header_fields.begin(); field != header_fields.end(); ++field) {
@@ -498,6 +486,7 @@ TEST_F(SecurityEntityTest, verify_message_without_signer_info)
     }
 
     // verify message
+    DecapRequest decap_request(std::move(secured_message));
     DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
     // check if verify was successful
     EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
