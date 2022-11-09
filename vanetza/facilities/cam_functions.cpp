@@ -386,12 +386,12 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
             --level;
         }
     } else {
-        prefix("High Frequency Container") << cam.camParameters.highFrequencyContainer.present << "\n";
+        prefix("High Frequency Container") << "empty\n";
     }
 
-    prefix("Low Frequency Container") << "\n";
     if (nullptr != cam.camParameters.lowFrequencyContainer) {
         if (cam.camParameters.lowFrequencyContainer->present == LowFrequencyContainer_PR_basicVehicleContainerLowFrequency) {
+            prefix("Low Frequency Container") << "\n";
             const BasicVehicleContainerLowFrequency_t& lfc =
                 cam.camParameters.lowFrequencyContainer->choice.basicVehicleContainerLowFrequency;
             ++level;
@@ -419,7 +419,7 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
             prefix("Low Frequency Container") << "present but empty" << "\n";
     }
     else
-        prefix("Low Frequency Container") << "no" << "\n";
+        prefix("Low Frequency Container") << "not present" << "\n";
 
     if (nullptr != cam.camParameters.specialVehicleContainer) {
         if (cam.camParameters.specialVehicleContainer->present == SpecialVehicleContainer_PR_publicTransportContainer) {
@@ -513,7 +513,7 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
             prefix("Special Vehicle Container") << ("present but empty") << "\n";
     }
     else
-        prefix("Special Vehicle Container") << "no" << "\n";
+        prefix("Special Vehicle Container") << "not present" << "\n";
 
     --level;
 }
