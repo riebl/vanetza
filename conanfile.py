@@ -6,11 +6,6 @@ class VanetzaConan(ConanFile):
     url = "https://github.com/riebl/vanetza"
     license = "LGPL-3.0-or-later"
     settings = "os", "compiler", "build_type", "arch"
-    requires = \
-        "boost/1.75.0", \
-        "cryptopp/8.4.0", \
-        "geographiclib/1.51", \
-        "openssl/1.1.1i"
     generators = "cmake"
     options = {
         "fPIC": [True, False],
@@ -22,6 +17,12 @@ class VanetzaConan(ConanFile):
         "shared": False,
         "testing": True,
     }
+
+    def requirements(self):
+        self.requires("boost/[>=1.58]")
+        self.requires("cryptopp/[>=5.6.1]")
+        self.requires("geographiclib/[>=1.37]")
+        self.requires("openssl/1.1.1i")
 
     def _configure_cmake(self):
         cmake = CMake(self)
