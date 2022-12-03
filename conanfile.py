@@ -11,24 +11,37 @@ class VanetzaConan(ConanFile):
         "fPIC": [True, False],
         "shared": [True, False],
         "testing": [True, False],
+        "with_openssl": [True, False],
+        "build_socktap": [True, False],
+        "build_certify": [True, False],
+        "build_benchmark": [True, False]
     }
     default_options = {
         "fPIC": True,
         "shared": False,
         "testing": True,
+        "with_openssl": False,
+        "build_socktap": False,
+        "build_certify": False,
+        "build_benchmark": False
     }
 
     def requirements(self):
         self.requires("boost/[>=1.58]")
         self.requires("cryptopp/[>=5.6.1]")
         self.requires("geographiclib/[>=1.37]")
-        self.requires("openssl/1.1.1i")
+        if self.options.with_openssl :
+            self.requires("openssl/1.1.1i")
 
     def _configure_cmake(self):
         cmake = CMake(self)
         cmake.configure(defs={
             "BUILD_SHARED_LIBS": self.options.shared,
             "BUILD_TESTS": self.options.testing,
+            "VANETZA_WITH_OPENSSL": self.options.with_openssl,
+            "BUILD_SOCKTAP": self.options.build_socktap,
+            "BUILD_CERTIFY": self.options.build_certify,
+            "BUILD_BENCHMARK": self.options.build_benchmark,
         })
         return cmake
 
