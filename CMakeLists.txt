@@ -21,6 +21,7 @@ if(EXISTS ${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
     include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup(TARGETS)
     set(Boost_NO_SYSTEM_PATHS ON)
+    set(GeographicLib_PREFER_PACKAGE_CONFIG OFF)
 endif()
 
 # Look up threading library (usually pthread)
