@@ -1,7 +1,7 @@
 #ifndef GUC_HEADER_HPP_UEGE3IFW
 #define GUC_HEADER_HPP_UEGE3IFW
 
-#include <vanezta/geonet/position_vector.hpp>
+#include <vanetza/geonet/position_vector.hpp>
 #include <vanetza/geonet/sequence_number.hpp>
 #include <cstddef>
 

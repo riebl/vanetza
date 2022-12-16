@@ -6,6 +6,7 @@
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
 #include <boost/variant/variant.hpp>
+#include <array>
 #include <list>
 
 namespace vanetza

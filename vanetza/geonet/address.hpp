@@ -35,7 +35,7 @@ public:
 private:
     bool m_manually_configured; // 1 bit
     StationType m_station_type; // 5 bit
-    BitNumber<unsigned, 10> m_country_code; // 10 bit
+    BitNumber<unsigned, 10> m_country_code; // 10 bit (deprecated since 1.3.1)
     MacAddress m_mid; // 48 bit
 };
 

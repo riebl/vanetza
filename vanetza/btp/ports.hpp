@@ -13,7 +13,7 @@ typedef uint16be_t port_type;
 namespace ports
 {
 
-// Port numbers according to ETSI TS 103 248 v1.3.1 (2019-04)
+// Port numbers according to ETSI TS 103 248 v2.1.1 (2021-08)
 static const port_type CAM = host_cast<uint16_t>(2001);
 static const port_type DENM = host_cast<uint16_t>(2002);
 static const port_type TOPO = host_cast<uint16_t>(2003);
@@ -35,6 +35,8 @@ static const port_type CTLM = host_cast<uint16_t>(2014);
 static const port_type CRLM = host_cast<uint16_t>(2015);
 static const port_type EC_AT_REQUEST = host_cast<uint16_t>(2016);
 static const port_type MCDM = host_cast<uint16_t>(2017);
+static const port_type VAM = host_cast<uint16_t>(2018);
+static const port_type IMZM = host_cast<uint16_t>(2019);
 
 } // namespace ports
 
