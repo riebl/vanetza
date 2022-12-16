@@ -5,7 +5,7 @@
 #include <vanetza/units/length.hpp>
 #include <cmath>
 
-static_assert(GPSD_API_MAJOR_VERSION >= 5 && GPSD_API_MAJOR_VERSION <= 12, "libgps has incompatible API");
+static_assert(GPSD_API_MAJOR_VERSION >= 5 && GPSD_API_MAJOR_VERSION <= 14, "libgps has incompatible API");
 
 namespace
 {
@@ -43,6 +43,15 @@ constexpr int gpsd_status(const gps_data_t& data)
 constexpr bool gpsd_has_useful_fix(const gps_data_t& data)
 {
     return gpsd_status(data) >= cStatusFix && data.fix.mode >= MODE_2D;
+}
+
+constexpr double gpsd_get_altitude(const gps_data_t& data)
+{
+#if GPSD_API_MAJOR_VERSION > 8
+    return data.fix.altHAE;
+#else
+    return data.fix.altitude;
+#endif
 }
 
 vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
@@ -147,7 +156,8 @@ void GpsPositionProvider::fetch_position_fix()
             fetched_position_fix.confidence = vanetza::PositionConfidence();
         }
         if (gps_data.fix.mode == MODE_3D) {
-            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length>(gps_data.fix.altitude * si::meter, gps_data.fix.epv * si::meter);
+            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length> {
+                gpsd_get_altitude(gps_data) * si::meter, gps_data.fix.epv * si::meter };
         } else {
             fetched_position_fix.altitude = boost::none;
         }

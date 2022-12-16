@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.12)
 project(Vanetza VERSION 0.8)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
@@ -21,6 +21,7 @@ if(EXISTS ${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
     include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
     conan_basic_setup(TARGETS)
     set(Boost_NO_SYSTEM_PATHS ON)
+    set(GeographicLib_PREFER_PACKAGE_CONFIG OFF)
 endif()
 
 # Look up threading library (usually pthread)
@@ -81,11 +82,6 @@ add_subdirectory(vanetza/gnss)
 add_subdirectory(vanetza/net)
 add_subdirectory(vanetza/security)
 add_subdirectory(vanetza/units)
-add_subdirectory(tools/proxy_fake_feed)
-
-if(TARGET Cohda::headers)
-  add_subdirectory(tools/cohda_proxy)
-endif()
 
 option(BUILD_SOCKTAP "Build socktap application" OFF)
 if(BUILD_SOCKTAP)

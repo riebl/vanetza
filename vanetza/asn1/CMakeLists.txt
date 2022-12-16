@@ -131,9 +131,17 @@ if(VANETZA_ASN1_WITH_ASN1C)
         COMMENT "Patching generated security asn1c files"
         WORKING_DIRECTORY ${_sec_asn1_dir} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/apply_patches.cmake
+        COMMAND ${CMAKE_COMMAND} -DPATCH_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR}/patches
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/apply_patches.cmake
         COMMENT "Applying hot-fixes to generated asn1c files"
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} VERBATIM)
+    if(VANETZA_ASN1_WITH_ISO)
+        add_custom_command(TARGET generate_asn1c POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -DPATCH_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR}/patches/iso
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/apply_patches.cmake
+                COMMENT "Applying hot-fixes to generated asn1c ITS ISO files"
+            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} VERBATIM)
+    endif()
 
     # wipe directory with generated files before generating
     add_custom_target(clean_asn1c

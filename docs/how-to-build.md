@@ -7,13 +7,17 @@ Building Vanetza is accomplished by the [CMake](https://cmake.org) build system.
 You need following tools and libraries on your system for compiling Vanetza:
 
 * C++11 compatible compiler, e.g. [GNU GCC](https://gcc.gnu.org) or [Clang](http://clang.llvm.org)
-* [CMake](https://cmake.org) 3.1 or higher
+* [CMake](https://cmake.org) 3.12 or higher
 * [Boost](https://www.boost.org) 1.58 or higher
 * [GeographicLib](http://geographiclib.sourceforge.net) 1.37 or higher
 * [Crypto++](https://www.cryptopp.com) 5.6.1 or higher
 
 If OpenSSL (1.0 or 1.1) or LibreSSL is available on your system, an alternative security backend implementation is compiled along with the Crypto++ based backend.
 See `security::Backend` and `security::create_backend` for more details.
+
+!!! hint
+    If you are building on Ubuntu 16.04 or 18.04, please note that these Ubuntu releases ship outdated CMake versions unsuitable for Vanetza.
+    Have a look at the [Kitware APT Repository](https://apt.kitware.com), which lists some of your options for installing an up-to-date CMake version.
 
 
 ## Compilation

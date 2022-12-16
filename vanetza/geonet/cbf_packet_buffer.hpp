@@ -74,7 +74,7 @@ public:
 
 private:
     PendingPacket<GbcPdu> m_packet;
-    const MacAddress m_sender;
+    MacAddress m_sender;
 };
 
 
