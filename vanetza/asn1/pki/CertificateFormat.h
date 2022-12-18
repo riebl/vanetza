@@ -36,6 +36,7 @@ ber_type_decoder_f CertificateFormat_decode_ber;
 der_type_encoder_f CertificateFormat_encode_der;
 xer_type_decoder_f CertificateFormat_decode_xer;
 xer_type_encoder_f CertificateFormat_encode_xer;
+jer_type_encoder_f CertificateFormat_encode_jer;
 oer_type_decoder_f CertificateFormat_decode_oer;
 oer_type_encoder_f CertificateFormat_encode_oer;
 per_type_decoder_f CertificateFormat_decode_uper;

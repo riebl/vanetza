@@ -77,6 +77,7 @@ ber_type_decoder_f SegmentAttributeXY_decode_ber;
 der_type_encoder_f SegmentAttributeXY_encode_der;
 xer_type_decoder_f SegmentAttributeXY_decode_xer;
 xer_type_encoder_f SegmentAttributeXY_encode_xer;
+jer_type_encoder_f SegmentAttributeXY_encode_jer;
 oer_type_decoder_f SegmentAttributeXY_decode_oer;
 oer_type_encoder_f SegmentAttributeXY_encode_oer;
 per_type_decoder_f SegmentAttributeXY_decode_uper;

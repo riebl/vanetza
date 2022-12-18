@@ -7,7 +7,7 @@
 
 #include "MovementEvent-addGrpC.h"
 
-static asn_TYPE_member_t asn_MBR_MovementEvent_addGrpC_1[] = {
+asn_TYPE_member_t asn_MBR_MovementEvent_addGrpC_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct MovementEvent_addGrpC, stateChangeReason),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
@@ -33,7 +33,7 @@ static const ber_tlv_tag_t asn_DEF_MovementEvent_addGrpC_tags_1[] = {
 static const asn_TYPE_tag2member_t asn_MAP_MovementEvent_addGrpC_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 } /* stateChangeReason */
 };
-static asn_SEQUENCE_specifics_t asn_SPC_MovementEvent_addGrpC_specs_1 = {
+asn_SEQUENCE_specifics_t asn_SPC_MovementEvent_addGrpC_specs_1 = {
 	sizeof(struct MovementEvent_addGrpC),
 	offsetof(struct MovementEvent_addGrpC, _asn_ctx),
 	asn_MAP_MovementEvent_addGrpC_tag2el_1,

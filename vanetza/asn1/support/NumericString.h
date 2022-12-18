@@ -36,6 +36,10 @@ asn_constr_check_f NumericString_constraint;
 #define NumericString_encode_xer OCTET_STRING_encode_xer_utf8
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+#define NumericString_encode_jer OCTET_STRING_encode_jer_utf8
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 #define NumericString_decode_oer OCTET_STRING_decode_oer
 #define NumericString_encode_oer OCTET_STRING_encode_oer

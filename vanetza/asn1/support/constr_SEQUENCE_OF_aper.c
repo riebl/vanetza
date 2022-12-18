@@ -33,8 +33,9 @@ SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
     if(ct) {
         int not_in_root = (list->count < ct->lower_bound
                 || list->count > ct->upper_bound);
-        ASN_DEBUG("lb %ld ub %ld %s",
-                  ct->lower_bound, ct->upper_bound,
+        ASN_DEBUG("lb %lld ub %lld %s",
+                  (long long int)ct->lower_bound,
+                  (long long int)ct->upper_bound,
                   ct->flags & APC_EXTENSIBLE ? "ext" : "fix");
         if(ct->flags & APC_EXTENSIBLE) {
             /* Declare whether size is in extension root */
@@ -54,7 +55,7 @@ SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
 */
         if (ct->lower_bound == ct->upper_bound && ct->upper_bound < 65536) {
             /* No length determinant */
-        } else if (aper_put_length(po, ct->upper_bound - ct->lower_bound + 1, list->count - ct->lower_bound, 0) < 0)
+    } else if (aper_put_length(po, ct->lower_bound, ct->upper_bound, list->count - ct->lower_bound, 0) < 0)
             ASN__ENCODE_FAILED;
     }
 
@@ -65,7 +66,7 @@ SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
         if(ct && ct->effective_bits >= 0) {
             mayEncode = list->count;
         } else {
-            mayEncode = aper_put_length(po, -1, list->count - seq, &need_eom);
+            mayEncode = aper_put_length(po, -1, -1, list->count - seq, &need_eom);
             if(mayEncode < 0) ASN__ENCODE_FAILED;
         }
 
@@ -79,7 +80,7 @@ SEQUENCE_OF_encode_aper(const asn_TYPE_descriptor_t *td,
                 ASN__ENCODE_FAILED;
         }
 
-        if(need_eom && aper_put_length(po, -1, 0, 0))
+        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
             ASN__ENCODE_FAILED;  /* End of Message length */
     }
 

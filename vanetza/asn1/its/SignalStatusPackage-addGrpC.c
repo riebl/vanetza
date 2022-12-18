@@ -7,7 +7,7 @@
 
 #include "SignalStatusPackage-addGrpC.h"
 
-static asn_TYPE_member_t asn_MBR_SignalStatusPackage_addGrpC_1[] = {
+asn_TYPE_member_t asn_MBR_SignalStatusPackage_addGrpC_1[] = {
 	{ ATF_POINTER, 2, offsetof(struct SignalStatusPackage_addGrpC, synchToSchedule),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
@@ -51,7 +51,7 @@ static const asn_TYPE_tag2member_t asn_MAP_SignalStatusPackage_addGrpC_tag2el_1[
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* synchToSchedule */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* rejectedReason */
 };
-static asn_SEQUENCE_specifics_t asn_SPC_SignalStatusPackage_addGrpC_specs_1 = {
+asn_SEQUENCE_specifics_t asn_SPC_SignalStatusPackage_addGrpC_specs_1 = {
 	sizeof(struct SignalStatusPackage_addGrpC),
 	offsetof(struct SignalStatusPackage_addGrpC, _asn_ctx),
 	asn_MAP_SignalStatusPackage_addGrpC_tag2el_1,

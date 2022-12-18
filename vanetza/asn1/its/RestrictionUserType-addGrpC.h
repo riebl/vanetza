@@ -35,6 +35,8 @@ typedef struct RestrictionUserType_addGrpC {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_RestrictionUserType_addGrpC;
+extern asn_SEQUENCE_specifics_t asn_SPC_RestrictionUserType_addGrpC_specs_1;
+extern asn_TYPE_member_t asn_MBR_RestrictionUserType_addGrpC_1[2];
 
 #ifdef __cplusplus
 }

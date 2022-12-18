@@ -37,6 +37,10 @@ extern asn_TYPE_operation_t asn_OP_ISO646String;
 #define ISO646String_encode_xer OCTET_STRING_encode_xer_utf8
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+#define ISO646String_encode_jer OCTET_STRING_encode_jer_utf8
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 #define ISO646String_decode_oer OCTET_STRING_decode_oer
 #define ISO646String_encode_oer OCTET_STRING_encode_oer
