@@ -532,6 +532,8 @@ its/RoadworksSubCauseCode.c
 its/RscPart.c
 its/SPAT.c
 its/SPATEM.c
+its/SREM.c
+its/SSEM.c
 its/SaeAutomationLevel.c
 its/SaeAutomationLevels.c
 its/SafetyCarContainer.c
