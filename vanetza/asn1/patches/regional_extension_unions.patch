@@ -1,0 +1,132 @@
+diff --git a/vanetza/asn1/its/RegionalExtension.h b/vanetza/asn1/its/RegionalExtension.h
+index 3ad7797f..3118dd43 100644
+--- a/vanetza/asn1/its/RegionalExtension.h
++++ b/vanetza/asn1/its/RegionalExtension.h
+@@ -165,6 +165,7 @@ typedef struct Reg_RTCMcorrections {
+ 	struct Reg_RTCMcorrections__regExtValue {
+ 		Reg_RTCMcorrections__regExtValue_PR present;
+ 		union Reg_RTCMcorrections__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -179,6 +180,7 @@ typedef struct Reg_SPAT {
+ 	struct Reg_SPAT__regExtValue {
+ 		Reg_SPAT__regExtValue_PR present;
+ 		union Reg_SPAT__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -193,6 +195,7 @@ typedef struct Reg_SignalRequestMessage {
+ 	struct Reg_SignalRequestMessage__regExtValue {
+ 		Reg_SignalRequestMessage__regExtValue_PR present;
+ 		union Reg_SignalRequestMessage__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -207,6 +210,7 @@ typedef struct Reg_SignalStatusMessage {
+ 	struct Reg_SignalStatusMessage__regExtValue {
+ 		Reg_SignalStatusMessage__regExtValue_PR present;
+ 		union Reg_SignalStatusMessage__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -221,6 +225,7 @@ typedef struct Reg_AdvisorySpeed {
+ 	struct Reg_AdvisorySpeed__regExtValue {
+ 		Reg_AdvisorySpeed__regExtValue_PR present;
+ 		union Reg_AdvisorySpeed__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -235,6 +240,7 @@ typedef struct Reg_ComputedLane {
+ 	struct Reg_ComputedLane__regExtValue {
+ 		Reg_ComputedLane__regExtValue_PR present;
+ 		union Reg_ComputedLane__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -279,6 +285,7 @@ typedef struct Reg_IntersectionGeometry {
+ 	struct Reg_IntersectionGeometry__regExtValue {
+ 		Reg_IntersectionGeometry__regExtValue_PR present;
+ 		union Reg_IntersectionGeometry__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -323,6 +330,7 @@ typedef struct Reg_LaneDataAttribute {
+ 	struct Reg_LaneDataAttribute__regExtValue {
+ 		Reg_LaneDataAttribute__regExtValue_PR present;
+ 		union Reg_LaneDataAttribute__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -352,6 +360,7 @@ typedef struct Reg_MovementState {
+ 	struct Reg_MovementState__regExtValue {
+ 		Reg_MovementState__regExtValue_PR present;
+ 		union Reg_MovementState__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -381,6 +390,7 @@ typedef struct Reg_NodeOffsetPointXY {
+ 	struct Reg_NodeOffsetPointXY__regExtValue {
+ 		Reg_NodeOffsetPointXY__regExtValue_PR present;
+ 		union Reg_NodeOffsetPointXY__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -425,6 +435,7 @@ typedef struct Reg_RequestorType {
+ 	struct Reg_RequestorType__regExtValue {
+ 		Reg_RequestorType__regExtValue_PR present;
+ 		union Reg_RequestorType__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -454,6 +465,7 @@ typedef struct Reg_RoadSegment {
+ 	struct Reg_RoadSegment__regExtValue {
+ 		Reg_RoadSegment__regExtValue_PR present;
+ 		union Reg_RoadSegment__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -468,6 +480,7 @@ typedef struct Reg_SignalControlZone {
+ 	struct Reg_SignalControlZone__regExtValue {
+ 		Reg_SignalControlZone__regExtValue_PR present;
+ 		union Reg_SignalControlZone__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -482,6 +495,7 @@ typedef struct Reg_SignalRequest {
+ 	struct Reg_SignalRequest__regExtValue {
+ 		Reg_SignalRequest__regExtValue_PR present;
+ 		union Reg_SignalRequest__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -496,6 +510,7 @@ typedef struct Reg_SignalRequestPackage {
+ 	struct Reg_SignalRequestPackage__regExtValue {
+ 		Reg_SignalRequestPackage__regExtValue_PR present;
+ 		union Reg_SignalRequestPackage__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
+@@ -510,6 +525,7 @@ typedef struct Reg_SignalStatus {
+ 	struct Reg_SignalStatus__regExtValue {
+ 		Reg_SignalStatus__regExtValue_PR present;
+ 		union Reg_SignalStatus__regExtValue_u {
++		    char _placeholder; /* avoid empty union */
+ 		} choice;
+ 		
+ 		/* Context for parsing across buffer boundaries */
