@@ -25,7 +25,7 @@ Please visit our project website at [www.vanetza.org](https://www.vanetza.org) w
 
 We strive for quality in our code base.
 New commits and pull requests are regularly checked by our unit tests in a container environment.
-At the moment, this container is based on Ubuntu 16.04 and runs on GitHub's Actions infrastructure.
+At the moment, the three latest Ubuntu LTS versions are run on GitHub's Actions infrastructure.
 
 [![Build Status](https://github.com/riebl/vanetza/actions/workflows/docker-ci.yml/badge.svg?branch=master)](https://github.com/riebl/vanetza/actions/workflows/docker-ci.yml)
 
