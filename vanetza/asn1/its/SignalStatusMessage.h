@@ -50,6 +50,8 @@ typedef struct SignalStatusMessage {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_SignalStatusMessage;
+extern asn_SEQUENCE_specifics_t asn_SPC_SignalStatusMessage_specs_1;
+extern asn_TYPE_member_t asn_MBR_SignalStatusMessage_1[5];
 
 #ifdef __cplusplus
 }
