@@ -9,11 +9,15 @@ Autotalks SDK can used only in the `socktap` example, so you must always compile
 
 ## Autotalks SDK
 
-SDK is shipped with Autotalks devices, you should have obtained one. As it is recommended to build the SDK in Ubuntu 16.04, it was tested on this OS. For Secton, there is used gcc version 5.4.0, for Craton `arm-poky-linux-gnueabi-g++` version 8.2.0, that is installed with the poky container.
+SDK is shipped with Autotalks devices, you should have obtained one. Until Release 18, it was recommended to build the SDK in Ubuntu 16.04, now Ubuntu 18.04 or 20.04 should be used; it was tested on the latter. For Secton, there is used gcc version 9.4.0, for Craton `arm-poky-linux-gnueabi-g++` version 11.2.0, that is installed with the poky container.
 
 ### Code corrections
 
 With Autotalks SDK version <= 5.15.0, you will have to do a correction in file `autotalks_*_api/include/atlk/ddm_service.h` on line 615 and add there an explicit cast to `stats_tlv_t *`. Without this, you won't be able to build the project because of the `-fpermissive` flag. As of version 5.16.0, this problem is fixed.
+
+In version 5.17 (Release 18), there are another problems:
+* In autotalks_{craton,secton}_api/include/common/counters.h change line 110 from `uint8_t data[]` to `uint8_t* data`
+* In autotalks_{craton,secton}_api/include/atlk/generic_compensator.h, there is missing `}` for the `extern "C"` directive (this should be solved in newer SDK)
 
 Another thing you must note is in the initialization in the `socktap` example. The initialization code in `v2x_device_init()` was used directly from the example in the Autotalks SDK, therefore it should not be distributed with the library. You will have to write it yourself, but it really is almost the same as `main()` function in the basic example from the SDK.
 
@@ -25,7 +29,7 @@ Please see [this document](vanetza-build-dependencies.md), program was tested wi
 
 ### Compiling for Craton
 We assume you have copy of the Vanetza repository in your home directory at `$HOME`.
-Furthermore, there should be a symbolic link named `autotalks_craton_api` in your home directory, that links to the root of Craton SDK (the directory where the API is compiled).
+Furthermore, there should be a symbolic link named `autotalks_craton_api` in your home directory, that links to the root of Craton SDK (the directory where the API is compiled). If you have Poky toolchain installed in other directory than /opt/poky-craton2/4.0.1 (e.g. /tools/gcc/arm/new_toolchain as suggested by Autotalks), change the path in cmake/Toolchain-Autotalks-Craton.cmake.
 Create a build directory and tell CMake to use the cross-compiler installed on your machine and to look up additional dependencies in `vanetza-deps`:
 
     :::shell

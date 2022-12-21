@@ -129,7 +129,20 @@ eui48_t mac_to_num(vanetza::MacAddress addr)
 
 void insert_autotalks_header_transmit(const vanetza::access::DataRequest& request, std::unique_ptr<vanetza::ChunkPacket>& packet, uint8_t* pData, uint16_t length)
 {
-    v2x_send_params_t send_params = V2X_SEND_PARAMS_INIT;
+    // There cannot be an assignment as three dots (...) are gcc extension that does not work in g++
+    // => initialize the structure manually
+    //v2x_send_params_t send_params = V2X_SEND_PARAMS_INIT;
+    v2x_send_params_t send_params;
+    send_params.source_address = EUI48_ZERO_INIT;
+    send_params.dest_address = EUI48_BCAST_INIT;
+    send_params.user_priority = USER_PRIORITY_NA;
+    send_params.channel_id = V2X_CHANNEL_ID_INIT;
+    send_params.datarate = DATARATE_NA;
+    send_params.power_dbm8 = POWER_DBM8_NA;
+    send_params.transmit_diversity_power_dbm8 = POWER_DBM8_NA;
+    send_params.expiry_time_ms = V2X_EXPIRY_TIME_MS_NA;
+    for (uint8_t i = 0; i < RF_INDEX_MAX; i++)
+        send_params.comp_data[i] = COMPENSATOR_DATA_INIT;
 
     vanetza::access::G5LinkLayer link_layer;
     vanetza::access::ieee802::dot11::QosDataHeader& mac_header = link_layer.mac_header;

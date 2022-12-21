@@ -1,6 +1,6 @@
 set(CMAKE_SYSTEM_NAME "Linux")
 set(CMAKE_SYSTEM_PROCESSOR "arm")
-set(POKY_CRATON2 "/opt/poky-craton2/2.6.2")
+set(POKY_CRATON2 "/opt/poky-craton2/4.0.1")
 set(CMAKE_C_COMPILER "${POKY_CRATON2}/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-gcc")
 set(CMAKE_CXX_COMPILER "${POKY_CRATON2}/sysroots/x86_64-pokysdk-linux/usr/bin/arm-poky-linux-gnueabi/arm-poky-linux-gnueabi-g++")
 set(CMAKE_C_FLAGS "--sysroot=${POKY_CRATON2}/sysroots/cortexa7t2hf-neon-poky-linux-gnueabi -march=armv7ve -mthumb -mfpu=neon -mfloat-abi=hard -mcpu=cortex-a7" CACHE STRING "" FORCE)
