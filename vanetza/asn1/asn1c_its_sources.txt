@@ -271,7 +271,7 @@ its/IntersectionState.c
 its/IntersectionStateList.c
 its/IntersectionStatusObject.c
 its/Iso3833VehicleType.c
-its/IssuerIdentifier.c
+its/IssuerIdentifierIso.c
 its/ItineraryPath.c
 its/ItsPduHeader.c
 its/ItsStationPosition.c

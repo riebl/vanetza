@@ -6,6 +6,9 @@ file(MAKE_DIRECTORY "${DIRECTORY}")
 file(DOWNLOAD
     https://standards.iso.org/iso/14816/ISO14816%20ASN.1%20repository/ISO14816_AVIAEINumberingAndDataStructures.asn
     "${DIRECTORY}/ISO14816.asn")
+file(READ "${DIRECTORY}/ISO14816.asn" _content)
+string(REPLACE "IssuerIdentifier" "IssuerIdentifierIso" _content "${_content}")
+file(WRITE "${DIRECTORY}/ISO14816.asn" "${_content}")
 
 file(DOWNLOAD
     https://forge.etsi.org/rep/ITS/asn1/is_ts103301/-/raw/v2.1.1/iso-patched/ISO24534-3_ElectronicRegistrationIdentificationVehicleDataModule-patched.asn
@@ -30,12 +33,16 @@ file(WRITE "${DIRECTORY}/ISO19321.asn" "${_content}")
 file(DOWNLOAD
     "https://forge.etsi.org/rep/ITS/asn1/is_ts103301/-/raw/v2.1.1/iso-patched/ISO14906(2018)EfcDsrcGenericv7-patched.asn"
     "${DIRECTORY}/ISO14906-1-7.asn")
+file(READ "${DIRECTORY}/ISO14906-1-7.asn" _content)
+string(REPLACE "IssuerIdentifier" "IssuerIdentifierIso" _content "${_content}")
+file(WRITE "${DIRECTORY}/ISO14906-1-7.asn" "${_content}")
 
 file(DOWNLOAD
     "https://forge.etsi.org/rep/ITS/asn1/is_ts103301/-/raw/v2.1.1/iso-patched/ISO14906(2018)EfcDsrcApplicationv6-patched.asn"
     "${DIRECTORY}/ISO14906-0-6.asn")
 file(READ "${DIRECTORY}/ISO14906-0-6.asn" _content)
 string(REPLACE "StationType" "StationTypeIso" _content "${_content}")
+string(REPLACE "IssuerIdentifier" "IssuerIdentifierIso" _content "${_content}")
 file(WRITE "${DIRECTORY}/ISO14906-0-6.asn" "${_content}")
 
 file(DOWNLOAD

@@ -28,7 +28,7 @@ static asn_TYPE_member_t asn_MBR_CS1_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct CS1, issuerIdentifier),
 		(ASN_TAG_CLASS_CONTEXT | (1 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_IssuerIdentifier,
+		&asn_DEF_IssuerIdentifierIso,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
