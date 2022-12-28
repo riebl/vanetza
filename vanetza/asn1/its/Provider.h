@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "CountryCode.h"
-#include "IssuerIdentifier.h"
+#include "IssuerIdentifierIso.h"
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
@@ -23,7 +23,7 @@ extern "C" {
 /* Provider */
 typedef struct Provider {
 	CountryCode_t	 countryCode;
-	IssuerIdentifier_t	 providerIdentifier;
+	IssuerIdentifierIso_t	 providerIdentifier;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;

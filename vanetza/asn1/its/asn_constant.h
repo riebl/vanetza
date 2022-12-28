@@ -9,8 +9,8 @@
 extern "C" {
 #endif
 
-#define min_val_IssuerIdentifier (0)
-#define max_val_IssuerIdentifier (16383)
+#define min_val_IssuerIdentifierIso (0)
+#define max_val_IssuerIdentifierIso (16383)
 #define min_val_ManufacturerIdentifier (0)
 #define max_val_ManufacturerIdentifier (65535)
 #define min_val_AlphabetIndicator (0)

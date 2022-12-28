@@ -5,10 +5,10 @@
  * 	`asn1c -fcompound-names -fincludes-quoted -no-gen-example -R`
  */
 
-#include "IssuerIdentifier.h"
+#include "IssuerIdentifierIso.h"
 
 int
-IssuerIdentifier_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
+IssuerIdentifierIso_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
 	long value;
 	
@@ -37,38 +37,38 @@ IssuerIdentifier_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_IssuerIdentifier_constr_1 CC_NOTUSED = {
+static asn_oer_constraints_t asn_OER_type_IssuerIdentifierIso_constr_1 CC_NOTUSED = {
 	{ 2, 1 }	/* (0..16383) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-asn_per_constraints_t asn_PER_type_IssuerIdentifier_constr_1 CC_NOTUSED = {
+asn_per_constraints_t asn_PER_type_IssuerIdentifierIso_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 14,  14,  0,  16383 }	/* (0..16383) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-static const ber_tlv_tag_t asn_DEF_IssuerIdentifier_tags_1[] = {
+static const ber_tlv_tag_t asn_DEF_IssuerIdentifierIso_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
 };
-asn_TYPE_descriptor_t asn_DEF_IssuerIdentifier = {
-	"IssuerIdentifier",
-	"IssuerIdentifier",
+asn_TYPE_descriptor_t asn_DEF_IssuerIdentifierIso = {
+	"IssuerIdentifierIso",
+	"IssuerIdentifierIso",
 	&asn_OP_NativeInteger,
-	asn_DEF_IssuerIdentifier_tags_1,
-	sizeof(asn_DEF_IssuerIdentifier_tags_1)
-		/sizeof(asn_DEF_IssuerIdentifier_tags_1[0]), /* 1 */
-	asn_DEF_IssuerIdentifier_tags_1,	/* Same as above */
-	sizeof(asn_DEF_IssuerIdentifier_tags_1)
-		/sizeof(asn_DEF_IssuerIdentifier_tags_1[0]), /* 1 */
+	asn_DEF_IssuerIdentifierIso_tags_1,
+	sizeof(asn_DEF_IssuerIdentifierIso_tags_1)
+		/sizeof(asn_DEF_IssuerIdentifierIso_tags_1[0]), /* 1 */
+	asn_DEF_IssuerIdentifierIso_tags_1,	/* Same as above */
+	sizeof(asn_DEF_IssuerIdentifierIso_tags_1)
+		/sizeof(asn_DEF_IssuerIdentifierIso_tags_1[0]), /* 1 */
 	{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-		&asn_OER_type_IssuerIdentifier_constr_1,
+		&asn_OER_type_IssuerIdentifierIso_constr_1,
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-		&asn_PER_type_IssuerIdentifier_constr_1,
+		&asn_PER_type_IssuerIdentifierIso_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-		IssuerIdentifier_constraint
+		IssuerIdentifierIso_constraint
 	},
 	0, 0,	/* No members */
 	0	/* No specifics */

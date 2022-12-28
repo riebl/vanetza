@@ -13,7 +13,7 @@
 
 /* Including external dependencies */
 #include "CountryCode.h"
-#include "IssuerIdentifier.h"
+#include "IssuerIdentifierIso.h"
 #include "ServiceNumber.h"
 #include "constr_SEQUENCE.h"
 
@@ -24,7 +24,7 @@ extern "C" {
 /* CS1 */
 typedef struct CS1 {
 	CountryCode_t	 countryCode;
-	IssuerIdentifier_t	 issuerIdentifier;
+	IssuerIdentifierIso_t	 issuerIdentifier;
 	ServiceNumber_t	 serviceNumber;
 	
 	/* Context for parsing across buffer boundaries */
