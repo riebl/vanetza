@@ -26,9 +26,6 @@ file(WRITE "${DIRECTORY}/ISO19091.asn" "${_content}")
 file(DOWNLOAD
     https://standards.iso.org/iso/ts/19321/ed-2/en/ISO19321IVIv2.asn
     "${DIRECTORY}/ISO19321.asn")
-file(READ "${DIRECTORY}/ISO19321.asn" _content)
-string(REPLACE "Temperature" "TemperatureIso" _content "${_content}")
-file(WRITE "${DIRECTORY}/ISO19321.asn" "${_content}")
 
 file(DOWNLOAD
     "https://forge.etsi.org/rep/ITS/asn1/is_ts103301/-/raw/v2.1.1/iso-patched/ISO14906(2018)EfcDsrcGenericv7-patched.asn"
