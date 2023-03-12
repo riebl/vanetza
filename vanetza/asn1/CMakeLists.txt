@@ -186,6 +186,9 @@ function(add_asn1_component NAME)
         target_include_directories(asn1_support PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/support>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/support>)
+        if(UNIX)
+            target_compile_definitions(asn1_support PUBLIC HAVE_NETINET_IN_H)
+        endif()
     else()
         target_link_libraries(asn1_${NAME} PUBLIC asn1_support)
     endif()
