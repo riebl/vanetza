@@ -20,18 +20,25 @@ public:
     typedef std::chrono::duration<rep, period> duration;
     typedef std::chrono::time_point<Clock> time_point;
     typedef boost::posix_time::ptime date_time;
+    typedef boost::posix_time::time_duration time_of_day;
 
     static constexpr bool is_steady() { return true; }
     static time_point at(const date_time&);
     static date_time at(const time_point&);
     static const date_time& epoch();
-    static std::string epoch_debug();
     /**
      * \brief create time point
      * \param at time string formatted like 2016-07-15 09:48:32
      * \return time point
      */
     static time_point at(const std::string& at);
+    /**
+     * \brief create time of day
+     * \param at time string formatted like 09:48:32.0000000
+     * \return time of day
+     */
+    static time_of_day time_at(const Clock::time_point &t);
+
 };
 
 } // namespace vanetza

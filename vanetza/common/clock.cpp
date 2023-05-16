@@ -31,12 +31,9 @@ Clock::time_point Clock::at(const std::string& at)
     return Clock::at(boost::posix_time::time_from_string(at));
 }
 
-std::string Clock::epoch_debug(){
-    uint64_t useconds_epoch = std::chrono::duration_cast<std::chrono::microseconds>(
-            std::chrono::high_resolution_clock::now().time_since_epoch())
-            .count();
-    auto useconds_decimal = static_cast<double>(useconds_epoch)/1e6;
-    return std::to_string(useconds_decimal) + " | ";
+Clock::time_of_day Clock::time_at(const Clock::time_point& t){
+
+    return Clock::at(t).time_of_day();
 }
 
 } // namespace vanetza
