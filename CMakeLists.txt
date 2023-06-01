@@ -62,7 +62,6 @@ endforeach()
 include(CompatBoostTargets)
 find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
-find_package(Cohda MODULE QUIET)
 
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
 if (VANETZA_WITH_OPENSSL)
