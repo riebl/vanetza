@@ -45,8 +45,8 @@ enum class VerificationReport
 // mandatory parameters of SN-VERIFY.request (TS 102 723-8 V1.1.1)
 struct VerifyRequest
 {
-    VerifyRequest(const SecuredMessage& msg) : secured_message(msg) {}
-    const SecuredMessage& secured_message; /*< contains security header and payload */
+    VerifyRequest(const SecuredMessageVariant& msg) : secured_message(msg) {}
+    const SecuredMessageVariant& secured_message; /*< contains security header and payload */
 };
 
 // parameters of SN-VERIFY.confirm (TS 102 723-8 V1.1.1)
@@ -75,6 +75,17 @@ using VerifyService = std::function<VerifyConfirm(VerifyRequest&&)>;
  * \return callable verify service
  */
 VerifyService straight_verify_service(const Runtime&, CertificateProvider&, CertificateValidator&, Backend&, CertificateCache&, SignHeaderPolicy&, PositionProvider&);
+
+/**
+ * Get verify service with basic certificate and signature checks
+ * \param rt runtime
+ * \param certificate_provider certificate provider
+ * \param certificate_validator certificate validator
+ * \param backend crypto backend
+ * \param certificate_cache certificate cache
+ * \param sign_header_policy sign header policy to report unknown certificates
+ * \return callable verify service
+ */
 
 /**
  * Get insecure dummy verify service without any checks

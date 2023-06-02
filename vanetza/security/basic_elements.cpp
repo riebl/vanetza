@@ -1,4 +1,6 @@
 #include <vanetza/security/basic_elements.hpp>
+#include <vanetza/asn1/support/OCTET_STRING.h>
+#include <vanetza/common/byte_buffer.hpp>
 #include <algorithm>
 #include <cassert>
 #include <chrono>
@@ -29,6 +31,7 @@ Time64 convert_time64(const Clock::time_point& tp)
     using microseconds = std::chrono::duration<Time64, std::micro>;
     return duration_cast<microseconds>(tp.time_since_epoch()).count();
 }
+
 
 } // namespace security
 } // namespace vanetza

@@ -17,7 +17,13 @@ NaiveCertificateProvider::NaiveCertificateProvider(const Runtime& rt) :
     m_own_key_pair(m_crypto_backend.generate_key_pair()),
     m_own_certificate(generate_authorization_ticket()) { }
 
-const Certificate& NaiveCertificateProvider::own_certificate()
+
+int NaiveCertificateProvider::version() 
+{
+    return 2;
+}
+
+const CertificateVariant& NaiveCertificateProvider::own_certificate()
 {
     // renew certificate if necessary
     for (auto& validity_restriction : m_own_certificate.validity_restriction) {
@@ -32,9 +38,9 @@ const Certificate& NaiveCertificateProvider::own_certificate()
     return m_own_certificate;
 }
 
-std::list<Certificate> NaiveCertificateProvider::own_chain()
+std::list<CertificateVariant> NaiveCertificateProvider::own_chain()
 {
-    static const std::list<Certificate> chain = { aa_certificate() };
+    static const std::list<CertificateVariant> chain = { aa_certificate() };
 
     return chain;
 }

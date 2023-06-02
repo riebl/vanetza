@@ -5,9 +5,23 @@
 
 using namespace vanetza::security;
 
+vanetza::ByteBuffer from_hexstring(std::string hex_string)
+{
+    size_t len = hex_string.length();
+    vanetza::ByteBuffer out;
+    for (size_t i = 0; i < len; i += 2)
+    {
+        std::istringstream strm(hex_string.substr(i, 2));
+        uint8_t x;
+        strm >> std::hex >> x;
+        out.push_back(x);
+    }
+    return out;
+}
+
 TEST(Certificate, WebValidator_RootCA_v2)
 {
-const char str[] =
+    const char str[] =
         "0200040C547275737465645F526F6F74808D000004F1817DD05116B855A853F80DB171A3A470D431"
         "70EA7EEFD8EF392D66ECEFBE501CEBA19963C9B6447574424FFF1BB89485743F4D09A72B715FC73C"
         "87E5F70A110101000441279A383B80C812B72B1A5F5C3C590E5041C634A1ADCC4CE58393CA046D3C"
@@ -62,4 +76,3 @@ TEST(Certificate, WebValidator_AuthorizationTicket1_v2)
     deserialize_from_hexstring(str, c);
     check(c, serialize_roundtrip(c));
 }
-

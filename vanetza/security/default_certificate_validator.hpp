@@ -14,6 +14,9 @@ namespace security
 // forward declaration
 class TrustStore;
 class CertificateCache;
+class TrustStoreV3;
+class CertificateCacheV3;
+
 
 /**
  * \brief The default certificate validator
@@ -30,7 +33,19 @@ public:
      * \param certificate to verify
      * \return certificate status
      */
-    CertificateValidity check_certificate(const Certificate& certificate) override;
+    CertificateValidity check_certificate(const CertificateVariant& certificate) override;
+    /**
+     * \brief check certificate
+     * \param certificate to verify
+     * \return certificate status
+     */
+    CertificateValidity check_certificate(const Certificate& certificate);
+    /**
+     * \brief check certificate
+     * \param certificate to verify
+     * \return certificate status
+     */
+    CertificateValidity check_certificate(const CertificateV3& certificate);
 
 private:
     Backend& m_crypto_backend;

@@ -48,15 +48,25 @@ std::size_t Parser::parse_common(CommonHeader& common)
     return bytes;
 }
 
-std::size_t Parser::parse_secured(security::SecuredMessageV2& secured)
+std::size_t Parser::parse_secured(security::SecuredMessageVariant& secured)
 {
     std::size_t bytes = 0;
-    try {
+    InputArchive temp_ar = InputArchive(m_archive);
+    uint8_t protocol_version = 0;
+    temp_ar >> protocol_version;
+    switch (protocol_version)
+    {
+    case 0x02:
+        secured = security::SecuredMessageV2();
         bytes = deserialize(m_archive, secured);
-    } catch (InputArchive::Exception&) {
-    } catch (security::deserialization_error&) {
+        break;
+    case 0x03:
+        secured = security::SecuredMessageV3();
+        bytes = deserialize(m_archive, secured);
+        break;
+    default:
+        break;
     }
-
     m_read_bytes += bytes;
     return bytes;
 }

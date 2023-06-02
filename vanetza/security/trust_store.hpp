@@ -21,16 +21,16 @@ public:
      * \param id hash identifier of the certificate
      * \return all stored certificates matching the passed identifier
      */
-    std::list<Certificate> lookup(HashedId8 id) const;
+    std::list<CertificateVariant> lookup(HashedId8 id) const;
 
     /**
      * Insert a certificate into store, i.e. consider it as trustworthy.
      * \param trusted_certificate a trustworthy certificate copied into TrustStore
      */
-    void insert(const Certificate& trusted_certificate);
+    void insert(const CertificateVariant& trusted_certificate);
 
 private:
-    std::multimap<HashedId8, Certificate> m_certificates;
+    std::multimap<HashedId8, CertificateVariant> m_certificates;
 };
 
 } // namespace security

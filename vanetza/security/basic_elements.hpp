@@ -2,6 +2,8 @@
 #define BASIC_ELEMENTS_HPP_RALCTYHI
 
 #include <vanetza/common/clock.hpp>
+#include <vanetza/asn1/support/OCTET_STRING.h>
+#include <vanetza/common/byte_buffer.hpp>
 #include <array>
 #include <cstdint>
 

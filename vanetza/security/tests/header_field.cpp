@@ -13,7 +13,7 @@ TEST(HeaderField, Serialize)
 {
     std::list<HeaderField> list;
 
-    std::list<Certificate> certificates;
+    std::list<CertificateVariant> certificates;
     for (unsigned i = 0; i < 2; ++i) {
         auto rand_gen = random_byte_generator(i + 8 * 3);
         Certificate cert;

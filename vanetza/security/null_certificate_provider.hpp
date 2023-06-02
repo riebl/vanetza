@@ -13,8 +13,8 @@ class NullCertificateProvider : public CertificateProvider
 public:
     NullCertificateProvider();
 
-    const Certificate& own_certificate() override;
-    std::list<Certificate> own_chain() override;
+    const CertificateVariant& own_certificate() override;
+    std::list<CertificateVariant> own_chain() override;
     const ecdsa256::PrivateKey& own_private_key() override;
 
     /**

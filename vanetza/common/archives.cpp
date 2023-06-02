@@ -13,6 +13,12 @@ InputArchive::InputArchive(StreamBuffer& buf) :
 {
 }
 
+std::size_t InputArchive::get_available()
+{
+    return m_stream_buffer->in_avail();
+}
+
+
 void InputArchive::load_binary(unsigned char* data, std::size_t len)
 {
     load_binary(reinterpret_cast<char*>(data), len);

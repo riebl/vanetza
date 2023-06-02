@@ -34,6 +34,8 @@ public:
         return *this;
     }
 
+    size_t get_available();
+
     void load_binary(unsigned char* data, std::size_t len);
     void load_binary(char* data, std::size_t len);
 

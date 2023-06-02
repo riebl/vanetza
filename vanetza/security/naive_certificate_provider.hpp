@@ -25,16 +25,22 @@ public:
     NaiveCertificateProvider(const Runtime&);
 
     /**
+     * Get the version of the provided certificates: 2 for v1.2.1 and 3 for v1.3.1
+     * \return certificates version
+     */
+    int version() override;
+
+    /**
      * \brief get own certificate for signing
      * \return own certificate
      */
-    const Certificate& own_certificate() override;
+    const CertificateVariant& own_certificate() override;
 
     /**
      * Get own certificate chain, excluding the leaf certificate and root CA
      * \return own certificate chain
      */
-    std::list<Certificate> own_chain() override;
+    std::list<CertificateVariant> own_chain() override;
 
     /**
      * \brief get own private key
