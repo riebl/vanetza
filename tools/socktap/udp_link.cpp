@@ -23,6 +23,23 @@ UdpLink::UdpLink(boost::asio::io_service& io_service, const ip::udp::endpoint& e
     do_receive();
 }
 
+
+UdpLink::UdpLink(boost::asio::io_service &io_service , const ip::udp::endpoint& endpoint_tx,
+    const boost::asio::ip::udp::endpoint& endpoint_rx):
+    multicast_endpoint_(endpoint_tx),
+    rx_endpoint_(endpoint_rx),
+    tx_socket_(io_service), rx_socket_(io_service),
+    rx_buffer_(2560, 0x00)
+{
+    tx_socket_.open(multicast_endpoint_.protocol());
+
+    rx_socket_.open(rx_endpoint_.protocol());
+    rx_socket_.set_option(ip::udp::socket::reuse_address(true));
+    rx_socket_.bind(rx_endpoint_);
+
+    do_receive();
+}
+
 void UdpLink::indicate(IndicationCallback cb)
 {
     callback_ = cb;

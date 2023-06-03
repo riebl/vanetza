@@ -31,4 +31,9 @@ Clock::time_point Clock::at(const std::string& at)
     return Clock::at(boost::posix_time::time_from_string(at));
 }
 
+Clock::time_of_day Clock::time_at(const Clock::time_point& t){
+
+    return Clock::at(t).time_of_day();
+}
+
 } // namespace vanetza
