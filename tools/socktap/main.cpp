@@ -36,6 +36,7 @@ int main(int argc, const char** argv)
     ;
     add_positioning_options(options);
     add_security_options(options);
+    add_link_layer_options(options);
 
     po::positional_options_description positional_options;
     positional_options.add("interface", 1);
@@ -80,7 +81,7 @@ int main(int argc, const char** argv)
         }
 
         const std::string link_layer_name = vm["link-layer"].as<std::string>();
-        auto link_layer =  create_link_layer(io_service, device, link_layer_name);
+        auto link_layer =  create_link_layer(io_service, device, link_layer_name, vm);
         if (!link_layer) {
             std::cerr << "No link layer '" << link_layer_name << "' found." << std::endl;
             return 1;
