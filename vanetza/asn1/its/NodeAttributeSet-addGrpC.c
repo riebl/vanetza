@@ -7,7 +7,7 @@
 
 #include "NodeAttributeSet-addGrpC.h"
 
-static asn_TYPE_member_t asn_MBR_NodeAttributeSet_addGrpC_1[] = {
+asn_TYPE_member_t asn_MBR_NodeAttributeSet_addGrpC_1[] = {
 	{ ATF_POINTER, 3, offsetof(struct NodeAttributeSet_addGrpC, ptvRequest),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
@@ -69,7 +69,7 @@ static const asn_TYPE_tag2member_t asn_MAP_NodeAttributeSet_addGrpC_tag2el_1[] =
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 }, /* nodeLink */
     { (ASN_TAG_CLASS_CONTEXT | (2 << 2)), 2, 0, 0 } /* node */
 };
-static asn_SEQUENCE_specifics_t asn_SPC_NodeAttributeSet_addGrpC_specs_1 = {
+asn_SEQUENCE_specifics_t asn_SPC_NodeAttributeSet_addGrpC_specs_1 = {
 	sizeof(struct NodeAttributeSet_addGrpC),
 	offsetof(struct NodeAttributeSet_addGrpC, _asn_ctx),
 	asn_MAP_NodeAttributeSet_addGrpC_tag2el_1,

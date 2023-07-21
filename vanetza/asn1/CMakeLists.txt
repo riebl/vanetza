@@ -26,11 +26,16 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-MAPEM.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-RTCMEM.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-SPATEM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-SREM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-SSEM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-IVIM.asn
     )
 
     option(VANETZA_ASN1_WITH_ISO "Fetch ISO ASN.1 files for a more complete ITS message set" OFF)
     if(VANETZA_ASN1_WITH_ISO)
-        set(_iso_asn1_files ISO14816.asn ISO19091.asn ISO24534-3.asn)
+        set(_iso_asn1_files
+            ISO14816.asn ISO19091.asn ISO24534-3.asn ISO19321.asn
+            ISO14906-0-6.asn ISO14906-1-7.asn ISO17419.asn ISO14823.asn)
         list(TRANSFORM _iso_asn1_files PREPEND ${PROJECT_BINARY_DIR}/iso/)
         add_custom_command(OUTPUT ${_iso_asn1_files}
             COMMAND ${CMAKE_COMMAND} -DDIRECTORY=${PROJECT_BINARY_DIR}/iso -P fetch_iso_asn1_files.cmake
@@ -181,6 +186,9 @@ function(add_asn1_component NAME)
         target_include_directories(asn1_support PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/support>
             $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/support>)
+        if(UNIX)
+            target_compile_definitions(asn1_support PUBLIC HAVE_NETINET_IN_H)
+        endif()
     else()
         target_link_libraries(asn1_${NAME} PUBLIC asn1_support)
     endif()

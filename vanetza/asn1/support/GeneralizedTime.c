@@ -196,6 +196,11 @@ asn_TYPE_operation_t asn_OP_GeneralizedTime = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    GeneralizedTime_encode_jer,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
     OCTET_STRING_decode_oer,
     OCTET_STRING_encode_oer,

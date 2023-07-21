@@ -31,6 +31,7 @@ ber_type_decoder_f VDS_decode_ber;
 der_type_encoder_f VDS_encode_der;
 xer_type_decoder_f VDS_decode_xer;
 xer_type_encoder_f VDS_encode_xer;
+jer_type_encoder_f VDS_encode_jer;
 oer_type_decoder_f VDS_decode_oer;
 oer_type_encoder_f VDS_encode_oer;
 per_type_decoder_f VDS_decode_uper;

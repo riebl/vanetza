@@ -62,6 +62,7 @@ ber_type_decoder_f BasicVehicleRole_decode_ber;
 der_type_encoder_f BasicVehicleRole_encode_der;
 xer_type_decoder_f BasicVehicleRole_decode_xer;
 xer_type_encoder_f BasicVehicleRole_encode_xer;
+jer_type_encoder_f BasicVehicleRole_encode_jer;
 oer_type_decoder_f BasicVehicleRole_decode_oer;
 oer_type_encoder_f BasicVehicleRole_encode_oer;
 per_type_decoder_f BasicVehicleRole_decode_uper;

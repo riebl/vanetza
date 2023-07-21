@@ -31,6 +31,7 @@ ber_type_decoder_f Offset_B16_decode_ber;
 der_type_encoder_f Offset_B16_encode_der;
 xer_type_decoder_f Offset_B16_decode_xer;
 xer_type_encoder_f Offset_B16_encode_xer;
+jer_type_encoder_f Offset_B16_encode_jer;
 oer_type_decoder_f Offset_B16_decode_oer;
 oer_type_encoder_f Offset_B16_encode_oer;
 per_type_decoder_f Offset_B16_decode_uper;

@@ -41,6 +41,10 @@ xer_type_decoder_f BMPString_decode_xer;
 xer_type_encoder_f BMPString_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_encoder_f BMPString_encode_jer;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 #define BMPString_decode_uper OCTET_STRING_decode_uper
 #define BMPString_encode_uper OCTET_STRING_encode_uper

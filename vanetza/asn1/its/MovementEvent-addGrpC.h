@@ -33,6 +33,8 @@ typedef struct MovementEvent_addGrpC {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_MovementEvent_addGrpC;
+extern asn_SEQUENCE_specifics_t asn_SPC_MovementEvent_addGrpC_specs_1;
+extern asn_TYPE_member_t asn_MBR_MovementEvent_addGrpC_1[1];
 
 #ifdef __cplusplus
 }

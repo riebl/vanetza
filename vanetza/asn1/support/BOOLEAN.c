@@ -33,6 +33,11 @@ asn_TYPE_operation_t asn_OP_BOOLEAN = {
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    BOOLEAN_encode_jer,
+#else
+    0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
     BOOLEAN_decode_oer,
     BOOLEAN_encode_oer,

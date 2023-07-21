@@ -87,8 +87,8 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                         ? asn_uint642INTEGER(st, (unsigned long)value)
                         : asn_int642INTEGER(st, value))
                     ASN__DECODE_FAILED;
-                ASN_DEBUG("Got value %ld + low %ld",
-                          value, ct->lower_bound);
+                ASN_DEBUG("Got value %ld + low %lld",
+                          value, (long long int)ct->lower_bound);
             } else {
                 long value = 0;
                 if (ct->range_bits < 8) {
@@ -111,8 +111,8 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
                         ? asn_ulong2INTEGER(st, value)
                         : asn_long2INTEGER(st, value))
                     ASN__DECODE_FAILED;
-                ASN_DEBUG("Got value %ld + low %ld",
-                          value, ct->lower_bound);
+                ASN_DEBUG("Got value %ld + low %lld",
+                          value, (long long int)ct->lower_bound);
             }
             return rval;
         } else {
@@ -129,7 +129,7 @@ INTEGER_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         int ret;
 
         /* Get the PER length */
-        len = aper_get_length(pd, -1, -1, &repeat);
+        len = aper_get_length(pd, -1, -1, -1, &repeat);
         if(len < 0) ASN__DECODE_STARVED;
 
         p = REALLOC(st->buf, st->size + len + 1);
@@ -191,9 +191,10 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
                         || uval > (unsigned long)ct->upper_bound)
                     inext = 1;
             }
-            ASN_DEBUG("Value %lu (%02x/%lu) lb %ld ub %ld %s",
+            ASN_DEBUG("Value %lu (%02x/%zu) lb %lld ub %lld %s",
                       uval, st->buf[0], st->size,
-                      ct->lower_bound, ct->upper_bound,
+                      (long long int)ct->lower_bound,
+                      (long long int)ct->upper_bound,
                       inext ? "ext" : "fix");
             value = uval;
         } else {
@@ -207,9 +208,10 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
                         || value > ct->upper_bound)
                     inext = 1;
             }
-            ASN_DEBUG("Value %lu (%02x/%lu) lb %ld ub %ld %s",
+            ASN_DEBUG("Value %lu (%02x/%zu) lb %lld ub %lld %s",
                       value, st->buf[0], st->size,
-                      ct->lower_bound, ct->upper_bound,
+                      (long long int)ct->lower_bound,
+                      (long long int)ct->upper_bound,
                       inext ? "ext" : "fix");
         }
         if(ct->flags & APC_EXTENSIBLE) {
@@ -226,8 +228,9 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
         unsigned long v;
 
         /* #10.5.6 */
-        ASN_DEBUG("Encoding integer %ld (%lu) with range %d bits",
-                  value, value - ct->lower_bound, ct->range_bits);
+        ASN_DEBUG("Encoding integer %ld (%lld) with range %d bits",
+                  value, (long long int)(value - ct->lower_bound),
+                  ct->range_bits);
 
         v = value - ct->lower_bound;
 
@@ -284,20 +287,21 @@ INTEGER_encode_aper(const asn_TYPE_descriptor_t *td,
     }
 
     if(ct && ct->lower_bound) {
-        ASN_DEBUG("Adjust lower bound to %ld", ct->lower_bound);
+        ASN_DEBUG("Adjust lower bound to %lld", (long long int)ct->lower_bound);
         /* TODO: adjust lower bound */
         ASN__ENCODE_FAILED;
     }
 
     for(buf = st->buf, end = st->buf + st->size; buf < end;) {
         int need_eom = 0;
-        ssize_t mayEncode = aper_put_length(po, -1, end - buf, &need_eom);
+        ssize_t mayEncode = aper_put_length(po, -1, -1, end - buf, &need_eom);
         if(mayEncode < 0)
             ASN__ENCODE_FAILED;
         if(per_put_many_bits(po, buf, 8 * mayEncode))
             ASN__ENCODE_FAILED;
         buf += mayEncode;
-        if(need_eom && aper_put_length(po, -1, 0, 0)) ASN__ENCODE_FAILED;
+        if(need_eom && (aper_put_length(po, -1, -1, 0, NULL) < 0))
+            ASN__ENCODE_FAILED;
     }
 
     ASN__ENCODED_OK(er);

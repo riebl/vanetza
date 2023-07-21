@@ -37,6 +37,10 @@ xer_type_decoder_f UniversalString_decode_xer;
 xer_type_encoder_f UniversalString_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_encoder_f UniversalString_encode_jer;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 #define UniversalString_decode_uper OCTET_STRING_decode_uper
 #define UniversalString_encode_uper OCTET_STRING_encode_uper

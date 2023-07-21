@@ -38,6 +38,7 @@ ber_type_decoder_f DeltaLongitude_decode_ber;
 der_type_encoder_f DeltaLongitude_encode_der;
 xer_type_decoder_f DeltaLongitude_decode_xer;
 xer_type_encoder_f DeltaLongitude_encode_xer;
+jer_type_encoder_f DeltaLongitude_encode_jer;
 oer_type_decoder_f DeltaLongitude_decode_oer;
 oer_type_encoder_f DeltaLongitude_encode_oer;
 per_type_decoder_f DeltaLongitude_decode_uper;

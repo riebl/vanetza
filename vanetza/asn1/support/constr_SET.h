@@ -65,6 +65,10 @@ xer_type_decoder_f SET_decode_xer;
 xer_type_encoder_f SET_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_encoder_f SET_encode_jer;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 per_type_decoder_f SET_decode_uper;
 per_type_encoder_f SET_encode_uper;

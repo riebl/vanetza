@@ -58,6 +58,10 @@ asn_dec_rval_t OPEN_TYPE_xer_get(
 #define OPEN_TYPE_encode_xer CHOICE_encode_xer
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+#define OPEN_TYPE_encode_jer CHOICE_encode_jer
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 asn_dec_rval_t OPEN_TYPE_oer_get(
     const asn_codec_ctx_t *opt_codec_ctx,
@@ -94,6 +98,14 @@ asn_enc_rval_t OPEN_TYPE_encode_aper(
     const asn_TYPE_descriptor_t *type_descriptor,
     const asn_per_constraints_t *constraints, const void *struct_ptr,
     asn_per_outp_t *per_output);
+
+int OPEN_TYPE_aper_is_unknown_type(
+    const asn_TYPE_descriptor_t *td,
+    void *sptr,
+    const asn_TYPE_member_t *elm);
+
+asn_dec_rval_t OPEN_TYPE_aper_unknown_type_discard_bytes(
+    asn_per_data_t *pd);
 #endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
 
 extern asn_TYPE_operation_t asn_OP_OPEN_TYPE;

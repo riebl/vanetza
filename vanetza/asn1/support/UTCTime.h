@@ -36,6 +36,10 @@ asn_constr_check_f UTCTime_constraint;
 xer_type_encoder_f UTCTime_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_encoder_f UTCTime_encode_jer;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 #define UTCTime_decode_uper OCTET_STRING_decode_uper
 #define UTCTime_encode_uper OCTET_STRING_encode_uper

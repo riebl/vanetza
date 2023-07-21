@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ubuntu-version: [xenial, bionic, focal]
+        ubuntu-version: [bionic, focal, jammy]
     steps:
       - uses: actions/checkout@v3
       - run: >

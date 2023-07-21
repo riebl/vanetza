@@ -110,7 +110,7 @@ asn_TYPE_descriptor_t asn_DEF_regional_6 = {
 	&asn_SPC_regional_specs_6	/* Additional specs */
 };
 
-static asn_TYPE_member_t asn_MBR_SignalStatusMessage_1[] = {
+asn_TYPE_member_t asn_MBR_SignalStatusMessage_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct SignalStatusMessage, timeStamp),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
@@ -208,7 +208,7 @@ static const asn_TYPE_tag2member_t asn_MAP_SignalStatusMessage_tag2el_1[] = {
     { (ASN_TAG_CLASS_CONTEXT | (3 << 2)), 3, 0, 0 }, /* status */
     { (ASN_TAG_CLASS_CONTEXT | (4 << 2)), 4, 0, 0 } /* regional */
 };
-static asn_SEQUENCE_specifics_t asn_SPC_SignalStatusMessage_specs_1 = {
+asn_SEQUENCE_specifics_t asn_SPC_SignalStatusMessage_specs_1 = {
 	sizeof(struct SignalStatusMessage),
 	offsetof(struct SignalStatusMessage, _asn_ctx),
 	asn_MAP_SignalStatusMessage_tag2el_1,

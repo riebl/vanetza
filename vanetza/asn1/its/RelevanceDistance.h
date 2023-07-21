@@ -44,6 +44,7 @@ ber_type_decoder_f RelevanceDistance_decode_ber;
 der_type_encoder_f RelevanceDistance_encode_der;
 xer_type_decoder_f RelevanceDistance_decode_xer;
 xer_type_encoder_f RelevanceDistance_encode_xer;
+jer_type_encoder_f RelevanceDistance_encode_jer;
 oer_type_decoder_f RelevanceDistance_decode_oer;
 oer_type_encoder_f RelevanceDistance_encode_oer;
 per_type_decoder_f RelevanceDistance_decode_uper;

@@ -36,6 +36,10 @@ extern asn_TYPE_operation_t asn_OP_T61String;
 #define T61String_encode_xer OCTET_STRING_encode_xer
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+#define T61String_encode_jer OCTET_STRING_encode_jer
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
+
 #if !defined(ASN_DISABLE_UPER_SUPPORT)
 #define T61String_decode_uper OCTET_STRING_decode_uper
 #define T61String_encode_uper OCTET_STRING_encode_uper

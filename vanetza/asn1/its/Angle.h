@@ -31,6 +31,7 @@ ber_type_decoder_f Angle_decode_ber;
 der_type_encoder_f Angle_encode_der;
 xer_type_decoder_f Angle_decode_xer;
 xer_type_encoder_f Angle_encode_xer;
+jer_type_encoder_f Angle_encode_jer;
 oer_type_decoder_f Angle_decode_oer;
 oer_type_encoder_f Angle_encode_oer;
 per_type_decoder_f Angle_decode_uper;
