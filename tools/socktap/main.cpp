@@ -86,7 +86,7 @@ int main(int argc, const char** argv)
             return 1;
         }
 
-        auto signal_handler = [&io_service, &link_layer](const boost::system::error_code& ec, int signal_number) {
+        auto signal_handler = [&io_service](const boost::system::error_code& ec, int signal_number) {
             if (!ec) {
                 std::cout << "Termination requested." << std::endl;
                 io_service.stop();
