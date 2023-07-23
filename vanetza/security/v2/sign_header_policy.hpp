@@ -56,6 +56,8 @@ public:
      * Request a full certificate chain to be included in next secured message
      */
     virtual void request_certificate_chain() = 0;
+
+    virtual ~SignHeaderPolicy() = default;
 };
 
 /**
