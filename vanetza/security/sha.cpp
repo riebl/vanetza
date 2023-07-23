@@ -11,7 +11,7 @@ namespace vanetza
 namespace security
 {
 
-Sha256Digest calculate_sha256_digest(uint8_t* data, std::size_t len)
+Sha256Digest calculate_sha256_digest(const uint8_t* data, std::size_t len)
 {
     Sha256Digest digest;
 #if defined VANETZA_WITH_OPENSSL
@@ -21,11 +21,26 @@ Sha256Digest calculate_sha256_digest(uint8_t* data, std::size_t len)
     SHA256_Update(&ctx, data, len);
     SHA256_Final(digest.data(), &ctx);
 #elif defined VANETZA_WITH_CRYPTOPP
-    static_assert(CryptoPP::SHA256::DIGESTSIZE == digest.size(), "size of CryptoPP::SHA256 diges does not match");
+    static_assert(CryptoPP::SHA256::DIGESTSIZE == digest.size(), "size of CryptoPP::SHA256 does not match digest");
     CryptoPP::SHA256 hash;
     hash.CalculateDigest(digest.data(), data, len);
 #else
 #   error "no SHA256 implementation available"
+#endif
+    return digest;
+}
+
+Sha384Digest calculate_sha384_digest(const uint8_t* data, std::size_t len)
+{
+    Sha384Digest digest;
+#if defined VANETZA_WITH_OPENSSL
+    SHA384(data, len, digest.data());
+#elif defined VANETZA_WITH_CRYPTOPP
+    static_assert(CryptoPP::SHA384::DIGESTSIZE == digest.size(), "size of CryptoPP::SHA384 does not match digest");
+    CryptoPP::SHA384 hash;
+    hash.CalculateDigest(digest.data(), data, len);
+#else
+#   error "no SHA384 implementation available"
 #endif
     return digest;
 }
