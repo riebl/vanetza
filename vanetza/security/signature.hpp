@@ -3,6 +3,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/key_type.hpp>
 #include <cstddef>
 #include <future>
 
@@ -33,12 +34,20 @@ private:
 
 using SomeEcdsaSignature = boost::variant<EcdsaSignature, EcdsaSignatureFuture>;
 
+struct Signature
+{
+    ByteBuffer r;
+    ByteBuffer s;
+    KeyType type;
+};
+
 /**
  * \brief Extracts binary signature
  * \param signature source for binary signature
  * \return signature as binary
  */
 ByteBuffer extract_signature_buffer(const SomeEcdsaSignature& sig);
+ByteBuffer extract_signature_buffer(const Signature& sig);
 
 } // namespace security
 } // namespace vanetza

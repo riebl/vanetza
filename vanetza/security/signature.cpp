@@ -59,6 +59,13 @@ ByteBuffer extract_signature_buffer(const SomeEcdsaSignature& sig)
     return visitor.m_buffer;
 }
 
+ByteBuffer extract_signature_buffer(const Signature& sig)
+{
+    ByteBuffer buffer = sig.r;
+    buffer.insert(buffer.end(), sig.s.begin(), sig.s.end());
+    return buffer;
+}
+
 } // namespace security
 } // namespace vanetza
 

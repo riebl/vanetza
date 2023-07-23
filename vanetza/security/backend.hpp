@@ -5,6 +5,7 @@
 #include <vanetza/common/factory.hpp>
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/ecdsa_signature.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <boost/optional/optional.hpp>
 #include <memory>
@@ -39,6 +40,16 @@ public:
      * \return true if the data could be verified
      */
     virtual bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) = 0;
+
+    /**
+     * \brief try to verify data using public key and signature
+     * 
+     * \param public_key public key
+     * \param hash hash value of data
+     * \param sig signature of data
+     * \return true if data could be verified
+     */
+    virtual bool verify_data(const PublicKey& public_key, const ByteBuffer& hash, const Signature& sig) = 0;
 
     /**
      * \brief decompress a possibly compressed elliptic curve point

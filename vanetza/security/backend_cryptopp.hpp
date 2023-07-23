@@ -15,10 +15,8 @@ namespace security
 class BackendCryptoPP : public Backend
 {
 public:
-    using PrivateKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey;
-    using PublicKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PublicKey;
-    using Signer = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Signer;
-    using Verifier = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::Verifier;
+    using Ecdsa256 = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>;
+    using Ecdsa384 = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA384>;
     using Point = CryptoPP::ECP::Point;
 
     static constexpr auto backend_name = "CryptoPP";
@@ -30,6 +28,7 @@ public:
 
     /// \see Backend::verify_data
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
+    bool verify_data(const PublicKey&, const ByteBuffer&, const Signature&) override;
 
     /// \see Backend::decompress_point
     boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) override;
@@ -42,30 +41,29 @@ public:
 
 private:
     /// internal sign method using crypto++ private key
-    EcdsaSignature sign_data(const PrivateKey& key, const ByteBuffer& data);
+    EcdsaSignature sign_data(const Ecdsa256::PrivateKey& key, const ByteBuffer& data);
 
     /// internal verify method using crypto++ public key
-    bool verify_data(const PublicKey& key, const ByteBuffer& data, const ByteBuffer& sig);
+    bool verify_data(const Ecdsa256::PublicKey& key, const ByteBuffer& data, const ByteBuffer& sig);
 
     /// create private key
-    PrivateKey generate_private_key();
+    Ecdsa256::PrivateKey generate_private_key();
 
     /// derive public key from private key
-    PublicKey generate_public_key(const PrivateKey&);
+    Ecdsa256::PublicKey generate_public_key(const Ecdsa256::PrivateKey&);
 
     /// adapt generic public key to internal structure
-    PublicKey internal_public_key(const ecdsa256::PublicKey&);
+    Ecdsa256::PublicKey internal_public_key(const ecdsa256::PublicKey&);
 
     /// adapt generic private key to internal structure
-    PrivateKey internal_private_key(const ecdsa256::PrivateKey&);
+    Ecdsa256::PrivateKey internal_private_key(const ecdsa256::PrivateKey&);
 
     CryptoPP::AutoSeededRandomPool m_prng;
-    LruCache<ecdsa256::PrivateKey, PrivateKey> m_private_cache;
-    LruCache<ecdsa256::PublicKey, PublicKey> m_public_cache;
+    LruCache<ecdsa256::PrivateKey, Ecdsa256::PrivateKey> m_private_cache;
+    LruCache<ecdsa256::PublicKey, Ecdsa256::PublicKey> m_public_cache;
 };
 
 } // namespace security
 } // namespace vanetza
 
 #endif /* BACKEND_CRYPTOPP_HPP_JQWA9MLZ */
-

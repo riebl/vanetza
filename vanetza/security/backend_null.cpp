@@ -20,6 +20,12 @@ bool BackendNull::verify_data(const ecdsa256::PublicKey&, const ByteBuffer&, con
     return true;
 }
 
+bool BackendNull::verify_data(const PublicKey&, const ByteBuffer&, const Signature&)
+{
+    // accept everything
+    return true;
+}
+
 boost::optional<Uncompressed> BackendNull::decompress_point(const EccPoint& ecc_point)
 {
     return boost::none;
