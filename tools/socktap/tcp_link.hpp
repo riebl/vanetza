@@ -3,8 +3,8 @@
 
 #include "link_layer.hpp"
 #include <vanetza/common/byte_buffer.hpp>
-#include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
 #include <array>
 #include <list>
 
@@ -29,6 +29,7 @@ public:
 private:
 
     bool is_connected_;
+    bool err_ = false;
     boost::asio::io_service* io_service_;
     boost::asio::ip::tcp::endpoint endpoint_;
     boost::asio::ip::tcp::socket socket_;
@@ -42,17 +43,17 @@ class TcpLink : public LinkLayer
 {
 public:
     TcpLink(boost::asio::io_service&);
-    ~TcpLink();
 
     void indicate(IndicationCallback) override;
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;
     void connect(boost::asio::ip::tcp::endpoint);
     void accept(boost::asio::ip::tcp::endpoint);
-    void accept_handler(boost::system::error_code& ec, TcpSocket* ts, boost::asio::ip::tcp::endpoint ep);
+    void accept_handler(boost::system::error_code& ec, TcpSocket& ts, boost::asio::ip::tcp::endpoint ep);
 
 private:
-    std::list<TcpSocket*> sockets_;
-    std::map<boost::asio::ip::tcp::endpoint, boost::asio::ip::tcp::acceptor*> acceptors_;
+    std::list<TcpSocket> sockets_;
+    // std::map<boost::asio::ip::tcp::endpoint, boost::asio::ip::tcp::acceptor*> acceptors_;
+    std::map<boost::asio::ip::tcp::endpoint, boost::asio::ip::tcp::acceptor> acceptors_;
     IndicationCallback callback_;
     boost::asio::io_service* io_service_;
     std::array<vanetza::ByteBuffer, layers_> tx_buffers_;

@@ -1,8 +1,7 @@
 #include "tcp_link.hpp"
 #include <vanetza/access/data_request.hpp>
 #include <vanetza/net/ethernet_header.hpp>
-#include <boost/asio/ip/multicast.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <iostream>
 
 namespace ip = boost::asio::ip;
@@ -12,16 +11,6 @@ TcpLink::TcpLink(boost::asio::io_service& io_service) :
     io_service_(&io_service)
 {
 
-}
-
-TcpLink::~TcpLink()
-{
-    for (auto &ts : sockets_) {
-        delete ts;
-    }
-    for (auto &acceptor : acceptors_) {
-        delete acceptor.second;
-    }
 }
 
 void TcpLink::indicate(IndicationCallback cb)
@@ -40,11 +29,11 @@ void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkP
         const_buffers[index] = boost::asio::buffer(tx_buffers_[index]);
     }
 
-    std::list<TcpSocket*>::iterator i = sockets_.begin();
+    std::list<TcpSocket>::iterator i = sockets_.begin();
 
     while (i != sockets_.end()) {
-        if ((*i)->connected()) {
-            (*i)->request(const_buffers);
+        if ((*i).connected()) {
+            (*i).request(const_buffers);
             i++;
         } else {
             sockets_.erase(i++);
@@ -55,38 +44,40 @@ void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkP
 
 void TcpLink::connect(ip::tcp::endpoint ep)
 {
-    TcpSocket* ts = new TcpSocket(*io_service_, callback_);
-    ts->connect(ep);
-    sockets_.push_back(ts);
+    TcpSocket ts(*io_service_, callback_);
+    ts.connect(ep);
+    sockets_.push_back(std::move(ts));
 }
 
 void TcpLink::accept(ip::tcp::endpoint ep)
 {
-    if (!acceptors_[ep]) {
-        acceptors_[ep] = new ip::tcp::acceptor(*io_service_, ep);
+
+    if (acceptors_.count(ep) == 0) {
+        acceptors_.find(ep)->second = ip::tcp::acceptor(*io_service_, ep);
     }
 
-    TcpSocket* ts = new TcpSocket(*io_service_, callback_);
+    TcpSocket ts(*io_service_, callback_);
     boost::system::error_code ec;
+    std::cout << "Accept connetions at " << ep.address().to_string() << ":" << ep.port() << std::endl;
 
-    acceptors_[ep]->async_accept(
-        ts->socket(),
+    acceptors_.find(ep)->second.async_accept(
+        ts.socket(),
         boost::bind(
             &TcpLink::accept_handler,
             this,
             ec,
-            ts,
+            boost::ref(ts),
             ep
         )
     );
 
 }
 
-void TcpLink::accept_handler(boost::system::error_code& ec, TcpSocket* ts, ip::tcp::endpoint ep)
+void TcpLink::accept_handler(boost::system::error_code& ec, TcpSocket& ts, ip::tcp::endpoint ep)
 {
-    sockets_.push_back(ts);
-    ts->do_receive();
-    ts->connected(true);
+    sockets_.push_back(std::move(ts));
+    ts.do_receive();
+    ts.connected(true);
     accept(ep);
 }
 
@@ -138,7 +129,7 @@ void TcpSocket::do_receive()
                     packet.set_boundary(OsiLayer::Link, EthernetHeader::length_bytes);
                     auto link_range = packet[OsiLayer::Link];
                     EthernetHeader eth = decode_ethernet_header(link_range.begin(), link_range.end());
-                    if (callback_) {
+                    if (*callback_) {
                         (*callback_)(std::move(packet), eth);
                     }
                 }
@@ -164,6 +155,4 @@ void TcpSocket::connected(bool b)
 {
     is_connected_ = b;
 }
-
-
 
