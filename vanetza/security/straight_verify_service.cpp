@@ -43,12 +43,34 @@ bool assign_permissions(const v2::Certificate& certificate, VerifyConfirm& confi
 } // namespace
 
 
-StraightVerifyService::StraightVerifyService(
-    const Runtime& runtime, v2::CertificateProvider& provider, v2::CertificateValidator& validator,
-    Backend& backend, v2::CertificateCache& cache, v2::SignHeaderPolicy& policy, PositionProvider& position) :
-    m_runtime(runtime), m_cert_cache(cache), m_cert_provider(provider), m_cert_validator(validator),
-    m_backend(backend), m_sign_policy(policy), m_position_provider(position)
+StraightVerifyService::StraightVerifyService(const Runtime& runtime, Backend& backend, PositionProvider& position) :
+    m_runtime(runtime), m_backend(backend),m_position_provider(position)
 {
+}
+
+void StraightVerifyService::use_certificate_cache(v2::CertificateCache* cache)
+{
+    m_context_v2.m_cert_cache = cache;
+}
+
+void StraightVerifyService::use_certificate_provider(v2::CertificateProvider* provider)
+{
+    m_context_v2.m_cert_provider = provider;
+}
+
+void StraightVerifyService::use_certitifcate_validator(v2::CertificateValidator* validator)
+{
+    m_context_v2.m_cert_validator = validator;
+}
+
+void StraightVerifyService::use_sign_header_policy(v2::SignHeaderPolicy* policy)
+{
+    m_context_v2.m_sign_policy = policy;
+}
+
+void StraightVerifyService::use_certificate_cache(v3::CertificateCache* cache)
+{
+    m_context_v3.m_cert_cache = cache;
 }
 
 VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
@@ -92,16 +114,26 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
         return confirm;
     }
 
+    if (!m_context_v2.complete()) {
+        confirm.report = VerificationReport::Configuration_Problem;
+        return confirm;
+    }
+
+    v2::CertificateProvider& cert_provider = *m_context_v2.m_cert_provider;
+    v2::CertificateCache& cert_cache = *m_context_v2.m_cert_cache;
+    v2::CertificateValidator& cert_validator = *m_context_v2.m_cert_validator;
+    v2::SignHeaderPolicy& sign_policy = *m_context_v2.m_sign_policy;
+
     const std::list<HashedId3>* requested_certs = secured_message.header_field<HeaderFieldType::Request_Unrecognized_Certificate>();
     if (requested_certs) {
         for (auto& requested_cert : *requested_certs) {
-            if (truncate(calculate_hash(m_cert_provider.own_certificate())) == requested_cert) {
-                m_sign_policy.request_certificate();
+            if (truncate(calculate_hash(cert_provider.own_certificate())) == requested_cert) {
+                sign_policy.request_certificate();
             }
 
-            for (auto& cert : m_cert_provider.own_chain()) {
+            for (auto& cert : cert_provider.own_chain()) {
                 if (truncate(calculate_hash(cert)) == requested_cert) {
-                    m_sign_policy.request_certificate_chain();
+                    sign_policy.request_certificate_chain();
                 }
             }
         }
@@ -129,16 +161,16 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
                 possible_certificates.push_back(boost::get<v2::Certificate>(*signer_info));
                 signer_hash = calculate_hash(boost::get<v2::Certificate>(*signer_info));
 
-                if (confirm.its_aid == aid::CA && m_cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket).size() == 0) {
+                if (confirm.its_aid == aid::CA && cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket).size() == 0) {
                     // Previously unknown certificate, send own certificate in next CAM
                     // See TS 103 097 v1.2.1, section 7.1, 1st bullet, 3rd dash
-                    m_sign_policy.request_certificate();
+                    sign_policy.request_certificate();
                 }
 
                 break;
             case SignerInfoType::Certificate_Digest_With_SHA256:
                 signer_hash = boost::get<HashedId8>(*signer_info);
-                possible_certificates.splice(possible_certificates.end(), m_cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket));
+                possible_certificates.splice(possible_certificates.end(), cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket));
                 possible_certificates_from_cache = true;
                 break;
             case SignerInfoType::Certificate_Chain:
@@ -158,7 +190,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
                     // root certificates must already be known, otherwise the validation will fail anyway
                     if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
                         // there's no need to report unknown signers at this point, see comment above
-                        CertificateValidity validity = m_cert_validator.check_certificate(cert);
+                        CertificateValidity validity = cert_validator.check_certificate(cert);
 
                         // we can abort early if there are invalid AA certificates in the chain
                         if (!validity) {
@@ -175,7 +207,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
                             return confirm;
                         }
 
-                        m_cert_cache.insert(cert);
+                        cert_cache.insert(cert);
                     }
                 }
                 // last certificate must be the authorization ticket
@@ -193,7 +225,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
     if (possible_certificates.size() == 0) {
         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
         confirm.certificate_id = signer_hash;
-        m_sign_policy.request_unrecognized_certificate(signer_hash);
+        sign_policy.request_unrecognized_certificate(signer_hash);
         return confirm;
     }
 
@@ -206,7 +238,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
 
     // check signature
     const TrailerField* signature_field = secured_message.trailer_field(TrailerFieldType::Signature);
-    const Signature* signature = boost::get<Signature>(signature_field);
+    const v2::Signature* signature = boost::get<v2::Signature>(signature_field);
 
     if (!signature) {
         confirm.report = VerificationReport::Unsigned_Message;
@@ -265,7 +297,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
         }
 
         confirm.certificate_id = signer_hash;
-        m_sign_policy.request_unrecognized_certificate(signer_hash);
+        sign_policy.request_unrecognized_certificate(signer_hash);
         return confirm;
     }
 
@@ -278,7 +310,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
 
     CertificateValidity cert_validity = CertificateValidity::valid();
     if (!possible_certificates_from_cache) { // certificates from cache are already verified as trusted
-        cert_validity = m_cert_validator.check_certificate(*signer);
+        cert_validity = cert_validator.check_certificate(*signer);
     }
 
     confirm.certificate_validity = cert_validity;
@@ -291,7 +323,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
             if (get_type(signer->signer_info) == SignerInfoType::Certificate_Digest_With_SHA256) {
                 auto signer_hash = boost::get<HashedId8>(signer->signer_info);
                 confirm.certificate_id = signer_hash;
-                m_sign_policy.request_unrecognized_certificate(signer_hash);
+                sign_policy.request_unrecognized_certificate(signer_hash);
             }
         }
 
@@ -320,7 +352,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
     }
 
     // cache only certificates that are useful, one that mismatches its restrictions isn't
-    m_cert_cache.insert(*signer);
+    cert_cache.insert(*signer);
 
     confirm.report = VerificationReport::Success;
     return confirm;

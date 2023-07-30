@@ -28,6 +28,39 @@ using vanetza::geonet::distance_u16t;
 using vanetza::geonet::geo_angle_i32t;
 using vanetza::units::si::meter;
 
+void use_verify_service_component(StraightVerifyService* service, v2::CertificateCache* cache)
+{
+    service->use_certificate_cache(cache);
+}
+
+void use_verify_service_component(StraightVerifyService* service, v2::CertificateProvider* provider)
+{
+    service->use_certificate_provider(provider);
+}
+
+void use_verify_service_component(StraightVerifyService* service, v2::CertificateValidator* validator)
+{
+    service->use_certitifcate_validator(validator);
+}
+
+void use_verify_service_component(StraightVerifyService* service, v2::SignHeaderPolicy* policy)
+{
+    service->use_sign_header_policy(policy);
+}
+
+void use_verify_service_component_expansion(StraightVerifyService*)
+{
+    // end of recursive paramater pack expansion: no-op
+}
+
+template<typename Arg, typename... Args>
+void use_verify_service_component_expansion(StraightVerifyService* service, Arg arg, Args... args)
+{
+    use_verify_service_component(service, arg);
+    use_verify_service_component_expansion(service, std::forward<Args>(args)...);
+}
+
+
 class SecurityEntityTest : public ::testing::Test
 {
 protected:
@@ -68,12 +101,29 @@ protected:
         };
     }
 
+    std::unique_ptr<StraightVerifyService> create_straight_verify_service()
+    {
+        std::unique_ptr<StraightVerifyService> service {
+            new StraightVerifyService(runtime, *crypto_backend, position_provider)
+        };
+        service->use_certificate_cache(&cert_cache);
+        service->use_certificate_provider(certificate_provider.get());
+        service->use_certitifcate_validator(certificate_validator.get());
+        service->use_sign_header_policy(&sign_header_policy);
+        return service;
+    }
+
     std::unique_ptr<VerifyService> create_verify_service()
     {
-        return std::unique_ptr<VerifyService> {
-            new StraightVerifyService(runtime, *certificate_provider, *certificate_validator,
-                *crypto_backend, cert_cache, sign_header_policy, position_provider)
-        };
+        return create_straight_verify_service();
+    }
+
+    template<typename... Args>
+    std::unique_ptr<VerifyService> create_verify_service(Args... args)
+    {
+        auto service = create_straight_verify_service();
+        use_verify_service_component_expansion(service.get(), std::forward<Args>(args)...);
+        return service;
     }
 
     EncapRequest create_encap_request()
@@ -120,7 +170,11 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
 {
     DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
     std::unique_ptr<SignService> sign { new StraightSignService(*certificate_provider, *crypto_backend, sign_header_policy) };
-    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, *certificate_provider, *certificate_validator, *crypto_backend, cert_cache, sign_header_policy, position_provider) };
+    std::unique_ptr<StraightVerifyService> verify { new StraightVerifyService(runtime, *crypto_backend, position_provider) };
+    verify->use_certificate_cache(&cert_cache);
+    verify->use_certificate_provider(certificate_provider.get());
+    verify->use_certitifcate_validator(certificate_validator.get());
+    verify->use_sign_header_policy(&sign_header_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
     DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { encap_confirm.sec_packet });
@@ -134,19 +188,33 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     auto openssl_backend = create_backend("OpenSSL");
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
-    DefaultSignHeaderPolicy sign_header_policy_openssl(runtime, position_provider);
+
     DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime, position_provider);
+    std::unique_ptr<StraightVerifyService> cryptopp_verify_service {
+        new StraightVerifyService(runtime, *cryptopp_backend, position_provider)
+    };
+    cryptopp_verify_service->use_certificate_cache(&cert_cache);
+    cryptopp_verify_service->use_certificate_provider(certificate_provider.get());
+    cryptopp_verify_service->use_certitifcate_validator(certificate_validator.get());
+    cryptopp_verify_service->use_sign_header_policy(&sign_header_policy_cryptopp);
     DelegatingSecurityEntity cryptopp_security {
         std::unique_ptr<SignService> {
-            new StraightSignService(*certificate_provider, *cryptopp_backend, sign_header_policy_openssl) },
-        std::unique_ptr<VerifyService> {
-            new StraightVerifyService(runtime, *certificate_provider, *certificate_validator, *cryptopp_backend, cert_cache, sign_header_policy_openssl, position_provider) }
+            new StraightSignService(*certificate_provider, *cryptopp_backend, sign_header_policy_cryptopp) },
+        std::move(cryptopp_verify_service)
     };
+
+    DefaultSignHeaderPolicy sign_header_policy_openssl(runtime, position_provider);
+    std::unique_ptr<StraightVerifyService> openssl_verify_service {
+        new StraightVerifyService(runtime, *openssl_backend, position_provider)
+    };
+    openssl_verify_service->use_certificate_cache(&cert_cache);
+    openssl_verify_service->use_certificate_provider(certificate_provider.get());
+    openssl_verify_service->use_certitifcate_validator(certificate_validator.get());
+    openssl_verify_service->use_sign_header_policy(&sign_header_policy_openssl);
     DelegatingSecurityEntity openssl_security {
         std::unique_ptr<SignService> {
             new StraightSignService(*certificate_provider, *openssl_backend, sign_header_policy_cryptopp) },
-        std::unique_ptr<VerifyService> {
-            new StraightVerifyService(runtime, *certificate_provider, *certificate_validator, *openssl_backend, cert_cache, sign_header_policy_cryptopp, position_provider) }
+        std::move(openssl_verify_service)
     };
 
     // OpenSSL to Crypto++
@@ -163,7 +231,6 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
 
 TEST_F(SecurityEntityTest, captured_acceptance)
 {
-
     const char secured_cam[] =
             "0280bc8002020118180bd751330373010056000004058caca9488f1710d7e7407b5402bc2986a87c43c9d695e91eacee9b1495060d"
             "403d64f8f9ef25e269b586042490f2b24b761f639b8bd2691a4a9e17a4392d3d020020022425210b240301889c2504010000000901"
@@ -184,7 +251,7 @@ TEST_F(SecurityEntityTest, captured_acceptance)
 
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
-    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider) };
+    std::unique_ptr<VerifyService> verify = create_verify_service(&validator);
     DelegatingSecurityEntity dummy_security(create_sign_service(), std::move(verify));
 
     // We only care about the message signature here to be valid, the certificate isn't validated.
@@ -840,7 +907,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
     std::unique_ptr<SignService> sign { new StraightSignService(*certificate_provider, *crypto_backend, sign_header_policy) };
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
-    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider) };
+    std::unique_ptr<VerifyService> verify = create_verify_service(&validator, &sign_header_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
     v2::Certificate certificate = certificate_provider->own_certificate();
@@ -882,7 +949,7 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
     NaiveCertificateProvider other_provider(runtime);
     DefaultSignHeaderPolicy other_policy(runtime, position_provider);
     std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
-    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider) };
+    std::unique_ptr<VerifyService> verify = create_verify_service(&other_provider, &other_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
 
@@ -939,7 +1006,7 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
     } other_policy(runtime, position_provider);
 
     std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
-    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider) };
+    std::unique_ptr<VerifyService> verify = create_verify_service(&other_provider, &other_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
     its_aid = aid::DEN;
@@ -967,7 +1034,7 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
     } other_policy(runtime, position_provider);
 
     std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
-    std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, other_provider, *certificate_validator, *crypto_backend, cert_cache, other_policy, position_provider) };
+    std::unique_ptr<VerifyService> verify = create_verify_service(&other_provider, &other_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
     its_aid = aid::DEN;

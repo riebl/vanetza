@@ -25,12 +25,7 @@ public:
         cert_cache(rt),
         certificate_validator(new security::v2::DefaultCertificateValidator(*backend, cert_cache, trust_store)),
         sign_header_policy(rt, position_provider),
-        security(
-            std::unique_ptr<security::SignService> {
-                new security::v2::StraightSignService(*certificate_provider, *backend, sign_header_policy) },
-            std::unique_ptr<security::VerifyService> {
-                new security::StraightVerifyService(rt, *certificate_provider, *certificate_validator, *backend, cert_cache, sign_header_policy, position_provider) }
-        )
+        security(build_sign_service(), build_verify_service(rt))
     {
         trust_store.insert(certificate_provider->root_certificate());
         for (auto cert : certificate_provider->own_chain()) {
@@ -55,6 +50,25 @@ public:
     }
 
 private:
+    std::unique_ptr<security::VerifyService> build_verify_service(Runtime& rt)
+    {
+        std::unique_ptr<security::StraightVerifyService> service {
+            new security::StraightVerifyService(rt, *backend, position_provider)
+        };
+        service->use_certificate_cache(&cert_cache);
+        service->use_certificate_provider(certificate_provider.get());
+        service->use_certitifcate_validator(certificate_validator.get());
+        service->use_sign_header_policy(&sign_header_policy);
+        return service;
+    }
+
+    std::unique_ptr<security::SignService> build_sign_service()
+    {
+        return std::unique_ptr<security::SignService> {
+            new security::v2::StraightSignService(*certificate_provider, *backend, sign_header_policy)
+        };
+    }
+
     StoredPositionProvider position_provider;
     std::unique_ptr<security::Backend> backend;
     std::unique_ptr<security::v2::NaiveCertificateProvider> certificate_provider;
