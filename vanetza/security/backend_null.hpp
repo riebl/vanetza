@@ -29,6 +29,9 @@ public:
     /// \see Backend::decompress_point
     boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) override;
 
+    /// \see Backend::calculate_hash
+    ByteBuffer calculate_hash(KeyType, const ByteBuffer&) override;
+
 private:
     EcdsaSignature fake_signature() const;
 };

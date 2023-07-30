@@ -43,5 +43,22 @@ EcdsaSignature BackendNull::fake_signature() const
     return signature;
 }
 
+ByteBuffer BackendNull::calculate_hash(KeyType key, const ByteBuffer& buffer)
+{
+    ByteBuffer hash;
+    switch (key) {
+        case KeyType::NistP256:
+        case KeyType::BrainpoolP256r1:
+            hash.resize(32);
+            break;
+        case KeyType::BrainpoolP384r1:
+            hash.resize(48);
+            break;
+        default:
+            break;
+    }
+    return hash;
+}
+
 } // namespace security
 } // namespace vanetza

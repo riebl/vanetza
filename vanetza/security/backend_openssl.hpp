@@ -36,6 +36,8 @@ public:
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
     bool verify_data(const PublicKey&, const ByteBuffer&, const Signature&) override;
 
+    ByteBuffer calculate_hash(KeyType, const ByteBuffer&) override;
+
     /// \see Backend::decompress_point
     boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) override;
 

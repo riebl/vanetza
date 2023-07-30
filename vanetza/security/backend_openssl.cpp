@@ -172,6 +172,28 @@ boost::optional<Uncompressed> BackendOpenSsl::decompress_point(const EccPoint& e
     }
 }
 
+ByteBuffer BackendOpenSsl::calculate_hash(KeyType key, const ByteBuffer& data)
+{
+    ByteBuffer result;
+    switch (key)
+    {
+        case KeyType::NistP256:
+        case KeyType::BrainpoolP256r1: {
+            auto digest = calculate_sha256_digest(data);
+            result.assign(digest.begin(), digest.end());
+            break;
+        }
+        case KeyType::BrainpoolP384r1: {
+            auto digest = calculate_sha384_digest(data);
+            result.assign(digest.begin(), digest.end());
+            break;
+        }
+        default:
+            break;
+    }
+    return result;
+}
+
 std::array<uint8_t, 32> BackendOpenSsl::calculate_sha256_digest(const ByteBuffer& data) const
 {
     static_assert(SHA256_DIGEST_LENGTH == 32, "Unexpected length of SHA256 digest");

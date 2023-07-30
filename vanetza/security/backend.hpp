@@ -59,6 +59,8 @@ public:
      */
     virtual boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) = 0;
 
+    virtual ByteBuffer calculate_hash(KeyType, const ByteBuffer&) = 0;
+
     virtual ~Backend() = default;
 };
 

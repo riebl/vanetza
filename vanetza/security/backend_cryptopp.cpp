@@ -161,6 +161,30 @@ boost::optional<Uncompressed> BackendCryptoPP::decompress_point(const EccPoint& 
     }
 }
 
+ByteBuffer BackendCryptoPP::calculate_hash(KeyType key, const ByteBuffer& buffer)
+{
+    ByteBuffer hash;
+    switch (key) {
+        case KeyType::NistP256:
+        case KeyType::BrainpoolP256r1: {
+            CryptoPP::SHA256 algo;
+            hash.resize(algo.DigestSize());
+            algo.CalculateDigest(hash.data(), buffer.data(), buffer.size());
+            break;
+        }
+        case KeyType::BrainpoolP384r1: {
+            CryptoPP::SHA384 algo;
+            hash.resize(algo.DigestSize());
+            algo.CalculateDigest(hash.data(), buffer.data(), buffer.size());
+            break;
+        }
+        default:
+            break;
+    }
+
+    return hash;
+}
+
 ecdsa256::KeyPair BackendCryptoPP::generate_key_pair()
 {
     ecdsa256::KeyPair kp;

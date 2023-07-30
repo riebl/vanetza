@@ -19,6 +19,7 @@ target_include_directories(security_test PUBLIC $<TARGET_PROPERTY:security,INTER
 target_link_libraries(security_test PUBLIC ${GTest_LIBRARY})
 configure_gtest_directory(LINK_LIBRARIES Boost::boost security security_test)
 
+add_gtest(Backend backend.cpp)
 add_gtest(CamServiceSpecificPermissions cam_ssp.cpp)
 add_gtest(Certificate certificate.cpp)
 add_gtest(CertificateCache certificate_cache.cpp)
