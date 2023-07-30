@@ -13,6 +13,11 @@ byte_view_range::byte_view_range(
 {
 }
 
+byte_view_range::byte_view_range(const byte_view_iterator& begin, const byte_view_iterator& end) :
+    iterator_range(begin, end)
+{
+}
+
 byte_view_range::byte_view_range(ByteBuffer&& _buffer) :
     iterator_range(_buffer.begin(), _buffer.end()), buffer(std::move(_buffer))
 {
@@ -21,14 +26,14 @@ byte_view_range::byte_view_range(ByteBuffer&& _buffer) :
 ByteBuffer::const_pointer byte_view_range::data() const
 {
     auto begin = this->begin();
-    return begin != this->end() ? &(*begin) : nullptr;
+    return begin != this->end() ? begin.raw() : nullptr;
 }
 
 ByteBuffer::value_type byte_view_range::operator[](size_type pos) const
 {
     assert(!std::numeric_limits<size_type>::is_signed || pos >= 0);
     assert(pos < size());
-    return data()[pos];
+    return begin()[pos];
 }
 
 byte_view_range create_byte_view(ByteBuffer&& buffer)
