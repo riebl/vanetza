@@ -2,6 +2,7 @@
 #include <vanetza/access/data_request.hpp>
 #include <vanetza/net/ethernet_header.hpp>
 #include <boost/bind/bind.hpp>
+#include <boost/bind/placeholders.hpp>
 #include <iostream>
 
 namespace ip = boost::asio::ip;
@@ -16,6 +17,11 @@ TcpLink::TcpLink(boost::asio::io_service& io_service) :
 void TcpLink::indicate(IndicationCallback cb)
 {
     callback_ = cb;
+    for (auto& ep : waiting_endpoints_) {
+        sockets_.emplace_back(*io_service_, &callback_);
+        auto& sock = sockets_.back();
+        sock.connect(ep);
+    }
 }
 
 void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkPacket> packet)
@@ -32,52 +38,58 @@ void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkP
     std::list<TcpSocket>::iterator i = sockets_.begin();
 
     while (i != sockets_.end()) {
-        if ((*i).connected()) {
+        if ((*i).status() == TcpSocket::CONNECTED) {
             (*i).request(const_buffers);
             i++;
-        } else {
+        } else if ((*i).status() == TcpSocket::ERROR) {
             sockets_.erase(i++);
             std::cerr << "Socket removed" << std::endl;
+        } else {
+            i++;
         }
     }
 }
 
 void TcpLink::connect(ip::tcp::endpoint ep)
 {
-    TcpSocket ts(*io_service_, callback_);
-    ts.connect(ep);
-    sockets_.push_back(std::move(ts));
+    if (callback_) {
+        sockets_.emplace_back(*io_service_, &callback_);
+        auto& sock = sockets_.back();
+        sock.connect(ep);
+    } else {
+        waiting_endpoints_.push_back(ep);
+    }
 }
 
 void TcpLink::accept(ip::tcp::endpoint ep)
 {
-
     if (acceptors_.count(ep) == 0) {
-        acceptors_.find(ep)->second = ip::tcp::acceptor(*io_service_, ep);
+        acceptors_.insert({ep, ip::tcp::acceptor(*io_service_, ep)});
     }
 
-    TcpSocket ts(*io_service_, callback_);
+    sockets_.emplace_back(*io_service_, &callback_);
+    auto& sock = sockets_.back();
+    sock.status(TcpSocket::ACCEPTING);
+
     boost::system::error_code ec;
     std::cout << "Accept connetions at " << ep.address().to_string() << ":" << ep.port() << std::endl;
 
     acceptors_.find(ep)->second.async_accept(
-        ts.socket(),
+        sock.socket(),
         boost::bind(
             &TcpLink::accept_handler,
             this,
             ec,
-            boost::ref(ts),
-            ep
+            ep,
+            &sock
         )
     );
-
 }
 
-void TcpLink::accept_handler(boost::system::error_code& ec, TcpSocket& ts, ip::tcp::endpoint ep)
+void TcpLink::accept_handler(boost::system::error_code& ec, ip::tcp::endpoint ep, TcpSocket* sock)
 {
-    sockets_.push_back(std::move(ts));
-    ts.do_receive();
-    ts.connected(true);
+    sock->status(TcpSocket::CONNECTED);
+    sock->do_receive();
     accept(ep);
 }
 
@@ -86,12 +98,11 @@ void TcpLink::accept_handler(boost::system::error_code& ec, TcpSocket& ts, ip::t
  * TcpSocket
  */
 
-TcpSocket::TcpSocket(boost::asio::io_service& io_service, IndicationCallback& cb) :
+TcpSocket::TcpSocket(boost::asio::io_service& io_service, IndicationCallback* cb) :
     socket_(io_service),
-    callback_(&cb),
+    callback_(cb),
     rx_buffer_(2560, 0x00)
 {
-
 }
 
 void TcpSocket::connect(ip::tcp::endpoint ep)
@@ -99,7 +110,7 @@ void TcpSocket::connect(ip::tcp::endpoint ep)
     boost::system::error_code ec;
     socket_.connect(ep, ec);
     if (!ec) {
-        is_connected_ = true;
+        status_ = CONNECTED;
         do_receive();
     }
 
@@ -111,48 +122,41 @@ void TcpSocket::request(std::array<boost::asio::const_buffer, layers_> const_buf
     socket_.write_some(const_buffers, ec);
 
     if (ec) {
-        is_connected_ = false;
+        status_ = ERROR;
     }
 }
 
 void TcpSocket::do_receive()
 {
-    socket_.async_read_some(boost::asio::buffer(rx_buffer_),
-        [this](boost::system::error_code ec, std::size_t length) {
-            if (!ec) {
-                is_connected_ = true;
-                ByteBuffer buffer(rx_buffer_.begin(), rx_buffer_.begin() + length);
-                CohesivePacket packet(std::move(buffer), OsiLayer::Link);
-                if (packet.size(OsiLayer::Link) < EthernetHeader::length_bytes) {
-                    std::cerr << "Dropped TCP packet too short to contain Ethernet header\n";
-                } else {
-                    packet.set_boundary(OsiLayer::Link, EthernetHeader::length_bytes);
-                    auto link_range = packet[OsiLayer::Link];
-                    EthernetHeader eth = decode_ethernet_header(link_range.begin(), link_range.end());
-                    if (*callback_) {
-                        (*callback_)(std::move(packet), eth);
-                    }
-                }
-                do_receive();
-            } else {
-                is_connected_ = false;
+    socket_.async_read_some(
+        boost::asio::buffer(rx_buffer_),
+        boost::bind(
+            &TcpSocket::receive_handler,
+            this,
+            boost::placeholders::_1,
+            boost::placeholders::_2
+        )
+    );
+}
+
+void TcpSocket::receive_handler(boost::system::error_code ec, std::size_t length) {
+    if (!ec) {
+        status_ = CONNECTED;
+        ByteBuffer buffer(rx_buffer_.begin(), rx_buffer_.begin() + length);
+        CohesivePacket packet(std::move(buffer), OsiLayer::Link);
+        if (packet.size(OsiLayer::Link) < EthernetHeader::length_bytes) {
+            std::cerr << "Dropped TCP packet too short to contain Ethernet header\n";
+        } else {
+            packet.set_boundary(OsiLayer::Link, EthernetHeader::length_bytes);
+            auto link_range = packet[OsiLayer::Link];
+            EthernetHeader eth = decode_ethernet_header(link_range.begin(), link_range.end());
+            auto test = *(this->callback_);
+            if (*callback_) {
+                (*callback_)(std::move(packet), eth);
             }
-        });
-
+        }
+        do_receive();
+    } else {
+        status_ = ERROR;
+    }
 }
-
-ip::tcp::socket& TcpSocket::socket()
-{
-    return socket_;
-}
-
-bool TcpSocket::connected()
-{
-    return is_connected_;
-}
-
-void TcpSocket::connected(bool b)
-{
-    is_connected_ = b;
-}
-
