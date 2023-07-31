@@ -18,9 +18,7 @@ void TcpLink::indicate(IndicationCallback cb)
 {
     callback_ = cb;
     for (auto& ep : waiting_endpoints_) {
-        sockets_.emplace_back(*io_service_, &callback_);
-        auto& sock = sockets_.back();
-        sock.connect(ep);
+        connect(ep);
     }
 }
 
