@@ -44,6 +44,7 @@ add_vanetza_component(security
     v2/verification.cpp
     v3/asn1_conversions.cpp
     v3/certificate.cpp
+    v3/certificate_cache.cpp
     v3/secured_message.cpp
 )
 target_link_libraries(security PUBLIC asn1 asn1_security common net)
