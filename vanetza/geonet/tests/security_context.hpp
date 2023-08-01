@@ -12,6 +12,7 @@
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
+#include <vanetza/security/v3/certificate_cache.hpp>
 
 namespace vanetza
 {
@@ -49,6 +50,11 @@ public:
         position_provider.position_fix(position_fix);
     }
 
+    security::v3::CertificateCache& certificate_cache_v3()
+    {
+        return cert_cache_v3;
+    }
+
 private:
     std::unique_ptr<security::VerifyService> build_verify_service(Runtime& rt)
     {
@@ -59,6 +65,7 @@ private:
         service->use_certificate_provider(certificate_provider.get());
         service->use_certitifcate_validator(certificate_validator.get());
         service->use_sign_header_policy(&sign_header_policy);
+        service->use_certificate_cache(&cert_cache_v3);
         return service;
     }
 
@@ -77,6 +84,7 @@ private:
     security::v2::CertificateCache cert_cache;
     std::unique_ptr<security::v2::CertificateValidator> certificate_validator;
     security::v2::DefaultSignHeaderPolicy sign_header_policy;
+    security::v3::CertificateCache cert_cache_v3;
     security::DelegatingSecurityEntity security;
 };
 
