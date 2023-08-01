@@ -16,6 +16,20 @@ HashedId3 truncate(const HashedId8& in)
     return out;
 }
 
+HashedId8 create_hashed_id8(const Sha256Digest& digest)
+{
+    HashedId8 hashed;
+    std::copy(digest.end() - 8, digest.end(), hashed.data());
+    return hashed;
+}
+
+HashedId8 create_hashed_id8(const Sha384Digest& digest)
+{
+    HashedId8 hashed;
+    std::copy(digest.end() - 8, digest.end(), hashed.data());
+    return hashed;
+}
+
 } // namespace security
 } // namespace vanetza
 
