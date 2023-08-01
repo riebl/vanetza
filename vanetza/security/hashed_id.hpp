@@ -3,6 +3,7 @@
 
 #include <array>
 #include <cstdint>
+#include <functional>
 
 namespace vanetza
 {
@@ -15,6 +16,15 @@ using HashedId3 = std::array<uint8_t, 3>;
 HashedId3 truncate(const HashedId8&);
 
 } // namespace security
-} // namespace vanetz
+} // namespace vanetza
+
+namespace std
+{
+/// std::hash specialization for HashedId8
+template<> struct hash<vanetza::security::HashedId8>
+{
+    size_t operator()(const vanetza::security::HashedId8&) const;
+};
+} // namespace std
 
 #endif /* CE45A952_0EE7_4D20_82CB_D42BF87F5B15 */
