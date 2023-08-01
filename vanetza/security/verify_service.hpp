@@ -27,7 +27,8 @@ enum class VerificationReport
     Unsigned_Message,
     Signer_Certificate_Not_Found,
     Unsupported_Signer_Identifier_Type,
-    Incompatible_Protocol
+    Incompatible_Protocol,
+    Configuration_Problem,
 };
 
 // mandatory parameters of SN-VERIFY.request (TS 102 723-8 V1.1.1)
