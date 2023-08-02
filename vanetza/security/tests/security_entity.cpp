@@ -5,6 +5,7 @@
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/security_entity.hpp>
+#include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
 #include <vanetza/security/v2/naive_certificate_provider.hpp>
@@ -14,7 +15,6 @@
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/static_certificate_provider.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
-#include <vanetza/security/v2/verify_service.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/serialization.hpp>
@@ -90,7 +90,7 @@ protected:
         return boost::get<v2::SecuredMessage>(confirm.sec_packet);
     }
 
-    v2::SecuredMessage create_secured_message(Certificate& modified_certificate)
+    v2::SecuredMessage create_secured_message(v2::Certificate& modified_certificate)
     {
         // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider->own_private_key());
@@ -106,7 +106,7 @@ protected:
     StoredPositionProvider position_provider;
     std::unique_ptr<Backend> crypto_backend;
     std::unique_ptr<NaiveCertificateProvider> certificate_provider;
-    std::vector<Certificate> roots;
+    std::vector<v2::Certificate> roots;
     TrustStore trust_store;
     CertificateCache cert_cache;
     std::unique_ptr<CertificateValidator> certificate_validator;
@@ -209,7 +209,7 @@ TEST_F(SecurityEntityTest, signature_is_ecdsa)
     EXPECT_EQ(1, msg.trailer_fields.size());
     auto signature = msg.trailer_field(TrailerFieldType::Signature);
     ASSERT_TRUE(!!signature);
-    auto signature_type = get_type(boost::get<Signature>(*signature));
+    auto signature_type = get_type(boost::get<v2::Signature>(*signature));
     EXPECT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, signature_type);
 }
 
@@ -278,7 +278,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_message_type)
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
 {
     // change the subject name
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.subject_info.subject_name = {42};
 
     // verify message
@@ -290,7 +290,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
 {
     // change the subject info
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     HashedId8 faulty_hash ({ 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 });
     certificate.signer_info = faulty_hash;
 
@@ -303,7 +303,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
 {
     // change the subject info
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.subject_info.subject_type = SubjectType::Root_CA;
 
     // verify message
@@ -314,7 +314,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance)
 {
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     for (auto& subject_attribute : certificate.subject_attributes) {
         if (SubjectAttributeType::Assurance_Level == get_type(subject_attribute)) {
             SubjectAssurance& subject_assurance = boost::get<SubjectAssurance>(subject_attribute);
@@ -336,7 +336,7 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
     outdated_validity.start_validity = convert_time32(runtime.now() - std::chrono::hours(1));
     outdated_validity.end_validity = convert_time32(runtime.now() - std::chrono::minutes(1));
 
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.validity_restriction.clear();
     certificate.validity_restriction.push_back(outdated_validity);
     certificate_provider->sign_authorization_ticket(certificate);
@@ -355,7 +355,7 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
     premature_validity.start_validity = convert_time32(runtime.now() + std::chrono::hours(1));
     premature_validity.end_validity = convert_time32(runtime.now() + std::chrono::hours(5));
 
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.validity_restriction.clear();
     certificate.validity_restriction.push_back(premature_validity);
     certificate_provider->sign_authorization_ticket(certificate);
@@ -369,7 +369,7 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restriction)
 {
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     for (auto& validity_restriction : certificate.validity_restriction) {
         ValidityRestrictionType type = get_type(validity_restriction);
         ASSERT_EQ(type, ValidityRestrictionType::Time_Start_And_End);
@@ -388,7 +388,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restrict
 
 TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
 {
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.signature = create_random_ecdsa_signature(0);
 
     // verify message
@@ -401,7 +401,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
 {
     // hamper with signature
     auto secured_message = create_secured_message();
-    Signature* signature = secured_message.trailer_field<TrailerFieldType::Signature>();
+    v2::Signature* signature = secured_message.trailer_field<TrailerFieldType::Signature>();
     ASSERT_TRUE(signature);
     ASSERT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(*signature));
     EcdsaSignature& ecdsa_signature = boost::get<EcdsaSignature>(signature->some_ecdsa);
@@ -698,14 +698,14 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_other)
 TEST_F(SecurityEntityTest, verify_message_without_position_and_with_restriction)
 {
     // certificate with region restriction
-    CircularRegion circle;
+    v2::CircularRegion circle;
     circle.radius = static_cast<distance_u16t>(400 * meter);
-    circle.center = TwoDLocation {
+    circle.center = v2::TwoDLocation {
         geo_angle_i32t::from_value(490139190),
         geo_angle_i32t::from_value(84044460)
     };
 
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.validity_restriction.push_back(circle);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -748,14 +748,14 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_ok)
     its_aid = aid::GN_MGMT;
 
     // certificate with region restriction
-    CircularRegion circle;
+    v2::CircularRegion circle;
     circle.radius = static_cast<distance_u16t>(400 * meter);
-    circle.center = TwoDLocation {
+    circle.center = v2::TwoDLocation {
         geo_angle_i32t::from_value(490139190),
         geo_angle_i32t::from_value(84044460)
     };
 
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.validity_restriction.push_back(circle);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -770,14 +770,14 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_fail)
     its_aid = aid::GN_MGMT;
 
     // certificate with region restriction
-    CircularRegion circle;
+    v2::CircularRegion circle;
     circle.radius = static_cast<distance_u16t>(400 * meter);
-    circle.center = TwoDLocation {
+    circle.center = v2::TwoDLocation {
         geo_angle_i32t::from_value(10139190),
         geo_angle_i32t::from_value(84044460)
     };
 
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.validity_restriction.push_back(circle);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -843,7 +843,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
     std::unique_ptr<VerifyService> verify { new StraightVerifyService(runtime, *certificate_provider, validator, *crypto_backend, cert_cache, sign_header_policy, position_provider) };
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
 
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.remove_restriction(ValidityRestrictionType::Time_Start_And_End);
     certificate_provider->sign_authorization_ticket(certificate);
 
@@ -857,7 +857,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
 
 TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
 {
-    Certificate certificate = certificate_provider->own_certificate();
+    v2::Certificate certificate = certificate_provider->own_certificate();
     certificate.remove_attribute(SubjectAttributeType::Verification_Key);
     certificate_provider->sign_authorization_ticket(certificate);
 

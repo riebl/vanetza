@@ -5,13 +5,13 @@
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
+#include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
 #include <vanetza/security/v2/naive_certificate_provider.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
-#include <vanetza/security/v2/verify_service.hpp>
 
 namespace vanetza
 {
@@ -29,7 +29,7 @@ public:
             std::unique_ptr<security::SignService> {
                 new security::v2::StraightSignService(*certificate_provider, *backend, sign_header_policy) },
             std::unique_ptr<security::VerifyService> {
-                new security::v2::StraightVerifyService(rt, *certificate_provider, *certificate_validator, *backend, cert_cache, sign_header_policy, position_provider) }
+                new security::StraightVerifyService(rt, *certificate_provider, *certificate_validator, *backend, cert_cache, sign_header_policy, position_provider) }
         )
     {
         trust_store.insert(certificate_provider->root_certificate());

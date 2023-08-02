@@ -10,6 +10,7 @@ add_vanetza_component(security
     sha.cpp
     sign_service.cpp
     signature.cpp
+    straight_verify_service.cpp
     verify_service.cpp
     v2/basic_elements.cpp
     v2/certificate.cpp
@@ -40,7 +41,7 @@ add_vanetza_component(security
     v2/trailer_field.cpp
     v2/trust_store.cpp
     v2/validity_restriction.cpp
-    v2/verify_service.cpp
+    v2/verification.cpp
     v3/asn1_conversions.cpp
     v3/certificate.cpp
     v3/secured_message.cpp

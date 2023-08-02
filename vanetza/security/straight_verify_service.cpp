@@ -2,114 +2,31 @@
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/straight_verify_service.hpp>
+#include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/certificate_provider.hpp>
 #include <vanetza/security/v2/certificate_validator.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
-#include <vanetza/security/v2/verify_service.hpp>
+#include <vanetza/security/v2/verification.hpp>
 #include <boost/optional.hpp>
-#include <chrono>
 
 namespace vanetza
 {
 namespace security
 {
-namespace v2
-{
 
 namespace
 {
 
-bool check_generation_time(const SecuredMessage& message, Clock::time_point now)
-{
-    using namespace std::chrono;
-
-    bool valid = false;
-    const Time64* generation_time = message.header_field<HeaderFieldType::Generation_Time>();
-    if (generation_time) {
-        // Values are picked from C2C-CC Basic System Profile v1.1.0, see RS_BSP_168
-        static const auto generation_time_future = milliseconds(40);
-        static const Clock::duration generation_time_past_default = minutes(10);
-        static const Clock::duration generation_time_past_ca = seconds(2);
-        auto generation_time_past = generation_time_past_default;
-
-        const IntX* its_aid = message.header_field<HeaderFieldType::Its_Aid>();
-        if (its_aid && aid::CA == *its_aid) {
-            generation_time_past = generation_time_past_ca;
-        }
-
-        if (*generation_time > convert_time64(now + generation_time_future)) {
-            valid = false;
-        } else if (*generation_time < convert_time64(now - generation_time_past)) {
-            valid = false;
-        } else {
-            valid = true;
-        }
-    }
-
-    return valid;
-}
-
-bool check_generation_location(const SecuredMessage& message, const Certificate& cert)
-{
-    const IntX* its_aid = message.header_field<HeaderFieldType::Its_Aid>();
-    if (its_aid && aid::CA == *its_aid) {
-        return true; // no check required for CAMs, field not even allowed
-    }
-
-    const ThreeDLocation* generation_location = message.header_field<HeaderFieldType::Generation_Location>();
-    if (generation_location) {
-        auto region = cert.get_restriction<ValidityRestrictionType::Region>();
-
-        if (!region || get_type(*region) == RegionType::None) {
-            return true;
-        }
-
-        return is_within(TwoDLocation(*generation_location), *region);
-    }
-
-    return false;
-}
-
-bool check_certificate_time(const Certificate& certificate, Clock::time_point now)
-{
-    auto time = certificate.get_restriction<ValidityRestrictionType::Time_Start_And_End>();
-    auto time_now = convert_time32(now);
-
-    if (!time) {
-        return false; // must be present
-    }
-
-    if (time->start_validity > time_now || time->end_validity < time_now) {
-        return false; // premature or outdated
-    }
-
-    return true;
-}
-
-bool check_certificate_region(const Certificate& certificate, const PositionFix& position)
-{
-    auto region = certificate.get_restriction<ValidityRestrictionType::Region>();
-
-    if (!region || get_type(*region) == RegionType::None) {
-        return true;
-    }
-
-    if (!position.confidence) {
-        return false; // cannot check region restrictions without good position fix
-    }
-
-    return is_within(TwoDLocation(position.latitude, position.longitude), *region);
-}
-
-bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
+bool assign_permissions(const v2::Certificate& certificate, VerifyConfirm& confirm)
 {
     for (auto& subject_attribute : certificate.subject_attributes) {
-        if (get_type(subject_attribute) != SubjectAttributeType::ITS_AID_SSP_List) {
+        if (get_type(subject_attribute) != v2::SubjectAttributeType::ITS_AID_SSP_List) {
             continue;
         }
 
-        auto& permissions = boost::get<std::list<ItsAidSsp> >(subject_attribute);
+        auto& permissions = boost::get<std::list<v2::ItsAidSsp> >(subject_attribute);
         for (auto& permission : permissions) {
             if (permission.its_aid == confirm.its_aid) {
                 confirm.permissions = permission.service_specific_permissions;
@@ -127,8 +44,8 @@ bool assign_permissions(const Certificate& certificate, VerifyConfirm& confirm)
 
 
 StraightVerifyService::StraightVerifyService(
-    const Runtime& runtime, CertificateProvider& provider, CertificateValidator& validator,
-    Backend& backend, CertificateCache& cache, SignHeaderPolicy& policy, PositionProvider& position) :
+    const Runtime& runtime, v2::CertificateProvider& provider, v2::CertificateValidator& validator,
+    Backend& backend, v2::CertificateCache& cache, v2::SignHeaderPolicy& policy, PositionProvider& position) :
     m_runtime(runtime), m_cert_cache(cache), m_cert_provider(provider), m_cert_validator(validator),
     m_backend(backend), m_sign_policy(policy), m_position_provider(position)
 {
@@ -136,11 +53,34 @@ StraightVerifyService::StraightVerifyService(
 
 VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
 {
+    struct visitor : public boost::static_visitor<VerifyConfirm>
+    {
+        visitor(StraightVerifyService* service) : m_service(service)
+        {
+        }
+
+        VerifyConfirm operator()(const v2::SecuredMessage& msg)
+        {
+            return m_service->verify(msg);
+        }
+
+        VerifyConfirm operator()(const v3::SecuredMessage& msg)
+        {
+            return m_service->verify(msg);
+        }
+
+        StraightVerifyService* m_service = nullptr;
+    } visitor(this);
+
+    const SecuredMessage& secured_message = request.secured_message;
+    return boost::apply_visitor(visitor, secured_message);
+}
+
+VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_message)
+{
     // TODO check if certificates in chain have been revoked for all CA certificates, ATs are never revoked
-
     VerifyConfirm confirm;
-    const SecuredMessage& secured_message = boost::get<SecuredMessage>(request.secured_message);
-
+    using namespace v2;
 
     if (PayloadType::Signed != secured_message.payload.type) {
         confirm.report = VerificationReport::Unsigned_Message;
@@ -176,7 +116,7 @@ VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
     confirm.its_aid = its_aid->get();
 
     const SignerInfo* signer_info = secured_message.header_field<HeaderFieldType::Signer_Info>();
-    std::list<Certificate> possible_certificates;
+    std::list<v2::Certificate> possible_certificates;
     bool possible_certificates_from_cache = false;
 
     // use a dummy hash for initialization
@@ -186,8 +126,8 @@ VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
     if (signer_info) {
         switch (get_type(*signer_info)) {
             case SignerInfoType::Certificate:
-                possible_certificates.push_back(boost::get<Certificate>(*signer_info));
-                signer_hash = calculate_hash(boost::get<Certificate>(*signer_info));
+                possible_certificates.push_back(boost::get<v2::Certificate>(*signer_info));
+                signer_hash = calculate_hash(boost::get<v2::Certificate>(*signer_info));
 
                 if (confirm.its_aid == aid::CA && m_cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket).size() == 0) {
                     // Previously unknown certificate, send own certificate in next CAM
@@ -203,7 +143,7 @@ VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
                 break;
             case SignerInfoType::Certificate_Chain:
             {
-                std::list<Certificate> chain = boost::get<std::list<Certificate>>(*signer_info);
+                std::list<v2::Certificate> chain = boost::get<std::list<v2::Certificate>>(*signer_info);
                 if (chain.size() == 0) {
                     confirm.report = VerificationReport::Signer_Certificate_Not_Found;
                     return confirm;
@@ -288,7 +228,7 @@ VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
 
     // verify payload signature with given signature
     ByteBuffer payload = convert_for_signing(secured_message, secured_message.trailer_fields);
-    boost::optional<Certificate> signer;
+    boost::optional<v2::Certificate> signer;
 
     for (const auto& cert : possible_certificates) {
         SubjectType subject_type = cert.subject_info.subject_type;
@@ -386,6 +326,17 @@ VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
     return confirm;
 }
 
-} // namespace v2
+VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
+{
+    /*
+     * TS 103 097 v1.3.1 demands to assess the validity of signed data
+     * according to IEEE 1609.2 clause 5.2.
+     */
+    VerifyConfirm confirm;
+    confirm.report = VerificationReport::Incompatible_Protocol; /*< fallback error code */
+
+    return confirm;
+}
+
 } // namespace security
 } // namespace vanetza
