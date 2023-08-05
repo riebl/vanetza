@@ -1,6 +1,7 @@
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <boost/optional/optional.hpp>
+#include <cstring>
 
 namespace vanetza
 {
