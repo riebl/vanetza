@@ -1,5 +1,5 @@
 #include <vanetza/security/hashed_id.hpp>
-#include <boost/container_hash/hash.hpp>
+#include <boost/functional/hash.hpp>
 #include <algorithm>
 #include <cassert>
 
