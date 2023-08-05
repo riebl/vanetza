@@ -169,7 +169,7 @@ bool BackendCryptoPP::verify_data(const ecdsa256::PublicKey& generic_key, const 
     return verify_data(m_public_cache[generic_key], msg, sigbuf);
 }
 
-bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer& digest, const Signature& sig)
+bool BackendCryptoPP::verify_digest(const PublicKey& public_key, const ByteBuffer& digest, const Signature& sig)
 {
     if (public_key.type != sig.type) {
         return false;

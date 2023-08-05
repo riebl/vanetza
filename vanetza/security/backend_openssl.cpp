@@ -97,7 +97,7 @@ bool BackendOpenSsl::verify_data(const ecdsa256::PublicKey& key, const ByteBuffe
     return (ECDSA_do_verify(digest.data(), digest.size(), signature, pub) == 1);
 }
 
-bool BackendOpenSsl::verify_data(const PublicKey& gpub, const ByteBuffer& digest, const Signature& gsig)
+bool BackendOpenSsl::verify_digest(const PublicKey& gpub, const ByteBuffer& digest, const Signature& gsig)
 {
     if (gpub.type != gsig.type) {
         return false;

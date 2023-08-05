@@ -42,14 +42,14 @@ public:
     virtual bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) = 0;
 
     /**
-     * \brief try to verify data using public key and signature
+     * \brief try to verify digest using public key and signature
      * 
      * \param public_key public key
-     * \param hash hash value of data
+     * \param digest hash value of data
      * \param sig signature of data
      * \return true if data could be verified
      */
-    virtual bool verify_data(const PublicKey& public_key, const ByteBuffer& hash, const Signature& sig) = 0;
+    virtual bool verify_digest(const PublicKey& public_key, const ByteBuffer& digest, const Signature& sig) = 0;
 
     /**
      * \brief decompress a possibly compressed elliptic curve point

@@ -27,7 +27,9 @@ public:
 
     /// \see Backend::verify_data
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
-    bool verify_data(const PublicKey&, const ByteBuffer&, const Signature&) override;
+
+    /// \see Backend::verify_digest
+    bool verify_digest(const PublicKey&, const ByteBuffer& digest, const Signature&) override;
 
     /// \see Backend::decompress_point
     boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) override;

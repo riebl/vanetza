@@ -439,7 +439,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
     concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
     ByteBuffer msg_hash = m_backend.calculate_hash(public_key->type, concat_hash);
 
-    if (!m_backend.verify_data(*public_key, msg_hash, *signature)) {
+    if (!m_backend.verify_digest(*public_key, msg_hash, *signature)) {
         confirm.report = VerificationReport::False_Signature;
         return confirm;
     }

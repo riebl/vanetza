@@ -34,7 +34,9 @@ public:
 
     /// \see Backend::verify_data
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
-    bool verify_data(const PublicKey&, const ByteBuffer&, const Signature&) override;
+
+    /// \see Backend::verify_digest
+    bool verify_digest(const PublicKey&, const ByteBuffer& digest, const Signature&) override;
 
     ByteBuffer calculate_hash(KeyType, const ByteBuffer&) override;
 

@@ -20,7 +20,7 @@ bool BackendNull::verify_data(const ecdsa256::PublicKey&, const ByteBuffer&, con
     return true;
 }
 
-bool BackendNull::verify_data(const PublicKey&, const ByteBuffer&, const Signature&)
+bool BackendNull::verify_digest(const PublicKey&, const ByteBuffer&, const Signature&)
 {
     // accept everything
     return true;
