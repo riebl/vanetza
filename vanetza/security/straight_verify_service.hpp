@@ -25,6 +25,14 @@ class SignHeaderPolicy;
 
 } // namespace v2
 
+namespace v3
+{
+
+// forward declarations
+class CertificateCache;
+
+} // namespace v3
+
 /**
  * Verify service with basic certificate and signature checks
  */
@@ -38,8 +46,7 @@ public:
     void use_certitifcate_validator(v2::CertificateValidator*);
     void use_sign_header_policy(v2::SignHeaderPolicy*);
 
-    StraightVerifyService(const Runtime&, Backend&, PositionProvider&);
-    void set_context(ContextV2);
+    void use_certificate_cache(v3::CertificateCache*);
 
     VerifyConfirm verify(VerifyRequest&&) override;
     VerifyConfirm verify(const v2::SecuredMessage&);
@@ -61,6 +68,10 @@ private:
             return m_cert_cache && m_cert_provider && m_cert_validator && m_sign_policy;
         }
     } m_context_v2;
+
+    struct {
+        v3::CertificateCache* m_cert_cache = nullptr;
+    } m_context_v3;
 };
 
 } // namespace security

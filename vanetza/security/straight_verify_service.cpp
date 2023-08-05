@@ -2,6 +2,8 @@
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/certificate.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
@@ -9,6 +11,8 @@
 #include <vanetza/security/v2/certificate_validator.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/verification.hpp>
+#include <vanetza/security/v3/asn1_conversions.hpp>
+#include <vanetza/security/v3/certificate_cache.hpp>
 #include <boost/optional.hpp>
 
 namespace vanetza
@@ -366,7 +370,83 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
      */
     VerifyConfirm confirm;
     confirm.report = VerificationReport::Incompatible_Protocol; /*< fallback error code */
+    
+    if (!msg.is_signed()) {
+        confirm.report = VerificationReport::Unsigned_Message;
+        return confirm;
+    }
 
+    if (msg.protocol_version() != 3) {
+        confirm.report = VerificationReport::Incompatible_Protocol;
+        return confirm;
+    }
+
+    auto gen_time = msg.generation_time();
+    if (!gen_time) {
+        // TS 103 097 v1.3.1 demands generation time to be always present
+        confirm.report = VerificationReport::Invalid_Timestamp;
+        return confirm;
+    }
+    // TODO further generation time checks depending on application profile
+
+    auto signature = msg.signature();
+    if (!signature) {
+        confirm.report = VerificationReport::Unsigned_Message;
+        return confirm;
+    }
+
+    struct certificate_lookup_visitor : public boost::static_visitor<const Certificate_t*> {
+        certificate_lookup_visitor(v3::CertificateCache* cache) : m_cache(cache)
+        {
+        }
+
+        const Certificate_t* operator()(const HashedId8_t* digest)
+        {
+            // look up certificate matching digest in local storage
+            if (m_cache && digest) {
+                const v3::Certificate* found = m_cache->lookup(v3::convert(*digest));
+                return found ? found->content() : nullptr;
+            } else {
+                return nullptr;
+            }
+        }
+
+        const Certificate_t* operator()(const Certificate_t* cert)
+        {
+            return cert;
+        }
+
+        v3::CertificateCache* m_cache;
+    } certificate_lookup_visitor(m_context_v3.m_cert_cache);
+    const Certificate_t* certificate = boost::apply_visitor(certificate_lookup_visitor, msg.signer_identifier());
+    if (!certificate) {
+        confirm.report = VerificationReport::Signer_Certificate_Not_Found;
+        return confirm;
+    }
+    // TODO check AT certificate's validity
+
+    auto public_key = v3::get_public_key(*certificate);
+    if (!public_key) {
+        confirm.report = VerificationReport::Invalid_Certificate;
+        confirm.certificate_validity = CertificateInvalidReason::Missing_Public_Key;
+        return confirm;
+    }
+
+    ByteBuffer data_hash = m_backend.calculate_hash(public_key->type, msg.signing_payload());
+    ByteBuffer cert_hash = m_backend.calculate_hash(public_key->type, asn1::encode_oer(asn_DEF_CertificateBase, certificate));
+    ByteBuffer concat_hash = data_hash;
+    concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
+    ByteBuffer msg_hash = m_backend.calculate_hash(public_key->type, concat_hash);
+
+    if (!m_backend.verify_data(*public_key, msg_hash, *signature)) {
+        confirm.report = VerificationReport::False_Signature;
+        return confirm;
+    }
+
+    confirm.its_aid = msg.its_aid();
+    confirm.permissions = v3::get_app_permissions(*certificate, confirm.its_aid);
+    confirm.certificate_id = v3::get_certificate_id(msg.signer_identifier());
+    confirm.report = VerificationReport::Success;
     return confirm;
 }
 
