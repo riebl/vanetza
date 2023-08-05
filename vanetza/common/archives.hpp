@@ -36,6 +36,8 @@ public:
 
     void load_binary(unsigned char* data, std::size_t len);
     void load_binary(char* data, std::size_t len);
+    char peek_byte();
+    std::size_t remaining_bytes();
 
 private:
     StreamBuffer* m_stream_buffer;

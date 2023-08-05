@@ -5,6 +5,7 @@
 #include <vanetza/common/serialization.hpp>
 #include <vanetza/net/packet_variant.hpp>
 #include <vanetza/security/v2/secured_message.hpp>
+#include <vanetza/security/v3/secured_message.hpp>
 #include <boost/variant/variant.hpp>
 
 namespace vanetza
@@ -12,7 +13,7 @@ namespace vanetza
 namespace security
 {
 
-using SecuredMessage = boost::variant<v2::SecuredMessage>;
+using SecuredMessage = boost::variant<v2::SecuredMessage, v3::SecuredMessage>;
 
 ItsAid get_its_aid(const SecuredMessage&);
 

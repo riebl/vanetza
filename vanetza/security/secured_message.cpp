@@ -15,6 +15,11 @@ ItsAid get_its_aid(const SecuredMessage& msg)
         {
             return get_its_aid(msg);
         }
+
+        ItsAid operator()(const v3::SecuredMessage& msg) const
+        {
+            return msg.its_aid();
+        }
     };
 
     return boost::apply_visitor(Visitor(), msg);
@@ -27,6 +32,11 @@ std::size_t get_size(const SecuredMessage& msg)
         std::size_t operator()(const v2::SecuredMessage& msg) const
         {
             return get_size(msg);
+        }
+
+        std::size_t operator()(const v3::SecuredMessage& msg) const
+        {
+            return msg.size();
         }
     };
 
@@ -41,6 +51,11 @@ void serialize(OutputArchive& ar, const SecuredMessage& msg)
         Visitor(OutputArchive& ar) : m_archive(ar) {}
 
         void operator()(const v2::SecuredMessage& msg)
+        {
+            serialize(m_archive, msg);
+        }
+
+        void operator()(const v3::SecuredMessage& msg)
         {
             serialize(m_archive, msg);
         }
@@ -61,6 +76,11 @@ std::size_t deserialize(InputArchive& ar, SecuredMessage& msg)
         {
             return deserialize(m_archive, msg);
         }
+
+        std::size_t operator()(v3::SecuredMessage& msg)
+        {
+            return deserialize(m_archive, msg);
+        }
     };
 
     Visitor visitor(ar);
@@ -74,6 +94,11 @@ PacketVariant get_payload_copy(const SecuredMessage& msg)
         PacketVariant operator()(const v2::SecuredMessage& msg) const
         {
             return msg.payload.data;
+        }
+
+        PacketVariant operator()(const v3::SecuredMessage& msg) const
+        {
+            return msg.payload();
         }
     };
 
