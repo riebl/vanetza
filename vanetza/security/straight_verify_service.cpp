@@ -418,7 +418,8 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
 
         v3::CertificateCache* m_cache;
     } certificate_lookup_visitor(m_context_v3.m_cert_cache);
-    const Certificate_t* certificate = boost::apply_visitor(certificate_lookup_visitor, msg.signer_identifier());
+    auto signer_identifier = msg.signer_identifier();
+    const Certificate_t* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
     if (!certificate) {
         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
         return confirm;
@@ -445,7 +446,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
 
     confirm.its_aid = msg.its_aid();
     confirm.permissions = v3::get_app_permissions(*certificate, confirm.its_aid);
-    confirm.certificate_id = v3::get_certificate_id(msg.signer_identifier());
+    confirm.certificate_id = v3::get_certificate_id(signer_identifier);
     confirm.report = VerificationReport::Success;
     return confirm;
 }
