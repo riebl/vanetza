@@ -1,5 +1,6 @@
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/ecc_point.hpp>
+#include <boost/optional/optional.hpp>
 #include <cryptopp/oids.h>
 #include <algorithm>
 #include <cassert>
@@ -13,12 +14,116 @@ namespace security
 
 namespace {
 
-CryptoPP::ECP::Point make_ecp_point(const PublicKey& public_key)
+/**
+ * Derive Crypto++ OID object from key type
+ * \param key_type key type from our API
+ * \return Crypto++ OID object (possibly empty)
+ */
+CryptoPP::OID get_oid(KeyType key_type)
 {
-    CryptoPP::Integer x { public_key.x.data(), public_key.x.size() };
-    CryptoPP::Integer y { public_key.y.data(), public_key.y.size() };
-    return CryptoPP::ECP::Point { std::move(x), std::move(y) };
+    if (key_type == KeyType::NistP256) {
+        return CryptoPP::ASN1::secp256r1();
+    } else if (key_type == KeyType::BrainpoolP256r1) {
+        return CryptoPP::ASN1::brainpoolP256r1();
+    } else if (key_type == KeyType::BrainpoolP384r1) {
+        return CryptoPP::ASN1::brainpoolP384r1();
+    } else {
+        return CryptoPP::OID {};
+    }
 }
+
+/**
+ * Encode public key with prefix byte
+ * - 0x02 compressed with Y0
+ * - 0x03 compressed with Y1
+ * - 0x04 uncompressed
+ *
+ * \param pub_key generic public key
+ * \return encoded public key
+ */
+ByteBuffer encode_public_key(const PublicKey& pub_key)
+{
+    ByteBuffer encoded;
+
+    if (pub_key.compression == KeyCompression::NoCompression) {
+        encoded.reserve(1 + pub_key.x.size() + pub_key.y.size());
+        encoded.push_back(0x04);
+        encoded.insert(encoded.end(), pub_key.x.begin(), pub_key.x.end());
+        encoded.insert(encoded.end(), pub_key.y.begin(), pub_key.y.end());
+    } else if (pub_key.compression == KeyCompression::Y0) {
+        encoded.reserve(1 + pub_key.x.size());
+        encoded.push_back(0x02);
+        encoded.insert(encoded.end(), pub_key.x.begin(), pub_key.x.end());
+    } else if (pub_key.compression == KeyCompression::Y1) {
+        encoded.reserve(1 + pub_key.x.size());
+        encoded.push_back(0x03);
+        encoded.insert(encoded.end(), pub_key.x.begin(), pub_key.x.end());
+    }
+
+    return encoded;
+}
+
+using InternalPublicKey = CryptoPP::DL_PublicKey_EC<CryptoPP::ECP>;
+
+/**
+ * Convert our PublicKey type to a Crypto++ EC public key
+ * \param pub_key our public key
+ * \return public key as Crypto++ type (if conversion was possible)
+ */
+boost::optional<InternalPublicKey> convert_public_key(const PublicKey& pub_key)
+{
+    InternalPublicKey out;
+    out.AccessGroupParameters().Initialize(get_oid(pub_key.type));
+    auto& curve = out.GetGroupParameters().GetCurve();
+    
+    CryptoPP::ECP::Point point;
+    ByteBuffer encoded_pub_key = encode_public_key(pub_key);
+    CryptoPP::StringStore store { encoded_pub_key.data(), encoded_pub_key.size() };
+    if (!curve.DecodePoint(point, store, store.MaxRetrievable())) {
+        return boost::none;
+    }
+    out.SetPublicElement(point);
+    return out;
+}
+
+/**
+ * Specialized Crypto++ Verifier for C-ITS messages
+ */
+template<typename ECDSA>
+class Verifier : public ECDSA::Verifier
+{
+public:
+    using BaseVerifier = typename ECDSA::Verifier;
+
+    /**
+     * Construct verifier object for a public key
+     * \param pub public key
+     */
+    Verifier(const InternalPublicKey& pub)
+        : BaseVerifier(pub)
+    {
+    }
+
+    /**
+     * Verify digest and signature
+     * \param digest hash of to-be-verified data
+     * \param sig given signature
+     * \return true if digest, signature and public key match
+     */
+    bool VerifyDigest(const ByteBuffer& digest, const Signature& sig)
+    {
+        using namespace CryptoPP;
+        const auto& alg = this->GetSignatureAlgorithm();
+        const auto& params = this->GetAbstractGroupParameters();
+        const auto& key = this->GetKeyInterface();
+        this->GetMaterial().DoQuickSanityCheck();
+
+        Integer e { digest.data(), digest.size() };
+        Integer r { sig.r.data(), sig.r.size() };
+        Integer s { sig.s.data(), sig.s.size() };
+        return alg.Verify(params, key, e, r, s);
+    }
+};
 
 } // namespace
 
@@ -64,40 +169,28 @@ bool BackendCryptoPP::verify_data(const ecdsa256::PublicKey& generic_key, const 
     return verify_data(m_public_cache[generic_key], msg, sigbuf);
 }
 
-bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer& msg, const Signature& sig)
+bool BackendCryptoPP::verify_data(const PublicKey& public_key, const ByteBuffer& digest, const Signature& sig)
 {
     if (public_key.type != sig.type) {
         return false;
     }
 
-    Ecdsa256::PublicKey pub;
-    if (public_key.type == KeyType::NistP256) {
-        pub.Initialize(CryptoPP::ASN1::secp256r1(), make_ecp_point(public_key));
-    } else if (sig.type == KeyType::BrainpoolP256r1) {
-        pub.Initialize(CryptoPP::ASN1::brainpoolP256r1(), make_ecp_point(public_key));
-    } else if (sig.type == KeyType::BrainpoolP384r1) {
-        pub.Initialize(CryptoPP::ASN1::brainpoolP384r1(), make_ecp_point(public_key));
-    }
-
-    if (!pub.Validate(m_prng, 3)) {
+    boost::optional<InternalPublicKey> internal_pub_key = convert_public_key(public_key);
+    if (!internal_pub_key) {
+        return false;
+    } else if (!internal_pub_key->Validate(m_prng, 3)) {
         return false;
     }
 
-    switch (sig.type) {
-        case KeyType::NistP256:
-        case KeyType::BrainpoolP256r1: {
-            Ecdsa256::Verifier verifier(pub);
-            ByteBuffer sigbuf = extract_signature_buffer(sig);
-            return verifier.VerifyMessage(msg.data(), msg.size(), sigbuf.data(), sigbuf.size());
-        }
-        case KeyType::BrainpoolP384r1: {
-            Ecdsa384::Verifier verifier(pub);
-            ByteBuffer sigbuf = extract_signature_buffer(sig);
-            return verifier.VerifyMessage(msg.data(), msg.size(), sigbuf.data(), sigbuf.size());
-        }
-        default:
-            return false;
+    if (sig.type == KeyType::NistP256 || sig.type == KeyType::BrainpoolP256r1) {
+        Verifier<Ecdsa256> verifier(*internal_pub_key);
+        return verifier.VerifyDigest(digest, sig);
+    } else if (sig.type == KeyType::BrainpoolP384r1) {
+        Verifier<Ecdsa384> verifier(*internal_pub_key);
+        return verifier.VerifyDigest(digest, sig);
     }
+
+    return false;
 }
 
 bool BackendCryptoPP::verify_data(const Ecdsa256::PublicKey& public_key, const ByteBuffer& msg, const ByteBuffer& sig)
@@ -105,7 +198,6 @@ bool BackendCryptoPP::verify_data(const Ecdsa256::PublicKey& public_key, const B
     Ecdsa256::Verifier verifier(public_key);
     return verifier.VerifyMessage(msg.data(), msg.size(), sig.data(), sig.size());
 }
-
 
 boost::optional<Uncompressed> BackendCryptoPP::decompress_point(const EccPoint& ecc_point)
 {
@@ -141,7 +233,7 @@ boost::optional<Uncompressed> BackendCryptoPP::decompress_point(const EccPoint& 
             compact.push_back(type);
             std::copy(x.begin(), x.end(), std::back_inserter(compact));
 
-            BackendCryptoPP::Point point;
+            CryptoPP::ECP::Point point;
             CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> group(CryptoPP::ASN1::secp256r1());
             group.GetCurve().DecodePoint(point, compact.data(), compact.size());
 

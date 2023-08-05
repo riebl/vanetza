@@ -17,7 +17,6 @@ class BackendCryptoPP : public Backend
 public:
     using Ecdsa256 = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>;
     using Ecdsa384 = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA384>;
-    using Point = CryptoPP::ECP::Point;
 
     static constexpr auto backend_name = "CryptoPP";
 
