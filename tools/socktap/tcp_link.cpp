@@ -1,6 +1,7 @@
 #include "tcp_link.hpp"
 #include <vanetza/access/data_request.hpp>
 #include <vanetza/net/ethernet_header.hpp>
+#include <boost/asio/write.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/bind/placeholders.hpp>
 #include <iostream>
@@ -24,7 +25,15 @@ void TcpLink::indicate(IndicationCallback cb)
 
 void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkPacket> packet)
 {
-    packet->layer(OsiLayer::Link) = create_ethernet_header(request.destination_addr, request.source_addr, request.ether_type);
+    // create ethernet header
+    vanetza::ByteBuffer buffer = create_ethernet_header(request.destination_addr, request.source_addr, request.ether_type);
+
+    // insert packet size before ethernet header
+    uint16_t packet_size = packet->size() + EthernetHeader::length_bytes;
+    buffer.insert(buffer.begin(), packet_size & 0x00FF);
+    buffer.insert(buffer.begin(), (packet_size & 0xFF00) >> 8);
+
+    packet->layer(OsiLayer::Link) = std::move(buffer);
 
     std::array<boost::asio::const_buffer, layers_> const_buffers;
     for (auto& layer : osi_layer_range<OsiLayer::Link, OsiLayer::Application>()) {
@@ -111,13 +120,12 @@ void TcpSocket::connect(ip::tcp::endpoint ep)
         status_ = CONNECTED;
         do_receive();
     }
-
 }
 
 void TcpSocket::request(std::array<boost::asio::const_buffer, layers_> const_buffers)
 {
     boost::system::error_code ec;
-    socket_.write_some(const_buffers, ec);
+    boost::asio::write(socket_, const_buffers, ec);
 
     if (ec) {
         status_ = ERROR;
@@ -140,21 +148,44 @@ void TcpSocket::do_receive()
 void TcpSocket::receive_handler(boost::system::error_code ec, std::size_t length) {
     if (!ec) {
         status_ = CONNECTED;
-        ByteBuffer buffer(rx_buffer_.begin(), rx_buffer_.begin() + length);
-        CohesivePacket packet(std::move(buffer), OsiLayer::Link);
-        if (packet.size(OsiLayer::Link) < EthernetHeader::length_bytes) {
-            std::cerr << "Dropped TCP packet too short to contain Ethernet header\n";
-        } else {
-            packet.set_boundary(OsiLayer::Link, EthernetHeader::length_bytes);
-            auto link_range = packet[OsiLayer::Link];
-            EthernetHeader eth = decode_ethernet_header(link_range.begin(), link_range.end());
-            auto test = *(this->callback_);
-            if (*callback_) {
-                (*callback_)(std::move(packet), eth);
-            }
+
+        rx_store_.insert(rx_store_.end(), rx_buffer_.begin(), rx_buffer_.begin() + length);
+
+        // While we have enough bytes stored to construct a packet, pass it up
+        while (rx_store_.size() >= get_next_packet_size() + 2)
+        {
+            uint16_t packet_length = get_next_packet_size();
+            ByteBuffer packet_buffer(rx_store_.begin() + 2, rx_store_.begin() + 2 + packet_length);
+            pass_up(std::move(packet_buffer));
+            rx_store_.erase(rx_store_.begin(), rx_store_.begin() + 2 + packet_length);
         }
+
         do_receive();
     } else {
         status_ = ERROR;
+    }
+}
+
+void TcpSocket::pass_up(ByteBuffer&& packet_buffer)
+{
+    CohesivePacket packet(std::move(packet_buffer), OsiLayer::Link);
+    if (packet.size(OsiLayer::Link) < EthernetHeader::length_bytes) {
+        std::cerr << "Dropped TCP packet too short to contain Ethernet header\n";
+    } else {
+        packet.set_boundary(OsiLayer::Link, EthernetHeader::length_bytes);
+        auto link_range = packet[OsiLayer::Link];
+        EthernetHeader eth = decode_ethernet_header(link_range.begin(), link_range.end());
+        if (*callback_) {
+            (*callback_)(std::move(packet), eth);
+        }
+    }
+}
+
+uint16_t TcpSocket::get_next_packet_size()
+{
+    if (rx_store_.size() >= 2) {
+        return (rx_store_[0] << 8) + rx_store_[1];
+    } else {
+        return 0;
     }
 }
