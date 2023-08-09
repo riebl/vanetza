@@ -18,7 +18,10 @@ You can choose via the `--link-layer` argument which implementation to use:
 - *ethernet* runs on Linux raw packet sockets
 - *cohda* employs Cohda's LLC API (optional)
 - *udp* runs GeoNetworking on top of IP/UDP multicast sockets
+- *tcp* runs GeoNetworking on top of IP/TCP sockets
 
+
+### Ethernet
 
 The *ethernet* variant has been initially *socktap*'s only available link-layer implementation.
 In this mode, *socktap* will send and receiver Ethernet frames on the specified network interface (see `--interface` argument).
@@ -29,15 +32,28 @@ You can do this via `sudo setcap cap_net_raw+ep bin/socktap`.
 When `CAP_NET_RAW` is attached to the *socktap* binary you can run it as an ordinary user.
 
 
+### Cohda
+
 If you have access to V2X hardware from Cohda Wireless, you can also run *socktap* on their units.
 In the *cohda* mode, *socktap* uses Cohda's LLC API for sending and receiving data frames.
 This mode is similar to *ethernet* but depends on the Cohda SDK.
 Please refer to our [Cohda SDK building recipe](/recipes/cohda-sdk-build) for details.
 
+
+### UDP
+
 A relatively new addition is the *udp* mode, which allows running *socktap* without any privileges.
 GeoNetworking packets are wrapped into UDP datagrams and sent to the IP multicast group **239.118.122.97** on UDP port **8947**.
 Further *socktap* instances within the same IP multicast network exchange GeoNetworking packets then.
 You can consider this as "GeoNetworking over IP/UDP".
+
+
+### TCP
+
+The TCP implementation is similiar to the UDP one.
+However, TCP adds the arguments `--tcp-accept` and `--tcp-connect`, which allow the user to accept incoming TCP connections or connect to open TCP sockets, respectively.
+Both arguments expect a comma separated list of `ip:port`.
+Outgoing GeoNetworking packets will then be sent to all active TCP connections.
 
 
 ## Positioning
