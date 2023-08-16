@@ -31,7 +31,7 @@ Please see [this document](vanetza-build-dependencies.md), program was tested wi
 
 ### Compiling for Craton
 We assume you have copy of the Vanetza repository in your home directory at `$HOME`.
-Furthermore, there should be a symbolic link named `autotalks_craton_api` in your home directory, that links to the root of Craton SDK (the directory where the API is compiled). If you have Poky toolchain installed in other directory than /opt/poky-craton2/4.0.1 (e.g. /tools/gcc/arm/new_toolchain as suggested by Autotalks), change the path in cmake/Toolchain-Autotalks-Craton.cmake.
+Furthermore, there should be a symbolic link named `autotalks_craton_api` in your home directory, that links to the root of Craton SDK (e.g., from `/home/your_user/autotalks_craton_api` to the API compilation directory). If you have Poky toolchain installed in other directory than /opt/poky-craton2/4.0.1 (e.g. /tools/gcc/arm/new_toolchain as suggested by Autotalks), change the path in cmake/Toolchain-Autotalks-Craton.cmake.
 Create a build directory and tell CMake to use the cross-compiler installed on your machine and to look up additional dependencies in `vanetza-deps`:
 
     :::shell
@@ -50,7 +50,7 @@ This builds the Vanetza libraries and *socktap* example as well. When you do `ma
 
 ### Compiling for Secton
 We assume you have copy of the Vanetza repository in your home directory at `$HOME`.
-Furthermore, there should be a symbolic link named `autotalks_secton_api` in your home directory, that links to the root of Secton SDK (the directory where the API is compiled). The build steps are then identical with the ones described in [How to build](vanetza-build-dependencies.md). Just note that for using Autotalks SDK you should use enable compilation of socktap, e.g. like this:
+Furthermore, there should be a symbolic link named `autotalks_secton_api` in your home directory, that links to the root of Secton SDK (e.g., from `/home/your_user/autotalks_secton_api` to the API compilation directory). The build steps are then identical with the ones described in [How to build](vanetza-build-dependencies.md). Just note that for using Autotalks SDK you should use enable compilation of socktap, e.g. like this:
 
     :::shell
     cmake .. \
