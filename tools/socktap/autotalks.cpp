@@ -29,6 +29,9 @@ extern "C" {
 
 #include "autotalks_link.hpp"
 
+// Update this if needed
+#define SECTON_NET_NAME	"enx0002ccf00006"
+
 namespace vanetza
 {
 namespace autotalks
@@ -39,12 +42,13 @@ bool endRxThread = false;
 
 static pthread_t v2x_rx_thread;
 static uint8_t v2x_rx_buffer[2048];
+static void* v2x_rx_thread_entry(void * arg);
 
 
 int autotalks_device_init(void)
 {
   atlk_rc_t rc;
-  const char* arg[] = {"./test", "enx0002ccf00006"};
+  const char* arg[] = {NULL, SECTON_NET_NAME};
   /** Reference system initialization */
 #ifdef CRATON_2
   rc = ref_sys_init_ex(1, (char**) arg);

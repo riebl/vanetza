@@ -21,6 +21,8 @@ In version 5.17 (Release 18), there are another problems:
 
 Another thing you must note is in the initialization in the `socktap` example. The initialization code in `v2x_device_init()` was used directly from the example in the Autotalks SDK, therefore it should not be distributed with the library. You will have to write it yourself, but it really is almost the same as `main()` function in the basic example from the SDK.
 
+In the initialization, there is a define for `SECTON_NET_NAME`. This is a network interface name which determines how is the SoC seen in Linux. It should be *enx0002ccf00006* by default, but if it is set to something else, you can change this define. You can use `ifconfig` output to determine the actual name (see Autotalks documentation for more details).
+
 ## Vanetza build dependencies
 
 Please see [this document](vanetza-build-dependencies.md), program was tested with precompiled libraries downloadable there.
