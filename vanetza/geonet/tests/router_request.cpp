@@ -7,6 +7,7 @@
 #include <vanetza/geonet/pdu_variant.hpp>
 #include <vanetza/geonet/router.hpp>
 #include <vanetza/geonet/serialization_buffer.hpp>
+#include <boost/variant/get.hpp>
 
 using namespace vanetza;
 using namespace vanetza::geonet;
@@ -81,13 +82,15 @@ TEST_F(RouterRequest, router_request)
     auto secured = *pdu_ext->secured();
 
     // check payload of packet
-    EXPECT_EQ(security::PayloadType::Signed, secured.payload.type);
+    auto secured2 = boost::get<security::v2::SecuredMessage>(&secured);
+    ASSERT_TRUE(secured2);
+    EXPECT_EQ(security::v2::PayloadType::Signed, secured2->payload.type);
     EXPECT_EQ(test_payload.size(), pdu->common().payload);
     const size_t payload_header_length = CommonHeader::length_bytes + ShbHeader::length_bytes;
-    EXPECT_EQ(payload_header_length, size(secured.payload.data, OsiLayer::Network));
-    EXPECT_EQ(test_payload.size(), size(secured.payload.data, OsiLayer::Transport, OsiLayer::Application));
+    EXPECT_EQ(payload_header_length, size(secured2->payload.data, OsiLayer::Network));
+    EXPECT_EQ(test_payload.size(), size(secured2->payload.data, OsiLayer::Transport, OsiLayer::Application));
 
-    ChunkPacket sec_payload = boost::get<ChunkPacket>(secured.payload.data);
+    ChunkPacket sec_payload = boost::get<ChunkPacket>(secured2->payload.data);
     ChunkPacket sec_header = sec_payload.extract(OsiLayer::Network, OsiLayer::Network);
     ByteBuffer actual_payload, expected_payload;
     serialize_into_buffer(sec_payload, actual_payload);

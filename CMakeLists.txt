@@ -64,6 +64,10 @@ find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
 find_package(Autotalks MODULE QUIET)
 
+if(Boost_VERSION_STRING STRGREATER_EQUAL 1.80)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
 if (VANETZA_WITH_OPENSSL)
   find_package(OpenSSL 1.0.1 REQUIRED)

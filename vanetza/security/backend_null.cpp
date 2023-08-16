@@ -20,6 +20,12 @@ bool BackendNull::verify_data(const ecdsa256::PublicKey&, const ByteBuffer&, con
     return true;
 }
 
+bool BackendNull::verify_digest(const PublicKey&, const ByteBuffer&, const Signature&)
+{
+    // accept everything
+    return true;
+}
+
 boost::optional<Uncompressed> BackendNull::decompress_point(const EccPoint& ecc_point)
 {
     return boost::none;
@@ -27,7 +33,7 @@ boost::optional<Uncompressed> BackendNull::decompress_point(const EccPoint& ecc_
 
 EcdsaSignature BackendNull::fake_signature() const
 {
-    const std::size_t size = field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256);
+    constexpr std::size_t size = 32;
     EcdsaSignature signature;
     X_Coordinate_Only coordinate;
     coordinate.x = random_byte_sequence(size, 0xdead);
@@ -35,6 +41,23 @@ EcdsaSignature BackendNull::fake_signature() const
     signature.s = random_byte_sequence(size, 0xbeef);
 
     return signature;
+}
+
+ByteBuffer BackendNull::calculate_hash(KeyType key, const ByteBuffer& buffer)
+{
+    ByteBuffer hash;
+    switch (key) {
+        case KeyType::NistP256:
+        case KeyType::BrainpoolP256r1:
+            hash.resize(32);
+            break;
+        case KeyType::BrainpoolP384r1:
+            hash.resize(48);
+            break;
+        default:
+            break;
+    }
+    return hash;
 }
 
 } // namespace security

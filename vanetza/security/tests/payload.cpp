@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
-#include <vanetza/security/payload.hpp>
+#include <vanetza/security/v2/payload.hpp>
 #include <vanetza/security/tests/check_payload.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza;
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 TEST(Payload, serialize_cohesive)
 {

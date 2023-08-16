@@ -1,10 +1,11 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/public_key.hpp>
+#include <vanetza/security/v2/public_key.hpp>
 #include <vanetza/security/tests/check_public_key.hpp>
 
-using namespace vanetza::security;
 using namespace vanetza;
+using namespace vanetza::security;
+using namespace vanetza::security::v2;
 using namespace std;
 
 PublicKey serialize(PublicKey key)

@@ -7,15 +7,16 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
-#include <vanetza/security/basic_elements.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/security/persistence.hpp>
-#include <vanetza/security/subject_attribute.hpp>
-#include <vanetza/security/subject_info.hpp>
+#include <vanetza/security/v2/basic_elements.hpp>
+#include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/persistence.hpp>
+#include <vanetza/security/v2/subject_attribute.hpp>
+#include <vanetza/security/v2/subject_info.hpp>
 
 namespace aid = vanetza::aid;
 namespace po = boost::program_options;
 using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 bool GenerateAaCommand::parse(const std::vector<std::string>& opts)
 {
@@ -59,13 +60,13 @@ int GenerateAaCommand::execute()
     BackendCryptoPP crypto_backend;
 
     std::cout << "Loading keys... ";
-    auto sign_key = load_private_key_from_file(sign_key_path);
+    auto sign_key = v2::load_private_key_from_file(sign_key_path);
     ecdsa256::PublicKey subject_key;
     try {
-        auto subject_private_key = load_private_key_from_file(subject_key_path);
+        auto subject_private_key = v2::load_private_key_from_file(subject_key_path);
         subject_key = subject_private_key.public_key;
     } catch (CryptoPP::BERDecodeErr& e) {
-        auto subject_key_etsi = load_public_key_from_file(subject_key_path);
+        auto subject_key_etsi = v2::load_public_key_from_file(subject_key_path);
         if (get_type(subject_key_etsi) != PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256) {
             std::cerr << "Wrong public key algorithm." << std::endl;
             return 1;
@@ -82,20 +83,20 @@ int GenerateAaCommand::execute()
     }
     std::cout << "OK" << std::endl;
 
-    Certificate sign_cert = load_certificate_from_file(sign_cert_path);
+    Certificate sign_cert = v2::load_certificate_from_file(sign_cert_path);
 
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
 
     Certificate certificate;
-    std::list<IntX> certificate_aids;
+    std::list<v2::IntX> certificate_aids;
 
     if (aids.size()) {
         for (unsigned aid : aids) {
-            certificate_aids.push_back(IntX(aid));
+            certificate_aids.push_back(v2::IntX(aid));
         }
     } else {
-        certificate_aids.push_back(IntX(aid::CA));
-        certificate_aids.push_back(IntX(aid::DEN));
+        certificate_aids.push_back(v2::IntX(aid::CA));
+        certificate_aids.push_back(v2::IntX(aid::DEN));
     }
     certificate.subject_attributes.push_back(certificate_aids);
 

@@ -6,6 +6,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const EncryptionParameter& expected, const EncryptionParameter& actual)
 {
@@ -14,5 +16,6 @@ void check(const EncryptionParameter& expected, const EncryptionParameter& actua
     boost::apply_visitor(check_visitor<EncryptionParameter>(), expected, actual);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

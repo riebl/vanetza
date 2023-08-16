@@ -1,9 +1,11 @@
 #include <gtest/gtest.h>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/security/trust_store.hpp>
+#include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
+using vanetza::security::HashedId8;
+using vanetza::security::deserialize_from_hexstring;
 
 TEST(TrustStoreTest, lookup)
 {

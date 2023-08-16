@@ -8,6 +8,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const ecdsa_nistp256_with_sha256& expected, const ecdsa_nistp256_with_sha256& actual)
 {
@@ -38,5 +40,6 @@ PublicKey create_random_public_key(int seed)
     return ecies;
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

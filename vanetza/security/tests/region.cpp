@@ -1,12 +1,12 @@
 #include <gtest/gtest.h>
-#include <vanetza/security/region.hpp>
+#include <vanetza/security/v2/region.hpp>
 #include <vanetza/security/tests/check_region.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
 #include <limits>
 
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
 using vanetza::geonet::distance_u16t;
 using vanetza::geonet::geo_angle_i32t;
 using vanetza::units::degrees;

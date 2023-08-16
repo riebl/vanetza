@@ -4,6 +4,7 @@
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/verify_service.hpp>
+#include <memory>
 
 namespace vanetza
 {
@@ -25,14 +26,14 @@ public:
      * \param sign SN-SIGN service
      * \param verify SN-VERIFY service
      */
-    DelegatingSecurityEntity(SignService sign, VerifyService verify);
+    DelegatingSecurityEntity(std::unique_ptr<SignService> sign, std::unique_ptr<VerifyService> verify);
 
     EncapConfirm encapsulate_packet(EncapRequest&& encap_request) override;
     DecapConfirm decapsulate_packet(DecapRequest&& decap_request) override;
 
 private:
-    SignService m_sign_service;
-    VerifyService m_verify_service;
+    std::unique_ptr<SignService> m_sign_service;
+    std::unique_ptr<VerifyService> m_verify_service;
 };
 
 } // namespace security

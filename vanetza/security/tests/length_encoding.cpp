@@ -1,14 +1,14 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/common/byte_buffer_source.hpp>
-#include <vanetza/security/length_coding.hpp>
-#include <vanetza/security/serialization.hpp>
+#include <vanetza/security/v2/length_coding.hpp>
+#include <vanetza/security/v2/serialization.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 
 using vanetza::ByteBuffer;
 using vanetza::InputArchive;
 using vanetza::OutputArchive;
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 TEST(LengthEncoding, count_leading_ones)
 {

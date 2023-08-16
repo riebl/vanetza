@@ -1,14 +1,15 @@
 #include <vanetza/common/manual_runtime.hpp>
-#include <vanetza/security/certificate_cache.hpp>
-#include <vanetza/security/default_certificate_validator.hpp>
-#include <vanetza/security/naive_certificate_provider.hpp>
-#include <vanetza/security/trust_store.hpp>
+#include <vanetza/security/v2/certificate_cache.hpp>
+#include <vanetza/security/v2/default_certificate_validator.hpp>
+#include <vanetza/security/v2/naive_certificate_provider.hpp>
+#include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/units/angle.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 
 using namespace vanetza;
 using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 class DefaultCertificateValidatorTest : public ::testing::Test
 {

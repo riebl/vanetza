@@ -7,6 +7,6 @@ ROOT_PATH=$(readlink -f ${ROOT})
 BUILD_DIR=${BUILD_DIR:-$PWD/build}
 
 mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
-cmake -DBUILD_TESTS=ON -DGTest_BUILD_DIRECTORY_DOWNLOAD=ON ${ROOT_PATH}
+cmake -G Ninja -DBUILD_TESTS=ON -DGTest_BUILD_DIRECTORY_DOWNLOAD=ON ${ROOT_PATH}
 cmake --build .
-ctest
+ctest --output-on-failure

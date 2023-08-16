@@ -74,7 +74,7 @@ class PacketVisitor : public boost::static_visitor<std::shared_ptr<const T>>
         void deserialize(const byte_view_range& range)
         {
             auto tmp = std::make_shared<T>();
-            bool decoded = tmp->decode(range.begin(), range.end());
+            bool decoded = tmp->decode(range.begin().raw(), range.size());
             m_wrapper = decoded ? tmp : nullptr;
         }
 

@@ -1,4 +1,6 @@
 #include "base.hpp"
+#include "vanetza/security/v2/sign_service.hpp"
+#include "vanetza/security/v2/verify_service.hpp"
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <iostream>
 
@@ -12,9 +14,7 @@ SecurityBaseCase::SecurityBaseCase() :
     certificate_provider(runtime),
     certificate_validator(*crypto_backend, certificate_cache, trust_store),
     sign_header_policy(runtime, positioning),
-    sign_service(straight_sign_service(certificate_provider, *crypto_backend, sign_header_policy)),
-    verify_service(straight_verify_service(runtime, certificate_provider, certificate_validator, *crypto_backend, certificate_cache, sign_header_policy, positioning)),
-    security_entity(sign_service, verify_service)
+    security_entity(create_sign_service(), create_verify_service())
 {
     // nothing to do
 }
@@ -29,4 +29,18 @@ void SecurityBaseCase::prepare()
     assert(position.confidence);
 
     positioning.position_fix(position);
+}
+
+std::unique_ptr<SignService> SecurityBaseCase::create_sign_service()
+{
+    return std::unique_ptr<SignService> {
+        new v2::StraightSignService(certificate_provider, *crypto_backend, sign_header_policy)
+    };
+}
+
+std::unique_ptr<VerifyService> SecurityBaseCase::create_verify_service()
+{
+    return std::unique_ptr<VerifyService> {
+        new v2::StraightVerifyService(runtime, certificate_provider, certificate_validator, *crypto_backend, certificate_cache, sign_header_policy, positioning)
+    };
 }

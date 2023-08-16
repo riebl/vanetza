@@ -8,8 +8,18 @@ namespace geonet
 
 VariantPdu::VariantPdu(const Pdu& pdu) :
     m_basic(pdu.basic()), m_common(pdu.common()), m_extended(pdu.extended_variant()),
-    m_secured(pdu.secured() != nullptr, *pdu.secured())
+    m_secured(pdu.secured() ? boost::make_optional(*pdu.secured()) : boost::none)
 {
+}
+
+VariantPdu::VariantPdu(const VariantPdu& pdu) :
+    VariantPdu(static_cast<const Pdu&>(pdu))
+{
+}
+
+VariantPdu& VariantPdu::operator=(const VariantPdu& pdu)
+{
+    return operator=(static_cast<const Pdu&>(pdu));
 }
 
 VariantPdu& VariantPdu::operator=(const Pdu& pdu)
@@ -66,14 +76,9 @@ const VariantPdu::SecuredMessage* VariantPdu::secured() const
     return m_secured.get_ptr();
 }
 
-void VariantPdu::secured(SecuredMessage* smsg)
+void VariantPdu::secured(const SecuredMessage& smsg)
 {
-    m_secured = boost::optional<SecuredMessage>(smsg, *smsg);
-}
-
-void VariantPdu::secured(SecuredMessage&& smsg)
-{
-    m_secured = std::move(smsg);
+    m_secured = smsg;
 }
 
 std::unique_ptr<Pdu> VariantPdu::clone() const

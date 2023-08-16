@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/recipient_info.hpp>
+#include <vanetza/security/v2/recipient_info.hpp>
 #include <vanetza/security/tests/check_recipient_info.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
+using namespace vanetza::security::v2;
 
 TEST(RecipientInfo, Serialize)
 {

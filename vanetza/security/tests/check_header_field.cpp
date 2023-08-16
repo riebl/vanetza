@@ -7,6 +7,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const HeaderField& expected, const HeaderField& actual)
 {
@@ -14,5 +16,6 @@ void check(const HeaderField& expected, const HeaderField& actual)
     boost::apply_visitor(check_visitor<HeaderField>(), expected, actual);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

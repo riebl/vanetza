@@ -7,6 +7,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const ThreeDLocation& expected, const ThreeDLocation& actual)
 {
@@ -77,5 +79,6 @@ void check(const GeographicRegion& expected, const GeographicRegion& actual)
     boost::apply_visitor(check_visitor<GeographicRegion>(), expected, actual);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

@@ -2,14 +2,16 @@
 #define CHECK_BASIC_ELEMENTS_HPP_XLHVYJ0S
 
 #include <gtest/gtest.h>
-#include <vanetza/security/basic_elements.hpp>
-#include <vanetza/security/int_x.hpp>
+#include <vanetza/security/v2/basic_elements.hpp>
+#include <vanetza/security/v2/int_x.hpp>
 #include <boost/format.hpp>
 #include <type_traits>
 
 namespace vanetza
 {
 namespace security
+{
+namespace v2
 {
 
 template<typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
@@ -37,6 +39,7 @@ template void check<uint8_t, 8>(const HashedId8&, const HashedId8&);
 template void check<Time64>(const Time64&, const Time64&);
 template void check<Time32>(const Time32&, const Time32&);
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
 

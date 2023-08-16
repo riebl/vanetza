@@ -10,6 +10,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 template<typename T>
 void check(std::list<T> expected, std::list<T> actual, const char* type = typeid(T).name())
@@ -26,9 +28,8 @@ void check(std::list<T> expected, std::list<T> actual, const char* type = typeid
     }
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
 
-
 #endif /* CHECK_LIST_HPP_1ONCXSED */
-

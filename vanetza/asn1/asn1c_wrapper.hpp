@@ -69,6 +69,10 @@ public:
     const asn1c_type& operator*() const { return *m_struct; }
     const asn1c_type* operator->() const { return m_struct; }
 
+    // direct access to content structure
+    const asn1c_type* content() const { return m_struct; }
+    asn1c_type* content() { return m_struct; }
+
     /**
      * Check ASN.1 constraints
      * \param error (optional) copy of error message

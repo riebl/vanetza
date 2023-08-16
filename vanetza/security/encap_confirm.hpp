@@ -2,6 +2,7 @@
 #define ENCAP_CONFIRM_HPP
 
 #include <vanetza/security/secured_message.hpp>
+#include <memory>
 
 namespace vanetza
 {

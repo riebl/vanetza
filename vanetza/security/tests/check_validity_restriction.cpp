@@ -8,6 +8,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(EndValidity expected, EndValidity actual)
 {
@@ -35,6 +37,6 @@ void check(const ValidityRestriction& expected, const ValidityRestriction& actua
     boost::apply_visitor(check_visitor<ValidityRestriction>(), expected, actual);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
-

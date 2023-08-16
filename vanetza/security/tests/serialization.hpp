@@ -3,7 +3,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/byte_buffer_source.hpp>
-#include <vanetza/security/serialization.hpp>
+#include <vanetza/security/v2/serialization.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 #include <sstream>
 
@@ -37,6 +37,9 @@ size_t deserialize_from_hexstring(const char* string, T& result, ARGS&&... args)
     return deserialize(ar, result, std::forward<ARGS>(args)...);
 }
 
+namespace v2
+{
+
 /**
  * \brief Serialize and deserialize an object
  *
@@ -63,6 +66,7 @@ T serialize_roundtrip(const T& source, ARGS&&... args)
     return result;
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
 

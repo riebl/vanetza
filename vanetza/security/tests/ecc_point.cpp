@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/ecc_point.hpp>
-#include <vanetza/security/public_key.hpp>
+#include <vanetza/security/v2/ecc_point.hpp>
+#include <vanetza/security/v2/public_key.hpp>
 #include <vanetza/security/tests/check_ecc_point.hpp>
 
 using vanetza::ByteBuffer;
 using namespace vanetza::security;
+using namespace vanetza::security::v2;
 using namespace vanetza;
 using namespace std;
 

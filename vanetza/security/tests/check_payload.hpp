@@ -4,11 +4,13 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/serialization_buffer.hpp>
-#include <vanetza/security/payload.hpp>
+#include <vanetza/security/v2/payload.hpp>
 
 namespace vanetza
 {
 namespace security
+{
+namespace v2
 {
 
 inline void check(const PacketVariant& expected, const PacketVariant& actual)
@@ -25,8 +27,8 @@ inline void check(const Payload& expected, const Payload& actual)
     check(expected.data, actual.data);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza
 
 #endif /* CHECK_PAYLOAD_HPP_YNRGOKGC */
-

@@ -1,9 +1,10 @@
 #include <gtest/gtest.h>
-#include <vanetza/security/certificate.hpp>
+#include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/tests/check_certificate.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
+using vanetza::security::deserialize_from_hexstring;
 
 TEST(Certificate, WebValidator_RootCA_v2)
 {

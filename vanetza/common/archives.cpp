@@ -26,6 +26,21 @@ void InputArchive::load_binary(char* data, std::size_t len)
     }
 }
 
+char InputArchive::peek_byte()
+{
+    auto got = m_stream_buffer->sgetc();
+    if (got == StreamBuffer::traits_type::eof()) {
+        throw Exception("impossible peek at end of stream");
+    } else { 
+        return StreamBuffer::traits_type::to_char_type(got);
+    }
+}
+
+std::size_t InputArchive::remaining_bytes()
+{
+    return m_stream_buffer->in_avail();
+}
+
 OutputArchive::OutputArchive(OutputStream& os) :
     m_stream_buffer(os.rdbuf())
 {

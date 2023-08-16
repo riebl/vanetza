@@ -1,13 +1,15 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/byte_sequence.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/security/signer_info.hpp>
+#include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/signer_info.hpp>
 #include <vanetza/security/tests/check_signature.hpp>
 #include <vanetza/security/tests/check_signer_info.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
 using vanetza::random_byte_sequence;
-using namespace vanetza::security;
+using vanetza::security::create_random_ecdsa_signature;
+using vanetza::security::HashedId8;
+using namespace vanetza::security::v2;
 
 TEST(SignerInfo, Serialization)
 {

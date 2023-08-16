@@ -23,6 +23,7 @@ add_executable(socktap
     raw_socket_link.cpp
     router_context.cpp
     security.cpp
+    tcp_link.cpp
     time_trigger.cpp
     udp_link.cpp
 )

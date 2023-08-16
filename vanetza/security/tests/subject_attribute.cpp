@@ -1,10 +1,11 @@
 #include <gtest/gtest.h>
-#include <vanetza/security/subject_attribute.hpp>
+#include <vanetza/security/v2/subject_attribute.hpp>
 #include <vanetza/security/tests/check_list.hpp>
 #include <vanetza/security/tests/check_subject_attribute.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
-using namespace vanetza::security;
+using namespace vanetza::security::v2;
+using vanetza::security::deserialize_from_hexstring;
 
 TEST(SubjectAttribute, serialize)
 {

@@ -17,6 +17,7 @@ namespace security
 
 // forward declaration
 struct EcdsaSignature;
+struct Signature;
 
 namespace openssl
 {
@@ -95,6 +96,8 @@ class Point : private boost::noncopyable
 {
 public:
     explicit Point(const EC_GROUP* group);
+    Point(Point&&);
+    Point& operator=(Point&&);
     ~Point();
 
     operator EC_POINT*() { return point; }
@@ -109,6 +112,9 @@ class Signature : private boost::noncopyable
 public:
     explicit Signature(ECDSA_SIG* sig);
     explicit Signature(const EcdsaSignature& sig);
+    explicit Signature(const security::Signature& sig);
+    Signature(Signature&&);
+    Signature& operator=(Signature&&);
     ~Signature();
 
     operator const ECDSA_SIG*() { return signature; }
@@ -117,6 +123,8 @@ public:
     operator bool() { return signature != nullptr; }
 
 private:
+    Signature(const ByteBuffer& r, const ByteBuffer& s);
+
     ECDSA_SIG* signature;
 };
 

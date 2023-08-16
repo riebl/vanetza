@@ -2,8 +2,9 @@
 #define DECAP_CONFIRM_HPP
 
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/security/payload.hpp>
+#include <vanetza/net/packet_variant.hpp>
+#include <vanetza/security/certificate_validity.hpp>
+#include <vanetza/security/hashed_id.hpp>
 #include <boost/optional.hpp>
 #include <cstdint>
 

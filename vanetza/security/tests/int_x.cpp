@@ -1,10 +1,10 @@
-#include <vanetza/security/int_x.hpp>
-#include <vanetza/security/length_coding.hpp>
+#include <vanetza/security/v2/int_x.hpp>
+#include <vanetza/security/v2/length_coding.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 #include <gtest/gtest.h>
 
 using vanetza::ByteBuffer;
-using vanetza::security::IntX;
+using vanetza::security::v2::IntX;
 
 TEST(IntX, set_and_get)
 {

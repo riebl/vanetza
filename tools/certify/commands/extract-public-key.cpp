@@ -3,8 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 #include <vanetza/security/backend.hpp>
-#include <vanetza/security/basic_elements.hpp>
-#include <vanetza/security/persistence.hpp>
+#include <vanetza/security/v2/basic_elements.hpp>
+#include <vanetza/security/v2/persistence.hpp>
 
 namespace po = boost::program_options;
 using namespace vanetza::security;
@@ -55,7 +55,7 @@ int ExtractPublicKeyCommand::execute()
     std::unique_ptr<Backend> backend = create_backend("default");
     ecdsa256::PublicKey public_key;
     if (certificate_path.length() > 0) {
-        auto certificate = load_certificate_from_file(certificate_path);
+        auto certificate = v2::load_certificate_from_file(certificate_path);
         auto certificate_key = get_public_key(certificate, *backend);
 
         if (!certificate_key) {
@@ -64,7 +64,7 @@ int ExtractPublicKeyCommand::execute()
 
         public_key = *certificate_key;
     } else {
-        auto private_key = load_private_key_from_file(private_key_path);
+        auto private_key = v2::load_private_key_from_file(private_key_path);
         public_key = private_key.public_key;
     }
 
@@ -74,11 +74,11 @@ int ExtractPublicKeyCommand::execute()
     coordinates.x.assign(public_key.x.begin(), public_key.x.end());
     coordinates.y.assign(public_key.y.begin(), public_key.y.end());
 
-    ecdsa_nistp256_with_sha256 public_key_etsi;
+    v2::ecdsa_nistp256_with_sha256 public_key_etsi;
     public_key_etsi.public_key = coordinates;
 
     std::cout << "Writing public key to '" << output << "'... ";
-    save_public_key_to_file(output, public_key_etsi);
+    v2::save_public_key_to_file(output, public_key_etsi);
     std::cout << "OK" << std::endl;
 
     return 0;

@@ -9,14 +9,17 @@ namespace vanetza
 {
 namespace security
 {
-
-void check(const SecuredMessageV2& expected, const SecuredMessageV2& actual)
+namespace v2
 {
-    SCOPED_TRACE("SecuredMessageV2");
+
+void check(const SecuredMessage& expected, const SecuredMessage& actual)
+{
+    SCOPED_TRACE("v2::SecuredMessage");
     check(expected.header_fields, actual.header_fields);
     check(expected.trailer_fields, actual.trailer_fields);
     check(expected.payload, actual.payload);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

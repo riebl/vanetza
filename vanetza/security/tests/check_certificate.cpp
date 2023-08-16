@@ -11,6 +11,8 @@ namespace vanetza
 {
 namespace security
 {
+namespace v2
+{
 
 void check(const Certificate& expected, const Certificate& actual)
 {
@@ -22,5 +24,6 @@ void check(const Certificate& expected, const Certificate& actual)
     check(expected.signature, actual.signature);
 }
 
+} // namespace v2
 } // namespace security
 } // namespace vanetza

@@ -7,8 +7,8 @@
 #include <iostream>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/cam_ssp.hpp>
-#include <vanetza/security/certificate.hpp>
-#include <vanetza/security/persistence.hpp>
+#include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/persistence.hpp>
 
 namespace po = boost::program_options;
 using namespace vanetza;
@@ -47,23 +47,23 @@ bool ShowCertificateCommand::parse(const std::vector<std::string>& opts)
 
 int ShowCertificateCommand::execute()
 {
-    Certificate cert = load_certificate_from_file(certificate_path);
+    v2::Certificate cert = v2::load_certificate_from_file(certificate_path);
 
     // subject info
 
     std::cout << "Subject: ";
 
-    if (cert.subject_info.subject_type == SubjectType::Enrollment_Credential) {
+    if (cert.subject_info.subject_type == v2::SubjectType::Enrollment_Credential) {
         std::cout << "Enrollment Credential";
-    } else if (cert.subject_info.subject_type == SubjectType::Authorization_Ticket) {
+    } else if (cert.subject_info.subject_type == v2::SubjectType::Authorization_Ticket) {
         std::cout << "Authorization Ticket";
-    } else if (cert.subject_info.subject_type == SubjectType::Authorization_Authority) {
+    } else if (cert.subject_info.subject_type == v2::SubjectType::Authorization_Authority) {
         std::cout << "Authorization Authority";
-    } else if (cert.subject_info.subject_type == SubjectType::Enrollment_Authority) {
+    } else if (cert.subject_info.subject_type == v2::SubjectType::Enrollment_Authority) {
         std::cout << "Enrollment Authority";
-    } else if (cert.subject_info.subject_type == SubjectType::Root_CA) {
+    } else if (cert.subject_info.subject_type == v2::SubjectType::Root_CA) {
         std::cout << "Root Authority";
-    } else if (cert.subject_info.subject_type == SubjectType::CRL_Signer) {
+    } else if (cert.subject_info.subject_type == v2::SubjectType::CRL_Signer) {
         std::cout << "CRL Signer";
     }
 
@@ -84,11 +84,11 @@ int ShowCertificateCommand::execute()
 
     std::cout << "Signer: ";
 
-    SignerInfoType signer_type = get_type(cert.signer_info);
+    v2::SignerInfoType signer_type = get_type(cert.signer_info);
 
-    if (signer_type == SignerInfoType::Self) {
+    if (signer_type == v2::SignerInfoType::Self) {
         std::cout << "Self-Signed";
-    } else if (signer_type == SignerInfoType::Certificate_Digest_With_SHA256) {
+    } else if (signer_type == v2::SignerInfoType::Certificate_Digest_With_SHA256) {
         HashedId8 signer = boost::get<HashedId8>(cert.signer_info);
         std::string signer_id(reinterpret_cast<const char*>(&signer[0]), signer.size());
         std::cout << boost::algorithm::hex(signer_id) << " (SHA-256)";
@@ -107,14 +107,14 @@ int ShowCertificateCommand::execute()
     unsigned certificate_application_ids = 0;
 
     for (auto& subject_attr : cert.subject_attributes) {
-        SubjectAttributeType attr_type = get_type(subject_attr);
-        if (attr_type == SubjectAttributeType::Assurance_Level) {
-            SubjectAssurance assurance = boost::get<SubjectAssurance>(subject_attr);
+        v2::SubjectAttributeType attr_type = get_type(subject_attr);
+        if (attr_type == v2::SubjectAttributeType::Assurance_Level) {
+            v2::SubjectAssurance assurance = boost::get<v2::SubjectAssurance>(subject_attr);
             std::cout << "Assurance: " << (assurance.raw & assurance.assurance_mask);
             std::cout << " with a confidence of " <<  (assurance.raw & assurance.confidence_mask);
             std::cout << std::endl << std::endl;
-        } else if (attr_type == SubjectAttributeType::ITS_AID_List) {
-            std::list<IntX> its_application_ids = boost::get<std::list<IntX>>(subject_attr);
+        } else if (attr_type == v2::SubjectAttributeType::ITS_AID_List) {
+            std::list<v2::IntX> its_application_ids = boost::get<std::list<v2::IntX>>(subject_attr);
 
             std::cout << "ITS Application IDs:" << std::endl;
             if (its_application_ids.size() == 0) {
@@ -135,8 +135,8 @@ int ShowCertificateCommand::execute()
                 }
             }
             std::cout << std::endl;
-        } else if (attr_type == SubjectAttributeType::ITS_AID_SSP_List) {
-            std::list<ItsAidSsp> its_service_specific_permissions = boost::get<std::list<ItsAidSsp>>(subject_attr);
+        } else if (attr_type == v2::SubjectAttributeType::ITS_AID_SSP_List) {
+            std::list<v2::ItsAidSsp> its_service_specific_permissions = boost::get<std::list<v2::ItsAidSsp>>(subject_attr);
             for (auto& its_ssp : its_service_specific_permissions) {
                 if (its_ssp.its_aid == aid::CA) {
                     std::cout << "CA - ITS Service Specific Permissions:" << std::endl;
@@ -187,23 +187,23 @@ int ShowCertificateCommand::execute()
     unsigned certificate_time_constraints = 0;
 
     for (auto& validity_restriction : cert.validity_restriction) {
-        ValidityRestrictionType restriction_type = get_type(validity_restriction);
-        if (restriction_type == ValidityRestrictionType::Time_End) {
+        v2::ValidityRestrictionType restriction_type = get_type(validity_restriction);
+        if (restriction_type == v2::ValidityRestrictionType::Time_End) {
             certificate_time_constraints++;
 
-            boost::posix_time::ptime time_end = epoch + boost::posix_time::seconds(boost::get<EndValidity>(validity_restriction));
+            boost::posix_time::ptime time_end = epoch + boost::posix_time::seconds(boost::get<v2::EndValidity>(validity_restriction));
             std::cout << "Validity ends " << time_end << std::endl;
-        } else if (restriction_type == ValidityRestrictionType::Time_Start_And_End) {
+        } else if (restriction_type == v2::ValidityRestrictionType::Time_Start_And_End) {
             certificate_time_constraints++;
 
-            StartAndEndValidity start_and_end = boost::get<StartAndEndValidity>(validity_restriction);
+            v2::StartAndEndValidity start_and_end = boost::get<v2::StartAndEndValidity>(validity_restriction);
             boost::posix_time::ptime time_start = epoch + boost::posix_time::seconds(start_and_end.start_validity);
             boost::posix_time::ptime time_end = epoch + boost::posix_time::seconds(start_and_end.end_validity);
             std::cout << "Validity starts " << time_start << " and ends " << time_end << std::endl;
-        } else if (restriction_type == ValidityRestrictionType::Time_Start_And_Duration) {
+        } else if (restriction_type == v2::ValidityRestrictionType::Time_Start_And_Duration) {
             certificate_time_constraints++;
 
-            StartAndDurationValidity start_and_duration = boost::get<StartAndDurationValidity>(validity_restriction);
+            v2::StartAndDurationValidity start_and_duration = boost::get<v2::StartAndDurationValidity>(validity_restriction);
             boost::posix_time::ptime time_start = epoch + boost::posix_time::seconds(start_and_duration.start_validity);
             boost::posix_time::ptime time_end = epoch + boost::posix_time::seconds(start_and_duration.duration.to_seconds().count());
             std::cout << "Validity starts " << time_start << " and ends " << time_end << std::endl;
@@ -221,24 +221,24 @@ int ShowCertificateCommand::execute()
     bool certificate_region_constraints = false;
 
     for (auto& validity_restriction : cert.validity_restriction) {
-        ValidityRestrictionType restriction_type = get_type(validity_restriction);
-        if (restriction_type == ValidityRestrictionType::Region) {
+        v2::ValidityRestrictionType restriction_type = get_type(validity_restriction);
+        if (restriction_type == v2::ValidityRestrictionType::Region) {
             certificate_region_constraints = true;
 
-            GeographicRegion region = boost::get<GeographicRegion>(validity_restriction);
+            v2::GeographicRegion region = boost::get<v2::GeographicRegion>(validity_restriction);
 
             std::cout << "This certificate is regionally restricted by ";
 
-            RegionType region_type = get_type(region);
-            if (region_type == RegionType::None) {
+            v2::RegionType region_type = get_type(region);
+            if (region_type == v2::RegionType::None) {
                 std::cout << "nothing";
-            } else if (region_type == RegionType::Circle) {
+            } else if (region_type == v2::RegionType::Circle) {
                 std::cout << "a circle";
-            } else if (region_type == RegionType::Rectangle) {
+            } else if (region_type == v2::RegionType::Rectangle) {
                 std::cout << "a set of rectangles";
-            } else if (region_type == RegionType::Polygon) {
+            } else if (region_type == v2::RegionType::Polygon) {
                 std::cout << "a polygon";
-            } else if (region_type == RegionType::ID) {
+            } else if (region_type == v2::RegionType::ID) {
                 std::cout << "an identified region";
             }
 
