@@ -28,7 +28,24 @@ add_executable(socktap
     udp_link.cpp
 )
 
-target_link_libraries(socktap PUBLIC Boost::system Boost::program_options Threads::Threads vanetza)
+option(SOCKTAP_WITH_AUTOTALKS "Use Autotalks API for socktap" OFF) # Both Secton and Craton devices
+if (SOCKTAP_WITH_AUTOTALKS)
+    find_package(Autotalks MODULE REQUIRED)
+    target_compile_definitions(socktap PUBLIC "SOCKTAP_WITH_AUTOTALKS")
+    if(NOT AUTOTALKS_CRATON)
+        target_compile_definitions(socktap PUBLIC "SECTON")
+        target_link_libraries(socktap PUBLIC Boost::system Boost::program_options Threads::Threads vanetza Autotalks::AtlkRemote)
+    else ()
+        target_compile_definitions(socktap PUBLIC "CRATON_2")
+        target_link_libraries(socktap PUBLIC Boost::system Boost::program_options Threads::Threads vanetza Autotalks::AtlkLocal)
+
+    endif()
+    target_include_directories(socktap PUBLIC ${AUTOTALKS_INCLUDE_DIRS})
+    target_sources(socktap PRIVATE autotalks.cpp autotalks_link.cpp)
+else()
+    target_link_libraries(socktap PUBLIC Boost::system Boost::program_options Threads::Threads vanetza)
+endif()
+
 install(TARGETS socktap EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 find_file(COHDA_LLC_API_HEADER llc-api.c

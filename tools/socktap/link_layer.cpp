@@ -10,6 +10,11 @@
 #   include "cohda_link.hpp"
 #endif
 
+#ifdef SOCKTAP_WITH_AUTOTALKS
+#    include "autotalks_link.hpp"
+#    include "autotalks.hpp"
+#endif
+
 boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_port(const std::string& ip_port)
 {
     using opt_ip_port = boost::optional<std::pair<boost::asio::ip::address, unsigned short>>;
@@ -85,6 +90,11 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
 
         link_layer.reset(tcp);
 
+    }
+    else if (name == "autotalks") {
+#ifdef SOCKTAP_WITH_AUTOTALKS
+        link_layer.reset(new AutotalksLink { });
+#endif
     }
 
     return link_layer;
