@@ -2,7 +2,6 @@
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
-#include <vanetza/security/certificate.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
