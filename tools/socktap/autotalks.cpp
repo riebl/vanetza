@@ -47,17 +47,15 @@ static void* v2x_rx_thread_entry(void * arg);
 
 int autotalks_device_init(void)
 {
-  atlk_rc_t rc;
-  const char* arg[] = {NULL, SECTON_NET_NAME};
-  /** Reference system initialization */
-#ifdef CRATON_2
-  rc = ref_sys_init_ex(1, (char**) arg);
-#else
-  #ifdef SECTON
+    atlk_rc_t rc;
+    const char* arg[] = {NULL, SECTON_NET_NAME};
+    /** Reference system initialization */
+#if defined(CRATON_2)
+    rc = ref_sys_init_ex(1, (char**) arg);
+#elif defined(SECTON)
     rc = ref_sys_init_ex(2, (char**) arg);
-  #else
-    #error Wrong configuration selected.
-  #endif
+#else
+  #error Wrong configuration selected.
 #endif
 
   // TODO                                                                     //
@@ -76,7 +74,7 @@ int autotalks_device_deinit(void)
 {
     endRxThread = true;
     if (v2x_socket_ptr)
-    	v2x_socket_delete(v2x_socket_ptr);
+        v2x_socket_delete(v2x_socket_ptr);
 
     atlk_rc_t ret;
 
@@ -94,41 +92,39 @@ int autotalks_device_deinit(void)
 atlk_rc_t autotalks_send(const void *data_ptr, size_t data_size,
                          const v2x_send_params_t *params_ptr, const atlk_wait_t *wait_ptr)
 {
-	atlk_rc_t ret = 0;
-	if (v2x_socket_ptr == NULL)
-		fprintf(stderr, "Invalid socket.\n");
-	else if (v2x_socket_ptr != NULL)
-		ret = v2x_send(v2x_socket_ptr, data_ptr, data_size, params_ptr, wait_ptr);
-	// Check the return value
+    atlk_rc_t ret = 0;
+    if (v2x_socket_ptr == NULL)
+        fprintf(stderr, "Invalid socket.\n");
+    else if (v2x_socket_ptr != NULL)
+        ret = v2x_send(v2x_socket_ptr, data_ptr, data_size, params_ptr, wait_ptr);
+    // Check the return value
     if (atlk_error(ret)) {
-      fprintf(stderr, "v2x_send failed: %d\n", ret);
+        fprintf(stderr, "v2x_send failed: %d\n", ret);
     }
 	return ret;
 }
 
-atlk_rc_t autotalks_receive(void *data_ptr,
-		size_t *data_size_ptr,
-		v2x_receive_params_t *params_ptr,
-		const atlk_wait_t *wait_ptr)
+atlk_rc_t autotalks_receive(void *data_ptr, size_t *data_size_ptr,
+    v2x_receive_params_t *params_ptr, const atlk_wait_t *wait_ptr)
 {
-	return v2x_receive(v2x_socket_ptr, data_ptr, data_size_ptr, params_ptr, wait_ptr);
+    return v2x_receive(v2x_socket_ptr, data_ptr, data_size_ptr, params_ptr, wait_ptr);
 }
 
 vanetza::MacAddress num_to_mac(eui48_t addr)
 {
-	return vanetza::MacAddress({addr.octets[0], addr.octets[1], addr.octets[2], addr.octets[3], addr.octets[4], addr.octets[5]});
+    return vanetza::MacAddress({addr.octets[0], addr.octets[1], addr.octets[2], addr.octets[3], addr.octets[4], addr.octets[5]});
 }
 
 eui48_t mac_to_num(vanetza::MacAddress addr)
 {
-	eui48_t ret;
-	ret.octets[0] = addr.octets[0];
-	ret.octets[1] = addr.octets[1];
-	ret.octets[2] = addr.octets[2];
-	ret.octets[3] = addr.octets[3];
-	ret.octets[4] = addr.octets[4];
-	ret.octets[5] = addr.octets[5];
-	return ret;
+    eui48_t ret;
+    ret.octets[0] = addr.octets[0];
+    ret.octets[1] = addr.octets[1];
+    ret.octets[2] = addr.octets[2];
+    ret.octets[3] = addr.octets[3];
+    ret.octets[4] = addr.octets[4];
+    ret.octets[5] = addr.octets[5];
+    return ret;
 }
 
 void insert_autotalks_header_transmit(const vanetza::access::DataRequest& request, std::unique_ptr<vanetza::ChunkPacket>& packet, uint8_t* pData, uint16_t length)

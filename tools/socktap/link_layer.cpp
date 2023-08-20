@@ -11,8 +11,8 @@
 #endif
 
 #ifdef SOCKTAP_WITH_AUTOTALKS
-#    include "autotalks_link.hpp"
-#    include "autotalks.hpp"
+#   include "autotalks_link.hpp"
+#   include "autotalks.hpp"
 #endif
 
 boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_port(const std::string& ip_port)
@@ -90,8 +90,7 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
 
         link_layer.reset(tcp);
 
-    }
-    else if (name == "autotalks") {
+    } else if (name == "autotalks") {
 #ifdef SOCKTAP_WITH_AUTOTALKS
         link_layer.reset(new AutotalksLink { });
 #endif

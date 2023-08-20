@@ -1,13 +1,13 @@
 #ifndef AUTOTALKS_HPP_
 #define AUTOTALKS_HPP_
 
+#include <cstddef>
 #include <memory>
 #include <vanetza/net/mac_address.hpp>
 #include <vanetza/access/data_request.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 #include <vanetza/net/ethernet_header.hpp>
 #include <vanetza/net/cohesive_packet.hpp>
-#include "stddef.h"
 #include "atlk/sdk.h"
 #include "atlk/v2x_service.h"
 #include "autotalks_link.hpp"
@@ -66,6 +66,4 @@ void init_rx(AutotalksLink*);
 } // namespace autotalks
 } // namespace vanetza
 
-
 #endif /* AUTOTALKS_HPP_ */
-

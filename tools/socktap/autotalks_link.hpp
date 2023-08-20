@@ -8,7 +8,6 @@
 class AutotalksLink : public LinkLayer
 {
 public:
-
     /*
      * Constructor used for device and thread initialization.
      */
