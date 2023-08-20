@@ -65,7 +65,7 @@ public:
 
 private:
     const Runtime& m_runtime;
-    const SignerInfo& m_signer_info;
+    SignerInfo m_signer_info;
 };
 
 } // namespace v2
