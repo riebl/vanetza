@@ -1,6 +1,6 @@
 #include "security.hpp"
 #include <vanetza/security/delegating_security_entity.hpp>
-#include <vanetza/security/verify_service.hpp>
+#include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
 #include <vanetza/security/v2/naive_certificate_provider.hpp>
@@ -10,7 +10,6 @@
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/static_certificate_provider.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
-#include <vanetza/security/v2/verify_service.hpp>
 #include <stdexcept>
 
 using namespace vanetza;
@@ -51,9 +50,12 @@ public:
         }
         std::unique_ptr<security::SignService> sign_service { new 
             security::v2::StraightSignService(*cert_provider, *backend, sign_header_policy) };
-        std::unique_ptr<security::VerifyService> verify_service { new
-            security::v2::StraightVerifyService(runtime, *cert_provider, cert_validator,
-                *backend, cert_cache, sign_header_policy, positioning) };
+        std::unique_ptr<security::StraightVerifyService> verify_service { new
+            security::StraightVerifyService(runtime, *backend, positioning) };
+        verify_service->use_certificate_provider(cert_provider.get());
+        verify_service->use_certificate_cache(&cert_cache);
+        verify_service->use_certitifcate_validator(&cert_validator);
+        verify_service->use_sign_header_policy(&sign_header_policy);
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }
 
