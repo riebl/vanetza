@@ -8,29 +8,29 @@
  viewBox="0.00 0.00 190.00 562.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 558)">
 <title>vanetza::geonet::VariantPdu</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-558 186,-558 186,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="22,-0.5 22,-233.5 160,-233.5 160,-0.5 22,-0.5"/>
-<text text-anchor="middle" x="91" y="-221.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::VariantPdu</text>
-<polyline fill="none" stroke="black" points="22,-214.5 160,-214.5 "/>
-<text text-anchor="start" x="30" y="-202.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_basic</text>
-<text text-anchor="start" x="30" y="-191.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_common</text>
-<text text-anchor="start" x="30" y="-180.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_extended</text>
-<text text-anchor="start" x="30" y="-169.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_secured</text>
-<polyline fill="none" stroke="black" points="22,-162.5 160,-162.5 "/>
+<polygon fill="#999999" stroke="#666666" points="22,-0.5 22,-244.5 160,-244.5 160,-0.5 22,-0.5"/>
+<text text-anchor="middle" x="91" y="-232.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::VariantPdu</text>
+<polyline fill="none" stroke="#666666" points="22,-225.5 160,-225.5 "/>
+<text text-anchor="start" x="30" y="-213.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_basic</text>
+<text text-anchor="start" x="30" y="-202.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_common</text>
+<text text-anchor="start" x="30" y="-191.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_extended</text>
+<text text-anchor="start" x="30" y="-180.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_secured</text>
+<polyline fill="none" stroke="#666666" points="22,-173.5 160,-173.5 "/>
+<text text-anchor="start" x="30" y="-161.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ VariantPdu()</text>
 <text text-anchor="start" x="30" y="-150.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ VariantPdu()</text>
-<text text-anchor="start" x="30" y="-139.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ VariantPdu()</text>
-<text text-anchor="start" x="30" y="-128.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
-<text text-anchor="start" x="30" y="-117.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ basic()</text>
+<text text-anchor="start" x="30" y="-139.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
+<text text-anchor="start" x="30" y="-128.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ VariantPdu()</text>
+<text text-anchor="start" x="30" y="-117.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="30" y="-106.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ basic()</text>
-<text text-anchor="start" x="30" y="-95.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ common()</text>
+<text text-anchor="start" x="30" y="-95.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ basic()</text>
 <text text-anchor="start" x="30" y="-84.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ common()</text>
-<text text-anchor="start" x="30" y="-73.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ extended_variant()</text>
+<text text-anchor="start" x="30" y="-73.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ common()</text>
 <text text-anchor="start" x="30" y="-62.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ extended_variant()</text>
-<text text-anchor="start" x="30" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
+<text text-anchor="start" x="30" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ extended_variant()</text>
 <text text-anchor="start" x="30" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
 <text text-anchor="start" x="30" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
 <text text-anchor="start" x="30" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
@@ -42,7 +42,7 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../dc/d8c/classvanetza_1_1geonet_1_1Pdu.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="#bfbfbf" points="37,-270.5 37,-404.5 145,-404.5 145,-270.5 37,-270.5"/>
+<polygon fill="white" stroke="#bfbfbf" points="37,-281.5 37,-404.5 145,-404.5 145,-281.5 37,-281.5"/>
 <text text-anchor="middle" x="91" y="-392.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Pdu</text>
 <polyline fill="none" stroke="#bfbfbf" points="37,-385.5 145,-385.5 "/>
 <text text-anchor="middle" x="91" y="-373.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
@@ -51,18 +51,17 @@
 <text text-anchor="start" x="45" y="-343.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ common()</text>
 <text text-anchor="start" x="45" y="-332.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
 <text text-anchor="start" x="45" y="-321.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
-<text text-anchor="start" x="45" y="-310.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
-<text text-anchor="start" x="45" y="-299.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ basic()</text>
-<text text-anchor="start" x="45" y="-288.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ common()</text>
-<text text-anchor="start" x="45" y="-277.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
+<text text-anchor="start" x="45" y="-310.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ basic()</text>
+<text text-anchor="start" x="45" y="-299.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ common()</text>
+<text text-anchor="start" x="45" y="-288.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ secured()</text>
 </a>
 </g>
 </g>
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M91,-260.32C91,-251.65 91,-242.67 91,-233.63"/>
-<polygon fill="none" stroke="midnightblue" points="87.5,-260.35 91,-270.35 94.5,-260.35 87.5,-260.35"/>
+<path fill="none" stroke="#63b8ff" d="M91,-271.42C91,-262.73 91,-253.68 91,-244.5"/>
+<polygon fill="none" stroke="#63b8ff" points="87.5,-271.43 91,-281.43 94.5,-271.43 87.5,-271.43"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
@@ -85,8 +84,8 @@
 <!-- Node3&#45;&gt;Node2 -->
 <g id="edge2" class="edge">
 <title>Node3&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M91,-431.09C91,-422.34 91,-413.35 91,-404.59"/>
-<polygon fill="none" stroke="midnightblue" points="87.5,-431.24 91,-441.24 94.5,-431.24 87.5,-431.24"/>
+<path fill="none" stroke="#63b8ff" d="M91,-431.22C91,-422.4 91,-413.39 91,-404.66"/>
+<polygon fill="none" stroke="#63b8ff" points="87.5,-431.44 91,-441.44 94.5,-431.44 87.5,-431.44"/>
 </g>
 </g>
 </svg>

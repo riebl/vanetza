@@ -8,18 +8,17 @@
  viewBox="0.00 0.00 349.50 479.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 475)">
 <title>vanetza::geonet::PendingPacket&lt; PDU, Args &gt;</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-475 345.5,-475 345.5,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="71,-270.5 71,-470.5 196,-470.5 196,-270.5 71,-270.5"/>
+<polygon fill="#999999" stroke="#666666" points="71,-270.5 71,-470.5 196,-470.5 196,-270.5 71,-270.5"/>
 <text text-anchor="start" x="79" y="-458.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Pending</text>
 <text text-anchor="middle" x="133.5" y="-447.5" font-family="Helvetica,sans-Serif" font-size="10.00">Packet&lt; PDU, Args &gt;</text>
-<polyline fill="none" stroke="black" points="71,-440.5 196,-440.5 "/>
+<polyline fill="none" stroke="#666666" points="71,-440.5 196,-440.5 "/>
 <text text-anchor="start" x="79" y="-428.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_packet</text>
 <text text-anchor="start" x="79" y="-417.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="71,-410.5 196,-410.5 "/>
+<polyline fill="none" stroke="#666666" points="71,-410.5 196,-410.5 "/>
 <text text-anchor="start" x="79" y="-398.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
 <text text-anchor="start" x="79" y="-387.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
 <text text-anchor="start" x="79" y="-376.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
@@ -39,14 +38,14 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d6/d26/classvanetza_1_1geonet_1_1PendingPacket.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="0,-0.5 0,-211.5 125,-211.5 125,-0.5 0,-0.5"/>
+<polygon fill="white" stroke="#666666" points="0,-0.5 0,-211.5 125,-211.5 125,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-199.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Pending</text>
 <text text-anchor="start" x="8" y="-188.5" font-family="Helvetica,sans-Serif" font-size="10.00">Packet&lt; vanetza::geonet</text>
 <text text-anchor="middle" x="62.5" y="-177.5" font-family="Helvetica,sans-Serif" font-size="10.00">::ExtendedPdu &gt;</text>
-<polyline fill="none" stroke="black" points="0,-170.5 125,-170.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-170.5 125,-170.5 "/>
 <text text-anchor="start" x="8" y="-158.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_packet</text>
 <text text-anchor="start" x="8" y="-147.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="0,-140.5 125,-140.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-140.5 125,-140.5 "/>
 <text text-anchor="start" x="8" y="-128.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
 <text text-anchor="start" x="8" y="-117.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
 <text text-anchor="start" x="8" y="-106.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
@@ -74,14 +73,14 @@
 <g id="node3" class="node">
 <title>Node3</title>
 <g id="a_node3"><a xlink:href="../../d6/d26/classvanetza_1_1geonet_1_1PendingPacket.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="143,-0.5 143,-211.5 268,-211.5 268,-0.5 143,-0.5"/>
+<polygon fill="white" stroke="#666666" points="143,-0.5 143,-211.5 268,-211.5 268,-0.5 143,-0.5"/>
 <text text-anchor="start" x="151" y="-199.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Pending</text>
 <text text-anchor="start" x="151" y="-188.5" font-family="Helvetica,sans-Serif" font-size="10.00">Packet&lt; GbcPdu, const</text>
 <text text-anchor="middle" x="205.5" y="-177.5" font-family="Helvetica,sans-Serif" font-size="10.00"> MacAddress &amp; &gt;</text>
-<polyline fill="none" stroke="black" points="143,-170.5 268,-170.5 "/>
+<polyline fill="none" stroke="#666666" points="143,-170.5 268,-170.5 "/>
 <text text-anchor="start" x="151" y="-158.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_packet</text>
 <text text-anchor="start" x="151" y="-147.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="143,-140.5 268,-140.5 "/>
+<polyline fill="none" stroke="#666666" points="143,-140.5 268,-140.5 "/>
 <text text-anchor="start" x="151" y="-128.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
 <text text-anchor="start" x="151" y="-117.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>
 <text text-anchor="start" x="151" y="-106.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ PendingPacket()</text>

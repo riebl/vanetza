@@ -8,16 +8,15 @@
  viewBox="0.00 0.00 1136.00 303.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 299)">
 <title>vanetza::Hook&lt; Args &gt;</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-299 1132,-299 1132,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="530.5,-193.5 530.5,-294.5 648.5,-294.5 648.5,-193.5 530.5,-193.5"/>
+<polygon fill="#999999" stroke="#666666" points="530.5,-193.5 530.5,-294.5 648.5,-294.5 648.5,-193.5 530.5,-193.5"/>
 <text text-anchor="middle" x="589.5" y="-282.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; Args &gt;</text>
-<polyline fill="none" stroke="black" points="530.5,-275.5 648.5,-275.5 "/>
+<polyline fill="none" stroke="#666666" points="530.5,-275.5 648.5,-275.5 "/>
 <text text-anchor="start" x="538.5" y="-263.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="530.5,-256.5 648.5,-256.5 "/>
+<polyline fill="none" stroke="#666666" points="530.5,-256.5 648.5,-256.5 "/>
 <text text-anchor="start" x="538.5" y="-244.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="538.5" y="-233.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="538.5" y="-222.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>
@@ -30,13 +29,13 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d7/d3f/classvanetza_1_1Hook.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="0,-0.5 0,-123.5 197,-123.5 197,-0.5 0,-0.5"/>
+<polygon fill="white" stroke="#666666" points="0,-0.5 0,-123.5 197,-123.5 197,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-111.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; const</text>
 <text text-anchor="start" x="8" y="-100.5" font-family="Helvetica,sans-Serif" font-size="10.00"> vanetza::geonet::DataIndication</text>
 <text text-anchor="middle" x="98.5" y="-89.5" font-family="Helvetica,sans-Serif" font-size="10.00"> &amp;, const vanetza::btp::DataIndication * &gt;</text>
-<polyline fill="none" stroke="black" points="0,-82.5 197,-82.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-82.5 197,-82.5 "/>
 <text text-anchor="start" x="8" y="-70.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="0,-63.5 197,-63.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-63.5 197,-63.5 "/>
 <text text-anchor="start" x="8" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="8" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="8" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>
@@ -58,13 +57,13 @@
 <g id="node3" class="node">
 <title>Node3</title>
 <g id="a_node3"><a xlink:href="../../d7/d3f/classvanetza_1_1Hook.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="215,-0.5 215,-123.5 340,-123.5 340,-0.5 215,-0.5"/>
+<polygon fill="white" stroke="#666666" points="215,-0.5 215,-123.5 340,-123.5 340,-0.5 215,-0.5"/>
 <text text-anchor="start" x="223" y="-111.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; access</text>
 <text text-anchor="start" x="223" y="-100.5" font-family="Helvetica,sans-Serif" font-size="10.00">::AccessCategory, const</text>
 <text text-anchor="middle" x="277.5" y="-89.5" font-family="Helvetica,sans-Serif" font-size="10.00"> ChunkPacket * &gt;</text>
-<polyline fill="none" stroke="black" points="215,-82.5 340,-82.5 "/>
+<polyline fill="none" stroke="#666666" points="215,-82.5 340,-82.5 "/>
 <text text-anchor="start" x="223" y="-70.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="215,-63.5 340,-63.5 "/>
+<polyline fill="none" stroke="#666666" points="215,-63.5 340,-63.5 "/>
 <text text-anchor="start" x="223" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="223" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="223" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>
@@ -85,12 +84,12 @@
 <g id="node4" class="node">
 <title>Node4</title>
 <g id="a_node4"><a xlink:href="../../d7/d3f/classvanetza_1_1Hook.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="365.5,-6 365.5,-118 487.5,-118 487.5,-6 365.5,-6"/>
+<polygon fill="white" stroke="#666666" points="365.5,-6 365.5,-118 487.5,-118 487.5,-6 365.5,-6"/>
 <text text-anchor="start" x="373.5" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; vanetza</text>
 <text text-anchor="middle" x="426.5" y="-95" font-family="Helvetica,sans-Serif" font-size="10.00">::dcc::ChannelLoad &gt;</text>
-<polyline fill="none" stroke="black" points="365.5,-88 487.5,-88 "/>
+<polyline fill="none" stroke="#666666" points="365.5,-88 487.5,-88 "/>
 <text text-anchor="start" x="373.5" y="-76" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="365.5,-69 487.5,-69 "/>
+<polyline fill="none" stroke="#666666" points="365.5,-69 487.5,-69 "/>
 <text text-anchor="start" x="373.5" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="373.5" y="-46" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="373.5" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>
@@ -110,13 +109,13 @@
 <g id="node5" class="node">
 <title>Node5</title>
 <g id="a_node5"><a xlink:href="../../d7/d3f/classvanetza_1_1Hook.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="506,-0.5 506,-123.5 621,-123.5 621,-0.5 506,-0.5"/>
+<polygon fill="white" stroke="#666666" points="506,-0.5 506,-123.5 621,-123.5 621,-0.5 506,-0.5"/>
 <text text-anchor="start" x="514" y="-111.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; const</text>
 <text text-anchor="start" x="514" y="-100.5" font-family="Helvetica,sans-Serif" font-size="10.00"> vanetza::dcc::Limeric</text>
 <text text-anchor="middle" x="563.5" y="-89.5" font-family="Helvetica,sans-Serif" font-size="10.00"> *, Clock::time_point &gt;</text>
-<polyline fill="none" stroke="black" points="506,-82.5 621,-82.5 "/>
+<polyline fill="none" stroke="#666666" points="506,-82.5 621,-82.5 "/>
 <text text-anchor="start" x="514" y="-70.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="506,-63.5 621,-63.5 "/>
+<polyline fill="none" stroke="#666666" points="506,-63.5 621,-63.5 "/>
 <text text-anchor="start" x="514" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="514" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="514" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>
@@ -138,12 +137,12 @@
 <g id="node6" class="node">
 <title>Node6</title>
 <g id="a_node6"><a xlink:href="../../d7/d3f/classvanetza_1_1Hook.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="638.5,-6 638.5,-118 814.5,-118 814.5,-6 638.5,-6"/>
+<polygon fill="white" stroke="#666666" points="638.5,-6 638.5,-118 814.5,-118 814.5,-6 638.5,-6"/>
 <text text-anchor="start" x="646.5" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; const</text>
 <text text-anchor="middle" x="726.5" y="-95" font-family="Helvetica,sans-Serif" font-size="10.00"> vanetza::geonet::CbrAggregator &amp; &gt;</text>
-<polyline fill="none" stroke="black" points="638.5,-88 814.5,-88 "/>
+<polyline fill="none" stroke="#666666" points="638.5,-88 814.5,-88 "/>
 <text text-anchor="start" x="646.5" y="-76" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="638.5,-69 814.5,-69 "/>
+<polyline fill="none" stroke="#666666" points="638.5,-69 814.5,-69 "/>
 <text text-anchor="start" x="646.5" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="646.5" y="-46" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="646.5" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>
@@ -164,12 +163,12 @@
 <g id="node7" class="node">
 <title>Node7</title>
 <g id="a_node7"><a xlink:href="../../d7/d3f/classvanetza_1_1Hook.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="832.5,-6 832.5,-118 972.5,-118 972.5,-6 832.5,-6"/>
+<polygon fill="white" stroke="#666666" points="832.5,-6 832.5,-118 972.5,-118 972.5,-6 832.5,-6"/>
 <text text-anchor="start" x="840.5" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; PacketDrop</text>
 <text text-anchor="middle" x="902.5" y="-95" font-family="Helvetica,sans-Serif" font-size="10.00">Reason &gt;</text>
-<polyline fill="none" stroke="black" points="832.5,-88 972.5,-88 "/>
+<polyline fill="none" stroke="#666666" points="832.5,-88 972.5,-88 "/>
 <text text-anchor="start" x="840.5" y="-76" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="832.5,-69 972.5,-69 "/>
+<polyline fill="none" stroke="#666666" points="832.5,-69 972.5,-69 "/>
 <text text-anchor="start" x="840.5" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="840.5" y="-46" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="840.5" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>
@@ -189,12 +188,12 @@
 <g id="node8" class="node">
 <title>Node8</title>
 <g id="a_node8"><a xlink:href="../../d7/d3f/classvanetza_1_1Hook.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="991,-6 991,-118 1128,-118 1128,-6 991,-6"/>
+<polygon fill="white" stroke="#666666" points="991,-6 991,-118 1128,-118 1128,-6 991,-6"/>
 <text text-anchor="start" x="999" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::Hook&lt; Forwarding</text>
 <text text-anchor="middle" x="1059.5" y="-95" font-family="Helvetica,sans-Serif" font-size="10.00">StopReason &gt;</text>
-<polyline fill="none" stroke="black" points="991,-88 1128,-88 "/>
+<polyline fill="none" stroke="#666666" points="991,-88 1128,-88 "/>
 <text text-anchor="start" x="999" y="-76" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_function</text>
-<polyline fill="none" stroke="black" points="991,-69 1128,-69 "/>
+<polyline fill="none" stroke="#666666" points="991,-69 1128,-69 "/>
 <text text-anchor="start" x="999" y="-57" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="999" y="-46" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="999" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator()()</text>

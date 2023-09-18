@@ -7,7 +7,10 @@ var dir_5ec4e2f36303eaf82f5c0be58696df55 =
     [ "cam.hpp", "dc/d97/cam_8hpp_source.html", null ],
     [ "cpm.hpp", "df/d76/cpm_8hpp_source.html", null ],
     [ "denm.hpp", "d5/d39/denm_8hpp_source.html", null ],
+    [ "ivim.hpp", "de/ddb/ivim_8hpp_source.html", null ],
     [ "mapem.hpp", "da/d8a/mapem_8hpp_source.html", null ],
     [ "packet_visitor.hpp", "db/d3b/packet__visitor_8hpp_source.html", null ],
-    [ "spatem.hpp", "db/d85/spatem_8hpp_source.html", null ]
+    [ "spatem.hpp", "db/d85/spatem_8hpp_source.html", null ],
+    [ "srem.hpp", "d5/d01/srem_8hpp_source.html", null ],
+    [ "ssem.hpp", "dd/dc6/ssem_8hpp_source.html", null ]
 ];

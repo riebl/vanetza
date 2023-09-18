@@ -1,6 +1,6 @@
 <map id="vanetza::geonet::Pdu" name="vanetza::geonet::Pdu">
-<area shape="rect" id="node1" title=" " alt="" coords="123,204,267,384"/>
-<area shape="rect" id="node3" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="5,447,181,729"/>
-<area shape="rect" id="node4" href="$d7/d84/classvanetza_1_1geonet_1_1VariantPdu.html" title=" " alt="" coords="205,432,389,744"/>
+<area shape="rect" id="node1" title=" " alt="" coords="123,204,267,369"/>
+<area shape="rect" id="node3" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="5,439,181,722"/>
+<area shape="rect" id="node4" href="$d7/d84/classvanetza_1_1geonet_1_1VariantPdu.html" title=" " alt="" coords="205,417,389,744"/>
 <area shape="rect" id="node2" href="$da/dcb/classvanetza_1_1geonet_1_1ConstAccessiblePdu.html" title=" " alt="" coords="73,5,316,156"/>
 </map>

@@ -39,7 +39,8 @@ var searchData=
   ['byte_5fbuffer_5fimpl_3c_20geonet_3a_3asecuredpdu_20_3e_36',['byte_buffer_impl&lt; geonet::SecuredPdu &gt;',['../da/dac/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01geonet_1_1SecuredPdu_01_4.html',1,'vanetza::convertible']]],
   ['byte_5fbuffer_5fsink_37',['byte_buffer_sink',['../de/d0e/classvanetza_1_1byte__buffer__sink.html',1,'vanetza']]],
   ['byte_5fbuffer_5fsource_38',['byte_buffer_source',['../da/da2/classvanetza_1_1byte__buffer__source.html',1,'vanetza']]],
-  ['byte_5fview_5frange_39',['byte_view_range',['../db/df6/classvanetza_1_1byte__view__range.html#aa98b31567b90d831f1a1fccd67a178b4',1,'vanetza::byte_view_range::byte_view_range(const ByteBuffer::const_iterator &amp;, const ByteBuffer::const_iterator &amp;)'],['../db/df6/classvanetza_1_1byte__view__range.html#a9220dd945d4a98fe2da121cbbd1f2e9c',1,'vanetza::byte_view_range::byte_view_range(ByteBuffer &amp;&amp;)'],['../db/df6/classvanetza_1_1byte__view__range.html',1,'vanetza::byte_view_range']]],
-  ['bytebufferconvertible_40',['ByteBufferConvertible',['../d6/dc0/classvanetza_1_1ByteBufferConvertible.html',1,'vanetza']]],
-  ['bytes_5fper_5fsecond_41',['bytes_per_second',['../d3/dbb/classvanetza_1_1access_1_1DataRateG5.html#a239803896c31245126e90e59fc4c5338',1,'vanetza::access::DataRateG5']]]
+  ['byte_5fview_5fiterator_39',['byte_view_iterator',['../dd/d82/classvanetza_1_1byte__view__iterator.html',1,'vanetza']]],
+  ['byte_5fview_5frange_40',['byte_view_range',['../db/df6/classvanetza_1_1byte__view__range.html#aa98b31567b90d831f1a1fccd67a178b4',1,'vanetza::byte_view_range::byte_view_range(const ByteBuffer::const_iterator &amp;, const ByteBuffer::const_iterator &amp;)'],['../db/df6/classvanetza_1_1byte__view__range.html#a9220dd945d4a98fe2da121cbbd1f2e9c',1,'vanetza::byte_view_range::byte_view_range(ByteBuffer &amp;&amp;)'],['../db/df6/classvanetza_1_1byte__view__range.html',1,'vanetza::byte_view_range']]],
+  ['bytebufferconvertible_41',['ByteBufferConvertible',['../d6/dc0/classvanetza_1_1ByteBufferConvertible.html',1,'vanetza']]],
+  ['bytes_5fper_5fsecond_42',['bytes_per_second',['../d3/dbb/classvanetza_1_1access_1_1DataRateG5.html#a239803896c31245126e90e59fc4c5338',1,'vanetza::access::DataRateG5']]]
 ];

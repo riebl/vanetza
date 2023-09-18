@@ -8,15 +8,14 @@
  viewBox="0.00 0.00 161.00 314.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 310)">
 <title>vanetza::geonet::detail::GbcGacHeader</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-310 157,-310 157,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="11,-105.5 11,-305.5 142,-305.5 142,-105.5 11,-105.5"/>
+<polygon fill="#999999" stroke="#666666" points="11,-105.5 11,-305.5 142,-305.5 142,-105.5 11,-105.5"/>
 <text text-anchor="start" x="19" y="-293.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::detail</text>
 <text text-anchor="middle" x="76.5" y="-282.5" font-family="Helvetica,sans-Serif" font-size="10.00">::GbcGacHeader</text>
-<polyline fill="none" stroke="black" points="11,-275.5 142,-275.5 "/>
+<polyline fill="none" stroke="#666666" points="11,-275.5 142,-275.5 "/>
 <text text-anchor="start" x="19" y="-263.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ sequence_number</text>
 <text text-anchor="start" x="19" y="-252.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ reserved1</text>
 <text text-anchor="start" x="19" y="-241.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ source_position</text>
@@ -27,7 +26,7 @@
 <text text-anchor="start" x="19" y="-186.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ angle</text>
 <text text-anchor="start" x="19" y="-175.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ reserved2</text>
 <text text-anchor="start" x="19" y="-164.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ length_bytes</text>
-<polyline fill="none" stroke="black" points="11,-157.5 142,-157.5 "/>
+<polyline fill="none" stroke="#666666" points="11,-157.5 142,-157.5 "/>
 <text text-anchor="start" x="19" y="-145.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ destination()</text>
 <text text-anchor="start" x="19" y="-134.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ position()</text>
 <text text-anchor="start" x="19" y="-123.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ position()</text>
@@ -52,8 +51,8 @@
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M76.5,-94.92C76.5,-85.58 76.5,-76.68 76.5,-68.75"/>
-<polygon fill="none" stroke="midnightblue" points="73,-95.21 76.5,-105.21 80,-95.21 73,-95.21"/>
+<path fill="none" stroke="#63b8ff" d="M76.5,-94.92C76.5,-85.58 76.5,-76.68 76.5,-68.75"/>
+<polygon fill="none" stroke="#63b8ff" points="73,-95.21 76.5,-105.21 80,-95.21 73,-95.21"/>
 </g>
 </g>
 </svg>

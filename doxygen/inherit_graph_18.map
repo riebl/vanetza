@@ -1,6 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" title=" " alt="" coords="5,93,129,120"/>
-<area shape="rect" id="node2" href="$dd/df9/classvanetza_1_1geonet_1_1SoftStateMap_1_1ExpiryWithKey.html" title=" " alt="" coords="177,5,371,61"/>
-<area shape="rect" id="node3" href="$d0/d5f/structvanetza_1_1security_1_1CertificateCache_1_1Expiry.html" title=" " alt="" coords="191,86,357,127"/>
-<area shape="rect" id="node4" href="$d2/d1e/structvanetza_1_1security_1_1v2_1_1CertificateCache_1_1Expiry.html" title=" " alt="" coords="203,152,345,208"/>
+<area shape="rect" id="node1" title=" " alt="" coords="5,60,129,85"/>
+<area shape="rect" id="node2" href="$dd/df9/classvanetza_1_1geonet_1_1SoftStateMap_1_1ExpiryWithKey.html" title=" " alt="" coords="177,5,371,60"/>
+<area shape="rect" id="node3" href="$d2/d1e/structvanetza_1_1security_1_1v2_1_1CertificateCache_1_1Expiry.html" title=" " alt="" coords="203,84,345,139"/>
 </map>

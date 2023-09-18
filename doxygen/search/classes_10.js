@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['recipientinfo_0',['RecipientInfo',['../da/d09/structRecipientInfo.html',1,'RecipientInfo'],['../d6/dcf/structvanetza_1_1security_1_1RecipientInfo.html',1,'vanetza::security::RecipientInfo'],['../dc/d8d/structvanetza_1_1security_1_1v2_1_1RecipientInfo.html',1,'vanetza::security::v2::RecipientInfo']]],
+  ['recipientinfo_0',['RecipientInfo',['../da/d09/structRecipientInfo.html',1,'RecipientInfo'],['../dc/d8d/structvanetza_1_1security_1_1v2_1_1RecipientInfo.html',1,'vanetza::security::v2::RecipientInfo']]],
   ['recipientinfo_5fu_1',['RecipientInfo_u',['../d1/d4f/unionRecipientInfo_1_1RecipientInfo__u.html',1,'RecipientInfo']]],
   ['rectangle_2',['Rectangle',['../df/d32/structvanetza_1_1geonet_1_1Rectangle.html',1,'vanetza::geonet']]],
-  ['rectangularregion_3',['RectangularRegion',['../d1/dba/structRectangularRegion.html',1,'RectangularRegion'],['../da/dbf/structvanetza_1_1security_1_1RectangularRegion.html',1,'vanetza::security::RectangularRegion'],['../d7/df2/structvanetza_1_1security_1_1v2_1_1RectangularRegion.html',1,'vanetza::security::v2::RectangularRegion']]],
+  ['rectangularregion_3',['RectangularRegion',['../d1/dba/structRectangularRegion.html',1,'RectangularRegion'],['../d7/df2/structvanetza_1_1security_1_1v2_1_1RectangularRegion.html',1,'vanetza::security::v2::RectangularRegion']]],
   ['regionandsubregions_4',['RegionAndSubregions',['../dc/d69/structRegionAndSubregions.html',1,'']]],
   ['relaxed_5',['Relaxed',['../da/d03/classvanetza_1_1dcc_1_1Relaxed.html',1,'vanetza::dcc']]],
   ['repeater_6',['Repeater',['../db/d33/classvanetza_1_1geonet_1_1Repeater.html',1,'vanetza::geonet']]],

@@ -1,3 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$db/d8e/classvanetza_1_1EthernetHeader.html" title=" " alt="" coords="5,5,172,32"/>
+<area shape="rect" id="node1" href="$df/dd5/classvanetza_1_1dcc_1_1Transmission.html" title=" " alt="" coords="5,42,187,67"/>
+<area shape="rect" id="node2" href="$d2/d56/structvanetza_1_1dcc_1_1FlowControl_1_1PendingTransmission.html" title=" " alt="" coords="249,5,423,45"/>
+<area shape="rect" id="node3" href="$dc/da1/structvanetza_1_1dcc_1_1TransmissionLite.html" title=" " alt="" coords="235,70,437,95"/>
 </map>

@@ -8,16 +8,15 @@
  viewBox="0.00 0.00 288.00 424.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 420)">
 <title>vanetza::dcc::RequestInterface</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-420 284,-420 284,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="63,-347.5 63,-415.5 216,-415.5 216,-347.5 63,-347.5"/>
+<polygon fill="#999999" stroke="#666666" points="63,-347.5 63,-415.5 216,-415.5 216,-347.5 63,-347.5"/>
 <text text-anchor="middle" x="139.5" y="-403.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::dcc::RequestInterface</text>
-<polyline fill="none" stroke="black" points="63,-396.5 216,-396.5 "/>
+<polyline fill="none" stroke="#666666" points="63,-396.5 216,-396.5 "/>
 <text text-anchor="middle" x="139.5" y="-384.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="63,-377.5 216,-377.5 "/>
+<polyline fill="none" stroke="#666666" points="63,-377.5 216,-377.5 "/>
 <text text-anchor="start" x="71" y="-365.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ request()</text>
 <text text-anchor="start" x="71" y="-354.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ ~RequestInterface()</text>
 </a>
@@ -27,9 +26,9 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d8/da4/classvanetza_1_1dcc_1_1FlowControl.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="0,-0.5 0,-310.5 131,-310.5 131,-0.5 0,-0.5"/>
+<polygon fill="white" stroke="#666666" points="0,-0.5 0,-310.5 131,-310.5 131,-0.5 0,-0.5"/>
 <text text-anchor="middle" x="65.5" y="-298.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::dcc::FlowControl</text>
-<polyline fill="none" stroke="black" points="0,-291.5 131,-291.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-291.5 131,-291.5 "/>
 <text text-anchor="start" x="8" y="-279.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_runtime</text>
 <text text-anchor="start" x="8" y="-268.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_trc</text>
 <text text-anchor="start" x="8" y="-257.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_access</text>
@@ -37,7 +36,7 @@
 <text text-anchor="start" x="8" y="-235.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_queue_length</text>
 <text text-anchor="start" x="8" y="-224.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_packet_drop_hook</text>
 <text text-anchor="start" x="8" y="-213.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_packet_transmit_hook</text>
-<polyline fill="none" stroke="black" points="0,-206.5 131,-206.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-206.5 131,-206.5 "/>
 <text text-anchor="start" x="8" y="-194.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ FlowControl()</text>
 <text text-anchor="start" x="8" y="-183.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ ~FlowControl()</text>
 <text text-anchor="start" x="8" y="-172.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ request()</text>
@@ -62,19 +61,19 @@
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M125.4,-337.81C122.67,-329.55 119.67,-320.47 116.51,-310.9"/>
-<polygon fill="none" stroke="midnightblue" points="122.12,-339.05 128.58,-347.45 128.77,-336.85 122.12,-339.05"/>
+<path fill="none" stroke="#63b8ff" d="M125.4,-337.81C122.67,-329.55 119.67,-320.47 116.51,-310.9"/>
+<polygon fill="none" stroke="#63b8ff" points="122.12,-339.05 128.58,-347.45 128.77,-336.85 122.12,-339.05"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
 <title>Node3</title>
 <g id="a_node3"><a xlink:href="../../d3/d6b/classvanetza_1_1dcc_1_1NullRequestInterface.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="149,-121.5 149,-189.5 280,-189.5 280,-121.5 149,-121.5"/>
+<polygon fill="white" stroke="#666666" points="149,-121.5 149,-189.5 280,-189.5 280,-121.5 149,-121.5"/>
 <text text-anchor="start" x="157" y="-177.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::dcc::NullRequest</text>
 <text text-anchor="middle" x="214.5" y="-166.5" font-family="Helvetica,sans-Serif" font-size="10.00">Interface</text>
-<polyline fill="none" stroke="black" points="149,-159.5 280,-159.5 "/>
+<polyline fill="none" stroke="#666666" points="149,-159.5 280,-159.5 "/>
 <text text-anchor="middle" x="214.5" y="-147.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="149,-140.5 280,-140.5 "/>
+<polyline fill="none" stroke="#666666" points="149,-140.5 280,-140.5 "/>
 <text text-anchor="start" x="157" y="-128.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ request()</text>
 </a>
 </g>
@@ -82,8 +81,8 @@
 <!-- Node1&#45;&gt;Node3 -->
 <g id="edge2" class="edge">
 <title>Node1&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M153.79,-337.81C168.23,-294.71 190.21,-229.04 203.39,-189.69"/>
-<polygon fill="none" stroke="midnightblue" points="150.42,-336.85 150.57,-347.45 157.06,-339.08 150.42,-336.85"/>
+<path fill="none" stroke="#63b8ff" d="M153.79,-337.81C168.23,-294.71 190.21,-229.04 203.39,-189.69"/>
+<polygon fill="none" stroke="#63b8ff" points="150.42,-336.85 150.57,-347.45 157.06,-339.08 150.42,-336.85"/>
 </g>
 </g>
 </svg>

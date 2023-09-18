@@ -8,16 +8,15 @@
  viewBox="0.00 0.00 362.50 463.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 459)">
 <title>vanetza::UnitInterval</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-459 358.5,-459 358.5,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="116,-160.5 116,-349.5 223,-349.5 223,-160.5 116,-160.5"/>
+<polygon fill="#999999" stroke="#666666" points="116,-160.5 116,-349.5 223,-349.5 223,-160.5 116,-160.5"/>
 <text text-anchor="middle" x="169.5" y="-337.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::UnitInterval</text>
-<polyline fill="none" stroke="black" points="116,-330.5 223,-330.5 "/>
+<polyline fill="none" stroke="#666666" points="116,-330.5 223,-330.5 "/>
 <text text-anchor="start" x="124" y="-318.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_value</text>
-<polyline fill="none" stroke="black" points="116,-311.5 223,-311.5 "/>
+<polyline fill="none" stroke="#666666" points="116,-311.5 223,-311.5 "/>
 <text text-anchor="start" x="124" y="-299.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ UnitInterval()</text>
 <text text-anchor="start" x="124" y="-288.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ UnitInterval()</text>
 <text text-anchor="start" x="124" y="-277.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ UnitInterval()</text>
@@ -56,8 +55,8 @@
 <!-- Node1&#45;&gt;Node5 -->
 <g id="edge4" class="edge">
 <title>Node1&#45;&gt;Node5</title>
-<path fill="none" stroke="midnightblue" d="M169.5,-150.23C169.5,-141.19 169.5,-132.26 169.5,-123.75"/>
-<polygon fill="none" stroke="midnightblue" points="166,-150.46 169.5,-160.46 173,-150.46 166,-150.46"/>
+<path fill="none" stroke="#63b8ff" d="M169.5,-150.23C169.5,-141.19 169.5,-132.26 169.5,-123.75"/>
+<polygon fill="none" stroke="#63b8ff" points="166,-150.46 169.5,-160.46 173,-150.46 166,-150.46"/>
 </g>
 <!-- Node2 -->
 <g id="node2" class="node">

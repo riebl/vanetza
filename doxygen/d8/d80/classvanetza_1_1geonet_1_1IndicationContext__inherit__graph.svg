@@ -54,17 +54,16 @@ var sectionId = 'dynsection-0';
 <svg id="graph" class="graph">
 <g id="viewport">
 <title>vanetza::geonet::IndicationContext</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-525 624.5,-525 624.5,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="246,-353.5 246,-520.5 379,-520.5 379,-353.5 246,-353.5"/>
+<polygon fill="#999999" stroke="#666666" points="246,-353.5 246,-520.5 379,-520.5 379,-353.5 246,-353.5"/>
 <text text-anchor="start" x="254" y="-508.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Indication</text>
 <text text-anchor="middle" x="312.5" y="-497.5" font-family="Helvetica,sans-Serif" font-size="10.00">Context</text>
-<polyline fill="none" stroke="black" points="246,-490.5 379,-490.5 "/>
+<polyline fill="none" stroke="#666666" points="246,-490.5 379,-490.5 "/>
 <text text-anchor="middle" x="312.5" y="-478.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="246,-471.5 379,-471.5 "/>
+<polyline fill="none" stroke="#666666" points="246,-471.5 379,-471.5 "/>
 <text text-anchor="start" x="254" y="-459.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ parse_basic()</text>
 <text text-anchor="start" x="254" y="-448.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ parse_common()</text>
 <text text-anchor="start" x="254" y="-437.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ parse_secured()</text>
@@ -82,14 +81,14 @@ var sectionId = 'dynsection-0';
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d6/d4a/classvanetza_1_1geonet_1_1IndicationContextBasic.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="163,-182.5 163,-316.5 296,-316.5 296,-182.5 163,-182.5"/>
+<polygon fill="white" stroke="#666666" points="163,-182.5 163,-316.5 296,-316.5 296,-182.5 163,-182.5"/>
 <text text-anchor="start" x="171" y="-304.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Indication</text>
 <text text-anchor="middle" x="229.5" y="-293.5" font-family="Helvetica,sans-Serif" font-size="10.00">ContextBasic</text>
-<polyline fill="none" stroke="black" points="163,-286.5 296,-286.5 "/>
+<polyline fill="none" stroke="#666666" points="163,-286.5 296,-286.5 "/>
 <text text-anchor="start" x="171" y="-274.5" font-family="Helvetica,sans-Serif" font-size="10.00"># m_link_layer</text>
 <text text-anchor="start" x="171" y="-263.5" font-family="Helvetica,sans-Serif" font-size="10.00"># m_service_primitive</text>
 <text text-anchor="start" x="171" y="-252.5" font-family="Helvetica,sans-Serif" font-size="10.00"># m_pdu</text>
-<polyline fill="none" stroke="black" points="163,-245.5 296,-245.5 "/>
+<polyline fill="none" stroke="#666666" points="163,-245.5 296,-245.5 "/>
 <text text-anchor="start" x="171" y="-233.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ IndicationContextBasic()</text>
 <text text-anchor="start" x="171" y="-222.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ link_layer()</text>
 <text text-anchor="start" x="171" y="-211.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ service_primitive()</text>
@@ -101,19 +100,19 @@ var sectionId = 'dynsection-0';
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M271.36,-344.05C267.22,-334.8 263.08,-325.54 259.09,-316.64"/>
-<polygon fill="none" stroke="midnightblue" points="268.21,-345.59 275.49,-353.29 274.6,-342.73 268.21,-345.59"/>
+<path fill="none" stroke="#63b8ff" d="M271.36,-344.05C267.22,-334.8 263.08,-325.54 259.09,-316.64"/>
+<polygon fill="none" stroke="#63b8ff" points="268.21,-345.59 275.49,-353.29 274.6,-342.73 268.21,-345.59"/>
 </g>
 <!-- Node5 -->
 <g id="node5" class="node">
 <title>Node5</title>
 <g id="a_node5"><a xlink:href="../../db/d97/classvanetza_1_1geonet_1_1IndicationContextSecured.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="323.5,-182.5 323.5,-316.5 467.5,-316.5 467.5,-182.5 323.5,-182.5"/>
+<polygon fill="white" stroke="#666666" points="323.5,-182.5 323.5,-316.5 467.5,-316.5 467.5,-182.5 323.5,-182.5"/>
 <text text-anchor="start" x="331.5" y="-304.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Indication</text>
 <text text-anchor="middle" x="395.5" y="-293.5" font-family="Helvetica,sans-Serif" font-size="10.00">ContextSecured</text>
-<polyline fill="none" stroke="black" points="323.5,-286.5 467.5,-286.5 "/>
+<polyline fill="none" stroke="#666666" points="323.5,-286.5 467.5,-286.5 "/>
 <text text-anchor="start" x="331.5" y="-274.5" font-family="Helvetica,sans-Serif" font-size="10.00"># m_parent</text>
-<polyline fill="none" stroke="black" points="323.5,-267.5 467.5,-267.5 "/>
+<polyline fill="none" stroke="#666666" points="323.5,-267.5 467.5,-267.5 "/>
 <text text-anchor="start" x="331.5" y="-255.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ IndicationContextSecured()</text>
 <text text-anchor="start" x="331.5" y="-244.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ link_layer()</text>
 <text text-anchor="start" x="331.5" y="-233.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ service_primitive()</text>
@@ -127,8 +126,8 @@ var sectionId = 'dynsection-0';
 <!-- Node1&#45;&gt;Node5 -->
 <g id="edge4" class="edge">
 <title>Node1&#45;&gt;Node5</title>
-<path fill="none" stroke="midnightblue" d="M353.64,-344.05C357.78,-334.8 361.92,-325.54 365.91,-316.64"/>
-<polygon fill="none" stroke="midnightblue" points="350.4,-342.73 349.51,-353.29 356.79,-345.59 350.4,-342.73"/>
+<path fill="none" stroke="#63b8ff" d="M353.64,-344.05C357.78,-334.8 361.92,-325.54 365.91,-316.64"/>
+<polygon fill="none" stroke="#63b8ff" points="350.4,-342.73 349.51,-353.29 356.79,-345.59 350.4,-342.73"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
@@ -152,8 +151,8 @@ var sectionId = 'dynsection-0';
 <!-- Node2&#45;&gt;Node3 -->
 <g id="edge2" class="edge">
 <title>Node2&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M160.52,-174.66C148.04,-161.29 135.15,-147.49 123.06,-134.56"/>
-<polygon fill="none" stroke="midnightblue" points="158.03,-177.11 167.41,-182.03 163.14,-172.33 158.03,-177.11"/>
+<path fill="none" stroke="#63b8ff" d="M160.52,-174.66C148.04,-161.29 135.15,-147.49 123.06,-134.56"/>
+<polygon fill="none" stroke="#63b8ff" points="158.03,-177.11 167.41,-182.03 163.14,-172.33 158.03,-177.11"/>
 </g>
 <!-- Node4 -->
 <g id="node4" class="node">
@@ -179,8 +178,8 @@ var sectionId = 'dynsection-0';
 <!-- Node2&#45;&gt;Node4 -->
 <g id="edge3" class="edge">
 <title>Node2&#45;&gt;Node4</title>
-<path fill="none" stroke="midnightblue" d="M229.5,-171.84C229.5,-163.09 229.5,-154.2 229.5,-145.51"/>
-<polygon fill="none" stroke="midnightblue" points="226,-172.03 229.5,-182.03 233,-172.03 226,-172.03"/>
+<path fill="none" stroke="#63b8ff" d="M229.5,-171.84C229.5,-163.09 229.5,-154.2 229.5,-145.51"/>
+<polygon fill="none" stroke="#63b8ff" points="226,-172.03 229.5,-182.03 233,-172.03 226,-172.03"/>
 </g>
 <!-- Node6 -->
 <g id="node6" class="node">
@@ -203,8 +202,8 @@ var sectionId = 'dynsection-0';
 <!-- Node5&#45;&gt;Node6 -->
 <g id="edge5" class="edge">
 <title>Node5&#45;&gt;Node6</title>
-<path fill="none" stroke="midnightblue" d="M395.5,-171.7C395.5,-157.4 395.5,-142.71 395.5,-129.22"/>
-<polygon fill="none" stroke="midnightblue" points="392,-172.03 395.5,-182.03 399,-172.03 392,-172.03"/>
+<path fill="none" stroke="#63b8ff" d="M395.5,-171.7C395.5,-157.4 395.5,-142.71 395.5,-129.22"/>
+<polygon fill="none" stroke="#63b8ff" points="392,-172.03 395.5,-182.03 399,-172.03 392,-172.03"/>
 </g>
 <!-- Node7 -->
 <g id="node7" class="node">
@@ -228,8 +227,8 @@ var sectionId = 'dynsection-0';
 <!-- Node5&#45;&gt;Node7 -->
 <g id="edge6" class="edge">
 <title>Node5&#45;&gt;Node7</title>
-<path fill="none" stroke="midnightblue" d="M461.85,-174.29C473.69,-161.03 485.91,-147.37 497.36,-134.56"/>
-<polygon fill="none" stroke="midnightblue" points="458.98,-172.24 454.92,-182.03 464.2,-176.91 458.98,-172.24"/>
+<path fill="none" stroke="#63b8ff" d="M461.85,-174.29C473.69,-161.03 485.91,-147.37 497.36,-134.56"/>
+<polygon fill="none" stroke="#63b8ff" points="458.98,-172.24 454.92,-182.03 464.2,-176.91 458.98,-172.24"/>
 </g>
 </g>
 </svg>

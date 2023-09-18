@@ -8,19 +8,18 @@
  viewBox="0.00 0.00 148.00 281.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 277)">
 <title>vanetza::security::v2::StaticCertificateProvider</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-277 144,-277 144,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title="A simple certificate provider.">
-<polygon fill="#bfbfbf" stroke="black" points="0,-0.5 0,-134.5 140,-134.5 140,-0.5 0,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="0,-0.5 0,-134.5 140,-134.5 140,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-122.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::security::</text>
 <text text-anchor="middle" x="70" y="-111.5" font-family="Helvetica,sans-Serif" font-size="10.00">v2::StaticCertificateProvider</text>
-<polyline fill="none" stroke="black" points="0,-104.5 140,-104.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-104.5 140,-104.5 "/>
 <text text-anchor="start" x="8" y="-92.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; authorization_ticket</text>
 <text text-anchor="start" x="8" y="-81.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; authorization_ticket_key</text>
 <text text-anchor="start" x="8" y="-70.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; chain</text>
-<polyline fill="none" stroke="black" points="0,-63.5 140,-63.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-63.5 140,-63.5 "/>
 <text text-anchor="start" x="8" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ StaticCertificateProvider()</text>
 <text text-anchor="start" x="8" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ StaticCertificateProvider()</text>
 <text text-anchor="start" x="8" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_certificate()</text>
@@ -49,8 +48,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M70,-161.38C70,-152.63 70,-143.56 70,-134.69"/>
-<polygon fill="none" stroke="midnightblue" points="66.5,-161.49 70,-171.49 73.5,-161.49 66.5,-161.49"/>
+<path fill="none" stroke="#63b8ff" d="M70,-161.38C70,-152.63 70,-143.56 70,-134.69"/>
+<polygon fill="none" stroke="#63b8ff" points="66.5,-161.49 70,-171.49 73.5,-161.49 66.5,-161.49"/>
 </g>
 </g>
 </svg>

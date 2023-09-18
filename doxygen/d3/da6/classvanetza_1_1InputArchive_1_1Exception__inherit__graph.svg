@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 118.00 265.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 261)">
 <title>vanetza::InputArchive::Exception</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-261 114,-261 114,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="0,-0.5 0,-68.5 110,-68.5 110,-0.5 0,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="0,-0.5 0,-68.5 110,-68.5 110,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-56.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::InputArchive</text>
 <text text-anchor="middle" x="55" y="-45.5" font-family="Helvetica,sans-Serif" font-size="10.00">::Exception</text>
-<polyline fill="none" stroke="black" points="0,-38.5 110,-38.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-38.5 110,-38.5 "/>
 <text text-anchor="middle" x="55" y="-26.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="0,-19.5 110,-19.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-19.5 110,-19.5 "/>
 <text text-anchor="middle" x="55" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
 </a>
 </g>
@@ -27,11 +26,11 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:title=" ">
-<polygon fill="white" stroke="black" points="8.5,-105.5 8.5,-162.5 101.5,-162.5 101.5,-105.5 8.5,-105.5"/>
+<polygon fill="white" stroke="#666666" points="8.5,-105.5 8.5,-162.5 101.5,-162.5 101.5,-105.5 8.5,-105.5"/>
 <text text-anchor="middle" x="55" y="-150.5" font-family="Helvetica,sans-Serif" font-size="10.00">std::runtime_error</text>
-<polyline fill="none" stroke="black" points="8.5,-143.5 101.5,-143.5 "/>
+<polyline fill="none" stroke="#666666" points="8.5,-143.5 101.5,-143.5 "/>
 <text text-anchor="middle" x="55" y="-131.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="8.5,-124.5 101.5,-124.5 "/>
+<polyline fill="none" stroke="#666666" points="8.5,-124.5 101.5,-124.5 "/>
 <text text-anchor="middle" x="55" y="-112.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
 </a>
 </g>
@@ -39,18 +38,18 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M55,-95.06C55,-86.39 55,-77.24 55,-68.79"/>
-<polygon fill="none" stroke="midnightblue" points="51.5,-95.32 55,-105.32 58.5,-95.32 51.5,-95.32"/>
+<path fill="none" stroke="#63b8ff" d="M55,-95.06C55,-86.39 55,-77.24 55,-68.79"/>
+<polygon fill="none" stroke="#63b8ff" points="51.5,-95.32 55,-105.32 58.5,-95.32 51.5,-95.32"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
 <title>Node3</title>
 <g id="a_node3"><a xlink:title=" ">
-<polygon fill="white" stroke="black" points="16.5,-199.5 16.5,-256.5 93.5,-256.5 93.5,-199.5 16.5,-199.5"/>
+<polygon fill="white" stroke="#666666" points="16.5,-199.5 16.5,-256.5 93.5,-256.5 93.5,-199.5 16.5,-199.5"/>
 <text text-anchor="middle" x="55" y="-244.5" font-family="Helvetica,sans-Serif" font-size="10.00">std::exception</text>
-<polyline fill="none" stroke="black" points="16.5,-237.5 93.5,-237.5 "/>
+<polyline fill="none" stroke="#666666" points="16.5,-237.5 93.5,-237.5 "/>
 <text text-anchor="middle" x="55" y="-225.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="16.5,-218.5 93.5,-218.5 "/>
+<polyline fill="none" stroke="#666666" points="16.5,-218.5 93.5,-218.5 "/>
 <text text-anchor="middle" x="55" y="-206.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
 </a>
 </g>
@@ -58,8 +57,8 @@
 <!-- Node3&#45;&gt;Node2 -->
 <g id="edge2" class="edge">
 <title>Node3&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M55,-189.21C55,-180.29 55,-170.95 55,-162.58"/>
-<polygon fill="none" stroke="midnightblue" points="51.5,-189.4 55,-199.4 58.5,-189.4 51.5,-189.4"/>
+<path fill="none" stroke="#63b8ff" d="M55,-189.21C55,-180.29 55,-170.95 55,-162.58"/>
+<polygon fill="none" stroke="#63b8ff" points="51.5,-189.4 55,-199.4 58.5,-189.4 51.5,-189.4"/>
 </g>
 </g>
 </svg>

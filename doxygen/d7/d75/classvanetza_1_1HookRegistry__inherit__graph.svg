@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 477.50 303.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 299)">
 <title>vanetza::HookRegistry&lt; Args &gt;</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-299 473.5,-299 473.5,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="181.5,-193.5 181.5,-294.5 297.5,-294.5 297.5,-193.5 181.5,-193.5"/>
+<polygon fill="#999999" stroke="#666666" points="181.5,-193.5 181.5,-294.5 297.5,-294.5 297.5,-193.5 181.5,-193.5"/>
 <text text-anchor="start" x="189.5" y="-282.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::HookRegistry</text>
 <text text-anchor="middle" x="239.5" y="-271.5" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; Args &gt;</text>
-<polyline fill="none" stroke="black" points="181.5,-264.5 297.5,-264.5 "/>
+<polyline fill="none" stroke="#666666" points="181.5,-264.5 297.5,-264.5 "/>
 <text text-anchor="start" x="189.5" y="-252.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_hook</text>
-<polyline fill="none" stroke="black" points="181.5,-245.5 297.5,-245.5 "/>
+<polyline fill="none" stroke="#666666" points="181.5,-245.5 297.5,-245.5 "/>
 <text text-anchor="start" x="189.5" y="-233.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ HookRegistry()</text>
 <text text-anchor="start" x="189.5" y="-222.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="189.5" y="-211.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
@@ -30,12 +29,12 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../dd/d5e/classvanetza_1_1HookRegistry.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="0,-11.5 0,-112.5 153,-112.5 153,-11.5 0,-11.5"/>
+<polygon fill="white" stroke="#666666" points="0,-11.5 0,-112.5 153,-112.5 153,-11.5 0,-11.5"/>
 <text text-anchor="start" x="8" y="-100.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::HookRegistry</text>
 <text text-anchor="middle" x="76.5" y="-89.5" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; vanetza::dcc::ChannelLoad &gt;</text>
-<polyline fill="none" stroke="black" points="0,-82.5 153,-82.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-82.5 153,-82.5 "/>
 <text text-anchor="start" x="8" y="-70.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_hook</text>
-<polyline fill="none" stroke="black" points="0,-63.5 153,-63.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-63.5 153,-63.5 "/>
 <text text-anchor="start" x="8" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ HookRegistry()</text>
 <text text-anchor="start" x="8" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="8" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
@@ -54,14 +53,14 @@
 <g id="node3" class="node">
 <title>Node3</title>
 <g id="a_node3"><a xlink:href="../../dd/d5e/classvanetza_1_1HookRegistry.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="181,-0.5 181,-123.5 298,-123.5 298,-0.5 181,-0.5"/>
+<polygon fill="white" stroke="#666666" points="181,-0.5 181,-123.5 298,-123.5 298,-0.5 181,-0.5"/>
 <text text-anchor="start" x="189" y="-111.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::HookRegistry</text>
 <text text-anchor="start" x="189" y="-100.5" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; const vanetza::dcc</text>
 <text text-anchor="start" x="189" y="-89.5" font-family="Helvetica,sans-Serif" font-size="10.00">::Limeric *, Clock::time</text>
 <text text-anchor="middle" x="239.5" y="-78.5" font-family="Helvetica,sans-Serif" font-size="10.00">_point &gt;</text>
-<polyline fill="none" stroke="black" points="181,-71.5 298,-71.5 "/>
+<polyline fill="none" stroke="#666666" points="181,-71.5 298,-71.5 "/>
 <text text-anchor="start" x="189" y="-59.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_hook</text>
-<polyline fill="none" stroke="black" points="181,-52.5 298,-52.5 "/>
+<polyline fill="none" stroke="#666666" points="181,-52.5 298,-52.5 "/>
 <text text-anchor="start" x="189" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ HookRegistry()</text>
 <text text-anchor="start" x="189" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="189" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
@@ -82,13 +81,13 @@
 <g id="node4" class="node">
 <title>Node4</title>
 <g id="a_node4"><a xlink:href="../../dd/d5e/classvanetza_1_1HookRegistry.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="316.5,-6 316.5,-118 438.5,-118 438.5,-6 316.5,-6"/>
+<polygon fill="white" stroke="#666666" points="316.5,-6 316.5,-118 438.5,-118 438.5,-6 316.5,-6"/>
 <text text-anchor="start" x="324.5" y="-106" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::HookRegistry</text>
 <text text-anchor="start" x="324.5" y="-95" font-family="Helvetica,sans-Serif" font-size="10.00">&lt; const vanetza::geonet</text>
 <text text-anchor="middle" x="377.5" y="-84" font-family="Helvetica,sans-Serif" font-size="10.00">::CbrAggregator &amp; &gt;</text>
-<polyline fill="none" stroke="black" points="316.5,-77 438.5,-77 "/>
+<polyline fill="none" stroke="#666666" points="316.5,-77 438.5,-77 "/>
 <text text-anchor="start" x="324.5" y="-65" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_hook</text>
-<polyline fill="none" stroke="black" points="316.5,-58 438.5,-58 "/>
+<polyline fill="none" stroke="#666666" points="316.5,-58 438.5,-58 "/>
 <text text-anchor="start" x="324.5" y="-46" font-family="Helvetica,sans-Serif" font-size="10.00">+ HookRegistry()</text>
 <text text-anchor="start" x="324.5" y="-35" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>
 <text text-anchor="start" x="324.5" y="-24" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator=()</text>

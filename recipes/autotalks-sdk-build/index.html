@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Building for Autotalks devices - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link href="../../css/extra.css" rel="stylesheet" />
+        <link href="../../css/tango.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Building for Autotalks devices";
+        var mkdocs_page_input_path = "recipes/autotalks-sdk-build.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]--> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+<div class="logo">
+    <img src="../../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
+</div>
+<div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Overview</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../..#project-layout">Project layout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../..#deployments">Deployments</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../api/">API Documentation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../how-to-build/">How to build</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#compilation">Compilation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#unit-tests">Unit tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#integrating-vanetza">Integrating Vanetza</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Recipes</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Building for Autotalks devices</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#autotalks-sdk">Autotalks SDK</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#code-corrections">Code corrections</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#compile-vanetza">Compile Vanetza</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#compiling-for-craton">Compiling for Craton</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#compiling-for-secton">Compiling for Secton</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cohda-sdk-build/">Building for Cohda MK5</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#cohda-sdk">Cohda SDK</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#compile-vanetza">Compile Vanetza</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#deployment">Deployment</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cross-compile-dependencies/">Cross-Compilation of Dependencies</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#boost">Boost</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#crypto">Crypto++</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#geographiclib">GeographicLib</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tools</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tools/benchmark/">Benchmark</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#running">Running</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tools/certify/">Certify</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#pki-setup">PKI Setup</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-keys">Generating Keys</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-root-certificates">Generating Root Certificates</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-authorization-authorities">Generating Authorization Authorities</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-authorization-tickets">Generating Authorization Tickets</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#other-options">Other Options</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tools/socktap/">Socktap</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#link-layer">Link layer</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#ethernet">Ethernet</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#cohda">Cohda</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#autotalks">Autotalks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#udp">UDP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#tcp">TCP</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#positioning">Positioning</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#applications">Applications</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#building-and-running">Building and Running</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#build-options">Build options</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#first-steps">First steps</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../legal/">Legal Notice</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../legal/#contact">Contact</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../legal/#privacy-statement">Privacy Statement</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Vanetza - Your open-source ETSI C-ITS protocol stack</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+          <li>Recipes &raquo;</li>
+      <li class="breadcrumb-item active">Building for Autotalks devices</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/autotalks-sdk-build.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="building-vanetza-for-autotalks-craton-using-autotalks-sdk">Building Vanetza for Autotalks Craton using Autotalks SDK</h1>
+<p>This document describes building Vanetza for the Autotalks device. There is a difference between building for Craton and Secton.
+Steps for building Vanetza for Autotalks Craton are very similar to build for Cohda MK5 devices (you can see steps in the <a href="../cohda-sdk-build/">building for Cohda MK5 document</a>). Difference is that there is no virtual machine provided from Autotalks.</p>
+<p>Autotalks SDK can used only in the <code>socktap</code> example, so you must always compile it when you want the SDK.</p>
+<h2 id="autotalks-sdk">Autotalks SDK</h2>
+<p>SDK is shipped with Autotalks devices, you should have obtained one. Until Release 18, it was recommended to build the SDK in Ubuntu 16.04, now Ubuntu 18.04 or 20.04 should be used; it was tested on the latter. For Secton, there is used gcc version 9.4.0, for Craton <code>arm-poky-linux-gnueabi-g++</code> version 11.2.0, that is installed with the poky container.</p>
+<h3 id="code-corrections">Code corrections</h3>
+<p>With Autotalks SDK version &lt;= 5.15.0, you will have to do a correction in file <code>autotalks_*_api/include/atlk/ddm_service.h</code> on line 615 and add there an explicit cast to <code>stats_tlv_t *</code>. Without this, you won&rsquo;t be able to build the project because of the <code>-fpermissive</code> flag. As of version 5.16.0, this problem is fixed.</p>
+<p>In version 5.17 (Release 18), there are another problems:
+* In autotalks_{craton,secton}<em>api/include/common/counters.h change line 110 from <code>uint8_t data[]</code> to <code>uint8_t* data</code>
+* In autotalks</em>{craton,secton}_api/include/atlk/generic_compensator.h, there is missing <code>}</code> for the <code>extern "C"</code> directive (this should be solved in newer SDK)</p>
+<p>Another thing you must note is in the initialization in the <code>socktap</code> example. The initialization code in <code>v2x_device_init()</code> was used directly from the example in the Autotalks SDK, therefore it should not be distributed with the library. You will have to write it yourself, but it really is almost the same as <code>main()</code> function in the basic example from the SDK.</p>
+<p>In the initialization, there is a define for <code>SECTON_NET_NAME</code>. This is a network interface name which determines how is the SoC seen in Linux. It should be <em>enx0002ccf00006</em> by default, but if it is set to something else, you can change this define. You can use <code>ifconfig</code> output to determine the actual name (see Autotalks documentation for more details).</p>
+<h2 id="vanetza-build-dependencies">Vanetza build dependencies</h2>
+<p>Please see <a href="../cross-compile-dependencies/">this document</a> about cross-compiling Vanetza&rsquo;s dependencies.
+This guide  was tested with precompiled libraries downloadable <a href="../cohda-sdk-build/">from here</a>.</p>
+<h2 id="compile-vanetza">Compile Vanetza</h2>
+<h3 id="compiling-for-craton">Compiling for Craton</h3>
+<p>We assume you have copy of the Vanetza repository in your home directory at <code>$HOME</code>.
+Furthermore, there should be a symbolic link named <code>autotalks_craton_api</code> in your home directory, that links to the root of Craton SDK (e.g., from <code>/home/your_user/autotalks_craton_api</code> to the API compilation directory). If you have Poky toolchain installed in other directory than /opt/poky-craton2/4.0.1 (e.g. /tools/gcc/arm/new_toolchain as suggested by Autotalks), change the path in cmake/Toolchain-Autotalks-Craton.cmake.
+Create a build directory and tell CMake to use the cross-compiler installed on your machine and to look up additional dependencies in <code>vanetza-deps</code>:</p>
+<pre class="codehilite"><code class="language-shell">mkdir vanetza/vanetza-build
+cd vanetza/vanetza-build
+cmake .. \
+    -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-Autotalks-Craton.cmake \
+    -DCMAKE_FIND_ROOT_PATH=$HOME/vanetza-deps \
+    -DCMAKE_INSTALL_RPATH=\$ORIGIN/../lib \
+    -DCMAKE_INSTALL_PREFIX=$HOME/vanetza-dist \
+    -DBUILD_SOCKTAP=ON \
+    -DSOCKTAP_WITH_AUTOTALKS=ON
+make
+</code></pre>
+
+<p>This builds the Vanetza libraries and <em>socktap</em> example as well. When you do <code>make install</code>, binaries are copied to <code>$HOME/vanetza-dist</code>. You can copy the binary with libraries to the Craton now. You should start the binary in the same directory as you would be running code from Autotalks examples (it needs their configuration files). You must run the binary with parameter <code>-l autotalks</code> for correct choosing of the link layer.</p>
+<h3 id="compiling-for-secton">Compiling for Secton</h3>
+<p>We assume you have copy of the Vanetza repository in your home directory at <code>$HOME</code>.
+Furthermore, there should be a symbolic link named <code>autotalks_secton_api</code> in your home directory, that links to the root of Secton SDK (e.g., from <code>/home/your_user/autotalks_secton_api</code> to the API compilation directory). The build steps are then identical with the ones described in <a href="../../how-to-build/">How to build</a>. Just note that for using Autotalks SDK you should use enable compilation of socktap, e.g. like this:</p>
+<pre class="codehilite"><code class="language-shell">cmake .. \
+    -DBUILD_SOCKTAP=ON \
+    -DSOCKTAP_WITH_AUTOTALKS=ON
+make
+</code></pre>
+
+<p>Binary then can be ran from the same directory you would be running the Autotalks example (it needs their configuration files). You must run the binary with parameter <code>-l autotalks</code> for correct choosing of the link layer.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../how-to-build/" class="btn btn-neutral float-left" title="How to build"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../cohda-sdk-build/" class="btn btn-neutral float-right" title="Building for Cohda MK5">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/riebl/vanetza" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../../how-to-build/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../cohda-sdk-build/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../js/extra.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

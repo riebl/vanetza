@@ -8,19 +8,18 @@
  viewBox="0.00 0.00 151.00 281.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 277)">
 <title>vanetza::btp::PortDispatcher</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-277 147,-277 147,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="0,-0.5 0,-156.5 143,-156.5 143,-0.5 0,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="0,-0.5 0,-156.5 143,-156.5 143,-0.5 0,-0.5"/>
 <text text-anchor="middle" x="71.5" y="-144.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::btp::PortDispatcher</text>
-<polyline fill="none" stroke="black" points="0,-137.5 143,-137.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-137.5 143,-137.5 "/>
 <text text-anchor="start" x="8" y="-125.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ hook_undispatched</text>
 <text text-anchor="start" x="8" y="-114.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_interactive_handlers</text>
 <text text-anchor="start" x="8" y="-103.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_non_interactive_handlers</text>
 <text text-anchor="start" x="8" y="-92.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_promiscuous_hooks</text>
-<polyline fill="none" stroke="black" points="0,-85.5 143,-85.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-85.5 143,-85.5 "/>
 <text text-anchor="start" x="8" y="-73.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ set_interactive_handler()</text>
 <text text-anchor="start" x="8" y="-62.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ set_non_interactive</text>
 <text text-anchor="start" x="8" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">_handler()</text>
@@ -49,8 +48,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M71.5,-183.08C71.5,-174.61 71.5,-165.62 71.5,-156.61"/>
-<polygon fill="none" stroke="midnightblue" points="68,-183.12 71.5,-193.12 75,-183.12 68,-183.12"/>
+<path fill="none" stroke="#63b8ff" d="M71.5,-183.08C71.5,-174.61 71.5,-165.62 71.5,-156.61"/>
+<polygon fill="none" stroke="#63b8ff" points="68,-183.12 71.5,-193.12 75,-183.12 68,-183.12"/>
 </g>
 </g>
 </svg>

@@ -1,6 +1,6 @@
 <map id="vanetza::security::Backend" name="vanetza::security::Backend">
-<area shape="rect" id="node1" title=" " alt="" coords="190,5,338,141"/>
-<area shape="rect" id="node2" href="$d1/ded/classvanetza_1_1security_1_1BackendCryptoPP.html" title=" " alt="" coords="5,189,165,472"/>
-<area shape="rect" id="node3" href="$d4/d9f/classvanetza_1_1security_1_1BackendNull.html" title="A backend doing nothing." alt="" coords="190,263,338,399"/>
-<area shape="rect" id="node4" href="$d1/dee/classvanetza_1_1security_1_1BackendOpenSsl.html" title="Backend implementation based on OpenSSL." alt="" coords="363,241,515,421"/>
+<area shape="rect" id="node1" title=" " alt="" coords="190,5,338,171"/>
+<area shape="rect" id="node2" href="$d1/ded/classvanetza_1_1security_1_1BackendCryptoPP.html" title=" " alt="" coords="5,219,165,531"/>
+<area shape="rect" id="node3" href="$d4/d9f/classvanetza_1_1security_1_1BackendNull.html" title="A backend doing nothing." alt="" coords="190,292,338,457"/>
+<area shape="rect" id="node4" href="$d1/dee/classvanetza_1_1security_1_1BackendOpenSsl.html" title="Backend implementation based on OpenSSL." alt="" coords="363,248,544,501"/>
 </map>

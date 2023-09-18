@@ -18,7 +18,6 @@
         var mkdocs_page_url = null;
       </script>
     
-    <script src="../../js/jquery-3.6.0.min.js" defer></script>
     <!--[if lt IE 9]>
       <script src="../../js/html5shiv.min.js"></script>
     <![endif]--> 
@@ -35,7 +34,7 @@
 </div>
 <div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -71,6 +70,26 @@
               </ul>
               <p class="caption"><span class="caption-text">Recipes</span></p>
               <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../autotalks-sdk-build/">Building for Autotalks devices</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#autotalks-sdk">Autotalks SDK</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#code-corrections">Code corrections</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#compile-vanetza">Compile Vanetza</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#compiling-for-craton">Compiling for Craton</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#compiling-for-secton">Compiling for Secton</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../cohda-sdk-build/">Building for Cohda MK5</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#cohda-sdk">Cohda SDK</a>
@@ -131,6 +150,18 @@
                   <li class="toctree-l1"><a class="reference internal" href="../../tools/socktap/">Socktap</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#link-layer">Link layer</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#ethernet">Ethernet</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#cohda">Cohda</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#autotalks">Autotalks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#udp">UDP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#tcp">TCP</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#positioning">Positioning</a>
     </li>
@@ -172,16 +203,15 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>Recipes &raquo;</li><li>Cross-Compilation of Dependencies</li>
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+          <li>Recipes &raquo;</li>
+      <li class="breadcrumb-item active">Cross-Compilation of Dependencies</li>
     <li class="wy-breadcrumbs-aside">
-        <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/cross-compile-dependencies.md"
-          class="icon icon-github"> Edit on GitHub</a>
+          <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/cross-compile-dependencies.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
   <hr/>
 </div>
-
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
@@ -190,12 +220,12 @@
 Please note, that cross-compiling is not relevant for you if you plan to use Vanetza on the same system you have built it on.</p>
 <h2 id="boost">Boost</h2>
 <p>Create a configuration file for Boost.Build in your home directory at <code>$HOME/user-config.jam</code> and add following line to it:</p>
-<div class="codehilite"><pre><span></span><code>using gcc : arm : arm-linux-gnueabihf-g++ ;
-</code></pre></div>
+<pre class="codehilite"><code>using gcc : arm : arm-linux-gnueabihf-g++ ;
+</code></pre>
 
 <p>The <em>install</em> stage does not work in Boost 1.71.0 (and 1.70.0) when cross-compiling.
 A workaround for this issue is to remove following lines from <code>tools/build/src/tools/common.jam</code> (around line 976):</p>
-<div class="codehilite"><pre><span></span><code># From GCC 5, versioning changes and minor becomes patch
+<pre class="codehilite"><code># From GCC 5, versioning changes and minor becomes patch
 if $(tag) = gcc &amp;&amp; [ numbers.less 4 $(version[1]) ]
 {
     version = $(version[1]) ;
@@ -206,29 +236,29 @@ if ( $(tag) = clang || $(tag) = clangw ) &amp;&amp; [ numbers.less 3 $(version[1
 {
     version = $(version[1]) ;
 }
-</code></pre></div>
+</code></pre>
 
 <p>Then, the required libraries can be built and installed at given <em>prefix</em> path:</p>
-<div class="codehilite"><pre><span></span><code>./b2 --prefix<span class="o">=</span><span class="nv">$HOME</span>/vanetza-deps --with-date_time --with-program_options --with-system --no-samples --no-tests <span class="nv">variant</span><span class="o">=</span>release <span class="nv">link</span><span class="o">=</span>shared <span class="nv">cxxstd</span><span class="o">=</span><span class="m">11</span> install
-</code></pre></div>
+<pre class="codehilite"><code class="language-shell">./b2 --prefix=$HOME/vanetza-deps --with-date_time --with-program_options --with-system --no-samples --no-tests variant=release link=shared cxxstd=11 install
+</code></pre>
 
 <h2 id="crypto">Crypto++</h2>
 <p>Version 8.2 can be cross-compiled with the provided <code>GNUmakefile-cross</code> makefile.</p>
-<div class="codehilite"><pre><span></span><code><span class="nb">export</span> <span class="nv">CXX</span><span class="o">=</span>arm-linux-gnueabihf-g++
-<span class="nb">export</span> <span class="nv">PREFIX</span><span class="o">=</span><span class="nv">$HOME</span>/vanetza-deps
-<span class="nb">export</span> <span class="nv">HAS_SOLIB_VERSION</span><span class="o">=</span><span class="m">1</span>
+<pre class="codehilite"><code class="language-shell">export CXX=arm-linux-gnueabihf-g++
+export PREFIX=$HOME/vanetza-deps
+export HAS_SOLIB_VERSION=1
 make -f GNUmakefile-cross shared
 make -f GNUmakefile-cross install
-</code></pre></div>
+</code></pre>
 
 <h2 id="geographiclib">GeographicLib</h2>
 <p>Following steps have been tested with version 1.50.
 <code>$VANETZA</code> refers to the root directory of this repository.</p>
-<div class="codehilite"><pre><span></span><code>mkdir build.arm
-<span class="nb">cd</span> build.arm
-cmake .. -DCMAKE_TOOLCHAIN_FILE<span class="o">=</span><span class="nv">$VANETZA</span>/cmake/Toolchain-Cohda-MK5.cmake -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DCMAKE_INSTALL_PREFIX<span class="o">=</span><span class="nv">$HOME</span>/vanetza-deps
+<pre class="codehilite"><code class="language-shell">mkdir build.arm
+cd build.arm
+cmake .. -DCMAKE_TOOLCHAIN_FILE=$VANETZA/cmake/Toolchain-Cohda-MK5.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/vanetza-deps
 make install
-</code></pre></div>
+</code></pre>
               
             </div>
           </div><footer>
@@ -268,15 +298,16 @@ make install
     
   </span>
 </div>
-    <script>var base_url = '../..';</script>
-    <script src="../../js/theme_extra.js" defer></script>
-    <script src="../../js/theme.js" defer></script>
-      <script src="../../js/extra.js" defer></script>
-      <script src="../../search/main.js" defer></script>
-    <script defer>
-        window.onload = function () {
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../js/extra.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
             SphinxRtdTheme.Navigation.enable(true);
-        };
+        });
     </script>
 
 </body>

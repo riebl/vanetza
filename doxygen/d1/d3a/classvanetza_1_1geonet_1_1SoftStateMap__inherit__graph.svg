@@ -54,21 +54,20 @@ var sectionId = 'dynsection-0';
 <svg id="graph" class="graph">
 <g id="viewport">
 <title>vanetza::geonet::SoftStateMap&lt; KEY, VALUE, CTOR &gt;</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-629 369.5,-629 369.5,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="89,-347.5 89,-624.5 234,-624.5 234,-347.5 89,-347.5"/>
+<polygon fill="#999999" stroke="#666666" points="89,-347.5 89,-624.5 234,-624.5 234,-347.5 89,-347.5"/>
 <text text-anchor="start" x="97" y="-612.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::SoftState</text>
 <text text-anchor="middle" x="161.5" y="-601.5" font-family="Helvetica,sans-Serif" font-size="10.00">Map&lt; KEY, VALUE, CTOR &gt;</text>
-<polyline fill="none" stroke="black" points="89,-594.5 234,-594.5 "/>
+<polyline fill="none" stroke="#666666" points="89,-594.5 234,-594.5 "/>
 <text text-anchor="start" x="97" y="-582.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_runtime</text>
 <text text-anchor="start" x="97" y="-571.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_lifetime</text>
 <text text-anchor="start" x="97" y="-560.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_creator</text>
 <text text-anchor="start" x="97" y="-549.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_heap</text>
 <text text-anchor="start" x="97" y="-538.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_map</text>
-<polyline fill="none" stroke="black" points="89,-531.5 234,-531.5 "/>
+<polyline fill="none" stroke="#666666" points="89,-531.5 234,-531.5 "/>
 <text text-anchor="start" x="97" y="-519.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ SoftStateMap()</text>
 <text text-anchor="start" x="97" y="-508.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ SoftStateMap()</text>
 <text text-anchor="start" x="97" y="-497.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ set_lifetime()</text>
@@ -92,16 +91,16 @@ var sectionId = 'dynsection-0';
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../dd/dab/classvanetza_1_1geonet_1_1SoftStateMap.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="0,-6 0,-283 147,-283 147,-6 0,-6"/>
+<polygon fill="white" stroke="#666666" points="0,-6 0,-283 147,-283 147,-6 0,-6"/>
 <text text-anchor="start" x="8" y="-271" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::SoftState</text>
 <text text-anchor="middle" x="73.5" y="-260" font-family="Helvetica,sans-Serif" font-size="10.00">Map&lt; id_type, counter_type &gt;</text>
-<polyline fill="none" stroke="black" points="0,-253 147,-253 "/>
+<polyline fill="none" stroke="#666666" points="0,-253 147,-253 "/>
 <text text-anchor="start" x="8" y="-241" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_runtime</text>
 <text text-anchor="start" x="8" y="-230" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_lifetime</text>
 <text text-anchor="start" x="8" y="-219" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_creator</text>
 <text text-anchor="start" x="8" y="-208" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_heap</text>
 <text text-anchor="start" x="8" y="-197" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_map</text>
-<polyline fill="none" stroke="black" points="0,-190 147,-190 "/>
+<polyline fill="none" stroke="#666666" points="0,-190 147,-190 "/>
 <text text-anchor="start" x="8" y="-178" font-family="Helvetica,sans-Serif" font-size="10.00">+ SoftStateMap()</text>
 <text text-anchor="start" x="8" y="-167" font-family="Helvetica,sans-Serif" font-size="10.00">+ SoftStateMap()</text>
 <text text-anchor="start" x="8" y="-156" font-family="Helvetica,sans-Serif" font-size="10.00">+ set_lifetime()</text>
@@ -133,17 +132,17 @@ var sectionId = 'dynsection-0';
 <g id="node3" class="node">
 <title>Node3</title>
 <g id="a_node3"><a xlink:href="../../dd/dab/classvanetza_1_1geonet_1_1SoftStateMap.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="165.5,-0.5 165.5,-288.5 335.5,-288.5 335.5,-0.5 165.5,-0.5"/>
+<polygon fill="white" stroke="#666666" points="165.5,-0.5 165.5,-288.5 335.5,-288.5 335.5,-0.5 165.5,-0.5"/>
 <text text-anchor="start" x="173.5" y="-276.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::SoftState</text>
 <text text-anchor="start" x="173.5" y="-265.5" font-family="Helvetica,sans-Serif" font-size="10.00">Map&lt; MacAddress, LocationTable</text>
 <text text-anchor="middle" x="250.5" y="-254.5" font-family="Helvetica,sans-Serif" font-size="10.00">Entry, LocationTableEntryCreator &gt;</text>
-<polyline fill="none" stroke="black" points="165.5,-247.5 335.5,-247.5 "/>
+<polyline fill="none" stroke="#666666" points="165.5,-247.5 335.5,-247.5 "/>
 <text text-anchor="start" x="173.5" y="-235.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_runtime</text>
 <text text-anchor="start" x="173.5" y="-224.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_lifetime</text>
 <text text-anchor="start" x="173.5" y="-213.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_creator</text>
 <text text-anchor="start" x="173.5" y="-202.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_heap</text>
 <text text-anchor="start" x="173.5" y="-191.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_map</text>
-<polyline fill="none" stroke="black" points="165.5,-184.5 335.5,-184.5 "/>
+<polyline fill="none" stroke="#666666" points="165.5,-184.5 335.5,-184.5 "/>
 <text text-anchor="start" x="173.5" y="-172.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ SoftStateMap()</text>
 <text text-anchor="start" x="173.5" y="-161.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ SoftStateMap()</text>
 <text text-anchor="start" x="173.5" y="-150.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ set_lifetime()</text>

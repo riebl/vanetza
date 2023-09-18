@@ -8,16 +8,15 @@
  viewBox="0.00 0.00 164.00 182.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 178)">
 <title>vanetza::PositionProvider</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-178 160,-178 160,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="14,-105.5 14,-173.5 142,-173.5 142,-105.5 14,-105.5"/>
+<polygon fill="#999999" stroke="#666666" points="14,-105.5 14,-173.5 142,-173.5 142,-105.5 14,-105.5"/>
 <text text-anchor="middle" x="78" y="-161.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::PositionProvider</text>
-<polyline fill="none" stroke="black" points="14,-154.5 142,-154.5 "/>
+<polyline fill="none" stroke="#666666" points="14,-154.5 142,-154.5 "/>
 <text text-anchor="middle" x="78" y="-142.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="14,-135.5 142,-135.5 "/>
+<polyline fill="none" stroke="#666666" points="14,-135.5 142,-135.5 "/>
 <text text-anchor="start" x="22" y="-123.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ position_fix()</text>
 <text text-anchor="start" x="22" y="-112.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ ~PositionProvider()</text>
 </a>
@@ -27,11 +26,11 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d1/dd6/classvanetza_1_1StoredPositionProvider.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="0,-0.5 0,-68.5 156,-68.5 156,-0.5 0,-0.5"/>
+<polygon fill="white" stroke="#666666" points="0,-0.5 0,-68.5 156,-68.5 156,-0.5 0,-0.5"/>
 <text text-anchor="middle" x="78" y="-56.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::StoredPositionProvider</text>
-<polyline fill="none" stroke="black" points="0,-49.5 156,-49.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-49.5 156,-49.5 "/>
 <text text-anchor="start" x="8" y="-37.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_position</text>
-<polyline fill="none" stroke="black" points="0,-30.5 156,-30.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-30.5 156,-30.5 "/>
 <text text-anchor="start" x="8" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ position_fix()</text>
 <text text-anchor="start" x="8" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ position_fix()</text>
 </a>
@@ -40,8 +39,8 @@
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M78,-95.14C78,-86.26 78,-77.04 78,-68.59"/>
-<polygon fill="none" stroke="midnightblue" points="74.5,-95.34 78,-105.34 81.5,-95.34 74.5,-95.34"/>
+<path fill="none" stroke="#63b8ff" d="M78,-95.14C78,-86.26 78,-77.04 78,-68.59"/>
+<polygon fill="none" stroke="#63b8ff" points="74.5,-95.34 78,-105.34 81.5,-95.34 74.5,-95.34"/>
 </g>
 </g>
 </svg>

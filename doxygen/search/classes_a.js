@@ -15,8 +15,8 @@ var searchData=
   ['loctex_5fg5_12',['LocTEX_G5',['../d2/d76/structvanetza_1_1geonet_1_1LocTEX__G5.html',1,'vanetza::geonet']]],
   ['longpositionvector_13',['LongPositionVector',['../df/d7e/classvanetza_1_1geonet_1_1LongPositionVector.html',1,'vanetza::geonet']]],
   ['lrucache_14',['LruCache',['../db/d4d/classvanetza_1_1LruCache.html',1,'vanetza']]],
-  ['lrucache_3c_20vanetza_3a_3asecurity_3a_3aecdsa256_3a_3aprivatekey_2c_20privatekey_20_3e_15',['LruCache&lt; vanetza::security::ecdsa256::PrivateKey, PrivateKey &gt;',['../db/d4d/classvanetza_1_1LruCache.html',1,'vanetza']]],
-  ['lrucache_3c_20vanetza_3a_3asecurity_3a_3aecdsa256_3a_3apublickey_2c_20publickey_20_3e_16',['LruCache&lt; vanetza::security::ecdsa256::PublicKey, PublicKey &gt;',['../db/d4d/classvanetza_1_1LruCache.html',1,'vanetza']]],
+  ['lrucache_3c_20vanetza_3a_3asecurity_3a_3aecdsa256_3a_3aprivatekey_2c_20ecdsa256_3a_3aprivatekey_20_3e_15',['LruCache&lt; vanetza::security::ecdsa256::PrivateKey, Ecdsa256::PrivateKey &gt;',['../db/d4d/classvanetza_1_1LruCache.html',1,'vanetza']]],
+  ['lrucache_3c_20vanetza_3a_3asecurity_3a_3aecdsa256_3a_3apublickey_2c_20ecdsa256_3a_3apublickey_20_3e_16',['LruCache&lt; vanetza::security::ecdsa256::PublicKey, Ecdsa256::PublicKey &gt;',['../db/d4d/classvanetza_1_1LruCache.html',1,'vanetza']]],
   ['lsreplyheader_17',['LsReplyHeader',['../d9/dcc/structvanetza_1_1geonet_1_1LsReplyHeader.html',1,'vanetza::geonet']]],
   ['lsrequestheader_18',['LsRequestHeader',['../d5/de0/structvanetza_1_1geonet_1_1LsRequestHeader.html',1,'vanetza::geonet']]]
 ];

@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 148.00 193.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 189)">
 <title>vanetza::security::openssl::BigNumberContext</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-189 144,-189 144,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="0,-0.5 0,-90.5 140,-90.5 140,-0.5 0,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="0,-0.5 0,-90.5 140,-90.5 140,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-78.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::security::</text>
 <text text-anchor="middle" x="70" y="-67.5" font-family="Helvetica,sans-Serif" font-size="10.00">openssl::BigNumberContext</text>
-<polyline fill="none" stroke="black" points="0,-60.5 140,-60.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-60.5 140,-60.5 "/>
 <text text-anchor="start" x="8" y="-48.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; ctx</text>
-<polyline fill="none" stroke="black" points="0,-41.5 140,-41.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-41.5 140,-41.5 "/>
 <text text-anchor="start" x="8" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ BigNumberContext()</text>
 <text text-anchor="start" x="8" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ ~BigNumberContext()</text>
 <text text-anchor="start" x="8" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ operator BN_CTX *()</text>

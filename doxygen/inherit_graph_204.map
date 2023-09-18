@@ -1,3 +1,6 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$d6/d43/structvanetza_1_1geonet_1_1DataConfirm.html" title=" " alt="" coords="5,5,200,32"/>
+<area shape="rect" id="node1" href="$db/d2d/classvanetza_1_1geonet_1_1CbfCounter.html" title=" " alt="" coords="5,32,193,58"/>
+<area shape="rect" id="node2" href="$da/d5f/classvanetza_1_1geonet_1_1CbfCounterContending.html" title=" " alt="" coords="477,29,665,69"/>
+<area shape="rect" id="node3" href="$d4/d50/classvanetza_1_1geonet_1_1CbfCounterFading.html" title=" " alt="" coords="241,25,429,65"/>
+<area shape="rect" id="node4" href="$db/d11/classvanetza_1_1geonet_1_1CbfCounterImmortal.html" title=" " alt="" coords="241,89,429,129"/>
 </map>

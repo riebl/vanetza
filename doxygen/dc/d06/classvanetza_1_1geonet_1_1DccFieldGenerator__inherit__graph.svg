@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 310.00 325.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 321)">
 <title>vanetza::geonet::DccFieldGenerator</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-321 306,-321 306,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="94,-237.5 94,-316.5 224,-316.5 224,-237.5 94,-237.5"/>
+<polygon fill="#999999" stroke="#666666" points="94,-237.5 94,-316.5 224,-316.5 224,-237.5 94,-237.5"/>
 <text text-anchor="start" x="102" y="-304.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::DccField</text>
 <text text-anchor="middle" x="159" y="-293.5" font-family="Helvetica,sans-Serif" font-size="10.00">Generator</text>
-<polyline fill="none" stroke="black" points="94,-286.5 224,-286.5 "/>
+<polyline fill="none" stroke="#666666" points="94,-286.5 224,-286.5 "/>
 <text text-anchor="middle" x="159" y="-274.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="94,-267.5 224,-267.5 "/>
+<polyline fill="none" stroke="#666666" points="94,-267.5 224,-267.5 "/>
 <text text-anchor="start" x="102" y="-255.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ generate_dcc_field()</text>
 <text text-anchor="start" x="102" y="-244.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ ~DccFieldGenerator()</text>
 </a>
@@ -28,10 +27,10 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d4/d6e/classvanetza_1_1geonet_1_1DccInformationSharing.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="0,-0.5 0,-200.5 158,-200.5 158,-0.5 0,-0.5"/>
+<polygon fill="white" stroke="#666666" points="0,-0.5 0,-200.5 158,-200.5 158,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-188.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::DccInformation</text>
 <text text-anchor="middle" x="79" y="-177.5" font-family="Helvetica,sans-Serif" font-size="10.00">Sharing</text>
-<polyline fill="none" stroke="black" points="0,-170.5 158,-170.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-170.5 158,-170.5 "/>
 <text text-anchor="start" x="8" y="-158.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ on_global_cbr_update</text>
 <text text-anchor="start" x="8" y="-147.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_runtime</text>
 <text text-anchor="start" x="8" y="-136.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_location_table</text>
@@ -41,7 +40,7 @@
 <text text-anchor="start" x="8" y="-92.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_trigger_interval</text>
 <text text-anchor="start" x="8" y="-81.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_last_aggregation</text>
 <text text-anchor="start" x="8" y="-70.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_update_hook</text>
-<polyline fill="none" stroke="black" points="0,-63.5 158,-63.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-63.5 158,-63.5 "/>
 <text text-anchor="start" x="8" y="-51.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ DccInformationSharing()</text>
 <text text-anchor="start" x="8" y="-40.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ DccInformationSharing()</text>
 <text text-anchor="start" x="8" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ generate_dcc_field()</text>
@@ -53,8 +52,8 @@
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M137.07,-228.17C133.11,-219.53 128.85,-210.23 124.5,-200.74"/>
-<polygon fill="none" stroke="midnightblue" points="133.9,-229.64 141.25,-237.27 140.26,-226.72 133.9,-229.64"/>
+<path fill="none" stroke="#63b8ff" d="M137.07,-228.17C133.11,-219.53 128.85,-210.23 124.5,-200.74"/>
+<polygon fill="none" stroke="#63b8ff" points="133.9,-229.64 141.25,-237.27 140.26,-226.72 133.9,-229.64"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
@@ -73,8 +72,8 @@
 <!-- Node1&#45;&gt;Node3 -->
 <g id="edge2" class="edge">
 <title>Node1&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M181.04,-227.93C194.65,-198.24 211.76,-160.92 223.85,-134.54"/>
-<polygon fill="none" stroke="midnightblue" points="177.74,-226.72 176.75,-237.27 184.1,-229.64 177.74,-226.72"/>
+<path fill="none" stroke="#63b8ff" d="M181.04,-227.93C194.65,-198.24 211.76,-160.92 223.85,-134.54"/>
+<polygon fill="none" stroke="#63b8ff" points="177.74,-226.72 176.75,-237.27 184.1,-229.64 177.74,-226.72"/>
 </g>
 </g>
 </svg>

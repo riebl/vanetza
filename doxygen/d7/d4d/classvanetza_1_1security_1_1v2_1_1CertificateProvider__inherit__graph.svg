@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 456.00 391.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 387)">
 <title>vanetza::security::v2::CertificateProvider</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-387 452,-387 452,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="164.5,-281.5 164.5,-382.5 283.5,-382.5 283.5,-281.5 164.5,-281.5"/>
+<polygon fill="#999999" stroke="#666666" points="164.5,-281.5 164.5,-382.5 283.5,-382.5 283.5,-281.5 164.5,-281.5"/>
 <text text-anchor="start" x="172.5" y="-370.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::security::</text>
 <text text-anchor="middle" x="224" y="-359.5" font-family="Helvetica,sans-Serif" font-size="10.00">v2::CertificateProvider</text>
-<polyline fill="none" stroke="black" points="164.5,-352.5 283.5,-352.5 "/>
+<polyline fill="none" stroke="#666666" points="164.5,-352.5 283.5,-352.5 "/>
 <text text-anchor="middle" x="224" y="-340.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="164.5,-333.5 283.5,-333.5 "/>
+<polyline fill="none" stroke="#666666" points="164.5,-333.5 283.5,-333.5 "/>
 <text text-anchor="start" x="172.5" y="-321.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_certificate()</text>
 <text text-anchor="start" x="172.5" y="-310.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_chain()</text>
 <text text-anchor="start" x="172.5" y="-299.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_private_key()</text>
@@ -30,15 +29,15 @@
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d7/dff/classvanetza_1_1security_1_1v2_1_1NaiveCertificateProvider.html" target="_top" xlink:title="A very simplistic certificate provider.">
-<polygon fill="white" stroke="black" points="0,-0.5 0,-244.5 140,-244.5 140,-0.5 0,-0.5"/>
+<polygon fill="white" stroke="#666666" points="0,-0.5 0,-244.5 140,-244.5 140,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-232.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::security::</text>
 <text text-anchor="middle" x="70" y="-221.5" font-family="Helvetica,sans-Serif" font-size="10.00">v2::NaiveCertificateProvider</text>
-<polyline fill="none" stroke="black" points="0,-214.5 140,-214.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-214.5 140,-214.5 "/>
 <text text-anchor="start" x="8" y="-202.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_crypto_backend</text>
 <text text-anchor="start" x="8" y="-191.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_runtime</text>
 <text text-anchor="start" x="8" y="-180.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_own_key_pair</text>
 <text text-anchor="start" x="8" y="-169.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_own_certificate</text>
-<polyline fill="none" stroke="black" points="0,-162.5 140,-162.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-162.5 140,-162.5 "/>
 <text text-anchor="start" x="8" y="-150.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ NaiveCertificateProvider()</text>
 <text text-anchor="start" x="8" y="-139.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_certificate()</text>
 <text text-anchor="start" x="8" y="-128.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_chain()</text>
@@ -59,8 +58,8 @@
 <!-- Node1&#45;&gt;Node2 -->
 <g id="edge1" class="edge">
 <title>Node1&#45;&gt;Node2</title>
-<path fill="none" stroke="midnightblue" d="M171.78,-273.34C163.92,-264.04 156.09,-254.39 149,-245 146.04,-241.08 143.08,-237.06 140.12,-232.97"/>
-<polygon fill="none" stroke="midnightblue" points="169.21,-275.73 178.36,-281.06 174.53,-271.18 169.21,-275.73"/>
+<path fill="none" stroke="#63b8ff" d="M171.78,-273.34C163.92,-264.04 156.09,-254.39 149,-245 146.04,-241.08 143.08,-237.06 140.12,-232.97"/>
+<polygon fill="none" stroke="#63b8ff" points="169.21,-275.73 178.36,-281.06 174.53,-271.18 169.21,-275.73"/>
 </g>
 <!-- Node3 -->
 <g id="node3" class="node">
@@ -83,21 +82,21 @@
 <!-- Node1&#45;&gt;Node3 -->
 <g id="edge2" class="edge">
 <title>Node1&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M224,-271.23C224,-242.05 224,-207.17 224,-178.64"/>
-<polygon fill="none" stroke="midnightblue" points="220.5,-271.3 224,-281.3 227.5,-271.3 220.5,-271.3"/>
+<path fill="none" stroke="#63b8ff" d="M224,-271.23C224,-242.05 224,-207.17 224,-178.64"/>
+<polygon fill="none" stroke="#63b8ff" points="220.5,-271.3 224,-281.3 227.5,-271.3 220.5,-271.3"/>
 </g>
 <!-- Node4 -->
 <g id="node4" class="node">
 <title>Node4</title>
 <g id="a_node4"><a xlink:href="../../d6/db8/classvanetza_1_1security_1_1v2_1_1StaticCertificateProvider.html" target="_top" xlink:title="A simple certificate provider.">
-<polygon fill="white" stroke="black" points="308,-55.5 308,-189.5 448,-189.5 448,-55.5 308,-55.5"/>
+<polygon fill="white" stroke="#666666" points="308,-55.5 308,-189.5 448,-189.5 448,-55.5 308,-55.5"/>
 <text text-anchor="start" x="316" y="-177.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::security::</text>
 <text text-anchor="middle" x="378" y="-166.5" font-family="Helvetica,sans-Serif" font-size="10.00">v2::StaticCertificateProvider</text>
-<polyline fill="none" stroke="black" points="308,-159.5 448,-159.5 "/>
+<polyline fill="none" stroke="#666666" points="308,-159.5 448,-159.5 "/>
 <text text-anchor="start" x="316" y="-147.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; authorization_ticket</text>
 <text text-anchor="start" x="316" y="-136.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; authorization_ticket_key</text>
 <text text-anchor="start" x="316" y="-125.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; chain</text>
-<polyline fill="none" stroke="black" points="308,-118.5 448,-118.5 "/>
+<polyline fill="none" stroke="#666666" points="308,-118.5 448,-118.5 "/>
 <text text-anchor="start" x="316" y="-106.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ StaticCertificateProvider()</text>
 <text text-anchor="start" x="316" y="-95.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ StaticCertificateProvider()</text>
 <text text-anchor="start" x="316" y="-84.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_certificate()</text>
@@ -109,8 +108,8 @@
 <!-- Node1&#45;&gt;Node4 -->
 <g id="edge3" class="edge">
 <title>Node1&#45;&gt;Node4</title>
-<path fill="none" stroke="midnightblue" d="M276.22,-273.34C284.08,-264.04 291.91,-254.39 299,-245 312.19,-227.53 325.54,-207.9 337.42,-189.6"/>
-<polygon fill="none" stroke="midnightblue" points="273.47,-271.18 269.64,-281.06 278.79,-275.73 273.47,-271.18"/>
+<path fill="none" stroke="#63b8ff" d="M276.22,-273.34C284.08,-264.04 291.91,-254.39 299,-245 312.19,-227.53 325.54,-207.9 337.42,-189.6"/>
+<polygon fill="none" stroke="#63b8ff" points="273.47,-271.18 269.64,-281.06 278.79,-275.73 273.47,-271.18"/>
 </g>
 </g>
 </svg>

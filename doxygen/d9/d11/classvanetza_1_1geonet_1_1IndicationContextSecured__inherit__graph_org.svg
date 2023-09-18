@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 302.00 507.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 503)">
 <title>vanetza::geonet::IndicationContextSecured</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-503 298,-503 298,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="75,-160.5 75,-294.5 219,-294.5 219,-160.5 75,-160.5"/>
+<polygon fill="#999999" stroke="#666666" points="75,-160.5 75,-294.5 219,-294.5 219,-160.5 75,-160.5"/>
 <text text-anchor="start" x="83" y="-282.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Indication</text>
 <text text-anchor="middle" x="147" y="-271.5" font-family="Helvetica,sans-Serif" font-size="10.00">ContextSecured</text>
-<polyline fill="none" stroke="black" points="75,-264.5 219,-264.5 "/>
+<polyline fill="none" stroke="#666666" points="75,-264.5 219,-264.5 "/>
 <text text-anchor="start" x="83" y="-252.5" font-family="Helvetica,sans-Serif" font-size="10.00"># m_parent</text>
-<polyline fill="none" stroke="black" points="75,-245.5 219,-245.5 "/>
+<polyline fill="none" stroke="#666666" points="75,-245.5 219,-245.5 "/>
 <text text-anchor="start" x="83" y="-233.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ IndicationContextSecured()</text>
 <text text-anchor="start" x="83" y="-222.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ link_layer()</text>
 <text text-anchor="start" x="83" y="-211.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ service_primitive()</text>
@@ -50,8 +49,8 @@
 <!-- Node1&#45;&gt;Node3 -->
 <g id="edge2" class="edge">
 <title>Node1&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M111.05,-151.15C105.73,-139.98 100.32,-128.66 95.24,-118.01"/>
-<polygon fill="none" stroke="midnightblue" points="108.03,-152.95 115.5,-160.47 114.35,-149.94 108.03,-152.95"/>
+<path fill="none" stroke="#63b8ff" d="M111.05,-151.15C105.73,-139.98 100.32,-128.66 95.24,-118.01"/>
+<polygon fill="none" stroke="#63b8ff" points="108.03,-152.95 115.5,-160.47 114.35,-149.94 108.03,-152.95"/>
 </g>
 <!-- Node4 -->
 <g id="node4" class="node">
@@ -75,19 +74,19 @@
 <!-- Node1&#45;&gt;Node4 -->
 <g id="edge3" class="edge">
 <title>Node1&#45;&gt;Node4</title>
-<path fill="none" stroke="midnightblue" d="M182.88,-151.29C187.28,-142.06 191.74,-132.71 196.03,-123.73"/>
-<polygon fill="none" stroke="midnightblue" points="179.65,-149.94 178.5,-160.47 185.97,-152.95 179.65,-149.94"/>
+<path fill="none" stroke="#63b8ff" d="M182.88,-151.29C187.28,-142.06 191.74,-132.71 196.03,-123.73"/>
+<polygon fill="none" stroke="#63b8ff" points="179.65,-149.94 178.5,-160.47 185.97,-152.95 179.65,-149.94"/>
 </g>
 <!-- Node2 -->
 <g id="node2" class="node">
 <title>Node2</title>
 <g id="a_node2"><a xlink:href="../../d0/db4/classvanetza_1_1geonet_1_1IndicationContext.html" target="_top" xlink:title=" ">
-<polygon fill="white" stroke="black" points="80.5,-331.5 80.5,-498.5 213.5,-498.5 213.5,-331.5 80.5,-331.5"/>
+<polygon fill="white" stroke="#666666" points="80.5,-331.5 80.5,-498.5 213.5,-498.5 213.5,-331.5 80.5,-331.5"/>
 <text text-anchor="start" x="88.5" y="-486.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::Indication</text>
 <text text-anchor="middle" x="147" y="-475.5" font-family="Helvetica,sans-Serif" font-size="10.00">Context</text>
-<polyline fill="none" stroke="black" points="80.5,-468.5 213.5,-468.5 "/>
+<polyline fill="none" stroke="#666666" points="80.5,-468.5 213.5,-468.5 "/>
 <text text-anchor="middle" x="147" y="-456.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="80.5,-449.5 213.5,-449.5 "/>
+<polyline fill="none" stroke="#666666" points="80.5,-449.5 213.5,-449.5 "/>
 <text text-anchor="start" x="88.5" y="-437.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ parse_basic()</text>
 <text text-anchor="start" x="88.5" y="-426.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ parse_common()</text>
 <text text-anchor="start" x="88.5" y="-415.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ parse_secured()</text>
@@ -104,8 +103,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M147,-321.19C147,-312.22 147,-303.26 147,-294.64"/>
-<polygon fill="none" stroke="midnightblue" points="143.5,-321.29 147,-331.29 150.5,-321.29 143.5,-321.29"/>
+<path fill="none" stroke="#63b8ff" d="M147,-321.19C147,-312.22 147,-303.26 147,-294.64"/>
+<polygon fill="none" stroke="#63b8ff" points="143.5,-321.29 147,-331.29 150.5,-321.29 143.5,-321.29"/>
 </g>
 </g>
 </svg>

@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 167.00 237.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 233)">
 <title>vanetza::convertible::byte_buffer_impl&lt; ByteBuffer &gt;</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-233 163,-233 163,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="0,-0.5 0,-90.5 159,-90.5 159,-0.5 0,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="0,-0.5 0,-90.5 159,-90.5 159,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-78.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::convertible</text>
 <text text-anchor="middle" x="79.5" y="-67.5" font-family="Helvetica,sans-Serif" font-size="10.00">::byte_buffer_impl&lt; ByteBuffer &gt;</text>
-<polyline fill="none" stroke="black" points="0,-60.5 159,-60.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-60.5 159,-60.5 "/>
 <text text-anchor="start" x="8" y="-48.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ m_buffer</text>
-<polyline fill="none" stroke="black" points="0,-41.5 159,-41.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-41.5 159,-41.5 "/>
 <text text-anchor="start" x="8" y="-29.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ byte_buffer_impl()</text>
 <text text-anchor="start" x="8" y="-18.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ convert()</text>
 <text text-anchor="start" x="8" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ size()</text>
@@ -45,8 +44,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M79.5,-117.23C79.5,-108.24 79.5,-99.1 79.5,-90.52"/>
-<polygon fill="none" stroke="midnightblue" points="76,-117.29 79.5,-127.29 83,-117.29 76,-117.29"/>
+<path fill="none" stroke="#63b8ff" d="M79.5,-117.23C79.5,-108.24 79.5,-99.1 79.5,-90.52"/>
+<polygon fill="none" stroke="#63b8ff" points="76,-117.29 79.5,-127.29 83,-117.29 76,-117.29"/>
 </g>
 </g>
 </svg>

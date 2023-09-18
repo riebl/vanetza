@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 130.00 182.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 178)">
 <title>vanetza::security::DefaultSigningPolicy</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-178 126,-178 126,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="0,-0.5 0,-68.5 122,-68.5 122,-0.5 0,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="0,-0.5 0,-68.5 122,-68.5 122,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-56.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::security::</text>
 <text text-anchor="middle" x="61" y="-45.5" font-family="Helvetica,sans-Serif" font-size="10.00">DefaultSigningPolicy</text>
-<polyline fill="none" stroke="black" points="0,-38.5 122,-38.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-38.5 122,-38.5 "/>
 <text text-anchor="middle" x="61" y="-26.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="0,-19.5 122,-19.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-19.5 122,-19.5 "/>
 <text text-anchor="start" x="8" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ DefaultSigningPolicy()</text>
 </a>
 </g>
@@ -40,8 +39,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M61,-95.14C61,-86.26 61,-77.04 61,-68.59"/>
-<polygon fill="none" stroke="midnightblue" points="57.5,-95.34 61,-105.34 64.5,-95.34 57.5,-95.34"/>
+<path fill="none" stroke="#63b8ff" d="M61,-95.14C61,-86.26 61,-77.04 61,-68.59"/>
+<polygon fill="none" stroke="#63b8ff" points="57.5,-95.34 61,-105.34 64.5,-95.34 57.5,-95.34"/>
 </g>
 </g>
 </svg>

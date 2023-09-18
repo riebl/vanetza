@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 286.00 342.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 338)">
 <title>vanetza::geonet::DataRequestWithArea</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-338 282,-338 282,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="65,-105.5 65,-173.5 213,-173.5 213,-105.5 65,-105.5"/>
+<polygon fill="#999999" stroke="#666666" points="65,-105.5 65,-173.5 213,-173.5 213,-105.5 65,-105.5"/>
 <text text-anchor="start" x="73" y="-161.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::DataRequest</text>
 <text text-anchor="middle" x="139" y="-150.5" font-family="Helvetica,sans-Serif" font-size="10.00">WithArea</text>
-<polyline fill="none" stroke="black" points="65,-143.5 213,-143.5 "/>
+<polyline fill="none" stroke="#666666" points="65,-143.5 213,-143.5 "/>
 <text text-anchor="start" x="73" y="-131.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ destination</text>
-<polyline fill="none" stroke="black" points="65,-124.5 213,-124.5 "/>
+<polyline fill="none" stroke="#666666" points="65,-124.5 213,-124.5 "/>
 <text text-anchor="start" x="73" y="-112.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ DataRequest()</text>
 </a>
 </g>
@@ -40,8 +39,8 @@
 <!-- Node1&#45;&gt;Node3 -->
 <g id="edge2" class="edge">
 <title>Node1&#45;&gt;Node3</title>
-<path fill="none" stroke="midnightblue" d="M109.3,-97.16C102.48,-87.66 95.31,-77.69 88.78,-68.59"/>
-<polygon fill="none" stroke="midnightblue" points="106.5,-99.26 115.18,-105.34 112.19,-95.18 106.5,-99.26"/>
+<path fill="none" stroke="#63b8ff" d="M109.3,-97.16C102.48,-87.66 95.31,-77.69 88.78,-68.59"/>
+<polygon fill="none" stroke="#63b8ff" points="106.5,-99.26 115.18,-105.34 112.19,-95.18 106.5,-99.26"/>
 </g>
 <!-- Node4 -->
 <g id="node4" class="node">
@@ -60,8 +59,8 @@
 <!-- Node1&#45;&gt;Node4 -->
 <g id="edge3" class="edge">
 <title>Node1&#45;&gt;Node4</title>
-<path fill="none" stroke="midnightblue" d="M168.7,-97.16C175.52,-87.66 182.69,-77.69 189.22,-68.59"/>
-<polygon fill="none" stroke="midnightblue" points="165.81,-95.18 162.82,-105.34 171.5,-99.26 165.81,-95.18"/>
+<path fill="none" stroke="#63b8ff" d="M168.7,-97.16C175.52,-87.66 182.69,-77.69 189.22,-68.59"/>
+<polygon fill="none" stroke="#63b8ff" points="165.81,-95.18 162.82,-105.34 171.5,-99.26 165.81,-95.18"/>
 </g>
 <!-- Node2 -->
 <g id="node2" class="node">
@@ -85,8 +84,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M139,-200.24C139,-190.97 139,-181.84 139,-173.62"/>
-<polygon fill="none" stroke="midnightblue" points="135.5,-200.33 139,-210.33 142.5,-200.33 135.5,-200.33"/>
+<path fill="none" stroke="#63b8ff" d="M139,-200.24C139,-190.97 139,-181.84 139,-173.62"/>
+<polygon fill="none" stroke="#63b8ff" points="135.5,-200.33 139,-210.33 142.5,-200.33 135.5,-200.33"/>
 </g>
 </g>
 </svg>

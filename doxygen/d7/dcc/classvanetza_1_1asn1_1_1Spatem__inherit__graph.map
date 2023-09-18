@@ -1,8 +1,7 @@
 <map id="vanetza::asn1::Spatem" name="vanetza::asn1::Spatem">
-<area shape="rect" id="node1" title=" " alt="" coords="140,896,296,973"/>
-<area shape="rect" id="node2" href="$dc/dbf/classvanetza_1_1asn1_1_1asn1c__per__wrapper.html" title=" " alt="" coords="124,696,312,847"/>
-<area shape="rect" id="node3" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="5,351,225,633"/>
-<area shape="rect" id="node4" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="15,5,210,288"/>
-<area shape="rect" id="node5" href="$dc/dbf/classvanetza_1_1asn1_1_1asn1c__per__wrapper.html" title=" " alt="" coords="255,417,402,567"/>
-<area shape="rect" id="node6" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="234,5,429,288"/>
+<area shape="rect" id="node1" title=" " alt="" coords="83,941,239,1019"/>
+<area shape="rect" id="node2" href="$dc/dbf/classvanetza_1_1asn1_1_1asn1c__per__wrapper.html" title=" " alt="" coords="67,741,255,892"/>
+<area shape="rect" id="node3" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="5,367,200,679"/>
+<area shape="rect" id="node4" href="$dc/dbf/classvanetza_1_1asn1_1_1asn1c__per__wrapper.html" title=" " alt="" coords="224,447,371,598"/>
+<area shape="rect" id="node5" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="200,5,395,317"/>
 </map>

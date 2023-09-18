@@ -8,20 +8,19 @@
  viewBox="0.00 0.00 148.00 391.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 387)">
 <title>vanetza::security::v2::NaiveCertificateProvider</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-387 144,-387 144,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title="A very simplistic certificate provider.">
-<polygon fill="#bfbfbf" stroke="black" points="0,-0.5 0,-244.5 140,-244.5 140,-0.5 0,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="0,-0.5 0,-244.5 140,-244.5 140,-0.5 0,-0.5"/>
 <text text-anchor="start" x="8" y="-232.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::security::</text>
 <text text-anchor="middle" x="70" y="-221.5" font-family="Helvetica,sans-Serif" font-size="10.00">v2::NaiveCertificateProvider</text>
-<polyline fill="none" stroke="black" points="0,-214.5 140,-214.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-214.5 140,-214.5 "/>
 <text text-anchor="start" x="8" y="-202.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_crypto_backend</text>
 <text text-anchor="start" x="8" y="-191.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_runtime</text>
 <text text-anchor="start" x="8" y="-180.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_own_key_pair</text>
 <text text-anchor="start" x="8" y="-169.5" font-family="Helvetica,sans-Serif" font-size="10.00">&#45; m_own_certificate</text>
-<polyline fill="none" stroke="black" points="0,-162.5 140,-162.5 "/>
+<polyline fill="none" stroke="#666666" points="0,-162.5 140,-162.5 "/>
 <text text-anchor="start" x="8" y="-150.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ NaiveCertificateProvider()</text>
 <text text-anchor="start" x="8" y="-139.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_certificate()</text>
 <text text-anchor="start" x="8" y="-128.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ own_chain()</text>
@@ -59,8 +58,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M70,-271.25C70,-262.8 70,-253.87 70,-244.76"/>
-<polygon fill="none" stroke="midnightblue" points="66.5,-271.3 70,-281.3 73.5,-271.3 66.5,-271.3"/>
+<path fill="none" stroke="#63b8ff" d="M70,-271.25C70,-262.8 70,-253.87 70,-244.76"/>
+<polygon fill="none" stroke="#63b8ff" points="66.5,-271.3 70,-281.3 73.5,-271.3 66.5,-271.3"/>
 </g>
 </g>
 </svg>

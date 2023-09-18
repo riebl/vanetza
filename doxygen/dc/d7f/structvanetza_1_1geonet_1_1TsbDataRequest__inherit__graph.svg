@@ -8,17 +8,16 @@
  viewBox="0.00 0.00 156.00 237.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 233)">
 <title>vanetza::geonet::TsbDataRequest</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-233 152,-233 152,4 -4,4"/>
 <!-- Node1 -->
 <g id="node1" class="node">
 <title>Node1</title>
 <g id="a_node1"><a xlink:title=" ">
-<polygon fill="#bfbfbf" stroke="black" points="10,-0.5 10,-68.5 138,-68.5 138,-0.5 10,-0.5"/>
+<polygon fill="#999999" stroke="#666666" points="10,-0.5 10,-68.5 138,-68.5 138,-0.5 10,-0.5"/>
 <text text-anchor="start" x="18" y="-56.5" font-family="Helvetica,sans-Serif" font-size="10.00">vanetza::geonet::TsbData</text>
 <text text-anchor="middle" x="74" y="-45.5" font-family="Helvetica,sans-Serif" font-size="10.00">Request</text>
-<polyline fill="none" stroke="black" points="10,-38.5 138,-38.5 "/>
+<polyline fill="none" stroke="#666666" points="10,-38.5 138,-38.5 "/>
 <text text-anchor="middle" x="74" y="-26.5" font-family="Helvetica,sans-Serif" font-size="10.00"> </text>
-<polyline fill="none" stroke="black" points="10,-19.5 138,-19.5 "/>
+<polyline fill="none" stroke="#666666" points="10,-19.5 138,-19.5 "/>
 <text text-anchor="start" x="18" y="-7.5" font-family="Helvetica,sans-Serif" font-size="10.00">+ DataRequest()</text>
 </a>
 </g>
@@ -45,8 +44,8 @@
 <!-- Node2&#45;&gt;Node1 -->
 <g id="edge1" class="edge">
 <title>Node2&#45;&gt;Node1</title>
-<path fill="none" stroke="midnightblue" d="M74,-95.24C74,-85.97 74,-76.84 74,-68.62"/>
-<polygon fill="none" stroke="midnightblue" points="70.5,-95.33 74,-105.33 77.5,-95.33 70.5,-95.33"/>
+<path fill="none" stroke="#63b8ff" d="M74,-95.24C74,-85.97 74,-76.84 74,-68.62"/>
+<polygon fill="none" stroke="#63b8ff" points="70.5,-95.33 74,-105.33 77.5,-95.33 70.5,-95.33"/>
 </g>
 </g>
 </svg>

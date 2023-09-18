@@ -18,7 +18,6 @@
         var mkdocs_page_url = null;
       </script>
     
-    <script src="../../js/jquery-3.6.0.min.js" defer></script>
     <!--[if lt IE 9]>
       <script src="../../js/html5shiv.min.js"></script>
     <![endif]--> 
@@ -35,7 +34,7 @@
 </div>
 <div role="search">
   <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-      <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
   </form>
 </div>
       </div>
@@ -71,6 +70,26 @@
               </ul>
               <p class="caption"><span class="caption-text">Recipes</span></p>
               <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../recipes/autotalks-sdk-build/">Building for Autotalks devices</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../recipes/autotalks-sdk-build/#autotalks-sdk">Autotalks SDK</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../recipes/autotalks-sdk-build/#code-corrections">Code corrections</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../recipes/autotalks-sdk-build/#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../recipes/autotalks-sdk-build/#compile-vanetza">Compile Vanetza</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../recipes/autotalks-sdk-build/#compiling-for-craton">Compiling for Craton</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../recipes/autotalks-sdk-build/#compiling-for-secton">Compiling for Secton</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../recipes/cohda-sdk-build/">Building for Cohda MK5</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../recipes/cohda-sdk-build/#cohda-sdk">Cohda SDK</a>
@@ -131,6 +150,18 @@
                   <li class="toctree-l1 current"><a class="reference internal current" href="./">Socktap</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#link-layer">Link layer</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#ethernet">Ethernet</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cohda">Cohda</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#autotalks">Autotalks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#udp">UDP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#tcp">TCP</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#positioning">Positioning</a>
     </li>
@@ -172,16 +203,15 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="../.." class="icon icon-home" alt="Docs"></a> &raquo;</li>
-          <li>Tools &raquo;</li><li>Socktap</li>
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+          <li>Tools &raquo;</li>
+      <li class="breadcrumb-item active">Socktap</li>
     <li class="wy-breadcrumbs-aside">
-        <a href="https://github.com/riebl/vanetza/edit/master/docs/tools/socktap.md"
-          class="icon icon-github"> Edit on GitHub</a>
+          <a href="https://github.com/riebl/vanetza/edit/master/docs/tools/socktap.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
   <hr/>
 </div>
-
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
@@ -200,21 +230,33 @@ You can choose via the <code>--link-layer</code> argument which implementation t
 <li><em>ethernet</em> runs on Linux raw packet sockets</li>
 <li><em>cohda</em> employs Cohda&rsquo;s LLC API (optional)</li>
 <li><em>udp</em> runs GeoNetworking on top of IP/UDP multicast sockets</li>
+<li><em>tcp</em> runs GeoNetworking on top of IP/TCP sockets</li>
 </ul>
-<p>The <em>ethernet</em> variant has been initially <em>socktap</em>&lsquo;s only available link-layer implementation.
+<h3 id="ethernet">Ethernet</h3>
+<p>The <em>ethernet</em> variant has been initially <em>socktap</em>&rsquo;s only available link-layer implementation.
 In this mode, <em>socktap</em> will send and receiver Ethernet frames on the specified network interface (see <code>--interface</code> argument).</p>
 <p>Please be aware that <em>socktap</em> needs special privileges to access the raw sockets.
 Either run <em>socktap</em> as root user or set the <code>CAP_NET_RAW</code> capabilities on the <em>socktap</em> executable.
 You can do this via <code>sudo setcap cap_net_raw+ep bin/socktap</code>.
 When <code>CAP_NET_RAW</code> is attached to the <em>socktap</em> binary you can run it as an ordinary user.</p>
+<h3 id="cohda">Cohda</h3>
 <p>If you have access to V2X hardware from Cohda Wireless, you can also run <em>socktap</em> on their units.
 In the <em>cohda</em> mode, <em>socktap</em> uses Cohda&rsquo;s LLC API for sending and receiving data frames.
 This mode is similar to <em>ethernet</em> but depends on the Cohda SDK.
-Please refer to our <a href="/recipes/cohda-sdk-build">Cohda SDK building recipe</a> for details.</p>
+Please refer to our <a href="../../recipes/cohda-sdk-build/">Cohda SDK building recipe</a> for details.</p>
+<h3 id="autotalks">Autotalks</h3>
+<p>Another option involving dedicated V2X hardware uses the Autotalks API.
+Please have a look at our <a href="../../recipes/autotalks-sdk-build/">Building for Autotalks devices</a> guide how to incorporate the Autotalks SDK.</p>
+<h3 id="udp">UDP</h3>
 <p>A relatively new addition is the <em>udp</em> mode, which allows running <em>socktap</em> without any privileges.
 GeoNetworking packets are wrapped into UDP datagrams and sent to the IP multicast group <strong>239.118.122.97</strong> on UDP port <strong>8947</strong>.
 Further <em>socktap</em> instances within the same IP multicast network exchange GeoNetworking packets then.
 You can consider this as &ldquo;GeoNetworking over IP/UDP&rdquo;.</p>
+<h3 id="tcp">TCP</h3>
+<p>The TCP implementation is similiar to the UDP one.
+However, TCP adds the arguments <code>--tcp-accept</code> and <code>--tcp-connect</code>, which allow the user to accept incoming TCP connections or connect to open TCP sockets, respectively.
+Both arguments expect a comma separated list of <code>ip:port</code>.
+Outgoing GeoNetworking packets will then be sent to all active TCP connections.</p>
 <h2 id="positioning">Positioning</h2>
 <p>Many components of an ITS-G5 system depend on positioning data.
 Ideally, you have a GPS receiver attached to the computer running <a href="http://catb.org/gpsd">gpsd</a> along with <em>socktap</em>.
@@ -296,15 +338,16 @@ Since then, <a href="https://github.com/kelunik">@kelunik</a> and <a href="https
     
   </span>
 </div>
-    <script>var base_url = '../..';</script>
-    <script src="../../js/theme_extra.js" defer></script>
-    <script src="../../js/theme.js" defer></script>
-      <script src="../../js/extra.js" defer></script>
-      <script src="../../search/main.js" defer></script>
-    <script defer>
-        window.onload = function () {
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../js/extra.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
             SphinxRtdTheme.Navigation.enable(true);
-        };
+        });
     </script>
 
 </body>
