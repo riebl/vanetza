@@ -55,6 +55,7 @@ Meanwhile, Vanetza is used by many more parties and for more use cases than anti
    Vanetza is used in this network simulation as (quite detailed) model of ITS-G5 protocols.
 * Various communication units (roadside units, vehicles and testbeds) in the [CARISSMA Car2X lab](https://www.thi.de/forschung/carissma/labore/car2x-labor) are powered by Vanetza.
 * Prototype motorcycles operated by the [Connected Motorcycle Consortium](https://www.cmc-info.net) use Vanetza for evaluation of novel ITS applications to enhance rider safety.
+* [nfiniity](https://www.nfiniity.com) integrates its *cube* V2X ecosystem with Vanetza.
 
 If you are using Vanetza, we would love to add your project to the list above.
 Please write an e-mail to [raphael.riebl@thi.de](mailto:raphael.riebl@thi.de) or open a pull request.
