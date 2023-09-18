@@ -58,4 +58,5 @@ Meanwhile, Vanetza is used by many more parties and for more use cases than anti
 * [nfiniity](https://www.nfiniity.com) integrates its *cube* V2X ecosystem with Vanetza.
 
 If you are using Vanetza, we would love to add your project to the list above.
-Please write an e-mail to [raphael.riebl@thi.de](mailto:raphael.riebl@thi.de) or open a pull request.
+Please write an e-mail to [raphael@riebl.net](mailto:raphael@riebl.net) or open a pull request.
+
