@@ -3,7 +3,7 @@ Title: Building for Autotalks devices
 # Building Vanetza for Autotalks Craton using Autotalks SDK
 
 This document describes building Vanetza for the Autotalks device. There is a difference between building for Craton and Secton.
-Steps for building Vanetza for Autotalks Craton are very similar to build for Cohda MK5 devices (you can see steps in the [building for Cohda MK5 document](vanetza-build-dependencies.md)). Difference is that there is no virtual machine provided from Autotalks.
+Steps for building Vanetza for Autotalks Craton are very similar to build for Cohda MK5 devices (you can see steps in the [building for Cohda MK5 document](cohda-sdk-build.md)). Difference is that there is no virtual machine provided from Autotalks.
 
 Autotalks SDK can used only in the `socktap` example, so you must always compile it when you want the SDK.
 
@@ -25,7 +25,8 @@ In the initialization, there is a define for `SECTON_NET_NAME`. This is a networ
 
 ## Vanetza build dependencies
 
-Please see [this document](vanetza-build-dependencies.md), program was tested with precompiled libraries downloadable there.
+Please see [this document](cross-compile-dependencies.md) about cross-compiling Vanetza's dependencies.
+This guide  was tested with precompiled libraries downloadable [from here](cohda-sdk-build.md).
 
 ## Compile Vanetza
 
@@ -50,7 +51,7 @@ This builds the Vanetza libraries and *socktap* example as well. When you do `ma
 
 ### Compiling for Secton
 We assume you have copy of the Vanetza repository in your home directory at `$HOME`.
-Furthermore, there should be a symbolic link named `autotalks_secton_api` in your home directory, that links to the root of Secton SDK (e.g., from `/home/your_user/autotalks_secton_api` to the API compilation directory). The build steps are then identical with the ones described in [How to build](vanetza-build-dependencies.md). Just note that for using Autotalks SDK you should use enable compilation of socktap, e.g. like this:
+Furthermore, there should be a symbolic link named `autotalks_secton_api` in your home directory, that links to the root of Secton SDK (e.g., from `/home/your_user/autotalks_secton_api` to the API compilation directory). The build steps are then identical with the ones described in [How to build](../how-to-build.md). Just note that for using Autotalks SDK you should use enable compilation of socktap, e.g. like this:
 
     :::shell
     cmake .. \
