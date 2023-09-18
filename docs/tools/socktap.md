@@ -37,7 +37,13 @@ When `CAP_NET_RAW` is attached to the *socktap* binary you can run it as an ordi
 If you have access to V2X hardware from Cohda Wireless, you can also run *socktap* on their units.
 In the *cohda* mode, *socktap* uses Cohda's LLC API for sending and receiving data frames.
 This mode is similar to *ethernet* but depends on the Cohda SDK.
-Please refer to our [Cohda SDK building recipe](/recipes/cohda-sdk-build) for details.
+Please refer to our [Cohda SDK building recipe](../recipes/cohda-sdk-build.md) for details.
+
+
+### Autotalks
+
+Another option involving dedicated V2X hardware uses the Autotalks API.
+Please have a look at our [Building for Autotalks devices](../recipes/autotalks-sdk-build.md) guide how to incorporate the Autotalks SDK.
 
 
 ### UDP
