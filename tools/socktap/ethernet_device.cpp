@@ -6,6 +6,7 @@
 #include <linux/if_packet.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
+#include <ifaddrs.h>
 
 static void initialize(ifreq& request, const char* interface_name)
 {
@@ -55,4 +56,29 @@ vanetza::MacAddress EthernetDevice::address() const
     vanetza::MacAddress addr;
     std::copy_n(data.ifr_hwaddr.sa_data, addr.octets.size(), addr.octets.data());
     return addr;
+}
+
+std::string EthernetDevice::ip() const
+{
+    //@todo maybe there's a better way to obtain IP from device name...
+    std::string ip;
+    char host[NI_MAXHOST];
+    struct ifaddrs *interfaces = nullptr;
+    // get all network interfaces
+    if(getifaddrs(&interfaces) == 0){
+        // search for local interface and copy IP
+        for(struct ifaddrs *ifa = interfaces; ifa != NULL; ifa = ifa->ifa_next) {
+            if(ifa->ifa_addr == NULL)
+                continue;
+
+            if(ifa->ifa_addr->sa_family == AF_INET && std::string(ifa->ifa_name) == interface_name_){
+                if(getnameinfo(ifa->ifa_addr, sizeof(struct sockaddr_in), host, NI_MAXHOST, NULL, 0, NI_NUMERICHOST) == 0) {
+                    ip = std::string(host);
+                    break;
+                }
+            }
+        }
+        freeifaddrs(interfaces);
+    }
+    return ip;
 }
