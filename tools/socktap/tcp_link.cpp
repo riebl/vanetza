@@ -5,6 +5,7 @@
 #include <boost/bind/bind.hpp>
 #include <boost/bind/placeholders.hpp>
 #include <iostream>
+#include <utility>
 
 namespace ip = boost::asio::ip;
 using namespace vanetza;
@@ -71,7 +72,7 @@ void TcpLink::connect(ip::tcp::endpoint ep)
 void TcpLink::accept(ip::tcp::endpoint ep)
 {
     if (acceptors_.count(ep) == 0) {
-        acceptors_.insert({ep, ip::tcp::acceptor(*io_service_, ep)});
+        acceptors_.insert(std::make_pair(ep, ip::tcp::acceptor(*io_service_, ep)));
     }
 
     sockets_.emplace_back(*io_service_, &callback_);
