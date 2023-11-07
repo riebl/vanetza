@@ -11,7 +11,7 @@ public:
     /*
      * Constructor used for device and thread initialization.
      */
-    AutotalksLink(void);
+    AutotalksLink(boost::asio::io_service&);
 
     /*
      * Destructor used for deinitialization.
@@ -25,6 +25,7 @@ private:
     static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Physical, vanetza::OsiLayer::Application);
     IndicationCallback callback_;
     std::array<vanetza::ByteBuffer, layers_> buffers_;
+    boost::asio::io_service& io_;
 };
 
 
