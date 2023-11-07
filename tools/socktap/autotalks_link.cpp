@@ -4,7 +4,8 @@
 
 const unsigned SendBufferSize = 2000;
 
-AutotalksLink::AutotalksLink(void)
+AutotalksLink::AutotalksLink(boost::asio::io_service& io)
+                             : io_(io)
 {
     vanetza::autotalks::autotalks_device_init();
     vanetza::autotalks::init_rx(this);
@@ -43,7 +44,12 @@ void AutotalksLink::data_received(uint8_t* pBuf, uint16_t size, v2x_receive_para
     vanetza::CohesivePacket packet(std::move(buffer), vanetza::OsiLayer::Physical);
     boost::optional<vanetza::EthernetHeader> eth = vanetza::autotalks::strip_autotalks_rx_header(packet, rx_params);
     if (callback_ && eth)
-        callback_(std::move(packet), *eth);
+    {
+        boost::asio::post(io_, [this, packet = std::move(packet), eth]() mutable
+	    {
+            callback_(std::move(packet), *eth);
+        });
+    }
 }
 
 void AutotalksLink::indicate(IndicationCallback cb)

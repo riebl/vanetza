@@ -92,7 +92,7 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
 
     } else if (name == "autotalks") {
 #ifdef SOCKTAP_WITH_AUTOTALKS
-        link_layer.reset(new AutotalksLink { });
+        link_layer.reset(new AutotalksLink { io_service });
 #endif
     }
 
