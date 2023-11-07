@@ -46,7 +46,7 @@ void AutotalksLink::data_received(uint8_t* pBuf, uint16_t size, v2x_receive_para
     if (callback_ && eth)
     {
         boost::asio::post(io_, [this, packet = std::move(packet), eth]() mutable
-	    {
+        {
             callback_(std::move(packet), *eth);
         });
     }
