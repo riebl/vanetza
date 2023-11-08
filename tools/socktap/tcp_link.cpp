@@ -31,6 +31,9 @@ void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkP
 
     // insert packet size before ethernet header
     uint16_t packet_size = packet->size() + EthernetHeader::length_bytes;
+    if (packet->layer(OsiLayer::Link).size() != 0) {
+        packet_size -= packet->layer(OsiLayer::Link).size();
+    }
     buffer.insert(buffer.begin(), packet_size & 0x00FF);
     buffer.insert(buffer.begin(), (packet_size & 0xFF00) >> 8);
 
