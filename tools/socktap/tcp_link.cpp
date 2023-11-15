@@ -30,10 +30,7 @@ void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkP
     vanetza::ByteBuffer buffer = create_ethernet_header(request.destination_addr, request.source_addr, request.ether_type);
 
     // insert packet size before ethernet header
-    uint16_t packet_size = packet->size() + EthernetHeader::length_bytes;
-    if (packet->layer(OsiLayer::Link).size() != 0) {
-        packet_size -= packet->layer(OsiLayer::Link).size();
-    }
+    uint16_t packet_size = packet->size(OsiLayer::Network, OsiLayer::Application) + EthernetHeader::length_bytes;
     buffer.insert(buffer.begin(), packet_size & 0x00FF);
     buffer.insert(buffer.begin(), (packet_size & 0xFF00) >> 8);
 
