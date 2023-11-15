@@ -25,24 +25,9 @@ int gpsd_read(gps_data_t& data)
 #endif
 }
 
-constexpr int gpsd_status(const gps_data_t& data)
-{
-#if GPSD_API_MAJOR_VERSION < 10
-    return data.status;
-#else
-    return data.fix.status;
-#endif
-}
-
-#if GPSD_API_MAJOR_VERSION < 12
-    constexpr int cStatusFix = STATUS_FIX;
-#else
-    constexpr int cStatusFix = STATUS_GPS;
-#endif
-
 constexpr bool gpsd_has_useful_fix(const gps_data_t& data)
 {
-    return gpsd_status(data) >= cStatusFix && data.fix.mode >= MODE_2D;
+    return data.fix.mode >= MODE_2D;
 }
 
 constexpr double gpsd_get_altitude(const gps_data_t& data)
