@@ -1,7 +1,7 @@
 Title: Running socktap on nfiniity devices
 
 # Introduction
-The CUBE EVK from [nfiniity](https://www.nfiniity.com/#portfolio) fully supports the Vanetza stack and its socktap application. An integrated V2X module listens for requests weather from a local or remote application. The communication protocol between host and V2X module is covered in Google's Protobuf that is used in the respective link-layer implementation.
+The CUBE EVK from [nfiniity](https://www.nfiniity.com/#portfolio) fully supports the Vanetza stack and its socktap application. An integrated V2X module listens for requests whether from a local or remote application. The communication protocol between host and V2X module is covered in Google's Protobuf that is used in the respective link-layer implementation.
 
 # Configuration
 Before building and running socktap you need to configure the v2x module and the wifi once.
