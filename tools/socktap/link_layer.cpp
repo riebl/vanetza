@@ -6,6 +6,10 @@
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <iostream>
 
+#ifdef SOCKTAP_WITH_CUBE_EVK
+#   include "nfiniity/cube_evk_link.hpp"
+#endif
+
 #ifdef SOCKTAP_WITH_COHDA_LLC
 #   include "cohda_link.hpp"
 #endif
@@ -93,6 +97,10 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
     } else if (name == "autotalks") {
 #ifdef SOCKTAP_WITH_AUTOTALKS
         link_layer.reset(new AutotalksLink { io_service });
+#endif
+    } else if (name == "cube-evk") {
+#ifdef SOCKTAP_WITH_CUBE_EVK
+        link_layer.reset(new CubeEvkLink { io_service, boost::asio::ip::address_v4::from_string(vm["cube-ip"].as<std::string>()) });
 #endif
     }
 

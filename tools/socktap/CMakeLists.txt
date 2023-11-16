@@ -28,6 +28,24 @@ add_executable(socktap
     udp_link.cpp
 )
 
+# cube evk board from nfiniity
+option(SOCKTAP_WITH_CUBE_EVK "Use cube evk for socktap" OFF)
+if (SOCKTAP_WITH_CUBE_EVK)
+    find_package(Protobuf REQUIRED)
+    find_package(Boost REQUIRED COMPONENTS coroutine)
+
+    target_compile_definitions(socktap PUBLIC "SOCKTAP_WITH_CUBE_EVK")
+
+    protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS nfiniity/cube-radio.proto)
+    add_library(socktap_cube_radio_protobuf_lib INTERFACE)
+    target_sources(socktap_cube_radio_protobuf_lib INTERFACE ${PROTO_SRCS} ${PROTO_HDRS})
+    target_link_libraries(socktap_cube_radio_protobuf_lib INTERFACE ${PROTOBUF_LIBRARIES})
+    target_include_directories(socktap_cube_radio_protobuf_lib INTERFACE ${PROTOBUF_INCLUDE_DIRS} ${CMAKE_CURRENT_BINARY_DIR})
+
+    target_link_libraries(socktap PUBLIC socktap_cube_radio_protobuf_lib Boost::coroutine)
+    target_sources(socktap PRIVATE nfiniity/cube_evk_link.cpp nfiniity/cube_evk.cpp)
+endif()
+
 option(SOCKTAP_WITH_AUTOTALKS "Use Autotalks API for socktap" OFF) # Both Secton and Craton devices
 if (SOCKTAP_WITH_AUTOTALKS)
     find_package(Autotalks MODULE REQUIRED)
