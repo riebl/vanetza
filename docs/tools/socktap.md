@@ -36,7 +36,7 @@ When `CAP_NET_RAW` is attached to the *socktap* binary you can run it as an ordi
 
 ### CUBE-EVK
 
-If you have access to a cube-evk from [nfiniity](https://www.nfiniity.com/#portfolio) you can use socktap on your personal computer and connect to the EVK. In this mode the EVK is used a wireless remote radio. Moreover, you can use socktap on the EVK natively as well. Please refer to our [Running socktap on nfiniity devices](../recipes/cube-evk-build.md) for more details.
+If you have access to a cube-evk from [nfiniity](https://www.nfiniity.com/#portfolio) you can use socktap on your personal computer and connect to the EVK. In this mode the EVK is used as wireless remote radio. Moreover, you can use socktap on the EVK natively as well. Please refer to our [Running socktap on nfiniity devices](../recipes/cube-evk-build.md) for more details.
 
 
 ### Cohda
