@@ -22,7 +22,7 @@ This is only need for the wireless remote radio mode.
     ip a
 
 # Building and Running Socktap for Wireless Mode
-You can build and run socktap directly on your personal computer and select `cube-evk` as link-layer. The EVK runs gpsd as well to feed socktap with GNSS data. In this mode, the user and the EVK do not need to be at the same location. Moreover, the integrated LTE module allows the user to do field tests with the EVK from remote.
+You can build and run socktap directly on your personal computer and select `cube-evk` as link-layer. The EVK runs gpsd as well to feed socktap with GNSS data. In this mode, the host applicaton and the EVK do not need to be at the same location. Moreover, the integrated LTE module allows the user to do field tests with the EVK from remote.
 
     :::shell
     mkdir build && cd build
