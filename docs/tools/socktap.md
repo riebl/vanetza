@@ -12,11 +12,13 @@ For example, *socktap* omits *Decentralized Congestion Control* (DCC) entirely t
 
 ## Link layer
 
-At the moment, three link layer implementations exist for *socktap*.
+At the moment, six link layer implementations exist for *socktap*.
 You can choose via the `--link-layer` argument which implementation to use:
 
 - *ethernet* runs on Linux raw packet sockets
-- *cohda* employs Cohda's LLC API (optional)
+- *cube-evk* runs nfiniity's link-layer implementation for the cube-evk
+- *autotalks* uses the Autotalks API to run on Autotalks hardware
+- *cohda* employs Cohda's LLC API
 - *udp* runs GeoNetworking on top of IP/UDP multicast sockets
 - *tcp* runs GeoNetworking on top of IP/TCP sockets
 
@@ -30,6 +32,11 @@ Please be aware that *socktap* needs special privileges to access the raw socket
 Either run *socktap* as root user or set the `CAP_NET_RAW` capabilities on the *socktap* executable.
 You can do this via `sudo setcap cap_net_raw+ep bin/socktap`.
 When `CAP_NET_RAW` is attached to the *socktap* binary you can run it as an ordinary user.
+
+
+### CUBE-EVK
+
+If you have access to a cube-evk from [nfiniity](https://www.nfiniity.com/#portfolio) you can use socktap on your personal computer and connect to the EVK. In this mode the EVK is used a wireless remote radio. Moreover, you can use socktap on the EVK natively as well. Please refer to our [Running socktap on nfiniity devices](../recipes/cube-evk-build.md) for more details.
 
 
 ### Cohda
