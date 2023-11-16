@@ -7,7 +7,7 @@ The CUBE EVK from [nfiniity](https://www.nfiniity.com/#portfolio) fully supports
 Before building and running socktap you need to configure the v2x module and the wifi once.
 
 ## V2X Radio Configuration - C-V2X or DSRC
-Before running socktap select your desired radio configuration using the v2xconfig tool:
+First of all select your desired radio configuration using the `v2xconfig` tool:
 
     :::shell
     # start dsrc or cv2x and enable auto-start
