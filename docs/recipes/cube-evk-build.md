@@ -8,12 +8,14 @@ Before building and running socktap you need to configure the v2x module and the
 
 ## V2X Radio Configuration - C-V2X or DSRC
 Before running socktap select your desired radio configuration using the v2xconfig tool:
+
     :::shell
     # start dsrc or cv2x and enable auto-start
     v2xconfig start enable dsrc 
 
 ## Connect to your local WiFi
 This is only need for the wireless remote radio mode.
+
     :::shell
     sudo nmcli dev wifi connect '<ssid>' password '<password>'
     # get your ip
@@ -43,7 +45,7 @@ You can also build and run socktap on the EVK itself and it will connect to the 
     ./bin/socktap -l cube-evk -p static
 
     # use the ublox module on the EVK for positioning data
-    ./bin/socktap -l cube-evk -p gpsd
+    ./bin/socktap -l cube-evk -p gpsd --gpsd-host 127.0.0.1
 
 
 
