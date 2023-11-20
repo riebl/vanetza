@@ -7,7 +7,7 @@
 #include <iostream>
 
 #ifdef SOCKTAP_WITH_CUBE_EVK
-#   include "nfiniity/cube_evk_link.hpp"
+#   include "nfiniity_cube_evk_link.hpp"
 #endif
 
 #ifdef SOCKTAP_WITH_COHDA_LLC

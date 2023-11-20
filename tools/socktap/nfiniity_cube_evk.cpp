@@ -1,4 +1,4 @@
-#include "cube_evk.hpp"
+#include "nfiniity_cube_evk.hpp"
 
 namespace po = boost::program_options;
 

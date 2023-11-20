@@ -1,5 +1,5 @@
-#ifndef CUBE_EVK_HPP_
-#define CUBE_EVK_HPP_
+#ifndef NFINIITY_CUBE_EVK_HPP_
+#define NFINIITY_CUBE_EVK_HPP_
 
 #include <boost/program_options.hpp>
 
@@ -13,4 +13,4 @@ void add_cube_evk_options(boost::program_options::options_description& options);
 } // namespace nfiniity
 } // namespace vanetza
 
-#endif /* CUBE_EVK_HPP_ */
+#endif /* NFINIITY_CUBE_EVK_HPP_ */

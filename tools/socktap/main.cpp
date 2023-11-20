@@ -13,7 +13,7 @@
 #include <iostream>
 
 #ifdef SOCKTAP_WITH_CUBE_EVK
-#include "nfiniity/cube_evk.hpp"
+#include "nfiniity_cube_evk.hpp"
 #endif
 
 namespace asio = boost::asio;

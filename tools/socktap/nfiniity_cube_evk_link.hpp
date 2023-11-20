@@ -1,7 +1,7 @@
-#ifndef CUBE_EVK_LINK_HPP_
-#define CUBE_EVK_LINK_HPP_
+#ifndef NFINIITY_CUBE_EVK_LINK_HPP_
+#define NFINIITY_CUBE_EVK_LINK_HPP_
 
-#include "../raw_socket_link.hpp"
+#include "raw_socket_link.hpp"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <vanetza/net/chunk_packet.hpp>
@@ -10,7 +10,7 @@
 #include <cstdint>
 #include <memory>
 
-#include "cube-radio.pb.h"
+#include "nfiniity_cube_radio.pb.h"
 
 class CubeEvkLink : public LinkLayer
 {
@@ -39,5 +39,5 @@ private:
     std::unique_ptr<LinkLayerTransmission> create_link_layer_tx(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>);
 };
 
-#endif /* CUBE_EVK_LINK_HPP_ */
+#endif /* NFINIITY_CUBE_EVK_LINK_HPP_ */
 
