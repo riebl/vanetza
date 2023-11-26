@@ -12,6 +12,10 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 
+#ifdef SOCKTAP_WITH_CUBE_EVK
+#include "nfiniity_cube_evk.hpp"
+#endif
+
 namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
 namespace po = boost::program_options;
@@ -37,6 +41,10 @@ int main(int argc, const char** argv)
     add_positioning_options(options);
     add_security_options(options);
     add_link_layer_options(options);
+
+#ifdef SOCKTAP_WITH_CUBE_EVK
+    nfiniity::add_cube_evk_options(options);
+#endif
 
     po::positional_options_description positional_options;
     positional_options.add("interface", 1);

@@ -1,0 +1,79 @@
+syntax = "proto2";
+
+message CommandRequest {
+  oneof kind {
+    LifecycleAction lifecycle = 1;
+    LinkLayerTransmission linklayer_tx = 2;
+    RadioConfiguration radio_cfg = 3;
+  }
+}
+
+message CommandResponse {
+  enum Status {
+    SUCCESS = 0;
+    FAILURE = 1;
+    UNKNOWN = 2;
+    NOT_IMPLEMENTED = 3;
+  }
+
+  required Status status = 1;
+  optional string message = 2;
+  optional CommandResponseData data = 3;
+}
+
+message CommandResponseData {
+  oneof kind {
+     RadioConfiguration radio_cfg = 1;
+  }
+}
+
+enum LifecycleAction {
+  SOFT_RESET = 0;
+  HARD_RESET = 1;
+}
+
+enum LinkLayerPriority {
+  BACKGROUND = 0;
+  BEST_EFFORT = 1;
+  VIDEO = 2;
+  VOICE = 3;
+}
+
+message RadioConfiguration {
+  optional bytes address = 1;
+  optional uint32 channel_frequency_mhz = 2;
+  optional bool filter_unicast_destination = 3;
+  optional sint32 default_tx_power_cbm = 4;
+  optional uint32 default_tx_datarate_500kbps = 5;
+}
+
+message LinkLayerTransmission {
+  optional bytes source = 1;
+  required bytes destination = 2;
+  required LinkLayerPriority priority = 3;
+  optional uint32 channel = 4;
+  optional uint32 datarate_500kbps = 5;
+  optional sint32 power_cbm = 6; // centi Bel mW = 10 * dBm
+  required bytes payload = 10;
+}
+
+message LinkLayerReception {
+  required bytes source = 1;
+  required bytes destination = 2;
+  optional uint32 channel = 4;
+  optional sint32 power_cbm = 6;
+  required bytes payload = 10;
+}
+
+message ChannelBusyRatio {
+  required uint32 busy = 1;
+  required uint32 total = 2;
+}
+
+message GossipMessage {
+  oneof kind {
+    ChannelBusyRatio cbr = 1;
+    LinkLayerReception linklayer_rx = 2;
+  }
+}
+
