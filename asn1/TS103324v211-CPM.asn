@@ -1,0 +1,171 @@
+CPM-PDU-Descriptions { itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) cpm (1) major-version-1 (1) minor-version-1(1)}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+
+ItsPduHeader, MessageRateHz, MessageSegmentationInfo, OrdinalNumber1B,  ReferencePosition, StationType, TimestampIts
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) major-version-4 (4) minor-version-1 (1)}
+-- WITH SUCCESSORS
+
+OriginatingRsuContainer, OriginatingVehicleContainer
+FROM CPM-OriginatingStationContainers {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) originatingStationContainers (2) major-version-1 (1) minor-version-1(1)}
+-- WITH SUCCESSORS
+
+SensorInformationContainer
+FROM CPM-SensorInformationContainer {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) sensorInformationContainer (3) major-version-1 (1) minor-version-1(1)}
+-- WITH SUCCESSORS
+
+PerceptionRegionContainer
+FROM CPM-PerceptionRegionContainer {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) perceptionRegionContainer (5) major-version-1 (1) minor-version-1(1)}
+-- WITH SUCCESSORS
+
+PerceivedObjectContainer
+FROM CPM-PerceivedObjectContainer {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) perceivedObjectContainer (4) major-version-1 (1) minor-version-1(1)}
+-- WITH SUCCESSORS
+
+;
+
+/**
+ * This DF  represents the Collective Perception Message (CPM) and is the top level Protocol Data Unit. 
+ *
+ * It shall include the following components: 
+ *
+ * @field header: the common message header for the facilities layer message. 
+ *
+ * @field payload: the payload of the message. 
+ *
+*/
+CollectivePerceptionMessage ::= SEQUENCE {
+    header     ItsPduHeader (WITH COMPONENTS {... , protocolVersion (2), messageId(cpm)}),
+    payload    CpmPayload
+}
+
+/**
+ * This DF  represents the payload of the CPM. 
+ *
+ * It shall include the following components: 
+ *
+ * @field managementContainer: the management container. 
+ *
+ * @field cpmContainers: the list of CPM containers, including its container type identifier and including either one or none of originatingVehicleContainer and/or originatingRsuContainer. 
+ *
+*/
+CpmPayload ::= SEQUENCE {
+    managementContainer   ManagementContainer,
+    cpmContainers         ConstraintWrappedCpmContainers,
+    ...
+}
+
+/**
+ * This DF  represents the management container of the CPM. 
+ * The management container provides basic information about the originating ITS-S, which are not specific to a specific type of station.
+ *
+ * It shall include the following components: 
+ *
+ * @field referenceTime: the reference time for all time related information in the CPM.
+ *
+ * @field messageRateRange: the planned or expected range of the CPM generation rate.
+ *
+ * @field segmentationInfo: information regarding the message segmentation on facility layer.
+ *
+ * @field referencePosition: the reference position for all position related information in the CPM.
+ *
+*/
+ManagementContainer ::= SEQUENCE {
+    referenceTime      TimestampIts,
+    referencePosition  ReferencePosition,
+    segmentationInfo   MessageSegmentationInfo OPTIONAL,
+    messageRateRange   MessageRateRange OPTIONAL,
+    ...
+}
+
+/**
+ * This information object class is an abstract template to instantiate containers.
+ *
+ * It shall include the following components: 
+ *
+ * @field &id: the identifier of the container type.
+ *
+ * @field &Type: the container content.
+ *
+*/
+
+CPM-CONTAINER-ID-AND-TYPE ::= CLASS {
+    &id     CpmContainerId UNIQUE,
+    &Type
+} WITH SYNTAX {&Type IDENTIFIED BY &id}
+
+/**
+ * This DE represents the identifier of the container type. 
+ *
+*/
+CpmContainerId ::= INTEGER (1..16)
+
+/**
+ * These value assignements represent specific values of the container type identifier. 
+*/
+originatingVehicleContainer CpmContainerId ::= 1
+originatingRsuContainer CpmContainerId ::= 2
+sensorInformationContainer CpmContainerId ::= 3
+perceptionRegionContainer CpmContainerId ::= 4
+perceivedObjectContainer CpmContainerId ::= 5
+
+
+/**
+ * This information object set represents the association between the container type and the container content.
+*/
+CpmContainers CPM-CONTAINER-ID-AND-TYPE ::= {
+    {OriginatingVehicleContainer IDENTIFIED BY originatingVehicleContainer} |
+    {OriginatingRsuContainer IDENTIFIED BY originatingRsuContainer} |
+    {SensorInformationContainer IDENTIFIED BY sensorInformationContainer} |
+    {PerceptionRegionContainer IDENTIFIED BY perceptionRegionContainer} |
+    {PerceivedObjectContainer IDENTIFIED BY perceivedObjectContainer},
+    ...
+}
+
+/**
+ * This DF represents a CPM container preceded by its type identifier and a lenght indicator.
+ *
+ * It shall include the following components: 
+ *
+ * @field containerId: the identifier of the container type.
+ *
+ * @field containerData: the container content consistent with the container type.
+ *
+*/
+WrappedCpmContainer ::= SEQUENCE {
+   containerId     CPM-CONTAINER-ID-AND-TYPE.&id( {CpmContainers} ),
+   containerData   CPM-CONTAINER-ID-AND-TYPE.&Type( {CpmContainers}{@containerId} )
+}
+
+/**
+ * This DF represents a list of CPM containers, each with their type identifier. 
+*/
+WrappedCpmContainers::= SEQUENCE SIZE(1..8,...) OF WrappedCpmContainer 
+
+/**
+ * This DF represents a list of CPM containers, each with their type identifier with an additional constraint. 
+*/
+ConstraintWrappedCpmContainers ::= WrappedCpmContainers
+    -- ((WITH COMPONENT (WITH COMPONENTS {..., containerId (ALL EXCEPT 1)})) |
+    -- (WITH COMPONENT (WITH COMPONENTS {..., containerId (ALL EXCEPT 2)})))
+
+/**
+ * This DF  represents the planned or expected range of the message generation rate.
+ *
+ * It shall include the following components: 
+ *
+ * @field messageRateMin: the minimum planned or expected message rate.
+ *
+ * @field messageRateMax: the maximum planned or expected message rate.
+ *
+*/
+MessageRateRange::= SEQUENCE{
+   messageRateMin   MessageRateHz,
+   messageRateMax   MessageRateHz
+}
+
+END
