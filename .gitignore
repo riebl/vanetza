@@ -1,4 +1,8 @@
-build
+.vscode/
+build/
+build.asn1/
 conanfile.pyc
 doxygen/html/
 www/
+vanetza/asn1/its/
+vanetza/asn1/cpm.hpp
