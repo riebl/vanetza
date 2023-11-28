@@ -1,6 +1,8 @@
 #ifndef CAM_FUNCTIONS_HPP_PUFKBEM8
 #define CAM_FUNCTIONS_HPP_PUFKBEM8
 
+#define VANETZA_USE_ITS2 @VANETZA_USE_ITS2@
+
 #include <vanetza/asn1/its/AltitudeConfidence.h>
 #include <vanetza/asn1/its/AltitudeValue.h>
 #include <vanetza/asn1/its/Heading.h>
@@ -51,12 +53,27 @@ bool similar_heading(units::Angle a, units::Angle b, units::Angle limit);
 units::Length distance(const ReferencePosition_t& a, const ReferencePosition_t& b);
 units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units::GeoAngle lon);
 
+#if VANETZA_USE_ITS2
+/**
+ * Calculate distance between positions
+ * \param a one position
+ * \param b another position
+ * \return distance between given positions (or NaN if some position is unavailable)
+ */
+units::Length distance(const ReferencePositionWithConfidence_t& a, const ReferencePositionWithConfidence_t& b);
+units::Length distance(const ReferencePositionWithConfidence_t& a, units::GeoAngle lat, units::GeoAngle lon);
+#endif
+
 /**
  * Check if ASN.1 data element indicates unavailable value
  * \return true if value is available
  */
 bool is_available(const Heading&);
 bool is_available(const ReferencePosition_t&);
+
+#if VANETZA_USE_ITS2
+bool is_available(const ReferencePositionWithConfidence_t& pos);
+#endif
 
 /**
  * Copy position information into a ReferencePosition structure from CDD
