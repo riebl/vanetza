@@ -1,8 +1,0 @@
-<map id="vanetza::security::v3::Sequence&lt; Extensible &gt;" name="vanetza::security::v3::Sequence&lt; Extensible &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="77,5,264,97"/>
-<area shape="rect" id="node2" href="$d3/df0/structvanetza_1_1security_1_1v3_1_1Sequence.html" title=" " alt="" coords="5,160,160,252"/>
-<area shape="rect" id="node4" href="$d3/df0/structvanetza_1_1security_1_1v3_1_1Sequence.html" title=" " alt="" coords="185,160,333,252"/>
-<area shape="rect" id="node3" href="$db/d79/structvanetza_1_1security_1_1v3_1_1CertificateBase.html" title=" " alt="" coords="15,309,150,459"/>
-<area shape="rect" id="node5" href="$d4/db8/structvanetza_1_1security_1_1v3_1_1MissingCrlIdentifier.html" title=" " alt="" coords="177,331,333,437"/>
-<area shape="rect" id="node6" href="$d1/d4d/structvanetza_1_1security_1_1v3_1_1ToBeSignedCertificate.html" title=" " alt="" coords="357,301,531,467"/>
-</map>

@@ -1,4 +1,0 @@
-var structvanetza_1_1security_1_1detail_1_1subject__attribute__type_3_01SubjectAttributeType_1_1Verification__Key_01_4 =
-[
-    [ "type", "da/df8/structvanetza_1_1security_1_1detail_1_1subject__attribute__type_3_01SubjectAttributeType_1_1Verification__Key_01_4.html#a333b655de4b73cea5756501e42ce5d81", null ]
-];

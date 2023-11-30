@@ -1,4 +1,0 @@
-var structvanetza_1_1detail_1_1EndianConverter_3_01T_00_01ByteOrder_1_1LittleEndian_00_01ByteOrder_1_1BigEndian_01_4 =
-[
-    [ "operator()", "de/de8/structvanetza_1_1detail_1_1EndianConverter_3_01T_00_01ByteOrder_1_1LittleEndian_00_01ByteOrder_1_1BigEndian_01_4.html#a6da8473f1130b1e29280cad31e59aa21", null ]
-];

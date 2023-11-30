@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Running socktap on nfiniity devices - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link href="../../css/extra.css" rel="stylesheet" />
+        <link href="../../css/tango.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Running socktap on nfiniity devices";
+        var mkdocs_page_input_path = "recipes/cube-evk-build.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]--> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+<div class="logo">
+    <img src="../../img/logo.png" alt="Vanetza - Your open-source ETSI C-ITS protocol stack" />
+</div>
+<div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Overview</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../..#project-layout">Project layout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../..#deployments">Deployments</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../api/">API Documentation</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../how-to-build/">How to build</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#prerequisites">Prerequisites</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#compilation">Compilation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#unit-tests">Unit tests</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../how-to-build/#integrating-vanetza">Integrating Vanetza</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Recipes</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../autotalks-sdk-build/">Building for Autotalks devices</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#autotalks-sdk">Autotalks SDK</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#code-corrections">Code corrections</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#compile-vanetza">Compile Vanetza</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#compiling-for-craton">Compiling for Craton</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#compiling-for-secton">Compiling for Secton</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cohda-sdk-build/">Building for Cohda MK5</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#cohda-sdk">Cohda SDK</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#vanetza-build-dependencies">Vanetza build dependencies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#compile-vanetza">Compile Vanetza</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cohda-sdk-build/#deployment">Deployment</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../cross-compile-dependencies/">Cross-Compilation of Dependencies</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#boost">Boost</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#crypto">Crypto++</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../cross-compile-dependencies/#geographiclib">GeographicLib</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Running socktap on nfiniity devices</a>
+    <ul class="current">
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tools</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tools/benchmark/">Benchmark</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#running">Running</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/benchmark/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tools/certify/">Certify</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#installation">Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#pki-setup">PKI Setup</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-keys">Generating Keys</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-root-certificates">Generating Root Certificates</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-authorization-authorities">Generating Authorization Authorities</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/certify/#generating-authorization-tickets">Generating Authorization Tickets</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#other-options">Other Options</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/certify/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tools/socktap/">Socktap</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#link-layer">Link layer</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#ethernet">Ethernet</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#cube-evk">CUBE-EVK</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#cohda">Cohda</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#autotalks">Autotalks</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#udp">UDP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#tcp">TCP</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#positioning">Positioning</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#applications">Applications</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#building-and-running">Building and Running</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#build-options">Build options</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#first-steps">First steps</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#acknowledgement">Acknowledgement</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../legal/">Legal Notice</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../legal/#contact">Contact</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../legal/#privacy-statement">Privacy Statement</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">Vanetza - Your open-source ETSI C-ITS protocol stack</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
+          <li>Recipes &raquo;</li>
+      <li class="breadcrumb-item active">Running socktap on nfiniity devices</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/cube-evk-build.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="introduction">Introduction</h1>
+<p>The CUBE EVK from <a href="https://www.nfiniity.com/#portfolio">nfiniity</a> fully supports the Vanetza stack and its socktap application. An integrated V2X module listens for requests whether from a local or remote application. The communication protocol between host and V2X module is covered in Google&rsquo;s Protobuf that is used in the respective link-layer implementation.</p>
+<h1 id="configuration">Configuration</h1>
+<p>Before building and running socktap you need to configure the V2X module and the WiFi once.</p>
+<h2 id="v2x-radio-configuration-c-v2x-or-dsrc">V2X Radio Configuration - C-V2X or DSRC</h2>
+<p>First of all select your desired radio configuration using the <code>v2xconfig</code> tool on the EVK:</p>
+<pre class="codehilite"><code class="language-shell"># start dsrc or cv2x and enable auto-start
+cube&gt; v2xconfig start enable dsrc
+</code></pre>
+
+<h2 id="connect-to-your-local-wifi">Connect to your local WiFi</h2>
+<p>This is only needed for the wireless remote radio mode.</p>
+<pre class="codehilite"><code class="language-shell">cube&gt; sudo nmcli dev wifi connect '&lt;ssid&gt;' password '&lt;password&gt;'
+# get your ip
+cube&gt; ip a
+</code></pre>
+
+<h1 id="building-and-running-socktap-for-wireless-remote-radio-mode">Building and Running Socktap for Wireless Remote Radio Mode</h1>
+<p>You can build and run socktap directly on your personal computer (host) and select <code>cube-evk</code> as link-layer. Further, gpsd daemon is running on the EVK that can feed socktap with GNSS data. </p>
+<p>In <code>wireless remote radio mode</code> you develop, debug and run Vanetza/socktap on your personal computer. There is no need to flash or transfer the application onto your EVK. The V2X radio on the EVK listens for incoming requests from remote. Both devices need to be pingable from each other only.</p>
+<pre class="codehilite"><code class="language-shell">host&gt; mkdir build &amp;&amp; cd build
+host&gt; cmake -DBUILD_SOCKTAP=ON -DSOCKTAP_WITH_CUBE_EVK=ON ..
+
+# use fix position data
+host&gt; ./bin/socktap -l cube-evk -p static --cube-ip &lt;cube-ip&gt;
+
+# use the ublox module on the EVK for positioning data
+host&gt; ./bin/socktap -l cube-evk -p gpsd --gpsd-host &lt;cube-ip&gt; --cube-ip &lt;cube-ip&gt;
+</code></pre>
+
+<p>Moreover, the integrated LTE module allows the user to do field tests with the EVK from remote.</p>
+<h1 id="building-and-running-socktap-on-the-evk">Building and Running Socktap on the EVK</h1>
+<p>You can also build and run socktap on the EVK itself and it will connect to the local V2X module.</p>
+<pre class="codehilite"><code class="language-shell">cube&gt; mkdir build &amp;&amp; cd build
+cube&gt; cmake -DBUILD_SOCKTAP=ON -DSOCKTAP_WITH_CUBE_EVK=ON ..
+
+# use fix position data
+cube&gt; ./bin/socktap -l cube-evk -p static
+
+# use the ublox module on the EVK for positioning data
+cube&gt; ./bin/socktap -l cube-evk -p gpsd --gpsd-host 127.0.0.1
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../cross-compile-dependencies/" class="btn btn-neutral float-left" title="Cross-Compilation of Dependencies"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../tools/benchmark/" class="btn btn-neutral float-right" title="Benchmark">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/riebl/vanetza" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../cross-compile-dependencies/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../tools/benchmark/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="../../js/extra.js"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

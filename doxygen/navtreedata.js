@@ -25,6 +25,7 @@
 var NAVTREE =
 [
   [ "Vanetza", "index.html", [
+    [ "LICENSE", "da/d19/md_LICENSE.html", null ],
     [ "Deprecated List", "da/d58/deprecated.html", null ],
     [ "Namespaces", "namespaces.html", [
       [ "Namespace List", "namespaces.html", "namespaces_dup" ]
@@ -58,8 +59,8 @@ var NAVTREEINDEX =
 "d5/d27/pending__packet_8hpp_source.html",
 "d7/df4/classvanetza_1_1security_1_1v2_1_1TrustStore.html#ad82a8306a97dcdc0b7b6bf3f45811d43",
 "d9/ddf/UnknownLongitude_8h_source.html",
-"dc/d7d/station__type_8hpp_source.html",
-"de/dbd/SequenceOfPsidSspRange_8c_source.html"
+"dc/d7d/EtsiTs103097Data-SignedAndEncrypted_8h_source.html",
+"de/db8/link__layer_8hpp_source.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

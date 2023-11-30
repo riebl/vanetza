@@ -112,6 +112,10 @@
     </li>
     </ul>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../recipes/cube-evk-build/">Running socktap on nfiniity devices</a>
+    <ul>
+    </ul>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Tools</span></p>
               <ul class="current">
@@ -152,6 +156,8 @@
     <li class="toctree-l2"><a class="reference internal" href="#link-layer">Link layer</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#ethernet">Ethernet</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#cube-evk">CUBE-EVK</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#cohda">Cohda</a>
     </li>
@@ -224,11 +230,13 @@ However, <em>socktap</em> may be the starting point for your custom application.
 Just keep in mind that Vanetza supports more features than those integrated in <em>socktap</em>.
 For example, <em>socktap</em> omits <em>Decentralized Congestion Control</em> (DCC) entirely though Vanetza supports this feature.</p>
 <h2 id="link-layer">Link layer</h2>
-<p>At the moment, three link layer implementations exist for <em>socktap</em>.
+<p>At the moment, six link layer implementations exist for <em>socktap</em>.
 You can choose via the <code>--link-layer</code> argument which implementation to use:</p>
 <ul>
 <li><em>ethernet</em> runs on Linux raw packet sockets</li>
-<li><em>cohda</em> employs Cohda&rsquo;s LLC API (optional)</li>
+<li><em>cube-evk</em> runs nfiniity&rsquo;s link-layer implementation for the cube-evk</li>
+<li><em>autotalks</em> uses the Autotalks API to run on Autotalks hardware</li>
+<li><em>cohda</em> employs Cohda&rsquo;s LLC API</li>
 <li><em>udp</em> runs GeoNetworking on top of IP/UDP multicast sockets</li>
 <li><em>tcp</em> runs GeoNetworking on top of IP/TCP sockets</li>
 </ul>
@@ -239,6 +247,8 @@ In this mode, <em>socktap</em> will send and receiver Ethernet frames on the spe
 Either run <em>socktap</em> as root user or set the <code>CAP_NET_RAW</code> capabilities on the <em>socktap</em> executable.
 You can do this via <code>sudo setcap cap_net_raw+ep bin/socktap</code>.
 When <code>CAP_NET_RAW</code> is attached to the <em>socktap</em> binary you can run it as an ordinary user.</p>
+<h3 id="cube-evk">CUBE-EVK</h3>
+<p>If you have access to a cube-evk from <a href="https://www.nfiniity.com/#portfolio">nfiniity</a> you can use socktap on your personal computer and connect to the EVK. In this mode the EVK is used as wireless remote radio. Moreover, you can use socktap on the EVK natively as well. Please refer to our <a href="../../recipes/cube-evk-build/">Running socktap on nfiniity devices</a> for more details.</p>
 <h3 id="cohda">Cohda</h3>
 <p>If you have access to V2X hardware from Cohda Wireless, you can also run <em>socktap</em> on their units.
 In the <em>cohda</em> mode, <em>socktap</em> uses Cohda&rsquo;s LLC API for sending and receiving data frames.

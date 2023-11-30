@@ -1,6 +1,0 @@
-<map id="vanetza::security::CertificateProvider" name="vanetza::security::CertificateProvider">
-<area shape="rect" id="node1" title=" " alt="" coords="222,5,381,141"/>
-<area shape="rect" id="node2" href="$d5/dda/classvanetza_1_1security_1_1NaiveCertificateProvider.html" title="A very simplistic certificate provider." alt="" coords="5,189,189,516"/>
-<area shape="rect" id="node3" href="$d6/d85/classvanetza_1_1security_1_1NullCertificateProvider.html" title=" " alt="" coords="214,277,389,428"/>
-<area shape="rect" id="node4" href="$d1/dd6/classvanetza_1_1security_1_1StaticCertificateProvider.html" title="A simple certificate provider." alt="" coords="413,263,598,443"/>
-</map>

@@ -1,4 +1,0 @@
-var structvanetza_1_1security_1_1detail_1_1validity__restriction__type_3_01ValidityRestrictionType_1_1Time__Start__And__End_01_4 =
-[
-    [ "type", "d1/d8b/structvanetza_1_1security_1_1detail_1_1validity__restriction__type_3_01ValidityRestrictionType_1_1Time__Start__And__End_01_4.html#a1f2fbaaad44661ca430e81bbd579dc53", null ]
-];

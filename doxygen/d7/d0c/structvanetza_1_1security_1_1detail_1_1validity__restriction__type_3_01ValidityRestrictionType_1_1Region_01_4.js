@@ -1,4 +1,0 @@
-var structvanetza_1_1security_1_1detail_1_1validity__restriction__type_3_01ValidityRestrictionType_1_1Region_01_4 =
-[
-    [ "type", "d7/d0c/structvanetza_1_1security_1_1detail_1_1validity__restriction__type_3_01ValidityRestrictionType_1_1Region_01_4.html#a6093acbbb4a86cb2fbc2671ab14f4e90", null ]
-];

@@ -1,4 +1,0 @@
-var structvanetza_1_1security_1_1header__field__type_3_01HeaderFieldType_1_1Generation__Time__Confidence_01_4 =
-[
-    [ "type", "d9/d91/structvanetza_1_1security_1_1header__field__type_3_01HeaderFieldType_1_1Generation__Time__Confidence_01_4.html#a74019fda7b29903c656d036b128a00ac", null ]
-];
