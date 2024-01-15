@@ -1,4 +1,5 @@
 #include "nfiniity_cube_evk_link.hpp"
+#include "nfiniity_cube_radio.pb.h"
 
 #include <iostream>
 #include <vanetza/net/osi_layer.hpp>

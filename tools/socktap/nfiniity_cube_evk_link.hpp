@@ -1,7 +1,7 @@
 #ifndef NFINIITY_CUBE_EVK_LINK_HPP_
 #define NFINIITY_CUBE_EVK_LINK_HPP_
 
-#include "raw_socket_link.hpp"
+#include "link_layer.hpp"
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <vanetza/net/chunk_packet.hpp>
@@ -10,7 +10,8 @@
 #include <cstdint>
 #include <memory>
 
-#include "nfiniity_cube_radio.pb.h"
+class LinkLayerReception;
+class LinkLayerTransmission;
 
 class CubeEvkLink : public LinkLayer
 {
