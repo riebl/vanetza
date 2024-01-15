@@ -37,7 +37,10 @@ if (SOCKTAP_WITH_CUBE_EVK)
     target_sources(socktap PRIVATE nfiniity_cube_evk_link.cpp nfiniity_cube_evk.cpp)
     target_include_directories(socktap PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
     target_link_libraries(socktap PUBLIC protobuf::libprotobuf)
-    set_property(TARGET socktap PROPERTY CXX_STANDARD 17)
+
+    if (Protobuf_VERSION VERSION_GREATER_EQUAL "22.0")
+        set_property(TARGET socktap PROPERTY CXX_STANDARD 17)
+    endif()
 endif()
 
 option(SOCKTAP_WITH_AUTOTALKS "Use Autotalks API for socktap" OFF) # Both Secton and Craton devices
