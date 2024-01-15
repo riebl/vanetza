@@ -29,10 +29,11 @@ public:
 private:
     void schedule_timer();
     void on_timer(const boost::system::error_code& ec);
+    bool apply_gps_data(const gps_data_t&);
 
     boost::asio::steady_timer timer_;
-    gps_data_t gps_data;
-    vanetza::PositionFix fetched_position_fix;
+    gps_data_t gps_data_;
+    vanetza::PositionFix fetched_position_fix_;
 };
 
 namespace gpsd

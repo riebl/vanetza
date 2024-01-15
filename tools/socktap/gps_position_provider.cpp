@@ -25,11 +25,6 @@ int gpsd_read(gps_data_t& data)
 #endif
 }
 
-constexpr bool gpsd_has_useful_fix(const gps_data_t& data)
-{
-    return data.fix.mode >= MODE_2D;
-}
-
 constexpr double gpsd_get_altitude(const gps_data_t& data)
 {
 #if GPSD_API_MAJOR_VERSION > 8
@@ -68,20 +63,20 @@ GpsPositionProvider::GpsPositionProvider(boost::asio::io_service& io) :
 GpsPositionProvider::GpsPositionProvider(boost::asio::io_service& io, const std::string& hostname, const std::string& port) :
     timer_(io)
 {
-    if (gps_open(hostname.c_str(), port.c_str(), &gps_data)) {
+    if (gps_open(hostname.c_str(), port.c_str(), &gps_data_)) {
         throw GpsPositioningException(errno);
     }
-    gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, nullptr);
+    gps_stream(&gps_data_, WATCH_ENABLE | WATCH_JSON, nullptr);
     using namespace vanetza::units;
-    fetched_position_fix.latitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
-    fetched_position_fix.longitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
+    fetched_position_fix_.latitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
+    fetched_position_fix_.longitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
     schedule_timer();
 }
 
 GpsPositionProvider::~GpsPositionProvider()
 {
-    gps_stream(&gps_data, WATCH_DISABLE, nullptr);
-    gps_close(&gps_data);
+    gps_stream(&gps_data_, WATCH_DISABLE, nullptr);
+    gps_close(&gps_data_);
 }
 
 GpsPositionProvider::GpsPositioningException::GpsPositioningException(int err) :
@@ -91,7 +86,7 @@ GpsPositionProvider::GpsPositioningException::GpsPositioningException(int err) :
 
 const vanetza::PositionFix& GpsPositionProvider::position_fix()
 {
-    return fetched_position_fix;
+    return fetched_position_fix_;
 }
 
 void GpsPositionProvider::schedule_timer()
@@ -112,46 +107,57 @@ void GpsPositionProvider::on_timer(const boost::system::error_code& ec)
 
 void GpsPositionProvider::fetch_position_fix()
 {
-    int gps_read_rc = 0;
-    do {
-        gps_read_rc = gpsd_read(gps_data);
-    } while (gps_read_rc > 0 && gps_data.devices.ndevices > 0);
-
-    if (gps_read_rc < 0) {
-        throw GpsPositioningException(errno);
-    }
-
-    using namespace vanetza::units;
-    if (gpsd_has_useful_fix(gps_data)) {
-        static const TrueNorth north = TrueNorth::from_value(0.0);
-
-        fetched_position_fix.timestamp = convert_gps_time(gps_data.fix.time);
-        fetched_position_fix.latitude = gps_data.fix.latitude * degree;
-        fetched_position_fix.longitude = gps_data.fix.longitude * degree;
-        fetched_position_fix.speed.assign(gps_data.fix.speed * si::meter_per_second, gps_data.fix.eps * si::meter_per_second);
-        fetched_position_fix.course.assign(north + gps_data.fix.track * degree, north + gps_data.fix.epd * degree);
-        if (!std::isnan(gps_data.fix.epx) && !std::isnan(gps_data.fix.epy)) {
-            if (gps_data.fix.epx > gps_data.fix.epy) {
-                fetched_position_fix.confidence.semi_minor = gps_data.fix.epy * si::meter;
-                fetched_position_fix.confidence.semi_major = gps_data.fix.epx * si::meter;
-                fetched_position_fix.confidence.orientation = north + 90.0 * degree;
-            } else {
-                fetched_position_fix.confidence.semi_minor = gps_data.fix.epx * si::meter;
-                fetched_position_fix.confidence.semi_major = gps_data.fix.epy * si::meter;
-                fetched_position_fix.confidence.orientation = north;
-            }
-        } else {
-            fetched_position_fix.confidence = vanetza::PositionConfidence();
+    while (gps_waiting(&gps_data_, 0)) {
+        // reading is not expected to block now
+        int gps_read_rc = gpsd_read(gps_data_);
+        if (gps_read_rc > 0) {
+            apply_gps_data(gps_data_);
+        } else if (gps_read_rc < 0) {
+            throw GpsPositioningException(errno);
         }
-        if (gps_data.fix.mode == MODE_3D) {
-            fetched_position_fix.altitude = vanetza::ConfidentQuantity<vanetza::units::Length> {
-                gpsd_get_altitude(gps_data) * si::meter, gps_data.fix.epv * si::meter };
-        } else {
-            fetched_position_fix.altitude = boost::none;
-        }
-    } else {
-        fetched_position_fix.latitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
-        fetched_position_fix.longitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
     }
 }
 
+bool GpsPositionProvider::apply_gps_data(const gps_data_t& gps_data)
+{
+    if ((gps_data.set & MODE_SET) != MODE_SET) {
+        // no mode set at all
+        return false;
+    } else if ((gps_data.set & TIME_SET) != TIME_SET) {
+        // mandatory GPS time is missing (fix.time field)
+        return false;
+    } else if (gps_data.fix.mode < MODE_2D) {
+        // latitude and longitude unavailable
+        return false;
+    }
+
+    using namespace vanetza::units;
+    static const TrueNorth north = TrueNorth::from_value(0.0);
+
+    fetched_position_fix_.timestamp = convert_gps_time(gps_data.fix.time);
+    fetched_position_fix_.latitude = gps_data.fix.latitude * degree;
+    fetched_position_fix_.longitude = gps_data.fix.longitude * degree;
+    fetched_position_fix_.speed.assign(gps_data.fix.speed * si::meter_per_second, gps_data.fix.eps * si::meter_per_second);
+    fetched_position_fix_.course.assign(north + gps_data.fix.track * degree, north + gps_data.fix.epd * degree);
+    if (std::isfinite(gps_data.fix.epx) && std::isfinite(gps_data.fix.epy)) {
+        if (gps_data.fix.epx > gps_data.fix.epy) {
+            fetched_position_fix_.confidence.semi_minor = gps_data.fix.epy * si::meter;
+            fetched_position_fix_.confidence.semi_major = gps_data.fix.epx * si::meter;
+            fetched_position_fix_.confidence.orientation = north + 90.0 * degree;
+        } else {
+            fetched_position_fix_.confidence.semi_minor = gps_data.fix.epx * si::meter;
+            fetched_position_fix_.confidence.semi_major = gps_data.fix.epy * si::meter;
+            fetched_position_fix_.confidence.orientation = north;
+        }
+    } else {
+        fetched_position_fix_.confidence = vanetza::PositionConfidence();
+    }
+    if (gps_data.fix.mode == MODE_3D) {
+        fetched_position_fix_.altitude = vanetza::ConfidentQuantity<vanetza::units::Length> {
+            gpsd_get_altitude(gps_data) * si::meter, gps_data.fix.epv * si::meter };
+    } else {
+        fetched_position_fix_.altitude = boost::none;
+    }
+
+    return true;
+}
