@@ -83,6 +83,11 @@ bool validate(asn_TYPE_descriptor_t& td, const void* t, std::string& error)
     return ok;
 }
 
+int print(FILE* stream, asn_TYPE_descriptor_t& td, const void* t)
+{
+    return asn_fprint(stream, &td, t);
+}
+
 std::size_t size_per(asn_TYPE_descriptor_t& td, const void* t)
 {
     asn_enc_rval_t ec;

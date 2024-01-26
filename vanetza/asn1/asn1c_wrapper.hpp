@@ -18,6 +18,7 @@ void free(asn_TYPE_descriptor_t&, void*);
 void* copy(asn_TYPE_descriptor_t&, const void*);
 bool validate(asn_TYPE_descriptor_t&, const void*);
 bool validate(asn_TYPE_descriptor_t&, const void*, std::string&);
+int print(FILE* stream, asn_TYPE_descriptor_t&, const void*);
 std::size_t size_per(asn_TYPE_descriptor_t&, const void*);
 std::size_t size_oer(asn_TYPE_descriptor_t&, const void*);
 ByteBuffer encode_per(asn_TYPE_descriptor_t&, const void*);
@@ -91,6 +92,26 @@ public:
     bool validate(std::string& error) const
     {
         return vanetza::asn1::validate(m_type, m_struct, error);
+    }
+
+    /**
+     * Print ASN.1 type to standard output
+     * \param stream Output stream
+     * \return 0 on success, -1 on error
+     */
+    int print() const 
+    {
+        return vanetza::asn1::print(stdout, m_type, m_struct);
+    }
+
+    /**
+     * Print ASN.1 type to some file stream
+     * \param stream Output stream
+     * \return 0 on success, -1 on error
+     */
+    int print(FILE* stream) const 
+    {
+        return vanetza::asn1::print(stream, m_type, m_struct);
     }
 
     /**
