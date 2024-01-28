@@ -56,6 +56,12 @@ TEST(asn1c_wrapper, validate) {
     EXPECT_FALSE(msg.empty());
 }
 
+TEST(asn1c_wrapper, print) {
+    test_wrapper wrapper(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&wrapper->string, "1234");
+    EXPECT_EQ(wrapper.print(), 0);
+}
+
 TEST(asn1c_wrapper, encode) {
     test_wrapper wrapper(asn_DEF_VanetzaTest);
     OCTET_STRING_fromString(&wrapper->string, "1234");
