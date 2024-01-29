@@ -83,6 +83,11 @@ bool validate(asn_TYPE_descriptor_t& td, const void* t, std::string& error)
     return ok;
 }
 
+int compare(asn_TYPE_descriptor_t& td, const void* a, const void* b)
+{
+    return td.op->compare_struct(&td, a, b);
+}
+
 int print(FILE* stream, asn_TYPE_descriptor_t& td, const void* t)
 {
     return asn_fprint(stream, &td, t);

@@ -18,6 +18,7 @@ void free(asn_TYPE_descriptor_t&, void*);
 void* copy(asn_TYPE_descriptor_t&, const void*);
 bool validate(asn_TYPE_descriptor_t&, const void*);
 bool validate(asn_TYPE_descriptor_t&, const void*, std::string&);
+int compare(asn_TYPE_descriptor_t&, const void*, const void*);
 int print(FILE* stream, asn_TYPE_descriptor_t&, const void*);
 std::size_t size_per(asn_TYPE_descriptor_t&, const void*);
 std::size_t size_oer(asn_TYPE_descriptor_t&, const void*);
@@ -95,8 +96,17 @@ public:
     }
 
     /**
+     * Compare ASN.1 types
+     * \param other Other ASN.1 type to compare with
+     * \return 0 if equal, <0 if other is "greater", >0 if other is "smaller"
+     */
+    int compare(const asn1c_wrapper_common& other) const
+    {
+        return vanetza::asn1::compare(m_type, m_struct, other.m_struct);
+    }
+
+    /**
      * Print ASN.1 type to standard output
-     * \param stream Output stream
      * \return 0 on success, -1 on error
      */
     int print() const 
