@@ -56,6 +56,31 @@ TEST(asn1c_wrapper, validate) {
     EXPECT_FALSE(msg.empty());
 }
 
+TEST(asn1c_wrapper, compare) {
+    test_wrapper wrapper1(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&wrapper1->string, "1234");
+    test_wrapper wrapper2(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&wrapper2->string, "1234");
+    test_wrapper wrapper3(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&wrapper3->string, "0123");
+    test_wrapper wrapper4(asn_DEF_VanetzaTest);
+    wrapper4->field = 5;
+    OCTET_STRING_fromString(&wrapper4->string, "1234");
+
+    // .compare()
+    EXPECT_EQ(wrapper1.compare(wrapper1), 0);
+    EXPECT_EQ(wrapper1.compare(wrapper2), 0);
+    EXPECT_EQ(wrapper1.compare(wrapper3), 1);
+    EXPECT_EQ(wrapper1.compare(wrapper4), -1);
+
+    // operators == and !=
+    EXPECT_TRUE(wrapper1 == wrapper1);
+    EXPECT_TRUE(wrapper1 == wrapper2);
+    EXPECT_FALSE(wrapper1 == wrapper3);
+    EXPECT_TRUE(wrapper1 != wrapper3);
+    EXPECT_TRUE(wrapper1 != wrapper4);
+}
+
 TEST(asn1c_wrapper, print) {
     test_wrapper wrapper(asn_DEF_VanetzaTest);
     OCTET_STRING_fromString(&wrapper->string, "1234");
