@@ -75,6 +75,16 @@ public:
     const asn1c_type* content() const { return m_struct; }
     asn1c_type* content() { return m_struct; }
 
+    // compare semantics
+    bool operator==(const asn1c_wrapper_common& rhs) const
+    {
+        return vanetza::asn1::compare(m_type, m_struct, rhs.m_struct) == 0;
+    }
+    bool operator!=(const asn1c_wrapper_common& rhs) const
+    {
+        return vanetza::asn1::compare(m_type, m_struct, rhs.m_struct) != 0;
+    }
+
     /**
      * Check ASN.1 constraints
      * \param error (optional) copy of error message
