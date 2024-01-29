@@ -68,11 +68,10 @@ TEST(asn1c_wrapper, compare) {
     OCTET_STRING_fromString(&wrapper4->string, "1234");
 
     // .compare()
-    EXPECT_TRUE(!wrapper1.compare(wrapper1));
-    EXPECT_TRUE(!wrapper1.compare(wrapper2));
-    EXPECT_FALSE(!wrapper1.compare(wrapper3));
-    EXPECT_TRUE(wrapper1.compare(wrapper3) > 0);
-    EXPECT_FALSE(!wrapper1.compare(wrapper4));
+    EXPECT_EQ(wrapper1.compare(wrapper1), 0);
+    EXPECT_EQ(wrapper1.compare(wrapper2), 0);
+    EXPECT_EQ(wrapper1.compare(wrapper3), 1);
+    EXPECT_EQ(wrapper1.compare(wrapper4), -1);
 
     // operators == and !=
     EXPECT_TRUE(wrapper1 == wrapper1);
