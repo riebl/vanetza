@@ -52,16 +52,16 @@ void* copy(asn_TYPE_descriptor_t& td, const void* original)
     ByteBuffer buffer;
 
     asn_enc_rval_t ec;
-    ec = der_encode(&td, const_cast<void*>(original), write_buffer, &buffer);
+    ec = oer_encode(&td, const_cast<void*>(original), write_buffer, &buffer);
     if (ec.encoded == -1) {
-        throw std::runtime_error("DER encoding failed");
+        throw std::runtime_error("OER encoding failed");
     }
 
     asn_dec_rval_t dc;
-    dc = ber_decode(0, &td, &copy, buffer.data(), buffer.size());
+    dc = oer_decode(0, &td, &copy, buffer.data(), buffer.size());
     if (dc.code != RC_OK) {
         free(td, copy);
-        throw std::runtime_error("BER decoding failed");
+        throw std::runtime_error("OER decoding failed");
     }
 
     return copy;
