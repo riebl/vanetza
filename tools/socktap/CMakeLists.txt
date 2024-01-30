@@ -31,7 +31,8 @@ add_executable(socktap
 # cube evk board from nfiniity
 option(SOCKTAP_WITH_CUBE_EVK "Use cube evk for socktap" OFF)
 if (SOCKTAP_WITH_CUBE_EVK)
-    find_package(Protobuf REQUIRED CONFIG)
+    set(CMAKE_FIND_PACKAGE_PREFER_CONFIG TRUE)
+    find_package(Protobuf REQUIRED)
     protobuf_generate(TARGET socktap PROTOS nfiniity_cube_radio.proto)
     target_compile_definitions(socktap PUBLIC "SOCKTAP_WITH_CUBE_EVK")
     target_sources(socktap PRIVATE nfiniity_cube_evk_link.cpp nfiniity_cube_evk.cpp)
