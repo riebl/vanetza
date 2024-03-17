@@ -1,0 +1,54 @@
+CPM-PerceptionRegionContainer {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) perceptionRegionContainer (5) major-version-1 (1) minor-version-1(1)}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+
+CardinalNumber1B, DeltaTimeMilliSecondSigned, Identifier2B, Shape, ConfidenceLevel, SensorType, SequenceOfIdentifier1B
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) major-version-4 (4) minor-version-1 (1)}
+;
+
+/**
+ * This DF  represents the Perception Region Container as a list of perception region information objects. 
+*/
+PerceptionRegionContainer ::= SEQUENCE SIZE(1..256, ...) OF PerceptionRegion
+
+/**
+ * This DF represents the actual perception capabilities available to the transmitting ITS-S, offering additional (often dynamic) details to the information provided in the sensor information container.
+ *
+ * It shall include the following components: 
+
+ * @field measurementDeltaTime: difference between the time of estimation of the perception region and the reference time. Positive values indicates that the provided information refers to a point in time after the reference time.
+ *
+ * @field perceptionRegionConfidence: the perception confidence.
+ *
+ * @field perceptionRegionShape: specification of the shape of the perception region.
+ *
+ * @field shadowingApplies: indicates if the standard shadowing approach applies to the described perception region.
+ *
+ * @field sensorIdList: the optional list of identifiers of the sensors which are involved in perceiving the region.
+ *
+ * @field numberOfPerceivedObjects: the optional number of perceived objects contained in the perception region specified in the component perceptionRegionShape. 
+ *
+ * @field perceivedObjectIds: the optional list of identifiers of the objects specified in the Perceived Object Container that are contained in the perception region specified in the component perceptionRegionShape.
+ *
+*/
+PerceptionRegion ::= SEQUENCE {
+    measurementDeltaTime         DeltaTimeMilliSecondSigned,     
+    perceptionRegionConfidence   ConfidenceLevel,
+    perceptionRegionShape        Shape, 
+    shadowingApplies             BOOLEAN,
+    sensorIdList                 SequenceOfIdentifier1B OPTIONAL,
+    numberOfPerceivedObjects     CardinalNumber1B OPTIONAL,
+    perceivedObjectIds           PerceivedObjectIds OPTIONAL,
+	...
+}
+
+/**
+ * This DF  represents a list of identifiers of perceived objects. 
+*/
+PerceivedObjectIds::= SEQUENCE SIZE(0..255, ...) OF Identifier2B
+
+END
