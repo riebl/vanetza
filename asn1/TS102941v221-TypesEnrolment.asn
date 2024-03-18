@@ -1,16 +1,21 @@
 EtsiTs102941TypesEnrolment
-{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) enrolment(4) version2(2) }
+  { itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) enrolment(4) major-version-3(3) minor-version-1(1) }
 
 DEFINITIONS AUTOMATIC TAGS ::=
 BEGIN
 
 IMPORTS
 
-  EtsiTs103097Certificate, EtsiTs103097Data-Signed
-FROM EtsiTs103097Module { itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(103097) securedMessageV1(0) }
+EtsiTs103097Certificate,
+EtsiTs103097Data-Signed
+FROM EtsiTs103097Module
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) secHeaders(103097) core(1) major-version-3(3) minor-version-1(1) } 
+WITH SUCCESSORS
 
-  CertificateFormat, CertificateSubjectAttributes, EcSignature, HashedId8, PublicKeys, Version
-FROM EtsiTs102941BaseTypes { itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) version2(2) }
+CertificateFormat, CertificateSubjectAttributes, EcSignature, HashedId8, PublicKeys, Version
+FROM EtsiTs102941BaseTypes
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
 ;
 
 /************
@@ -32,8 +37,7 @@ EnrolmentResponseCode ::= ENUMERATED {
   deniedpermissions, -- requested permissions are not granted
   invalidkeys, -- either the verification_key of the encryption_key is bad
   deniedrequest, -- any other reason?
-  ...
-}
+  ... }
 
 InnerEcRequestSignedForPop::= EtsiTs103097Data-Signed{InnerEcRequest}
 
@@ -43,16 +47,16 @@ InnerEcRequest ::= SEQUENCE {
   publicKeys                            PublicKeys,
   requestedSubjectAttributes            CertificateSubjectAttributes (WITH COMPONENTS{..., certIssuePermissions ABSENT}),
   ...
-}
+ }
 
 InnerEcResponse ::= SEQUENCE {
   requestHash                           OCTET STRING (SIZE(16)),
   responseCode                          EnrolmentResponseCode,
   certificate                           EtsiTs103097Certificate OPTIONAL,
-  ...
-}
+  ... 
+ }
   (WITH COMPONENTS { responseCode (ok), certificate PRESENT }
-  | WITH COMPONENTS { responseCode (ALL EXCEPT ok), certificate ABSENT }
+     | WITH COMPONENTS { responseCode (ALL EXCEPT ok), certificate ABSENT }
   )
 
 END
