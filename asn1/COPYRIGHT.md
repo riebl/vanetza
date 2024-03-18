@@ -9,11 +9,9 @@ Code generated from the files located here can be found in the *vanetza/asn1/its
 - *EN302637-2v141-CAM.asn* from ETSI EN 302 637-2 v1.4.1 (2019-04)
 - *EN302637-3v131-DENM.asn* from  ETSI EN 302 637-3 v1.3.1 (2019-04)
 - *TS102894-2v131-CDD.asn* from ETSI TS 102 894-2 v1.3.1 (2018-08)
-- *TS102941v131-\*.asn* from ETSI TS 102 941 v1.3.1 (2019-02)
-- *TS103097v131.asn* from ETSI TS 103 097 v1.3.1 (2017-10)
+- *TS102941v221-\*.asn* from ETSI TS 102 941 v2.2.1 (2022-11)
+- *TS103097v211.asn* from ETSI TS 103 097 v2.1.1 (2021-10)
 - *TR103562v211.asn* from ETSI TR 103 562 v2.1.1 (2019-12)
-
-- *IEEE1609dot2.asn* and *IEEE1609dot2BaseTypes.asn* from IEEE 1609.2 as printed in ETSI TS 103 097 v1.3.1
 
 # ETSI WebSVN
 
