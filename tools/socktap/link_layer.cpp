@@ -77,7 +77,7 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
         if (vm.count("tcp-connect")) {
             for (const std::string& ip_port : vm["tcp-connect"].as<std::vector<std::string>>()) {
                 auto ip_port_pair = parse_ip_port(ip_port);
-                if (ip_port_pair.has_value()) {
+                if (ip_port_pair.is_initialized()) {
                     tcp->connect(ip::tcp::endpoint(ip_port_pair.value().first, ip_port_pair.value().second));
                 }
             }
@@ -86,7 +86,7 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
         if (vm.count("tcp-accept")) {
             for (const std::string& ip_port : vm["tcp-accept"].as<std::vector<std::string>>()) {
                 auto ip_port_pair = parse_ip_port(ip_port);
-                if (ip_port_pair.has_value()) {
+                if (ip_port_pair.is_initialized()) {
                     tcp->accept(ip::tcp::endpoint(ip_port_pair.value().first, ip_port_pair.value().second));
                 }
             }

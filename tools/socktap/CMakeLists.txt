@@ -14,11 +14,13 @@ add_executable(socktap
     application.cpp
     benchmark_application.cpp
     cam_application.cpp
+    #its_lci.cpp
     dcc_passthrough.cpp
     ethernet_device.cpp
     hello_application.cpp
     link_layer.cpp
     main.cpp
+    #gps_position_provider.cpp
     positioning.cpp
     raw_socket_link.cpp
     router_context.cpp
@@ -87,9 +89,12 @@ if(SOCKTAP_WITH_COHDA_LLC)
     target_sources(socktap PRIVATE cohda.cpp cohda_link.cpp)
 endif()
 
-find_package(GPS QUIET)
+find_package(GPS)
+message(Found "${GPS}")
+message(GPS found: "${GPS_FOUND}")
 option(SOCKTAP_WITH_GPSD "Enable gpsd positioning for socktap" ${GPS_FOUND})
 if(SOCKTAP_WITH_GPSD)
+    message(Configuring GPS)
     find_package(GPS REQUIRED)
     target_compile_definitions(socktap PUBLIC "SOCKTAP_WITH_GPSD")
     target_link_libraries(socktap PUBLIC GPS::GPS)
