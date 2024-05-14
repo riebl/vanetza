@@ -102,6 +102,11 @@ if(BUILD_BENCHMARK)
   add_subdirectory(tools/benchmark)
 endif()
 
+option(BUILD_FUZZ "Build fuzz harness" OFF)
+if(BUILD_FUZZ)
+  add_subdirectory(tools/fuzz-harness)
+endif()
+
 # interface library for convenience
 get_property(_components GLOBAL PROPERTY VANETZA_COMPONENTS)
 add_library(vanetza INTERFACE)
