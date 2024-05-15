@@ -23,11 +23,6 @@ int main() {
     RouterIndicate routerIndicate;
     routerIndicate.SetUp();
 
-    routerIndicate.mac_address_sender = MacAddress{0xfe, 0x38, 0x4c, 0xe0, 0xb8, 0x90};
-    routerIndicate.mac_address_destination = MacAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-    routerIndicate.router.set_transport_handler(geonet::UpperProtocol::BTP_B, &routerIndicate.ind_ifc);
-    routerIndicate.router.set_transport_handler(geonet::UpperProtocol::IPv6, nullptr);
-
     unsigned char *buf = __AFL_FUZZ_TESTCASE_BUF;
 
     while (__AFL_LOOP(10000)) {

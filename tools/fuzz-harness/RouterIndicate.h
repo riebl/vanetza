@@ -21,7 +21,8 @@ public:
         gn_addr.mid(MacAddress{0, 0, 0, 0, 0, 1});
         router.set_address(gn_addr);
         router.set_access_interface(&req_ifc);
-        router.set_transport_handler(geonet::UpperProtocol::IPv6, &ind_ifc);
+        router.set_transport_handler(geonet::UpperProtocol::BTP_B, &ind_ifc);
+        router.set_transport_handler(geonet::UpperProtocol::IPv6, nullptr);
         router.set_security_entity(&security.entity());
         packet_drop_occurred = false;
         router.packet_dropped = [this](geonet::Router::PacketDropReason r) {
@@ -36,14 +37,6 @@ public:
         send_payload.insert(send_payload.end(), test_payload_pres.begin(), test_payload_pres.end());
     }
 
-    std::unique_ptr<geonet::DownPacket> create_packet() {
-        std::unique_ptr<geonet::DownPacket> packet{new geonet::DownPacket()};
-        packet->layer(OsiLayer::Transport) = ByteBuffer(test_payload_trans);
-        packet->layer(OsiLayer::Session) = ByteBuffer(test_payload_sess);
-        packet->layer(OsiLayer::Presentation) = ByteBuffer(test_payload_pres);
-        return packet;
-    }
-
     std::unique_ptr<geonet::UpPacket> get_up_packet(const ByteBuffer &sec_packet_buffer) {
         // parse the data into UpPacket
         std::unique_ptr<geonet::UpPacket> up_packet(
@@ -51,59 +44,8 @@ public:
         return up_packet;
     }
 
-    ByteBuffer create_secured_packet() {
-        // enable security
-        mib.itsGnSecurity = true;
-
-        // create ShbDataRequest
-        geonet::ShbDataRequest request(mib, aid::CA);
-        request.upper_protocol = geonet::UpperProtocol::IPv6;
-
-        // Router handles request
-        auto confirm = router.request(request, create_packet());
-        assert(confirm.accepted());
-
-        // secured packet on network layer
-        ByteBuffer sec_packet_buffer;
-        req_ifc.m_last_packet->layer(OsiLayer::Network).convert(sec_packet_buffer);
-        assert(req_ifc.m_last_packet->size(OsiLayer::Transport, max_osi_layer()) == 0);
-
-        assert(!sec_packet_buffer.empty());
-        return sec_packet_buffer;
-    }
-
-    ByteBuffer create_plain_packet() {
-        // disable security
-        mib.itsGnSecurity = false;
-
-        // create ShbDataRequest
-        geonet::ShbDataRequest request(mib, aid::CA);
-        request.upper_protocol = geonet::UpperProtocol::IPv6;
-
-        // Router handles request
-        auto confirm = router.request(request, create_packet());
-        assert(confirm.accepted());
-
-        // secured packet on network layer
-        ByteBuffer plain_packet_buffer;
-        for (auto layer: osi_layer_range<OsiLayer::Network, max_osi_layer()>()) {
-            ByteBuffer layer_buffer;
-            req_ifc.m_last_packet->layer(layer).convert(layer_buffer);
-            plain_packet_buffer.insert(plain_packet_buffer.end(), layer_buffer.begin(), layer_buffer.end());
-        }
-
-        assert(!plain_packet_buffer.empty());
-        return plain_packet_buffer;
-    }
-
-    bool test_and_reset_packet_drop() {
-        bool result = packet_drop_occurred;
-        packet_drop_occurred = false;
-        return result;
-    }
-
-    MacAddress mac_address_sender = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06};
-    MacAddress mac_address_destination = {0x07, 0x08, 0x09, 0x00, 0x01, 0x02};
+    MacAddress mac_address_sender = MacAddress{0xfe, 0x38, 0x4c, 0xe0, 0xb8, 0x90};
+    MacAddress mac_address_destination = MacAddress{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
     geonet::ManagementInformationBase mib;
     ManualRuntime runtime;
     SecurityContext security;

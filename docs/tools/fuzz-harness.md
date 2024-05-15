@@ -55,5 +55,4 @@ afl-fuzz -i input/ -o output/ -c ../../build_cmplog/bin/routerIndicatePersistent
 If it crashes immediately, try again a few times. 
 
 ### Analyse
-You can utilize `routerIndicateTest` to scrutinize the crash and gather more information about the potential issues.
-
+You can use `routerIndicateTest` to investigate the crash and get more information about the possible problems. The address sanitizer is enabled by default. If you're not interested in memory leaks, make sure to disable the leak sanatizer with the environment variable `ASAN_OPTIONS=detect_leaks=0`.
