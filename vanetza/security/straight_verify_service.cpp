@@ -432,8 +432,16 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         return confirm;
     }
 
+    ByteBuffer encoded_cert;
+    try {
+        encoded_cert = asn1::encode_oer(asn_DEF_CertificateBase, certificate);
+    } catch (...) {
+        confirm.report = VerificationReport::Invalid_Certificate;
+        return confirm;
+    }
+
     ByteBuffer data_hash = m_backend.calculate_hash(public_key->type, msg.signing_payload());
-    ByteBuffer cert_hash = m_backend.calculate_hash(public_key->type, asn1::encode_oer(asn_DEF_CertificateBase, certificate));
+    ByteBuffer cert_hash = m_backend.calculate_hash(public_key->type, encoded_cert);
     ByteBuffer concat_hash = data_hash;
     concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
     ByteBuffer msg_hash = m_backend.calculate_hash(public_key->type, concat_hash);
