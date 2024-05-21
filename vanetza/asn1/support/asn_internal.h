@@ -34,9 +34,10 @@ extern "C" {
 #define	ASN1C_ENVIRONMENT_VERSION	923	/* Compile-time version */
 int get_asn1c_environment_version(void);	/* Run-time version */
 
-#define	CALLOC(nmemb, size)	calloc(nmemb, size)
-#define	MALLOC(size)		malloc(size)
-#define	REALLOC(oldptr, size)	realloc(oldptr, size)
+#include <vanetza/asn1/memory.h>
+#define	CALLOC(nmemb, size)	vanetza_asn1c_calloc(nmemb, size)
+#define	MALLOC(size)		vanetza_asn1c_malloc(size)
+#define	REALLOC(oldptr, size)   vanetza_asn1c_realloc(oldptr, size)
 #define	FREEMEM(ptr)		free(ptr)
 
 #define	asn_debug_indent	0
