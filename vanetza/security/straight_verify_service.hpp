@@ -48,7 +48,7 @@ public:
 
     void use_certificate_cache(v3::CertificateCache*);
 
-    VerifyConfirm verify(VerifyRequest&&) override;
+    VerifyConfirm verify(const VerifyRequest&) override;
     VerifyConfirm verify(const v2::SecuredMessage&);
     VerifyConfirm verify(const v3::SecuredMessage&);
 

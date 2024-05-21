@@ -76,7 +76,7 @@ void StraightVerifyService::use_certificate_cache(v3::CertificateCache* cache)
     m_context_v3.m_cert_cache = cache;
 }
 
-VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
+VerifyConfirm StraightVerifyService::verify(const VerifyRequest& request)
 {
     struct visitor : public boost::static_visitor<VerifyConfirm>
     {
@@ -97,8 +97,13 @@ VerifyConfirm StraightVerifyService::verify(VerifyRequest&& request)
         StraightVerifyService* m_service = nullptr;
     } visitor(this);
 
-    const SecuredMessage& secured_message = request.secured_message;
-    return boost::apply_visitor(visitor, secured_message);
+    if (request.secured_message) {
+        return boost::apply_visitor(visitor, *request.secured_message);
+    } else {
+        VerifyConfirm confirm;
+        confirm.report = VerificationReport::Unsigned_Message;
+        return confirm;
+    }
 }
 
 VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_message)

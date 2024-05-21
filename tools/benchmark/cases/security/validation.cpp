@@ -55,7 +55,7 @@ int SecurityValidationCase::execute()
 
     std::vector<std::unique_ptr<v2::CertificateProvider>> providers;
     std::vector<std::unique_ptr<SecurityEntity>> entities;
-    std::vector<v2::SecuredMessage> secured_messages(identities);
+    std::vector<SecuredMessage> secured_messages(identities);
 
     for (unsigned i = 0; i < identities; i++) {
         providers.emplace_back(new v2::NaiveCertificateProvider(runtime));
@@ -83,9 +83,9 @@ int SecurityValidationCase::execute()
         encap_request.its_aid = aid::CA;
 
         EncapConfirm encap_confirm = entities[i]->encapsulate_packet(std::move(encap_request));
-        secured_messages.push_back(boost::get<v2::SecuredMessage>(encap_confirm.sec_packet));
-        auto signer_info = secured_messages[i].header_field<v2::HeaderFieldType::Signer_Info>();
-
+        auto v2_sec_msg = boost::get<v2::SecuredMessage>(encap_confirm.sec_packet);
+        auto signer_info = v2_sec_msg.header_field<v2::HeaderFieldType::Signer_Info>();
+        
         if (signer_info_type == "hash") {
             assert(signer_info && get_type(*signer_info) == v2::SignerInfoType::Certificate_Digest_With_SHA256);
         } else if (signer_info_type == "certificate") {
@@ -93,6 +93,8 @@ int SecurityValidationCase::execute()
         } else if (signer_info_type == "chain") {
             assert(signer_info && get_type(*signer_info) == v2::SignerInfoType::Certificate_Chain);
         }
+
+        secured_messages.push_back(v2_sec_msg);
     }
 
     std::mt19937 gen(0);
@@ -101,8 +103,9 @@ int SecurityValidationCase::execute()
     std::cout << "Starting benchmark for messages ... ";
 
     for (unsigned i = 0; i < messages; i++) {
-        SecuredMessage copy = secured_messages[dis(gen)];
-        auto decap_confirm = security_entity.decapsulate_packet(std::move(copy));
+        SecuredMessage secured_message = secured_messages[dis(gen)];
+        DecapRequest decap_request { &secured_message };
+        auto decap_confirm = security_entity.decapsulate_packet(std::move(decap_request));
         assert(decap_confirm.report == DecapReport::Success);
     }
 

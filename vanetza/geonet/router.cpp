@@ -498,7 +498,7 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
     } else if (m_security_entity) {
         // Decap packet
         using namespace vanetza::security;
-        DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(DecapRequest(*secured_message));
+        DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(DecapRequest(secured_message));
         ctx.service_primitive().security_report = decap_confirm.report;
         ctx.service_primitive().its_aid = decap_confirm.its_aid;
         ctx.service_primitive().permissions = decap_confirm.permissions;
