@@ -38,7 +38,7 @@ Elevation_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_type_Elevation_constr_1 CC_NOTUSED = {
-	{ 4, 0 }	/* (-4096..61439) */,
+	{ 2, 1 }	/* (-4096..61439) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
