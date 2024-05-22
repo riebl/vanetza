@@ -1,11 +1,12 @@
-#include "RouterIndicate.h"
+#include "router_fuzzing_context.hpp"
 
 #include <iostream>
 #include <fstream>
 #include <vector>
 
 
-ByteBuffer readFileToByteArray(const std::string &filename) {
+ByteBuffer readFileIntoBuffer(const std::string &filename)
+{
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
         std::cerr << "Error opening file: " << filename << std::endl;
@@ -24,26 +25,21 @@ ByteBuffer readFileToByteArray(const std::string &filename) {
     return buffer;
 }
 
-
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[])
+{
     if (argc != 2) {
         std::cerr << "Usage: " << argv[0] << " <filepath>" << std::endl;
         return 1;
     }
 
     const std::string filename = argv[1];
-    const ByteBuffer byteArray = readFileToByteArray(filename);
+    ByteBuffer buffer = readFileIntoBuffer(filename);
 
-    if (byteArray.empty()) {
+    if (buffer.empty()) {
         return 1;
     }
 
-    RouterIndicate routerIndicate;
-    routerIndicate.SetUp();
-
-    routerIndicate.router.indicate(routerIndicate.get_up_packet(byteArray),
-                                   routerIndicate.mac_address_sender,
-                                   routerIndicate.mac_address_destination);
-
+    RouterFuzzingContext context;
+    context.indicate(std::move(buffer));
     return 0;
 }

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
-#include "RouterIndicate.h"
-
+#include "router_fuzzing_context.hpp"
 
 #ifndef __AFL_FUZZ_TESTCASE_LEN
 ssize_t fuzz_len;
@@ -15,24 +14,20 @@ unsigned char fuzz_buf[1024000];
 
 __AFL_FUZZ_INIT();
 
-int main() {
+int main()
+{
 #ifdef __AFL_HAVE_MANUAL_CONTROL
     __AFL_INIT();
 #endif
 
-    RouterIndicate routerIndicate;
-    routerIndicate.SetUp();
+    RouterFuzzingContext context;
 
     unsigned char *buf = __AFL_FUZZ_TESTCASE_BUF;
-
     while (__AFL_LOOP(10000)) {
         int len = __AFL_FUZZ_TESTCASE_LEN;
 
         ByteBuffer buffer = ByteBuffer(buf, buf + len);
-
-        routerIndicate.router.indicate(routerIndicate.get_up_packet(buffer),
-                                       routerIndicate.mac_address_sender,
-                                       routerIndicate.mac_address_destination);
+        context.indicate(std::move(buffer));
     }
 
     return 0;
