@@ -15,7 +15,7 @@ static asn_oer_constraints_t asn_OER_type_DeltaReferencePositions_constr_1 CC_NO
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_DeltaReferencePositions_constr_1 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
-	{ APC_CONSTRAINED | APC_EXTENSIBLE,  7,  7,  1,  100 }	/* (SIZE(1..100,...)) */,
+	{ APC_CONSTRAINED | APC_EXTENSIBLE,  5,  5,  1,  32 }	/* (SIZE(1..32,...))*/,
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
