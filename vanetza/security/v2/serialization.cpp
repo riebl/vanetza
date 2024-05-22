@@ -52,8 +52,12 @@ std::uintmax_t deserialize_length(InputArchive& ar)
         ar >> buf[c];
     }
     auto tup = decode_length(buf);
-    assert(std::get<0>(tup) != buf.begin());
-    return std::get<1>(tup);
+    if (std::get<0>(tup) != buf.begin()) {
+        return std::get<1>(tup);
+    } else {
+        ar.fail(InputArchive::ErrorCode::ConstraintViolation);
+        return 0;
+    }
 }
 
 } // namespace v2

@@ -91,14 +91,26 @@ template<class T, typename... ARGS>
 std::size_t deserialize(InputArchive& ar, std::list<T>& list, ARGS&&... args)
 {
     using vanetza::security::v2::deserialize;
+    static const std::size_t length_limit = 4096;
+
     const auto length = trim_size(deserialize_length(ar));
-    std::intmax_t remainder = length;
-    while (remainder > 0) {
-        T t;
-        remainder -= deserialize(ar, t, std::forward<ARGS>(args)...);
-        list.push_back(std::move(t));
+    if (length <= length_limit) {
+        std::intmax_t remainder = length;
+        while (remainder > 0) {
+            T t;
+            std::size_t size = deserialize(ar, t, std::forward<ARGS>(args)...);
+            if (size <= remainder && ar.is_good()) {
+                list.push_back(std::move(t));
+                remainder -= size;
+            } else {
+                ar.fail(InputArchive::ErrorCode::ConstraintViolation);
+                break;
+            }
+        }
+    } else {
+        ar.fail(InputArchive::ErrorCode::ExcessiveLength);
     }
-    assert(remainder == 0);
+
     return length;
 }
 

@@ -43,12 +43,17 @@ size_t deserialize(InputArchive& ar, Payload& payload)
     deserialize(ar, type);
     payload.type = type;
 
+    static const std::size_t data_length_limit = 4096;
     const auto data_length = deserialize_length(ar);
-    size += length_coding_size(data_length);
-    size += data_length;
-    ByteBuffer buf(data_length);
-    ar.load_binary(buf.data(), buf.size());
-    payload.data = CohesivePacket(std::move(buf), OsiLayer::Network);
+    if (data_length <= data_length_limit) {
+        size += length_coding_size(data_length);
+        size += data_length;
+        ByteBuffer buf(data_length);
+        ar.load_binary(buf.data(), buf.size());
+        payload.data = CohesivePacket(std::move(buf), OsiLayer::Network);
+    } else {
+        ar.fail(InputArchive::ErrorCode::ExcessiveLength);
+    }
 
     return size;
 }
