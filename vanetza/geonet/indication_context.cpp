@@ -28,10 +28,10 @@ const CommonHeader* IndicationContextDeserialize::parse_common()
 
 const IndicationContext::SecuredMessage* IndicationContextDeserialize::parse_secured()
 {
-    boost::optional<IndicationContext::SecuredMessage> tmp;
+    IndicationContext::SecuredMessage tmp;
     auto bytes = m_parser.parse_secured(tmp);
-    if (bytes > 0 && tmp) {
-        pdu().secured(std::move(*tmp));
+    if (bytes > 0) {
+        pdu().secured(std::move(tmp));
         return pdu().secured();
     } else {
         return nullptr;

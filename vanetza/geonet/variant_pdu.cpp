@@ -81,6 +81,11 @@ void VariantPdu::secured(const SecuredMessage& smsg)
     m_secured = smsg;
 }
 
+void VariantPdu::secured(SecuredMessage&& smsg)
+{
+    m_secured.emplace(std::move(smsg));
+}
+
 std::unique_ptr<Pdu> VariantPdu::clone() const
 {
     return std::unique_ptr<Pdu> { new VariantPdu(*this) };

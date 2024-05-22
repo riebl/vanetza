@@ -48,25 +48,26 @@ std::size_t Parser::parse_common(CommonHeader& common)
     return bytes;
 }
 
-std::size_t Parser::parse_secured(boost::optional<security::SecuredMessage>& secured)
+std::size_t Parser::parse_secured(security::SecuredMessage& secured)
 {
     std::size_t bytes = 0;
-    try {
-        std::uint8_t sec_first_byte = m_archive.peek_byte();
-        if (sec_first_byte < 3) {
-            security::v2::SecuredMessage msg;
-            bytes = security::v2::deserialize(m_archive, msg);
-            secured = std::move(msg);
-        } else if (sec_first_byte == 3) {
-            security::v3::SecuredMessage msg;
-            bytes = security::v3::deserialize(m_archive, msg);
-            secured = std::move(msg);
+    if (m_archive.is_good()) {
+        try {
+            std::uint8_t sec_first_byte = m_archive.peek_byte();
+            if (sec_first_byte < 3) {
+                security::v2::SecuredMessage msg;
+                bytes = security::v2::deserialize(m_archive, msg);
+                secured = std::move(msg);
+            } else if (sec_first_byte == 3) {
+                security::v3::SecuredMessage msg;
+                bytes = security::v3::deserialize(m_archive, msg);
+                secured = std::move(msg);
+            }
+        } catch (...) {
         }
-    } catch (InputArchive::Exception&) {
-    } catch (security::deserialization_error&) {
+        m_read_bytes += bytes;
     }
 
-    m_read_bytes += bytes;
     return bytes;
 }
 
