@@ -1,6 +1,6 @@
+#include "router_fuzzing_context.hpp"
 #include <stdio.h>
 #include <unistd.h>
-#include "router_fuzzing_context.hpp"
 
 #ifndef __AFL_FUZZ_TESTCASE_LEN
 ssize_t fuzz_len;
@@ -20,12 +20,12 @@ int main()
     __AFL_INIT();
 #endif
 
-    RouterFuzzingContext context;
+    vanetza::RouterFuzzingContext context;
 
     unsigned char *buf = __AFL_FUZZ_TESTCASE_BUF;
     while (__AFL_LOOP(10000)) {
         int len = __AFL_FUZZ_TESTCASE_LEN;
-        ByteBuffer buffer = ByteBuffer(buf, buf + len);
+        vanetza::ByteBuffer buffer { buf, buf + len };
         context.initialize();
         context.indicate(std::move(buffer));
     }

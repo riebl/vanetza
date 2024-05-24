@@ -1,11 +1,8 @@
 #include "router_fuzzing_context.hpp"
-
 #include <iostream>
 #include <fstream>
-#include <vector>
 
-
-ByteBuffer readFileIntoBuffer(const std::string &filename)
+vanetza::ByteBuffer readFileIntoBuffer(const std::string &filename)
 {
     std::ifstream file(filename, std::ios::binary | std::ios::ate);
     if (!file.is_open()) {
@@ -16,7 +13,7 @@ ByteBuffer readFileIntoBuffer(const std::string &filename)
     const std::streamsize size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    ByteBuffer buffer(size);
+    vanetza::ByteBuffer buffer(size);
     if (!file.read(reinterpret_cast<char *>(buffer.data()), size)) {
         std::cerr << "Error reading file: " << filename << std::endl;
         return {};
@@ -33,13 +30,13 @@ int main(int argc, char* argv[])
     }
 
     const std::string filename = argv[1];
-    ByteBuffer buffer = readFileIntoBuffer(filename);
+    vanetza::ByteBuffer buffer = readFileIntoBuffer(filename);
 
     if (buffer.empty()) {
         return 1;
     }
 
-    RouterFuzzingContext context;
+    vanetza::RouterFuzzingContext context;
     context.indicate(std::move(buffer));
     return 0;
 }
