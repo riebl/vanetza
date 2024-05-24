@@ -15,15 +15,34 @@ namespace security
 
 using SecuredMessage = boost::variant<v2::SecuredMessage, v3::SecuredMessage>;
 
+class SecuredMessageView
+{
+public:
+    explicit SecuredMessageView(const SecuredMessage& msg);
+
+    template<typename Visitor>
+    typename Visitor::result_type apply_visitor(Visitor& visitor) const
+    {
+        return m_variant.apply_visitor(visitor);
+    }
+
+private:
+    boost::variant<const v2::SecuredMessage&, const v3::SecuredMessage&> m_variant;
+};
+
 ItsAid get_its_aid(const SecuredMessage&);
+ItsAid get_its_aid(const SecuredMessageView&);
 
 std::size_t get_size(const SecuredMessage& msg);
+std::size_t get_size(const SecuredMessageView& msg);
 
 void serialize(OutputArchive& ar, const SecuredMessage& msg);
+void serialize(OutputArchive& ar, const SecuredMessageView& msg);
 
 std::size_t deserialize(InputArchive& ar, SecuredMessage&);
 
 PacketVariant get_payload_copy(const SecuredMessage&);
+PacketVariant get_payload_copy(const SecuredMessageView&);
 
 } // namespace security
 } // namespace vanetza

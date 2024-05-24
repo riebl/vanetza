@@ -97,13 +97,7 @@ VerifyConfirm StraightVerifyService::verify(const VerifyRequest& request)
         StraightVerifyService* m_service = nullptr;
     } visitor(this);
 
-    if (request.secured_message) {
-        return boost::apply_visitor(visitor, *request.secured_message);
-    } else {
-        VerifyConfirm confirm;
-        confirm.report = VerificationReport::Unsigned_Message;
-        return confirm;
-    }
+    return boost::apply_visitor(visitor, request.secured_message);
 }
 
 VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_message)

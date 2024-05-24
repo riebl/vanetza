@@ -103,8 +103,7 @@ int SecurityValidationCase::execute()
     std::cout << "Starting benchmark for messages ... ";
 
     for (unsigned i = 0; i < messages; i++) {
-        SecuredMessage secured_message = secured_messages[dis(gen)];
-        DecapRequest decap_request { &secured_message };
+        DecapRequest decap_request { SecuredMessageView { secured_messages[dis(gen)] }};
         auto decap_confirm = security_entity.decapsulate_packet(std::move(decap_request));
         assert(decap_confirm.report == DecapReport::Success);
     }

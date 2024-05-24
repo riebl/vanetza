@@ -177,7 +177,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
     verify->use_sign_header_policy(&sign_header_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &encap_confirm.sec_packet });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
 }
 
@@ -219,12 +219,12 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
 
     // OpenSSL to Crypto++
     EncapConfirm encap_confirm = openssl_security.encapsulate_packet(create_encap_request());
-    DecapConfirm decap_confirm = cryptopp_security.decapsulate_packet(DecapRequest { &encap_confirm.sec_packet });
+    DecapConfirm decap_confirm = cryptopp_security.decapsulate_packet(SecuredMessageView { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
 
     // Crypto++ to OpenSSL
     encap_confirm = cryptopp_security.encapsulate_packet(create_encap_request());
-    decap_confirm = openssl_security.decapsulate_packet(DecapRequest { &encap_confirm.sec_packet });
+    decap_confirm = openssl_security.decapsulate_packet(SecuredMessageView { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
 }
 #endif
@@ -256,7 +256,7 @@ TEST_F(SecurityEntityTest, captured_acceptance)
     DelegatingSecurityEntity dummy_security(create_sign_service(), std::move(verify));
 
     // We only care about the message signature here to be valid, the certificate isn't validated.
-    DecapConfirm decap_confirm = dummy_security.decapsulate_packet(DecapRequest { &message });
+    DecapConfirm decap_confirm = dummy_security.decapsulate_packet(SecuredMessageView { message });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
 }
 
@@ -317,8 +317,7 @@ TEST_F(SecurityEntityTest, verify_message)
 {
     // build valid message
     security::SecuredMessage secured_message = create_secured_message();
-    DecapRequest decap_request(&secured_message);
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { secured_message });
 
     // check if verify was successful
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
@@ -337,9 +336,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_message_type)
     its_aid->set(42);
 
     // verify message
-    security::SecuredMessage secured_message = v2_secured_message;
-    DecapRequest decap_request(&secured_message);
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { v2_secured_message });
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
 }
@@ -352,7 +349,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_name)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Invalid_Name, decap_confirm.certificate_validity.reason());
 }
@@ -366,7 +363,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signer_info)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
 }
@@ -379,7 +376,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_info)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Invalid_Signer, decap_confirm.certificate_validity.reason());
 }
@@ -397,7 +394,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
 }
@@ -416,7 +413,7 @@ TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Off_Time_Period, decap_confirm.certificate_validity.reason());
@@ -436,7 +433,7 @@ TEST_F(SecurityEntityTest, verify_message_premature_certificate)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Off_Time_Period, decap_confirm.certificate_validity.reason());
@@ -457,7 +454,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_validity_restrict
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Broken_Time_Period, decap_confirm.certificate_validity.reason());
 }
@@ -469,7 +466,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
 }
@@ -485,9 +482,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_signature)
     ecdsa_signature.s = {8, 15, 23};
 
     // verify message
-    security::SecuredMessage secured_message = v2_secured_message;
-    DecapRequest decap_request(&secured_message);
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { v2_secured_message });
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
 }
@@ -499,9 +494,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload_type)
     v2_secured_message.payload.type = PayloadType::Unsecured;
 
     // verify message
-    security::SecuredMessage secured_message = v2_secured_message;
-    DecapRequest decap_request(&secured_message);
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { v2_secured_message });
     // check if verify was successful
     EXPECT_EQ(DecapReport::Unsigned_Message, decap_confirm.report);
 }
@@ -513,9 +506,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_payload)
     v2_secured_message.payload.data = CohesivePacket({42, 42, 42}, OsiLayer::Session);
 
     // verify message
-    security::SecuredMessage secured_message = v2_secured_message;
-    DecapRequest decap_request(&secured_message);
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { v2_secured_message });
     // check if verify was successful
     EXPECT_EQ(DecapReport::False_Signature, decap_confirm.report);
 }
@@ -524,13 +515,12 @@ TEST_F(SecurityEntityTest, verify_message_generation_time_before_current_time)
 {
     // prepare decap request
     security::SecuredMessage secured_message = create_secured_message();
-    DecapRequest decap_request(&secured_message);
 
     // change the time, so the generation time of SecuredMessage is before current time
     runtime.trigger(std::chrono::hours(12));
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { secured_message });
     // check if verify was successful
     EXPECT_EQ(DecapReport::Invalid_Timestamp, decap_confirm.report);
 }
@@ -542,13 +532,12 @@ TEST_F(SecurityEntityTest, verify_message_generation_time_after_current_time)
 
     // prepare decap request
     security::SecuredMessage secured_message = create_secured_message();
-    DecapRequest decap_request(&secured_message);
 
     // change the time, so the current time is before generation time of SecuredMessage
     runtime.reset(runtime.now() - std::chrono::hours(12));
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { secured_message });
     // check if verify was successful
     EXPECT_EQ(DecapReport::Invalid_Timestamp, decap_confirm.report);
 }
@@ -567,9 +556,7 @@ TEST_F(SecurityEntityTest, verify_message_without_signer_info)
     }
 
     // verify message
-    security::SecuredMessage secured_message = v2_secured_message;
-    DecapRequest decap_request(&secured_message);
-    DecapConfirm decap_confirm = security.decapsulate_packet(std::move(decap_request));
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { v2_secured_message});
     // check if verify was successful
     EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
 }
@@ -797,7 +784,7 @@ TEST_F(SecurityEntityTest, verify_message_without_position_and_with_restriction)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Off_Region, decap_confirm.certificate_validity.reason());
@@ -811,7 +798,7 @@ TEST_F(SecurityEntityTest, verify_message_without_position_and_without_restricti
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message();
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
     ASSERT_TRUE(decap_confirm.certificate_validity);
 }
@@ -822,7 +809,7 @@ TEST_F(SecurityEntityTest, verify_message_with_insufficient_aid)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message();
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Insufficient_ITS_AID, decap_confirm.certificate_validity.reason());
@@ -846,7 +833,7 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_ok)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
     ASSERT_TRUE(decap_confirm.certificate_validity);
 }
@@ -869,7 +856,7 @@ TEST_F(SecurityEntityTest, verify_non_cam_generation_location_fail)
 
     // verify message
     security::SecuredMessage sec_msg = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &sec_msg });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Off_Region, decap_confirm.certificate_validity.reason());
@@ -882,7 +869,7 @@ TEST_F(SecurityEntityTest, verify_message_without_signature)
     security::SecuredMessage message = v2_message;
 
     // verify message
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &message });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { message });
     EXPECT_EQ(DecapReport::Unsigned_Message, decap_confirm.report);
 }
 
@@ -897,14 +884,14 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_hash)
     security::SecuredMessage message = message_with_digest;
 
     // verify message - hash unknown
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &message });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { message });
     EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
     EXPECT_EQ(cert_cache.size(), 1);
 
     cert_cache.insert(certificate_provider->own_certificate());
 
     // verify message - certificate now known
-    decap_confirm = security.decapsulate_packet(DecapRequest { &message });
+    decap_confirm = security.decapsulate_packet(SecuredMessageView { message });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
     EXPECT_EQ(cert_cache.size(), 2);
 }
@@ -919,7 +906,7 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
 
     // verify message - hash unknown
     security::SecuredMessage message = v2_message;
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &message });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { message });
     EXPECT_EQ(DecapReport::Success, decap_confirm.report);
     EXPECT_EQ(cert_cache.size(), 2);
 }
@@ -938,7 +925,7 @@ TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_ver
     certificate_provider->sign_authorization_ticket(certificate);
 
     security::SecuredMessage message = create_secured_message(certificate);
-    DecapConfirm decap_confirm = other_security.decapsulate_packet(DecapRequest { &message });
+    DecapConfirm decap_confirm = other_security.decapsulate_packet(SecuredMessageView { message });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Off_Time_Period, decap_confirm.certificate_validity.reason());
@@ -951,7 +938,7 @@ TEST_F(SecurityEntityTest, verify_message_without_public_key_in_certificate)
     certificate_provider->sign_authorization_ticket(certificate);
 
     security::SecuredMessage message = create_secured_message(certificate);
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &message });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { message });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Missing_Public_Key, decap_confirm.certificate_validity.reason());
@@ -984,7 +971,7 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
     ASSERT_EQ(get_type(signer_info(msg(encap_confirm))), SignerInfoType::Certificate_Digest_With_SHA256);
 
     // Unknown certificate hash incoming from other
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &encap_confirm.sec_packet });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Signer_Certificate_Not_Found, decap_confirm.report);
 
     // Security entity does request certificate from other
@@ -996,7 +983,7 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
     ASSERT_EQ(get_type(signer_info(msg(encap_confirm))), SignerInfoType::Certificate_Digest_With_SHA256);
 
     // Other receives certificate request and sends certificate with next message
-    decap_confirm = other_security.decapsulate_packet(DecapRequest { &encap_confirm.sec_packet });
+    decap_confirm = other_security.decapsulate_packet(SecuredMessageView { encap_confirm.sec_packet });
     encap_confirm = other_security.encapsulate_packet(create_encap_request());
     ASSERT_EQ(get_type(signer_info(msg(encap_confirm))), SignerInfoType::Certificate);
 }
@@ -1032,7 +1019,7 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
 
     its_aid = aid::DEN;
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &encap_confirm.sec_packet });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Invalid_Certificate, decap_confirm.report);
     ASSERT_FALSE(decap_confirm.certificate_validity);
     EXPECT_EQ(CertificateInvalidReason::Off_Region, decap_confirm.certificate_validity.reason());
@@ -1063,7 +1050,7 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
     auto msg = boost::get<v2::SecuredMessage>(encap_confirm.sec_packet);
     ASSERT_EQ(nullptr, msg.header_field<HeaderFieldType::Its_Aid>());
 
-    DecapConfirm decap_confirm = security.decapsulate_packet(DecapRequest { &encap_confirm.sec_packet });
+    DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { encap_confirm.sec_packet });
     EXPECT_EQ(DecapReport::Incompatible_Protocol, decap_confirm.report);
 }
 

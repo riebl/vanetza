@@ -10,7 +10,7 @@ TEST(DummyVerifyServiceTest, lookup)
         VerificationReport::Invalid_Timestamp, CertificateValidity::valid() }};
 
     SecuredMessage message;
-    VerifyRequest req(&message);
+    VerifyRequest req(SecuredMessageView { message });
 
     auto confirm = dummy->verify(std::move(req));
 
