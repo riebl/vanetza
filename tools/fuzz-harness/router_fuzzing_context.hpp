@@ -9,21 +9,20 @@
 class RouterFuzzingContext {
 public:
     RouterFuzzingContext() :
-        runtime(Clock::at("2010-12-23 18:29")), router(runtime, mib), security(runtime)
+        runtime(vanetza::Clock::at("2010-12-23 18:29")), security(runtime)
     {
         initialize();
     }
 
     void initialize()
     {
-        runtime.trigger(Clock::at("2010-12-23 18:30"));
-        
+        router = std::make_unique<geonet::Router>(runtime, mib);
         geonet::Address gn_addr;
         gn_addr.mid(MacAddress{0, 0, 0, 0, 0, 1});
-        router.set_address(gn_addr);
-        router.set_access_interface(&req_ifc);
-        router.set_security_entity(&security.entity());
-        router.set_transport_handler(geonet::UpperProtocol::BTP_B, &ind_ifc);
+        router->set_address(gn_addr);
+        router->set_access_interface(&req_ifc);
+        router->set_security_entity(&security.entity());
+        router->set_transport_handler(geonet::UpperProtocol::BTP_B, &ind_ifc);
     }
 
     void indicate(ByteBuffer&& buffer)
@@ -31,12 +30,12 @@ public:
         MacAddress source { 0, 0, 0, 0, 0, 2 };
         MacAddress destination { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
         auto packet = std::make_unique<geonet::UpPacket>(CohesivePacket { std::move(buffer), OsiLayer::Network });
-        router.indicate(std::move(packet), source, destination);
+        router->indicate(std::move(packet), source, destination);
     }
 
     ManualRuntime runtime;
     geonet::ManagementInformationBase mib;
-    geonet::Router router;
+    std::unique_ptr<geonet::Router> router;
     SecurityContext security;
     FakeRequestInterface req_ifc;
     FakeTransportInterface ind_ifc;
