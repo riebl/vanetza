@@ -46,19 +46,39 @@ if(VANETZA_ASN1_WITH_ASN1C)
         set(_its_asn1_files ${_iso_asn1_files} ${_its_asn1_files} ${_its_asn1_files_depending_on_iso})
     endif()
 
+    set(_ieee_2_asn1_files
+        IEEE1609dot2.asn IEEE1609dot2BaseTypes.asn IEEE1609dot2crl.asn IEEE1609dot2crlBaseTypes.asn)
+    set(_ieee_21_asn1_files
+        IEEE1609dot2dot1AcaEeInterface.asn IEEE1609dot2dot1AcaLaInterface.asn IEEE1609dot2dot1AcaMaInterface.asn
+        IEEE1609dot2dot1AcaRaInterface.asn IEEE1609dot2dot1Acpc.asn IEEE1609dot2dot1CamRaInterface.asn
+        IEEE1609dot2dot1CertManagement.asn IEEE1609dot2dot1EcaEeInterface.asn IEEE1609dot2dot1EeMaInterface.asn
+        IEEE1609dot2dot1EeRaInterface.asn IEEE1609dot2dot1LaMaInterface.asn IEEE1609dot2dot1LaRaInterface.asn
+        IEEE1609dot2dot1MaRaInterface.asn IEEE1609dot2dot1Protocol.asn)
+    list(TRANSFORM _ieee_2_asn1_files PREPEND ${PROJECT_BINARY_DIR}/ieee/)
+    list(TRANSFORM _ieee_21_asn1_files PREPEND ${PROJECT_BINARY_DIR}/ieee/)
+
+    set(_ieee_asn1_files ${_ieee_2_asn1_files} ${_ieee_21_asn1_files})
+    add_custom_command(OUTPUT ${_ieee_asn1_files}
+        COMMAND ${CMAKE_COMMAND} -DDIRECTORY=${PROJECT_BINARY_DIR}/ieee -P fetch_ieee_asn1_files.cmake
+        COMMENT "Fetch and patch IEEE1609 ASN.1 file"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        VERBATIM)
+
     set(_pki_asn1_files
-        ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-BaseTypes.asn
-        ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-MessagesCa.asn
-        ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-TrustLists.asn
-        ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-TypesAuthorization.asn
-        ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-TypesAuthorizationValidation.asn
-        ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-TypesCaManagement.asn
-        ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-TypesEnrolment.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-BaseTypes.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-MessagesCa.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-MessagesItss-OptionalPrivacy.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-MessagesItss.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-TrustLists.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-TypesAuthorization.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-TypesAuthorizationValidation.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-TypesCaManagement.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-TypesEnrolment.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS102941v221-TypesLinkCertificate.asn
     )
     set(_sec_asn1_files
-        ${PROJECT_SOURCE_DIR}/asn1/TS103097v131.asn
-        ${PROJECT_SOURCE_DIR}/asn1/IEEE1609dot2.asn
-        ${PROJECT_SOURCE_DIR}/asn1/IEEE1609dot2BaseTypes.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103097v211.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103097v211-Extension.asn
     )
 
     add_custom_command(OUTPUT ${_support_asn1_dir}
@@ -87,9 +107,9 @@ if(VANETZA_ASN1_WITH_ASN1C)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
 
     add_custom_command(OUTPUT ${_pki_asn1_dir}
-        DEPENDS ${_pki_asn1_files}
+        DEPENDS ${_pki_asn1_files} ${_ieee_asn1_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_pki_asn1_dir}
-        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -R -D ${_pki_asn1_dir} ${_pki_asn1_files} ${_sec_asn1_files}
+        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -R -D ${_pki_asn1_dir} ${_pki_asn1_files} ${_sec_asn1_files} ${_ieee_asn1_files}
         COMMENT "Generating code from PKI (TS 102 941) ASN.1 modules" VERBATIM
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
     add_custom_command(OUTPUT "${_pki_asn1_source_file}"
@@ -99,9 +119,9 @@ if(VANETZA_ASN1_WITH_ASN1C)
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
 
     add_custom_command(OUTPUT "${_sec_asn1_dir}"
-        DEPENDS ${_sec_asn1_files}
+        DEPENDS ${_sec_asn1_files} ${_ieee_asn1_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_sec_asn1_dir}
-        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -R -D ${_sec_asn1_dir} ${_sec_asn1_files}
+        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -R -D ${_sec_asn1_dir} ${_sec_asn1_files} ${_ieee_2_asn1_files}
         COMMENT "Generating code from Security (1609.2 and TS 103 097) ASN.1 modules" VERBATIM)
     add_custom_command(OUTPUT "${_sec_asn1_source_file}"
         DEPENDS ${_sec_asn1_dir}
