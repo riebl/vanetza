@@ -16,19 +16,22 @@ namespace security
 
 enum class VerificationReport
 {
-    Success,
-    False_Signature,
-    Invalid_Certificate,
-    Revoked_Certificate,
-    Inconsistent_Chain,
-    Invalid_Timestamp,
-    Duplicate_Message,
-    Invalid_Mobility_Data,
-    Unsigned_Message,
-    Signer_Certificate_Not_Found,
-    Unsupported_Signer_Identifier_Type,
-    Incompatible_Protocol,
-    Configuration_Problem,
+    Success = 0x00,
+    False_Signature = 0x01,
+    Invalid_Certificate = 0x02,
+    Revoked_Certificate = 0x03,
+    Inconsistent_Chain = 0x04,
+    Invalid_Timestamp = 0x05,
+    Duplicate_Message = 0x06,
+    Invalid_Mobility_Data = 0x07,
+    Unsigned_Message = 0x08,
+    Signer_Certificate_Not_Found = 0x09,
+    Unsupported_Signer_Identifier_Type = 0x0a,
+    Incompatible_Protocol = 0x0b,
+    Unencrypted_Message = 0x0c,
+    Decryption_Error = 0x0d,
+    Configuration_Problem = 0x0e,
+    None = 0xff,
 };
 
 // mandatory parameters of SN-VERIFY.request (TS 102 723-8 V1.1.1)

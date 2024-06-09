@@ -435,7 +435,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
     try {
         encoded_signing_payload = msg.signing_payload();
     } catch (...) {
-        confirm.report = VerificationReport::False_Signature;
+        confirm.report = VerificationReport::Decryption_Error;
         return confirm;
     }
 

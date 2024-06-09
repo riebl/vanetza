@@ -502,13 +502,14 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
                 case DecapReport::False_Signature:
                 case DecapReport::Invalid_Certificate:
                 case DecapReport::Revoked_Certificate:
-                case DecapReport::Inconsistant_Chain:
+                case DecapReport::Inconsistent_Chain:
                 case DecapReport::Invalid_Timestamp:
                 case DecapReport::Invalid_Mobility_Data:
                 case DecapReport::Unsigned_Message:
                 case DecapReport::Signer_Certificate_Not_Found:
                 case DecapReport::Unsupported_Signer_Identifier_Type:
                 case DecapReport::Unencrypted_Message:
+                case DecapReport::None:
                     // ok, continue
                     boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
                     break;
