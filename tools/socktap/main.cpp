@@ -37,6 +37,8 @@ int main(int argc, const char** argv)
         ("print-tx-cam", "Print generated CAMs")
         ("benchmark", "Enable benchmarking")
         ("send-to-server", "Send V2X data to server")
+        ("send-to-file", "Store V2X data in a file")
+        ("file",po::value<std::string>()->default_value("v2x_data.bin"), "File")
         ("server-ip",po::value<std::string>()->default_value("192.168.1.124"), "Server IP")
         ("server-port", po::value<unsigned>()->default_value(9000), "Server Port")
         ("station-id", po::value<unsigned>()->default_value(1), "Station ID")
@@ -161,6 +163,10 @@ int main(int argc, const char** argv)
                     
                     ca->createSocket();
                     ca->setSendToServer(true);
+                }
+                if(vm.count("send-to-file") > 0){
+                    ca->setSendToFile(true);
+                    ca->setFile(vm["file"].as<std::string>().data());
                 }
                 apps.emplace(app_name, std::move(ca));
             } /*

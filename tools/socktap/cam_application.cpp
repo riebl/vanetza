@@ -25,6 +25,7 @@ CamApplication::CamApplication(PositionProvider& positioning, Runtime& rt) :
     this->station_id = 1;
     this->server_port = 9000;
     this->serverIP = strdup("192.168.1.124");
+    this->file = NULL;
 }
 
 int CamApplication::createSocket(){
@@ -60,6 +61,29 @@ void CamApplication::setServerIP(const char * serverIP){
     this->serverIP = serverIP;
 }
 
+void CamApplication::setSendToFile(bool send_to_file){
+    this->send_to_file = send_to_file;
+}
+
+void CamApplication::setFile(const char * file_path){
+    this->file_path = file_path;
+}
+
+int CamApplication::openFile(const char * file_path){
+    this->file = fopen(file_path,"a+");
+    if(file){
+        return 0;
+    }else{
+        return -1;
+    }
+}
+
+int CamApplication::writeToFile(u_int64_t* dataToSend, int size){
+    int writen = fwrite(dataToSend, sizeof(char), size, this->file);
+    fflush(this->file);
+    return writen;
+}
+
 void CamApplication::setStationID(int station_id){
     this->station_id = station_id;
 }
@@ -76,6 +100,11 @@ void CamApplication::set_interval(Clock::duration interval)
 {
     cam_interval_ = interval;
     runtime_.cancel(this);
+    if(cam_interval_<=vanetza::Clock::duration{0}){
+        std::cout << "CAM period to low, disabling" << std::endl;
+        return;
+    }
+    
     schedule_timer();
 }
 
@@ -98,7 +127,7 @@ int decodeCAM(const asn1::Cam& recvd, char* message){
     const ItsPduHeader_t& header = recvd->header;
     const CoopAwareness_t& cam = recvd->cam;
     const BasicContainer_t& basic = cam.camParameters.basicContainer;
-    int size = sprintf(message, "%ld;%ld;%ld",header.stationID,basic.referencePosition.longitude,basic.referencePosition.latitude);
+    int size = sprintf(message, "%ld;%ld;%ld\n",header.stationID,basic.referencePosition.longitude,basic.referencePosition.latitude);
     return strlen(message);
 }
 
@@ -119,17 +148,34 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
         int size = decodeCAM(*cam, message);
         this->sendToServer((u_int64_t*)message, size);
     }
+
+    if(this->send_to_file){
+        if(this->file == NULL){
+            int result = this->openFile(this->file_path);
+            if(result < 0){
+                std::cout << "Unable to open file, exiting" << std::endl;
+                exit(-1);
+            }
+        }
+        char message [100];
+        int size = decodeCAM(*cam, message);
+        int writen = this->writeToFile((u_int64_t*)message, size);
+        std::cout << "sent to file " << size << " bytes " << writen << " bytes "  << std::endl;
+    }
     
 }
 
 void CamApplication::schedule_timer()
 {
+    
     runtime_.schedule(cam_interval_, std::bind(&CamApplication::on_timer, this, std::placeholders::_1), this);
 }
 
 void CamApplication::on_timer(Clock::time_point)
 {
     schedule_timer();
+
+    
     vanetza::asn1::Cam message;
 
     ItsPduHeader_t& header = message->header;
