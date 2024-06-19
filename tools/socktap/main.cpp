@@ -1,6 +1,7 @@
 #include "ethernet_device.hpp"
 #include "benchmark_application.hpp"
 #include "cam_application.hpp"
+//#include "its_lci.hpp"
 #include "hello_application.hpp"
 #include "link_layer.hpp"
 #include "positioning.hpp"
@@ -35,7 +36,13 @@ int main(int argc, const char** argv)
         ("print-rx-cam", "Print received CAMs")
         ("print-tx-cam", "Print generated CAMs")
         ("benchmark", "Enable benchmarking")
-        ("applications,a", po::value<std::vector<std::string>>()->default_value({"ca"}, "ca")->multitoken(), "Run applications [ca,hello,benchmark]")
+        ("send-to-server", "Send V2X data to server")
+        ("send-to-file", "Store V2X data in a file")
+        ("file",po::value<std::string>()->default_value("v2x_data.bin"), "File")
+        ("server-ip",po::value<std::string>()->default_value("192.168.1.124"), "Server IP")
+        ("server-port", po::value<unsigned>()->default_value(9000), "Server Port")
+        ("station-id", po::value<unsigned>()->default_value(1), "Station ID")
+        ("applications,a", po::value<std::vector<std::string>>()->default_value({"ca"}, "ca")->multitoken(), "Run applications [ca,de,hello,benchmark]")
         ("non-strict", "Set MIB parameter ItsGnSnDecapResultHandling to NON_STRICT")
     ;
     add_positioning_options(options);
@@ -149,8 +156,29 @@ int main(int argc, const char** argv)
                 ca->set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
                 ca->print_received_message(vm.count("print-rx-cam") > 0);
                 ca->print_generated_message(vm.count("print-tx-cam") > 0);
+                ca->setStationID(vm["station-id"].as<unsigned>());
+                if(vm.count("send-to-server") > 0){
+                    ca->setServerIP(vm["server-ip"].as<std::string>().data());
+                    ca->setServerPort(vm["server-port"].as<unsigned>());
+                    
+                    ca->createSocket();
+                    ca->setSendToServer(true);
+                }
+                if(vm.count("send-to-file") > 0){
+                    ca->setSendToFile(true);
+                    ca->setFile(vm["file"].as<std::string>().data());
+                }
                 apps.emplace(app_name, std::move(ca));
-            } else if (app_name == "hello") {
+            } /*
+            else if (app_name == "DE") {
+                std::unique_ptr<ITC_LCI_Application> de {
+                    new ITC_LCI_Application(*positioning, trigger.runtime())
+                };
+                //ca->set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+                //ca->print_received_message(vm.count("print-rx-cam") > 0);
+                //ca->print_generated_message(vm.count("print-tx-cam") > 0);
+                apps.emplace(app_name, std::move(de));
+            }*/ else if (app_name == "hello") {
                 std::unique_ptr<HelloApplication> hello {
                     new HelloApplication(io_service, std::chrono::milliseconds(800))
                 };
