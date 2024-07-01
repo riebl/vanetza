@@ -2,15 +2,20 @@
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
+#include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
-#include <vanetza/security/v2/naive_certificate_provider.hpp>
-#include <vanetza/security/v2/null_certificate_validator.hpp>
+
+#include <vanetza/security/v3/naive_certificate_provider.hpp>
+#include <vanetza/security/v3/static_certificate_provider.hpp>
 #include <vanetza/security/v2/persistence.hpp>
-#include <vanetza/security/v2/sign_header_policy.hpp>
+#include <vanetza/security/v3/persistence.hpp>
+#include <vanetza/security/v3/sign_header_policy.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
-#include <vanetza/security/v2/static_certificate_provider.hpp>
+
 #include <vanetza/security/v2/trust_store.hpp>
+#include <vanetza/security/v3/sign_service.hpp>
 #include <stdexcept>
+#include <iostream>
 
 using namespace vanetza;
 namespace po = boost::program_options;
@@ -22,8 +27,8 @@ public:
         runtime(runtime), positioning(positioning),
         backend(security::create_backend("default")),
         sign_header_policy(runtime, positioning),
-        cert_cache(runtime),
-        cert_validator(*backend, cert_cache, trust_store)
+        cert_cache()
+        //cert_validator(*backend, cert_cache, trust_store)
     {
     }
 
@@ -49,13 +54,10 @@ public:
             throw std::runtime_error("certificate provider is missing");
         }
         std::unique_ptr<security::SignService> sign_service { new 
-            security::v2::StraightSignService(*cert_provider, *backend, sign_header_policy) };
+            security::v3::StraightSignService(*cert_provider, *backend, sign_header_policy) };
         std::unique_ptr<security::StraightVerifyService> verify_service { new
             security::StraightVerifyService(runtime, *backend, positioning) };
-        verify_service->use_certificate_provider(cert_provider.get());
         verify_service->use_certificate_cache(&cert_cache);
-        verify_service->use_certitifcate_validator(&cert_validator);
-        verify_service->use_sign_header_policy(&sign_header_policy);
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }
 
@@ -63,11 +65,11 @@ public:
     PositionProvider& positioning;
     std::unique_ptr<security::Backend> backend;
     std::unique_ptr<security::SecurityEntity> entity;
-    std::unique_ptr<security::v2::CertificateProvider> cert_provider;
-    security::v2::DefaultSignHeaderPolicy sign_header_policy;
+    std::unique_ptr<security::v3::CertificateProvider> cert_provider;
+    security::v3::DefaultSignHeaderPolicy sign_header_policy;
     security::v2::TrustStore trust_store;
-    security::v2::CertificateCache cert_cache;
-    security::v2::DefaultCertificateValidator cert_validator;
+    security::v3::CertificateCache cert_cache;
+    //security::v2::DefaultCertificateValidator cert_validator;
 };
 
 
@@ -81,7 +83,7 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
         // no operation
     } else if (name == "dummy") {
         std::unique_ptr<security::SignService> sign_service { new
-            security::v2::DummySignService { runtime, nullptr } };
+            vanetza::security::v3::DummySignService { runtime, nullptr } };
         std::unique_ptr<security::VerifyService> verify_service { new
             security::DummyVerifyService {
                 security::VerificationReport::Success, security::CertificateValidity::valid() } };
@@ -97,27 +99,22 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
             const std::string& certificate_path = vm["certificate"].as<std::string>();
             const std::string& certificate_key_path = vm["certificate-key"].as<std::string>();
 
-            auto authorization_ticket = security::v2::load_certificate_from_file(certificate_path);
-            auto authorization_ticket_key = security::v2::load_private_key_from_file(certificate_key_path);
-
-            std::list<security::v2::Certificate> chain;
+            auto authorization_ticket = security::v3::load_certificate_from_file(certificate_path);
+            auto authorization_ticket_key = security::v3::load_private_key_from_file(certificate_key_path);
+            
+            std::list<security::v3::Certificate> chain;
 
             if (vm.count("certificate-chain")) {
                 for (auto& chain_path : vm["certificate-chain"].as<std::vector<std::string> >()) {
-                    auto chain_certificate = security::v2::load_certificate_from_file(chain_path);
+                    auto chain_certificate = security::v3::load_certificate_from_file(chain_path);
                     chain.push_back(chain_certificate);
-                    context->cert_cache.insert(chain_certificate);
-
-                    // Only add root certificates to trust store, so certificate requests are visible for demo purposes.
-                    if (chain_certificate.subject_info.subject_type == security::v2::SubjectType::Root_CA) {
-                        context->trust_store.insert(chain_certificate);
-                    }
+                    context->cert_cache.store(chain_certificate);
                 }
             }
 
-            context->cert_provider.reset(new security::v2::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key, chain));
+            context->cert_provider.reset(new security::v3::StaticCertificateProvider(authorization_ticket, authorization_ticket_key.private_key, chain));
         } else {
-            context->cert_provider.reset(new security::v2::NaiveCertificateProvider(runtime));
+            context->cert_provider.reset(new security::v3::NaiveCertificateProvider(runtime));
         }
 
         if (vm.count("trusted-certificate")) {
