@@ -56,11 +56,16 @@ size_t deserialize(InputArchive& ar, ItsAidSsp& its_aid_ssp)
 {
     size_t size = 0;
     size += deserialize(ar, its_aid_ssp.its_aid);
+    static const std::uintmax_t buf_size_limit = 1024;
     const std::uintmax_t buf_size = deserialize_length(ar);
-    its_aid_ssp.service_specific_permissions.resize(buf_size);
-    size += buf_size + length_coding_size(buf_size);
-    for (std::uintmax_t i = 0; i < buf_size; ++i) {
-        ar >> its_aid_ssp.service_specific_permissions[i];
+    if (buf_size <= buf_size_limit) {
+        its_aid_ssp.service_specific_permissions.resize(buf_size);
+        size += buf_size + length_coding_size(buf_size);
+        for (std::uintmax_t i = 0; i < buf_size; ++i) {
+            ar >> its_aid_ssp.service_specific_permissions[i];
+        }
+    } else {
+        ar.fail(InputArchive::ErrorCode::ExcessiveLength);
     }
     return size;
 }

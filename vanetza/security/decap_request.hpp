@@ -15,10 +15,11 @@ namespace security
 */
 struct DecapRequest
 {
-    DecapRequest(SecuredMessage secmsg) : sec_packet(std::move(secmsg)) {}
-    SecuredMessage sec_packet;
+    DecapRequest(SecuredMessageView sec_msg_view) : sec_packet(sec_msg_view) {}
+    SecuredMessageView sec_packet;
 };
 
 } // namespace security
 } // namespace vanetza
+
 #endif // DECAP_REQUEST_HPP_WH8O09MB

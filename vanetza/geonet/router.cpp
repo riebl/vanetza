@@ -363,38 +363,26 @@ DataConfirm Router::request(const TsbDataRequest&, DownPacketPtr)
 void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
 {
     assert(packet);
+    const auto size_limit = m_mib.itsGnMaxSduSize + m_mib.itsGnMaxGeoNetworkingHeaderSize;
+    if (size(*packet) <= size_limit) {
+        IndicationContext::LinkLayer link_layer;
+        link_layer.sender = sender;
+        link_layer.destination = destination;
 
-    struct indication_visitor : public boost::static_visitor<>
-    {
-        indication_visitor(Router& router, const IndicationContext::LinkLayer& link_layer, UpPacketPtr packet) :
-            m_router(router), m_link_layer(link_layer), m_packet(std::move(packet))
-        {
+        if (auto cohesive = boost::get<CohesivePacket>(packet.get())) {
+            IndicationContextDeserialize ctx(std::move(packet), *cohesive, link_layer);
+            indicate_basic(ctx);
+
+        } else if (auto chunk = boost::get<ChunkPacket>(packet.get())) {
+            IndicationContextCast ctx(std::move(packet), *chunk, link_layer);
+            indicate_basic(ctx);
+        } else {
+            packet_dropped(PacketDropReason::Internal_Error);
         }
-
-        void operator()(CohesivePacket& packet)
-        {
-            IndicationContextDeserialize ctx(std::move(m_packet), packet, m_link_layer);
-            m_router.indicate_basic(ctx);
-        }
-
-        void operator()(ChunkPacket& packet)
-        {
-            IndicationContextCast ctx(std::move(m_packet), packet, m_link_layer);
-            m_router.indicate_basic(ctx);
-        }
-
-        Router& m_router;
-        const IndicationContext::LinkLayer& m_link_layer;
-        UpPacketPtr m_packet;
-    };
-
-    IndicationContext::LinkLayer link_layer;
-    link_layer.sender = sender;
-    link_layer.destination = destination;
-
-    UpPacket* packet_ptr = packet.get();
-    indication_visitor visitor(*this, link_layer, std::move(packet));
-    boost::apply_visitor(visitor, *packet_ptr);
+    } else {
+        packet_dropped(PacketDropReason::Packet_Size);
+        return;
+    }
 }
 
 void Router::indicate_basic(IndicationContextBasic& ctx)
@@ -498,7 +486,7 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
     } else if (m_security_entity) {
         // Decap packet
         using namespace vanetza::security;
-        DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(DecapRequest(*secured_message));
+        DecapConfirm decap_confirm = m_security_entity->decapsulate_packet(SecuredMessageView { *secured_message });
         ctx.service_primitive().security_report = decap_confirm.report;
         ctx.service_primitive().its_aid = decap_confirm.its_aid;
         ctx.service_primitive().permissions = decap_confirm.permissions;

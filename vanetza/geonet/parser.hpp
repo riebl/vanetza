@@ -27,7 +27,7 @@ public:
 
     std::size_t parse_basic(BasicHeader&);
     std::size_t parse_common(CommonHeader&);
-    std::size_t parse_secured(boost::optional<security::SecuredMessage>&);
+    std::size_t parse_secured(security::SecuredMessage&);
     std::size_t parse_extended(HeaderVariant&, HeaderType);
     std::size_t parsed_bytes() const;
 

@@ -9,8 +9,8 @@ TEST(DummyVerifyServiceTest, lookup)
     std::unique_ptr<VerifyService> dummy { new DummyVerifyService {
         VerificationReport::Invalid_Timestamp, CertificateValidity::valid() }};
 
-    v2::SecuredMessage message;
-    VerifyRequest req(message);
+    SecuredMessage message;
+    VerifyRequest req(SecuredMessageView { message });
 
     auto confirm = dummy->verify(std::move(req));
 

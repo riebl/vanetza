@@ -9,7 +9,7 @@ DummyVerifyService::DummyVerifyService(VerificationReport report, CertificateVal
 {
 }
 
-VerifyConfirm DummyVerifyService::verify(VerifyRequest&& request)
+VerifyConfirm DummyVerifyService::verify(const VerifyRequest& request)
 {
     VerifyConfirm confirm;
     confirm.report = m_report;

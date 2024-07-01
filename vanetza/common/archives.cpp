@@ -22,6 +22,7 @@ void InputArchive::load_binary(char* data, std::size_t len)
 {
     std::size_t read_bytes = m_stream_buffer->sgetn(data, len);
     if (read_bytes != len) {
+        fail(ErrorCode::IncompleteData);
         throw Exception("incomplete read");
     }
 }
@@ -30,9 +31,28 @@ char InputArchive::peek_byte()
 {
     auto got = m_stream_buffer->sgetc();
     if (got == StreamBuffer::traits_type::eof()) {
+        fail(ErrorCode::IncompleteData);
         throw Exception("impossible peek at end of stream");
     } else { 
         return StreamBuffer::traits_type::to_char_type(got);
+    }
+}
+
+bool InputArchive::is_good() const
+{
+    return m_error_code == ErrorCode::Ok;
+}
+
+InputArchive::ErrorCode InputArchive::error_code() const
+{
+    return m_error_code;
+}
+
+void InputArchive::fail(ErrorCode error_code)
+{
+    // do not overwrite prior error code except "ok"
+    if (m_error_code == ErrorCode::Ok) {
+        m_error_code = error_code;
     }
 }
 

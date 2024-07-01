@@ -34,8 +34,8 @@ enum class VerificationReport
 // mandatory parameters of SN-VERIFY.request (TS 102 723-8 V1.1.1)
 struct VerifyRequest
 {
-    VerifyRequest(const SecuredMessage& msg) : secured_message(msg) {}
-    const SecuredMessage& secured_message; /*< contains security header and payload */
+    VerifyRequest(SecuredMessageView msg) : secured_message(msg) {}
+    SecuredMessageView secured_message; /*< contains security header and payload */
 };
 
 // parameters of SN-VERIFY.confirm (TS 102 723-8 V1.1.1)
@@ -55,7 +55,7 @@ class VerifyService
 {
 public:
     virtual ~VerifyService() = default;
-    virtual VerifyConfirm verify(VerifyRequest&&) = 0;
+    virtual VerifyConfirm verify(const VerifyRequest&) = 0;
 };
 
 
@@ -70,7 +70,7 @@ public:
      * \param validity predefined certificate validity result 
      */
     DummyVerifyService(VerificationReport report, CertificateValidity validity);
-    VerifyConfirm verify(VerifyRequest&&) override;
+    VerifyConfirm verify(const VerifyRequest&) override;
 
 private:
     VerificationReport m_report;

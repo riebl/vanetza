@@ -206,6 +206,7 @@ function(add_asn1_component NAME)
 endfunction()
 
 add_asn1_component(support)
+target_sources(asn1_support PRIVATE memory.c)
 add_asn1_component(its)
 add_asn1_component(security)
 add_asn1_component(pki)

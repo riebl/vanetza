@@ -92,7 +92,9 @@ public:
         Decap_Unsuccessful_Strict,
         Hop_Limit,
         Payload_Size,
-        Security_Entity_Missing
+        Security_Entity_Missing,
+        Packet_Size,
+        Internal_Error,
     };
 
     // Reason for stopping packet forwarding

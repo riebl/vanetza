@@ -179,10 +179,15 @@ void serialize(OutputArchive& ar, const HeaderField& field)
 
 std::size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
 {
+    static const std::size_t size_limit = 1024;
     const std::size_t size = trim_size(deserialize_length(ar));
+    if (size > size_limit) {
+        ar.fail(InputArchive::ErrorCode::ExcessiveLength);
+    }
+
     std::size_t read = 0;
     boost::optional<SymmetricAlgorithm> sym_algo;
-    while (read < size) {
+    while (read < size && ar.is_good()) {
         HeaderField field;
         HeaderFieldType type;
         deserialize(ar, type);
@@ -277,7 +282,7 @@ std::size_t deserialize(InputArchive& ar, std::list<HeaderField>& list)
                 break;
         }
     }
-    return size;
+    return read;
 }
 
 } // namespace v2

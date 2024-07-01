@@ -99,6 +99,40 @@ void serialize(OutputArchive& ar, const RecipientInfo& info, SymmetricAlgorithm 
     boost::apply_visitor(visitor, info.enc_key);
 }
 
+EciesEncryptedKey deserialize_ecies(InputArchive& ar, const SymmetricAlgorithm& symAlgo)
+{
+    EciesEncryptedKey ecies;
+    deserialize(ar, ecies.v, PublicKeyAlgorithm::ECIES_NISTP256);
+    const size_t fieldSize = field_size(symAlgo);
+    for (size_t c = 0; c < fieldSize; ++c) {
+        uint8_t tmp;
+        ar >> tmp;
+        ecies.c.push_back(tmp);
+    }
+    for (size_t c = 0; c < ecies.t.size(); ++c) {
+        uint8_t tmp;
+        ar >> tmp;
+        ecies.t[c] = tmp;
+    }
+    return ecies;
+}
+
+OpaqueKey deserialize_opaque(InputArchive& ar)
+{
+    static const std::uintmax_t length_limit = 512;
+    const std::uintmax_t length = deserialize_length(ar);
+
+    if (length <= length_limit) {
+        ByteBuffer opaque(length);
+        for (std::uintmax_t i = 0; i < length; ++i) {
+            ar >> opaque[i];
+        }
+        return OpaqueKey { std::move(opaque) };
+    } else {
+        return OpaqueKey {};
+    }
+}
+
 size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorithm& symAlgo)
 {
     for (size_t c = 0; c < info.cert_id.size(); ++c) {
@@ -107,32 +141,12 @@ size_t deserialize(InputArchive& ar, RecipientInfo& info, const SymmetricAlgorit
     PublicKeyAlgorithm algo;
     deserialize(ar, algo);
     switch (algo) {
-        case PublicKeyAlgorithm::ECIES_NISTP256: {
-            EciesEncryptedKey ecies;
-            deserialize(ar, ecies.v, PublicKeyAlgorithm::ECIES_NISTP256);
-            const size_t fieldSize = field_size(symAlgo);
-            for (size_t c = 0; c < fieldSize; ++c) {
-                uint8_t tmp;
-                ar >> tmp;
-                ecies.c.push_back(tmp);
-            }
-            for (size_t c = 0; c < ecies.t.size(); ++c) {
-                uint8_t tmp;
-                ar >> tmp;
-                ecies.t[c] = tmp;
-            }
-            info.enc_key = std::move(ecies);
+        case PublicKeyAlgorithm::ECIES_NISTP256:
+            info.enc_key = deserialize_ecies(ar, symAlgo);
             break;
-        }
-        default: {
-            const std::uintmax_t length = deserialize_length(ar);
-            ByteBuffer opaque(length);
-            for (std::uintmax_t i = 0; i < length; ++i) {
-                ar >> opaque[i];
-            }
-            info.enc_key = OpaqueKey { std::move(opaque) };
+        default:
+            info.enc_key = deserialize_opaque(ar);
             break;
-        }
     }
     return get_size(info);
 }

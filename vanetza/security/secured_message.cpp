@@ -7,22 +7,32 @@ namespace vanetza
 namespace security
 {
 
+SecuredMessageView::SecuredMessageView(const SecuredMessage& msg) :
+    m_variant(msg)
+{
+}
+
+struct ItsAidVisitor : boost::static_visitor<ItsAid>
+{
+    ItsAid operator()(const v2::SecuredMessage& msg) const
+    {
+        return get_its_aid(msg);
+    }
+
+    ItsAid operator()(const v3::SecuredMessage& msg) const
+    {
+        return msg.its_aid();
+    }
+};
+
 ItsAid get_its_aid(const SecuredMessage& msg)
 {
-    struct Visitor : boost::static_visitor<ItsAid>
-    {
-        ItsAid operator()(const v2::SecuredMessage& msg) const
-        {
-            return get_its_aid(msg);
-        }
+    return boost::apply_visitor(ItsAidVisitor(), msg);
+}
 
-        ItsAid operator()(const v3::SecuredMessage& msg) const
-        {
-            return msg.its_aid();
-        }
-    };
-
-    return boost::apply_visitor(Visitor(), msg);
+ItsAid get_its_aid(const SecuredMessageView& msg)
+{
+    return boost::apply_visitor(ItsAidVisitor(), msg);
 }
 
 std::size_t get_size(const SecuredMessage& msg)
@@ -43,25 +53,31 @@ std::size_t get_size(const SecuredMessage& msg)
     return boost::apply_visitor(Visitor(), msg);
 }
 
+struct SerializeVisitor : boost::static_visitor<void>
+{
+    OutputArchive& m_archive;
+    SerializeVisitor(OutputArchive& ar) : m_archive(ar) {}
+
+    void operator()(const v2::SecuredMessage& msg)
+    {
+        serialize(m_archive, msg);
+    }
+
+    void operator()(const v3::SecuredMessage& msg)
+    {
+        serialize(m_archive, msg);
+    }
+};
+
 void serialize(OutputArchive& ar, const SecuredMessage& msg)
 {
-    struct Visitor : boost::static_visitor<void>
-    {
-        OutputArchive& m_archive;
-        Visitor(OutputArchive& ar) : m_archive(ar) {}
+    SerializeVisitor visitor { ar };
+    boost::apply_visitor(visitor, msg);
+}
 
-        void operator()(const v2::SecuredMessage& msg)
-        {
-            serialize(m_archive, msg);
-        }
-
-        void operator()(const v3::SecuredMessage& msg)
-        {
-            serialize(m_archive, msg);
-        }
-    };
-
-    Visitor visitor(ar);
+void serialize(OutputArchive& ar, const SecuredMessageView& msg)
+{
+    SerializeVisitor visitor { ar };
     boost::apply_visitor(visitor, msg);
 }
 
@@ -87,22 +103,27 @@ std::size_t deserialize(InputArchive& ar, SecuredMessage& msg)
     return boost::apply_visitor(visitor, msg);
 }
 
+struct PayloadCopyVisitor : boost::static_visitor<PacketVariant>
+{
+    PacketVariant operator()(const v2::SecuredMessage& msg) const
+    {
+        return msg.payload.data;
+    }
+
+    PacketVariant operator()(const v3::SecuredMessage& msg) const
+    {
+        return msg.payload();
+    }
+};
+
 PacketVariant get_payload_copy(const SecuredMessage& msg)
 {
-    struct Visitor : boost::static_visitor<PacketVariant>
-    {
-        PacketVariant operator()(const v2::SecuredMessage& msg) const
-        {
-            return msg.payload.data;
-        }
+    return boost::apply_visitor(PayloadCopyVisitor {}, msg);
+}
 
-        PacketVariant operator()(const v3::SecuredMessage& msg) const
-        {
-            return msg.payload();
-        }
-    };
-
-    return boost::apply_visitor(Visitor {}, msg);
+PacketVariant get_payload_copy(const SecuredMessageView& msg)
+{
+    return boost::apply_visitor(PayloadCopyVisitor {}, msg);
 }
 
 } // namespace security

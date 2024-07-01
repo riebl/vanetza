@@ -33,6 +33,7 @@ public:
     SecuredMessage* secured() override;
     const SecuredMessage* secured() const override;
     void secured(const SecuredMessage&) override;
+    void secured(SecuredMessage&&);
     std::unique_ptr<Pdu> clone() const override;
 
 private:
