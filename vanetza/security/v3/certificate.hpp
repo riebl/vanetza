@@ -5,6 +5,9 @@
 #include <vanetza/security/hashed_id.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <boost/optional/optional_fwd.hpp>
+#include <vanetza/net/packet_variant.hpp>
+#include <vanetza/security/signature.hpp>
+#include <fstream>
 
 namespace vanetza
 {
@@ -16,6 +19,16 @@ namespace v3
 struct Certificate : public asn1::asn1c_oer_wrapper<EtsiTs103097Certificate_t>
 {
     Certificate();
+
+    void add_permission(ItsAid aid, const ByteBuffer& ssp);
+
+    void add_cert_permission(PsidGroupPermissions* group_permission);
+
+    void set_signature(const SomeEcdsaSignature& signature);
+
+    ByteBuffer serialize();
+
+    ByteBuffer convert_for_signing();
 };
 
 /**
@@ -39,6 +52,12 @@ boost::optional<PublicKey> get_public_key(const EtsiTs103097Certificate_t& cert)
  * \return SSP bitmap or empty buffer
  */
 ByteBuffer get_app_permissions(const EtsiTs103097Certificate_t& cert, ItsAid aid);
+
+void add_psid_group_permission(PsidGroupPermissions* group_permission, ItsAid aid, const ByteBuffer& ssp, const ByteBuffer& bitmask);
+
+void serialize(OutputArchive& ar, Certificate& certificate);
+
+Certificate fake_certificate();
 
 } // namespace v3
 } // namespace security

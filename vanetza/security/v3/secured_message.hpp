@@ -4,6 +4,7 @@
 
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/EtsiTs103097Data.h>
+#include <vanetza/security/v3/signer_info.hpp>
 #include <vanetza/common/archives.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/net/packet_variant.hpp>
@@ -36,6 +37,19 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<EtsiTs103097Data_t>
     boost::optional<Signature> signature() const;
     SignerIdentifier signer_identifier() const;
     ByteBuffer signing_payload() const;
+
+    void set_its_aid(ItsAid its_aid);
+    void set_generation_time(Time64 time);
+    void set_generation_location(ThreeDLocation location);
+    void set_payload(ByteBuffer& payload);
+    void set_signature(const Signature& signature);
+    void set_inline_p2pcd_request(std::list<HashedId3> requests);
+    void add_inline_p2_pcd_request(HashedId3 unkown_certificate_digest);
+    ByteBuffer convert_for_signing();
+    void set_signature(const SomeEcdsaSignature& signature);
+    void set_dummy_signature();
+    void set_signer_info(const SignerInfo& signer_info);
+
 };
 
 /**
@@ -64,6 +78,8 @@ size_t deserialize(InputArchive& ar, SecuredMessage& msg);
 
 ByteBuffer get_payload(const Opaque_t*);
 ByteBuffer get_payload(const SignedData*);
+void set_payload(Opaque_t* unsecured, const ByteBuffer& buffer);
+ByteBuffer convert_to_payload(vanetza::DownPacket packet);
 
 boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdentifier&);
 
