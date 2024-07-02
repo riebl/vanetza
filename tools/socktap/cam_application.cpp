@@ -128,7 +128,7 @@ int decodeCAM(const asn1::Cam& recvd, char* message){
     const CoopAwareness_t& cam = recvd->cam;
     const BasicContainer_t& basic = cam.camParameters.basicContainer;
     const BasicVehicleContainerHighFrequency& bvc = cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency;
-    int size = sprintf(message, "%ld;%ld;%ld;%ld;ld\n",header.stationID,basic.referencePosition.latitude,basic.referencePosition.longitude,bvc.speed.speedValue,bvc.verticalAcceleration->verticalAccelerationValue);
+    int size = sprintf(message, "%ld;%ld;%ld;%ld;ld\n",header.stationID,basic.referencePosition.latitude,basic.referencePosition.longitude,bvc.speed.speedValue,bvc.longitudinalAcceleration.longitudinalAccelerationValue);
     return strlen(message);
 }
 
@@ -209,6 +209,9 @@ void CamApplication::on_timer(Clock::time_point)
 
     bvc.speed.speedValue = 0;
     bvc.speed.speedConfidence = SpeedConfidence_equalOrWithinOneCentimeterPerSec;
+
+    bvc.longitudinalAcceleration.longitudinalAccelerationValue = 0;
+    bvc.longitudinalAcceleration.longitudinalAccelerationConfidence = AccelerationConfidence_pointOneMeterPerSecSquared;
 
     bvc.driveDirection = DriveDirection_forward;
     bvc.longitudinalAcceleration.longitudinalAccelerationValue = LongitudinalAccelerationValue_unavailable;
