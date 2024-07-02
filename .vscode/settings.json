@@ -64,6 +64,8 @@
         "typeindex": "cpp",
         "typeinfo": "cpp",
         "asn_application.h": "c",
-        "basicvehiclecontainerhighfrequency.h": "c"
+        "basicvehiclecontainerhighfrequency.h": "c",
+        "referenceposition.h": "c",
+        "speedconfidence.h": "c"
     }
 }

@@ -127,7 +127,8 @@ int decodeCAM(const asn1::Cam& recvd, char* message){
     const ItsPduHeader_t& header = recvd->header;
     const CoopAwareness_t& cam = recvd->cam;
     const BasicContainer_t& basic = cam.camParameters.basicContainer;
-    int size = sprintf(message, "%ld;%ld;%ld\n",header.stationID,basic.referencePosition.longitude,basic.referencePosition.latitude);
+    const BasicVehicleContainerHighFrequency& bvc = cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency;
+    int size = sprintf(message, "%ld;%ld;%ld;%ld;ld\n",header.stationID,basic.referencePosition.latitude,basic.referencePosition.longitude,bvc.speed.speedValue,bvc.verticalAcceleration->verticalAccelerationValue);
     return strlen(message);
 }
 
