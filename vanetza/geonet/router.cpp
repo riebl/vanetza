@@ -145,14 +145,14 @@ Router::Router(Runtime& rt, const MIB& mib) :
     m_random_gen(mib.vanetzaDefaultSeed)
 {
     if (!m_mib.vanetzaDisableBeaconing) {
-        if (!m_mib.vanetzaDeferInitialBeacon) {
+        if (m_mib.vanetzaDeferInitialBeacon > Clock::duration::zero()) {
+            // defer initial Beacon transmission by given duration plus jitter
+            std::uniform_real_distribution<double> dist_jitter(0.0, 1.0);
+            const auto jitter = clock_cast(dist_jitter(m_random_gen) * m_mib.itsGnBeaconServiceMaxJitter);
+            reset_beacon_timer(m_mib.vanetzaDeferInitialBeacon + jitter);
+        } else {
             // send Beacon immediately after start-up at next runtime trigger invocation
             reset_beacon_timer(Clock::duration::zero());
-        } else {
-            // defer initial Beacon transmission slightly
-            std::uniform_real_distribution<double> dist(0.0, 1.0);
-            const auto first_beacon = dist(m_random_gen) * m_mib.itsGnBeaconServiceRetransmitTimer;
-            reset_beacon_timer(clock_cast(first_beacon));
         }
     }
 
