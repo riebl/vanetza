@@ -146,6 +146,8 @@ if(VANETZA_INSTALL)
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vanetza
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.hpp" PATTERN "/tests/*.hpp" EXCLUDE)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/vanetza/asn1/memory.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1)
 
   # export build tree (allows import by outside projects)
   option(VANETZA_EXPORT_PACKAGE "Export Vanetza build directory to CMake package registry" ON)
