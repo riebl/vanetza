@@ -27,8 +27,8 @@ public:
     void setServerPort(int serverPort);
     void setServerIP(const char * serverIP);
     void setStationID(int station_id);
-    void setSendToFile(bool send_to_file);
-    void setFile(const char * file_path);
+    
+
     int createSocket();
 private:
     void schedule_timer();
@@ -36,9 +36,6 @@ private:
     
     int closeSocket();
     int sendToServer(u_int64_t* dataToSend, int size);
-
-    int openFile(const char * filename);
-    int writeToFile(u_int64_t* dataToSend, int size);
    
 
     vanetza::PositionProvider& positioning_;
@@ -47,14 +44,13 @@ private:
     bool print_rx_msg_ = false;
     bool print_tx_msg_ = false;
     bool send_to_server = false;
-    bool send_to_file = false;
+    
     int sockfd; 
     int server_port;
     const char* serverIP;
-    const char* file_path;
+    
     struct sockaddr_in servaddr; 
     int station_id;
-    FILE *file;
 };
 
 #endif /* CAM_APPLICATION_HPP_EUIC2VFR */

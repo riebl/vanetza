@@ -1,6 +1,7 @@
 #include "cam_application.hpp"
 #include <vanetza/btp/ports.hpp>
 #include <vanetza/asn1/cam.hpp>
+#include <vanetza/asn1/denm.hpp>
 #include <vanetza/asn1/packet_visitor.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
@@ -19,13 +20,11 @@ using namespace std::chrono;
 CamApplication::CamApplication(PositionProvider& positioning, Runtime& rt) :
     positioning_(positioning), runtime_(rt), cam_interval_(seconds(1))
 {
-    this->send_to_server = false;
     schedule_timer();    
 
     this->station_id = 1;
     this->server_port = 9000;
     this->serverIP = strdup("192.168.1.124");
-    this->file = NULL;
 }
 
 int CamApplication::createSocket(){
@@ -61,28 +60,11 @@ void CamApplication::setServerIP(const char * serverIP){
     this->serverIP = serverIP;
 }
 
-void CamApplication::setSendToFile(bool send_to_file){
-    this->send_to_file = send_to_file;
-}
 
-void CamApplication::setFile(const char * file_path){
-    this->file_path = file_path;
-}
 
-int CamApplication::openFile(const char * file_path){
-    this->file = fopen(file_path,"a+");
-    if(file){
-        return 0;
-    }else{
-        return -1;
-    }
-}
 
-int CamApplication::writeToFile(u_int64_t* dataToSend, int size){
-    int writen = fwrite(dataToSend, sizeof(char), size, this->file);
-    fflush(this->file);
-    return writen;
-}
+
+
 
 void CamApplication::setStationID(int station_id){
     this->station_id = station_id;
@@ -137,6 +119,8 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
     asn1::PacketVisitor<asn1::Cam> visitor;
     std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(visitor, *packet);
 
+    packet.get();
+
     std::cout << "CAM application received a packet with " << (cam ? "decodable" : "broken") << " content" << std::endl;
     if (cam && print_rx_msg_) {
         std::cout << "Received CAM contains\n";
@@ -148,20 +132,6 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
         char message [100];
         int size = decodeCAM(*cam, message);
         this->sendToServer((u_int64_t*)message, size);
-    }
-
-    if(this->send_to_file){
-        if(this->file == NULL){
-            int result = this->openFile(this->file_path);
-            if(result < 0){
-                std::cout << "Unable to open file, exiting" << std::endl;
-                exit(-1);
-            }
-        }
-        char message [100];
-        int size = decodeCAM(*cam, message);
-        int writen = this->writeToFile((u_int64_t*)message, size);
-        std::cout << "sent to file " << size << " bytes " << writen << " bytes "  << std::endl;
     }
     
 }
