@@ -8,6 +8,7 @@
 #include <vanetza/dcc/interface.hpp>
 #include <iostream>
 #include <vanetza/common/byte_order.hpp>
+#include <fstream>
 
 using namespace vanetza;
 
@@ -22,6 +23,7 @@ RouterContext::RouterContext(const geonet::MIB& mib, TimeTrigger& trigger, vanet
     update_position_vector();
 
     trigger_.schedule();
+    this->send_to_file = false;
 }
 
 RouterContext::~RouterContext()
@@ -29,6 +31,13 @@ RouterContext::~RouterContext()
     for (auto* app : applications_) {
         disable(app);
     }
+}
+
+void RouterContext::setSendToFile(bool send_to_file){
+    this->send_to_file = send_to_file;
+}
+void RouterContext::setFile(const char * file_path){
+    this->file_path = file_path;
 }
 
 void RouterContext::log_packet_drop(geonet::Router::PacketDropReason reason)
@@ -55,7 +64,20 @@ void RouterContext::set_link_layer(LinkLayer* link_layer)
 void RouterContext::indicate(CohesivePacket&& packet, const EthernetHeader& hdr)
 {
     if (hdr.source != mib_.itsGnLocalGnAddr.mid() && hdr.type == access::ethertype::GeoNetworking) {
-        std::cout << "received packet from " << hdr.source << " (" << packet.size() << " bytes)\n";
+        std::cout << "received packet from " << hdr.source << " (" << packet.size()  << " bytes)\n";
+
+        const std::vector<uint8_t> buffer = packet.buffer();
+        if(this->send_to_file){
+            std::cout << "storing receveived in file\n";
+            std::ofstream output_file(this->file_path, std::ios::binary | std::ios::app);
+            long size = (long) packet.size();
+            output_file.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
+        
+            output_file.write((const char *)buffer.data(), size);
+            output_file.close();
+        }
+
+        
         std::unique_ptr<PacketVariant> up { new PacketVariant(std::move(packet)) };
         trigger_.schedule(); // ensure the clock is up-to-date for the security entity
         router_.indicate(std::move(up), hdr.source, hdr.destination);

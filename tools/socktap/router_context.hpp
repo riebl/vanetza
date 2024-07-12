@@ -31,6 +31,10 @@ public:
 
     void set_link_layer(LinkLayer*);
 
+    void setSendToFile(bool send_to_file);
+    void setFile(const char * file_path);
+
+
 private:
     void indicate(vanetza::CohesivePacket&& packet, const vanetza::EthernetHeader& hdr);
     void log_packet_drop(vanetza::geonet::Router::PacketDropReason);
@@ -45,6 +49,8 @@ private:
     std::unique_ptr<DccPassthrough> request_interface_;
     std::list<Application*> applications_;
     bool require_position_fix_ = false;
+    bool send_to_file = false;
+    const char* file_path;
 };
 
 #endif /* ROUTER_CONTEXT_HPP_KIPUYBY2 */

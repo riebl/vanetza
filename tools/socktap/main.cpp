@@ -165,8 +165,8 @@ int main(int argc, const char** argv)
                     ca->setSendToServer(true);
                 }
                 if(vm.count("send-to-file") > 0){
-                    ca->setSendToFile(true);
-                    ca->setFile(vm["file"].as<std::string>().data());
+                    context.setSendToFile(true);
+                    context.setFile(vm["file"].as<std::string>().data());
                 }
                 apps.emplace(app_name, std::move(ca));
             } /*
