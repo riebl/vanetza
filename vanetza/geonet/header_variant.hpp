@@ -5,6 +5,7 @@
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/gbc_header.hpp>
 #include <vanetza/geonet/shb_header.hpp>
+#include <vanetza/geonet/tsb_header.hpp>
 #include <boost/variant/variant.hpp>
 
 namespace vanetza
@@ -12,9 +13,9 @@ namespace vanetza
 namespace geonet
 {
 
-typedef boost::variant<BeaconHeader, GeoBroadcastHeader, ShbHeader> HeaderVariant;
-typedef boost::variant<BeaconHeader&, GeoBroadcastHeader&, ShbHeader&> HeaderRefVariant;
-typedef boost::variant<const BeaconHeader&, const GeoBroadcastHeader&, const ShbHeader&> HeaderConstRefVariant;
+typedef boost::variant<BeaconHeader, GeoBroadcastHeader, ShbHeader, TsbHeader> HeaderVariant;
+typedef boost::variant<BeaconHeader&, GeoBroadcastHeader&, ShbHeader&, TsbHeader&> HeaderRefVariant;
+typedef boost::variant<const BeaconHeader&, const GeoBroadcastHeader&, const ShbHeader&, const TsbHeader&> HeaderConstRefVariant;
 
 /** \brief get the length of the underlying header type
  *

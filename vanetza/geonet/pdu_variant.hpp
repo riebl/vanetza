@@ -5,6 +5,7 @@
 #include <vanetza/geonet/beacon_header.hpp>
 #include <vanetza/geonet/gbc_header.hpp>
 #include <vanetza/geonet/shb_header.hpp>
+#include <vanetza/geonet/tsb_header.hpp>
 #include <boost/variant.hpp>
 
 namespace vanetza
@@ -13,6 +14,7 @@ namespace geonet
 {
 
 typedef ExtendedPdu<ShbHeader> ShbPdu;
+typedef ExtendedPdu<TsbHeader> TsbPdu;
 typedef ExtendedPdu<BeaconHeader> BeaconPdu;
 typedef ExtendedPdu<GeoBroadcastHeader> GbcPdu;
 

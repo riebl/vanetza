@@ -545,8 +545,18 @@ void Router::indicate_extended(IndicationContext& ctx, const CommonHeader& commo
 
             auto& pdu = m_context.pdu();
             ExtendedPduConstRefs<ShbHeader> shb_pdu(pdu.basic(), pdu.common(), shb, pdu.secured());
-
             return m_router.process_extended(shb_pdu, m_packet, m_context.link_layer());
+        }
+
+        bool operator()(const TsbHeader& tsb)
+        {
+            DataIndication& indication = m_context.service_primitive();
+            indication.transport_type = TransportType::TSB;
+            indication.source_position = static_cast<ShortPositionVector>(tsb.source_position);
+
+            auto& pdu = m_context.pdu();
+            ExtendedPduConstRefs<TsbHeader> tsb_pdu(pdu.basic(), pdu.common(), tsb, pdu.secured());
+            return m_router.process_extended(tsb_pdu, m_packet, m_context.link_layer());
         }
 
         bool operator()(const GeoBroadcastHeader& gbc)
@@ -997,6 +1007,102 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
     }
 
     // step 7: pass up SHB packet anyways
+    return true;
+}
+
+bool Router::process_extended(const ExtendedPduConstRefs<TsbHeader>& pdu, const UpPacket& packet, const LinkLayer& ll)
+{
+    const TsbHeader& tsb = pdu.extended();
+    const Address& source_addr = tsb.source_position.gn_addr;
+
+    // remember if LocTE(SO) exists (5) before duplicate packet detection might (3) silently create an entry
+    const bool locte_exists = m_location_table.has_entry(source_addr);
+
+    // step 3: execute duplicate packet detection
+    if (detect_duplicate_packet(source_addr, tsb.sequence_number)) {
+        // discard packet and omit execution of further steps
+        return false;
+    }
+
+    // step 4: execute duplicate address detection
+    if (m_mib.vanetzaMultiHopDuplicateAddressDetection) {
+        // Be careful, DAD is broken with address mode AUTO for multi-hop communication
+        detect_duplicate_address(source_addr, ll.sender);
+    }
+
+    // step 5a & step 6a (make sure IS_NEIGHBOUR is false for new location table entry)
+    auto& source_entry = m_location_table.update(tsb.source_position);
+    if (!locte_exists) {
+        // step 5b only
+        source_entry.set_neighbour(false);
+    }
+
+    // step 5c and step 6b
+    const std::size_t packet_size = size(packet, OsiLayer::Network, OsiLayer::Application);
+    source_entry.update_pdr(packet_size, m_mib.itsGnMaxPacketDataRateEmaBeta);
+
+    // step 7: packet is passed up depending on return value of this method
+
+    // step 8a: TODO: flush SO LS packet buffer if LS_pending, reset LS_pending
+    // step 8b: flush UC forwarding packet buffer
+    flush_unicast_forwarding_buffer(source_addr);
+
+    // step 9: discard packet (no forwarding) if hop limit is reached
+    if (pdu.basic().hop_limit <= 1) {
+        // step 9a: discard packet and omit execution of further steps
+        forwarding_stopped(ForwardingStopReason::Hop_Limit);
+        return true;
+    } else if (m_mib.itsGnMaxPacketDataRate < std::numeric_limits<decltype(m_mib.itsGnMaxPacketDataRate)>::max()) {
+        // do packet data rate checks (annex B.2) if set maximum rate is not "infinity" (i.e. max unsigned value)
+        if (source_entry.get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
+            forwarding_stopped(ForwardingStopReason::Source_PDR);
+            return true; // omit forwarding, source exceeds PDR limit
+        } else if (const auto* sender_entry = m_location_table.get_entry(ll.sender)) {
+            if (sender_entry->get_pdr() > m_mib.itsGnMaxPacketDataRate * 1000.0) {
+                forwarding_stopped(ForwardingStopReason::Sender_PDR);
+                return true; // omit forwarding, sender exceeds PDR limit
+            }
+        }
+    }
+
+    // step 9b: update hop limit in basic header
+    auto fwd_dup = create_forwarding_duplicate(pdu, packet);
+    TsbPdu& fwd_pdu = get_pdu(fwd_dup);
+    --fwd_pdu.basic().hop_limit;
+    assert(fwd_pdu.basic().hop_limit + 1 == pdu.basic().hop_limit);
+
+    auto transmit = [this](PendingPacket<TsbPdu>::Packet&& packet) {
+        // step 11: execute media-dependent procedures
+        execute_media_procedures(m_mib.itsGnIfType);
+
+        // step 12: pass down to link-layer
+        std::unique_ptr<Pdu> pdu;
+        std::unique_ptr<DownPacket> payload;
+        std::tie(pdu, payload) = std::move(packet);
+
+        dcc::DataRequest request;
+        request.destination = cBroadcastMacAddress;
+        request.source = m_local_position_vector.gn_addr.mid();
+        request.dcc_profile = dcc::Profile::DP3;
+        request.ether_type = geonet::ether_type;
+        request.lifetime = clock_cast(pdu->basic().lifetime.decode());
+        pass_down(request, std::move(pdu), std::move(payload));
+    };
+
+    PendingPacket<TsbPdu> fwd_packet(std::move(fwd_dup), transmit);
+
+    // step 10: store & carry forwarding procedure
+    const bool scf = pdu.common().traffic_class.store_carry_forward();
+    if (scf && !m_location_table.has_neighbours()) {
+        PacketBuffer::data_ptr data { new PendingPacketBufferData<TsbPdu>(std::move(fwd_packet)) };
+        m_bc_forward_buffer.push(std::move(data), m_runtime.now());
+        return true; // step 10a: buffer packet and omit further steps
+    }
+
+    // immediately execute steps 11 & 12
+    std::move(fwd_packet).process();
+    
+    // step 7: pass up TSB finally
     return true;
 }
 

@@ -333,6 +333,16 @@ private:
     bool process_extended(const ExtendedPduConstRefs<ShbHeader>&, const UpPacket&, const LinkLayer& ll);
 
     /**
+     * \brief packet handling of received TSB packet
+     *
+     * \param pdu PDU with TSB header
+     * \param packet received packet
+     * \param ll link-layer control info
+     * \return pass up decision (true for all non-duplicate TSBs)
+     */
+    bool process_extended(const ExtendedPduConstRefs<TsbHeader>&, const UpPacket&, const LinkLayer& ll);
+
+    /**
      * \brief Process ExtendedHeader information.
      * Update router's LocationTable and neighbour relationship.
      * Pass packet up to transport layer for further processing.
