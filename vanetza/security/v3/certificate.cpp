@@ -28,8 +28,12 @@ boost::optional<HashedId8> calculate_hash(const EtsiTs103097Certificate_t& cert)
     if (indicator.present != VerificationKeyIndicator_PR_verificationKey) {
         return boost::none;
     }
-
-    ByteBuffer buffer = asn1::encode_oer(asn_DEF_EtsiTs103097Certificate, &cert);
+    ByteBuffer buffer;
+    try {
+        buffer = asn1::encode_oer(asn_DEF_EtsiTs103097Certificate, &cert);
+    } catch (...) {
+        return boost::none;
+    }
     switch (indicator.choice.verificationKey.present)
     {
         case PublicVerificationKey_PR_ecdsaNistP256:
