@@ -79,7 +79,7 @@ size_t deserialize(InputArchive& ar, SecuredMessage& msg);
 ByteBuffer get_payload(const Opaque_t*);
 ByteBuffer get_payload(const SignedData*);
 void set_payload(Opaque_t* unsecured, const ByteBuffer& buffer);
-ByteBuffer convert_to_payload(vanetza::DownPacket packet);
+ByteBuffer convert_to_payload(vanetza::ChunkPacket packet);
 
 boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdentifier&);
 
