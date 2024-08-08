@@ -12,6 +12,24 @@
 #include <limits>
 #undef min
 
+#if VANETZA_USE_ITS2
+#define PathDeltaTime_tenMilliSecondsInPast 1
+#define Latitude_oneMicrodegreeNorth 10
+#define Latitude_oneMicrodegreeSouth -10
+#define Latitude_unavailable 900000001
+#define Longitude_oneMicrodegreeEast 10
+#define Longitude_oneMicrodegreeWest -10
+#define Longitude_unavailable 1800000001
+#define AltitudeValue_oneCentimeter 1
+#define AltitudeValue_unavailable 800001
+#define DeltaLatitude_oneMicrodegreeNorth 10
+#define DeltaLatitude_oneMicrodegreeSouth -10
+#define DeltaLatitude_unavailable 131072
+#define DeltaLongitude_oneMicrodegreeEast 10
+#define DeltaLongitude_oneMicrodegreeWest -10
+#define DeltaLongitude_unavailable 131072
+#endif
+
 namespace vanetza
 {
 namespace facilities
@@ -40,12 +58,21 @@ void copy(const facilities::PathHistory& ph, BasicVehicleContainerLowFrequency& 
         while (!delta_time.is_negative() && path_points < scMaxPathPoints) {
             ::PathPoint* path_point = asn1::allocate<::PathPoint>();
             path_point->pathDeltaTime = asn1::allocate<PathDeltaTime_t>();
+#if VANETZA_USE_ITS2
+            *(path_point->pathDeltaTime) = std::min(delta_time, scMaxDeltaTime).total_milliseconds() /
+                10 * PathDeltaTime_tenMilliSecondsInPast;
+            path_point->pathPosition.deltaLatitude = (delta_latitude / scMicrodegree).value() *
+                DeltaLatitude_oneMicrodegreeNorth;
+            path_point->pathPosition.deltaLongitude = (delta_longitude / scMicrodegree).value() *
+                DeltaLongitude_oneMicrodegreeEast;
+#else
             *(path_point->pathDeltaTime) = std::min(delta_time, scMaxDeltaTime).total_milliseconds() /
                 10 * PathDeltaTime::PathDeltaTime_tenMilliSecondsInPast;
             path_point->pathPosition.deltaLatitude = (delta_latitude / scMicrodegree).value() *
                 DeltaLatitude::DeltaLatitude_oneMicrodegreeNorth;
             path_point->pathPosition.deltaLongitude = (delta_longitude / scMicrodegree).value() *
                 DeltaLongitude::DeltaLongitude_oneMicrodegreeEast;
+#endif
             path_point->pathPosition.deltaAltitude = DeltaAltitude::DeltaAltitude_unavailable;
 
             ASN_SEQUENCE_ADD(&container.pathHistory, path_point);
@@ -129,6 +156,45 @@ units::Length distance(const ReferencePosition_t& a, units::GeoAngle lat, units:
     return length;
 }
 
+#if VANETZA_USE_ITS2
+units::Length distance(const ReferencePositionWithConfidence_t& a, const ReferencePositionWithConfidence_t& b)
+{
+    using geonet::GeodeticPosition;
+    using units::GeoAngle;
+
+    auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
+    if (is_available(a) && is_available(b)) {
+        GeodeticPosition geo_a {
+            GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * microdegree },
+            GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * microdegree }
+        };
+        GeodeticPosition geo_b {
+            GeoAngle { b.latitude / Latitude_oneMicrodegreeNorth * microdegree },
+            GeoAngle { b.longitude / Longitude_oneMicrodegreeEast * microdegree }
+        };
+        length = geonet::distance(geo_a, geo_b);
+    }
+    return length;
+}
+
+units::Length distance(const ReferencePositionWithConfidence_t& a, units::GeoAngle lat, units::GeoAngle lon)
+{
+    using geonet::GeodeticPosition;
+    using units::GeoAngle;
+
+    auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
+    if (is_available(a)) {
+        GeodeticPosition geo_a {
+            GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * microdegree },
+            GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * microdegree }
+        };
+        GeodeticPosition geo_b { lat, lon };
+        length = geonet::distance(geo_a, geo_b);
+    }
+    return length;
+}
+#endif
+
 bool is_available(const Heading& hd)
 {
     return hd.headingValue != HeadingValue_unavailable;
@@ -139,6 +205,12 @@ bool is_available(const ReferencePosition& pos)
     return pos.latitude != Latitude_unavailable && pos.longitude != Longitude_unavailable;
 }
 
+#if VANETZA_USE_ITS2
+bool is_available(const ReferencePositionWithConfidence_t& pos)
+{
+    return pos.latitude != Latitude_unavailable && pos.longitude != Longitude_unavailable;
+}
+#endif
 
 template<typename T, typename U>
 long round(const boost::units::quantity<T>& q, const U& u)
@@ -314,11 +386,20 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
     prefix("ITS PDU Header") << "\n";
     ++level;
     prefix("Protocol Version") << header.protocolVersion << "\n";
+#if VANETZA_USE_ITS2
+    prefix("Message Id") << header.messageId << "\n";
+    prefix("Station Id") << header.stationId << "\n";
+#else
     prefix("Message ID") << header.messageID << "\n";
     prefix("Station ID") << header.stationID << "\n";
+#endif
     --level;
 
+#if VANETZA_USE_ITS2
+    const CamPayload_t& cam = message->cam;
+#else
     const CoopAwareness_t& cam = message->cam;
+#endif
     prefix("CoopAwarensess") << "\n";
     ++level;
     prefix("Generation Delta Time") << cam.generationDeltaTime << "\n";
@@ -331,9 +412,15 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
     ++level;
     prefix("Longitude") << basic.referencePosition.longitude << "\n";
     prefix("Latitude") << basic.referencePosition.latitude << "\n";
+#if VANETZA_USE_ITS2
+    prefix("Semi Major Axis Orientation") << basic.referencePosition.positionConfidenceEllipse.semiMajorAxisOrientation << "\n";
+    prefix("Semi Major Axis Length") << basic.referencePosition.positionConfidenceEllipse.semiMajorAxisLength << "\n";
+    prefix("Semi Minor Axis Length") << basic.referencePosition.positionConfidenceEllipse.semiMinorAxisLength << "\n";
+#else
     prefix("Semi Major Orientation") << basic.referencePosition.positionConfidenceEllipse.semiMajorOrientation << "\n";
     prefix("Semi Major Confidence") << basic.referencePosition.positionConfidenceEllipse.semiMajorConfidence << "\n";
     prefix("Semi Minor Confidence") << basic.referencePosition.positionConfidenceEllipse.semiMinorConfidence << "\n";
+#endif
     prefix("Altitude [Confidence]") << basic.referencePosition.altitude.altitudeValue
         << " [" << basic.referencePosition.altitude.altitudeConfidence << "]\n";
     --level;
@@ -349,8 +436,13 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
         prefix("Speed [Confidence]") << bvc.speed.speedValue
             << " [" << bvc.speed.speedConfidence << "]\n";
         prefix("Drive Direction") << bvc.driveDirection << "\n";
+#if VANETZA_USE_ITS2
+        prefix("Longitudinal Acceleration [Confidence]") << bvc.longitudinalAcceleration.value
+            << " [" << bvc.longitudinalAcceleration.confidence << "]\n";
+#else
         prefix("Longitudinal Acceleration [Confidence]") << bvc.longitudinalAcceleration.longitudinalAccelerationValue
             << " [" << bvc.longitudinalAcceleration.longitudinalAccelerationConfidence << "]\n";
+#endif
         prefix("Vehicle Length [Confidence Indication]") << bvc.vehicleLength.vehicleLengthValue
             << " [" << bvc.vehicleLength.vehicleLengthConfidenceIndication << "]\n";
         prefix("Vehicle Width") << bvc.vehicleWidth << "\n";
@@ -380,7 +472,11 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
                 if (nullptr != rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneRadius)
                     prefix("Radius") << *(rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneRadius) << "\n";
                 if (nullptr != rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneRadius)
+#if VANETZA_USE_ITS2
+                    prefix("ID") << *(rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneId) << "\n";
+#else
                     prefix("ID") << *(rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneID) << "\n";
+#endif
                 --level;
             }
             --level;
@@ -483,8 +579,13 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
             if (nullptr != ec.lightBarSirenInUse.buf && ec.lightBarSirenInUse.size > 0)
                 prefix("Light Bar Siren in Use") << (unsigned) ec.lightBarSirenInUse.buf[0] << "\n";
             if (nullptr != ec.incidentIndication) {
+#if VANETZA_USE_ITS2
+                prefix("Incident Indication Cause Code") << ec.incidentIndication->ccAndScc.present << "\n";
+                prefix("Incident Indication Sub Cause Code") << ec.incidentIndication->ccAndScc.choice.reserved0 << "\n";
+#else
                 prefix("Incident Indication Cause Code") << ec.incidentIndication->causeCode << "\n";
                 prefix("Incident Indication Sub Cause Code") << ec.incidentIndication->subCauseCode << "\n";
+#endif
             }
             if (nullptr != ec.emergencyPriority && nullptr != ec.emergencyPriority->buf
                 && ec.emergencyPriority->size > 0) {
@@ -498,8 +599,13 @@ void print_indented(std::ostream& os, const asn1::Cam& message, const std::strin
             if (nullptr != sc.lightBarSirenInUse.buf && sc.lightBarSirenInUse.size > 0)
                 prefix("Light Bar Siren in Use") << (unsigned) sc.lightBarSirenInUse.buf[0] << "\n";
             if (nullptr != sc.incidentIndication) {
+#if VANETZA_USE_ITS2
+                prefix("Incident Indication Cause Code") << sc.incidentIndication->ccAndScc.present << "\n";
+                prefix("Incident Indication Sub Cause Code") << sc.incidentIndication->ccAndScc.choice.reserved0 << "\n";
+#else
                 prefix("Incident Indication Cause Code") << sc.incidentIndication->causeCode << "\n";
                 prefix("Incident Indication Sub Cause Code") << sc.incidentIndication->subCauseCode << "\n";
+#endif
             }
             if (nullptr != sc.trafficRule) {
                 prefix("Traffic Rule") << *(sc.trafficRule) << "\n";

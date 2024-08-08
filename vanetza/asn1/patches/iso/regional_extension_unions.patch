@@ -1,7 +1,7 @@
-diff --git a/vanetza/asn1/its/RegionalExtension.h b/vanetza/asn1/its/RegionalExtension.h
+diff --git a/vanetza/asn1/its1/RegionalExtension.h b/vanetza/asn1/its/RegionalExtension.h
 index 3ad7797f..3118dd43 100644
---- a/vanetza/asn1/its/RegionalExtension.h
-+++ b/vanetza/asn1/its/RegionalExtension.h
+--- a/vanetza/asn1/its1/RegionalExtension.h
++++ b/vanetza/asn1/its1/RegionalExtension.h
 @@ -165,6 +165,7 @@ typedef struct Reg_RTCMcorrections {
  	struct Reg_RTCMcorrections__regExtValue {
  		Reg_RTCMcorrections__regExtValue_PR present;
