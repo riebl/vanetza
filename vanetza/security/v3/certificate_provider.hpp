@@ -1,7 +1,7 @@
+#pragma once
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <list>
-#pragma once
 
 namespace vanetza
 {
@@ -37,5 +37,4 @@ public:
 } // namespace v2
 } // namespace security
 } // namespace vanetza
-
 

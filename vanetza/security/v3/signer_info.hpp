@@ -1,6 +1,4 @@
-
 #pragma once
-
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/public_key.hpp>

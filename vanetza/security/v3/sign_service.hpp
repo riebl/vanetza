@@ -1,3 +1,4 @@
+#pragma once
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/v3/signer_info.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>

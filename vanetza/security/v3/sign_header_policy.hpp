@@ -1,6 +1,4 @@
-#ifndef SIGN_HEADER_POLICY_HPP_KJIIEGCH
-#define SIGN_HEADER_POLICY_HPP_KJIIEGCH
-
+#pragma once
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/hashed_id.hpp>
@@ -87,4 +85,3 @@ private:
 } // namespace security
 } // namespace vanetza
 
-#endif /* SIGN_HEADER_POLICY_HPP_KJIIEGCH */

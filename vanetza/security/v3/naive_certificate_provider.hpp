@@ -1,3 +1,4 @@
+#pragma once
 #include <string>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>

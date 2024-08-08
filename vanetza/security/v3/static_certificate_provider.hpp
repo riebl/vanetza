@@ -1,3 +1,4 @@
+#pragma once
 #include <vanetza/security/v3/certificate_provider.hpp>
 #include <vanetza/security/v3/persistence.hpp>
 

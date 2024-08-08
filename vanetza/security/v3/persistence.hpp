@@ -1,3 +1,4 @@
+#pragma once
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v2/public_key.hpp>
