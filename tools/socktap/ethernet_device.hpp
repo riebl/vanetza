@@ -17,6 +17,7 @@ public:
 
     protocol::endpoint endpoint(int family) const;
     vanetza::MacAddress address() const;
+    std::string ip() const;
 
 private:
     int index() const;
