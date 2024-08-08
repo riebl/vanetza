@@ -7,7 +7,6 @@
 #include <boost/optional/optional_fwd.hpp>
 #include <vanetza/net/packet_variant.hpp>
 #include <vanetza/security/signature.hpp>
-#include <fstream>
 
 namespace vanetza
 {
