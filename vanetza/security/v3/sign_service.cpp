@@ -29,18 +29,7 @@ StraightSignService::StraightSignService(CertificateProvider& provider, Backend&
 
 SignConfirm StraightSignService::sign(SignRequest&& request)
 {
-    SecuredMessage secured_message;
-    secured_message->protocolVersion = 3;
-    secured_message->content = static_cast<struct Ieee1609Dot2Content*>(calloc(1, sizeof(struct Ieee1609Dot2Content)));
-    secured_message->content->present = Ieee1609Dot2Content_PR_signedData;
-    secured_message->content->choice.signedData = static_cast<struct SignedData*>(calloc(1, sizeof(struct SignedData)));
-    secured_message->content->choice.signedData->tbsData = static_cast<struct ToBeSignedData*>(calloc(1, sizeof(struct ToBeSignedData)));
-    secured_message->content->choice.signedData->tbsData->payload = static_cast<struct SignedDataPayload*>(calloc(1, sizeof(struct SignedDataPayload)));
-    secured_message->content->choice.signedData->tbsData->payload->data = static_cast<struct Ieee1609Dot2Data*>(calloc(1, sizeof(struct Ieee1609Dot2Data)));
-    secured_message->content->choice.signedData->tbsData->payload->data->protocolVersion = 3;
-    secured_message->content->choice.signedData->tbsData->payload->data->content = static_cast<struct Ieee1609Dot2Content*>(calloc(1, sizeof(struct Ieee1609Dot2Content)));
-    secured_message->content->choice.signedData->tbsData->payload->data->content->present = Ieee1609Dot2Content_PR_unsecuredData;
-
+    SecuredMessage secured_message = SecuredMessage::with_signed_data();
     ByteBuffer payload;
     payload = convert_to_payload(request.plain_message);
     secured_message.set_payload(payload);
@@ -64,18 +53,7 @@ DummySignService::DummySignService(const Runtime& runtime) :
 
 SignConfirm DummySignService::sign(SignRequest&& request)
 {
-    SecuredMessage secured_message;
-    secured_message->protocolVersion = 3;
-    secured_message->content = static_cast<struct Ieee1609Dot2Content*>(calloc(1, sizeof(struct Ieee1609Dot2Content)));
-    secured_message->content->present = Ieee1609Dot2Content_PR_signedData;
-    secured_message->content->choice.signedData = static_cast<struct SignedData*>(calloc(1, sizeof(struct SignedData)));
-    secured_message->content->choice.signedData->tbsData = static_cast<struct ToBeSignedData*>(calloc(1, sizeof(struct ToBeSignedData)));
-    secured_message->content->choice.signedData->tbsData->payload = static_cast<struct SignedDataPayload*>(calloc(1, sizeof(struct SignedDataPayload)));
-    secured_message->content->choice.signedData->tbsData->payload->data = static_cast<struct Ieee1609Dot2Data*>(calloc(1, sizeof(struct Ieee1609Dot2Data)));
-    secured_message->content->choice.signedData->tbsData->payload->data->protocolVersion = 3;
-    secured_message->content->choice.signedData->tbsData->payload->data->content = static_cast<struct Ieee1609Dot2Content*>(calloc(1, sizeof(struct Ieee1609Dot2Content)));
-    secured_message->content->choice.signedData->tbsData->payload->data->content->present = Ieee1609Dot2Content_PR_unsecuredData;
-
+    SecuredMessage secured_message = SecuredMessage::with_signed_data();
     ByteBuffer payload;
     payload = convert_to_payload(request.plain_message);
     secured_message.set_payload(payload);

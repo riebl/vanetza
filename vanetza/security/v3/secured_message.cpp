@@ -101,6 +101,22 @@ ByteBuffer get_x_coordinate(const EccP384CurvePoint_t& point)
 
 } // namespace
 
+SecuredMessage SecuredMessage::with_signed_data()
+{
+    SecuredMessage secured_message;
+    secured_message->protocolVersion = 3;
+    secured_message->content = static_cast<struct Ieee1609Dot2Content*>(calloc(1, sizeof(struct Ieee1609Dot2Content)));
+    secured_message->content->present = Ieee1609Dot2Content_PR_signedData;
+    secured_message->content->choice.signedData = static_cast<struct SignedData*>(calloc(1, sizeof(struct SignedData)));
+    secured_message->content->choice.signedData->tbsData = static_cast<struct ToBeSignedData*>(calloc(1, sizeof(struct ToBeSignedData)));
+    secured_message->content->choice.signedData->tbsData->payload = static_cast<struct SignedDataPayload*>(calloc(1, sizeof(struct SignedDataPayload)));
+    secured_message->content->choice.signedData->tbsData->payload->data = static_cast<struct Ieee1609Dot2Data*>(calloc(1, sizeof(struct Ieee1609Dot2Data)));
+    secured_message->content->choice.signedData->tbsData->payload->data->protocolVersion = 3;
+    secured_message->content->choice.signedData->tbsData->payload->data->content = static_cast<struct Ieee1609Dot2Content*>(calloc(1, sizeof(struct Ieee1609Dot2Content)));
+    secured_message->content->choice.signedData->tbsData->payload->data->content->present = Ieee1609Dot2Content_PR_unsecuredData;
+    return secured_message;
+}
+
 SecuredMessage::SecuredMessage() :
     asn1::asn1c_oer_wrapper<EtsiTs103097Data_t>(asn_DEF_EtsiTs103097Data)
 {

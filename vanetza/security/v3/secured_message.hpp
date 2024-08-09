@@ -29,6 +29,7 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<EtsiTs103097Data_t>
     using SignerIdentifier = boost::variant<const HashedId8_t*, const Certificate_t*>;
 
     SecuredMessage();
+    static SecuredMessage with_signed_data();
 
     uint8_t protocol_version() const;
     ItsAid its_aid() const;
