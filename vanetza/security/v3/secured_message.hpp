@@ -10,9 +10,11 @@
 #include <vanetza/security/hashed_id.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/v3/certificate.hpp>
-#include <cstdint>
+
 #include <boost/optional/optional_fwd.hpp>
 #include <boost/variant/variant_fwd.hpp>
+#include <cstdint>
+#include <list>
 
 namespace vanetza
 {
@@ -43,7 +45,7 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<EtsiTs103097Data_t>
     void set_payload(ByteBuffer& payload);
     void set_signature(const Signature& signature);
     void set_inline_p2pcd_request(std::list<HashedId3> requests);
-    void add_inline_p2_pcd_request(HashedId3 unkown_certificate_digest);
+    void add_inline_p2pcd_request(HashedId3 unkown_certificate_digest);
     ByteBuffer convert_for_signing();
     void set_signature(const SomeEcdsaSignature& signature);
     void set_dummy_signature();

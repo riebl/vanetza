@@ -157,7 +157,6 @@ void SecuredMessage::set_generation_location(ThreeDLocation location) {
     }
 }
 
-
 void SecuredMessage::set_inline_p2pcd_request(std::list<HashedId3> requests){
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
         ASN_STRUCT_FREE_CONTENTS_ONLY(
@@ -165,13 +164,13 @@ void SecuredMessage::set_inline_p2pcd_request(std::list<HashedId3> requests){
             &(m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest)
         );
         for (HashedId3 request : requests) {
-            this->add_inline_p2_pcd_request(request);
+            this->add_inline_p2pcd_request(request);
         }
     }
 
 }
 
-void SecuredMessage::add_inline_p2_pcd_request(HashedId3 unkown_certificate_digest) {
+void SecuredMessage::add_inline_p2pcd_request(HashedId3 unkown_certificate_digest) {
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
             if (m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest == nullptr) {
             //generationTime is not initialiazed
@@ -467,7 +466,8 @@ SecuredMessage::SignerIdentifier SecuredMessage::signer_identifier() const
     const SignedData_t* signed_data = get_signed_data(m_struct);
     if (signed_data) {
         if (signed_data->signer.present == SignerIdentifier_PR_digest) {
-            return &signed_data->signer.choice.digest;
+            const HashedId8_t* digest = &signed_data->signer.choice.digest;
+            return digest;
         } else if (signed_data->signer.present == SignerIdentifier_PR_certificate) {
             const SequenceOfCertificate_t& certificates = signed_data->signer.choice.certificate;
             // TS 103 097 v1.3.1 contraints this to exactly one certificate in clause 5.2
