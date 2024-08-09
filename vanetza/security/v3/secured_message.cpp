@@ -346,6 +346,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
             return *to_return;
         }
     };
+
     struct signature_visitor : public boost::static_visitor<Signature_t>
     {
         Signature_t operator()(const EcdsaSignature& signature) const
@@ -363,14 +364,13 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
             );
             return *final_signature;
         }
+
         Signature_t operator()(const EcdsaSignatureFuture& signature) const
         {
-            Signature_t final_signature;
-/*             EcdsaSignature temp = signature.get();
-            final_signature = boost::apply_visitor(signature_visitor(), temp); */
-            return final_signature;
+            return this->operator()(signature.get());
         }
     };
+
     m_struct->content->choice.signedData->signature = boost::apply_visitor(signature_visitor(), signature);
 }
 
