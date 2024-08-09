@@ -1,16 +1,21 @@
 EtsiTs102941TrustLists
-{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) trustLists(6) version2(2) }
+  { itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) trustLists(6) major-version-3(3) minor-version-1(1)}
 
 DEFINITIONS AUTOMATIC TAGS ::=
 BEGIN
 
 IMPORTS
 
-  EtsiTs103097Certificate, EtsiTs103097Data-SignedAndEncrypted, EtsiTs103097Data-Signed
-FROM EtsiTs103097Module {itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(103097) securedMessageV1(0)}
+EtsiTs103097Certificate, EtsiTs103097Data-SignedAndEncrypted, EtsiTs103097Data-Signed 
+FROM	
+EtsiTs103097Module
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) secHeaders(103097) core(1) major-version-3(3) minor-version-1(1) } 
+WITH SUCCESSORS
 
-  HashedId8, Time32, Version --, CertificateAuthorityConstraints
-FROM EtsiTs102941BaseTypes {itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) version2(2)}
+HashedId8, Time32, Version --, CertificateAuthorityConstraints
+FROM EtsiTs102941BaseTypes 
+{itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
 ;
 
 /************
@@ -31,9 +36,9 @@ CrlEntry ::= HashedId8
 ************/
 
 ToBeSignedTlmCtl ::= CtlFormat (FullCtl | DeltaCtl) (WITH COMPONENTS {...,
-  ctlCommands ( WITH COMPONENT(
-    ( WITH COMPONENTS {...,
-      add ( WITH COMPONENTS {...,
+  ctlCommands ( WITH COMPONENT( 
+    ( WITH COMPONENTS {..., 
+      add ( WITH COMPONENTS {..., 
         ea ABSENT,
         aa ABSENT
       })
@@ -46,9 +51,9 @@ ToBeSignedTlmCtl ::= CtlFormat (FullCtl | DeltaCtl) (WITH COMPONENTS {...,
 ************/
 
 ToBeSignedRcaCtl ::= CtlFormat (FullCtl | DeltaCtl) ( WITH COMPONENTS {...,
-  ctlCommands ( WITH COMPONENT(
-    ( WITH COMPONENTS {...,
-      add ( WITH COMPONENTS {...,
+  ctlCommands ( WITH COMPONENT( 
+    ( WITH COMPONENTS {..., 
+      add ( WITH COMPONENTS {..., 
         rca ABSENT,
         tlm ABSENT
       })
@@ -62,11 +67,11 @@ ToBeSignedRcaCtl ::= CtlFormat (FullCtl | DeltaCtl) ( WITH COMPONENTS {...,
 
 FullCtl::= CtlFormat ( WITH COMPONENTS {...,
   isFullCtl ( TRUE ),
-  ctlCommands ( WITH COMPONENT(
-    ( WITH COMPONENTS {...,
+  ctlCommands ( WITH COMPONENT( 
+    ( WITH COMPONENTS {..., 
       delete ABSENT
     })
-  ))
+  )) 
 })
 
 DeltaCtl::= CtlFormat (WITH COMPONENTS {...,
@@ -76,7 +81,7 @@ DeltaCtl::= CtlFormat (WITH COMPONENTS {...,
 
 CtlFormat ::= SEQUENCE {
   version     Version,
-  nextUpdate  Time32,
+  nextUpdate  Time32, 
   isFullCtl   BOOLEAN,
   ctlSequence INTEGER (0..255),
   ctlCommands SEQUENCE OF CtlCommand,
@@ -106,13 +111,13 @@ CtlDelete ::= CHOICE {
 
 TlmEntry::= SEQUENCE {
   selfSignedTLMCertificate EtsiTs103097Certificate,
-  linkTLMCertificate       EtsiTs103097Certificate OPTIONAL,
+  successorTo              EtsiTs103097Certificate OPTIONAL,
   accessPoint              Url
 }
 
 RootCaEntry ::= SEQUENCE {
-  selfsignedRootCa      EtsiTs103097Certificate,
-  linkRootCaCertificate EtsiTs103097Certificate OPTIONAL
+  selfsignedRootCa EtsiTs103097Certificate,
+  successorTo      EtsiTs103097Certificate OPTIONAL
 }
 
 EaEntry ::= SEQUENCE {
