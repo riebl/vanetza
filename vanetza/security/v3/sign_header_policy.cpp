@@ -28,9 +28,12 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Certifi
         // section 7.1.1 in TS 103 097 v2.1.1
         m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
-            secured_message.set_signer_info(boost::get(calculate_hash(*(certificate_provider.own_certificate()))));
+            auto maybe_digest = calculate_hash(*certificate_provider.own_certificate());
+            if (maybe_digest) {
+                secured_message.set_signer_identifier(*maybe_digest);
+            }
         } else {
-            secured_message.set_signer_info(certificate_provider.own_certificate());
+            secured_message.set_signer_identifier(certificate_provider.own_certificate());
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         }
 
@@ -44,7 +47,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Certifi
     }
     else if (request.its_aid == aid::DEN) {
         // section 7.1.2 in TS 103 097 v2.1.1
-        secured_message.set_signer_info(certificate_provider.own_certificate());
+        secured_message.set_signer_identifier(certificate_provider.own_certificate());
         ThreeDLocation location;
         v2::ThreeDLocation location_v2;
         auto position = m_positioning.position_fix();
@@ -59,7 +62,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Certifi
         secured_message.set_generation_location(location);
     }
     else {
-        secured_message.set_signer_info(certificate_provider.own_certificate());
+        secured_message.set_signer_identifier(certificate_provider.own_certificate());
     }
 }
 

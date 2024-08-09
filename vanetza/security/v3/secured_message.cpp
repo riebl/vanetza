@@ -384,74 +384,34 @@ void SecuredMessage::set_payload(ByteBuffer& payload) {
 
 }
 
-void SecuredMessage::set_signer_info(const SignerInfo& signer_info){
-    struct signer_info_visitor : public boost::static_visitor<SignerIdentifier_t*>
-        {
-            SignerIdentifier_t* operator()(const std::nullptr_t& pnullptr ) const
-            {
-                SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
-                signer->present = SignerIdentifier_PR_self;
-                return signer;
-            }
-
-            SignerIdentifier_t* operator()(const HashedId8& hashedId8) const
-            {
-                SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
-                signer->present = SignerIdentifier_PR_digest;
-                OCTET_STRING_fromBuf(
-                    &(signer->choice.digest),
-                    reinterpret_cast<const char *>(hashedId8.data()),
-                    hashedId8.size()
-                );
-                return signer;
-            }
-            SignerIdentifier_t* operator()(const Certificate cert) const
-            {
-                SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
-                signer->present = SignerIdentifier_PR_certificate;
-                // Encode the certificate input
-                vanetza::ByteBuffer cert_buffer = cert.encode();
-                // Allocate the memory
-                Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                // Copy the certificate input inisde the allocated memory
-                vanetza::asn1::decode_oer(asn_DEF_Certificate, (void**)(&certi), cert_buffer);
-                // Add the certificate to the list
-                ASN_SEQUENCE_ADD(&(signer->choice.certificate),certi);
-                return signer;
-            }
-            SignerIdentifier_t* operator()(const std::list<Certificate>& certificates) const
-            {
-                SignerIdentifier_t* signer = static_cast<SignerIdentifier_t*>(vanetza::asn1::allocate(sizeof(SignerIdentifier_t)));
-                signer->present = SignerIdentifier_PR_certificate;
-                for (auto const& cert : certificates){
-                    // Encode the certificate input
-                    vanetza::ByteBuffer cert_buffer = cert.encode();
-                    // Allocate the memory
-                    Certificate_t* certi = static_cast<Certificate_t*>(vanetza::asn1::allocate(sizeof(Certificate_t)));
-                    // Copy the certificate input inisde the allocated memory
-                    vanetza::asn1::decode_oer(asn_DEF_Certificate, (void**)(&certi), cert_buffer);
-                    // Add the certificate to the list
-                    ASN_SEQUENCE_ADD(&(signer->choice.certificate), certi);
-                }
-                return signer;
-            }
-        };
-    SignerIdentifier_t* temp = boost::apply_visitor(signer_info_visitor(), signer_info);
-    ASN_STRUCT_RESET(
-        asn_DEF_SignerIdentifier,
-        &(m_struct->content->choice.signedData->signer)
-    );
-    m_struct->content->choice.signedData->signer = *temp;
+void SecuredMessage::set_signer_identifier(const HashedId8& digest)
+{
+    assert(m_struct->content->present == Ieee1609Dot2Content_PR_signedData);
+    SignerIdentifier_t* signer = &m_struct->content->choice.signedData->signer;
+    ASN_STRUCT_RESET(asn_DEF_SignerIdentifier, signer);
+    signer->present = SignerIdentifier_PR_digest;
+    OCTET_STRING_fromBuf(&signer->choice.digest, reinterpret_cast<const char*>(digest.data()), digest.size());
 }
 
-ByteBuffer SecuredMessage::convert_for_signing(){
+void SecuredMessage::set_signer_identifier(const Certificate& cert)
+{
+    assert(m_struct->content->present == Ieee1609Dot2Content_PR_signedData);
+    SignerIdentifier_t* signer = &m_struct->content->choice.signedData->signer;
+    ASN_STRUCT_RESET(asn_DEF_SignerIdentifier, signer);
+    signer->present = SignerIdentifier_PR_certificate;
+    ASN_SEQUENCE_ADD(&signer->choice.certificate, asn1::copy(asn_DEF_EtsiTs103097Certificate, cert.content()));
+}
+
+ByteBuffer SecuredMessage::convert_for_signing()
+{
     vanetza::ByteBuffer to_return;
-    try{
+    try {
         to_return = vanetza::asn1::encode_oer(asn_DEF_ToBeSignedData, m_struct->content->choice.signedData->tbsData);
-    }catch(std::runtime_error& er){
+    } catch(std::runtime_error& er) {
     }
     return to_return;
 }
+
 bool SecuredMessage::is_signed() const
 {
     return m_struct->content->present == Ieee1609Dot2Content_PR_signedData;

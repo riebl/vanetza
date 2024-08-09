@@ -4,7 +4,6 @@
 
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/EtsiTs103097Data.h>
-#include <vanetza/security/v3/signer_info.hpp>
 #include <vanetza/common/archives.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/net/packet_variant.hpp>
@@ -48,8 +47,8 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<EtsiTs103097Data_t>
     ByteBuffer convert_for_signing();
     void set_signature(const SomeEcdsaSignature& signature);
     void set_dummy_signature();
-    void set_signer_info(const SignerInfo& signer_info);
-
+    void set_signer_identifier(const HashedId8&);
+    void set_signer_identifier(const Certificate&);
 };
 
 /**

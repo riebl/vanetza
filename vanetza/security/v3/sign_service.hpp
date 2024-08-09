@@ -1,6 +1,5 @@
 #pragma once
 #include <vanetza/security/sign_service.hpp>
-#include <vanetza/security/v3/signer_info.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
@@ -40,14 +39,12 @@ class DummySignService : public SignService
 public:
     /**
      * \param rt runtime for appropriate generation time
-     * \param si signer info attached to header fields of secured message
      */ 
-    DummySignService(const Runtime& rt, const SignerInfo& si);
+    DummySignService(const Runtime& rt);
     SignConfirm sign(SignRequest&&) override;
 
 private:
     const Runtime& m_runtime;
-    SignerInfo m_signer_info;
 };
 
 } // namespace v3

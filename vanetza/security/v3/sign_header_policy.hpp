@@ -2,7 +2,6 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/hashed_id.hpp>
-#include <vanetza/security/v3/signer_info.hpp>
 #include <set>
 
 namespace vanetza

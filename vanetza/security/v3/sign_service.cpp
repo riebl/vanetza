@@ -57,8 +57,8 @@ SignConfirm StraightSignService::sign(SignRequest&& request)
     return confirm;
 }
 
-DummySignService::DummySignService(const Runtime& runtime, const SignerInfo& signer) :
-    m_runtime(runtime), m_signer_info(signer)
+DummySignService::DummySignService(const Runtime& runtime) :
+    m_runtime(runtime)
 {
 }
 
@@ -82,8 +82,8 @@ SignConfirm DummySignService::sign(SignRequest&& request)
     secured_message.set_dummy_signature();
     secured_message.set_its_aid(request.its_aid);
     secured_message.set_generation_time(vanetza::security::v2::convert_time64(m_runtime.now()));
-    secured_message.set_signer_info(m_signer_info);
-    
+    secured_message->content->choice.signedData->signer.present = SignerIdentifier_PR_self;
+
     SignConfirm confirm;
     confirm.secured_message = std::move(secured_message);
     return confirm;

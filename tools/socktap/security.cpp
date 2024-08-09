@@ -137,7 +137,7 @@ create_dummy_v2_security_entity(const Runtime& runtime)
 std::unique_ptr<security::SecurityEntity>
 create_dummy_v3_security_entity(const Runtime& runtime)
 {
-    std::unique_ptr<security::SignService> sign_service { new security::v3::DummySignService { runtime, nullptr } };
+    std::unique_ptr<security::SignService> sign_service { new security::v3::DummySignService { runtime } };
     std::unique_ptr<security::VerifyService> verify_service { new security::DummyVerifyService {
         security::VerificationReport::Success, security::CertificateValidity::valid() } };
     return std::make_unique<security::DelegatingSecurityEntity>(std::move(sign_service), std::move(verify_service));
