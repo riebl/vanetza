@@ -99,6 +99,11 @@ ByteBuffer get_x_coordinate(const EccP384CurvePoint_t& point)
     }
 }
 
+void assign(OCTET_STRING_t* dst, const ByteBuffer& src)
+{
+    OCTET_STRING_fromBuf(dst, reinterpret_cast<const char*>(src.data()), src.size());
+}
+
 } // namespace
 
 SecuredMessage SecuredMessage::with_signed_data()
@@ -210,19 +215,11 @@ void SecuredMessage::set_dummy_signature()
             signed_data->signature.choice.ecdsaNistP256Signature.rSig.present = EccP256CurvePoint_PR_x_only;
             std::vector<uint8_t> dummy_r(32, 0); // Correct length for P256 signature part
             dummy_r[0] = 0; // Ensure the leading byte is set to zero if needed
-            OCTET_STRING_fromBuf(
-                &signed_data->signature.choice.ecdsaNistP256Signature.rSig.choice.x_only,
-                reinterpret_cast<const char*>(dummy_r.data()),
-                dummy_r.size()
-            );
+            assign(&signed_data->signature.choice.ecdsaNistP256Signature.rSig.choice.x_only, dummy_r);
 
             // Initialize sSig part of the signature
             std::vector<uint8_t> dummy_s(32, 0); // Correct length for P256 signature part
-            OCTET_STRING_fromBuf(
-                &signed_data->signature.choice.ecdsaNistP256Signature.sSig,
-                reinterpret_cast<const char*>(dummy_s.data()),
-                dummy_s.size()
-            );
+            assign(&signed_data->signature.choice.ecdsaNistP256Signature.sSig, dummy_s);
         }
     }
 }
@@ -244,46 +241,22 @@ void SecuredMessage::set_signature(const Signature& signature)
 
                 // Check the type (x_only, y-1, y-0 or uncompressed ??????)
                 signed_data->signature.choice.ecdsaNistP256Signature.rSig.present = EccP256CurvePoint_PR_x_only;
-                OCTET_STRING_fromBuf(
-                    &signed_data->signature.choice.ecdsaNistP256Signature.rSig.choice.x_only,
-                    reinterpret_cast<const char*>(signature.r.data()),
-                    signature.r.size()
-                );
-                OCTET_STRING_fromBuf(
-                    &signed_data->signature.choice.ecdsaNistP256Signature.sSig,
-                    reinterpret_cast<const char*>(signature.s.data()),
-                    signature.s.size()
-                );
+                assign(&signed_data->signature.choice.ecdsaNistP256Signature.rSig.choice.x_only, signature.r);
+                assign(&signed_data->signature.choice.ecdsaNistP256Signature.sSig, signature.s);
                 break;
             case vanetza::security::KeyType::BrainpoolP256r1 :
                 signed_data->signature.present = Signature_PR_ecdsaBrainpoolP256r1Signature;
                 // Check the type (x_only, y-1, y-0 or uncompressed ??????)
                 signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.rSig.present = EccP256CurvePoint_PR_x_only;
-                OCTET_STRING_fromBuf(
-                    &signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.rSig.choice.x_only,
-                    reinterpret_cast<const char*>(signature.r.data()),
-                    signature.r.size()
-                );
-                OCTET_STRING_fromBuf(
-                    &signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.sSig,
-                    reinterpret_cast<const char*>(signature.s.data()),
-                    signature.s.size()
-                );
+                assign(&signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.rSig.choice.x_only, signature.r);
+                assign(&signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.sSig, signature.s);
                 break;
             case vanetza::security::KeyType::BrainpoolP384r1 :
                 signed_data->signature.present = Signature_PR_ecdsaBrainpoolP384r1Signature;
                 // Check the type (x_only, y-1, y-0 or uncompressed ??????)
                 signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.rSig.present = EccP384CurvePoint_PR_x_only;
-                OCTET_STRING_fromBuf(
-                    &signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.rSig.choice.x_only,
-                    reinterpret_cast<const char*>(signature.r.data()),
-                    signature.r.size()
-                );
-                OCTET_STRING_fromBuf(
-                    &signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.sSig,
-                    reinterpret_cast<const char*>(signature.s.data()),
-                    signature.s.size()
-                );
+                assign(&signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.rSig.choice.x_only, signature.r);
+                assign(&signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.sSig, signature.s);
                 break;
             default:
                 this->set_dummy_signature();
@@ -300,49 +273,29 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
         {
             EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_x_only;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.x_only),
-                reinterpret_cast<const char*>(x_only.x.data()),
-                x_only.x.size()
-            );
+            assign(&to_return->choice.x_only, x_only.x);
             return *to_return;
         }
         EccP256CurvePoint_t operator()(const Compressed_Lsb_Y_0& y0) const
         {
             EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_compressed_y_0;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.compressed_y_0),
-                reinterpret_cast<const char*>(y0.x.data()),
-                y0.x.size()
-            );
+            assign(&to_return->choice.compressed_y_0, y0.x);
             return *to_return;
         }
         EccP256CurvePoint_t operator()(const Compressed_Lsb_Y_1& y1) const
         {
             EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_compressed_y_1;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.compressed_y_1),
-                reinterpret_cast<const char*>(y1.x.data()),
-                y1.x.size()
-            );
+            assign(&to_return->choice.compressed_y_1, y1.x);
             return *to_return;
         }
         EccP256CurvePoint_t operator()(const Uncompressed& unc) const
         {
             EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_uncompressedP256;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.uncompressedP256.x),
-                reinterpret_cast<const char*>(unc.x.data()),
-                unc.x.size()
-            );
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.uncompressedP256.y),
-                reinterpret_cast<const char*>(unc.y.data()),
-                unc.y.size()
-            );
+            assign(&to_return->choice.uncompressedP256.x, unc.x);
+            assign(&to_return->choice.uncompressedP256.y, unc.y);
             return *to_return;
         }
     };
@@ -353,11 +306,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
         {
             Signature_t* final_signature = asn1::allocate<Signature_t>();
             final_signature->present = Signature_PR_ecdsaNistP256Signature;
-            OCTET_STRING_fromBuf(
-                &(final_signature->choice.ecdsaNistP256Signature.sSig),
-                reinterpret_cast<const char*>(signature.s.data()),
-                signature.s.size()
-            );
+            assign(&final_signature->choice.ecdsaNistP256Signature.sSig, signature.s);
             final_signature->choice.ecdsaNistP256Signature.rSig = boost::apply_visitor(
                 ecc_point_visitor(),
                 signature.R
