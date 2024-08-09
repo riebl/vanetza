@@ -1,7 +1,7 @@
-diff --git a/vanetza/asn1/security/Vanetza_Security_Time64.c b/vanetza/asn1/security/Vanetza_Security_Time64.c
+diff --git a/vanetza/asn1/security/Time64.c b/vanetza/asn1/security/Time64.c
 index a5113b83..76b37fd2 100644
---- a/vanetza/asn1/security/Vanetza_Security_Time64.c
-+++ b/vanetza/asn1/security/Vanetza_Security_Time64.c
+--- a/vanetza/asn1/security/Time64.c
++++ b/vanetza/asn1/security/Time64.c
 @@ -11,7 +11,7 @@ int
  Vanetza_Security_Time64_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
@@ -53,10 +53,10 @@ index a5113b83..76b37fd2 100644
 +	&asn_SPC_Vanetza_Security_Time64_specs_1	/* Manually added specifics */
  };
  
-diff --git a/vanetza/asn1/security/Vanetza_Security_Time64.h b/vanetza/asn1/security/Vanetza_Security_Time64.h
+diff --git a/vanetza/asn1/security/Time64.h b/vanetza/asn1/security/Time64.h
 index c34f9236..751096b1 100644
---- a/vanetza/asn1/security/Vanetza_Security_Time64.h
-+++ b/vanetza/asn1/security/Vanetza_Security_Time64.h
+--- a/vanetza/asn1/security/Time64.h
++++ b/vanetza/asn1/security/Time64.h
 @@ -24,6 +24,7 @@ typedef Uint64_t	 Vanetza_Security_Time64_t;
  /* Implementation */
  extern asn_per_constraints_t asn_PER_type_Vanetza_Security_Time64_constr_1;
@@ -65,10 +65,10 @@ index c34f9236..751096b1 100644
  asn_struct_free_f Vanetza_Security_Time64_free;
  asn_struct_print_f Vanetza_Security_Time64_print;
  asn_constr_check_f Vanetza_Security_Time64_constraint;
-diff --git a/vanetza/asn1/security/Vanetza_Security_Uint64.c b/vanetza/asn1/security/Vanetza_Security_Uint64.c
+diff --git a/vanetza/asn1/security/Uint64.c b/vanetza/asn1/security/Uint64.c
 index 054ab239..644c7640 100644
---- a/vanetza/asn1/security/Vanetza_Security_Uint64.c
-+++ b/vanetza/asn1/security/Vanetza_Security_Uint64.c
+--- a/vanetza/asn1/security/Uint64.c
++++ b/vanetza/asn1/security/Uint64.c
 @@ -11,7 +11,7 @@ int
  Vanetza_Security_Uint64_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
@@ -120,10 +120,10 @@ index 054ab239..644c7640 100644
 +	&asn_SPC_Vanetza_Security_Uint64_specs_1	/* Manually added specifics */
  };
  
-diff --git a/vanetza/asn1/security/Vanetza_Security_Uint64.h b/vanetza/asn1/security/Vanetza_Security_Uint64.h
+diff --git a/vanetza/asn1/security/Uint64.h b/vanetza/asn1/security/Uint64.h
 index 34073918..944e79d0 100644
---- a/vanetza/asn1/security/Vanetza_Security_Uint64.h
-+++ b/vanetza/asn1/security/Vanetza_Security_Uint64.h
+--- a/vanetza/asn1/security/Uint64.h
++++ b/vanetza/asn1/security/Uint64.h
 @@ -24,6 +24,7 @@ typedef INTEGER_t	 Vanetza_Security_Uint64_t;
  /* Implementation */
  extern asn_per_constraints_t asn_PER_type_Vanetza_Security_Uint64_constr_1;

@@ -20,6 +20,12 @@ foreach(_file ${_files})
         endif()
     endforeach()
 
+    # remove prefix from header filenames
+    if (ASN1C_PREFIX)
+        string(REGEX REPLACE "#include \"${ASN1C_PREFIX}([^\"]+)\"" "#include \"\\1\"" _content "${_content}")
+        list(APPEND _patched "prefix")
+    endif()
+
     # remove absolute paths from generated files
     string(REGEX REPLACE "`asn1c (.*) -D [^`]+`" "`asn1c \\1`" _content "${_content}")
     if (CMAKE_MATCH_1)

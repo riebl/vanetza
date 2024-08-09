@@ -88,6 +88,9 @@ if(VANETZA_ASN1_WITH_ASN1C)
         DEPENDS ${_sec_asn1_files} ${_pki_asn1_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_sec_asn1_dir}
         COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -fprefix=Vanetza_Security_ -R -D ${_sec_asn1_dir} ${_sec_asn1_files} ${_pki_asn1_files}
+        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=security -DASN1C_PREFIX=Vanetza_Security_
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/remove_prefix_from_filename.cmake
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         COMMENT "Generating code from Security (1609.2 and TS 103 097, TS 102 941) ASN.1 modules" VERBATIM)
     add_custom_command(OUTPUT "${_sec_asn1_source_file}"
         DEPENDS ${_sec_asn1_dir}
@@ -111,7 +114,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
         COMMENT "Patching generated ITS application asn1c files"
         WORKING_DIRECTORY ${_its_asn1_dir} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_Security_
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
         COMMENT "Patching generated security asn1c files"
         WORKING_DIRECTORY ${_sec_asn1_dir} VERBATIM)
