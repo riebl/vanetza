@@ -9,7 +9,7 @@ namespace security
 namespace v3
 {
 
-HashedId8 convert(const HashedId8_t& in)
+HashedId8 convert(const Vanetza_Security_HashedId8_t& in)
 {
     HashedId8 out;
     std::memcpy(out.data(), in.buf, std::min(out.size(), in.size));

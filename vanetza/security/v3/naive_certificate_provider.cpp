@@ -68,7 +68,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
 
     Certificate aa_certificate = this->aa_certificate();
     // section 6 in TS 103 097 v2.1.1
-    certificate->issuer.present= IssuerIdentifier_PR_sha256AndDigest;
+    certificate->issuer.present= Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
     HashedId8 aa_certi_hashed = boost::get(calculate_hash(*aa_certificate));
     OCTET_STRING_fromBuf(
         &(certificate->issuer.choice.sha256AndDigest),
@@ -77,7 +77,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     );
 
     // section 6 in TS 103 097 v2.1.1
-    certificate->toBeSigned.id.present = CertificateId_PR_none;
+    certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_none;
     std::vector<uint8_t> craciId(3, 0);
     OCTET_STRING_fromBuf(
         &certificate->toBeSigned.cracaId,
@@ -99,9 +99,9 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     Uncompressed coordinates;
     coordinates.x.assign(m_own_key_pair.public_key.x.begin(), m_own_key_pair.public_key.x.end());
     coordinates.y.assign(m_own_key_pair.public_key.y.begin(), m_own_key_pair.public_key.y.end());
-    certificate->toBeSigned.verifyKeyIndicator.present = VerificationKeyIndicator_PR_verificationKey;
-    certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = PublicVerificationKey_PR_ecdsaNistP256;
-    certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = EccP256CurvePoint_PR_uncompressedP256;
+    certificate->toBeSigned.verifyKeyIndicator.present = Vanetza_Security_VerificationKeyIndicator_PR_verificationKey;
+    certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256;
+    certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256;
     OCTET_STRING_fromBuf(
         &certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.choice.uncompressedP256.x,
         reinterpret_cast<const char*>(coordinates.x.data()),
@@ -118,7 +118,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     // set validity restriction
 
     certificate->toBeSigned.validityPeriod.start = v2::convert_time32(m_runtime.now() - std::chrono::hours(1));;
-    certificate->toBeSigned.validityPeriod.duration.present = Duration_PR_hours;
+    certificate->toBeSigned.validityPeriod.duration.present = Vanetza_Security_Duration_PR_hours;
     certificate->toBeSigned.validityPeriod.duration.choice.hours = 23;
 
     sign_authorization_ticket(certificate);
@@ -139,7 +139,7 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
 
     //section 7.2.4 in TS 103 097 v2.1.1
     Certificate root_cert = this->root_certificate();
-    aa_certificate->issuer.present= IssuerIdentifier_PR_sha256AndDigest;
+    aa_certificate->issuer.present= Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
     HashedId8 root_certi_hashed = boost::get(calculate_hash(*root_cert));
     OCTET_STRING_fromBuf(
         &(aa_certificate->issuer.choice.sha256AndDigest),
@@ -148,7 +148,7 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     );
 
 
-    aa_certificate->toBeSigned.id.present = CertificateId_PR_name;
+    aa_certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_name;
     std::string root_name = "AA-cert";
     ByteBuffer root_name_encoded(root_name.begin(), root_name.end());
         OCTET_STRING_fromBuf(
@@ -171,8 +171,8 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     // certIssuePermissions shall be used to indicate issuing permissions
     // See https://cpoc.jrc.ec.europa.eu/data/documents/e01941_CPOC_Protocol_v3.0_20240206.pdf for detailled cert_permissions
     // I.3.8. certIssuePermissions with predefined values
-    PsidGroupPermissions* cert_permission_message = static_cast<PsidGroupPermissions*>(vanetza::asn1::allocate(sizeof(PsidGroupPermissions)));
-    cert_permission_message->subjectPermissions.present = SubjectPermissions_PR_explicit;
+    asn1::PsidGroupPermissions* cert_permission_message = asn1::allocate<asn1::PsidGroupPermissions>();
+    cert_permission_message->subjectPermissions.present = Vanetza_Security_SubjectPermissions_PR_explicit;
     add_psid_group_permission(cert_permission_message,aid::CA,{0x01, 0xff, 0xfc}, {0xff, 0x00, 0x03});
     add_psid_group_permission(cert_permission_message,aid::DEN,{0x01, 0xff, 0xff, 0xff}, {0xff, 0x00, 0x00, 0x00});
     add_psid_group_permission(cert_permission_message,aid::TLM,{0x01, 0xe0}, {0xff, 0x1f});
@@ -187,9 +187,9 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     // set the verification_key
     X_Coordinate_Only coordinates;
     coordinates.x.assign(m_own_key_pair.public_key.x.begin(), m_own_key_pair.public_key.x.end());
-    aa_certificate->toBeSigned.verifyKeyIndicator.present = VerificationKeyIndicator_PR_verificationKey;
-    aa_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = PublicVerificationKey_PR_ecdsaNistP256;
-    aa_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = EccP256CurvePoint_PR_x_only;
+    aa_certificate->toBeSigned.verifyKeyIndicator.present = Vanetza_Security_VerificationKeyIndicator_PR_verificationKey;
+    aa_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256;
+    aa_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
     OCTET_STRING_fromBuf(
         &aa_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.choice.x_only,
         reinterpret_cast<const char*>(coordinates.x.data()),
@@ -197,15 +197,15 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     );
 
     aa_certificate->toBeSigned.validityPeriod.start = v2::convert_time32(m_runtime.now() - std::chrono::hours(1));;
-    aa_certificate->toBeSigned.validityPeriod.duration.present = Duration_PR_years;
+    aa_certificate->toBeSigned.validityPeriod.duration.present = Vanetza_Security_Duration_PR_years;
     aa_certificate->toBeSigned.validityPeriod.duration.choice.hours = 4;
 
     Uncompressed encryption_key;
     encryption_key.x.assign(m_own_key_pair.public_key.x.begin(), m_own_key_pair.public_key.x.end());
     encryption_key.y.assign(m_own_key_pair.public_key.y.begin(), m_own_key_pair.public_key.y.end());
-    aa_certificate->toBeSigned.encryptionKey = static_cast<PublicEncryptionKey*>(vanetza::asn1::allocate(sizeof(PublicEncryptionKey)));
-    aa_certificate->toBeSigned.encryptionKey->publicKey.present = BasePublicEncryptionKey_PR_eciesNistP256;
-    aa_certificate->toBeSigned.encryptionKey->publicKey.choice.eciesNistP256.present = EccP256CurvePoint_PR_uncompressedP256;
+    aa_certificate->toBeSigned.encryptionKey = asn1::allocate<asn1::PublicEncryptionKey>();
+    aa_certificate->toBeSigned.encryptionKey->publicKey.present = Vanetza_Security_BasePublicEncryptionKey_PR_eciesNistP256;
+    aa_certificate->toBeSigned.encryptionKey->publicKey.choice.eciesNistP256.present = Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256;
     OCTET_STRING_fromBuf(
         &aa_certificate->toBeSigned.encryptionKey->publicKey.choice.eciesNistP256.choice.uncompressedP256.x,
         reinterpret_cast<const char*>(encryption_key.x.data()),
@@ -228,8 +228,8 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     Certificate root_certificate;
 
     //section 7.2.3 in TS 103 097 v2.1.1
-    root_certificate->issuer.present = IssuerIdentifier_PR_self;
-    root_certificate->toBeSigned.id.present = CertificateId_PR_name;
+    root_certificate->issuer.present = Vanetza_Security_IssuerIdentifier_PR_self;
+    root_certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_name;
     std::string root_name = "Root-CA";
     ByteBuffer root_name_encoded(root_name.begin(), root_name.end());
         OCTET_STRING_fromBuf(
@@ -256,13 +256,13 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     // certIssuePermissions shall be used to indicate issuing permissions
     // See https://cpoc.jrc.ec.europa.eu/data/documents/e01941_CPOC_Protocol_v3.0_20240206.pdf for detailled cert_permissions
     // I.3.8. certIssuePermissions with predefined values
-    PsidGroupPermissions* cert_permission = static_cast<PsidGroupPermissions*>(vanetza::asn1::allocate(sizeof(PsidGroupPermissions)));
-    cert_permission->subjectPermissions.present = SubjectPermissions_PR_explicit;
+    auto cert_permission = asn1::allocate<asn1::PsidGroupPermissions>();
+    cert_permission->subjectPermissions.present = Vanetza_Security_SubjectPermissions_PR_explicit;
     add_psid_group_permission(cert_permission,aid::SCR,{0x01, 0x3e}, {0xff, 0xc1});
     root_certificate.add_cert_permission(cert_permission);
 
-    PsidGroupPermissions* cert_permission_message = static_cast<PsidGroupPermissions*>(vanetza::asn1::allocate(sizeof(PsidGroupPermissions)));
-    cert_permission_message->subjectPermissions.present = SubjectPermissions_PR_explicit;
+    auto cert_permission_message = asn1::allocate<asn1::PsidGroupPermissions>();
+    cert_permission_message->subjectPermissions.present = Vanetza_Security_SubjectPermissions_PR_explicit;
     add_psid_group_permission(cert_permission_message,aid::CA,{0x01, 0xff, 0xfc}, {0xff, 0x00, 0x03});
     add_psid_group_permission(cert_permission_message,aid::DEN,{0x01, 0xff, 0xff, 0xff}, {0xff, 0x00, 0x00, 0x00});
     add_psid_group_permission(cert_permission_message,aid::TLM,{0x01, 0xe0}, {0xff, 0x1f});
@@ -277,16 +277,16 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     // set the verification_key
     X_Coordinate_Only coordinates;
     coordinates.x.assign(m_own_key_pair.public_key.x.begin(), m_own_key_pair.public_key.x.end());
-    root_certificate->toBeSigned.verifyKeyIndicator.present = VerificationKeyIndicator_PR_verificationKey;
-    root_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = PublicVerificationKey_PR_ecdsaNistP256;
-    root_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = EccP256CurvePoint_PR_x_only;
+    root_certificate->toBeSigned.verifyKeyIndicator.present = Vanetza_Security_VerificationKeyIndicator_PR_verificationKey;
+    root_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256;
+    root_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
     OCTET_STRING_fromBuf(
         &root_certificate->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.choice.x_only,
         reinterpret_cast<const char*>(coordinates.x.data()),
         coordinates.x.size()
     );
     root_certificate->toBeSigned.validityPeriod.start = v2::convert_time32(m_runtime.now() - std::chrono::hours(1));;
-    root_certificate->toBeSigned.validityPeriod.duration.present = Duration_PR_years;
+    root_certificate->toBeSigned.validityPeriod.duration.present = Vanetza_Security_Duration_PR_years;
     root_certificate->toBeSigned.validityPeriod.duration.choice.hours = 4;
 
     sign_authorization_ticket(root_certificate);
