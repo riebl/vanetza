@@ -62,6 +62,7 @@ asn_TYPE_operation_t asn_OP_REAL = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     REAL_compare,
+    REAL_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     ber_decode_primitive,
     der_encode_primitive,
@@ -77,8 +78,10 @@ asn_TYPE_operation_t asn_OP_REAL = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    REAL_decode_jer,
     REAL_encode_jer,
 #else
+	0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -357,6 +360,41 @@ REAL_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
     } else {
         return 1;
     }
+}
+
+int
+REAL_copy(const asn_TYPE_descriptor_t *td, void **aptr,
+          const void *bptr) {
+    REAL_t *a = *aptr;
+    const REAL_t *b = bptr;
+
+    (void)td;
+
+    if(!b) {
+        if(a) {
+            FREEMEM(a->buf);
+            FREEMEM(a);
+            *aptr = 0;
+        }
+        return 0;
+    } 
+
+    if(!a) {
+        a = *aptr = CALLOC(1, sizeof(*a));
+        if(!a) return -1;
+    }
+
+    if(b->size) {
+        uint8_t* buf = (uint8_t*)MALLOC(b->size);
+        if(!buf) return -1;
+        memcpy(buf, b->buf, b->size);
+
+        FREEMEM(a->buf);
+        a->buf = buf;
+        a->size = b->size;
+    } 
+
+    return 0;
 }
 
 int

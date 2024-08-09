@@ -34,10 +34,9 @@ extern "C" {
 #define	ASN1C_ENVIRONMENT_VERSION	923	/* Compile-time version */
 int get_asn1c_environment_version(void);	/* Run-time version */
 
-#include <vanetza/asn1/memory.h>
-#define	CALLOC(nmemb, size)	vanetza_asn1c_calloc(nmemb, size)
-#define	MALLOC(size)		vanetza_asn1c_malloc(size)
-#define	REALLOC(oldptr, size)   vanetza_asn1c_realloc(oldptr, size)
+#define	CALLOC(nmemb, size)	calloc(nmemb, size)
+#define	MALLOC(size)		malloc(size)
+#define	REALLOC(oldptr, size)	realloc(oldptr, size)
 #define	FREEMEM(ptr)		free(ptr)
 
 #define	asn_debug_indent	0
@@ -137,8 +136,25 @@ asn__format_to_callback(
 /*
  * Check stack against overflow, if limit is set.
  */
+
+/* Since GCC 13, AddressSanitizer started defaulting to
+* ASAN_OPTIONS="detect_stack_use_after_return=1", which makes this check
+* fail due to apparently jumping stack pointers.
+* Hence, disable this check if building with ASan, as documented in:
+* GCC: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+* Clang: https://clang.llvm.org/docs/AddressSanitizer.html#conditional-compilation-with-has-feature-address-sanitizer
+*/
+#if defined(__SANITIZE_ADDRESS__)
+	#define ASN__SANITIZE_ENABLED 1
+#elif defined(__has_feature)
+#if __has_feature(address_sanitizer)
+	#define ASN__SANITIZE_ENABLED 1
+#endif
+#endif
+
 #define	ASN__DEFAULT_STACK_MAX	(30000)
-#ifdef ASN_DISABLE_STACK_OVERFLOW_CHECK
+
+#if defined(ASN__SANITIZE_ENABLED) || defined(ASN_DISABLE_STACK_OVERFLOW_CHECK)
 static int CC_NOTUSED
 ASN__STACK_OVERFLOW_CHECK(const asn_codec_ctx_t *ctx) {
    (void)ctx;

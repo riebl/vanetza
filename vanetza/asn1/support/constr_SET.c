@@ -14,6 +14,7 @@ asn_TYPE_operation_t asn_OP_SET = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     SET_compare,
+    SET_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     SET_decode_ber,
     SET_encode_der,
@@ -29,8 +30,10 @@ asn_TYPE_operation_t asn_OP_SET = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-    SET_encode_jer,
+    SET_decode_jer,
+    SEQUENCE_encode_jer,
 #else
+	0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -209,6 +212,56 @@ SET_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
 		}
 
         ret = elm->type->op->compare_struct(elm->type, amemb, bmemb);
+        if(ret != 0) return ret;
+    }
+
+    return 0;
+}
+
+int
+SET_copy(const asn_TYPE_descriptor_t *td, void **aptr,
+         const void *bptr) {
+    if(!td) return -1;
+
+    const asn_SET_specifics_t *specs = 
+        (const asn_SET_specifics_t *)td->specifics;
+    size_t edx;
+    void *st = *aptr;        /* Target structure */
+
+    if(!bptr) {
+        if(st) {
+            SET_free(td, st, ASFM_FREE_EVERYTHING);
+            *aptr = 0;
+        }
+        return 0;
+    }
+
+    /*
+     * Create the target structure if it is not present already.
+     */
+    if(st == 0) {
+        st = *aptr = CALLOC(1, specs->struct_size);
+        if(st == 0) return -1;
+    }
+
+	for(edx = 0; edx < td->elements_count; edx++) {
+		asn_TYPE_member_t *elm = &td->elements[edx];
+		void *amemb;
+		void **amembp;
+		const void *bmemb;
+        int ret;
+
+        if(elm->flags & ATF_POINTER) {
+            /* Member is a pointer to another structure */
+            amembp = (void **)((char *)st + elm->memb_offset);
+            bmemb = *(const void* const*)((const char*)bptr + elm->memb_offset);
+        } else {
+            amemb = (char *)st + elm->memb_offset;
+            amembp = &amemb;
+            bmemb = (const void*)((const char*)bptr + elm->memb_offset);
+        }
+
+        ret = elm->type->op->copy_struct(elm->type, amembp, bmemb);
         if(ret != 0) return ret;
     }
 

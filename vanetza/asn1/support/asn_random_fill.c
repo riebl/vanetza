@@ -6,6 +6,7 @@
 #include "asn_internal.h"
 #include "asn_random_fill.h"
 #include "constr_TYPE.h"
+#include <stdlib.h>
 
 int
 asn_random_fill(const struct asn_TYPE_descriptor_s *td, void **struct_ptr,
@@ -42,17 +43,22 @@ asn_random_between(intmax_t lb, intmax_t rb) {
         uintmax_t range = asn__intmax_range(lb, rb);
         uintmax_t value = 0;
         uintmax_t got_entropy = 0;
-
         (void)intmax_max;
-        assert(RAND_MAX > 0xffffff);    /* Seen 7ffffffd! */
+        int max = 0xffffff;
+
+#ifdef __WIN32__
+        max = RAND_MAX-1;
+#endif
+
+        assert(RAND_MAX > max);    /* Seen 7ffffffd! */
         assert(range < intmax_max);
 
         for(; got_entropy < range;) {
-            got_entropy = (got_entropy << 24) | 0xffffff;
+            got_entropy = (got_entropy << 24) | max;
 #ifdef HAVE_RANDOM
-            value = (value << 24) | (rand() % 0xffffff);
+            value = (value << 24) | (rand() % max);
 #else
-            value = (value << 24) | (rand() % 0xffffff);
+            value = (value << 24) | (rand() % max);
 #endif
         }
 

@@ -22,6 +22,7 @@ asn_TYPE_operation_t asn_OP_RELATIVE_OID = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     OCTET_STRING_compare,  /* Implemented in terms of opaque comparison */
+    OCTET_STRING_copy,     /* Implemented in terms of opaque copy */
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     ber_decode_primitive,
     der_encode_primitive,
@@ -37,8 +38,10 @@ asn_TYPE_operation_t asn_OP_RELATIVE_OID = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    RELATIVE_OID_decode_jer,
     RELATIVE_OID_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)

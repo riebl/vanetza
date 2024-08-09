@@ -1,10 +1,8 @@
 set(_its_asn1_source_file "asn1c_its_sources.txt")
-set(_pki_asn1_source_file "asn1c_pki_sources.txt")
 set(_sec_asn1_source_file "asn1c_security_sources.txt")
 set(_support_asn1_source_file "asn1c_support_sources.txt")
 
 set(_its_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its")
-set(_pki_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/pki")
 set(_sec_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/security")
 set(_support_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/support")
 
@@ -86,23 +84,11 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P collect_asn1c_sources.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
 
-    add_custom_command(OUTPUT ${_pki_asn1_dir}
-        DEPENDS ${_pki_asn1_files}
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${_pki_asn1_dir}
-        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -R -D ${_pki_asn1_dir} ${_pki_asn1_files} ${_sec_asn1_files}
-        COMMENT "Generating code from PKI (TS 102 941) ASN.1 modules" VERBATIM
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-    add_custom_command(OUTPUT "${_pki_asn1_source_file}"
-        DEPENDS ${_pki_asn1_dir}
-        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=pki -DASN1C_SOURCE_FILE=${_pki_asn1_source_file}
-            -P collect_asn1c_sources.cmake
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
-
     add_custom_command(OUTPUT "${_sec_asn1_dir}"
-        DEPENDS ${_sec_asn1_files}
+        DEPENDS ${_sec_asn1_files} ${_pki_asn1_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_sec_asn1_dir}
-        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -R -D ${_sec_asn1_dir} ${_sec_asn1_files}
-        COMMENT "Generating code from Security (1609.2 and TS 103 097) ASN.1 modules" VERBATIM)
+        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -fprefix=Vanetza_Security_ -R -D ${_sec_asn1_dir} ${_sec_asn1_files} ${_pki_asn1_files}
+        COMMENT "Generating code from Security (1609.2 and TS 103 097, TS 102 941) ASN.1 modules" VERBATIM)
     add_custom_command(OUTPUT "${_sec_asn1_source_file}"
         DEPENDS ${_sec_asn1_dir}
         COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=security -DASN1C_SOURCE_FILE=${_sec_asn1_source_file}
@@ -112,7 +98,6 @@ if(VANETZA_ASN1_WITH_ASN1C)
     add_custom_target(generate_asn1c DEPENDS
         "${_support_asn1_dir}" "${_support_asn1_source_file}"
         "${_its_asn1_dir}" "${_its_asn1_source_file}"
-        "${_pki_asn1_dir}" "${_pki_asn1_source_file}"
         "${_sec_asn1_dir}" "${_sec_asn1_source_file}"
         VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
@@ -125,11 +110,6 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
         COMMENT "Patching generated ITS application asn1c files"
         WORKING_DIRECTORY ${_its_asn1_dir} VERBATIM)
-    add_custom_command(TARGET generate_asn1c POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
-        COMMENT "Patching generated PKI asn1c files"
-        WORKING_DIRECTORY ${_pki_asn1_dir} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
         COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
@@ -157,10 +137,6 @@ if(VANETZA_ASN1_WITH_ASN1C)
         COMMAND ${CMAKE_COMMAND}
           -DASN1C_OUTPUT_DIR=${_its_asn1_dir}
           -DASN1C_SOURCE_FILE=${_its_asn1_source_file}
-          -P clean_asn1c.cmake
-        COMMAND ${CMAKE_COMMAND}
-          -DASN1C_OUTPUT_DIR=${_pki_asn1_dir}
-          -DASN1C_SOURCE_FILE=${_pki_asn1_source_file}
           -P clean_asn1c.cmake
         COMMAND ${CMAKE_COMMAND}
           -DASN1C_OUTPUT_DIR=${_sec_asn1_dir}
@@ -209,7 +185,6 @@ add_asn1_component(support)
 target_sources(asn1_support PRIVATE memory.c)
 add_asn1_component(its)
 add_asn1_component(security)
-add_asn1_component(pki)
 
 add_vanetza_component(asn1 asn1c_wrapper.cpp)
 target_link_libraries(asn1 PUBLIC asn1_its Boost::boost)

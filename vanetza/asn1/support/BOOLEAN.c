@@ -19,6 +19,7 @@ asn_TYPE_operation_t asn_OP_BOOLEAN = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     BOOLEAN_compare,
+    BOOLEAN_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     BOOLEAN_decode_ber,
     BOOLEAN_encode_der,
@@ -34,8 +35,10 @@ asn_TYPE_operation_t asn_OP_BOOLEAN = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    BOOLEAN_decode_jer,
     BOOLEAN_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -125,4 +128,30 @@ BOOLEAN_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
     } else {
         return 1;
     }
+}
+
+int
+BOOLEAN_copy(const asn_TYPE_descriptor_t *td, void **aptr,
+             const void *bptr) {
+    BOOLEAN_t *a = *aptr;
+    const BOOLEAN_t *b = bptr;
+
+    (void)td;
+
+    if(!b) {
+        if(a) {
+            FREEMEM(a);
+            *aptr = 0;
+        }
+        return 0;
+    }
+
+    if(!a) {
+        a = *aptr = MALLOC(sizeof(BOOLEAN_t));
+        if(!a) return -1;
+    }
+
+    *a = *b;
+
+    return 0;
 }

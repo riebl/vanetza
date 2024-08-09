@@ -40,6 +40,8 @@ CHOICE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         value = per_get_few_bits(pd, 1);
         if(value < 0) ASN__DECODE_STARVED;
         if(value) ct = 0;  /* Not restricted */
+        if((unsigned)value >= td->elements_count)
+            ASN__DECODE_FAILED;
     }
 
     if(ct && ct->range_bits >= 0) {
@@ -53,8 +55,8 @@ CHOICE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         if(specs->ext_start == -1)
             ASN__DECODE_FAILED;
 
-        if (ct && ct->upper_bound >= ct->lower_bound) {
-            value = aper_get_nsnnwn(pd, ct->upper_bound - ct->lower_bound + 1);
+        if(specs && specs->tag2el_count > (unsigned)specs->ext_start) {
+            value = aper_get_nsnnwn(pd); /* extension elements range */
             if(value < 0) ASN__DECODE_STARVED;
             value += specs->ext_start;
             if((unsigned)value >= td->elements_count)
@@ -166,11 +168,7 @@ CHOICE_encode_aper(const asn_TYPE_descriptor_t *td,
         asn_enc_rval_t rval = {0,0,0};
         if(specs->ext_start == -1)
             ASN__ENCODE_FAILED;
-        int n = present - specs->ext_start;
-        if(n <= 63) {
-            if(n < 0) ASN__ENCODE_FAILED;
-            if(per_put_few_bits(po, n, 7)) ASN__ENCODE_FAILED;
-        } else
+        if(aper_put_nsnnwn(po, present - specs->ext_start))
             ASN__ENCODE_FAILED;
         if(aper_open_type_put(elm->type, elm->encoding_constraints.per_constraints,
                               memb_ptr, po))

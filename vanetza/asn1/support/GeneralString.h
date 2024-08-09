@@ -23,6 +23,7 @@ extern asn_TYPE_operation_t asn_OP_GeneralString;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define GeneralString_compare OCTET_STRING_compare
+#define GeneralString_copy    OCTET_STRING_copy
 
 #define GeneralString_constraint asn_generic_unknown_constraint
 
@@ -37,6 +38,7 @@ extern asn_TYPE_operation_t asn_OP_GeneralString;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define GeneralString_decode_jer OCTET_STRING_decode_jer_hex
 #define GeneralString_encode_jer OCTET_STRING_encode_jer
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

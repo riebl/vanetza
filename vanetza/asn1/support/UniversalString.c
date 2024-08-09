@@ -32,6 +32,7 @@ asn_TYPE_operation_t asn_OP_UniversalString = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     OCTET_STRING_compare,
+    OCTET_STRING_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     OCTET_STRING_decode_ber,
     OCTET_STRING_encode_der,
@@ -47,8 +48,10 @@ asn_TYPE_operation_t asn_OP_UniversalString = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    UniversalString_decode_jer,  /* Convert from UTF-8 */
     UniversalString_encode_jer,  /* Convert into UTF-8 */
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)

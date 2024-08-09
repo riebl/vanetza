@@ -10,7 +10,7 @@ static enum xer_pbd_rval
 RELATIVE_OID__xer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
                               const void *chunk_buf, size_t chunk_size) {
     RELATIVE_OID_t *st = (RELATIVE_OID_t *)sptr;
-    const char *chunk_end = (const char *)chunk_buf + chunk_size;
+    const char *chunk_end __attribute__((unused)) = (const char *)chunk_buf + chunk_size;
     const char *endptr;
     asn_oid_arc_t s_arcs[6];
     asn_oid_arc_t *arcs = s_arcs;

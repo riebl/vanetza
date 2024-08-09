@@ -23,6 +23,7 @@ extern asn_TYPE_operation_t asn_OP_ENUMERATED;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define ENUMERATED_compare INTEGER_compare
+#define ENUMERATED_copy    INTEGER_copy
 
 #define ENUMERATED_constraint asn_generic_no_constraint
 
@@ -37,6 +38,7 @@ extern asn_TYPE_operation_t asn_OP_ENUMERATED;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f ENUMERATED_decode_jer;
 #define ENUMERATED_encode_jer INTEGER_encode_jer
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

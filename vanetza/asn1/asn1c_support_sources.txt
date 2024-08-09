@@ -27,6 +27,7 @@ support/BOOLEAN_uper.c
 support/BOOLEAN_xer.c
 support/ENUMERATED.c
 support/ENUMERATED_aper.c
+support/ENUMERATED_jer.c
 support/ENUMERATED_oer.c
 support/ENUMERATED_uper.c
 support/GeneralString.c
@@ -99,6 +100,7 @@ support/OCTET_STRING_xer.c
 support/OPEN_TYPE.c
 support/OPEN_TYPE_aper.c
 support/OPEN_TYPE_ber.c
+support/OPEN_TYPE_jer.c
 support/OPEN_TYPE_oer.c
 support/OPEN_TYPE_uper.c
 support/OPEN_TYPE_xer.c
@@ -143,6 +145,7 @@ support/asn_application.c
 support/asn_bit_data.c
 support/asn_codecs_prim.c
 support/asn_codecs_prim_ber.c
+support/asn_codecs_prim_jer.c
 support/asn_codecs_prim_xer.c
 support/asn_internal.c
 support/asn_random_fill.c
@@ -191,7 +194,9 @@ support/constr_SET_xer.c
 support/constr_TYPE.c
 support/constraints.c
 support/der_encoder.c
+support/jer_decoder.c
 support/jer_encoder.c
+support/jer_support.c
 support/oer_decoder.c
 support/oer_encoder.c
 support/oer_support.c

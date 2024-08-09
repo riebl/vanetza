@@ -38,6 +38,7 @@ asn_TYPE_operation_t asn_OP_UTCTime = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     UTCTime_compare,
+    UTCTime_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     OCTET_STRING_decode_ber,  /* Implemented in terms of OCTET STRING */
     OCTET_STRING_encode_der,  /* Implemented in terms of OCTET STRING */
@@ -53,8 +54,10 @@ asn_TYPE_operation_t asn_OP_UTCTime = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    OCTET_STRING_decode_jer_utf8,
     UTCTime_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
