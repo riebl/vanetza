@@ -6,7 +6,6 @@
 #include <cryptopp/oids.h>
 #include <cryptopp/osrng.h>
 #include <cryptopp/base64.h>
-#include <streambuf>
 #include <fstream>
 
 namespace vanetza
@@ -46,7 +45,7 @@ ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path)
     CryptoPP::Base64Decoder decoder;
 
     decoder.Attach(new CryptoPP::Redirector(queue));
-    decoder.Put((const CryptoPP::byte*)keystr.data(), keystr.length());
+    decoder.Put(reinterpret_cast<const uint8_t*>(keystr.data()), keystr.length());
     decoder.MessageEnd();
 
     CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey private_key;
