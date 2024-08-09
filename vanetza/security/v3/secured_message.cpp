@@ -139,7 +139,8 @@ ItsAid SecuredMessage::its_aid() const
     return aid;
 }
 
-void SecuredMessage::set_its_aid(ItsAid its_aid) {
+void SecuredMessage::set_its_aid(ItsAid its_aid)
+{
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
         SignedData* signed_data = m_struct->content->choice.signedData;
         if (signed_data && signed_data->tbsData) {
@@ -148,24 +149,21 @@ void SecuredMessage::set_its_aid(ItsAid its_aid) {
     }
 }
 
-void SecuredMessage::set_generation_time(Time64 time) {
+void SecuredMessage::set_generation_time(Time64 time)
+{
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
         if (m_struct->content->choice.signedData->tbsData->headerInfo.generationTime == nullptr) {
-            //generationTime is not initialiazed
-            m_struct->content->choice.signedData->tbsData->headerInfo.generationTime = static_cast<Time64_t*>(calloc(1, sizeof(Time64_t)));;
+            m_struct->content->choice.signedData->tbsData->headerInfo.generationTime = asn1::allocate<Time64_t>();
         }
-        asn_uint642INTEGER(
-            (m_struct->content->choice.signedData->tbsData->headerInfo.generationTime),
-            time
-    );
+        asn_uint642INTEGER(m_struct->content->choice.signedData->tbsData->headerInfo.generationTime, time);
     }
 }
 
-void SecuredMessage::set_generation_location(ThreeDLocation location) {
+void SecuredMessage::set_generation_location(ThreeDLocation location)
+{
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
         if (m_struct->content->choice.signedData->tbsData->headerInfo.generationLocation == nullptr) {
-            //generationLocation is not initialiazed
-            m_struct->content->choice.signedData->tbsData->headerInfo.generationLocation = static_cast<ThreeDLocation_t*>(calloc(1, sizeof(ThreeDLocation_t)));;
+            m_struct->content->choice.signedData->tbsData->headerInfo.generationLocation = asn1::allocate<ThreeDLocation_t>();
         }
         m_struct->content->choice.signedData->tbsData->headerInfo.generationLocation->latitude = location.latitude;
         m_struct->content->choice.signedData->tbsData->headerInfo.generationLocation->longitude = location.longitude;
@@ -173,7 +171,8 @@ void SecuredMessage::set_generation_location(ThreeDLocation location) {
     }
 }
 
-void SecuredMessage::set_inline_p2pcd_request(std::list<HashedId3> requests){
+void SecuredMessage::set_inline_p2pcd_request(std::list<HashedId3> requests)
+{
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
         ASN_STRUCT_FREE_CONTENTS_ONLY(
             asn_DEF_SequenceOfHashedId3,
@@ -186,17 +185,18 @@ void SecuredMessage::set_inline_p2pcd_request(std::list<HashedId3> requests){
 
 }
 
-void SecuredMessage::add_inline_p2pcd_request(HashedId3 unkown_certificate_digest) {
+void SecuredMessage::add_inline_p2pcd_request(HashedId3 unkown_certificate_digest)
+{
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
             if (m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest == nullptr) {
-            //generationTime is not initialiazed
-            m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest = static_cast<SequenceOfHashedId3*>(calloc(1, sizeof(SequenceOfHashedId3)));;
+            m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest = asn1::allocate<SequenceOfHashedId3>();
         }
         ASN_SEQUENCE_ADD(&(m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest), &unkown_certificate_digest);
     }
 }
 
-void SecuredMessage::set_dummy_signature() {
+void SecuredMessage::set_dummy_signature()
+{
     if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
         SignedData* signed_data = m_struct->content->choice.signedData;
         if (signed_data) {
@@ -227,76 +227,78 @@ void SecuredMessage::set_dummy_signature() {
     }
 }
 
-void SecuredMessage::set_signature(const Signature& signature) {
-        if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
-            SignedData* signed_data = m_struct->content->choice.signedData;
-            if (signed_data) {
-                // Reset the signature structure
-                ASN_STRUCT_RESET(asn_DEF_Signature, &(signed_data->signature));
+void SecuredMessage::set_signature(const Signature& signature)
+{
+    if (m_struct->content->present == Ieee1609Dot2Content_PR_signedData) {
+        SignedData* signed_data = m_struct->content->choice.signedData;
+        if (signed_data) {
+            // Reset the signature structure
+            ASN_STRUCT_RESET(asn_DEF_Signature, &(signed_data->signature));
 
-                // Set the signature type to ECDSA NIST P256
-                switch (signature.type)
-                {
-                case vanetza::security::KeyType::NistP256:
-                    signed_data->signature.present = Signature_PR_ecdsaNistP256Signature;
-                    // Initialize rSig and sSig part of the signature
+            // Set the signature type to ECDSA NIST P256
+            switch (signature.type)
+            {
+            case vanetza::security::KeyType::NistP256:
+                signed_data->signature.present = Signature_PR_ecdsaNistP256Signature;
+                // Initialize rSig and sSig part of the signature
 
-                    // Check the type (x_only, y-1, y-0 or uncompressed ??????)
-                    signed_data->signature.choice.ecdsaNistP256Signature.rSig.present = EccP256CurvePoint_PR_x_only;
-                    OCTET_STRING_fromBuf(
-                        &signed_data->signature.choice.ecdsaNistP256Signature.rSig.choice.x_only,
-                        reinterpret_cast<const char*>(signature.r.data()),
-                        signature.r.size()
-                    );
-                    OCTET_STRING_fromBuf(
-                        &signed_data->signature.choice.ecdsaNistP256Signature.sSig,
-                        reinterpret_cast<const char*>(signature.s.data()),
-                        signature.s.size()
-                    );
-                    break;
-                case vanetza::security::KeyType::BrainpoolP256r1 :
-                    signed_data->signature.present = Signature_PR_ecdsaBrainpoolP256r1Signature;
-                    // Check the type (x_only, y-1, y-0 or uncompressed ??????)
-                    signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.rSig.present = EccP256CurvePoint_PR_x_only;
-                    OCTET_STRING_fromBuf(
-                        &signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.rSig.choice.x_only,
-                        reinterpret_cast<const char*>(signature.r.data()),
-                        signature.r.size()
-                    );
-                    OCTET_STRING_fromBuf(
-                        &signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.sSig,
-                        reinterpret_cast<const char*>(signature.s.data()),
-                        signature.s.size()
-                    );
-                    break;
-                case vanetza::security::KeyType::BrainpoolP384r1 :
-                    signed_data->signature.present = Signature_PR_ecdsaBrainpoolP384r1Signature;
-                    // Check the type (x_only, y-1, y-0 or uncompressed ??????)
-                    signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.rSig.present = EccP384CurvePoint_PR_x_only;
-                    OCTET_STRING_fromBuf(
-                        &signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.rSig.choice.x_only,
-                        reinterpret_cast<const char*>(signature.r.data()),
-                        signature.r.size()
-                    );
-                    OCTET_STRING_fromBuf(
-                        &signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.sSig,
-                        reinterpret_cast<const char*>(signature.s.data()),
-                        signature.s.size()
-                    );
-                    break;
-                default:
-                    this->set_dummy_signature();
-                    break;
-                }
+                // Check the type (x_only, y-1, y-0 or uncompressed ??????)
+                signed_data->signature.choice.ecdsaNistP256Signature.rSig.present = EccP256CurvePoint_PR_x_only;
+                OCTET_STRING_fromBuf(
+                    &signed_data->signature.choice.ecdsaNistP256Signature.rSig.choice.x_only,
+                    reinterpret_cast<const char*>(signature.r.data()),
+                    signature.r.size()
+                );
+                OCTET_STRING_fromBuf(
+                    &signed_data->signature.choice.ecdsaNistP256Signature.sSig,
+                    reinterpret_cast<const char*>(signature.s.data()),
+                    signature.s.size()
+                );
+                break;
+            case vanetza::security::KeyType::BrainpoolP256r1 :
+                signed_data->signature.present = Signature_PR_ecdsaBrainpoolP256r1Signature;
+                // Check the type (x_only, y-1, y-0 or uncompressed ??????)
+                signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.rSig.present = EccP256CurvePoint_PR_x_only;
+                OCTET_STRING_fromBuf(
+                    &signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.rSig.choice.x_only,
+                    reinterpret_cast<const char*>(signature.r.data()),
+                    signature.r.size()
+                );
+                OCTET_STRING_fromBuf(
+                    &signed_data->signature.choice.ecdsaBrainpoolP256r1Signature.sSig,
+                    reinterpret_cast<const char*>(signature.s.data()),
+                    signature.s.size()
+                );
+                break;
+            case vanetza::security::KeyType::BrainpoolP384r1 :
+                signed_data->signature.present = Signature_PR_ecdsaBrainpoolP384r1Signature;
+                // Check the type (x_only, y-1, y-0 or uncompressed ??????)
+                signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.rSig.present = EccP384CurvePoint_PR_x_only;
+                OCTET_STRING_fromBuf(
+                    &signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.rSig.choice.x_only,
+                    reinterpret_cast<const char*>(signature.r.data()),
+                    signature.r.size()
+                );
+                OCTET_STRING_fromBuf(
+                    &signed_data->signature.choice.ecdsaBrainpoolP384r1Signature.sSig,
+                    reinterpret_cast<const char*>(signature.s.data()),
+                    signature.s.size()
+                );
+                break;
+            default:
+                this->set_dummy_signature();
+                break;
             }
+        }
     }
 }
 
-void SecuredMessage::set_signature(const SomeEcdsaSignature& signature) {
+void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
+{
     struct ecc_point_visitor : public boost::static_visitor<EccP256CurvePoint_t> {
         EccP256CurvePoint_t operator()(const X_Coordinate_Only& x_only) const
         {
-            EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
+            EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_x_only;
             OCTET_STRING_fromBuf(
                 &(to_return->choice.x_only),
@@ -307,7 +309,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature) {
         }
         EccP256CurvePoint_t operator()(const Compressed_Lsb_Y_0& y0) const
         {
-            EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
+            EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_compressed_y_0;
             OCTET_STRING_fromBuf(
                 &(to_return->choice.compressed_y_0),
@@ -318,7 +320,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature) {
         }
         EccP256CurvePoint_t operator()(const Compressed_Lsb_Y_1& y1) const
         {
-            EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
+            EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_compressed_y_1;
             OCTET_STRING_fromBuf(
                 &(to_return->choice.compressed_y_1),
@@ -329,7 +331,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature) {
         }
         EccP256CurvePoint_t operator()(const Uncompressed& unc) const
         {
-            EccP256CurvePoint_t* to_return = static_cast<EccP256CurvePoint_t*>(vanetza::asn1::allocate(sizeof(EccP256CurvePoint_t)));
+            EccP256CurvePoint_t* to_return = asn1::allocate<EccP256CurvePoint_t>();
             to_return->present = EccP256CurvePoint_PR_uncompressedP256;
             OCTET_STRING_fromBuf(
                 &(to_return->choice.uncompressedP256.x),
@@ -348,7 +350,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature) {
     {
         Signature_t operator()(const EcdsaSignature& signature) const
         {
-            Signature_t* final_signature = static_cast<Signature_t*>(vanetza::asn1::allocate(sizeof(Signature_t)));
+            Signature_t* final_signature = asn1::allocate<Signature_t>();
             final_signature->present = Signature_PR_ecdsaNistP256Signature;
             OCTET_STRING_fromBuf(
                 &(final_signature->choice.ecdsaNistP256Signature.sSig),
@@ -387,7 +389,8 @@ PacketVariant SecuredMessage::payload() const
     return CohesivePacket { std::move(buffer), OsiLayer::Network };
 }
 
-void SecuredMessage::set_payload(ByteBuffer& payload) {
+void SecuredMessage::set_payload(ByteBuffer& payload)
+{
     switch (m_struct->content->present) {
         case Ieee1609Dot2Content_PR_unsecuredData:
             vanetza::security::v3::set_payload(&m_struct->content->choice.unsecuredData, payload);
@@ -396,7 +399,6 @@ void SecuredMessage::set_payload(ByteBuffer& payload) {
             vanetza::security::v3::set_payload(&m_struct->content->choice.signedData->tbsData->payload->data->content->choice.unsecuredData, payload);
             break;
     }
-
 }
 
 void SecuredMessage::set_signer_identifier(const HashedId8& digest)
