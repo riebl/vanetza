@@ -26,9 +26,7 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
 
     void set_signature(const SomeEcdsaSignature& signature);
 
-    ByteBuffer serialize();
 
-    ByteBuffer convert_for_signing();
 };
 
 /**

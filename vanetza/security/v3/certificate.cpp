@@ -252,21 +252,6 @@ void Certificate::set_signature(const SomeEcdsaSignature& signature)
     m_struct->signature = boost::apply_visitor(signature_visitor(), signature);
 }
 
-ByteBuffer Certificate::serialize()
-{
-    return this->encode();
-}
-
-ByteBuffer Certificate::convert_for_signing()
-{
-    vanetza::ByteBuffer to_return;
-    try {
-        to_return = asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, m_struct);
-    } catch (std::runtime_error&) {
-    }
-    return to_return;
-}
-
 Certificate fake_certificate()
 {
     Certificate certi;
@@ -297,12 +282,12 @@ Certificate fake_certificate()
     return certi;
 }
 
-void serialize(OutputArchive& ar, Certificate& certificate) {
-    vanetza::ByteBuffer buffer = certificate.serialize();
-    for (auto& temp_byte : buffer){
-        ar << temp_byte;
-    }
+void serialize(OutputArchive& ar, Certificate& certificate)
+{
+    ByteBuffer buffer = certificate.encode();
+    ar.save_binary(buffer.data(), buffer.size());
 }
+
 namespace
 {
 

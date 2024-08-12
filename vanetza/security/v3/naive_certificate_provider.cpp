@@ -128,8 +128,8 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
 
 void NaiveCertificateProvider::sign_authorization_ticket(Certificate& certificate)
 {
-    ByteBuffer data_buffer;
-    data_buffer = certificate.convert_for_signing(); // Correct length for P256 signature parts
+    ByteBuffer data_buffer = certificate.encode();
+    // TODO build to-be-signed data buffer correctly
     certificate.set_signature(m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer));
 }
 
