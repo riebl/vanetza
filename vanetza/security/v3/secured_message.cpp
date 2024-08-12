@@ -368,16 +368,6 @@ void SecuredMessage::set_signer_identifier(const Certificate& cert)
     ASN_SEQUENCE_ADD(&signer->choice.certificate, asn1::copy(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, cert.content()));
 }
 
-ByteBuffer SecuredMessage::convert_for_signing()
-{
-    vanetza::ByteBuffer to_return;
-    try {
-        to_return = vanetza::asn1::encode_oer(asn_DEF_Vanetza_Security_ToBeSignedData, m_struct->content->choice.signedData->tbsData);
-    } catch(std::runtime_error& er) {
-    }
-    return to_return;
-}
-
 bool SecuredMessage::is_signed() const
 {
     return m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData;
