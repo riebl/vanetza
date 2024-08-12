@@ -3,7 +3,9 @@
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
+#include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
+#include <vanetza/security/v3/sign_service.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -83,4 +85,28 @@ TEST(SecuredMessageV3, verify)
     HashedId8 digest { 0x12, 0x7c, 0xff, 0x38, 0x4c, 0xe0, 0xb8, 0x90};
     EXPECT_EQ(confirm.certificate_id, digest);
     // AT issuer digest = 56dfd6d627a362dc
+}
+
+TEST(SecuredMessageV3, sign_and_verify)
+{
+    StoredPositionProvider position_provider;
+    ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
+    auto backend = create_backend("default");
+
+    v3::NaiveCertificateProvider cert_provider { runtime };
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider};
+    v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy };
+
+    SignRequest request;
+    ChunkPacket packet;
+    packet[OsiLayer::Application] = ByteBuffer {0x01, 0x02, 0x03};
+    request.plain_message = std::move(packet);
+    request.its_aid = aid::DEN;
+    SignConfirm sign_confirm = sign_service.sign(std::move(request));
+
+    StraightVerifyService verify_service { runtime, *backend, position_provider };
+    VerifyRequest verify_request { SecuredMessageView { sign_confirm.secured_message } };
+    VerifyConfirm verify_confirm = verify_service.verify(verify_request);
+    EXPECT_EQ(verify_confirm.report, VerificationReport::Success);
+    EXPECT_TRUE(verify_confirm.certificate_validity.valid());
 }
