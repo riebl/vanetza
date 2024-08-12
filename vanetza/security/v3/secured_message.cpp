@@ -524,7 +524,7 @@ boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdenti
 
         result_type operator()(const asn1::Certificate* cert) const
         {
-            return cert ? calculate_hash(*cert) : result_type { };
+            return cert ? calculate_digest(*cert) : result_type { };
         }
     };
     return boost::apply_visitor(cert_id_visitor(), identifier);

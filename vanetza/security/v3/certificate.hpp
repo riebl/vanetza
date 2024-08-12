@@ -26,15 +26,25 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
 
     void set_signature(const SomeEcdsaSignature& signature);
 
+    /**
+     * Calculate digest of certificate
+     * \return digest if possible
+     */
+    boost::optional<HashedId8> calculate_digest() const;
 
+    /**
+     * Get verification key type
+     * \return verification key type if possible
+     */
+    boost::optional<KeyType> get_verification_key_type() const;
 };
 
 /**
- * Calculate hash id (digest) of v3 certificate
+ * Calculate digest of v3 certificate
  * \param cert certificate
- * \return hash id if possible
+ * \return digest if possible
  */
-boost::optional<HashedId8> calculate_hash(const asn1::EtsiTs103097Certificate& cert);
+boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate& cert);
 
 /**
  * Extract the public key out of a certificate
@@ -42,6 +52,13 @@ boost::optional<HashedId8> calculate_hash(const asn1::EtsiTs103097Certificate& c
  * \return public key if possible
  */
 boost::optional<PublicKey> get_public_key(const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Get verification key type
+ * \param cert certificate
+ * \return verification key type
+ */
+boost::optional<KeyType> get_verification_key_type(const asn1::EtsiTs103097Certificate& cert);
 
 /**
  * Get application permissions (SSP = service specific permissions)

@@ -69,7 +69,7 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     Certificate aa_certificate = this->aa_certificate();
     // section 6 in TS 103 097 v2.1.1
     certificate->issuer.present= Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
-    HashedId8 aa_certi_hashed = boost::get(calculate_hash(*aa_certificate));
+    HashedId8 aa_certi_hashed = boost::get(calculate_digest(*aa_certificate));
     OCTET_STRING_fromBuf(
         &(certificate->issuer.choice.sha256AndDigest),
         reinterpret_cast<const char *>(aa_certi_hashed.data()),
@@ -140,7 +140,7 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     //section 7.2.4 in TS 103 097 v2.1.1
     Certificate root_cert = this->root_certificate();
     aa_certificate->issuer.present= Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
-    HashedId8 root_certi_hashed = boost::get(calculate_hash(*root_cert));
+    HashedId8 root_certi_hashed = boost::get(calculate_digest(*root_cert));
     OCTET_STRING_fromBuf(
         &(aa_certificate->issuer.choice.sha256AndDigest),
         reinterpret_cast<const char *>(root_certi_hashed.data()),

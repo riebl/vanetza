@@ -20,7 +20,7 @@ const Certificate* CertificateCache::lookup(const HashedId8& digest) const
 
 void CertificateCache::store(const Certificate& cert)
 {
-    auto maybe_hash = calculate_hash(*cert.content());
+    auto maybe_hash = cert.calculate_digest();
     if (maybe_hash) {
         m_storage[*maybe_hash] = cert;
     }

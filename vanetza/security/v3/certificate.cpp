@@ -22,27 +22,67 @@ Certificate::Certificate() :
 {
 }
 
-boost::optional<HashedId8> calculate_hash(const asn1::EtsiTs103097Certificate& cert)
+boost::optional<HashedId8> Certificate::calculate_digest() const
 {
-    asn1::VerificationKeyIndicator indicator = cert.toBeSigned.verifyKeyIndicator;
-    if (indicator.present != Vanetza_Security_VerificationKeyIndicator_PR_verificationKey) {
-        return boost::none;
+    return v3::calculate_digest(*content());
+}
+
+boost::optional<KeyType> Certificate::get_verification_key_type() const
+{
+    return v3::get_verification_key_type(*content());
+}
+
+boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate& cert)
+{
+    boost::optional<HashedId8> digest;
+    auto key_type = get_verification_key_type(cert);
+    if (key_type) {
+        try {
+            ByteBuffer buffer = asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert);
+
+            switch (*key_type)
+            {
+                case KeyType::NistP256:
+                case KeyType::BrainpoolP256r1:
+                    digest = create_hashed_id8(calculate_sha256_digest(buffer.data(), buffer.size()));
+                    break;
+                case KeyType::BrainpoolP384r1:
+                    digest = create_hashed_id8(calculate_sha384_digest(buffer.data(), buffer.size()));
+                    break;
+                default:
+                    break;
+            }
+        } catch (const std::exception&) {
+            // cannot calculate digest of non-encodable certificate
+        }
     }
 
-    ByteBuffer buffer = asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert);
-    switch (indicator.choice.verificationKey.present)
+    return digest;
+}
+
+boost::optional<KeyType> get_verification_key_type(const asn1::EtsiTs103097Certificate& cert)
+{
+    boost::optional<KeyType> key_type;
+
+    if (cert.toBeSigned.verifyKeyIndicator.present == Vanetza_Security_VerificationKeyIndicator_PR_verificationKey)
     {
-        case Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256:
-        case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP256r1:
-            return create_hashed_id8(calculate_sha256_digest(buffer.data(), buffer.size()));
-            break;
-        case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP384r1:
-            return create_hashed_id8(calculate_sha384_digest(buffer.data(), buffer.size()));
-            break;
-        default:
-            return boost::none;
-            break;
+        switch (cert.toBeSigned.verifyKeyIndicator.choice.verificationKey.present)
+        {
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256:
+                key_type = KeyType::NistP256;
+                break;
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP256r1:
+                key_type = KeyType::BrainpoolP256r1;
+                break;
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP384r1:
+                key_type = KeyType::BrainpoolP384r1;
+                break;
+            default:
+                break;
+        }
     }
+
+    return key_type;
 }
 
 boost::optional<PublicKey> get_public_key(const asn1::EtsiTs103097Certificate& cert)
