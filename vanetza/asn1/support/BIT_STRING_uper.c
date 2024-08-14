@@ -55,7 +55,7 @@ BIT_STRING_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
         if(!st) RETURN(RC_FAIL);
     }
 
-    ASN_DEBUG("PER Decoding %s size %ld .. %ld bits %d",
+    ASN_DEBUG("PER Decoding %s size %"ASN_PRIdMAX" .. %"ASN_PRIdMAX" bits %d",
         csiz->flags & APC_EXTENSIBLE ? "extensible" : "non-extensible",
         csiz->lower_bound, csiz->upper_bound, csiz->effective_bits);
 
@@ -79,7 +79,7 @@ BIT_STRING_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
     /* X.691, #16.7: long fixed length encoding (up to 64K octets) */
     if(csiz->effective_bits == 0) {
         int ret;
-        ASN_DEBUG("Encoding BIT STRING size %ld", csiz->upper_bound);
+        ASN_DEBUG("Encoding BIT STRING size %"ASN_PRIdMAX"", csiz->upper_bound);
         ret = per_get_many_bits(pd, st->buf, 0, csiz->upper_bound);
         if(ret < 0) RETURN(RC_WMORE);
         consumed_myself += csiz->upper_bound;
@@ -164,7 +164,7 @@ BIT_STRING_encode_uper(const asn_TYPE_descriptor_t *td,
 
     ASN_DEBUG(
         "Encoding %s into %" ASN_PRI_SIZE " bits"
-        " (%ld..%ld, effective %d)%s",
+        " (%"ASN_PRIdMAX"..%"ASN_PRIdMAX", effective %d)%s",
         td->name, size_in_bits, csiz->lower_bound, csiz->upper_bound,
         csiz->effective_bits, ct_extensible ? " EXT" : "");
 
@@ -192,11 +192,11 @@ BIT_STRING_encode_uper(const asn_TYPE_descriptor_t *td,
     if(csiz->effective_bits >= 0 && !inext) {
         int add_trailer = (ssize_t)size_in_bits < csiz->lower_bound;
         ASN_DEBUG(
-            "Encoding %" ASN_PRI_SIZE " bytes (%ld), length (in %d bits) trailer %d; actual "
+            "Encoding %" ASN_PRI_SIZE " bytes (%"ASN_PRIdMAX"), length (in %d bits) trailer %d; actual "
             "value %" ASN_PRI_SSIZE "",
             st->size, size_in_bits - csiz->lower_bound, csiz->effective_bits,
             add_trailer,
-            add_trailer ? 0 : (ssize_t)size_in_bits - csiz->lower_bound);
+            add_trailer ? 0 : (ssize_t)size_in_bits - (ssize_t)csiz->lower_bound);
         ret = per_put_few_bits(
             po, add_trailer ? 0 : (ssize_t)size_in_bits - csiz->lower_bound,
             csiz->effective_bits);

@@ -24,6 +24,7 @@ asn_struct_print_f UniversalString_print;  /* Human-readable output */
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define UniversalString_compare OCTET_STRING_compare
+#define UniversalString_copy    OCTET_STRING_copy
 
 asn_constr_check_f UniversalString_constraint;
 
@@ -38,6 +39,7 @@ xer_type_encoder_f UniversalString_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f UniversalString_decode_jer;
 jer_type_encoder_f UniversalString_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

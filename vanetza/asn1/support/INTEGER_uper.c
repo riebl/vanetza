@@ -63,7 +63,7 @@ INTEGER_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
                 if(uper_get_constrained_whole_number(pd,
                     &uvalue, ct->range_bits))
                     ASN__DECODE_STARVED;
-                ASN_DEBUG("Got value %lu + low %ld",
+                ASN_DEBUG("Got value %"ASN_PRIuMAX" + low %"ASN_PRIdMAX"",
                     uvalue, ct->lower_bound);
                 uvalue += ct->lower_bound;
                 if(asn_umax2INTEGER(st, uvalue))
@@ -74,7 +74,7 @@ INTEGER_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
                 if(uper_get_constrained_whole_number(pd,
                     &uvalue, ct->range_bits))
                     ASN__DECODE_STARVED;
-                ASN_DEBUG("Got value %lu + low %ld",
+                ASN_DEBUG("Got value %"ASN_PRIuMAX" + low %"ASN_PRIdMAX"",
                 uvalue, ct->lower_bound);
                 if(per_imax_range_unrebase(uvalue, ct->lower_bound,
                                            ct->upper_bound, &svalue)
@@ -160,9 +160,9 @@ INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
                 || value.u > (uintmax_t)ct->upper_bound)
                     inext = 1;
             }
-            ASN_DEBUG("Value %lu (%02x/%" ASN_PRI_SIZE ") lb %lu ub %lu %s",
+            ASN_DEBUG("Value %"ASN_PRIuMAX" (%02x/%" ASN_PRI_SIZE ") lb %"ASN_PRIuMAX" ub %"ASN_PRIuMAX" %s",
                       value.u, st->buf[0], st->size,
-                      ct->lower_bound, ct->upper_bound,
+                      (uintmax_t)ct->lower_bound, (uintmax_t)ct->upper_bound,
                       inext ? "ext" : "fix");
         } else {
             if(asn_INTEGER2imax(st, &value.s))
@@ -176,7 +176,7 @@ INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
                 || value.s > ct->upper_bound)
                     inext = 1;
             }
-            ASN_DEBUG("Value %ld (%02x/%" ASN_PRI_SIZE ") lb %ld ub %ld %s",
+            ASN_DEBUG("Value %"ASN_PRIdMAX" (%02x/%" ASN_PRI_SIZE ") lb %"ASN_PRIdMAX" ub %"ASN_PRIdMAX" %s",
                       value.s, st->buf[0], st->size,
                       ct->lower_bound, ct->upper_bound,
                       inext ? "ext" : "fix");
@@ -198,8 +198,8 @@ INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
             if(((uintmax_t)ct->lower_bound > (uintmax_t)(ct->upper_bound)
             || (value.u < (uintmax_t)ct->lower_bound))
             || (value.u > (uintmax_t)ct->upper_bound)) {
-                ASN_DEBUG("Value %lu to-be-encoded is outside the bounds [%lu, %lu]!",
-                          value.u, ct->lower_bound, ct->upper_bound);
+                ASN_DEBUG("Value %"ASN_PRIuMAX" to-be-encoded is outside the bounds [%"ASN_PRIuMAX", %"ASN_PRIuMAX"]!",
+                          value.u, (uintmax_t)ct->lower_bound, (uintmax_t)ct->upper_bound);
                 ASN__ENCODE_FAILED;
             }
             v = value.u - (uintmax_t)ct->lower_bound;
@@ -208,7 +208,7 @@ INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
                 ASN__ENCODE_FAILED;
             }
         }
-        ASN_DEBUG("Encoding integer %lu with range %d bits",
+        ASN_DEBUG("Encoding integer %"ASN_PRIuMAX" with range %d bits",
                   v, ct->range_bits);
         if(uper_put_constrained_whole_number_u(po, v, ct->range_bits))
             ASN__ENCODE_FAILED;
@@ -216,7 +216,7 @@ INTEGER_encode_uper(const asn_TYPE_descriptor_t *td,
     }
 
     if(ct && ct->lower_bound) {
-        ASN_DEBUG("Adjust lower bound to %ld", ct->lower_bound);
+        ASN_DEBUG("Adjust lower bound to %"ASN_PRIdMAX"", ct->lower_bound);
         /* TODO: adjust lower bound */
         ASN__ENCODE_FAILED;
     }

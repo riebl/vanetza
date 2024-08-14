@@ -18,6 +18,9 @@ BIT_STRING_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
     uint8_t *buf;
     uint8_t *end;
 
+    (void)ilevel;
+    (void)flags;
+
     if(!st || !st->buf)
         ASN__ENCODE_FAILED;
 

@@ -10,7 +10,7 @@
  * Generate values from the list of interesting values, or just a random value.
  */
 static asn_oid_arc_t
-RELATIVE_OID__biased_random_arc() {
+RELATIVE_OID__biased_random_arc(void) {
     static const uint16_t values[] = {0, 1, 127, 128, 129, 254, 255, 256};
 
     switch(asn_random_between(0, 2)) {

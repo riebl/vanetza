@@ -28,6 +28,7 @@ asn_struct_print_f BMPString_print;	/* Human-readable output */
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define BMPString_compare OCTET_STRING_compare
+#define BMPString_copy    OCTET_STRING_copy   
 
 asn_constr_check_f BMPString_constraint;
 
@@ -42,6 +43,7 @@ xer_type_encoder_f BMPString_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f BMPString_decode_jer;
 jer_type_encoder_f BMPString_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

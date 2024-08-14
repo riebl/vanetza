@@ -23,6 +23,7 @@ asn_struct_print_f GeneralizedTime_print;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 asn_struct_compare_f GeneralizedTime_compare;
+#define GeneralizedTime_copy OCTET_STRING_copy
 
 asn_constr_check_f GeneralizedTime_constraint;
 
@@ -37,6 +38,7 @@ xer_type_encoder_f GeneralizedTime_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define GeneralizedTime_decode_jer OCTET_STRING_decode_jer_utf8
 jer_type_encoder_f GeneralizedTime_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

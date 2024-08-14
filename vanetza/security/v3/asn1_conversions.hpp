@@ -10,7 +10,7 @@ namespace security
 namespace v3
 {
 
-HashedId8 convert(const HashedId8_t&);
+HashedId8 convert(const Vanetza_Security_HashedId8_t&);
 
 } // namespace v3
 } // namespace security

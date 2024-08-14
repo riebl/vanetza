@@ -3,7 +3,9 @@
  * Redistribution and modifications are permitted subject to BSD license.
  */
 #define	_POSIX_PTHREAD_SEMANTICS	/* for Sun */
+#ifndef _REENTRANT
 #define	_REENTRANT			/* for Sun */
+#endif
 #define __EXTENSIONS__                  /* for Sun */
 #ifndef _BSD_SOURCE
 #define _BSD_SOURCE     /* for timegm(3) */
@@ -69,7 +71,7 @@ static struct tm *gmtime_r(const time_t *tloc, struct tm *result) {
 #ifdef	HAVE_TM_GMTOFF
 #define	GMTOFF(tm)	((tm).tm_gmtoff)
 #else	/* HAVE_TM_GMTOFF */
-#define	GMTOFF(tm)	(-timezone)
+#define	GMTOFF(tm)	(_timezone)
 #endif	/* HAVE_TM_GMTOFF */
 
 #if	defined(_WIN32)
@@ -182,6 +184,7 @@ asn_TYPE_operation_t asn_OP_GeneralizedTime = {
     0,
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
     GeneralizedTime_compare,
+    GeneralizedTime_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
     OCTET_STRING_decode_ber,  /* Implemented in terms of OCTET STRING */
     GeneralizedTime_encode_der,
@@ -197,8 +200,10 @@ asn_TYPE_operation_t asn_OP_GeneralizedTime = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+    OCTET_STRING_decode_jer_utf8,
     GeneralizedTime_encode_jer,
 #else
+    0,
     0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)

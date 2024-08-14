@@ -23,6 +23,7 @@ extern asn_TYPE_operation_t asn_OP_VideotexString;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define VideotexString_compare OCTET_STRING_compare
+#define VideotexString_copy    OCTET_STRING_copy
 
 #define VideotexString_constraint asn_generic_unknown_constraint
 
@@ -37,6 +38,7 @@ extern asn_TYPE_operation_t asn_OP_VideotexString;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define VideotexString_decode_jer OCTET_STRING_decode_jer_hex
 #define VideotexString_encode_jer OCTET_STRING_encode_jer
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

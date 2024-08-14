@@ -52,6 +52,7 @@ asn_struct_print_f SET_print;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 asn_struct_compare_f SET_compare;
+asn_struct_copy_f    SET_copy;
 
 asn_constr_check_f SET_constraint;
 
@@ -66,7 +67,8 @@ xer_type_encoder_f SET_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-jer_type_encoder_f SET_encode_jer;
+jer_type_decoder_f SET_decode_jer;
+jer_type_encoder_f SEQUENCE_encode_jer; /* X.697 29. (2021) */
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_UPER_SUPPORT)

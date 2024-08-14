@@ -11,27 +11,16 @@
  */
 asn_enc_rval_t
 jer_encode(const asn_TYPE_descriptor_t *td, const void *sptr,
-           asn_app_consume_bytes_f *cb,
+		   enum jer_encoder_flags_e jer_flags, asn_app_consume_bytes_f *cb,
            void *app_key) {
     asn_enc_rval_t er = {0, 0, 0};
 	asn_enc_rval_t tmper;
-	const char *mname;
-	size_t mlen;
 
 	if(!td || !sptr) goto cb_failed;
 
-	mname = td->xml_tag;
-	mlen = strlen(mname);
-
-	ASN__CALLBACK3("{\n\"", 3, mname, mlen, "\":", 2);
-
-        int xFlag = 0;
-	tmper = td->op->jer_encoder(td, sptr, 1, xFlag, cb, app_key);
+	tmper = td->op->jer_encoder(td, sptr, 0, jer_flags, cb, app_key);
 	if(tmper.encoded == -1) return tmper;
 	er.encoded += tmper.encoded;
-
-        ASN__CALLBACK("}", 1);
-        //	ASN__CALLBACK3("</", 2, mname, mlen, ">\n", xcan);
 
 	ASN__ENCODED_OK(er);
 cb_failed:
@@ -60,7 +49,7 @@ jer_fprint(FILE *stream, const asn_TYPE_descriptor_t *td, const void *sptr) {
 	if(!td || !sptr)
 		return -1;
 
-	er = jer_encode(td, sptr, jer__print2fp, stream);
+	er = jer_encode(td, sptr, JER_F, jer__print2fp, stream);
 	if(er.encoded == -1)
 		return -1;
 

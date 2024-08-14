@@ -54,6 +54,7 @@ asn_struct_print_f REAL_print;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 asn_struct_compare_f REAL_compare;
+asn_struct_copy_f    REAL_copy;
 
 #define REAL_constraint asn_generic_no_constraint
 
@@ -68,6 +69,7 @@ xer_type_encoder_f REAL_encode_xer;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+jer_type_decoder_f REAL_decode_jer;
 jer_type_encoder_f REAL_encode_jer;
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

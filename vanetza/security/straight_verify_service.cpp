@@ -11,6 +11,7 @@
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/verification.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
+#include <vanetza/security/v3/asn1_types.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <boost/optional.hpp>
 
@@ -393,12 +394,12 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         return confirm;
     }
 
-    struct certificate_lookup_visitor : public boost::static_visitor<const Certificate_t*> {
+    struct certificate_lookup_visitor : public boost::static_visitor<const v3::asn1::Certificate*> {
         certificate_lookup_visitor(v3::CertificateCache* cache) : m_cache(cache)
         {
         }
 
-        const Certificate_t* operator()(const HashedId8_t* digest)
+        const v3::asn1::Certificate* operator()(const v3::asn1::HashedId8* digest)
         {
             // look up certificate matching digest in local storage
             if (m_cache && digest) {
@@ -409,7 +410,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
             }
         }
 
-        const Certificate_t* operator()(const Certificate_t* cert)
+        const v3::asn1::Certificate* operator()(const v3::asn1::Certificate* cert)
         {
             return cert;
         }
@@ -417,7 +418,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         v3::CertificateCache* m_cache;
     } certificate_lookup_visitor(m_context_v3.m_cert_cache);
     auto signer_identifier = msg.signer_identifier();
-    const Certificate_t* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
+    const v3::asn1::Certificate* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
     if (!certificate) {
         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
         return confirm;
@@ -433,7 +434,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
 
     ByteBuffer encoded_cert;
     try {
-        encoded_cert = asn1::encode_oer(asn_DEF_CertificateBase, certificate);
+        encoded_cert = asn1::encode_oer(asn_DEF_Vanetza_Security_CertificateBase, certificate);
     } catch (...) {
         confirm.report = VerificationReport::Invalid_Certificate;
         return confirm;

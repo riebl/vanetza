@@ -24,6 +24,7 @@ extern asn_TYPE_operation_t asn_OP_ISO646String;
 #endif  /* !defined(ASN_DISABLE_PRINT_SUPPORT) */
 
 #define ISO646String_compare OCTET_STRING_compare
+#define ISO646String_copy    OCTET_STRING_copy   
 
 #define ISO646String_constraint VisibleString_constraint
 
@@ -38,6 +39,7 @@ extern asn_TYPE_operation_t asn_OP_ISO646String;
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 
 #if !defined(ASN_DISABLE_JER_SUPPORT)
+#define ISO646String_decode_jer OCTET_STRING_decode_jer_utf8
 #define ISO646String_encode_jer OCTET_STRING_encode_jer_utf8
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 

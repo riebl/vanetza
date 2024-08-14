@@ -72,10 +72,8 @@ OCTET_STRING_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
     case ASN_OSUBV_ANY:
     case ASN_OSUBV_STR:
         canonical_unit_bits = unit_bits = 8;
-/*
         if(cval->flags & APC_CONSTRAINED)
             unit_bits = cval->range_bits;
-*/
         bpc = OS__BPC_CHAR;
         break;
     case ASN_OSUBV_U16:
@@ -179,7 +177,6 @@ OCTET_STRING_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
             raw_len = aper_get_length(pd, csiz->lower_bound, csiz->upper_bound,
                                       csiz->effective_bits, &repeat);
         if(raw_len < 0) RETURN(RC_WMORE);
-        raw_len += csiz->lower_bound;
 
         ASN_DEBUG("Got PER length eb %ld, len %ld, %s (%s)",
                   (long)csiz->effective_bits, (long)raw_len,

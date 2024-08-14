@@ -15,11 +15,7 @@ SEQUENCE_OF_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
     const asn_SET_OF_specifics_t *specs = (const asn_SET_OF_specifics_t *)td->specifics;
     const asn_TYPE_member_t *elm = td->elements;
     const asn_anonymous_sequence_ *list = _A_CSEQUENCE_FROM_VOID(sptr);
-    const char *mname = specs->as_XMLValueList
-                            ? 0
-                            : ((*elm->name) ? elm->name : elm->type->xml_tag);
-    size_t mlen = mname ? strlen(mname) : 0;
-    int xcan = 0;
+    int jmin = (flags & JER_F_MINIFIED);
     int i;
 
     if(!sptr) ASN__ENCODE_FAILED;
@@ -32,11 +28,7 @@ SEQUENCE_OF_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
         void *memb_ptr = list->array[i];
         if(!memb_ptr) continue;
 
-        if(mname) {
-            if(!xcan) ASN__TEXT_INDENT(1, ilevel);
-            ASN__CALLBACK3("{\"", 2, mname, mlen, "\":", 2);
-        }
-
+        if(!jmin) ASN__TEXT_INDENT(1, ilevel + 1);
         tmper = elm->type->op->jer_encoder(elm->type, memb_ptr, ilevel + 1,
                                            flags, cb, app_key);
         if(tmper.encoded == -1) return tmper;
@@ -44,19 +36,16 @@ SEQUENCE_OF_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
         if(tmper.encoded == 0 && specs->as_XMLValueList) {
             const char *name = elm->type->xml_tag;
             size_t len = strlen(name);
-            if(!xcan) ASN__TEXT_INDENT(1, ilevel + 1);
+            if(!jmin) ASN__TEXT_INDENT(1, ilevel + 1);
             ASN__CALLBACK3("\"", 1, name, len, "\"", 1);
         }
 
-        if(mname) {
-          ASN__CALLBACK("}", 1);
-        }
         if (i != list->count - 1) {
           ASN__CALLBACK(",", 1);
         }
     }
 
-    if(!xcan) ASN__TEXT_INDENT(1, ilevel - 1);
+    if(!jmin) ASN__TEXT_INDENT(1, ilevel);
     ASN__CALLBACK("]", 1);
 
     ASN__ENCODED_OK(er);

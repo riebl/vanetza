@@ -30,15 +30,21 @@ StraightSignService::StraightSignService(CertificateProvider& provider, Backend&
 SignConfirm StraightSignService::sign(SignRequest&& request)
 {
     SecuredMessage secured_message = SecuredMessage::with_signed_data();
+    m_policy.prepare_header(request, m_certificates, secured_message);
+
     ByteBuffer payload;
     payload = convert_to_payload(request.plain_message);
     secured_message.set_payload(payload);
 
-    m_policy.prepare_header(request, m_certificates, secured_message);
+    const auto& signing_cert = m_certificates.own_certificate();
+    KeyType key_type = signing_cert.get_verification_key_type().value_or(KeyType::NistP256);
 
-    ByteBuffer to_be_signed_data = secured_message.convert_for_signing();
-    const auto& private_key = m_certificates.own_private_key();
-    EcdsaSignature signature = m_backend.sign_data(private_key, to_be_signed_data);
+    ByteBuffer data_hash = m_backend.calculate_hash(key_type, secured_message.signing_payload());
+    ByteBuffer cert_hash = m_backend.calculate_hash(key_type, signing_cert.encode());
+    ByteBuffer concat_hash = data_hash;
+    concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
+
+    EcdsaSignature signature = m_backend.sign_data(m_certificates.own_private_key(), concat_hash);
     secured_message.set_signature(signature);
 
     SignConfirm confirm;
@@ -60,7 +66,7 @@ SignConfirm DummySignService::sign(SignRequest&& request)
     secured_message.set_dummy_signature();
     secured_message.set_its_aid(request.its_aid);
     secured_message.set_generation_time(vanetza::security::v2::convert_time64(m_runtime.now()));
-    secured_message->content->choice.signedData->signer.present = SignerIdentifier_PR_self;
+    secured_message->content->choice.signedData->signer.present = Vanetza_Security_SignerIdentifier_PR_self;
 
     SignConfirm confirm;
     confirm.secured_message = std::move(secured_message);

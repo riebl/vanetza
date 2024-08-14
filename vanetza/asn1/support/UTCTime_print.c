@@ -31,7 +31,7 @@ UTCTime_print(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             return (cb("<bad-value>", 11, app_key) < 0) ? -1 : 0;
 
         ret = snprintf(buf, sizeof(buf),
-                       "%04d-%02d-%02d %02d:%02d:%02d (GMT)",
+                       "%04d-%02d-%02d %02d:%02d:%02d (UTC)",
                        tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
                        tm.tm_hour, tm.tm_min, tm.tm_sec);
         assert(ret > 0 && ret < (int)sizeof(buf));

@@ -8,6 +8,40 @@
 #include "BOOLEAN.h"
 #include <errno.h>
 
+/*
+ * Decode the chunk of JSON text encoding INTEGER.
+ */
+static enum jer_pbd_rval
+BOOLEAN__jer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
+                         const void *chunk_buf, size_t chunk_size) {
+    BOOLEAN_t *st = (BOOLEAN_t *)sptr;
+    const char *p = (const char *)chunk_buf;
+
+    (void)td;
+    (void)chunk_size;
+
+    if(p[0] == 't' /* 'true' */) {
+        *st = 1;
+        return JPBD_BODY_CONSUMED;
+    } else if (p[0] == 'f' /* 'false' */) {
+        *st = 0;
+        return JPBD_BODY_CONSUMED;
+    } else {
+        return JPBD_BROKEN_ENCODING;
+    }
+}
+
+
+asn_dec_rval_t
+BOOLEAN_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
+                   const asn_TYPE_descriptor_t *td, void **sptr,
+                   const void *buf_ptr, size_t size) {
+    return jer_decode_primitive(opt_codec_ctx, td,
+                                sptr, sizeof(BOOLEAN_t), buf_ptr, size,
+                                BOOLEAN__jer_body_decode);
+}
+
+
 asn_enc_rval_t
 BOOLEAN_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
                    int ilevel, enum jer_encoder_flags_e flags,

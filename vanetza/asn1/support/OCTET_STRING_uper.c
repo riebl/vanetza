@@ -90,7 +90,7 @@ OCTET_STRING_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
         if(!st) RETURN(RC_FAIL);
     }
 
-    ASN_DEBUG("PER Decoding %s size %ld .. %ld bits %d",
+    ASN_DEBUG("PER Decoding %s size %"ASN_PRIdMAX" .. %"ASN_PRIdMAX" bits %d",
               csiz->flags & APC_EXTENSIBLE ? "extensible" : "non-extensible",
               csiz->lower_bound, csiz->upper_bound, csiz->effective_bits);
 
@@ -120,7 +120,7 @@ OCTET_STRING_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
     if(csiz->effective_bits == 0) {
         int ret;
         if(bpc) {
-            ASN_DEBUG("Encoding OCTET STRING size %ld",
+            ASN_DEBUG("Encoding OCTET STRING size %"ASN_PRIdMAX"",
                       csiz->upper_bound);
             ret = OCTET_STRING_per_get_characters(pd, st->buf,
                                                   csiz->upper_bound,
@@ -130,7 +130,7 @@ OCTET_STRING_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
                                                   pc);
             if(ret > 0) RETURN(RC_FAIL);
         } else {
-            ASN_DEBUG("Encoding BIT STRING size %ld",
+            ASN_DEBUG("Encoding BIT STRING size %"ASN_PRIdMAX"",
                       csiz->upper_bound);
             ret = per_get_many_bits(pd, st->buf, 0,
                                     unit_bits * csiz->upper_bound);
@@ -250,7 +250,7 @@ OCTET_STRING_encode_uper(const asn_TYPE_descriptor_t *td,
     }
 
     ASN_DEBUG("Encoding %s into %" ASN_PRI_SIZE " units of %d bits"
-              " (%ld..%ld, effective %d)%s",
+              " (%"ASN_PRIdMAX"..%"ASN_PRIdMAX", effective %d)%s",
               td->name, size_in_units, unit_bits,
               csiz->lower_bound, csiz->upper_bound,
               csiz->effective_bits, ct_extensible ? " EXT" : "");
@@ -279,7 +279,7 @@ OCTET_STRING_encode_uper(const asn_TYPE_descriptor_t *td,
     }
 
     if(csiz->effective_bits >= 0 && !inext) {
-        ASN_DEBUG("Encoding %" ASN_PRI_SIZE " bytes (%ld), length in %d bits", st->size,
+        ASN_DEBUG("Encoding %" ASN_PRI_SIZE " bytes (%"ASN_PRIdMAX"), length in %d bits", st->size,
                   size_in_units - csiz->lower_bound, csiz->effective_bits);
         ret = per_put_few_bits(po, size_in_units - csiz->lower_bound,
                                csiz->effective_bits);
