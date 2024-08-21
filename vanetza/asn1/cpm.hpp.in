@@ -6,7 +6,7 @@
 #include <vanetza/asn1/asn1c_conversion.hpp>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #if VANETZA_USE_ITS2
-#include <vanteza/asn1/its/CollectivePerceptionMessage.h>
+#include <vanetza/asn1/its/CollectivePerceptionMessage.h>
 #else
 #include <vanetza/asn1/its/CPM.h>
 #endif

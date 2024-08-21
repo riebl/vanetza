@@ -140,12 +140,12 @@ if(VANETZA_ASN1_WITH_ASN1C)
         COMMENT "Patching generated ITS application asn1c files"
         WORKING_DIRECTORY ${_its_asn1_dir} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_Security_
+        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
         COMMENT "Patching generated ITS-2 application asn1c files"
         WORKING_DIRECTORY ${_its2_asn1_dir} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
+        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_Security_
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
         COMMENT "Patching generated security asn1c files"
         WORKING_DIRECTORY ${_sec_asn1_dir} VERBATIM)
@@ -230,8 +230,10 @@ endfunction()
 # Update asn1/its dir to the selected version
 file(REMOVE_RECURSE ${CMAKE_CURRENT_SOURCE_DIR}/its) # Remove asn1/its dir
 if(VANETZA_ASN1_WITH_ITS2)
+    message(STATUS "Using vanetza/its2 directory as vanetza/its")
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/its2/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/its)
 else()
+    message(STATUS "Using vanetza/its1 directory as vanetza/its")
     file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/its1/ DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/its)
 endif()
 
