@@ -15,5 +15,5 @@ jobs:
           ${{github.workspace}}/tools/docker
       - run: >
           docker run --rm
-          -v${{github.workspace}}:/home/build-user/workspace:ro
+          -v${{github.workspace}}:/home/build-user/workspace
           vanetza/docker-ci:${{matrix.ubuntu-version}}

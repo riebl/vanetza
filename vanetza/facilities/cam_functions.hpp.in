@@ -7,6 +7,9 @@
 #include <vanetza/asn1/its/AltitudeValue.h>
 #include <vanetza/asn1/its/Heading.h>
 #include <vanetza/asn1/its/ReferencePosition.h>
+#if VANETZA_USE_ITS2
+#include <vanetza/asn1/its/ReferencePositionWithConfidence.h>
+#endif
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/units/angle.hpp>
