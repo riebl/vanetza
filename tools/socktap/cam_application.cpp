@@ -79,7 +79,7 @@ void CamApplication::on_timer(Clock::time_point)
 
     auto position = positioning_.position_fix();
 
-    if (!std::isfinite(position.latitude.value()) || !std::isfinite(position.latitude.value())) {
+    if (!std::isfinite(position.latitude.value()) || !std::isfinite(position.longitude.value())) {
         std::cerr << "Skipping CAM, because no good position is available, yet." << std::endl;
         return;
     }
