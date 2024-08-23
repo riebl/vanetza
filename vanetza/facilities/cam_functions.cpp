@@ -151,10 +151,10 @@ void copy(const PositionFix& position, ReferencePosition& reference_position) {
     reference_position.longitude = round(position.longitude, microdegree) * Longitude_oneMicrodegreeEast;
     reference_position.latitude = round(position.latitude, microdegree) * Latitude_oneMicrodegreeNorth;
     if (std::isfinite(position.confidence.semi_major.value())
-        && std::isfinite(position.confidence.semi_major.value()))
+        && std::isfinite(position.confidence.semi_minor.value()))
     {
         if ((position.confidence.semi_major.value() * 100 < SemiAxisLength_outOfRange)
-            && (position.confidence.semi_major.value() * 100 < SemiAxisLength_outOfRange)
+            && (position.confidence.semi_minor.value() * 100 < SemiAxisLength_outOfRange)
             && (position.confidence.orientation.value() * 10 < HeadingValue_unavailable))
         {
             reference_position.positionConfidenceEllipse.semiMajorConfidence = position.confidence.semi_major.value() * 100;    // Value in centimeters
