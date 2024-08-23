@@ -150,9 +150,30 @@ long round(const boost::units::quantity<T>& q, const U& u)
 void copy(const PositionFix& position, ReferencePosition& reference_position) {
     reference_position.longitude = round(position.longitude, microdegree) * Longitude_oneMicrodegreeEast;
     reference_position.latitude = round(position.latitude, microdegree) * Latitude_oneMicrodegreeNorth;
-    reference_position.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
-    reference_position.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_unavailable;
-    reference_position.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_unavailable;
+    if (std::isfinite(position.confidence.semi_major.value())
+        && std::isfinite(position.confidence.semi_major.value()))
+    {
+        if ((position.confidence.semi_major.value() * 100 < SemiAxisLength_outOfRange)
+            && (position.confidence.semi_major.value() * 100 < SemiAxisLength_outOfRange)
+            && (position.confidence.orientation.value() * 10 < HeadingValue_unavailable))
+        {
+            reference_position.positionConfidenceEllipse.semiMajorConfidence = position.confidence.semi_major.value() * 100;    // Value in centimeters
+            reference_position.positionConfidenceEllipse.semiMinorConfidence = position.confidence.semi_minor.value() * 100;
+            reference_position.positionConfidenceEllipse.semiMajorOrientation = (position.confidence.orientation.value()) * 10; // Value from 0 to 3600
+        }
+        else
+        {
+            reference_position.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_outOfRange;
+            reference_position.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_outOfRange;
+            reference_position.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
+        }
+    }
+    else
+    {
+        reference_position.positionConfidenceEllipse.semiMajorConfidence = SemiAxisLength_unavailable;
+        reference_position.positionConfidenceEllipse.semiMinorConfidence = SemiAxisLength_unavailable;
+        reference_position.positionConfidenceEllipse.semiMajorOrientation = HeadingValue_unavailable;
+    }
     if (position.altitude) {
         reference_position.altitude.altitudeValue = to_altitude_value(position.altitude->value());
         reference_position.altitude.altitudeConfidence = to_altitude_confidence(position.altitude->confidence());
