@@ -72,6 +72,9 @@ GpsPositionProvider::GpsPositionProvider(boost::asio::io_service& io, const std:
         throw GpsPositioningException(errno);
     }
     gps_stream(&gps_data, WATCH_ENABLE | WATCH_JSON, nullptr);
+    using namespace vanetza::units;
+    fetched_position_fix.latitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
+    fetched_position_fix.longitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
     schedule_timer();
 }
 
@@ -118,8 +121,8 @@ void GpsPositionProvider::fetch_position_fix()
         throw GpsPositioningException(errno);
     }
 
+    using namespace vanetza::units;
     if (gpsd_has_useful_fix(gps_data)) {
-        using namespace vanetza::units;
         static const TrueNorth north = TrueNorth::from_value(0.0);
 
         fetched_position_fix.timestamp = convert_gps_time(gps_data.fix.time);
@@ -146,6 +149,9 @@ void GpsPositionProvider::fetch_position_fix()
         } else {
             fetched_position_fix.altitude = boost::none;
         }
+    } else {
+        fetched_position_fix.latitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
+        fetched_position_fix.longitude = GeoAngle::from_value(std::numeric_limits<GeoAngle::value_type>::infinity());
     }
 }
 
