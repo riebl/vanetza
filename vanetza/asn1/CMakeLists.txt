@@ -55,6 +55,8 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/TS103324v211-CPM-PerceivedObjectContainer.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS103324v211-CPM-PerceptionRegionContainer.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS103324v211-CPM-SensorInformationContainer.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103300-3v221-VAM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS103300-3v221-VAM-MotorcylistSpecialContainer.asn
     )
 
     set(_pki_asn1_files
