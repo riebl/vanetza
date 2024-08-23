@@ -68,6 +68,9 @@ asn_TYPE_descriptor_t asn_DEF_ActualNumberOfPassengers = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_ActualNumberOfPassengers_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		ActualNumberOfPassengers_constraint
 	},
 	0, 0,	/* No members */

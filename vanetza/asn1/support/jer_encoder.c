@@ -11,14 +11,14 @@
  */
 asn_enc_rval_t
 jer_encode(const asn_TYPE_descriptor_t *td, const void *sptr,
-		   enum jer_encoder_flags_e jer_flags, asn_app_consume_bytes_f *cb,
-           void *app_key) {
+           enum jer_encoder_flags_e jer_flags,
+           asn_app_consume_bytes_f *cb, void *app_key) {
     asn_enc_rval_t er = {0, 0, 0};
 	asn_enc_rval_t tmper;
 
 	if(!td || !sptr) goto cb_failed;
 
-	tmper = td->op->jer_encoder(td, sptr, 0, jer_flags, cb, app_key);
+	tmper = td->op->jer_encoder(td, 0, sptr, 0, jer_flags, cb, app_key);
 	if(tmper.encoded == -1) return tmper;
 	er.encoded += tmper.encoded;
 

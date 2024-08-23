@@ -5,8 +5,8 @@
  * 	`asn1c -fcompound-names -fincludes-quoted -no-gen-example -R`
  */
 
-#ifndef	_StationId_H_
-#define	_StationId_H_
+#ifndef	_StationID_H_
+#define	_StationID_H_
 
 
 #include "asn_application.h"
@@ -18,31 +18,31 @@
 extern "C" {
 #endif
 
-/* StationId */
-typedef unsigned long	 StationId_t;
+/* StationID */
+typedef unsigned long	 StationID_t;
 
 /* Implementation */
-extern asn_per_constraints_t asn_PER_type_StationId_constr_1;
-extern asn_TYPE_descriptor_t asn_DEF_StationId;
-extern const asn_INTEGER_specifics_t asn_SPC_StationId_specs_1;
-asn_struct_free_f StationId_free;
-asn_struct_print_f StationId_print;
-asn_constr_check_f StationId_constraint;
-ber_type_decoder_f StationId_decode_ber;
-der_type_encoder_f StationId_encode_der;
-xer_type_decoder_f StationId_decode_xer;
-xer_type_encoder_f StationId_encode_xer;
-jer_type_encoder_f StationId_encode_jer;
-oer_type_decoder_f StationId_decode_oer;
-oer_type_encoder_f StationId_encode_oer;
-per_type_decoder_f StationId_decode_uper;
-per_type_encoder_f StationId_encode_uper;
-per_type_decoder_f StationId_decode_aper;
-per_type_encoder_f StationId_encode_aper;
+extern asn_per_constraints_t asn_PER_type_StationID_constr_1;
+extern asn_TYPE_descriptor_t asn_DEF_StationID;
+extern const asn_INTEGER_specifics_t asn_SPC_StationID_specs_1;
+asn_struct_free_f StationID_free;
+asn_struct_print_f StationID_print;
+asn_constr_check_f StationID_constraint;
+ber_type_decoder_f StationID_decode_ber;
+der_type_encoder_f StationID_encode_der;
+xer_type_decoder_f StationID_decode_xer;
+xer_type_encoder_f StationID_encode_xer;
+jer_type_encoder_f StationID_encode_jer;
+oer_type_decoder_f StationID_decode_oer;
+oer_type_encoder_f StationID_encode_oer;
+per_type_decoder_f StationID_decode_uper;
+per_type_encoder_f StationID_encode_uper;
+per_type_decoder_f StationID_decode_aper;
+per_type_encoder_f StationID_encode_aper;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _StationId_H_ */
+#endif	/* _StationID_H_ */
 #include "asn_internal.h"

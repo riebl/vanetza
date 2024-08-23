@@ -93,6 +93,9 @@ asn_TYPE_descriptor_t asn_DEF_OCTET_STRING = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         asn_generic_no_constraint
     },
     0, 0,  /* No members */
@@ -253,7 +256,7 @@ OCTET_STRING_compare(const asn_TYPE_descriptor_t *td, const void *aptr,
 int
 OCTET_STRING_copy(const asn_TYPE_descriptor_t *td, void **aptr,
                      const void *bptr) {
-    const asn_OCTET_STRING_specifics_t *specs = 
+    const asn_OCTET_STRING_specifics_t *specs =
         td->specifics ? (const asn_OCTET_STRING_specifics_t *)td->specifics
                       : &asn_SPC_OCTET_STRING_specs;
     OCTET_STRING_t *a = *aptr;

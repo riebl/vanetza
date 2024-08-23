@@ -13,13 +13,13 @@ static asn_oer_constraints_t asn_OER_type_PathHistory_constr_1 CC_NOTUSED = {
 	-1	/* (SIZE(0..40)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_type_PathHistory_constr_1 CC_NOTUSED = {
+asn_per_constraints_t asn_PER_type_PathHistory_constr_1 CC_NOTUSED = {
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	{ APC_CONSTRAINED,	 6,  6,  0,  40 }	/* (SIZE(0..40)) */,
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
-static asn_TYPE_member_t asn_MBR_PathHistory_1[] = {
+asn_TYPE_member_t asn_MBR_PathHistory_1[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
@@ -32,6 +32,9 @@ static asn_TYPE_member_t asn_MBR_PathHistory_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -41,7 +44,7 @@ static asn_TYPE_member_t asn_MBR_PathHistory_1[] = {
 static const ber_tlv_tag_t asn_DEF_PathHistory_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (16 << 2))
 };
-static asn_SET_OF_specifics_t asn_SPC_PathHistory_specs_1 = {
+asn_SET_OF_specifics_t asn_SPC_PathHistory_specs_1 = {
 	sizeof(struct PathHistory),
 	offsetof(struct PathHistory, _asn_ctx),
 	0,	/* XER encoding is XMLDelimitedItemList */
@@ -63,6 +66,9 @@ asn_TYPE_descriptor_t asn_DEF_PathHistory = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_PathHistory_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_OF_constraint
 	},
 	asn_MBR_PathHistory_1,

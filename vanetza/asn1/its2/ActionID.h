@@ -5,14 +5,14 @@
  * 	`asn1c -fcompound-names -fincludes-quoted -no-gen-example -R`
  */
 
-#ifndef	_ActionId_H_
-#define	_ActionId_H_
+#ifndef	_ActionID_H_
+#define	_ActionID_H_
 
 
 #include "asn_application.h"
 
 /* Including external dependencies */
-#include "StationId.h"
+#include "StationID.h"
 #include "SequenceNumber.h"
 #include "constr_SEQUENCE.h"
 
@@ -20,23 +20,21 @@
 extern "C" {
 #endif
 
-/* ActionId */
-typedef struct ActionId {
-	StationId_t	 originatingStationId;
+/* ActionID */
+typedef struct ActionID {
+	StationID_t	 originatingStationId;
 	SequenceNumber_t	 sequenceNumber;
 	
 	/* Context for parsing across buffer boundaries */
 	asn_struct_ctx_t _asn_ctx;
-} ActionId_t;
+} ActionID_t;
 
 /* Implementation */
-extern asn_TYPE_descriptor_t asn_DEF_ActionId;
-extern asn_SEQUENCE_specifics_t asn_SPC_ActionId_specs_1;
-extern asn_TYPE_member_t asn_MBR_ActionId_1[2];
+extern asn_TYPE_descriptor_t asn_DEF_ActionID;
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif	/* _ActionId_H_ */
+#endif	/* _ActionID_H_ */
 #include "asn_internal.h"

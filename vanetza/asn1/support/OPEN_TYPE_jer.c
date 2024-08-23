@@ -9,8 +9,9 @@
 
 asn_dec_rval_t
 OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
-                  const asn_TYPE_descriptor_t *td, void *sptr,
-                  const asn_TYPE_member_t *elm, const void *ptr, size_t size) {
+                  const asn_TYPE_descriptor_t *td,
+                  void *sptr, const asn_TYPE_member_t *elm, const void *ptr,
+                  size_t size) {
     size_t consumed_myself = 0;
     asn_type_selector_result_t selected;
     void *memb_ptr;   /* Pointer to the member */
@@ -103,7 +104,8 @@ OPEN_TYPE_jer_get(const asn_codec_ctx_t *opt_codec_ctx,
         + elm->type->elements[selected.presence_index - 1].memb_offset;
 
     rv = selected.type_descriptor->op->jer_decoder(
-        opt_codec_ctx, selected.type_descriptor, &inner_value, ptr, size);
+        opt_codec_ctx, selected.type_descriptor, selected.type_descriptor->encoding_constraints.jer_constraints,
+        &inner_value, ptr, size);
     ADVANCE(rv.consumed);
     rv.consumed = 0;
     switch(rv.code) {

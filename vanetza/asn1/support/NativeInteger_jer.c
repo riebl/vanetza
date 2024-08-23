@@ -11,8 +11,9 @@
  */
 asn_dec_rval_t
 NativeInteger_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                         const asn_TYPE_descriptor_t *td, void **sptr,
-                         const void *buf_ptr,
+                         const asn_TYPE_descriptor_t *td,
+                         const asn_jer_constraints_t* constraints,
+                         void **sptr, const void *buf_ptr,
                          size_t size) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
@@ -27,7 +28,7 @@ NativeInteger_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
     }
 
     memset(&st, 0, sizeof(st));
-    rval = INTEGER_decode_jer(opt_codec_ctx, td, &st_ptr, buf_ptr, size);
+    rval = INTEGER_decode_jer(opt_codec_ctx, td, constraints, &st_ptr, buf_ptr, size);
     if(rval.code == RC_OK) {
         long l;
         if((specs&&specs->field_unsigned)
@@ -51,8 +52,10 @@ NativeInteger_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_enc_rval_t
-NativeInteger_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
-                         int ilevel, enum jer_encoder_flags_e flags,
+NativeInteger_encode_jer(const asn_TYPE_descriptor_t *td,
+                         const asn_jer_constraints_t* constraints,
+                         const void *sptr, int ilevel,
+                         enum jer_encoder_flags_e flags,
                          asn_app_consume_bytes_f *cb, void *app_key) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;

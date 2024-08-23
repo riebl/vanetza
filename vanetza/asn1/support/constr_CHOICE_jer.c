@@ -31,8 +31,9 @@
  */
 asn_dec_rval_t
 CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                  const asn_TYPE_descriptor_t *td, void **struct_ptr,
-                  const void *buf_ptr, size_t size) {
+                  const asn_TYPE_descriptor_t *td,
+                  const asn_jer_constraints_t *constraints,
+                  void **struct_ptr, const void *buf_ptr, size_t size) {
     /*
      * Bring closer parts of structure description.
      */
@@ -98,7 +99,9 @@ CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
 
             /* Start/Continue decoding the inner member */
             tmprval = elm->type->op->jer_decoder(opt_codec_ctx,
-                                                 elm->type, memb_ptr2,
+                                                 elm->type,
+                                                 elm->encoding_constraints.jer_constraints,
+                                                 memb_ptr2,
                                                  buf_ptr, size);
             JER_ADVANCE(tmprval.consumed);
             ASN_DEBUG("JER/CHOICE: itdf: [%s] code=%d",
@@ -133,7 +136,7 @@ CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                 continue;
 
             case PJER_DLM:
-            case PJER_VALUE:  
+            case PJER_VALUE: 
             case PJER_KEY:
                 break;  /* Check the rest down there */
             }
@@ -263,9 +266,9 @@ CHOICE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
 }
 
 asn_enc_rval_t
-CHOICE_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
-                  enum jer_encoder_flags_e flags, asn_app_consume_bytes_f *cb,
-                  void *app_key) {
+CHOICE_encode_jer(const asn_TYPE_descriptor_t *td, const asn_jer_constraints_t *constraints,
+                  const void *sptr, int ilevel, enum jer_encoder_flags_e flags,
+                  asn_app_consume_bytes_f *cb, void *app_key) {
     const asn_CHOICE_specifics_t *specs =
         (const asn_CHOICE_specifics_t *)td->specifics;
     asn_enc_rval_t er = {0,0,0};
@@ -307,7 +310,9 @@ CHOICE_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
             ASN__CALLBACK3("\"", 1, mname, mlen, "\":", 2);
         }
 
-        tmper = elm->type->op->jer_encoder(elm->type, memb_ptr,
+        tmper = elm->type->op->jer_encoder(elm->type,
+                                           elm->encoding_constraints.jer_constraints,
+                                           memb_ptr,
                                            ilevel + 1, flags, cb, app_key);
         if(tmper.encoded == -1) return tmper;
         er.encoded += tmper.encoded;

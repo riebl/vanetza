@@ -212,6 +212,9 @@ typedef struct asn_encoding_constraints_s {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
     const struct asn_per_constraints_s *per_constraints;
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+    const struct asn_jer_constraints_s *jer_constraints;
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
     asn_constr_check_f *general_constraints;
 } asn_encoding_constraints_t;
 

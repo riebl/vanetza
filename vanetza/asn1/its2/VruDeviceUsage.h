@@ -35,6 +35,7 @@ typedef enum VruDeviceUsage {
 typedef long	 VruDeviceUsage_t;
 
 /* Implementation */
+extern asn_per_constraints_t asn_PER_type_VruDeviceUsage_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_VruDeviceUsage;
 asn_struct_free_f VruDeviceUsage_free;
 asn_struct_print_f VruDeviceUsage_print;

@@ -233,7 +233,9 @@ REAL__jer_dump(double d, int canonical, asn_app_consume_bytes_f *cb, void *app_k
 }
 
 asn_enc_rval_t
-REAL_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
+REAL_encode_jer(const asn_TYPE_descriptor_t *td,
+                const asn_jer_constraints_t *constraints,
+                const void *sptr, int ilevel,
                 enum jer_encoder_flags_e flags, asn_app_consume_bytes_f *cb,
                 void *app_key) {
     const REAL_t *st = (const REAL_t *)sptr;
@@ -255,8 +257,8 @@ REAL_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr, int ilevel,
  * Decode the chunk of JSON text encoding REAL.
  */
 static enum jer_pbd_rval
-REAL__jer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
-                      const void *chunk_buf, size_t chunk_size) {
+REAL__jer_body_decode(const asn_TYPE_descriptor_t *td,
+                      void *sptr, const void *chunk_buf, size_t chunk_size) {
     REAL_t *st = (REAL_t *)sptr;
     double value;
     const char *jerdata = (const char *)chunk_buf;
@@ -322,8 +324,9 @@ REAL__jer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
 
 asn_dec_rval_t
 REAL_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                const asn_TYPE_descriptor_t *td, void **sptr,
-                const void *buf_ptr, size_t size) {
+                const asn_TYPE_descriptor_t *td,
+                const asn_jer_constraints_t *constraints,
+                void **sptr, const void *buf_ptr, size_t size) {
     return jer_decode_primitive(opt_codec_ctx, td, sptr, sizeof(REAL_t),
                                 buf_ptr, size, REAL__jer_body_decode);
 }

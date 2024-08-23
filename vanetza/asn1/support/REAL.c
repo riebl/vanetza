@@ -127,6 +127,9 @@ asn_TYPE_descriptor_t asn_DEF_REAL = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         asn_generic_no_constraint
     },
     0, 0,  /* No members */
@@ -377,7 +380,7 @@ REAL_copy(const asn_TYPE_descriptor_t *td, void **aptr,
             *aptr = 0;
         }
         return 0;
-    } 
+    }
 
     if(!a) {
         a = *aptr = CALLOC(1, sizeof(*a));
@@ -392,7 +395,7 @@ REAL_copy(const asn_TYPE_descriptor_t *td, void **aptr,
         FREEMEM(a->buf);
         a->buf = buf;
         a->size = b->size;
-    } 
+    }
 
     return 0;
 }

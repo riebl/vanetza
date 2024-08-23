@@ -13,6 +13,13 @@ extern "C" {
 #endif
 
 /*
+ * Pre-computed JER constraints
+ */
+typedef struct asn_jer_constraints_s {
+    ssize_t size;    /* -1 (no constraint) or >= 0 */
+} asn_jer_constraints_t;
+
+/*
  * Types of data transferred to the application.
  */
 typedef enum {

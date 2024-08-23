@@ -40,7 +40,7 @@ asn_TYPE_operation_t asn_OP_BIT_STRING = {
     0,
 #endif  /* !defined(ASN_DISABLE_XER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-    OCTET_STRING_decode_jer_hex,
+    BIT_STRING_decode_jer,
     BIT_STRING_encode_jer,
 #else
     0,
@@ -91,6 +91,9 @@ asn_TYPE_descriptor_t asn_DEF_BIT_STRING = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         BIT_STRING_constraint
     },
     0, 0,  /* No members */

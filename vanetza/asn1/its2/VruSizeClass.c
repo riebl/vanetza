@@ -42,7 +42,7 @@ static asn_oer_constraints_t asn_OER_type_VruSizeClass_constr_1 CC_NOTUSED = {
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
-static asn_per_constraints_t asn_PER_type_VruSizeClass_constr_1 CC_NOTUSED = {
+asn_per_constraints_t asn_PER_type_VruSizeClass_constr_1 CC_NOTUSED = {
 	{ APC_CONSTRAINED,	 4,  4,  0,  15 }	/* (0..15) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
@@ -68,6 +68,9 @@ asn_TYPE_descriptor_t asn_DEF_VruSizeClass = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_VruSizeClass_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		VruSizeClass_constraint
 	},
 	0, 0,	/* Defined elsewhere */

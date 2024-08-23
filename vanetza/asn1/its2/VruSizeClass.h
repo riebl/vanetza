@@ -30,6 +30,7 @@ typedef enum VruSizeClass {
 typedef long	 VruSizeClass_t;
 
 /* Implementation */
+extern asn_per_constraints_t asn_PER_type_VruSizeClass_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_VruSizeClass;
 asn_struct_free_f VruSizeClass_free;
 asn_struct_print_f VruSizeClass_print;

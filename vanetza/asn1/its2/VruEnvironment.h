@@ -32,6 +32,7 @@ typedef enum VruEnvironment {
 typedef long	 VruEnvironment_t;
 
 /* Implementation */
+extern asn_per_constraints_t asn_PER_type_VruEnvironment_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_VruEnvironment;
 asn_struct_free_f VruEnvironment_free;
 asn_struct_print_f VruEnvironment_print;

@@ -35,6 +35,8 @@ typedef struct AccelerationChangeIndication {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_AccelerationChangeIndication;
+extern asn_SEQUENCE_specifics_t asn_SPC_AccelerationChangeIndication_specs_1;
+extern asn_TYPE_member_t asn_MBR_AccelerationChangeIndication_1[2];
 
 #ifdef __cplusplus
 }

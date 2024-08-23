@@ -94,6 +94,9 @@ asn_TYPE_descriptor_t asn_DEF_IA5String = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
         &asn_DEF_IA5String_per_constraints,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+        0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
         IA5String_constraint
     },
     0, 0,  /* No members */
