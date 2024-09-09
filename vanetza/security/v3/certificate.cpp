@@ -2,6 +2,7 @@
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <boost/optional/optional.hpp>
+#include <cassert>
 #include <cstring>
 
 namespace vanetza
@@ -16,9 +17,17 @@ namespace
 bool copy_curve_point(PublicKey& to, const asn1::EccP256CurvePoint& from);
 bool copy_curve_point(PublicKey& to, const asn1::EccP384CurvePoint& from);
 ByteBuffer fetch_octets(const OCTET_STRING_t& octets);
+
 bool is_compressed(const Vanetza_Security_EccP256CurvePoint& point);
 bool is_compressed(const Vanetza_Security_EccP384CurvePoint& point);
 bool is_signature_x_only(const Vanetza_Security_Signature_t& sig);
+bool compress(Vanetza_Security_EccP256CurvePoint&);
+bool compress(Vanetza_Security_EccP384CurvePoint&);
+bool make_x_only(Vanetza_Security_EccP256CurvePoint&);
+bool make_x_only(Vanetza_Security_EccP384CurvePoint&);
+bool make_signature_x_only(Vanetza_Security_Signature_t& sig);
+
+} // namespace
 
 Certificate::Certificate() :
     asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>(asn_DEF_Vanetza_Security_EtsiTs103097Certificate)
@@ -72,30 +81,82 @@ bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
     }
 }
 
+boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& cert)
+{
+    Certificate canonical { cert };
+    bool success = true;
+
+    if (canonical->toBeSigned.verifyKeyIndicator.present == Vanetza_Security_VerificationKeyIndicator_PR_verificationKey) {
+        Vanetza_Security_PublicVerificationKey& pubkey = canonical->toBeSigned.verifyKeyIndicator.choice.verificationKey;
+        switch (pubkey.present) {
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256:
+                success &= compress(pubkey.choice.ecdsaNistP256);
+                break;
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP256r1:
+                success &= compress(pubkey.choice.ecdsaBrainpoolP256r1);
+                break;
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP384r1:
+                success &= compress(pubkey.choice.ecdsaBrainpoolP384r1);
+                break;
+            default:
+                break;
+        }
+    } else if (canonical->toBeSigned.verifyKeyIndicator.present == Vanetza_Security_VerificationKeyIndicator_PR_reconstructionValue) {
+        success &= compress(canonical->toBeSigned.verifyKeyIndicator.choice.reconstructionValue);
+    }
+
+    if (canonical->signature) {
+        success &= make_signature_x_only(*canonical->signature);
+    }
+
+    if (success) {
+        assert(is_canonical(*canonical));
+        return canonical;
+    } else {
+        return boost::none;
+    }
+}
+
+boost::optional<HashedId8> calculate_digest_internal(const asn1::EtsiTs103097Certificate& cert, KeyType key_type)
+{
+    boost::optional<HashedId8> digest;
+
+    try {
+        ByteBuffer buffer = asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert);
+
+        switch (key_type)
+        {
+            case KeyType::NistP256:
+            case KeyType::BrainpoolP256r1:
+                digest = create_hashed_id8(calculate_sha256_digest(buffer.data(), buffer.size()));
+                break;
+            case KeyType::BrainpoolP384r1:
+                digest = create_hashed_id8(calculate_sha384_digest(buffer.data(), buffer.size()));
+                break;
+            default:
+                break;
+        }
+    } catch (const std::exception&) {
+        // cannot calculate digest of non-encodable certificate
+    }
+
+    return digest;
+}
+
+boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate& cert)
 {
     boost::optional<HashedId8> digest;
     auto key_type = get_verification_key_type(cert);
     if (key_type) {
-        try {
-            ByteBuffer buffer = asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert);
-
-            switch (*key_type)
-            {
-                case KeyType::NistP256:
-                case KeyType::BrainpoolP256r1:
-                    digest = create_hashed_id8(calculate_sha256_digest(buffer.data(), buffer.size()));
-                    break;
-                case KeyType::BrainpoolP384r1:
-                    digest = create_hashed_id8(calculate_sha384_digest(buffer.data(), buffer.size()));
-                    break;
-                default:
-                    break;
+        if (is_canonical(cert)) {
+            digest = calculate_digest_internal(cert, *key_type);
+        } else {
+            auto maybe_canonical_cert = canonicalize(cert);
+            if (maybe_canonical_cert) {
+                digest = calculate_digest_internal(*maybe_canonical_cert.value(), *key_type);
             }
-        } catch (const std::exception&) {
-            // cannot calculate digest of non-encodable certificate
         }
     }
-
     return digest;
 }
 
@@ -460,6 +521,88 @@ bool is_signature_x_only(const Vanetza_Security_Signature_t& sig)
             return sig.choice.ecdsaBrainpoolP384r1Signature.rSig.present == Vanetza_Security_EccP384CurvePoint_PR_x_only;
         default:
             return true; // not an ECDSA signature at all
+    }
+}
+
+bool compress(Vanetza_Security_EccP256CurvePoint& point)
+{
+    if (point.present == Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256) {
+        auto& unc = point.choice.uncompressedP256;
+        if (unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01) {
+            assert(&point.choice.uncompressedP256.x == &point.choice.compressed_y_1);
+            point.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1;
+        } else {
+            assert(&point.choice.uncompressedP256.x == &point.choice.compressed_y_0);
+            point.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0;
+        }
+        return true;
+    } else if (point.present == Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0 || point.present == Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool compress(Vanetza_Security_EccP384CurvePoint& point)
+{
+    if (point.present == Vanetza_Security_EccP384CurvePoint_PR_uncompressedP384) {
+        auto& unc = point.choice.uncompressedP384;
+        if (unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01) {
+            assert(&point.choice.uncompressedP384.x == &point.choice.compressed_y_1);
+            point.present = Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1;
+        } else {
+            assert(&point.choice.uncompressedP384.x == &point.choice.compressed_y_0);
+            point.present = Vanetza_Security_EccP384CurvePoint_PR_compressed_y_0;
+        }
+        return true;
+    } else if (point.present == Vanetza_Security_EccP384CurvePoint_PR_compressed_y_0 || point.present == Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool make_x_only(Vanetza_Security_EccP256CurvePoint& point)
+{
+    if (point.present == Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256) {
+        assert(&point.choice.uncompressedP256.x == &point.choice.x_only);
+        point.present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
+        return true;
+    } else if (point.present == Vanetza_Security_EccP256CurvePoint_PR_x_only) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool make_x_only(Vanetza_Security_EccP384CurvePoint& point)
+{
+    if (point.present == Vanetza_Security_EccP384CurvePoint_PR_uncompressedP384) {
+        assert(&point.choice.uncompressedP384.x == &point.choice.x_only);
+        point.present = Vanetza_Security_EccP384CurvePoint_PR_x_only;
+        return true;
+    } else if (point.present == Vanetza_Security_EccP384CurvePoint_PR_x_only) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+bool make_signature_x_only(Vanetza_Security_Signature& sig)
+{
+    switch (sig.present) {
+        case Vanetza_Security_Signature_PR_ecdsaNistP256Signature:
+            return make_x_only(sig.choice.ecdsaNistP256Signature.rSig);
+            break;
+        case Vanetza_Security_Signature_PR_ecdsaBrainpoolP256r1Signature:
+            return make_x_only(sig.choice.ecdsaBrainpoolP256r1Signature.rSig);
+            break;
+        case Vanetza_Security_Signature_PR_ecdsaBrainpoolP384r1Signature:
+            return make_x_only(sig.choice.ecdsaBrainpoolP384r1Signature.rSig);
+            break;
+        default:
+            return false;
+            break;
     }
 }
 
