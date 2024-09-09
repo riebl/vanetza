@@ -5,6 +5,7 @@
 #include <array>
 #include <cstdint>
 #include <functional>
+#include <string>
 
 namespace vanetza
 {
@@ -18,6 +19,8 @@ HashedId3 truncate(const HashedId8&);
 
 HashedId8 create_hashed_id8(const Sha256Digest&);
 HashedId8 create_hashed_id8(const Sha384Digest&);
+
+std::string to_string(const vanetza::security::HashedId8&);
 
 } // namespace security
 } // namespace vanetza
