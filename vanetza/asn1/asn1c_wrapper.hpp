@@ -44,6 +44,8 @@ public:
 
     asn1c_wrapper_common(asn_TYPE_descriptor_t& desc) :
         m_struct(vanetza::asn1::allocate<asn1c_type>()), m_type(desc) {}
+    asn1c_wrapper_common(asn_TYPE_descriptor_t& desc, const T* ptr) :
+        m_struct(static_cast<T*>(copy(desc, ptr))), m_type(desc) {}
     ~asn1c_wrapper_common() { vanetza::asn1::free(m_type, m_struct); }
 
     // copy semantics
