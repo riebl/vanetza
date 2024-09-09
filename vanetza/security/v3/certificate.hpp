@@ -48,6 +48,13 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
 boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate& cert);
 
 /**
+ * Check if certificate is in canonical format suitable for digest calculation.
+ * \param cert certificate
+ * \return true if certificate is in canonical format
+ */
+bool is_canonical(const asn1::EtsiTs103097Certificate& cert);
+
+/**
  * Extract the public key out of a certificate
  * \param cert certificate
  * \return public key if possible

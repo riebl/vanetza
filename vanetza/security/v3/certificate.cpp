@@ -16,7 +16,9 @@ namespace
 bool copy_curve_point(PublicKey& to, const asn1::EccP256CurvePoint& from);
 bool copy_curve_point(PublicKey& to, const asn1::EccP384CurvePoint& from);
 ByteBuffer fetch_octets(const OCTET_STRING_t& octets);
-}
+bool is_compressed(const Vanetza_Security_EccP256CurvePoint& point);
+bool is_compressed(const Vanetza_Security_EccP384CurvePoint& point);
+bool is_signature_x_only(const Vanetza_Security_Signature_t& sig);
 
 Certificate::Certificate() :
     asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>(asn_DEF_Vanetza_Security_EtsiTs103097Certificate)
@@ -38,7 +40,38 @@ boost::optional<KeyType> Certificate::get_verification_key_type() const
     return v3::get_verification_key_type(*content());
 }
 
-boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate& cert)
+bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
+{
+    bool compressed_point = true;
+    const Vanetza_Security_VerificationKeyIndicator& indicator = cert.toBeSigned.verifyKeyIndicator;
+    if (indicator.present == Vanetza_Security_VerificationKeyIndicator_PR_verificationKey) {
+        const Vanetza_Security_PublicVerificationKey& pubkey = indicator.choice.verificationKey;
+        switch (pubkey.present) {
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256:
+                compressed_point = is_compressed(pubkey.choice.ecdsaNistP256);
+                break;
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP256r1:
+                compressed_point = is_compressed(pubkey.choice.ecdsaBrainpoolP256r1);
+                break;
+            case Vanetza_Security_PublicVerificationKey_PR_ecdsaBrainpoolP384r1:
+                compressed_point = is_compressed(pubkey.choice.ecdsaBrainpoolP384r1);
+                break;
+            default:
+                break;
+        }
+    } else if (indicator.present == Vanetza_Security_VerificationKeyIndicator_PR_reconstructionValue) {
+        compressed_point = is_compressed(indicator.choice.reconstructionValue);
+    }
+
+    if (!compressed_point) {
+        return false;
+    } else if (cert.signature && !is_signature_x_only(*cert.signature)) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
 {
     boost::optional<HashedId8> digest;
     auto key_type = get_verification_key_type(cert);
@@ -392,6 +425,42 @@ ByteBuffer fetch_octets(const OCTET_STRING_t& octets)
     ByteBuffer buffer(octets.size);
     std::memcpy(buffer.data(), octets.buf, octets.size);
     return buffer;
+}
+
+bool is_compressed(const Vanetza_Security_EccP256CurvePoint& point)
+{
+    switch (point.present) {
+        case Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0:
+        case Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool is_compressed(const Vanetza_Security_EccP384CurvePoint& point)
+{
+    switch (point.present) {
+        case Vanetza_Security_EccP384CurvePoint_PR_compressed_y_0:
+        case Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool is_signature_x_only(const Vanetza_Security_Signature_t& sig)
+{
+    switch (sig.present) {
+        case Vanetza_Security_Signature_PR_ecdsaNistP256Signature:
+            return sig.choice.ecdsaNistP256Signature.rSig.present == Vanetza_Security_EccP256CurvePoint_PR_x_only;
+        case Vanetza_Security_Signature_PR_ecdsaBrainpoolP256r1Signature:
+            return sig.choice.ecdsaBrainpoolP256r1Signature.rSig.present == Vanetza_Security_EccP256CurvePoint_PR_x_only;
+        case Vanetza_Security_Signature_PR_ecdsaBrainpoolP384r1Signature:
+            return sig.choice.ecdsaBrainpoolP384r1Signature.rSig.present == Vanetza_Security_EccP384CurvePoint_PR_x_only;
+        default:
+            return true; // not an ECDSA signature at all
+    }
 }
 
 } // namespace
