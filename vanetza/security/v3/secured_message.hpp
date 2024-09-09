@@ -84,6 +84,13 @@ ByteBuffer convert_to_payload(vanetza::ChunkPacket packet);
 
 boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdentifier&);
 
+/**
+ * Check if signer identifier contains a full certificate
+ * \param signer_identifier to check
+ * \param true if signer identifier contains a full certificate
+ */
+bool contains_certificate(const SecuredMessage::SignerIdentifier& signer_identifier);
+
 } // namespace v3
 } // namespace security
 } // namespace vanetza
