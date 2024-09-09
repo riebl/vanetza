@@ -5,16 +5,15 @@
 
 using namespace vanetza;
 using namespace vanetza::security;
-using namespace vanetza::security::v2;
 using namespace std;
 
-PublicKey serialize(PublicKey key)
+v2::PublicKey serialize(v2::PublicKey key)
 {
     std::stringstream stream;
     OutputArchive oa(stream);
     serialize(oa, key);
 
-    PublicKey deKey;
+    v2::PublicKey deKey;
     InputArchive ia(stream);
     deserialize(ia, deKey);
     return deKey;
@@ -22,31 +21,31 @@ PublicKey serialize(PublicKey key)
 
 TEST(PublicKey, Field_Size)
 {
-    EXPECT_EQ(32, field_size(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256));
-    EXPECT_EQ(32, field_size(PublicKeyAlgorithm::ECIES_NISTP256));
+    EXPECT_EQ(32, field_size(v2::PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256));
+    EXPECT_EQ(32, field_size(v2::PublicKeyAlgorithm::ECIES_NISTP256));
 }
 
 TEST(PublicKey, ECIES_NISTP256)
 {
-    ecies_nistp256 ecies;
+    v2::ecies_nistp256 ecies;
     ecies.public_key = Uncompressed { random_byte_sequence(32, 1), random_byte_sequence(32, 2) };
-    ecies.supported_symm_alg = SymmetricAlgorithm::AES128_CCM;
-    PublicKey key = ecies;
+    ecies.supported_symm_alg = v2::SymmetricAlgorithm::AES128_CCM;
+    v2::PublicKey key = ecies;
 
-    PublicKey deKey = serialize(key);
+    v2::PublicKey deKey = serialize(key);
     check(key, deKey);
-    EXPECT_EQ(PublicKeyAlgorithm::ECIES_NISTP256, get_type(deKey));
+    EXPECT_EQ(v2::PublicKeyAlgorithm::ECIES_NISTP256, get_type(deKey));
     EXPECT_EQ(67, get_size(deKey));
 }
 
 TEST(PublicKey, ECDSA_NISTP256_With_SHA256)
 {
-    ecdsa_nistp256_with_sha256 ecdsa;
+    v2::ecdsa_nistp256_with_sha256 ecdsa;
     ecdsa.public_key = X_Coordinate_Only { random_byte_sequence(32, 1) };
-    PublicKey key = ecdsa;
+    v2::PublicKey key = ecdsa;
 
-    PublicKey deKey = serialize(key);
+    v2::PublicKey deKey = serialize(key);
     check(key, deKey);
-    EXPECT_EQ(PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(deKey));
+    EXPECT_EQ(v2::PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256, get_type(deKey));
     EXPECT_EQ(34, get_size(deKey));
 }
