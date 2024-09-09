@@ -13,6 +13,7 @@
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/asn1_types.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
+#include <vanetza/security/v3/sign_header_policy.hpp>
 #include <boost/optional.hpp>
 
 namespace vanetza
@@ -75,6 +76,11 @@ void StraightVerifyService::use_sign_header_policy(v2::SignHeaderPolicy* policy)
 void StraightVerifyService::use_certificate_cache(v3::CertificateCache* cache)
 {
     m_context_v3.m_cert_cache = cache;
+}
+
+void StraightVerifyService::use_sign_header_policy(v3::SignHeaderPolicy* policy)
+{
+    m_context_v3.m_sign_policy = policy;
 }
 
 VerifyConfirm StraightVerifyService::verify(const VerifyRequest& request)
