@@ -1,4 +1,6 @@
 #include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/ecdsa256.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
 
@@ -51,6 +53,34 @@ std::size_t get_length(const EccPoint& point)
 {
     EccPointLengthVisitor visitor;
     return boost::apply_visitor(visitor, point);
+}
+
+EccPoint compress_public_key(const PublicKey& public_key)
+{
+    switch (public_key.compression)
+    {
+        case KeyCompression::NoCompression:
+            if (!public_key.y.empty() && public_key.y.back() & 0x01) {
+                return Compressed_Lsb_Y_1 {public_key.x };
+            } else {
+                return Compressed_Lsb_Y_0 {public_key.x };
+            }
+        case KeyCompression::Y0:
+            return Compressed_Lsb_Y_0 {public_key.x };
+        case KeyCompression::Y1:
+            return Compressed_Lsb_Y_1 {public_key.x };
+        default:
+            return Compressed_Lsb_Y_0 {};
+    }
+}
+
+EccPoint compress_public_key(const ecdsa256::PublicKey& public_key)
+{
+    if (!public_key.y.empty() && public_key.y.back() & 0x01) {
+        return Compressed_Lsb_Y_1 { ByteBuffer { public_key.x.begin(), public_key.x.end() } };
+    } else {
+        return Compressed_Lsb_Y_0 { ByteBuffer { public_key.x.begin(), public_key.x.end() } };
+    }
 }
 
 } // namespace security

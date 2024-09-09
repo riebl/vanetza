@@ -9,6 +9,10 @@ namespace vanetza
 namespace security
 {
 
+// forward declarations
+struct PublicKey;
+namespace ecdsa256 { struct PublicKey; }
+
 /// X_Coordinate_Only specified in TS 103 097 v1.2.1 in section 4.2.5
 struct X_Coordinate_Only
 {
@@ -57,6 +61,14 @@ std::size_t get_length(const EccPoint& ecc_point);
  * \return binary representation of ECC point
  */
 ByteBuffer convert_for_signing(const EccPoint& ecc_point);
+
+/**
+ * \brief Compressed ECC point from public key
+ * \param public_key
+ * \return compressed ECC point
+ */
+EccPoint compress_public_key(const PublicKey& public_key);
+EccPoint compress_public_key(const ecdsa256::PublicKey& public_key);
 
 } // namespace security
 } // namespace vanetza
