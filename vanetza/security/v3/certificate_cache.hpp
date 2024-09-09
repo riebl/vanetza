@@ -29,7 +29,7 @@ public:
      * Store a (pre-validated) certificate in cache
      * \param cert certificate
      */
-    void store(const Certificate& cert);
+    void store(Certificate cert);
 
     size_t size() const { return m_storage.size(); }
 

@@ -18,11 +18,11 @@ const Certificate* CertificateCache::lookup(const HashedId8& digest) const
     }
 }
 
-void CertificateCache::store(const Certificate& cert)
+void CertificateCache::store(Certificate cert)
 {
     auto maybe_hash = cert.calculate_digest();
     if (maybe_hash) {
-        m_storage.emplace(*maybe_hash, cert);
+        m_storage.emplace(*maybe_hash, std::move(cert));
         m_digests.insert(*maybe_hash);
     }
 }
