@@ -2,6 +2,7 @@
 #include <vanetza/security/hashed_id.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace vanetza
 {
@@ -32,9 +33,25 @@ public:
 
     size_t size() const { return m_storage.size(); }
 
+    /**
+     * Announce a station with a given certificate digest.
+     * \param digest certificate digest
+     * \return true if digest was not known before
+     */
+    bool announce(const HashedId8& digest);
+
+    /**
+     * Test if a certificate digest is already known, i.e. either
+     * its certificate is stored or at least the digest has been announced.
+     * \param digest certificate digest
+     * \return true if digest is known
+     */
+    bool is_known(const HashedId8& digest) const;
+
 private:
     // TODO add bounded capacity and automatic removal of expired certificates
     std::unordered_map<HashedId8, Certificate> m_storage;
+    std::unordered_set<HashedId8> m_digests;
 };
 
 } // namespace v3
