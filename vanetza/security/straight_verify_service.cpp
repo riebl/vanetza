@@ -424,6 +424,17 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         v3::CertificateCache* m_cache;
     } certificate_lookup_visitor(m_context_v3.m_cert_cache);
     auto signer_identifier = msg.signer_identifier();
+
+    // track "known" stations
+    auto maybe_digest = v3::get_certificate_id(signer_identifier);
+    if (m_context_v3.m_cert_cache && maybe_digest) {
+        bool was_unknown_station = m_context_v3.m_cert_cache->announce(*maybe_digest);
+        if (was_unknown_station && msg.its_aid() == aid::CA && m_context_v3.m_sign_policy) {
+            // CAM from unknown station received, add our certificate to next outgoing message
+            m_context_v3.m_sign_policy->request_certificate();
+        }
+    }
+
     const v3::asn1::Certificate* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
     if (!certificate) {
         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
@@ -459,8 +470,22 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
 
     confirm.its_aid = msg.its_aid();
     confirm.permissions = v3::get_app_permissions(*certificate, confirm.its_aid);
-    confirm.certificate_id = v3::get_certificate_id(signer_identifier);
+    confirm.certificate_id = maybe_digest;
     confirm.report = VerificationReport::Success;
+
+    if (m_context_v3.m_cert_cache && confirm.certificate_id) {
+        bool already_cached = m_context_v3.m_cert_cache->lookup(*confirm.certificate_id) != nullptr;
+        if (!already_cached && confirm.its_aid == aid::CA && m_context_v3.m_sign_policy) {
+            // CAM from unknown station received, add our certificate to next outgoing message
+            m_context_v3.m_sign_policy->request_certificate();
+        }
+
+        // update certificate cache with received certificate
+        if (certificate && v3::contains_certificate(signer_identifier)) {
+            m_context_v3.m_cert_cache->store(v3::Certificate { *certificate });
+        }
+    }
+
     return confirm;
 }
 
