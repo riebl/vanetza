@@ -19,22 +19,22 @@ DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProv
 }
 
 void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, CertificateProvider& certificate_provider, SecuredMessage& secured_message)
-{   
+{
+    const auto now = m_runtime.now();
     secured_message.set_its_aid(request.its_aid);
-    secured_message.set_generation_time(vanetza::security::v2::convert_time64(m_runtime.now()));
+    secured_message.set_generation_time(vanetza::security::v2::convert_time64(now));
     //header_info.signer_info = certificate_provider.own_certificate();
 
     if (request.its_aid == aid::CA) {
         // section 7.1.1 in TS 103 097 v2.1.1
-        m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
-        if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
+        if (now < m_cam_next_certificate && !m_cert_requested) {
             auto maybe_digest = calculate_digest(*certificate_provider.own_certificate());
             if (maybe_digest) {
                 secured_message.set_signer_identifier(*maybe_digest);
             }
         } else {
             secured_message.set_signer_identifier(certificate_provider.own_certificate());
-            m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
+            m_cam_next_certificate = now + std::chrono::seconds(1) - std::chrono::milliseconds(50);
         }
 
         if (m_unknown_certificates.size() > 0) {
