@@ -19,6 +19,7 @@ namespace v3
 struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>
 {
     Certificate();
+    explicit Certificate(const asn1::EtsiTs103097Certificate&);
 
     void add_permission(ItsAid aid, const ByteBuffer& ssp);
 

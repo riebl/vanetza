@@ -1,3 +1,4 @@
+#include <vanetza/asn1/security/Certificate.h>
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <boost/optional/optional.hpp>
@@ -19,6 +20,11 @@ ByteBuffer fetch_octets(const OCTET_STRING_t& octets);
 
 Certificate::Certificate() :
     asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>(asn_DEF_Vanetza_Security_EtsiTs103097Certificate)
+{
+}
+
+Certificate::Certificate(const asn1::EtsiTs103097Certificate& cert) :
+    asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert)
 {
 }
 
