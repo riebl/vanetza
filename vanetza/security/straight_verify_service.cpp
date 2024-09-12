@@ -435,6 +435,21 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         }
     }
 
+    // check if a ITS-AID 36 (CAM) with inline cert request shall be handled by us
+    if (msg.its_aid() == aid::CA && m_context_v3.m_sign_policy && m_context_v3.m_cert_cache) {
+        Vanetza_Security_SequenceOfHashedId3* requests = msg->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest;
+        if (requests) {
+            for (int i = 0; i < requests->list.count; ++i)
+            {
+                const Vanetza_Security_HashedId3_t* req_digest = requests->list.array[i];
+                const v3::Certificate* req_cert = m_context_v3.m_cert_cache->lookup(create_hashed_id3(*req_digest));
+                if (req_cert) {
+                    m_context_v3.m_sign_policy->insert_certificate(*req_cert);
+                }
+            }
+        }
+    }
+
     const v3::asn1::Certificate* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
     if (!certificate && maybe_digest) {
         if (m_context_v3.m_sign_policy) {

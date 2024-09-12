@@ -30,7 +30,7 @@ StraightSignService::StraightSignService(CertificateProvider& provider, Backend&
 SignConfirm StraightSignService::sign(SignRequest&& request)
 {
     SecuredMessage secured_message = SecuredMessage::with_signed_data();
-    m_policy.prepare_header(request, m_certificates, secured_message);
+    m_policy.prepare_header(request, secured_message);
 
     ByteBuffer payload;
     payload = convert_to_payload(request.plain_message);

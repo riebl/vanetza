@@ -453,6 +453,18 @@ ByteBuffer SecuredMessage::signing_payload() const
     }
 }
 
+void SecuredMessage::set_requested_certificate(const Certificate& cert)
+{
+    const asn1::SignedData* signed_data = get_signed_data(m_struct);
+    if (signed_data && signed_data->tbsData) {
+        if (signed_data->tbsData->headerInfo.requestedCertificate) {
+            ASN_STRUCT_FREE(asn_DEF_Vanetza_Security_Certificate, signed_data->tbsData->headerInfo.requestedCertificate);
+        }
+        signed_data->tbsData->headerInfo.requestedCertificate =
+            static_cast<Vanetza_Security_Certificate*>(asn1::copy(asn_DEF_Vanetza_Security_Certificate, cert.content()));
+    }
+}
+
 size_t get_size(const SecuredMessage& message)
 {
     return message.size();

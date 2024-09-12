@@ -94,7 +94,7 @@ TEST(SecuredMessageV3, sign_and_verify)
     auto backend = create_backend("default");
 
     v3::NaiveCertificateProvider cert_provider { runtime };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider};
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cert_provider };
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy };
 
     SignRequest request;
