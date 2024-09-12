@@ -445,6 +445,28 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
     }
     // TODO check AT certificate's validity
 
+    boost::optional<HashedId8> aa_digest;
+    switch (certificate->issuer.present)
+    {
+        case Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest:
+            aa_digest = v3::convert(certificate->issuer.choice.sha256AndDigest);
+            break;
+        case Vanetza_Security_IssuerIdentifier_PR_sha384AndDigest:
+            aa_digest = v3::convert(certificate->issuer.choice.sha384AndDigest);
+            break;
+        default:
+            break;
+    }
+
+    if (aa_digest && m_context_v3.m_cert_cache) {
+        if (!m_context_v3.m_cert_cache->is_known(*aa_digest)) {
+            if (m_context_v3.m_sign_policy) {
+                m_context_v3.m_sign_policy->request_unrecognized_certificate(*aa_digest);
+            }
+        }
+        // TODO: if AA is validated and fails, announce it in cache
+    }
+
     auto public_key = v3::get_public_key(*certificate);
     if (!public_key) {
         confirm.report = VerificationReport::Invalid_Certificate;
