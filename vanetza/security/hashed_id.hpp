@@ -27,6 +27,12 @@ std::string to_string(const vanetza::security::HashedId8&);
 
 namespace std
 {
+// std::hash specialization for HashedId3
+template<> struct hash<vanetza::security::HashedId3>
+{
+    size_t operator()(const vanetza::security::HashedId3&) const;
+};
+
 /// std::hash specialization for HashedId8
 template<> struct hash<vanetza::security::HashedId8>
 {

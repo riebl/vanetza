@@ -49,6 +49,15 @@ std::string to_string(const vanetza::security::HashedId8& digest)
 namespace std
 {
 
+size_t hash<vanetza::security::HashedId3>::operator()(const vanetza::security::HashedId3& hid3) const
+{
+    size_t seed = 0;
+    for (uint8_t octet : hid3) {
+        boost::hash_combine(seed, octet);
+    }
+    return seed;
+}
+
 size_t hash<vanetza::security::HashedId8>::operator()(const vanetza::security::HashedId8& hid8) const
 {
     size_t seed = 0;
