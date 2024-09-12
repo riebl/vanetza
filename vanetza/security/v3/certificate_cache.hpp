@@ -24,6 +24,7 @@ public:
      * \return certificate matching digest
      */
     const Certificate* lookup(const HashedId8& digest) const;
+    const Certificate* lookup(const HashedId3& digest) const;
 
     /**
      * Store a (pre-validated) certificate in cache
@@ -49,8 +50,12 @@ public:
     bool is_known(const HashedId8& digest) const;
 
 private:
+    using CertificateMap = std::unordered_map<HashedId8, Certificate>;
+    using ShortDigestMap = std::unordered_map<HashedId3, CertificateMap::iterator>;
+
     // TODO add bounded capacity and automatic removal of expired certificates
-    std::unordered_map<HashedId8, Certificate> m_storage;
+    CertificateMap m_storage;
+    ShortDigestMap m_short_digests;
     std::unordered_set<HashedId8> m_digests;
 };
 
