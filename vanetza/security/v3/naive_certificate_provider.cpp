@@ -59,9 +59,13 @@ std::list<Certificate> NaiveCertificateProvider::own_chain()
     return chain;
 }
 
-const ecdsa256::PrivateKey& NaiveCertificateProvider::own_private_key()
+const PrivateKey& NaiveCertificateProvider::own_private_key()
 {
-    return m_own_key_pair.private_key;
+    static PrivateKey private_key;
+    private_key.type = KeyType::NistP256;
+    private_key.key.resize(m_own_key_pair.private_key.key.size());
+    std::copy(m_own_key_pair.private_key.key.begin(), m_own_key_pair.private_key.key.end(), private_key.key.data());
+    return private_key;
 }
 
 const ecdsa256::KeyPair& NaiveCertificateProvider::aa_key_pair()

@@ -5,6 +5,7 @@
 #include <vanetza/common/factory.hpp>
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/ecdsa_signature.hpp>
+#include <vanetza/security/private_key.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <boost/optional/optional.hpp>
@@ -30,6 +31,7 @@ public:
      * \return calculated signature
      */
     virtual EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data) = 0;
+    virtual Signature sign_data(const PrivateKey&, const ByteBuffer& data) = 0;
 
     /**
      * \brief try to verify data using public key and signature

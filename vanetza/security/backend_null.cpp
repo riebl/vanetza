@@ -14,6 +14,12 @@ EcdsaSignature BackendNull::sign_data(const ecdsa256::PrivateKey&, const ByteBuf
     return fake;
 }
 
+Signature BackendNull::sign_data(const PrivateKey&, const ByteBuffer& data)
+{
+    static const Signature empty {};
+    return empty;
+}
+
 bool BackendNull::verify_data(const ecdsa256::PublicKey&, const ByteBuffer&, const EcdsaSignature&)
 {
     // accept everything

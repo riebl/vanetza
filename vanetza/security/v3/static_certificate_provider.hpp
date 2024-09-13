@@ -22,7 +22,7 @@ public:
      * \param authorization_ticket
      * \param ticket_key private key of given authorization ticket
      */
-    StaticCertificateProvider(const Certificate& authorization_ticket, const ecdsa256::PrivateKey& ticket_key);
+    StaticCertificateProvider(const Certificate& authorization_ticket, const PrivateKey& ticket_key);
 
     /**
      * Create static certificate provider with given chain
@@ -30,7 +30,7 @@ public:
      * \param ticket_key private key of given authorization ticket
      * \param chain own certificate chain
      */
-    StaticCertificateProvider(const Certificate& authorization_ticket, const ecdsa256::PrivateKey& ticket_key,
+    StaticCertificateProvider(const Certificate& authorization_ticket, const PrivateKey& ticket_key,
             const std::list<Certificate>& chain);
 
     /**
@@ -49,11 +49,11 @@ public:
      * Get private key associated with own certificate
      * \return private key
      */
-    virtual const ecdsa256::PrivateKey& own_private_key() override;
+    virtual const PrivateKey& own_private_key() override;
 
 private:
     Certificate authorization_ticket;
-    ecdsa256::PrivateKey authorization_ticket_key;
+    PrivateKey authorization_ticket_key;
     std::list<Certificate> chain;
 };
 

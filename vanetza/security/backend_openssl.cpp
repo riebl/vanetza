@@ -88,6 +88,44 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
     return ecdsa_signature;
 }
 
+Signature BackendOpenSsl::sign_data(const PrivateKey& key, const ByteBuffer& data)
+{
+    auto priv_key = internal_private_key(key);
+    auto digest = calculate_sha256_digest(data);
+
+    // sign message data represented by the digest
+    openssl::Signature signature { ECDSA_do_sign(digest.data(), digest.size(), priv_key) };
+#if OPENSSL_API_COMPAT < 0x10100000L
+    const BIGNUM* sig_r = signature->r;
+    const BIGNUM* sig_s = signature->s;
+#else
+    const BIGNUM* sig_r = nullptr;
+    const BIGNUM* sig_s = nullptr;
+    ECDSA_SIG_get0(signature, &sig_r, &sig_s);
+#endif
+
+    Signature ecdsa_signature;
+    ecdsa_signature.type = key.type;
+
+    if (sig_r && sig_s) {
+        const size_t len = key_length(key.type);
+
+        const auto num_bytes_s = BN_num_bytes(sig_s);
+        assert(len >= static_cast<size_t>(num_bytes_s));
+        ecdsa_signature.s.resize(len, 0x00);
+        BN_bn2bin(sig_s, ecdsa_signature.s.data() + len - num_bytes_s);
+
+        const auto num_bytes_r = BN_num_bytes(sig_r);
+        assert(len >= static_cast<size_t>(num_bytes_r));
+        ecdsa_signature.r.resize(len, 0x00);
+        BN_bn2bin(sig_r, ecdsa_signature.r.data() + len - num_bytes_r);
+    } else {
+        throw openssl::Exception();
+    }
+
+    return ecdsa_signature;
+}
+
 bool BackendOpenSsl::verify_data(const ecdsa256::PublicKey& key, const ByteBuffer& data, const EcdsaSignature& sig)
 {
     auto digest = calculate_sha256_digest(data);
@@ -218,6 +256,23 @@ std::array<uint8_t, 48> BackendOpenSsl::calculate_sha384_digest(const ByteBuffer
 openssl::Key BackendOpenSsl::internal_private_key(const ecdsa256::PrivateKey& generic) const
 {
     openssl::Key key(NID_X9_62_prime256v1);
+    openssl::BigNumber prv(generic.key);
+    EC_KEY_set_private_key(key, prv);
+
+    // OpenSSL requires public key, so we recreate it from private key
+    openssl::BigNumberContext ctx;
+    const EC_GROUP* group = EC_KEY_get0_group(key);
+    openssl::Point pub(group);
+    openssl::check(EC_POINT_mul(group, pub, prv, nullptr, nullptr, ctx));
+    EC_KEY_set_public_key(key, pub);
+
+    openssl::check(EC_KEY_check_key(key));
+    return key;
+}
+
+openssl::Key BackendOpenSsl::internal_private_key(const PrivateKey& generic) const
+{
+    openssl::Key key(openssl_nid(generic.type));
     openssl::BigNumber prv(generic.key);
     EC_KEY_set_private_key(key, prv);
 

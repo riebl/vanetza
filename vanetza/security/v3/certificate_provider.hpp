@@ -1,5 +1,5 @@
 #pragma once
-#include <vanetza/security/ecdsa256.hpp>
+#include <vanetza/security/private_key.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <list>
 
@@ -29,7 +29,7 @@ public:
      * Get private key associated with own certificate
      * \return private key
      */
-    virtual const ecdsa256::PrivateKey& own_private_key() = 0;
+    virtual const PrivateKey& own_private_key() = 0;
 
     virtual ~CertificateProvider() = default;
 };

@@ -42,7 +42,7 @@ public:
      * \brief get own private key
      * \return private key
      */
-    const ecdsa256::PrivateKey& own_private_key() override;
+    const PrivateKey& own_private_key() override;
 
     /**
      * \brief get ticket signer certificate (same for all instances)
