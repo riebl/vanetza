@@ -66,6 +66,10 @@
         "asn_application.h": "c",
         "basicvehiclecontainerhighfrequency.h": "c",
         "referenceposition.h": "c",
-        "speedconfidence.h": "c"
+        "speedconfidence.h": "c",
+        "constr_sequence.h": "c",
+        "longitudinalaccelerationvalue.h": "c",
+        "nativeenumerated.h": "c",
+        "headingconfidence.h": "c"
     }
 }
