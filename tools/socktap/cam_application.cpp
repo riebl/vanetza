@@ -24,7 +24,7 @@ CamApplication::CamApplication(PositionProvider& positioning, Runtime& rt) :
 
     this->station_id = 1;
     this->server_port = 9000;
-    this->serverIP = strdup("192.168.1.124");
+    this->serverIP = strdup("192.168.1.125");
 }
 
 int CamApplication::createSocket(){
@@ -110,7 +110,29 @@ int decodeCAM(const asn1::Cam& recvd, char* message){
     const CoopAwareness_t& cam = recvd->cam;
     const BasicContainer_t& basic = cam.camParameters.basicContainer;
     const BasicVehicleContainerHighFrequency& bvc = cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency;
-    int size = sprintf(message, "%ld;%ld;%ld;%ld;ld\n",header.stationID,basic.referencePosition.latitude,basic.referencePosition.longitude,bvc.speed.speedValue,bvc.longitudinalAcceleration.longitudinalAccelerationValue);
+    //int size = sprintf(message, "%ld;%ld;%ld;%ld;ld\n",header.stationID,basic.referencePosition.latitude,basic.referencePosition.longitude,bvc.speed.speedValue,bvc.longitudinalAcceleration.longitudinalAccelerationValue);
+    int size = sprintf(
+        message, 
+        "{\"objectID\":%ld,\"speed\":%ld,\"speedConfidence\":%ld,\"longAcc\":%ld,\"longAccConfidence\":%ld,\"heading\":%ld,\"headingConfidence\":%ld,\"lat\":%ld,\"lon\":%ld,\"length\":%ld,\"lengthConfidence\":%ld,\"lane\":%ld,\"laneConfidence\":%ld,\"altitude\":%ld,\"altitudeConfidence\":%ld,\"vehicleLength\":%ld,\"vehicleLengthConfidence\":%ld,\"positionConfidence\":%ld}\n",
+        header.stationID,
+        bvc.speed.speedValue,
+        bvc.speed.speedConfidence,
+        bvc.longitudinalAcceleration.longitudinalAccelerationValue,
+        bvc.longitudinalAcceleration.longitudinalAccelerationConfidence,
+        bvc.heading.headingValue,
+        bvc.heading.headingConfidence,
+        basic.referencePosition.latitude,
+        basic.referencePosition.longitude,
+        bvc.vehicleLength.vehicleLengthValue,
+        bvc.vehicleLength.vehicleLengthConfidenceIndication,
+        0,
+        0,
+        0,
+        bvc.vehicleLength.vehicleLengthValue,
+        bvc.vehicleLength.vehicleLengthConfidenceIndication,
+        0,
+        0
+        );
     return strlen(message);
 }
 
@@ -129,7 +151,7 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
     
     if(cam && send_to_server){
         std::cout << "sending to udp server" << std::endl;
-        char message [100];
+        char message [500];
         int size = decodeCAM(*cam, message);
         this->sendToServer((u_int64_t*)message, size);
     }
