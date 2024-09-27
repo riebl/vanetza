@@ -91,7 +91,7 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
 Signature BackendOpenSsl::sign_data(const PrivateKey& key, const ByteBuffer& data)
 {
     auto priv_key = internal_private_key(key);
-    auto digest = calculate_sha256_digest(data);
+    auto digest = calculate_hash(key.type, data);
 
     // sign message data represented by the digest
     openssl::Signature signature { ECDSA_do_sign(digest.data(), digest.size(), priv_key) };
