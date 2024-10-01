@@ -44,7 +44,7 @@ boost::optional<HashedId8> Certificate::calculate_digest() const
     return v3::calculate_digest(*content());
 }
 
-boost::optional<KeyType> Certificate::get_verification_key_type() const
+KeyType Certificate::get_verification_key_type() const
 {
     return v3::get_verification_key_type(*content());
 }
@@ -147,22 +147,22 @@ boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate&
 {
     boost::optional<HashedId8> digest;
     auto key_type = get_verification_key_type(cert);
-    if (key_type) {
+    if (key_type != KeyType::Unspecified) {
         if (is_canonical(cert)) {
-            digest = calculate_digest_internal(cert, *key_type);
+            digest = calculate_digest_internal(cert, key_type);
         } else {
             auto maybe_canonical_cert = canonicalize(cert);
             if (maybe_canonical_cert) {
-                digest = calculate_digest_internal(*maybe_canonical_cert.value(), *key_type);
+                digest = calculate_digest_internal(*maybe_canonical_cert.value(), key_type);
             }
         }
     }
     return digest;
 }
 
-boost::optional<KeyType> get_verification_key_type(const asn1::EtsiTs103097Certificate& cert)
+KeyType get_verification_key_type(const asn1::EtsiTs103097Certificate& cert)
 {
-    boost::optional<KeyType> key_type;
+    KeyType key_type = KeyType::Unspecified;
 
     if (cert.toBeSigned.verifyKeyIndicator.present == Vanetza_Security_VerificationKeyIndicator_PR_verificationKey)
     {

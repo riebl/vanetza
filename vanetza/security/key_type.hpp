@@ -8,6 +8,7 @@ namespace security
 
 enum class KeyType
 {
+    Unspecified,
     NistP256, // also known as prime256v1
     BrainpoolP256r1,
     BrainpoolP384r1

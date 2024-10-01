@@ -37,7 +37,7 @@ SignConfirm StraightSignService::sign(SignRequest&& request)
     secured_message.set_payload(payload);
 
     const auto& signing_cert = m_certificates.own_certificate();
-    KeyType key_type = signing_cert.get_verification_key_type().value_or(KeyType::NistP256);
+    KeyType key_type = signing_cert.get_verification_key_type();
 
     ByteBuffer data_hash = m_backend.calculate_hash(key_type, secured_message.signing_payload());
     ByteBuffer cert_hash = m_backend.calculate_hash(key_type, signing_cert.encode());

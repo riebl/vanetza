@@ -4,6 +4,7 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/net/packet_variant.hpp>
 #include <vanetza/security/hashed_id.hpp>
+#include <vanetza/security/key_type.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/v3/asn1_types.hpp>
@@ -35,9 +36,9 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
 
     /**
      * Get verification key type
-     * \return verification key type if possible
+     * \return verification key type if possible; otherwise unspecified
      */
-    boost::optional<KeyType> get_verification_key_type() const;
+    KeyType get_verification_key_type() const;
 };
 
 /**
@@ -64,9 +65,9 @@ boost::optional<PublicKey> get_public_key(const asn1::EtsiTs103097Certificate& c
 /**
  * Get verification key type
  * \param cert certificate
- * \return verification key type
+ * \return verification key type (maybe unspecified)
  */
-boost::optional<KeyType> get_verification_key_type(const asn1::EtsiTs103097Certificate& cert);
+KeyType get_verification_key_type(const asn1::EtsiTs103097Certificate& cert);
 
 /**
  * Get application permissions (SSP = service specific permissions)
