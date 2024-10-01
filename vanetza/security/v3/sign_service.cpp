@@ -29,22 +29,21 @@ StraightSignService::StraightSignService(CertificateProvider& provider, Backend&
 
 SignConfirm StraightSignService::sign(SignRequest&& request)
 {
+    const auto& signing_cert = m_certificates.own_certificate();
+    const auto hash_algo = specified_hash_algorithm(signing_cert.get_verification_key_type());
+
     SecuredMessage secured_message = SecuredMessage::with_signed_data();
+    secured_message.set_hash_id(hash_algo);
+    secured_message.set_payload(convert_to_payload(request.plain_message));
     m_policy.prepare_header(request, secured_message);
 
-    ByteBuffer payload;
-    payload = convert_to_payload(request.plain_message);
-    secured_message.set_payload(payload);
-
-    const auto& signing_cert = m_certificates.own_certificate();
-    KeyType key_type = signing_cert.get_verification_key_type();
-
-    ByteBuffer data_hash = m_backend.calculate_hash(key_type, secured_message.signing_payload());
-    ByteBuffer cert_hash = m_backend.calculate_hash(key_type, signing_cert.encode());
+    ByteBuffer data_hash = m_backend.calculate_hash(hash_algo, secured_message.signing_payload());
+    ByteBuffer cert_hash = m_backend.calculate_hash(hash_algo, signing_cert.encode());
     ByteBuffer concat_hash = data_hash;
     concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
+    ByteBuffer digest = m_backend.calculate_hash(hash_algo, concat_hash);
 
-    EcdsaSignature signature = m_backend.sign_data(m_certificates.own_private_key(), concat_hash);
+    Signature signature = m_backend.sign_digest(m_certificates.own_private_key(), digest);
     secured_message.set_signature(signature);
 
     SignConfirm confirm;
@@ -71,6 +70,19 @@ SignConfirm DummySignService::sign(SignRequest&& request)
     SignConfirm confirm;
     confirm.secured_message = std::move(secured_message);
     return confirm;
+}
+
+HashAlgorithm specified_hash_algorithm(KeyType key_type)
+{
+    switch (key_type) {
+        case KeyType::NistP256:
+        case KeyType::BrainpoolP256r1:
+            return HashAlgorithm::SHA256;
+        case KeyType::BrainpoolP384r1:
+            return HashAlgorithm::SHA384;
+        default:
+            return HashAlgorithm::Unspecified;
+    }
 }
 
 } // namespace v3

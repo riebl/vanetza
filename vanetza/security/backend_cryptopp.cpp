@@ -139,6 +139,42 @@ public:
     }
 };
 
+template<size_t N>
+class IdentityHash : public CryptoPP::HashTransformation
+{
+public:
+    CRYPTOPP_CONSTANT(DIGESTSIZE = N);
+
+    static const char* StaticAlgorithmName()
+    {
+        return "IdentityHash";
+    }
+
+    void Update(const CryptoPP::byte* input, size_t length) override
+    {
+        std::copy_n(input, std::min(length, m_hash.size()), m_hash.begin());;
+    }
+
+    void TruncatedFinal(CryptoPP::byte* output, size_t len) override
+    {
+        if (output != nullptr) {
+            std::copy_n(m_hash.begin(), std::min(len, m_hash.size()), output);
+        }
+        m_hash.fill(0);
+    }
+
+    unsigned int DigestSize() const override
+    {
+        return m_hash.size();
+    }
+
+private:
+    std::array<CryptoPP::byte, N> m_hash;
+};
+
+template<size_t N>
+using DigestEcdsa = CryptoPP::ECDSA<CryptoPP::ECP, IdentityHash<N>>;
+
 } // namespace
 
 using std::placeholders::_1;
@@ -175,52 +211,50 @@ EcdsaSignature BackendCryptoPP::sign_data(const Ecdsa256::PrivateKey& private_ke
     return ecdsa_signature;
 }
 
-Signature generic_sign_data(CryptoPP::PK_Signer* signer, CryptoPP::RandomNumberGenerator& rng, KeyType key_type, const ByteBuffer& data)
+Signature BackendCryptoPP::sign_digest(const PrivateKey& private_key, const ByteBuffer& digest)
 {
-    // calculate signature
-    ByteBuffer signature(signer->MaxSignatureLength(), 0x00);
-    auto signature_length = signer->SignMessage(rng, data.data(), data.size(), signature.data());
-    signature.resize(signature_length);
+    static const Signature dummy = {};
 
-    auto signature_delimiter = signature.begin();
-    std::advance(signature_delimiter, key_length(key_type));
+    CryptoPP::DL_Keys_ECDSA<CryptoPP::ECP>::PrivateKey key;
+    CryptoPP::Integer integer { private_key.key.data(), private_key.key.size() };
 
-    Signature ecdsa_signature;
-    ecdsa_signature.type = key_type;
-    ecdsa_signature.r = ByteBuffer(signature.begin(), signature_delimiter);
-    ecdsa_signature.s = ByteBuffer(signature_delimiter, signature.end());
-    return ecdsa_signature;
-}
-
-Signature BackendCryptoPP::sign_data(const PrivateKey& private_key, const ByteBuffer& data)
-{
-    auto int_priv_key = convert_private_key(private_key);
-    
     if (private_key.type == KeyType::NistP256) {
-        Ecdsa256::PrivateKey key;
         CryptoPP::Integer integer { private_key.key.data(), private_key.key.size() };
         key.Initialize(CryptoPP::ASN1::secp256r1(), integer);
-
-        Ecdsa256::Signer signer(key);
-        return generic_sign_data(&signer, m_prng, private_key.type, data);
-
-    } else if (private_key.type == KeyType::NistP256) {
-        Ecdsa256::PrivateKey key;
+    } else if (private_key.type == KeyType::BrainpoolP256r1) {
         CryptoPP::Integer integer { private_key.key.data(), private_key.key.size() };
         key.Initialize(CryptoPP::ASN1::brainpoolP256r1(), integer);
-        
-        Ecdsa256::Signer signer(key);
-        return generic_sign_data(&signer, m_prng, private_key.type, data);
-
     } else if (private_key.type == KeyType::BrainpoolP384r1) {
-        Ecdsa384::PrivateKey key;
         CryptoPP::Integer integer { private_key.key.data(), private_key.key.size() };
         key.Initialize(CryptoPP::ASN1::brainpoolP384r1(), integer);
-       
-        Ecdsa384::Signer signer(key);
-        return generic_sign_data(&signer, m_prng, private_key.type, data);
     } else {
-        Signature dummy;
+        return dummy;
+    }
+
+    auto calculate_signature = [&](CryptoPP::PK_Signer* signer) -> Signature
+    {
+        // calculate signature
+        ByteBuffer signature(signer->MaxSignatureLength(), 0x00);
+        auto signature_length = signer->SignMessage(m_prng, digest.data(), digest.size(), signature.data());
+        signature.resize(signature_length);
+
+        auto signature_delimiter = signature.begin();
+        std::advance(signature_delimiter, signer->MaxSignatureLength() / 2);
+
+        Signature ecdsa_signature;
+        ecdsa_signature.type = private_key.type;
+        ecdsa_signature.r = ByteBuffer(signature.begin(), signature_delimiter);
+        ecdsa_signature.s = ByteBuffer(signature_delimiter, signature.end());
+        return ecdsa_signature;
+    };
+
+    if (digest.size() == 32) {
+        DigestEcdsa<32>::Signer signer(key);
+        return calculate_signature(&signer);
+    } else if (digest.size() == 48) {
+        DigestEcdsa<48>::Signer signer(key);
+        return calculate_signature(&signer);
+    } else {
         return dummy;
     }
 }
@@ -315,27 +349,18 @@ boost::optional<Uncompressed> BackendCryptoPP::decompress_point(const EccPoint& 
     }
 }
 
-ByteBuffer BackendCryptoPP::calculate_hash(KeyType key, const ByteBuffer& buffer)
+ByteBuffer BackendCryptoPP::calculate_hash(HashAlgorithm algo_id, const ByteBuffer& buffer)
 {
     ByteBuffer hash;
-    switch (key) {
-        case KeyType::NistP256:
-        case KeyType::BrainpoolP256r1: {
-            CryptoPP::SHA256 algo;
-            hash.resize(algo.DigestSize());
-            algo.CalculateDigest(hash.data(), buffer.data(), buffer.size());
-            break;
-        }
-        case KeyType::BrainpoolP384r1: {
-            CryptoPP::SHA384 algo;
-            hash.resize(algo.DigestSize());
-            algo.CalculateDigest(hash.data(), buffer.data(), buffer.size());
-            break;
-        }
-        default:
-            break;
+    if (algo_id == HashAlgorithm::SHA256) {
+        CryptoPP::SHA256 algo;
+        hash.resize(algo.DigestSize());
+        algo.CalculateDigest(hash.data(), buffer.data(), buffer.size());
+    } else if (algo_id == HashAlgorithm::SHA384) {
+        CryptoPP::SHA384 algo;
+        hash.resize(algo.DigestSize());
+        algo.CalculateDigest(hash.data(), buffer.data(), buffer.size());
     }
-
     return hash;
 }
 

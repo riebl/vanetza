@@ -47,6 +47,14 @@ private:
     const Runtime& m_runtime;
 };
 
+/**
+ * Determine the hash algorithm for a given key type.
+ * \see IEEE 1609.2 clause 5.3.1.2.2 rule a)
+ * \param key_type key type
+ * \return suitable hash algorithm
+ */
+HashAlgorithm specified_hash_algorithm(KeyType key_type);
+
 } // namespace v3
 } // namespace security
 } // namespace vanetza

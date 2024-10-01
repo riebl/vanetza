@@ -9,7 +9,6 @@ add_vanetza_component(security
     key_type.cpp
     secured_message.cpp
     sha.cpp
-    sign_service.cpp
     signature.cpp
     straight_verify_service.cpp
     verify_service.cpp

@@ -343,7 +343,7 @@ PacketVariant SecuredMessage::payload() const
     return CohesivePacket { std::move(buffer), OsiLayer::Network };
 }
 
-void SecuredMessage::set_payload(ByteBuffer& payload)
+void SecuredMessage::set_payload(const ByteBuffer& payload)
 {
     switch (m_struct->content->present) {
         case Vanetza_Security_Ieee1609Dot2Content_PR_unsecuredData:
@@ -352,6 +352,42 @@ void SecuredMessage::set_payload(ByteBuffer& payload)
         case Vanetza_Security_Ieee1609Dot2Content_PR_signedData:
             vanetza::security::v3::set_payload(&m_struct->content->choice.signedData->tbsData->payload->data->content->choice.unsecuredData, payload);
             break;
+    }
+}
+
+HashAlgorithm SecuredMessage::hash_id() const
+{
+    HashAlgorithm algo = HashAlgorithm::Unspecified;
+
+    const asn1::SignedData* signed_data = get_signed_data(m_struct);
+    if (signed_data) {
+        switch (signed_data->hashId) {
+            case Vanetza_Security_HashAlgorithm_sha256:
+                algo = HashAlgorithm::SHA256;
+                break;
+            case Vanetza_Security_HashAlgorithm_sha384:
+                algo = HashAlgorithm::SHA384;
+                break;
+            default:
+                break;
+        }
+    }
+
+    return algo;
+}
+
+void SecuredMessage::set_hash_id(HashAlgorithm hash)
+{
+    assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
+    switch (hash) {
+        case HashAlgorithm::SHA256:
+            m_struct->content->choice.signedData->hashId = Vanetza_Security_HashAlgorithm_sha256;
+            break;
+        case HashAlgorithm::SHA384:
+            m_struct->content->choice.signedData->hashId = Vanetza_Security_HashAlgorithm_sha384;
+            break;
+        default:
+            m_struct->content->choice.signedData->hashId = -1;
     }
 }
 

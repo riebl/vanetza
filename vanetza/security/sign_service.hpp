@@ -5,6 +5,8 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/net/packet.hpp>
+#include <vanetza/security/hash_algorithm.hpp>
+#include <vanetza/security/key_type.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signing_policy.hpp>
 #include <functional>

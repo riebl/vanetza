@@ -88,12 +88,10 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
     return ecdsa_signature;
 }
 
-Signature BackendOpenSsl::sign_data(const PrivateKey& key, const ByteBuffer& data)
+Signature BackendOpenSsl::sign_digest(const PrivateKey& key, const ByteBuffer& digest)
 {
-    auto priv_key = internal_private_key(key);
-    auto digest = calculate_hash(key.type, data);
-
     // sign message data represented by the digest
+    auto priv_key = internal_private_key(key);
     openssl::Signature signature { ECDSA_do_sign(digest.data(), digest.size(), priv_key) };
 #if OPENSSL_API_COMPAT < 0x10100000L
     const BIGNUM* sig_r = signature->r;
@@ -210,24 +208,15 @@ boost::optional<Uncompressed> BackendOpenSsl::decompress_point(const EccPoint& e
     }
 }
 
-ByteBuffer BackendOpenSsl::calculate_hash(KeyType key, const ByteBuffer& data)
+ByteBuffer BackendOpenSsl::calculate_hash(HashAlgorithm algo, const ByteBuffer& data)
 {
     ByteBuffer result;
-    switch (key)
-    {
-        case KeyType::NistP256:
-        case KeyType::BrainpoolP256r1: {
-            auto digest = calculate_sha256_digest(data);
-            result.assign(digest.begin(), digest.end());
-            break;
-        }
-        case KeyType::BrainpoolP384r1: {
-            auto digest = calculate_sha384_digest(data);
-            result.assign(digest.begin(), digest.end());
-            break;
-        }
-        default:
-            break;
+    if (algo == HashAlgorithm::SHA256) {
+        auto digest = calculate_sha256_digest(data);
+        result.assign(digest.begin(), digest.end());
+    } else if (algo == HashAlgorithm::SHA384) {
+        auto digest = calculate_sha384_digest(data);
+        result.assign(digest.begin(), digest.end());
     }
     return result;
 }

@@ -14,7 +14,7 @@ EcdsaSignature BackendNull::sign_data(const ecdsa256::PrivateKey&, const ByteBuf
     return fake;
 }
 
-Signature BackendNull::sign_data(const PrivateKey&, const ByteBuffer& data)
+Signature BackendNull::sign_digest(const PrivateKey&, const ByteBuffer&)
 {
     static const Signature empty {};
     return empty;
@@ -49,15 +49,14 @@ EcdsaSignature BackendNull::fake_signature() const
     return signature;
 }
 
-ByteBuffer BackendNull::calculate_hash(KeyType key, const ByteBuffer& buffer)
+ByteBuffer BackendNull::calculate_hash(HashAlgorithm algo, const ByteBuffer& buffer)
 {
     ByteBuffer hash;
-    switch (key) {
-        case KeyType::NistP256:
-        case KeyType::BrainpoolP256r1:
+    switch (algo) {
+        case HashAlgorithm::SHA256:
             hash.resize(32);
             break;
-        case KeyType::BrainpoolP384r1:
+        case HashAlgorithm::SHA384:
             hash.resize(48);
             break;
         default:

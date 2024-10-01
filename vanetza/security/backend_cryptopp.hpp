@@ -23,7 +23,9 @@ public:
 
     /// \see Backend::sign_data
     EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data_buffer) override;
-    Signature sign_data(const PrivateKey&, const ByteBuffer& data) override;
+
+    /// \see Backend::sign_digest
+    Signature sign_digest(const PrivateKey&, const ByteBuffer& digest) override;
 
     /// \see Backend::verify_data
     bool verify_data(const ecdsa256::PublicKey& public_key, const ByteBuffer& data, const EcdsaSignature& sig) override;
@@ -35,7 +37,7 @@ public:
     boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) override;
 
     /// \see Backend::calculate_hash
-    ByteBuffer calculate_hash(KeyType, const ByteBuffer&) override;
+    ByteBuffer calculate_hash(HashAlgorithm, const ByteBuffer&) override;
 
     /**
      * \brief generate a private key and the corresponding public key

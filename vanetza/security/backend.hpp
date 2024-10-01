@@ -5,6 +5,7 @@
 #include <vanetza/common/factory.hpp>
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/ecdsa_signature.hpp>
+#include <vanetza/security/hash_algorithm.hpp>
 #include <vanetza/security/private_key.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
@@ -31,7 +32,15 @@ public:
      * \return calculated signature
      */
     virtual EcdsaSignature sign_data(const ecdsa256::PrivateKey& private_key, const ByteBuffer& data) = 0;
-    virtual Signature sign_data(const PrivateKey&, const ByteBuffer& data) = 0;
+
+    /**
+     * \brief calculate signature for given digest and private key
+     * 
+     * \param private_key secret private key
+     * \param digest hash value of data
+     * \return calculated signature
+     */
+    virtual Signature sign_digest(const PrivateKey&, const ByteBuffer& digest) = 0;
 
     /**
      * \brief try to verify data using public key and signature
@@ -61,7 +70,14 @@ public:
      */
     virtual boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) = 0;
 
-    virtual ByteBuffer calculate_hash(KeyType, const ByteBuffer&) = 0;
+    /**
+     * \brief calculate hash value of data
+     * 
+     * \param algo hash algorithm
+     * \param data buffer with data
+     * \return buffer containing calculated hash value
+     */
+    virtual ByteBuffer calculate_hash(HashAlgorithm algo, const ByteBuffer& data) = 0;
 
     virtual ~Backend() = default;
 };
