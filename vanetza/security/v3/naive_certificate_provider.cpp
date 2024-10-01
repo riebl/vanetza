@@ -103,7 +103,8 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     // create certificate
     Certificate certificate;
 
-    Certificate aa_certificate = this->aa_certificate();
+    const Certificate& aa_certificate = this->aa_certificate();
+
     // section 6 in TS 103 097 v2.1.1
     certificate->issuer.present= Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
     auto maybe_aa_cert_digest = aa_certificate.calculate_digest();
