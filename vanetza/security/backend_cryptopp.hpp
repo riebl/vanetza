@@ -1,7 +1,6 @@
 #ifndef BACKEND_CRYPTOPP_HPP_JQWA9MLZ
 #define BACKEND_CRYPTOPP_HPP_JQWA9MLZ
 
-#include <vanetza/common/lru_cache.hpp>
 #include <vanetza/security/backend.hpp>
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/osrng.h>
@@ -64,8 +63,6 @@ private:
     Ecdsa256::PrivateKey internal_private_key(const ecdsa256::PrivateKey&);
 
     CryptoPP::AutoSeededRandomPool m_prng;
-    LruCache<ecdsa256::PrivateKey, Ecdsa256::PrivateKey> m_private_cache;
-    LruCache<ecdsa256::PublicKey, Ecdsa256::PublicKey> m_public_cache;
 };
 
 } // namespace security

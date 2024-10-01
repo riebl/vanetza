@@ -143,15 +143,13 @@ public:
 
 using std::placeholders::_1;
 
-BackendCryptoPP::BackendCryptoPP() :
-    m_private_cache(std::bind(&BackendCryptoPP::internal_private_key, this, _1), 8),
-    m_public_cache(std::bind(&BackendCryptoPP::internal_public_key, this, _1), 2048)
+BackendCryptoPP::BackendCryptoPP()
 {
 }
 
 EcdsaSignature BackendCryptoPP::sign_data(const ecdsa256::PrivateKey& generic_key, const ByteBuffer& data)
 {
-    return sign_data(m_private_cache[generic_key], data);
+    return sign_data(internal_private_key(generic_key), data);
 }
 
 EcdsaSignature BackendCryptoPP::sign_data(const Ecdsa256::PrivateKey& private_key, const ByteBuffer& data)
@@ -230,7 +228,7 @@ Signature BackendCryptoPP::sign_data(const PrivateKey& private_key, const ByteBu
 bool BackendCryptoPP::verify_data(const ecdsa256::PublicKey& generic_key, const ByteBuffer& msg, const EcdsaSignature& sig)
 {
     const ByteBuffer sigbuf = extract_signature_buffer(sig);
-    return verify_data(m_public_cache[generic_key], msg, sigbuf);
+    return verify_data(internal_public_key(generic_key), msg, sigbuf);
 }
 
 bool BackendCryptoPP::verify_digest(const PublicKey& public_key, const ByteBuffer& digest, const Signature& sig)
