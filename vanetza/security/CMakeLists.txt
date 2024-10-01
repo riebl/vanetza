@@ -6,6 +6,7 @@ add_vanetza_component(security
     ecc_point.cpp
     ecdsa256.cpp
     hashed_id.cpp
+    key_type.cpp
     secured_message.cpp
     sha.cpp
     sign_service.cpp
