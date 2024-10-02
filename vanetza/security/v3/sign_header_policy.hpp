@@ -52,11 +52,6 @@ public:
     virtual void request_certificate() = 0;
 
     /**
-     * Request a full certificate chain to be included in next secured message
-     */
-    virtual void request_certificate_chain() = 0;
-
-    /**
      * Insert a certificate for P2P distribution
      * \param cert certificate to be inserted
      */
@@ -86,7 +81,6 @@ private:
     Clock::time_point m_cam_next_certificate;
     std::set<HashedId3> m_unknown_certificates;
     bool m_cert_requested;
-    bool m_chain_requested;
     boost::optional<Certificate> m_p2p_certificate;
 };
 

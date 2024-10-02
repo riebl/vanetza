@@ -17,7 +17,7 @@ namespace v3
 DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning, CertificateProvider& certs) :
     m_runtime(rt), m_positioning(positioning), m_cert_provider(certs),
     m_cam_next_certificate(m_runtime.now()),
-    m_cert_requested(false), m_chain_requested(false)
+    m_cert_requested(false)
 {
 }
 
@@ -52,7 +52,6 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
         }
 
         m_cert_requested = false;
-        m_chain_requested = false;
     }
     else if (request.its_aid == aid::DEN) {
         // section 7.1.2 in TS 103 097 v2.1.1
@@ -83,11 +82,6 @@ void DefaultSignHeaderPolicy::request_unrecognized_certificate(HashedId8 id)
 void DefaultSignHeaderPolicy::request_certificate()
 {
     m_cert_requested = true;
-}
-
-void DefaultSignHeaderPolicy::request_certificate_chain()
-{
-    m_chain_requested = true;
 }
 
 void DefaultSignHeaderPolicy::insert_certificate(const Certificate& cert)
