@@ -48,6 +48,20 @@ private:
 };
 
 /**
+ * Calculate message hash (combination of hashes).
+ * 
+ * This function creates the message hash according to IEEE 1609.2 cause 5.3.1.2.2
+ * for verification type "certificate", i.e. not "self-signed" messages.
+ * 
+ * \param backend backend for cryptographic operations
+ * \param algo hash algorithm
+ * \param data message payload (data to be signed)
+ * \param signing certificate used for signing
+ * \return message digest
+ */
+ByteBuffer calculate_message_hash(Backend&, HashAlgorithm, const ByteBuffer& data, const Certificate& signing);
+
+/**
  * Determine the hash algorithm for a given key type.
  * \see IEEE 1609.2 clause 5.3.1.2.2 rule a)
  * \param key_type key type

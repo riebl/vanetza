@@ -37,12 +37,7 @@ SignConfirm StraightSignService::sign(SignRequest&& request)
     secured_message.set_payload(convert_to_payload(request.plain_message));
     m_policy.prepare_header(request, secured_message);
 
-    ByteBuffer data_hash = m_backend.calculate_hash(hash_algo, secured_message.signing_payload());
-    ByteBuffer cert_hash = m_backend.calculate_hash(hash_algo, signing_cert.encode());
-    ByteBuffer concat_hash = data_hash;
-    concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
-    ByteBuffer digest = m_backend.calculate_hash(hash_algo, concat_hash);
-
+    ByteBuffer digest = calculate_message_hash(m_backend, hash_algo, secured_message.signing_payload(), signing_cert);
     Signature signature = m_backend.sign_digest(m_certificates.own_private_key(), digest);
     secured_message.set_signature(signature);
 
@@ -70,6 +65,17 @@ SignConfirm DummySignService::sign(SignRequest&& request)
     SignConfirm confirm;
     confirm.secured_message = std::move(secured_message);
     return confirm;
+}
+
+ByteBuffer calculate_message_hash(Backend& backend, HashAlgorithm hash_algo, const ByteBuffer& payload, const Certificate& signing_cert)
+{
+    ByteBuffer data_hash = backend.calculate_hash(hash_algo, payload);
+    ByteBuffer cert_hash = backend.calculate_hash(hash_algo, signing_cert.encode());
+    ByteBuffer concat_hash;
+    concat_hash.reserve(data_hash.size() + cert_hash.size());
+    concat_hash.insert(concat_hash.end(), data_hash.begin(), data_hash.end());
+    concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
+    return backend.calculate_hash(hash_algo, concat_hash);
 }
 
 HashAlgorithm specified_hash_algorithm(KeyType key_type)
