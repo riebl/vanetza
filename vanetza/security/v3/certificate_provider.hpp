@@ -1,7 +1,6 @@
 #pragma once
 #include <vanetza/security/private_key.hpp>
 #include <vanetza/security/v3/certificate.hpp>
-#include <list>
 
 namespace vanetza
 {
@@ -18,12 +17,6 @@ public:
      * \return own certificate
      */
     virtual const Certificate& own_certificate() = 0;
-
-    /**
-     * Get own certificate chain in root CA → AA → AT order, excluding the AT and root certificate
-     * \return own certificate chain
-     */
-    virtual std::list<Certificate> own_chain() = 0;
 
     /**
      * Get private key associated with own certificate

@@ -52,13 +52,6 @@ const Certificate& NaiveCertificateProvider::own_certificate()
     return m_own_certificate;
 }
 
-std::list<Certificate> NaiveCertificateProvider::own_chain()
-{
-    static const std::list<Certificate> chain = { aa_certificate() };
-
-    return chain;
-}
-
 const PrivateKey& NaiveCertificateProvider::own_private_key()
 {
     static PrivateKey private_key;
