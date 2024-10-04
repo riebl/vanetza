@@ -1,6 +1,7 @@
 #pragma once
 #include <vanetza/security/private_key.hpp>
 #include <vanetza/security/v3/certificate.hpp>
+#include <vanetza/security/v3/certificate_cache.hpp>
 
 namespace vanetza
 {
@@ -24,10 +25,26 @@ public:
      */
     virtual const PrivateKey& own_private_key() = 0;
 
+    /**
+     * Get certificate cache
+     * \return certificate cache
+     */
+    virtual CertificateCache& cache() = 0;
+    virtual const CertificateCache& cache() const = 0;
+
     virtual ~CertificateProvider() = default;
 };
 
-} // namespace v2
+class BaseCertificateProvider : public CertificateProvider
+{
+public:
+    const CertificateCache& cache() const override { return m_cache; }
+    CertificateCache& cache() override { return m_cache; }
+    
+private:
+    CertificateCache m_cache;
+};
+
+} // namespace v3
 } // namespace security
 } // namespace vanetza
-
