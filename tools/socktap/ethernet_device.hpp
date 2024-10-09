@@ -3,6 +3,7 @@
 
 #include <vanetza/net/mac_address.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
+#include <boost/asio/ip/address_v4.hpp>
 #include <string>
 
 class EthernetDevice
@@ -17,12 +18,12 @@ public:
 
     protocol::endpoint endpoint(int family) const;
     vanetza::MacAddress address() const;
-    std::string ip() const;
+    boost::asio::ip::address_v4 ip() const;
 
 private:
     int index() const;
 
-    int local_socket_;
+    int inet_socket_;
     std::string interface_name_;
 };
 

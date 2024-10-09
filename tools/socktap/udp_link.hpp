@@ -6,10 +6,13 @@
 #include <boost/asio/ip/udp.hpp>
 #include <array>
 
+// forward declaration
+class EthernetDevice;
+
 class UdpLink : public LinkLayer
 {
 public:
-    UdpLink(boost::asio::io_service&, const boost::asio::ip::udp::endpoint&, const std::string&);
+    UdpLink(boost::asio::io_service&, const boost::asio::ip::udp::endpoint&, const EthernetDevice&);
 
     void indicate(IndicationCallback) override;
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;

@@ -7,15 +7,16 @@
 namespace ip = boost::asio::ip;
 using namespace vanetza;
 
-UdpLink::UdpLink(boost::asio::io_service& io_service, const ip::udp::endpoint& endpoint, const std::string& ip) :
+UdpLink::UdpLink(boost::asio::io_service& io_service, const ip::udp::endpoint& endpoint, const EthernetDevice& device) :
     multicast_endpoint_(endpoint),
     tx_socket_(io_service), rx_socket_(io_service),
     rx_buffer_(2560, 0x00)
 {
-    tx_socket_.open(multicast_endpoint_.protocol());
+    auto ip = device.ip();
 
-    if(ip.size() != 0){
-        boost::asio::ip::multicast::outbound_interface option(boost::asio::ip::address_v4::from_string(ip));
+    tx_socket_.open(multicast_endpoint_.protocol());
+    if (!ip.is_unspecified()) {
+        boost::asio::ip::multicast::outbound_interface option(ip);
         tx_socket_.set_option(option);
     }
 
@@ -23,10 +24,9 @@ UdpLink::UdpLink(boost::asio::io_service& io_service, const ip::udp::endpoint& e
     rx_socket_.set_option(ip::udp::socket::reuse_address(true));
     rx_socket_.bind(multicast_endpoint_);
     rx_socket_.set_option(ip::multicast::enable_loopback(false));
-
-    if(ip.size() != 0){
-        rx_socket_.set_option(ip::multicast::join_group(multicast_endpoint_.address().to_v4(), boost::asio::ip::address_v4::from_string(ip)));
-    }else{
+    if(!ip.is_unspecified() && multicast_endpoint_.address().is_v4()) {
+        rx_socket_.set_option(ip::multicast::join_group(multicast_endpoint_.address().to_v4(), ip));
+    } else {
         rx_socket_.set_option(ip::multicast::join_group(multicast_endpoint_.address()));
     }
 
