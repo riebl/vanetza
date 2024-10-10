@@ -9,6 +9,7 @@ add_vanetza_component(security
     encap_service.cpp
     hashed_id.cpp
     key_type.cpp
+    peer_request_tracker.cpp
     secured_message.cpp
     sha.cpp
     signature.cpp
