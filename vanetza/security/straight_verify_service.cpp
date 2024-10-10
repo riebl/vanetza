@@ -463,7 +463,8 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
 
     const v3::asn1::Certificate* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
     if (!certificate && maybe_digest) {
-        if (m_context_v3.m_sign_policy) {
+        if (msg.its_aid() == aid::CA && m_context_v3.m_sign_policy) {
+            // for received CAMs (having digest as signer identifier) with unknown AT we request the full AT certificate
             m_context_v3.m_sign_policy->request_unrecognized_certificate(*maybe_digest);
         }
         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
