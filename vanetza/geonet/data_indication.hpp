@@ -6,7 +6,7 @@
 #include <vanetza/geonet/destination_variant.hpp>
 #include <vanetza/geonet/interface.hpp>
 #include <vanetza/geonet/position_vector.hpp>
-#include <vanetza/security/decap_confirm.hpp>
+#include <vanetza/security/decap_service.hpp>
 #include <boost/optional.hpp>
 
 namespace vanetza
@@ -14,6 +14,10 @@ namespace vanetza
 namespace geonet
 {
 
+/**
+ * \brief GN-DATA.indication
+ * \see EN 302 636-4-1 V1.4.1, section J.4
+ */
 struct DataIndication
 {
     UpperProtocol upper_protocol;

@@ -6,6 +6,8 @@
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
 #include <vanetza/geonet/tests/security_context.hpp>
 
+#include "decap_report_printer.hpp"
+
 using namespace vanetza;
 
 class RouterIndicate : public ::testing::Test
@@ -443,7 +445,7 @@ TEST_F(RouterIndicate, shb_secured_v3_message_digest)
     // assure that packet has been passed to transport layer
     ASSERT_TRUE(ind_ifc.m_last_indication);
     EXPECT_EQ(ind_ifc.m_last_indication->upper_protocol, geonet::UpperProtocol::BTP_B);
-    EXPECT_EQ(ind_ifc.m_last_indication->security_report, security::DecapReport::Success);
+    EXPECT_EQ(ind_ifc.m_last_indication->security_report, security::VerificationReport::Success);
     EXPECT_EQ(ind_ifc.m_last_indication->its_aid, aid::CA);
 
     ASSERT_TRUE(ind_ifc.m_last_packet);
@@ -508,7 +510,7 @@ TEST_F(RouterIndicate, shb_secured_v3_message_certificate)
     // assure that packet has been passed to transport layer
     ASSERT_TRUE(ind_ifc.m_last_indication);
     EXPECT_EQ(ind_ifc.m_last_indication->upper_protocol, geonet::UpperProtocol::BTP_B);
-    EXPECT_EQ(ind_ifc.m_last_indication->security_report, security::DecapReport::Success);
+    EXPECT_EQ(ind_ifc.m_last_indication->security_report, security::VerificationReport::Success);
     EXPECT_EQ(ind_ifc.m_last_indication->its_aid, aid::CA);
 
     ASSERT_TRUE(ind_ifc.m_last_packet);

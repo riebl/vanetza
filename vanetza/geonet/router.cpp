@@ -409,11 +409,10 @@ void Router::indicate_basic(IndicationContextBasic& ctx)
         indication.remaining_hop_limit = basic->hop_limit;
 
         if (basic->next_header == NextHeaderBasic::Secured) {
-            indication.security_report = security::DecapReport::Incompatible_Protocol;
             indicate_secured(ctx, *basic);
         } else if (basic->next_header == NextHeaderBasic::Common) {
             if (!m_mib.itsGnSecurity || SecurityDecapHandling::Non_Strict == m_mib.itsGnSnDecapResultHandling) {
-                indication.security_report = security::DecapReport::Unsigned_Message,
+                indication.security_report = boost::blank {}; /*< not secured at all*/
                 indicate_common(ctx, *basic);
             } else {
                 packet_dropped(PacketDropReason::Decap_Unsuccessful_Strict);
@@ -504,31 +503,16 @@ void Router::indicate_secured(IndicationContextBasic& ctx, const BasicHeader& ba
         secured_payload_visitor visitor(*this, ctx, basic);
 
         // check whether the received packet is valid
-        if (DecapReport::Success == decap_confirm.report) {
+        if (is_successful(decap_confirm.report)) {
             boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
         } else if (SecurityDecapHandling::Non_Strict == m_mib.itsGnSnDecapResultHandling) {
-            // according to ETSI EN 302 636-4-1 v1.2.1 section 9.3.3 Note 2
-            // handle the packet anyway, when itsGnDecapResultHandling is set to NON-Strict (1)
-            switch (decap_confirm.report) {
-                case DecapReport::False_Signature:
-                case DecapReport::Invalid_Certificate:
-                case DecapReport::Revoked_Certificate:
-                case DecapReport::Inconsistant_Chain:
-                case DecapReport::Invalid_Timestamp:
-                case DecapReport::Invalid_Mobility_Data:
-                case DecapReport::Unsigned_Message:
-                case DecapReport::Signer_Certificate_Not_Found:
-                case DecapReport::Unsupported_Signer_Identifier_Type:
-                case DecapReport::Unencrypted_Message:
-                    // ok, continue
-                    boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
-                    break;
-                case DecapReport::Duplicate_Message:
-                case DecapReport::Incompatible_Protocol:
-                case DecapReport::Decryption_Error:
-                default:
-                    packet_dropped(PacketDropReason::Decap_Unsuccessful_Non_Strict);
-                    break;
+            // Any packet is passed up with NON-STRICT decapsulation handling
+            // -> see ETSI EN 302 636-4-1 v1.4.1 Section 10.3.3 Note 3
+            if (!decap_confirm.plaintext_payload.empty()) {
+                boost::apply_visitor(visitor, decap_confirm.plaintext_payload);
+            } else {
+                // no payload extracted from secured message to pass up
+                packet_dropped(PacketDropReason::Decap_Unsuccessful_Non_Strict);
             }
         } else {
             // discard packet

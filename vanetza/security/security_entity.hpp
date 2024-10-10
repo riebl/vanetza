@@ -1,8 +1,7 @@
 #ifndef SECURITY_ENTITY_HPP
 #define SECURITY_ENTITY_HPP
 
-#include <vanetza/security/decap_confirm.hpp>
-#include <vanetza/security/decap_request.hpp>
+#include <vanetza/security/decap_service.hpp>
 #include <vanetza/security/encap_service.hpp>
 
 namespace vanetza

@@ -2,6 +2,7 @@ add_vanetza_component(security
     backend.cpp
     backend_null.cpp
     cam_ssp.cpp
+    decap_service.cpp
     delegating_security_entity.cpp
     ecc_point.cpp
     ecdsa256.cpp
