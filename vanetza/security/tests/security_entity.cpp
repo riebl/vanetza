@@ -40,7 +40,7 @@ void use_verify_service_component(StraightVerifyService* service, v2::Certificat
 
 void use_verify_service_component(StraightVerifyService* service, v2::CertificateValidator* validator)
 {
-    service->use_certitifcate_validator(validator);
+    service->use_certificate_validator(validator);
 }
 
 void use_verify_service_component(StraightVerifyService* service, v2::SignHeaderPolicy* policy)
@@ -108,7 +108,7 @@ protected:
         };
         service->use_certificate_cache(&cert_cache);
         service->use_certificate_provider(certificate_provider.get());
-        service->use_certitifcate_validator(certificate_validator.get());
+        service->use_certificate_validator(certificate_validator.get());
         service->use_sign_header_policy(&sign_header_policy);
         return service;
     }
@@ -173,7 +173,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance)
     std::unique_ptr<StraightVerifyService> verify { new StraightVerifyService(runtime, *crypto_backend, position_provider) };
     verify->use_certificate_cache(&cert_cache);
     verify->use_certificate_provider(certificate_provider.get());
-    verify->use_certitifcate_validator(certificate_validator.get());
+    verify->use_certificate_validator(certificate_validator.get());
     verify->use_sign_header_policy(&sign_header_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
     EncapConfirm encap_confirm = other_security.encapsulate_packet(create_encap_request());
@@ -195,7 +195,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     };
     cryptopp_verify_service->use_certificate_cache(&cert_cache);
     cryptopp_verify_service->use_certificate_provider(certificate_provider.get());
-    cryptopp_verify_service->use_certitifcate_validator(certificate_validator.get());
+    cryptopp_verify_service->use_certificate_validator(certificate_validator.get());
     cryptopp_verify_service->use_sign_header_policy(&sign_header_policy_cryptopp);
     DelegatingSecurityEntity cryptopp_security {
         std::unique_ptr<SignService> {
@@ -209,7 +209,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     };
     openssl_verify_service->use_certificate_cache(&cert_cache);
     openssl_verify_service->use_certificate_provider(certificate_provider.get());
-    openssl_verify_service->use_certitifcate_validator(certificate_validator.get());
+    openssl_verify_service->use_certificate_validator(certificate_validator.get());
     openssl_verify_service->use_sign_header_policy(&sign_header_policy_openssl);
     DelegatingSecurityEntity openssl_security {
         std::unique_ptr<SignService> {

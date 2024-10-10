@@ -43,7 +43,7 @@ std::unique_ptr<VerifyService> SecurityBaseCase::create_verify_service()
     std::unique_ptr<StraightVerifyService> verify_service { new StraightVerifyService(runtime, *crypto_backend, positioning) };
     verify_service->use_certificate_cache(&certificate_cache);
     verify_service->use_certificate_provider(&certificate_provider);
-    verify_service->use_certitifcate_validator(&certificate_validator);
+    verify_service->use_certificate_validator(&certificate_validator);
     verify_service->use_sign_header_policy(&sign_header_policy);
     return verify_service;
 }

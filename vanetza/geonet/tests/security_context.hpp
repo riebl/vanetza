@@ -63,7 +63,7 @@ private:
         };
         service->use_certificate_cache(&cert_cache);
         service->use_certificate_provider(certificate_provider.get());
-        service->use_certitifcate_validator(certificate_validator.get());
+        service->use_certificate_validator(certificate_validator.get());
         service->use_sign_header_policy(&sign_header_policy);
         service->use_certificate_cache(&cert_cache_v3);
         return service;

@@ -60,7 +60,7 @@ public:
             security::StraightVerifyService(runtime, *backend, positioning) };
         verify_service->use_certificate_provider(cert_provider.get());
         verify_service->use_certificate_cache(&cert_cache);
-        verify_service->use_certitifcate_validator(&cert_validator);
+        verify_service->use_certificate_validator(&cert_validator);
         verify_service->use_sign_header_policy(&sign_header_policy);
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }

@@ -63,7 +63,7 @@ void StraightVerifyService::use_certificate_provider(v2::CertificateProvider* pr
     m_context_v2.m_cert_provider = provider;
 }
 
-void StraightVerifyService::use_certitifcate_validator(v2::CertificateValidator* validator)
+void StraightVerifyService::use_certificate_validator(v2::CertificateValidator* validator)
 {
     m_context_v2.m_cert_validator = validator;
 }
