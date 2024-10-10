@@ -3,8 +3,7 @@
 
 #include <vanetza/security/decap_confirm.hpp>
 #include <vanetza/security/decap_request.hpp>
-#include <vanetza/security/encap_confirm.hpp>
-#include <vanetza/security/encap_request.hpp>
+#include <vanetza/security/encap_service.hpp>
 
 namespace vanetza
 {

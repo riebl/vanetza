@@ -39,12 +39,15 @@ namespace
 
 struct ControlInfo
 {
-    ControlInfo(const DataRequest request) :
+    ControlInfo(const DataRequest& request) :
         communication_profile(request.communication_profile),
-        its_aid(request.its_aid) {}
+        its_aid(request.its_aid),
+        permissions(request.permissions)
+    {}
 
     const CommunicationProfile communication_profile;
     const ItsAid its_aid;
+    const ByteBuffer permissions;
 };
 
 template<typename PDU>
@@ -246,7 +249,11 @@ DataConfirm Router::request(const ShbDataRequest& request, DownPacketPtr payload
 
             // step 2: encapsulate packet by security
             if (m_mib.itsGnSecurity) {
-                payload = encap_packet(ctrl.its_aid, *pdu, std::move(payload));
+                payload = encap_packet(ctrl.its_aid, ctrl.permissions, *pdu, std::move(payload));
+                if (!payload) {
+                    // stop because encapsulation failed
+                    return;
+                }
             }
 
             // step 5: execute media-dependent procedures
@@ -311,7 +318,11 @@ DataConfirm Router::request(const GbcDataRequest& request, DownPacketPtr payload
         // step 5: apply security
         if (m_mib.itsGnSecurity) {
             assert(pdu->basic().next_header == NextHeaderBasic::Secured);
-            payload = encap_packet(ctrl.its_aid, *pdu, std::move(payload));
+            payload = encap_packet(ctrl.its_aid, ctrl.permissions, *pdu, std::move(payload));
+            if (!payload) {
+                // stop because encapsulation failed
+                return;
+            }
         }
 
         // step 6: repetition is already set-up before
@@ -724,7 +735,11 @@ void Router::on_beacon_timer_expired()
 
     if (m_mib.itsGnSecurity) {
         pdu->basic().next_header = NextHeaderBasic::Secured;
-        payload = encap_packet(aid::GN_MGMT, *pdu, std::move(payload));
+        payload = encap_packet(aid::GN_MGMT, ByteBuffer {}, *pdu, std::move(payload));
+        if (!payload) {
+            // stop because encapsulation failed
+            return;
+        }
     } else {
         pdu->basic().next_header = NextHeaderBasic::Common;
     }
@@ -1338,26 +1353,50 @@ std::unique_ptr<GbcPdu> Router::create_gbc_pdu(const GbcDataRequest& request)
     return pdu;
 }
 
-Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, Pdu& pdu, DownPacketPtr packet)
+Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, ByteBuffer ssp, Pdu& pdu, DownPacketPtr packet)
 {
-    security::EncapRequest encap_request;
-
-    DownPacket sec_payload;
-    sec_payload[OsiLayer::Network] = SecuredPdu(pdu);
-    sec_payload.merge(*packet, OsiLayer::Transport, max_osi_layer());
-    encap_request.plaintext_payload = std::move(sec_payload);
-    encap_request.its_aid = its_aid;
-
     if (m_security_entity) {
-        security::EncapConfirm confirm = m_security_entity->encapsulate_packet(std::move(encap_request));
-        pdu.secured(std::move(confirm.sec_packet));
-    } else {
-        throw std::runtime_error("security entity unavailable");
-    }
+        DownPacket sec_payload;
+        sec_payload[OsiLayer::Network] = SecuredPdu(pdu);
+        sec_payload.merge(*packet, OsiLayer::Transport, max_osi_layer());
 
-    assert(size(*packet, OsiLayer::Transport, max_osi_layer()) == 0);
-    assert(pdu.basic().next_header == NextHeaderBasic::Secured);
-    return packet;
+        security::SignRequest sign_request;
+        sign_request.plain_message = std::move(sec_payload);
+        sign_request.its_aid = its_aid;
+        sign_request.permissions = std::move(ssp);
+
+        security::EncapConfirm confirm = m_security_entity->encapsulate_packet(std::move(sign_request));
+
+        struct Visitor : boost::static_visitor<DownPacketPtr>
+        {
+            Visitor(DownPacketPtr packet, Pdu& pdu) : m_packet(std::move(packet)), m_pdu(pdu)
+            {
+                assert(size(*m_packet, OsiLayer::Transport, max_osi_layer()) == 0);
+                assert(m_pdu.basic().next_header == NextHeaderBasic::Secured);
+            }
+
+            DownPacketPtr operator() (security::SecuredMessage& msg)
+            {
+                m_pdu.secured(std::move(msg));
+                return std::move(m_packet);
+            }
+
+            DownPacketPtr operator() (security::SignConfirmError signing_error)
+            {
+                // SN-SIGN encapsulation failed
+                return nullptr;
+            }
+
+            DownPacketPtr m_packet;
+            Pdu& m_pdu;
+        };
+
+        Visitor visitor(std::move(packet), pdu);
+        return boost::apply_visitor(visitor, confirm);
+    } else {
+        // security entity is not available
+        return nullptr;
+    }
 }
 
 std::string stringify(Router::PacketDropReason pdr)

@@ -516,10 +516,11 @@ private:
      * \brief Encaspulate a packet according to security profile
      *
      * \param aid ITS-AID
+     * \param ssp Service Specific Permissions
      * \param pdu PDU
      * \param packet Packet with payload
      */
-    DownPacketPtr encap_packet(ItsAid aid, Pdu& pdu, DownPacketPtr packet);
+    DownPacketPtr encap_packet(ItsAid aid, ByteBuffer ssp, Pdu& pdu, DownPacketPtr packet);
 
     /**
      * \brief Create an initialized Single-Hop-Broadcast PDU

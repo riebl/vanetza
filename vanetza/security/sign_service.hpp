@@ -9,6 +9,7 @@
 #include <vanetza/security/key_type.hpp>
 #include <vanetza/security/secured_message.hpp>
 #include <vanetza/security/signing_policy.hpp>
+#include <boost/optional/optional.hpp>
 #include <functional>
 
 namespace vanetza
@@ -28,10 +29,30 @@ struct SignRequest
     ByteBuffer permissions;
 };
 
+enum class SignConfirmError
+{
+    Unspecified,
+    No_Certificate,
+    No_Service,
+};
+
 // mandatory SN-SIGN.confirm parameters
 struct SignConfirm
 {
-    SecuredMessage secured_message;
+    SignConfirm() = delete;
+
+    static SignConfirm success(SecuredMessage&& message)
+    {
+        return { SignConfirmError::Unspecified, std::move(message) };
+    }
+
+    static SignConfirm failure(SignConfirmError error)
+    {
+        return { error, boost::none };
+    }
+
+    SignConfirmError error;
+    boost::optional<SecuredMessage> secured_message;
 };
 
 /**

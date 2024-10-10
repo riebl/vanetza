@@ -1,6 +1,7 @@
 #ifndef DATA_REQUEST_HPP_3JYISVXB
 #define DATA_REQUEST_HPP_3JYISVXB
 
+#include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/areas.hpp>
@@ -41,6 +42,7 @@ struct DataRequest
     UpperProtocol upper_protocol;
     CommunicationProfile communication_profile;
     ItsAid its_aid;
+    ByteBuffer permissions;
     Lifetime maximum_lifetime;
     boost::optional<Repetition> repetition;
     unsigned max_hop_limit;

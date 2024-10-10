@@ -40,10 +40,7 @@ SignConfirm StraightSignService::sign(SignRequest&& request)
     ByteBuffer digest = calculate_message_hash(m_backend, hash_algo, secured_message.signing_payload(), signing_cert);
     Signature signature = m_backend.sign_digest(m_certificates.own_private_key(), digest);
     secured_message.set_signature(signature);
-
-    SignConfirm confirm;
-    confirm.secured_message = std::move(secured_message);
-    return confirm;
+    return SignConfirm::success(std::move(secured_message));
 }
 
 DummySignService::DummySignService(const Runtime& runtime) :
@@ -62,9 +59,7 @@ SignConfirm DummySignService::sign(SignRequest&& request)
     secured_message.set_generation_time(vanetza::security::v2::convert_time64(m_runtime.now()));
     secured_message->content->choice.signedData->signer.present = Vanetza_Security_SignerIdentifier_PR_self;
 
-    SignConfirm confirm;
-    confirm.secured_message = std::move(secured_message);
-    return confirm;
+    return SignConfirm::success(std::move(secured_message));
 }
 
 ByteBuffer calculate_message_hash(Backend& backend, HashAlgorithm hash_algo, const ByteBuffer& payload, const Certificate& signing_cert)

@@ -54,9 +54,7 @@ SignConfirm StraightSignService::sign(SignRequest&& request)
     TrailerField trailer_field = m_backend.sign_data(private_key, data_buffer);
     secured_message.trailer_fields.push_back(trailer_field);
 
-    SignConfirm confirm;
-    confirm.secured_message = std::move(secured_message);
-    return confirm;
+    return SignConfirm::success(std::move(secured_message));
 }
 
 DeferredSignService::DeferredSignService(CertificateProvider& provider, Backend& backend, SignHeaderPolicy& policy) :
@@ -83,9 +81,7 @@ SignConfirm DeferredSignService::sign(SignRequest&& request)
     EcdsaSignatureFuture signature(future.share(), placeholder);
     secured_message.trailer_fields.push_back(Signature { std::move(signature) });
 
-    SignConfirm confirm;
-    confirm.secured_message = std::move(secured_message);
-    return confirm;
+    return SignConfirm::success(std::move(secured_message));
 }
 
 DummySignService::DummySignService(const Runtime& runtime, const SignerInfo& signer) :
@@ -105,9 +101,7 @@ SignConfirm DummySignService::sign(SignRequest&& request)
     secured_message.header_fields.push_back(m_signer_info);
     secured_message.trailer_fields.push_back(null_signature);
 
-    SignConfirm confirm;
-    confirm.secured_message = std::move(secured_message);
-    return confirm;
+    return SignConfirm::success(std::move(secured_message));
 }
 
 } // namespace v2

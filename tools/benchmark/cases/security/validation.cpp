@@ -83,7 +83,11 @@ int SecurityValidationCase::execute()
         encap_request.its_aid = aid::CA;
 
         EncapConfirm encap_confirm = entities[i]->encapsulate_packet(std::move(encap_request));
-        auto v2_sec_msg = boost::get<v2::SecuredMessage>(encap_confirm.sec_packet);
+        if (!encap_confirm.sec_packet) {
+            std::cerr << "Failed to encapsulate packet." << std::endl;
+            return 1;
+        }
+        auto v2_sec_msg = boost::get<v2::SecuredMessage>(*encap_confirm.sec_packet);
         auto signer_info = v2_sec_msg.header_field<v2::HeaderFieldType::Signer_Info>();
         
         if (signer_info_type == "hash") {

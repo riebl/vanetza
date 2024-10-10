@@ -103,9 +103,10 @@ TEST(SecuredMessageV3, sign_and_verify)
     request.plain_message = std::move(packet);
     request.its_aid = aid::DEN;
     SignConfirm sign_confirm = sign_service.sign(std::move(request));
+    ASSERT_TRUE(sign_confirm.secured_message);
 
     StraightVerifyService verify_service { runtime, *backend, position_provider };
-    VerifyRequest verify_request { SecuredMessageView { sign_confirm.secured_message } };
+    VerifyRequest verify_request { SecuredMessageView { *sign_confirm.secured_message } };
     VerifyConfirm verify_confirm = verify_service.verify(verify_request);
     EXPECT_EQ(verify_confirm.report, VerificationReport::Success);
     EXPECT_TRUE(verify_confirm.certificate_validity.valid());

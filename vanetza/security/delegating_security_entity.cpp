@@ -20,14 +20,7 @@ DelegatingSecurityEntity::DelegatingSecurityEntity(std::unique_ptr<SignService> 
 
 EncapConfirm DelegatingSecurityEntity::encapsulate_packet(EncapRequest&& encap_request)
 {
-    SignRequest sign_request;
-    sign_request.plain_message = std::move(encap_request.plaintext_payload);
-    sign_request.its_aid = encap_request.its_aid;
-
-    SignConfirm sign_confirm = m_sign_service->sign(std::move(sign_request));
-    EncapConfirm encap_confirm;
-    encap_confirm.sec_packet = std::move(sign_confirm.secured_message);
-    return encap_confirm;
+    return dispatch(std::move(encap_request), m_sign_service.get());
 }
 
 DecapConfirm DelegatingSecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
