@@ -39,6 +39,18 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
      * \return verification key type if possible; otherwise unspecified
      */
     KeyType get_verification_key_type() const;
+
+    /**
+     * Check if certificate is a Certification Authority certificate
+     * \return true if certificate is a CA certificate
+     */
+    bool is_ca_certificate() const;
+
+    /**
+     * Check if certificate is an Authorization Ticket certificate
+     * \return true if certificate is an AT certificate
+     */
+    bool is_at_certificate() const;
 };
 
 /**

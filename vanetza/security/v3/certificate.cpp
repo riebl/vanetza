@@ -49,6 +49,16 @@ KeyType Certificate::get_verification_key_type() const
     return v3::get_verification_key_type(*content());
 }
 
+bool Certificate::is_ca_certificate() const
+{
+    return content()->toBeSigned.certIssuePermissions != nullptr;
+}
+
+bool Certificate::is_at_certificate() const
+{
+    return content()->toBeSigned.certIssuePermissions == nullptr && content()->toBeSigned.appPermissions != nullptr;
+}
+
 bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
 {
     bool compressed_point = true;
