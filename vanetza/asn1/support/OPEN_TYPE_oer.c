@@ -94,7 +94,7 @@ asn_enc_rval_t
 OPEN_TYPE_encode_oer(const asn_TYPE_descriptor_t *td,
                   const asn_oer_constraints_t *constraints, const void *sptr,
                   asn_app_consume_bytes_f *cb, void *app_key) {
-    asn_TYPE_member_t *elm; 
+    asn_TYPE_member_t *elm;
     unsigned present;
     const void *memb_ptr;
     ssize_t encoded;

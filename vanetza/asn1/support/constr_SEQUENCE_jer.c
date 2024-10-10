@@ -39,8 +39,9 @@
  */
 asn_dec_rval_t
 SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                    const asn_TYPE_descriptor_t *td, void **struct_ptr,
-                    const void *ptr, size_t size) {
+                    const asn_TYPE_descriptor_t *td,
+                    const asn_jer_constraints_t *constraints,
+                    void **struct_ptr, const void *ptr, size_t size) {
     /*
      * Bring closer parts of structure description.
      */
@@ -108,7 +109,9 @@ SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
             } else {
                 /* Invoke the inner type decoder, m.b. multiple times */
                 tmprval = elm->type->op->jer_decoder(opt_codec_ctx,
-                                                     elm->type, memb_ptr2,
+                                                     elm->type,
+                                                     elm->encoding_constraints.jer_constraints,
+                                                     memb_ptr2,
                                                      ptr, size);
             }
             JER_ADVANCE(tmprval.consumed);
@@ -179,7 +182,7 @@ SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                /* All extensions are optional */
                IN_EXTENSION_GROUP(specs, edx)) {
                 JER_ADVANCE(ch_size);
-                JER_ADVANCE(jer_whitespace_span(ptr, size)); 
+                JER_ADVANCE(jer_whitespace_span(ptr, size));
                 ctx->phase = 4; /* Phase out */
                 RETURN(RC_OK);
             } else {
@@ -239,7 +242,7 @@ SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                                 switch(ch_type) {
                                 case PJER_WMORE:
                                     RETURN(RC_WMORE);
-                                case PJER_TEXT:  
+                                case PJER_TEXT:
                                     JER_ADVANCE(ch_size);
                                     break;
                                 default:
@@ -255,7 +258,7 @@ SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
                     }
                     break;
                 }
-                if(n != edx_end) 
+                if(n != edx_end)
                     continue;
             } else {
                 ASN_DEBUG("Out of defined members: %" ASN_PRI_SIZE "/%u",
@@ -294,7 +297,8 @@ SEQUENCE_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
 }
 
 
-asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
+asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
+                    const asn_jer_constraints_t* constraints, const void *sptr,
                     int ilevel, enum jer_encoder_flags_e flags,
                     asn_app_consume_bytes_f *cb, void *app_key) {
     asn_enc_rval_t er = {0,0,0};
@@ -352,8 +356,10 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td, const void *
         }
 
         /* Print the member itself */
-        tmper = elm->type->op->jer_encoder(elm->type, memb_ptr, ilevel + 1,
-                                           flags, cb, app_key);
+        tmper = elm->type->op->jer_encoder(elm->type,
+                                           elm->encoding_constraints.jer_constraints,
+                                           memb_ptr,
+                                           ilevel + 1, flags, cb, app_key);
         if(tmp_def_val) {
             ASN_STRUCT_FREE(*tmp_def_val_td, tmp_def_val);
             tmp_def_val = 0;
