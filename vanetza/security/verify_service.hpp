@@ -13,7 +13,14 @@ namespace vanetza
 namespace security
 {
 
-
+/**
+ * SN-VERIFY.confirm report codes
+ * 
+ * "Configuration_Problem" is not found in TS 103 723-8 V1.1.1 but indicates a
+ * problem with the verification subsystem itself, e.g. a programming error.
+ * 
+ * \see TS 102 723-8 v1.1.1 table 5
+ */
 enum class VerificationReport
 {
     Success,
