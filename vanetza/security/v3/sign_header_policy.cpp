@@ -4,8 +4,6 @@
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
-#include <iostream>
-#include <list>
 
 namespace vanetza
 {
@@ -26,34 +24,41 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
     const auto now = m_runtime.now();
     secured_message.set_its_aid(request.its_aid);
     secured_message.set_generation_time(vanetza::security::v2::convert_time64(now));
-    //header_info.signer_info = certificate_provider.own_certificate();
 
     if (request.its_aid == aid::CA) {
+        bool signer_full_cert = false;
+        const auto& at_cert = m_cert_provider.own_certificate();
+        const auto maybe_at_digest = at_cert.calculate_digest();
+
+        // include full certificate if its digest has been requested by a peer
+        if (maybe_at_digest && m_incoming_requests.is_pending(truncate(*maybe_at_digest))) {
+            m_cert_requested = true;
+            m_incoming_requests.discard_request(truncate(*maybe_at_digest));
+        }
+
         // section 7.1.1 in TS 103 097 v2.1.1
         if (now < m_cam_next_certificate && !m_cert_requested) {
-            auto maybe_digest = calculate_digest(*m_cert_provider.own_certificate());
-            if (maybe_digest) {
-                secured_message.set_signer_identifier(*maybe_digest);
+            if (maybe_at_digest) {
+                secured_message.set_signer_identifier(*maybe_at_digest);
             }
         } else {
-            secured_message.set_signer_identifier(m_cert_provider.own_certificate());
+            signer_full_cert = true;
+            m_cert_requested = false;
+            secured_message.set_signer_identifier(at_cert);
             m_cam_next_certificate = now + std::chrono::seconds(1) - std::chrono::milliseconds(50);
         }
 
-        if (m_unknown_certificates.size() > 0) {
-            std::list<HashedId3> unknown_certificates(m_unknown_certificates.begin(), m_unknown_certificates.end());
-            secured_message.set_inline_p2pcd_request(unknown_certificates);
-            m_unknown_certificates.clear();
+        // peer-to-peer certificate distribution
+        secured_message.set_inline_p2pcd_request(m_outgoing_requests.all());
+        while (auto p2p_hid = m_incoming_requests.next_one()) {
+            // provide requested CA certificates (no AT certificates here)
+            auto p2p_cert = m_cert_provider.cache().lookup(*p2p_hid);
+            if (p2p_cert && p2p_cert->is_ca_certificate()) {
+                secured_message.set_requested_certificate(*p2p_cert);
+                break;
+            }
         }
-
-        if (m_p2p_certificate) {
-            secured_message.set_requested_certificate(*m_p2p_certificate);
-            m_p2p_certificate.reset();
-        }
-
-        m_cert_requested = false;
-    }
-    else if (request.its_aid == aid::DEN) {
+    } else if (request.its_aid == aid::DEN) {
         // section 7.1.2 in TS 103 097 v2.1.1
         secured_message.set_signer_identifier(m_cert_provider.own_certificate());
         asn1::ThreeDLocation location;
@@ -68,15 +73,14 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
         location.longitude = location_v2.longitude.value();
         location.elevation = 0;
         secured_message.set_generation_location(location);
-    }
-    else {
+    } else {
         secured_message.set_signer_identifier(m_cert_provider.own_certificate());
     }
 }
 
 void DefaultSignHeaderPolicy::request_unrecognized_certificate(HashedId8 id)
 {
-    m_unknown_certificates.insert(truncate(id));
+    m_outgoing_requests.add_request(truncate(id));
 }
 
 void DefaultSignHeaderPolicy::request_certificate()
@@ -84,9 +88,14 @@ void DefaultSignHeaderPolicy::request_certificate()
     m_cert_requested = true;
 }
 
-void DefaultSignHeaderPolicy::insert_certificate(const Certificate& cert)
+void DefaultSignHeaderPolicy::enqueue_p2p_request(HashedId3 id)
 {
-    m_p2p_certificate = cert;
+    m_incoming_requests.add_request(id);
+}
+
+void DefaultSignHeaderPolicy::discard_p2p_request(HashedId3 id)
+{
+    m_incoming_requests.discard_request(id);
 }
 
 } // namespace v3

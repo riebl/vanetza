@@ -17,6 +17,9 @@
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <boost/optional.hpp>
 
+// asn1c quirk
+struct Vanetza_Security_Certificate : public Vanetza_Security_CertificateBase {};
+
 namespace vanetza
 {
 namespace security
@@ -444,10 +447,16 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
             for (int i = 0; i < requests->list.count; ++i)
             {
                 const Vanetza_Security_HashedId3_t* req_digest = requests->list.array[i];
-                const v3::Certificate* req_cert = m_context_v3.m_cert_cache->lookup(create_hashed_id3(*req_digest));
-                if (req_cert) {
-                    m_context_v3.m_sign_policy->insert_certificate(*req_cert);
-                }
+                const HashedId3 hid3 = create_hashed_id3(*req_digest);
+                m_context_v3.m_sign_policy->enqueue_p2p_request(hid3);
+            }
+        }
+
+        Vanetza_Security_Certificate* included_cert = msg->content->choice.signedData->tbsData->headerInfo.requestedCertificate;
+        if (included_cert) {
+            auto maybe_digest = v3::calculate_digest(*included_cert);
+            if (maybe_digest) {
+                m_context_v3.m_sign_policy->discard_p2p_request(truncate(*maybe_digest));
             }
         }
     }
