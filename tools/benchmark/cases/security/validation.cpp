@@ -65,10 +65,10 @@ int SecurityValidationCase::execute()
 
     if (signer_info_type == "hash") {
         // Sign one message with CAM profile, so the next message only includes the certificate hash
-        EncapRequest initial_encap_request;
-        initial_encap_request.plaintext_payload = packet;
-        initial_encap_request.its_aid = aid::CA;
-        entities[0]->encapsulate_packet(std::move(initial_encap_request));
+        SignRequest initial_sign_request;
+        initial_sign_request.plain_message = packet;
+        initial_sign_request.its_aid = aid::CA;
+        entities[0]->encapsulate_packet(std::move(initial_sign_request));
     }
 
     for (unsigned i = 0; i < identities; i++) {
@@ -78,16 +78,17 @@ int SecurityValidationCase::execute()
             sign_header_policy.request_certificate_chain();
         }
 
-        EncapRequest encap_request;
-        encap_request.plaintext_payload = packet;
-        encap_request.its_aid = aid::CA;
+        SignRequest sign_request;
+        sign_request.plain_message = packet;
+        sign_request.its_aid = aid::CA;
 
-        EncapConfirm encap_confirm = entities[i]->encapsulate_packet(std::move(encap_request));
-        if (!encap_confirm.sec_packet) {
+        EncapConfirm encap_confirm = entities[i]->encapsulate_packet(std::move(sign_request));
+        auto secured_msg = encap_confirm.secured_message();
+        if (!secured_msg) {
             std::cerr << "Failed to encapsulate packet." << std::endl;
             return 1;
         }
-        auto v2_sec_msg = boost::get<v2::SecuredMessage>(*encap_confirm.sec_packet);
+        auto v2_sec_msg = boost::get<v2::SecuredMessage>(*secured_msg);
         auto signer_info = v2_sec_msg.header_field<v2::HeaderFieldType::Signer_Info>();
         
         if (signer_info_type == "hash") {
@@ -109,7 +110,7 @@ int SecurityValidationCase::execute()
     for (unsigned i = 0; i < messages; i++) {
         DecapRequest decap_request { SecuredMessageView { secured_messages[dis(gen)] }};
         auto decap_confirm = security_entity.decapsulate_packet(std::move(decap_request));
-        assert(decap_confirm.report == DecapReport::Success);
+        assert(decap_confirm.report == VerificationReport::Success);
     }
 
     std::cout << "[Done]" << std::endl;

@@ -47,10 +47,10 @@ int SecuritySigningCase::execute()
         DownPacket packet;
         packet.layer(OsiLayer::Application) = ByteBuffer { 0xC0, 0xFF, 0xEE };
 
-        EncapRequest initial_encap_request;
-        initial_encap_request.plaintext_payload = packet;
-        initial_encap_request.its_aid = aid::CA;
-        security_entity.encapsulate_packet(std::move(initial_encap_request));
+        SignRequest initial_sign_request;
+        initial_sign_request.plain_message = std::move(packet);
+        initial_sign_request.its_aid = aid::CA;
+        security_entity.encapsulate_packet(std::move(initial_sign_request));
     }
 
     if (signer_info_type == "certificate") {
@@ -65,11 +65,11 @@ int SecuritySigningCase::execute()
         DownPacket packet;
         packet.layer(OsiLayer::Application) = ByteBuffer { 0xC0, 0xFF, 0xEE };
 
-        EncapRequest encap_request;
-        encap_request.plaintext_payload = packet;
-        encap_request.its_aid = aid::CA;
+        SignRequest sign_request;
+        sign_request.plain_message= std::move(packet);
+        sign_request.its_aid = aid::CA;
 
-        EncapConfirm encap_confirm = security_entity.encapsulate_packet(std::move(encap_request));
+        EncapConfirm encap_confirm = security_entity.encapsulate_packet(std::move(sign_request));
     }
 
     std::cout << "[Done]" << std::endl;
