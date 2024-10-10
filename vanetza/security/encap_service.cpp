@@ -14,6 +14,16 @@ EncapConfirm EncapConfirm::from(SignConfirm&& sign_confirm)
     }
 }
 
+const SecuredMessage* EncapConfirm::secured_message() const
+{
+    return boost::get<SecuredMessage>(this);
+}
+
+SecuredMessage* EncapConfirm::secured_message()
+{
+    return boost::get<SecuredMessage>(this);
+}
+
 EncapConfirm dispatch(EncapRequest&& encap_request, SignService* sign_service)
 {
     struct Dispatcher : boost::static_visitor<EncapConfirm>

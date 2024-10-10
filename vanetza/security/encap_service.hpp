@@ -32,6 +32,9 @@ struct EncapConfirm : public boost::variant<SecuredMessage, SignConfirmError>
 public:
     static EncapConfirm from(SignConfirm&&);
 
+    const SecuredMessage* secured_message() const;
+    SecuredMessage* secured_message();
+
 private:
     using variant::variant;
 };
