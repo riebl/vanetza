@@ -132,6 +132,9 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_Security_EtsiTs103097Data_Signed_55P0 = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P0_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		Vanetza_Security_EtsiTs103097Data_Signed_55P0_constraint
 	},
 	asn_MBR_Vanetza_Security_Ieee1609Dot2Data_1,
@@ -159,6 +162,9 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_Security_EtsiTs103097Data_Signed_55P1 = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P1_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		Vanetza_Security_EtsiTs103097Data_Signed_55P1_constraint
 	},
 	asn_MBR_Vanetza_Security_Ieee1609Dot2Data_1,
@@ -186,6 +192,9 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_Security_EtsiTs103097Data_Signed_55P2 = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P2_constr_3,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		Vanetza_Security_EtsiTs103097Data_Signed_55P2_constraint
 	},
 	asn_MBR_Vanetza_Security_Ieee1609Dot2Data_1,

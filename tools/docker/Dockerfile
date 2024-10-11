@@ -18,7 +18,6 @@ RUN update_cmake.sh && apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 COPY build_and_run_tests.sh /usr/local/bin/build_and_run_tests.sh
 RUN useradd -m build-user
-USER build-user
 WORKDIR /home/build-user
 ENTRYPOINT ["build_and_run_tests.sh"]
 CMD ["/home/build-user/workspace"]

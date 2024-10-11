@@ -140,7 +140,7 @@ aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
 
 	/* X.691 2002 10.5.7.2 - The one-octet case. */
 	if (range == 256) {
-		if (aper_get_align(pd))
+		if (aper_get_align(pd) < 0)
 			return -1;
 		value = per_get_few_bits(pd, 8);
 		if (value < 0 || value >= range)
@@ -150,7 +150,7 @@ aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
 
 	/* X.691 2002 10.5.7.3 - The two-octet case. */
 	if (range <= 65536) {
-		if (aper_get_align(pd))
+		if (aper_get_align(pd) < 0)
 			return -1;
 		value = per_get_few_bits(pd, 16);
 		if (value < 0 || value >= range)
@@ -174,7 +174,7 @@ aper_get_constrained_whole_number(asn_per_data_t *pd, long lb, long ub) {
 		ASN_DEBUG("todo: aper_get_constrained_whole_number: value_len > 4");
 		return -1;
 	}
-	if (aper_get_align(pd))
+	if (aper_get_align(pd) < 0)
 		return -1;
 	value = per_get_few_bits(pd, value_len * 8);
 	if (value < 0 || value >= range)

@@ -38,8 +38,9 @@
  */
 asn_dec_rval_t
 SET_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                    const asn_TYPE_descriptor_t *td, void **struct_ptr,
-                    const void *ptr, size_t size) {
+               const asn_TYPE_descriptor_t *td,
+               const asn_jer_constraints_t *constraints,
+               void **struct_ptr, const void *ptr, size_t size) {
     /*
      * Bring closer parts of structure description.
      */
@@ -112,7 +113,9 @@ SET_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
 
             /* Invoke the inner type decoder, m.b. multiple times */
             tmprval = elm->type->op->jer_decoder(opt_codec_ctx,
-                                                 elm->type, memb_ptr2,
+                                                 elm->type,
+                                                 elm->encoding_constraints.jer_constraints,
+                                                 memb_ptr2,
                                                  ptr, size);
             JER_ADVANCE(tmprval.consumed);
             if(tmprval.code != RC_OK)

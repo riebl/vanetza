@@ -20,6 +20,9 @@ static asn_TYPE_member_t asn_MBR_Vanetza_Security_SingleEtsiTs103097Certificate_
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -57,6 +60,9 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_Security_SingleEtsiTs103097Certificate = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_Vanetza_Security_SingleEtsiTs103097Certificate_1,

@@ -6,6 +6,7 @@
 #define	_JER_ENCODER_H_
 
 #include "asn_application.h"
+#include "jer_support.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,6 +72,7 @@ enum jer_equivalence_e jer_equivalent(
  */
 typedef asn_enc_rval_t(jer_type_encoder_f)(
     const struct asn_TYPE_descriptor_s *type_descriptor,
+    const asn_jer_constraints_t *constraints,
     const void *struct_ptr, /* Structure to be encoded */
     int ilevel,             /* Level of indentation */
     enum jer_encoder_flags_e jer_flags,

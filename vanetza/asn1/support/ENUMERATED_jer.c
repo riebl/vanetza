@@ -81,7 +81,7 @@ ENUMERATED__jer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
     int decoded = 0;
 
     for (lp = lstart; lp < lstop; ++lp) {
-        if (*lp == 0x22 /* '"' */) { 
+        if (*lp == 0x22 /* '"' */) {
             const asn_INTEGER_enum_map_t *el;
             el = ENUMERATED_jer_map_enum2value(
                     (const asn_INTEGER_specifics_t *)
@@ -117,8 +117,9 @@ ENUMERATED__jer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
 
 asn_dec_rval_t
 ENUMERATED_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                   const asn_TYPE_descriptor_t *td, void **sptr,
-                   const void *buf_ptr, size_t size) {
+                   const asn_TYPE_descriptor_t *td,
+                   const asn_jer_constraints_t *constraints,
+                   void **sptr, const void *buf_ptr, size_t size) {
     return jer_decode_primitive(opt_codec_ctx, td,
         sptr, sizeof(INTEGER_t),
         buf_ptr, size, ENUMERATED__jer_body_decode);
