@@ -1,6 +1,7 @@
 #pragma once
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>
+#include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
 
@@ -21,13 +22,14 @@ namespace v3
 class StraightSignService : public SignService
 {
 public:
-   StraightSignService(CertificateProvider&, Backend&, SignHeaderPolicy&);
+   StraightSignService(CertificateProvider&, Backend&, SignHeaderPolicy&, CertificateValidator&);
    SignConfirm sign(SignRequest&&) override;
 
 private:
     CertificateProvider & m_certificates;
     Backend& m_backend;
     SignHeaderPolicy& m_policy;
+    CertificateValidator& m_validator;
 };
     
 

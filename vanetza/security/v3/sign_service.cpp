@@ -22,8 +22,8 @@ void printByteBuffer(const ByteBuffer& buffer) {
     std::cout << std::dec << std::endl; // Reset stream to decimal format
 }
 
-StraightSignService::StraightSignService(CertificateProvider& provider, Backend& backend, SignHeaderPolicy& policy) :
-    m_certificates(provider), m_backend(backend), m_policy(policy)
+StraightSignService::StraightSignService(CertificateProvider& provider, Backend& backend, SignHeaderPolicy& policy, CertificateValidator& validator) :
+    m_certificates(provider), m_backend(backend), m_policy(policy), m_validator(validator)
 {
 }
 
@@ -36,6 +36,10 @@ SignConfirm StraightSignService::sign(SignRequest&& request)
     secured_message.set_hash_id(hash_algo);
     secured_message.set_payload(convert_to_payload(request.plain_message));
     m_policy.prepare_header(request, secured_message);
+
+    if (m_validator.valid_for_signing(signing_cert, request.its_aid) != CertificateValidator::Verdict::Valid) {
+        return SignConfirm::failure(SignConfirmError::No_Certificate);
+    }
 
     ByteBuffer digest = calculate_message_hash(m_backend, hash_algo, secured_message.signing_payload(), signing_cert);
     Signature signature = m_backend.sign_digest(m_certificates.own_private_key(), digest);

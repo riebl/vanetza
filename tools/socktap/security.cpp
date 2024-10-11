@@ -10,6 +10,7 @@
 #include <vanetza/security/v2/static_certificate_provider.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
+#include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/persistence.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
@@ -83,6 +84,8 @@ public:
         runtime(runtime), positioning(positioning),
         backend(security::create_backend("default"))
     {
+        cert_validator.use_runtime(&runtime);
+        cert_validator.use_position_provider(&positioning);
     }
 
     security::EncapConfirm encapsulate_packet(security::EncapRequest&& request) override
@@ -109,7 +112,7 @@ public:
         std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy { new
             security::v3::DefaultSignHeaderPolicy(runtime, positioning, *cert_provider) };
         std::unique_ptr<security::SignService> sign_service { new 
-            security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy) };
+            security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy, cert_validator) };
         std::unique_ptr<security::StraightVerifyService> verify_service { new
             security::StraightVerifyService(runtime, *backend, positioning) };
         verify_service->use_certificate_provider(cert_provider.get());
@@ -123,6 +126,7 @@ public:
     std::unique_ptr<security::SecurityEntity> entity;
     std::unique_ptr<security::v3::CertificateProvider> cert_provider;
     std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy;
+    security::v3::DefaultCertificateValidator cert_validator;
 };
 
 std::unique_ptr<security::SecurityEntity>
