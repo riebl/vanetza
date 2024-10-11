@@ -81,8 +81,7 @@ class SecurityContextV3 : public security::SecurityEntity
 public:
     SecurityContextV3(const Runtime& runtime, PositionProvider& positioning) :
         runtime(runtime), positioning(positioning),
-        backend(security::create_backend("default")),
-        sign_header_policy(runtime, positioning)
+        backend(security::create_backend("default"))
     {
     }
 
@@ -107,11 +106,14 @@ public:
         if (!cert_provider) {
             throw std::runtime_error("certificate provider is missing");
         }
+        std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy { new
+            security::v3::DefaultSignHeaderPolicy(runtime, positioning, *cert_provider) };
         std::unique_ptr<security::SignService> sign_service { new 
-            security::v3::StraightSignService(*cert_provider, *backend, sign_header_policy) };
+            security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy) };
         std::unique_ptr<security::StraightVerifyService> verify_service { new
             security::StraightVerifyService(runtime, *backend, positioning) };
         verify_service->use_certificate_provider(cert_provider.get());
+        verify_service->use_sign_header_policy(sign_header_policy.get());
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }
 
@@ -120,7 +122,7 @@ public:
     std::unique_ptr<security::Backend> backend;
     std::unique_ptr<security::SecurityEntity> entity;
     std::unique_ptr<security::v3::CertificateProvider> cert_provider;
-    security::v3::DefaultSignHeaderPolicy sign_header_policy;
+    std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy;
 };
 
 std::unique_ptr<security::SecurityEntity>
