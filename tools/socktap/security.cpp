@@ -82,8 +82,7 @@ public:
     SecurityContextV3(const Runtime& runtime, PositionProvider& positioning) :
         runtime(runtime), positioning(positioning),
         backend(security::create_backend("default")),
-        sign_header_policy(runtime, positioning),
-        cert_cache()
+        sign_header_policy(runtime, positioning)
     {
     }
 
@@ -112,7 +111,7 @@ public:
             security::v3::StraightSignService(*cert_provider, *backend, sign_header_policy) };
         std::unique_ptr<security::StraightVerifyService> verify_service { new
             security::StraightVerifyService(runtime, *backend, positioning) };
-        verify_service->use_certificate_cache(&cert_cache);
+        verify_service->use_certificate_provider(cert_provider.get());
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }
 
@@ -122,7 +121,6 @@ public:
     std::unique_ptr<security::SecurityEntity> entity;
     std::unique_ptr<security::v3::CertificateProvider> cert_provider;
     security::v3::DefaultSignHeaderPolicy sign_header_policy;
-    security::v3::CertificateCache cert_cache;
 };
 
 std::unique_ptr<security::SecurityEntity>
@@ -160,19 +158,22 @@ load_v2_certificates(const std::string& cert_path, const std::string& cert_key_p
 }
 
 std::unique_ptr<security::v3::CertificateProvider>
-load_v3_certificates(const std::string& cert_path, const std::string& cert_key_path, const std::vector<std::string> cert_chain_path, security::v3::CertificateCache& cert_cache)
+load_v3_certificates(const std::string& cert_path, const std::string& cert_key_path, const std::vector<std::string> cert_chain_path)
 {
     auto authorization_ticket = security::v3::load_certificate_from_file(cert_path);
     auto authorization_ticket_key = security::v3::load_private_key_from_file(cert_key_path);
 
-    std::list<security::v3::Certificate> chain;
+    security::PrivateKey priv_key;
+    priv_key.type = authorization_ticket.get_verification_key_type();
+    std::copy(authorization_ticket_key.private_key.key.begin(), authorization_ticket_key.private_key.key.end(),
+        std::back_inserter(priv_key.key));
+
+    auto provider = std::make_unique<security::v3::StaticCertificateProvider>(authorization_ticket, priv_key);
     for (auto& chain_path : cert_chain_path) {
         auto chain_certificate = security::v3::load_certificate_from_file(chain_path);
-        chain.push_back(chain_certificate);
-        cert_cache.store(chain_certificate);
+        provider->cache().store(chain_certificate);
     }
-
-    return std::make_unique<security::v3::StaticCertificateProvider>(authorization_ticket, authorization_ticket_key.private_key, chain);
+    return provider;
 }
 
 std::unique_ptr<security::SecurityEntity>
@@ -204,7 +205,7 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
 
             if (version == 3) {
                 auto context = std::make_unique<SecurityContextV3>(runtime, positioning);
-                context->cert_provider = load_v3_certificates(cert_path, cert_key_path, chain_paths, context->cert_cache);
+                context->cert_provider = load_v3_certificates(cert_path, cert_key_path, chain_paths);
                 context->build_entity();
                 security = std::move(context);
             } else {
