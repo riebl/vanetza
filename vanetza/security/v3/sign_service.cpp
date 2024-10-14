@@ -4,8 +4,6 @@
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/v3/sign_service.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
-#include <iostream>
-#include <future>
 
 namespace vanetza
 {
@@ -13,14 +11,6 @@ namespace security
 {
 namespace v3
 {
-
-void printByteBuffer(const ByteBuffer& buffer) {
-    for (size_t i = 0; i < buffer.size(); ++i) {
-        // Print each byte in hexadecimal format
-        std::cout << std::hex << static_cast<int>(buffer[i]) << ' ';
-    }
-    std::cout << std::dec << std::endl; // Reset stream to decimal format
-}
 
 StraightSignService::StraightSignService(CertificateProvider& provider, Backend& backend, SignHeaderPolicy& policy, CertificateValidator& validator) :
     m_certificates(provider), m_backend(backend), m_policy(policy), m_validator(validator)
