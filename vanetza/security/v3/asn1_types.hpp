@@ -68,6 +68,10 @@ FWD_ALIAS(Time64, Uint64)
 
 namespace vanetza
 {
+namespace asn1
+{
+} // namespace asn1
+
 namespace security
 {
 namespace v3
@@ -81,4 +85,3 @@ using namespace vanetza::asn1;
 } // namespace v3
 } // namespace security
 } // namespace vanetza
-
