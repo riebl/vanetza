@@ -47,6 +47,14 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
     bool valid_at_timepoint(const Clock::time_point& time_point) const;
 
     /**
+     * Check if certificate is valid for given application
+     * 
+     * \param aid application to be checked
+     * \return true if certificate is valid for application
+     */
+    bool valid_for_application(ItsAid aid) const;
+
+    /**
      * Calculate digest of certificate
      * \return digest if possible
      */

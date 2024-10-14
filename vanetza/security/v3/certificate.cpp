@@ -113,6 +113,21 @@ bool Certificate::valid_at_timepoint(const Clock::time_point& timepoint) const
     return timepoint >= start && timepoint < end;
 }
 
+bool Certificate::valid_for_application(ItsAid aid) const
+{
+    const asn1::SequenceOfPsidSsp* permissions = content()->toBeSigned.appPermissions;
+    if (permissions) {
+        for (int i = 0; i < permissions->list.count; ++i) {
+            if (permissions->list.array[i]->psid == aid) {
+                return true;
+            }
+        }
+    }
+
+    // only explicitly allowed applications are valid
+    return false;
+}
+
 bool Certificate::is_ca_certificate() const
 {
     return content()->toBeSigned.certIssuePermissions != nullptr;
