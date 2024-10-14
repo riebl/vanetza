@@ -26,9 +26,18 @@ using Vanetza_Security_Uint64_t = INTEGER_t;
     using name = ::ASN1_TYPE_ALIAS(name); \
   }}}}
 
+#define FWD_NATIVE_INTEGER(name) \
+  using ASN1_TYPE_ALIAS(name) = long; \
+  namespace vanetza { namespace security { namespace v3 { namespace asn1 { \
+    using name = ::ASN1_TYPE_ALIAS(name); \
+  }}}}
+
 FWD_OCTET_STRING(BitmapSsp)
 FWD_OCTET_STRING(HashedId8)
 FWD_OCTET_STRING(Opaque)
+
+FWD_NATIVE_INTEGER(Latitude)
+FWD_NATIVE_INTEGER(Longitude)
 
 FWD_STRUCT(CertificateBase)
 FWD_STRUCT(EccP256CurvePoint)
@@ -53,6 +62,7 @@ FWD_STRUCT(SignerIdentifier)
 FWD_STRUCT(SspRange)
 FWD_STRUCT(ThreeDLocation)
 FWD_STRUCT(ToBeSignedData)
+FWD_STRUCT(TwoDLocation)
 FWD_STRUCT(VerificationKeyIndicator)
 
 FWD_ALIAS(Certificate, CertificateBase)
@@ -63,6 +73,7 @@ FWD_ALIAS(Time64, Uint64)
 #undef ASN1_TYPE_ALIAS
 #undef ASN1_TYPE_NAME
 #undef FWD_ALIAS
+#undef FWD_NATIVE_INTEGER
 #undef FWT_OCTET_STRING
 #undef FWD_STRUCT
 
