@@ -2,6 +2,7 @@
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/EtsiTs103097Certificate.h>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/common/position_fix.hpp>
 #include <vanetza/net/packet_variant.hpp>
 #include <vanetza/security/hashed_id.hpp>
 #include <vanetza/security/key_type.hpp>
@@ -27,6 +28,14 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
     void add_cert_permission(asn1::PsidGroupPermissions* group_permission);
 
     void set_signature(const SomeEcdsaSignature& signature);
+
+    /**
+     * Check if certificate is valid at given location
+     * 
+     * \param location location to be checked
+     * \return true if certificate is valid at location
+     */
+    bool valid_at_location(const PositionFix& location) const;
 
     /**
      * Calculate digest of certificate

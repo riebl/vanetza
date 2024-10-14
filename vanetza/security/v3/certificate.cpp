@@ -1,6 +1,7 @@
 #include <vanetza/asn1/security/Certificate.h>
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/v3/certificate.hpp>
+#include <vanetza/security/v3/distance.hpp>
 #include <boost/optional/optional.hpp>
 #include <cassert>
 #include <cstring>
@@ -47,6 +48,31 @@ boost::optional<HashedId8> Certificate::calculate_digest() const
 KeyType Certificate::get_verification_key_type() const
 {
     return v3::get_verification_key_type(*content());
+}
+
+bool Certificate::valid_at_location(const PositionFix& location) const
+{
+    const asn1::GeographicRegion* region = content()->toBeSigned.region;
+    if (region) {
+        switch (region->present) {
+            case Vanetza_Security_GeographicRegion_PR_circularRegion:
+                return is_inside(location, region->choice.circularRegion);
+            case Vanetza_Security_GeographicRegion_PR_rectangularRegion:
+                return is_inside(location, region->choice.rectangularRegion);
+            case Vanetza_Security_GeographicRegion_PR_polygonalRegion:
+                // not supported yet
+                return false;
+            case Vanetza_Security_GeographicRegion_PR_identifiedRegion:
+                // not supported yet
+                return false;
+            default:
+                // unknown region restriction
+                return false;
+        }
+    } else {
+        // no region restriction applies
+        return true;
+    }
 }
 
 bool Certificate::is_ca_certificate() const
