@@ -75,6 +75,44 @@ bool Certificate::valid_at_location(const PositionFix& location) const
     }
 }
 
+bool Certificate::valid_at_timepoint(const Clock::time_point& timepoint) const
+{
+    const asn1::ValidityPeriod* validity = &content()->toBeSigned.validityPeriod;
+    Clock::time_point start { std::chrono::seconds(validity->start) };
+    Clock::time_point end = start;
+
+    switch (validity->duration.present)
+    {
+        case Vanetza_Security_Duration_PR_microseconds:
+            end += std::chrono::microseconds(validity->duration.choice.microseconds);
+            break;
+        case Vanetza_Security_Duration_PR_milliseconds:
+            end += std::chrono::milliseconds(validity->duration.choice.milliseconds);
+            break;
+        case Vanetza_Security_Duration_PR_seconds:
+            end += std::chrono::seconds(validity->duration.choice.seconds);
+            break;
+        case Vanetza_Security_Duration_PR_minutes:
+            end += std::chrono::minutes(validity->duration.choice.minutes);
+            break;
+        case Vanetza_Security_Duration_PR_hours:
+            end += std::chrono::hours(validity->duration.choice.hours);
+            break;
+        case Vanetza_Security_Duration_PR_sixtyHours:
+            end += std::chrono::hours(60) * validity->duration.choice.sixtyHours;
+            break;
+        case Vanetza_Security_Duration_PR_years:
+            // one year is considered 31556952 seconds according to IEEE 1609.2
+            end += std::chrono::seconds(31556952) * validity->duration.choice.years;
+            break;
+        default:
+            // leave end at start and thus forming an invalid range
+            break;
+    }
+    
+    return timepoint >= start && timepoint < end;
+}
+
 bool Certificate::is_ca_certificate() const
 {
     return content()->toBeSigned.certIssuePermissions != nullptr;

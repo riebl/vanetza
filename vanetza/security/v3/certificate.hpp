@@ -1,6 +1,7 @@
 #pragma once
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/EtsiTs103097Certificate.h>
+#include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/net/packet_variant.hpp>
@@ -36,6 +37,14 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
      * \return true if certificate is valid at location
      */
     bool valid_at_location(const PositionFix& location) const;
+
+    /**
+     * Check if certificate is valid at given time point
+     * 
+     * \param time_point time point to be checked
+     * \return true if certificate is valid at time point
+     */
+    bool valid_at_timepoint(const Clock::time_point& time_point) const;
 
     /**
      * Calculate digest of certificate

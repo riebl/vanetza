@@ -67,6 +67,7 @@ FWD_STRUCT(SspRange)
 FWD_STRUCT(ThreeDLocation)
 FWD_STRUCT(ToBeSignedData)
 FWD_STRUCT(TwoDLocation)
+FWD_STRUCT(ValidityPeriod)
 FWD_STRUCT(VerificationKeyIndicator)
 
 FWD_ALIAS(Certificate, CertificateBase)
