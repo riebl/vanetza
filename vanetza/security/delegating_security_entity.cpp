@@ -25,16 +25,9 @@ EncapConfirm DelegatingSecurityEntity::encapsulate_packet(EncapRequest&& encap_r
 
 DecapConfirm DelegatingSecurityEntity::decapsulate_packet(DecapRequest&& decap_request)
 {
-    DecapConfirm decap_confirm;
-
-    VerifyConfirm verify_confirm = m_verify_service->verify(VerifyRequest { decap_request.sec_packet });
-    decap_confirm.plaintext_payload = get_payload_copy(decap_request.sec_packet);
-    decap_confirm.report = static_cast<DecapReport>(verify_confirm.report);
-    decap_confirm.certificate_validity = verify_confirm.certificate_validity;
-    decap_confirm.its_aid = verify_confirm.its_aid;
-    decap_confirm.permissions = verify_confirm.permissions;
-    
-    return decap_confirm;
+    SecuredMessageView msg_view { decap_request.sec_packet };
+    auto verify_confirm = m_verify_service->verify(VerifyRequest { msg_view });
+    return DecapConfirm::from(std::move(verify_confirm), msg_view);
 }
 
 } // namespace security

@@ -68,6 +68,15 @@ bool operator==(VerificationReport verification, const DecapReport& decap);
  */
 struct DecapConfirm
 {
+    /**
+     * Build DecapConfirm from verify outcome and secured message.
+     * 
+     * \param verify_confirm outcome of verification
+     * \param msg_view view of secured message
+     * \return decapsulation confirmation
+     */
+    static DecapConfirm from(VerifyConfirm&& verify_confirm, const SecuredMessageView& msg_view);
+    
     PacketVariant plaintext_payload; // mandatory (plaintext_packet_length also covered by data type)
     DecapReport report; // mandatory
     CertificateValidity certificate_validity; // non-standard extension

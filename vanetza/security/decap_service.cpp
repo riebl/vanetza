@@ -38,5 +38,16 @@ bool operator==(VerificationReport verification, const DecapReport& decap)
     return (decap == verification);
 }
 
+DecapConfirm DecapConfirm::from(VerifyConfirm&& verify, const SecuredMessageView& msg_view)
+{
+    DecapConfirm decap;
+    decap.plaintext_payload = get_payload_copy(msg_view);
+    decap.report = verify.report;
+    decap.certificate_validity = verify.certificate_validity;
+    decap.its_aid = verify.its_aid;
+    decap.permissions = verify.permissions;
+    return decap;
+}
+
 } // namespace security
 } // namespace vanetza
