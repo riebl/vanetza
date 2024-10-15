@@ -19,6 +19,9 @@ namespace security
 namespace v3
 {
 
+// forward declaration
+class Certificate;
+
 /**
  * Read-only view on a certificate
  * 
@@ -78,6 +81,18 @@ public:
      */
     bool valid_for_application(ItsAid aid) const;
 
+    /**
+     * Check if certificate has a canonical format
+     * \return true if certificate is in canonical format
+     */
+    bool is_canonical() const;
+
+    /**
+     * Convert certificate into its canonical format if possible.
+     * \return canonical certificate (or none if conversion failed)
+     */
+    boost::optional<Certificate> canonicalize() const;
+
 private:
     const asn1::EtsiTs103097Certificate* m_cert = nullptr;
 };
@@ -115,6 +130,13 @@ boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate&
  * \return true if certificate is in canonical format
  */
 bool is_canonical(const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Convert certificate into its canonical format if possible.
+ * \param cert certificate
+ * \return canonical certificate (or none if conversion failed)
+ */
+boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& cert); 
 
 /**
  * Check if certificate is valid at given location

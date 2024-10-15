@@ -190,6 +190,11 @@ bool CertificateView::is_at_certificate() const
     return m_cert && m_cert->toBeSigned.certIssuePermissions == nullptr && m_cert->toBeSigned.appPermissions != nullptr;
 }
 
+bool CertificateView::is_canonical() const
+{
+    return m_cert ? v3::is_canonical(*m_cert) : false;
+}
+
 bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
 {
     bool compressed_point = true;
@@ -220,6 +225,11 @@ bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
     } else {
         return true;
     }
+}
+
+boost::optional<Certificate> CertificateView::canonicalize() const
+{
+    return m_cert ? v3::canonicalize(*m_cert) : boost::none;
 }
 
 boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& cert)
