@@ -4,6 +4,7 @@
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
+#include <cmath>
 
 namespace vanetza
 {
@@ -11,6 +12,35 @@ namespace security
 {
 namespace v3
 {
+
+asn1::ThreeDLocation build_location(const PositionFix& fix)
+{
+    asn1::ThreeDLocation location;
+    
+    long lat = std::round(fix.latitude / units::degree / 90.0 * Vanetza_Security_NinetyDegreeInt_max);
+    if (lat >= Vanetza_Security_NinetyDegreeInt_min && lat <= Vanetza_Security_NinetyDegreeInt_max) {
+        location.latitude = lat;
+    } else {
+        location.latitude = Vanetza_Security_NinetyDegreeInt_unknown;
+    }
+
+    long lon = std::round(fix.longitude / units::degree / 180.0 * Vanetza_Security_OneEightyDegreeInt_max);
+    if (lon >= Vanetza_Security_OneEightyDegreeInt_min && lon <= Vanetza_Security_OneEightyDegreeInt_max) {
+        location.longitude = lon;
+    } else {
+        location.longitude = Vanetza_Security_OneEightyDegreeInt_unknown;
+    }
+
+    location.elevation = 4096; // no "not available" value specified, set 0m as fallback
+    if (fix.altitude) {
+        long elev_dm = std::round(fix.altitude->value() / units::si::meter * 10.0);
+        if (elev_dm >= -4095 && elev_dm <= 61439) {
+            location.elevation = elev_dm + 4096;
+        }
+    }
+
+    return location;
+}
 
 DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning, CertificateProvider& certs) :
     m_runtime(rt), m_positioning(positioning), m_cert_provider(certs),
@@ -63,18 +93,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
     } else if (request.its_aid == aid::DEN) {
         // section 7.1.2 in TS 103 097 v2.1.1
         secured_message.set_signer_identifier(m_cert_provider.own_certificate());
-        asn1::ThreeDLocation location;
-        v2::ThreeDLocation location_v2;
-        auto position = m_positioning.position_fix();
-        if (position.altitude) {
-            location_v2 = v2::ThreeDLocation(position.latitude, position.longitude, v2::to_elevation(position.altitude->value()));
-        } else {
-            location_v2 = v2::ThreeDLocation(position.latitude, position.longitude);
-        }
-        location.latitude = location_v2.latitude.value();
-        location.longitude = location_v2.longitude.value();
-        location.elevation = 0;
-        secured_message.set_generation_location(location);
+        secured_message.set_generation_location(build_location(m_positioning.position_fix()));
     } else {
         secured_message.set_signer_identifier(m_cert_provider.own_certificate());
     }
