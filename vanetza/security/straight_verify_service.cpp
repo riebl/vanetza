@@ -14,6 +14,7 @@
 #include <vanetza/security/v3/asn1_types.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>
+#include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <boost/optional.hpp>
 
@@ -80,6 +81,11 @@ void StraightVerifyService::use_sign_header_policy(v2::SignHeaderPolicy* policy)
 void StraightVerifyService::use_certificate_provider(v3::CertificateProvider* provider)
 {
     m_context_v3.m_cert_provider = provider;
+}
+
+void StraightVerifyService::use_certificate_validator(v3::CertificateValidator* validator)
+{
+    m_context_v3.m_cert_validator = validator;
 }
 
 void StraightVerifyService::use_sign_header_policy(v3::SignHeaderPolicy* policy)
@@ -470,7 +476,15 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
         return confirm;
     }
-    // TODO check AT certificate's validity
+
+    // check AT certificate's validity
+    if (certificate && m_context_v3.m_cert_validator) {
+        auto verdict = m_context_v3.m_cert_validator->valid_for_signing(v3::CertificateView { certificate }, msg.its_aid());
+        if (verdict != v3::CertificateValidator::Verdict::Valid) {
+            confirm.report = VerificationReport::Invalid_Certificate;
+            return confirm;
+        }
+    }
 
     boost::optional<HashedId8> aa_digest;
     switch (certificate->issuer.present)

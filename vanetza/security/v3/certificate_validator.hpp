@@ -14,7 +14,7 @@ namespace v3
 {
 
 // forward declarations
-class Certificate;
+class CertificateView;
 
 class CertificateValidator
 {
@@ -35,7 +35,7 @@ public:
      * \param certificate pre-validated AT certificate
      * \param app ITS-AID of the message to be signed
      */
-    virtual Verdict valid_for_signing(const Certificate&, ItsAid app) = 0;
+    virtual Verdict valid_for_signing(const CertificateView& certificate, ItsAid app) = 0;
 
     virtual ~CertificateValidator() = default;
 };
@@ -43,7 +43,7 @@ public:
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
-    Verdict valid_for_signing(const Certificate&, ItsAid) override;
+    Verdict valid_for_signing(const CertificateView&, ItsAid) override;
     
     void use_runtime(const Runtime* runtime);
     void use_position_provider(PositionProvider* provider);
@@ -61,7 +61,7 @@ private:
 class NullCertificateValidator : public CertificateValidator
 {
 public:
-    Verdict valid_for_signing(const Certificate&, ItsAid) override
+    Verdict valid_for_signing(const CertificateView&, ItsAid) override
     {
         return Verdict::Valid;
     }

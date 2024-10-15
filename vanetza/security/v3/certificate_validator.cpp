@@ -10,7 +10,7 @@ namespace security
 namespace v3
 {
 
-auto DefaultCertificateValidator::valid_for_signing(const Certificate& signing_cert, ItsAid its_aid) -> Verdict
+auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signing_cert, ItsAid its_aid) -> Verdict
 {
     if (!m_disable_time_checks && !m_runtime) {
         return Verdict::Misconfiguration;

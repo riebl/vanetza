@@ -19,16 +19,40 @@ namespace security
 namespace v3
 {
 
-struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>
+/**
+ * Read-only view on a certificate
+ * 
+ * In contrast to Certificate, a view does not own the certificate data.
+ * A view can be created with low overhead as no heavy copying is required.
+ */
+class CertificateView
 {
-    Certificate();
-    explicit Certificate(const asn1::EtsiTs103097Certificate&);
+public:
+    explicit CertificateView(const asn1::EtsiTs103097Certificate* cert);
 
-    void add_permission(ItsAid aid, const ByteBuffer& ssp);
+    /**
+     * Calculate digest of certificate
+     * \return digest if possible
+     */
+    boost::optional<HashedId8> calculate_digest() const;
 
-    void add_cert_permission(asn1::PsidGroupPermissions* group_permission);
+    /**
+     * Get verification key type
+     * \return verification key type if possible; otherwise unspecified
+     */
+    KeyType get_verification_key_type() const;
 
-    void set_signature(const SomeEcdsaSignature& signature);
+    /**
+     * Check if certificate is a Certification Authority certificate
+     * \return true if certificate is a CA certificate
+     */
+    bool is_ca_certificate() const;
+
+    /**
+     * Check if certificate is an Authorization Ticket certificate
+     * \return true if certificate is an AT certificate
+     */
+    bool is_at_certificate() const;
 
     /**
      * Check if certificate is valid at given location
@@ -54,29 +78,28 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
      */
     bool valid_for_application(ItsAid aid) const;
 
-    /**
-     * Calculate digest of certificate
-     * \return digest if possible
-     */
-    boost::optional<HashedId8> calculate_digest() const;
+private:
+    const asn1::EtsiTs103097Certificate* m_cert = nullptr;
+};
 
-    /**
-     * Get verification key type
-     * \return verification key type if possible; otherwise unspecified
-     */
-    KeyType get_verification_key_type() const;
+struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>, public CertificateView
+{
+    using Wrapper = asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>;
 
-    /**
-     * Check if certificate is a Certification Authority certificate
-     * \return true if certificate is a CA certificate
-     */
-    bool is_ca_certificate() const;
+    Certificate();
+    explicit Certificate(const asn1::EtsiTs103097Certificate&);
 
-    /**
-     * Check if certificate is an Authorization Ticket certificate
-     * \return true if certificate is an AT certificate
-     */
-    bool is_at_certificate() const;
+    Certificate(const Certificate&);
+    Certificate& operator=(const Certificate&);
+
+    Certificate(Certificate&&);
+    Certificate& operator=(Certificate&&);
+
+    void add_permission(ItsAid aid, const ByteBuffer& ssp);
+
+    void add_cert_permission(asn1::PsidGroupPermissions* group_permission);
+
+    void set_signature(const SomeEcdsaSignature& signature);
 };
 
 /**
@@ -92,6 +115,33 @@ boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate&
  * \return true if certificate is in canonical format
  */
 bool is_canonical(const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Check if certificate is valid at given location
+ * 
+ * \param cert certificate to be checked
+ * \param location location to be checked
+ * \return true if certificate is valid at location
+ */
+bool valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location);
+
+/**
+ * Check if certificate is valid at given time point
+ * 
+ * \param cert certificate to be checked
+ * \param time_point time point to be checked
+ * \return true if certificate is valid at time point
+ */
+bool valid_at_timepoint(const asn1::EtsiTs103097Certificate& cert, const Clock::time_point& time_point);
+
+/**
+ * Check if certificate is valid for given application
+ *
+ * \param cert certificate to be checked
+ * \param aid application to be checked
+ * \return true if certificate is valid for application
+ */
+bool valid_for_application(const asn1::EtsiTs103097Certificate& cert, ItsAid aid);
 
 /**
  * Extract the public key out of a certificate

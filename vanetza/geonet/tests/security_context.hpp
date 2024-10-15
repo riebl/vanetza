@@ -12,6 +12,7 @@
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
+#include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 
@@ -35,6 +36,10 @@ public:
         for (auto cert : certificate_provider.own_chain()) {
             cert_cache.insert(cert);
         }
+
+        // wire up v3 certificate validator
+        certificate_validator_v3.use_runtime(&rt);
+        certificate_validator_v3.use_position_provider(&position_provider);
     }
 
     security::SecurityEntity& entity()
@@ -70,6 +75,7 @@ private:
         service->use_sign_header_policy(&sign_header_policy);
 
         service->use_certificate_provider(&certificate_provider_v3);
+        service->use_certificate_validator(&certificate_validator_v3);
         service->use_sign_header_policy(&sign_header_policy_v3);
         return service;
     }
@@ -93,6 +99,7 @@ private:
     
     security::v3::NaiveCertificateProvider certificate_provider_v3;
     security::v3::DefaultSignHeaderPolicy sign_header_policy_v3;
+    security::v3::DefaultCertificateValidator certificate_validator_v3;
     
     security::DelegatingSecurityEntity security;
 };

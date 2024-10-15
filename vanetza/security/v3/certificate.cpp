@@ -30,29 +30,71 @@ bool make_signature_x_only(Vanetza_Security_Signature_t& sig);
 
 } // namespace
 
-Certificate::Certificate() :
-    asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>(asn_DEF_Vanetza_Security_EtsiTs103097Certificate)
+CertificateView::CertificateView(const asn1::EtsiTs103097Certificate* cert) :
+    m_cert(cert)
 {
+}
+
+Certificate::Certificate() :
+    Wrapper(asn_DEF_Vanetza_Security_EtsiTs103097Certificate),
+    CertificateView { content() }
+{
+    assert(CertificateView::m_cert == Wrapper::m_struct);
 }
 
 Certificate::Certificate(const asn1::EtsiTs103097Certificate& cert) :
-    asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificate>(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert)
+    Wrapper(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert),
+    CertificateView { content() }
 {
+    assert(CertificateView::m_cert == Wrapper::m_struct);
 }
 
-boost::optional<HashedId8> Certificate::calculate_digest() const
+Certificate::Certificate(const Certificate& other) :
+    Wrapper(other), CertificateView(content())
 {
-    return v3::calculate_digest(*content());
+    assert(CertificateView::m_cert == Wrapper::m_struct);
 }
 
-KeyType Certificate::get_verification_key_type() const
+Certificate& Certificate::operator=(const Certificate& other)
 {
-    return v3::get_verification_key_type(*content());
+    Wrapper::operator=(other);
+    CertificateView::m_cert = content();
+    assert(CertificateView::m_cert == Wrapper::m_struct);
+    return *this;
 }
 
-bool Certificate::valid_at_location(const PositionFix& location) const
+Certificate::Certificate(Certificate&& other) :
+    Wrapper(std::move(other)), CertificateView(content())
 {
-    const asn1::GeographicRegion* region = content()->toBeSigned.region;
+    assert(CertificateView::m_cert == Wrapper::m_struct);
+}
+
+Certificate& Certificate::operator=(Certificate&& other)
+{
+    Wrapper::operator=(std::move(other));
+    CertificateView::m_cert = content();
+    assert(CertificateView::m_cert == Wrapper::m_struct);
+    return *this;
+}
+
+boost::optional<HashedId8> CertificateView::calculate_digest() const
+{
+    return m_cert ? v3::calculate_digest(*m_cert) : boost::none;
+}
+
+KeyType CertificateView::get_verification_key_type() const
+{
+    return m_cert ? v3::get_verification_key_type(*m_cert) : KeyType::Unspecified;
+}
+
+bool CertificateView::valid_at_location(const PositionFix& location) const
+{
+    return m_cert ? v3::valid_at_location(*m_cert, location) : false;
+}
+
+bool valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location)
+{
+    const asn1::GeographicRegion* region = cert.toBeSigned.region;
     if (region) {
         switch (region->present) {
             case Vanetza_Security_GeographicRegion_PR_circularRegion:
@@ -75,35 +117,40 @@ bool Certificate::valid_at_location(const PositionFix& location) const
     }
 }
 
-bool Certificate::valid_at_timepoint(const Clock::time_point& timepoint) const
+bool CertificateView::valid_at_timepoint(const Clock::time_point& timepoint) const
 {
-    const asn1::ValidityPeriod* validity = &content()->toBeSigned.validityPeriod;
-    Clock::time_point start { std::chrono::seconds(validity->start) };
+    return m_cert ? v3::valid_at_timepoint(*m_cert, timepoint) : false;
+}
+
+bool valid_at_timepoint(const asn1::EtsiTs103097Certificate& cert, const Clock::time_point& timepoint)
+{
+    const asn1::ValidityPeriod& validity = cert.toBeSigned.validityPeriod;
+    Clock::time_point start { std::chrono::seconds(validity.start) };
     Clock::time_point end = start;
 
-    switch (validity->duration.present)
+    switch (validity.duration.present)
     {
         case Vanetza_Security_Duration_PR_microseconds:
-            end += std::chrono::microseconds(validity->duration.choice.microseconds);
+            end += std::chrono::microseconds(validity.duration.choice.microseconds);
             break;
         case Vanetza_Security_Duration_PR_milliseconds:
-            end += std::chrono::milliseconds(validity->duration.choice.milliseconds);
+            end += std::chrono::milliseconds(validity.duration.choice.milliseconds);
             break;
         case Vanetza_Security_Duration_PR_seconds:
-            end += std::chrono::seconds(validity->duration.choice.seconds);
+            end += std::chrono::seconds(validity.duration.choice.seconds);
             break;
         case Vanetza_Security_Duration_PR_minutes:
-            end += std::chrono::minutes(validity->duration.choice.minutes);
+            end += std::chrono::minutes(validity.duration.choice.minutes);
             break;
         case Vanetza_Security_Duration_PR_hours:
-            end += std::chrono::hours(validity->duration.choice.hours);
+            end += std::chrono::hours(validity.duration.choice.hours);
             break;
         case Vanetza_Security_Duration_PR_sixtyHours:
-            end += std::chrono::hours(60) * validity->duration.choice.sixtyHours;
+            end += std::chrono::hours(60) * validity.duration.choice.sixtyHours;
             break;
         case Vanetza_Security_Duration_PR_years:
             // one year is considered 31556952 seconds according to IEEE 1609.2
-            end += std::chrono::seconds(31556952) * validity->duration.choice.years;
+            end += std::chrono::seconds(31556952) * validity.duration.choice.years;
             break;
         default:
             // leave end at start and thus forming an invalid range
@@ -113,9 +160,14 @@ bool Certificate::valid_at_timepoint(const Clock::time_point& timepoint) const
     return timepoint >= start && timepoint < end;
 }
 
-bool Certificate::valid_for_application(ItsAid aid) const
+bool CertificateView::valid_for_application(ItsAid aid) const
 {
-    const asn1::SequenceOfPsidSsp* permissions = content()->toBeSigned.appPermissions;
+    return m_cert ? v3::valid_for_application(*m_cert, aid) : false;
+}
+
+bool valid_for_application(const asn1::EtsiTs103097Certificate& cert, ItsAid aid)
+{
+    const asn1::SequenceOfPsidSsp* permissions = cert.toBeSigned.appPermissions;
     if (permissions) {
         for (int i = 0; i < permissions->list.count; ++i) {
             if (permissions->list.array[i]->psid == aid) {
@@ -128,14 +180,14 @@ bool Certificate::valid_for_application(ItsAid aid) const
     return false;
 }
 
-bool Certificate::is_ca_certificate() const
+bool CertificateView::is_ca_certificate() const
 {
-    return content()->toBeSigned.certIssuePermissions != nullptr;
+    return m_cert && m_cert->toBeSigned.certIssuePermissions != nullptr;
 }
 
-bool Certificate::is_at_certificate() const
+bool CertificateView::is_at_certificate() const
 {
-    return content()->toBeSigned.certIssuePermissions == nullptr && content()->toBeSigned.appPermissions != nullptr;
+    return m_cert && m_cert->toBeSigned.certIssuePermissions == nullptr && m_cert->toBeSigned.appPermissions != nullptr;
 }
 
 bool is_canonical(const asn1::EtsiTs103097Certificate& cert)

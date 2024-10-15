@@ -109,13 +109,13 @@ public:
         if (!cert_provider) {
             throw std::runtime_error("certificate provider is missing");
         }
-        std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy { new
-            security::v3::DefaultSignHeaderPolicy(runtime, positioning, *cert_provider) };
+        sign_header_policy.reset(new security::v3::DefaultSignHeaderPolicy(runtime, positioning, *cert_provider));
         std::unique_ptr<security::SignService> sign_service { new 
             security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy, cert_validator) };
         std::unique_ptr<security::StraightVerifyService> verify_service { new
             security::StraightVerifyService(runtime, *backend, positioning) };
         verify_service->use_certificate_provider(cert_provider.get());
+        verify_service->use_certificate_validator(&cert_validator);
         verify_service->use_sign_header_policy(sign_header_policy.get());
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }
