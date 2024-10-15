@@ -50,12 +50,14 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
 
         // peer-to-peer certificate distribution
         secured_message.set_inline_p2pcd_request(m_outgoing_requests.all());
-        while (auto p2p_hid = m_incoming_requests.next_one()) {
-            // provide requested CA certificates (no AT certificates here)
-            auto p2p_cert = m_cert_provider.cache().lookup(*p2p_hid);
-            if (p2p_cert && p2p_cert->is_ca_certificate()) {
-                secured_message.set_requested_certificate(*p2p_cert);
-                break;
+        if (!signer_full_cert) {
+            while (auto p2p_hid = m_incoming_requests.next_one()) {
+                // provide requested CA certificates (no AT certificates here)
+                auto p2p_cert = m_cert_provider.cache().lookup(*p2p_hid);
+                if (p2p_cert && p2p_cert->is_ca_certificate()) {
+                    secured_message.set_requested_certificate(*p2p_cert);
+                    break;
+                }
             }
         }
     } else if (request.its_aid == aid::DEN) {
