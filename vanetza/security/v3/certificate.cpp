@@ -256,6 +256,20 @@ boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& c
         success &= compress(canonical->toBeSigned.verifyKeyIndicator.choice.reconstructionValue);
     }
 
+    if (canonical->toBeSigned.encryptionKey) {
+        Vanetza_Security_BasePublicEncryptionKey& pubkey = canonical->toBeSigned.encryptionKey->publicKey;
+        switch (pubkey.present) {
+            case Vanetza_Security_BasePublicEncryptionKey_PR_eciesNistP256:
+                success &= compress(pubkey.choice.eciesNistP256);
+                break;
+            case Vanetza_Security_BasePublicEncryptionKey_PR_eciesBrainpoolP256r1:
+                success &= compress(pubkey.choice.eciesBrainpoolP256r1);
+                break;
+            default:
+                break;
+        }
+    }
+
     if (canonical->signature) {
         success &= make_signature_x_only(*canonical->signature);
     }
