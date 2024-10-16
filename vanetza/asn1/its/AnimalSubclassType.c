@@ -68,6 +68,9 @@ asn_TYPE_descriptor_t asn_DEF_AnimalSubclassType = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_AnimalSubclassType_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		AnimalSubclassType_constraint
 	},
 	0, 0,	/* Defined elsewhere */

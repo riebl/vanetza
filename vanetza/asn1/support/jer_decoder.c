@@ -35,7 +35,7 @@ jer_decode(const asn_codec_ctx_t *opt_codec_ctx,
 	/*
 	 * Invoke type-specific decoder.
 	 */
-	return td->op->jer_decoder(opt_codec_ctx, td, struct_ptr, buffer, size);
+    return td->op->jer_decoder(opt_codec_ctx, td, 0, struct_ptr, buffer, size);
 }
 
 

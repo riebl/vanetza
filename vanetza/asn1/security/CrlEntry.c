@@ -69,6 +69,9 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_Security_CrlEntry = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_Vanetza_Security_CrlEntry_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		Vanetza_Security_CrlEntry_constraint
 	},
 	0, 0,	/* No members */

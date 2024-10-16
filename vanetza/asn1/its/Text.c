@@ -87,6 +87,10 @@ static asn_per_constraints_t asn_PER_memb_language_constr_3 CC_NOTUSED = {
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+static asn_jer_constraints_t asn_JER_memb_language_constr_3 CC_NOTUSED = {
+	10};
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_Text_1[] = {
 	{ ATF_POINTER, 1, offsetof(struct Text, layoutComponentId),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -100,6 +104,9 @@ asn_TYPE_member_t asn_MBR_Text_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_layoutComponentId_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_layoutComponentId_constraint_1
 		},
 		0, 0, /* No default value */
@@ -117,6 +124,9 @@ asn_TYPE_member_t asn_MBR_Text_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_language_constr_3,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			&asn_JER_memb_language_constr_3,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_language_constraint_1
 		},
 		0, 0, /* No default value */
@@ -134,6 +144,9 @@ asn_TYPE_member_t asn_MBR_Text_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -175,6 +188,9 @@ asn_TYPE_descriptor_t asn_DEF_Text = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_Text_1,
