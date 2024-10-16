@@ -131,6 +131,9 @@ asn_TYPE_member_t asn_MBR_InternationalSign_destinationInformation_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_junctionDirection_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_junctionDirection_constraint_1
 		},
 		0, 0, /* No default value */
@@ -148,6 +151,9 @@ asn_TYPE_member_t asn_MBR_InternationalSign_destinationInformation_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_roundaboutCwDirection_constr_3,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_roundaboutCwDirection_constraint_1
 		},
 		0, 0, /* No default value */
@@ -165,6 +171,9 @@ asn_TYPE_member_t asn_MBR_InternationalSign_destinationInformation_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_roundaboutCcwDirection_constr_4,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_roundaboutCcwDirection_constraint_1
 		},
 		0, 0, /* No default value */
@@ -182,6 +191,9 @@ asn_TYPE_member_t asn_MBR_InternationalSign_destinationInformation_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -224,6 +236,9 @@ asn_TYPE_descriptor_t asn_DEF_InternationalSign_destinationInformation = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_InternationalSign_destinationInformation_1,

@@ -87,6 +87,10 @@ static asn_per_constraints_t asn_PER_memb_sessionLocation_constr_5 CC_NOTUSED = 
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+static asn_jer_constraints_t asn_JER_memb_sessionLocation_constr_5 CC_NOTUSED = {
+	8};
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct ReceiptServicePart, sessionTime),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -100,6 +104,9 @@ static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -117,6 +124,9 @@ static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -134,6 +144,9 @@ static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_stationLocation_constr_4,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_stationLocation_constraint_1
 		},
 		0, 0, /* No default value */
@@ -151,6 +164,9 @@ static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_sessionLocation_constr_5,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			&asn_JER_memb_sessionLocation_constr_5,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_sessionLocation_constraint_1
 		},
 		0, 0, /* No default value */
@@ -168,6 +184,9 @@ static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -185,6 +204,9 @@ static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -202,6 +224,9 @@ static asn_TYPE_member_t asn_MBR_ReceiptServicePart_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -245,6 +270,9 @@ asn_TYPE_descriptor_t asn_DEF_ReceiptServicePart = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_ReceiptServicePart_1,

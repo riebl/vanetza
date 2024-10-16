@@ -223,7 +223,7 @@ SET_copy(const asn_TYPE_descriptor_t *td, void **aptr,
          const void *bptr) {
     if(!td) return -1;
 
-    const asn_SET_specifics_t *specs = 
+    const asn_SET_specifics_t *specs =
         (const asn_SET_specifics_t *)td->specifics;
     size_t edx;
     void *st = *aptr;        /* Target structure */

@@ -16,8 +16,10 @@
 
 #if !defined(ASN___INTERNAL_TEST_MODE)
 asn_enc_rval_t
-GeneralizedTime_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
-                           int ilevel, enum jer_encoder_flags_e flags,
+GeneralizedTime_encode_jer(const asn_TYPE_descriptor_t *td,
+                           const asn_jer_constraints_t *constraints,
+                           const void *sptr, int ilevel,
+                           enum jer_encoder_flags_e flags,
                            asn_app_consume_bytes_f *cb, void *app_key) {
   GeneralizedTime_t *gt;
   asn_enc_rval_t rv;
@@ -33,7 +35,7 @@ GeneralizedTime_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
   gt = asn_time2GT_frac(0, &tm, fv, fd, 1);
   if(!gt) ASN__ENCODE_FAILED;
 
-  rv = OCTET_STRING_encode_jer_utf8(td, sptr, ilevel, flags,
+  rv = OCTET_STRING_encode_jer_utf8(td, constraints, sptr, ilevel, flags,
                                     cb, app_key);
   ASN_STRUCT_FREE(asn_DEF_GeneralizedTime, gt);
   return rv;

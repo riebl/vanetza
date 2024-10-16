@@ -281,6 +281,10 @@ static asn_per_constraints_t asn_PER_memb_ownerCode_constr_2 CC_NOTUSED = {
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+static asn_jer_constraints_t asn_JER_memb_ownerCode_constr_2 CC_NOTUSED = {
+	19};
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
 static asn_oer_constraints_t asn_OER_memb_serialNumber_constr_3 CC_NOTUSED = {
 	{ 4, 1 }	/* (0..1000000) */,
@@ -389,6 +393,10 @@ static asn_per_constraints_t asn_PER_memb_fill_constr_11 CC_NOTUSED = {
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+static asn_jer_constraints_t asn_JER_memb_fill_constr_11 CC_NOTUSED = {
+	3};
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct FreightContainerData, ownerCode),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -402,6 +410,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_ownerCode_constr_2,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			&asn_JER_memb_ownerCode_constr_2,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_ownerCode_constraint_1
 		},
 		0, 0, /* No default value */
@@ -419,6 +430,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_serialNumber_constr_3,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_serialNumber_constraint_1
 		},
 		0, 0, /* No default value */
@@ -436,6 +450,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_checkDigit_constr_4,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_checkDigit_constraint_1
 		},
 		0, 0, /* No default value */
@@ -453,6 +470,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_length_constr_5,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_length_constraint_1
 		},
 		0, 0, /* No default value */
@@ -470,6 +490,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_height_constr_6,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_height_constraint_1
 		},
 		0, 0, /* No default value */
@@ -487,6 +510,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_width_constr_7,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_width_constraint_1
 		},
 		0, 0, /* No default value */
@@ -504,6 +530,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_containerTypeCode_constr_8,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_containerTypeCode_constraint_1
 		},
 		0, 0, /* No default value */
@@ -521,6 +550,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_maximumGrossMass_constr_9,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_maximumGrossMass_constraint_1
 		},
 		0, 0, /* No default value */
@@ -538,6 +570,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_tareMass_constr_10,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_tareMass_constraint_1
 		},
 		0, 0, /* No default value */
@@ -555,6 +590,9 @@ asn_TYPE_member_t asn_MBR_FreightContainerData_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_fill_constr_11,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			&asn_JER_memb_fill_constr_11,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_fill_constraint_1
 		},
 		0, 0, /* No default value */
@@ -601,6 +639,9 @@ asn_TYPE_descriptor_t asn_DEF_FreightContainerData = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_FreightContainerData_1,

@@ -62,6 +62,9 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_Security_CertificateRevocationListMessage 
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_Vanetza_Security_CertificateRevocationListMessage_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		Vanetza_Security_CertificateRevocationListMessage_constraint
 	},
 	asn_MBR_Vanetza_Security_Ieee1609Dot2Data_1,

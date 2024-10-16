@@ -34,8 +34,9 @@ BOOLEAN__jer_body_decode(const asn_TYPE_descriptor_t *td, void *sptr,
 
 asn_dec_rval_t
 BOOLEAN_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
-                   const asn_TYPE_descriptor_t *td, void **sptr,
-                   const void *buf_ptr, size_t size) {
+                   const asn_TYPE_descriptor_t *td,
+                   const asn_jer_constraints_t* constraints,
+                   void **sptr, const void *buf_ptr, size_t size) {
     return jer_decode_primitive(opt_codec_ctx, td,
                                 sptr, sizeof(BOOLEAN_t), buf_ptr, size,
                                 BOOLEAN__jer_body_decode);
@@ -43,8 +44,9 @@ BOOLEAN_decode_jer(const asn_codec_ctx_t *opt_codec_ctx,
 
 
 asn_enc_rval_t
-BOOLEAN_encode_jer(const asn_TYPE_descriptor_t *td, const void *sptr,
-                   int ilevel, enum jer_encoder_flags_e flags,
+BOOLEAN_encode_jer(const asn_TYPE_descriptor_t *td,
+                   const asn_jer_constraints_t *constraints,
+                   const void *sptr, int ilevel, enum jer_encoder_flags_e flags,
                    asn_app_consume_bytes_f *cb, void *app_key) {
     const BOOLEAN_t *st = (const BOOLEAN_t *)sptr;
     asn_enc_rval_t er = {0, 0, 0};

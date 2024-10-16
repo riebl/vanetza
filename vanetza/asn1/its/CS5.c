@@ -50,6 +50,10 @@ static asn_per_constraints_t asn_PER_memb_fill_constr_3 CC_NOTUSED = {
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+static asn_jer_constraints_t asn_JER_memb_fill_constr_3 CC_NOTUSED = {
+	9};
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 asn_TYPE_member_t asn_MBR_CS5_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct CS5, vin),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
@@ -63,6 +67,9 @@ asn_TYPE_member_t asn_MBR_CS5_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			0
 		},
 		0, 0, /* No default value */
@@ -80,6 +87,9 @@ asn_TYPE_member_t asn_MBR_CS5_1[] = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 			&asn_PER_memb_fill_constr_3,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+			&asn_JER_memb_fill_constr_3,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 			memb_fill_constraint_1
 		},
 		0, 0, /* No default value */
@@ -118,6 +128,9 @@ asn_TYPE_descriptor_t asn_DEF_CS5 = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		0,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SEQUENCE_constraint
 	},
 	asn_MBR_CS5_1,

@@ -54,6 +54,10 @@ asn_per_constraints_t asn_PER_type_DayOfWeek_constr_1 CC_NOTUSED = {
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+static asn_jer_constraints_t asn_JER_type_DayOfWeek_constr_1 CC_NOTUSED = {
+	8};
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_DayOfWeek_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (3 << 2))
 };
@@ -74,6 +78,9 @@ asn_TYPE_descriptor_t asn_DEF_DayOfWeek = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_DayOfWeek_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		&asn_JER_type_DayOfWeek_constr_1,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		DayOfWeek_constraint
 	},
 	0, 0,	/* Defined elsewhere */

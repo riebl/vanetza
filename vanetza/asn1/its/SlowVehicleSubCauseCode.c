@@ -68,6 +68,9 @@ asn_TYPE_descriptor_t asn_DEF_SlowVehicleSubCauseCode = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_SlowVehicleSubCauseCode_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		0,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		SlowVehicleSubCauseCode_constraint
 	},
 	0, 0,	/* Defined elsewhere */

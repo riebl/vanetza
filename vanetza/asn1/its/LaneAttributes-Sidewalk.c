@@ -54,6 +54,10 @@ asn_per_constraints_t asn_PER_type_LaneAttributes_Sidewalk_constr_1 CC_NOTUSED =
 	0, 0	/* No PER value map */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+static asn_jer_constraints_t asn_JER_type_LaneAttributes_Sidewalk_constr_1 CC_NOTUSED = {
+	16};
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_LaneAttributes_Sidewalk_tags_1[] = {
 	(ASN_TAG_CLASS_UNIVERSAL | (3 << 2))
 };
@@ -74,6 +78,9 @@ asn_TYPE_descriptor_t asn_DEF_LaneAttributes_Sidewalk = {
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 		&asn_PER_type_LaneAttributes_Sidewalk_constr_1,
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+#if !defined(ASN_DISABLE_JER_SUPPORT)
+		&asn_JER_type_LaneAttributes_Sidewalk_constr_1,
+#endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 		LaneAttributes_Sidewalk_constraint
 	},
 	0, 0,	/* Defined elsewhere */
