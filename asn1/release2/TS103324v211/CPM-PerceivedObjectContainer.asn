@@ -1,0 +1,34 @@
+CPM-PerceivedObjectContainer {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) perceivedObjectContainer (4) major-version-1 (1) minor-version-1(1)}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+
+CardinalNumber1B, PerceivedObject
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) major-version-4 (4) minor-version-1 (1)}
+;
+
+/**
+ * This DF  represents the Perceived Object Container 
+ *
+ * It shall include the following components: 
+ *
+ * @field numberOfPerceivedObjects: the total number of perceived objects at the time of generating the message. 
+ *
+ * @field perceivedObjects: the list of perceived objects.
+ *
+*/
+PerceivedObjectContainer ::= SEQUENCE {
+    numberOfPerceivedObjects    CardinalNumber1B,
+    perceivedObjects            PerceivedObjects,
+    ...
+}
+
+/** @brief Perceived Objects
+ * This DF provides a list of perceived objects represented in the coordinate system in which the y-axis corresponds to the North direction, the x-axis to the East direction, and the z- axis to the vertical direction.
+*/
+PerceivedObjects::= SEQUENCE SIZE(0..255, ...) OF PerceivedObject (WITH COMPONENTS {... ,objectId PRESENT})
+
+END

@@ -1,0 +1,54 @@
+CPM-OriginatingStationContainers {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (103324) originatingStationContainers (2) major-version-1 (1) minor-version-1(1)}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+
+CartesianAngle, MapReference, Speed, StationType, TrailerData, Wgs84Angle
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) major-version-4 (4) minor-version-1 (1)}
+;
+
+/**
+ * This DF  represents the Originating Vehicle Container
+ *
+ * It shall include the following components: 
+ *
+ * @field orientationAngle: the angle and angle accuracy of the absolute orientation of the disseminating vehicle in the WGS84 coordinate system with respect to true North.
+ *
+ * @field pitchAngle: the optional angle and angle accuracy between the ground plane and the current orientation of the vehicle's x-axis with respect to the ground plane about the y-axis according to the ISO 8855.
+ *
+ * @field rollAngle: the optional angle and angle accuracy between the ground plane and the current orientation of a vehicle's y-axis with respect to the ground plane about the x-axis according to the ISO 8855
+ *
+ * @field trailerData: information about the trailer dimensions and orientation in case a trailer is present.
+ * 
+*/
+OriginatingVehicleContainer ::= SEQUENCE {
+    orientationAngle   Wgs84Angle,
+    pitchAngle         CartesianAngle OPTIONAL,
+    rollAngle          CartesianAngle OPTIONAL,
+    trailerDataSet     TrailerDataSet OPTIONAL,
+    ...
+}
+
+/**
+ * This DF  represents the Originating RSU Container.
+ *
+ * It shall include the following components: 
+ *
+ * @field mapReference: identifies the MAPEM containing the topology information reference in the Perceived Object Container
+ * 
+*/
+OriginatingRsuContainer ::= SEQUENCE{
+    mapReference    MapReference OPTIONAL,
+    ...
+}
+
+/**
+ * This DF  represents a list of trailer data.
+ * 
+*/
+TrailerDataSet::= SEQUENCE SIZE(1..8,...) OF TrailerData (WITH COMPONENTS {... ,frontOverhang ABSENT, rearOverhang ABSENT, trailerWidth ABSENT}) 
+
+END
