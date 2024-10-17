@@ -1,8 +1,10 @@
 set(_its_asn1_source_file "asn1c_its_sources.txt")
+set(_its_r2_asn1_source_file "asn1c_its_r2_sources.txt")
 set(_sec_asn1_source_file "asn1c_security_sources.txt")
 set(_support_asn1_source_file "asn1c_support_sources.txt")
 
 set(_its_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its")
+set(_its_r2_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its/r2")
 set(_sec_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/security")
 set(_support_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/support")
 
@@ -27,6 +29,17 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-SREM.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-SSEM.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS103301v211-IVIM.asn
+    )
+
+    set(_its_r2_asn1_files
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102894-2v221-CDD.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103831v221-DENM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103900v211-CAM.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-OriginatingStationContainers.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-PDU-Descriptions.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-PerceivedObjectContainer.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-PerceptionRegionContainer.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-SensorInformationContainer.asn
     )
 
     option(VANETZA_ASN1_WITH_ISO "Fetch ISO ASN.1 files for a more complete ITS message set" OFF)
@@ -84,6 +97,20 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P collect_asn1c_sources.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
 
+    add_custom_command(OUTPUT ${_its_r2_asn1_dir}
+        DEPENDS ${_its_r2_asn1_files}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${_its_r2_asn1_dir}
+        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -fprefix=Vanetza_ITS2_ -R -D ${_its_r2_asn1_dir} ${_its_r2_asn1_files}
+        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=its/r2 -DASN1C_PREFIX=Vanetza_ITS2_
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/remove_prefix_from_filename.cmake
+        COMMENT "Generating code from ITS Release 2 application ASN.1 modules (CDD, CA, DEN)" VERBATIM
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+    add_custom_command(OUTPUT "${_its_r2_asn1_source_file}"
+        DEPENDS ${_its_r2_asn1_dir}
+        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=its/r2 -DASN1C_SOURCE_FILE=${_its_r2_asn1_source_file}
+            -P collect_asn1c_sources.cmake
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
+
     add_custom_command(OUTPUT "${_sec_asn1_dir}"
         DEPENDS ${_sec_asn1_files} ${_pki_asn1_files}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${_sec_asn1_dir}
@@ -101,6 +128,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
     add_custom_target(generate_asn1c DEPENDS
         "${_support_asn1_dir}" "${_support_asn1_source_file}"
         "${_its_asn1_dir}" "${_its_asn1_source_file}"
+        "${_its_r2_asn1_dir}" "${_its_r2_asn1_source_file}"
         "${_sec_asn1_dir}" "${_sec_asn1_source_file}"
         VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
@@ -113,6 +141,11 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
         COMMENT "Patching generated ITS application asn1c files"
         WORKING_DIRECTORY ${_its_asn1_dir} VERBATIM)
+    add_custom_command(TARGET generate_asn1c POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_ITS2_
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
+        COMMENT "Patching generated ITS Release 2 asn1c files"
+        WORKING_DIRECTORY ${_its_r2_asn1_dir} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
         COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_Security_
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
@@ -142,6 +175,10 @@ if(VANETZA_ASN1_WITH_ASN1C)
           -DASN1C_SOURCE_FILE=${_its_asn1_source_file}
           -P clean_asn1c.cmake
         COMMAND ${CMAKE_COMMAND}
+          -DASN1C_OUTPUT_DIR=${_its_r2_asn1_dir}
+          -DASN1C_SOURCE_FILE=${_its_r2_asn1_source_file}
+          -P clean_asn1c.cmake
+        COMMAND ${CMAKE_COMMAND}
           -DASN1C_OUTPUT_DIR=${_sec_asn1_dir}
           -DASN1C_SOURCE_FILE=${_sec_asn1_source_file}
           -P clean_asn1c.cmake
@@ -150,7 +187,8 @@ if(VANETZA_ASN1_WITH_ASN1C)
 endif()
 
 function(add_asn1_component NAME)
-    set(_source_file "asn1c_${NAME}_sources.txt")
+    string(REPLACE "/" "_" NAME_ESCAPED "${NAME}")
+    set(_source_file "asn1c_${NAME_ESCAPED}_sources.txt")
     file(STRINGS "${_source_file}" _sources REGEX "^[^#]+")
     if (NOT _sources)
         message(AUTHOR_WARNING "source file ${_source_file} is empty, fix this now!")
@@ -158,8 +196,8 @@ function(add_asn1_component NAME)
             "#error \"generated ${NAME} ASN.1 source files are missing\"")
         set(_sources ${CMAKE_CURRENT_BINARY_DIR}/asn1_${NAME}_no_sources.c)
     endif()
-    add_vanetza_component(asn1_${NAME} ${_sources})
-    set_target_properties(asn1_${NAME} PROPERTIES C_STANDARD 11)
+    add_vanetza_component(asn1_${NAME_ESCAPED} ${_sources})
+    set_target_properties(asn1_${NAME_ESCAPED} PROPERTIES C_STANDARD 11)
 
     if ("${NAME}" STREQUAL "support")
         target_include_directories(asn1_support PUBLIC
@@ -169,7 +207,7 @@ function(add_asn1_component NAME)
             target_compile_definitions(asn1_support PUBLIC HAVE_NETINET_IN_H)
         endif()
     else()
-        target_link_libraries(asn1_${NAME} PUBLIC asn1_support)
+        target_link_libraries(asn1_${NAME_ESCAPED} PUBLIC asn1_support)
     endif()
 
     # Silence warnings in code generated by asn1c
@@ -187,6 +225,7 @@ endfunction()
 add_asn1_component(support)
 target_sources(asn1_support PRIVATE memory.c)
 add_asn1_component(its)
+add_asn1_component(its/r2)
 add_asn1_component(security)
 
 add_vanetza_component(asn1 asn1c_wrapper.cpp)
