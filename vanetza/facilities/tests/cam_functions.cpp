@@ -1,4 +1,8 @@
 #include <gtest/gtest.h>
+#include <vanetza/asn1/its/Heading.h>
+#include <vanetza/asn1/its/ReferencePosition.h>
+#include <vanetza/asn1/its/r2/Heading.h>
+#include <vanetza/asn1/its/r2/ReferencePosition.h>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/io.hpp>
@@ -24,7 +28,14 @@ constexpr double microdegree(double degree, double min)
     }
 }
 
-TEST(CamFunctions, similar_heading)
+using HeadingTypes = ::testing::Types<Heading, Vanetza_ITS2_Heading>;
+template<typename T>
+class CamFunctionsHeading : public ::testing::Test
+{
+};
+TYPED_TEST_SUITE(CamFunctionsHeading, HeadingTypes);
+
+TEST(CamFunctionsHeading, similar_heading)
 {
     Angle a = 3 * si::radian;
     Angle b = 2 * si::radian;
@@ -50,9 +61,11 @@ TEST(CamFunctions, similar_heading)
     EXPECT_FALSE(similar_heading(a, a, limit));
 }
 
-TEST(CamFunctions, similar_heading_unavailable1)
+TYPED_TEST(CamFunctionsHeading, similar_heading_unavailable1)
 {
-    Heading a;
+    using SomeHeading = TypeParam;
+
+    SomeHeading a;
     a.headingValue = HeadingValue_unavailable;
     Angle b = 2.0 * si::radian;
     Angle limit = 10 * si::radian;
@@ -71,11 +84,13 @@ TEST(CamFunctions, similar_heading_unavailable1)
     EXPECT_TRUE(similar_heading(a, b, limit));
 }
 
-TEST(CamFunctions, similar_heading_unavailable2)
+TYPED_TEST(CamFunctionsHeading, similar_heading_unavailable2)
 {
-    Heading a;
+    using SomeHeading = TypeParam;
+
+    SomeHeading a;
     a.headingValue = HeadingValue_unavailable;
-    Heading b;
+    SomeHeading b;
     b.headingValue = HeadingValue_unavailable;
     Angle limit = 10 * si::radian;
     EXPECT_FALSE(is_available(a));
@@ -93,44 +108,55 @@ TEST(CamFunctions, similar_heading_unavailable2)
     EXPECT_TRUE(similar_heading(b, a, limit));
 }
 
-TEST(CamFunctions, distance_reference_positions)
+using ReferencePositionTypes = ::testing::Types<ReferencePosition_t, Vanetza_ITS2_ReferencePosition_t>;
+template<typename T>
+class CamFunctionsReferencePosition : public ::testing::Test
 {
-    ReferencePosition_t pos1;
+};
+TYPED_TEST_SUITE(CamFunctionsReferencePosition, ReferencePositionTypes);
+
+TYPED_TEST(CamFunctionsReferencePosition, distance_reference_positions)
+{
+    using SomeReferencePosition = TypeParam;
+
+    SomeReferencePosition pos1;
     pos1.latitude = microdegree(6, 21.23) * Latitude_oneMicrodegreeSouth;
     pos1.longitude = microdegree(33, 22.12) * Longitude_oneMicrodegreeWest;
-    ReferencePosition_t pos2;
+    SomeReferencePosition pos2;
     pos2.latitude = microdegree(6, 22.48) * Latitude_oneMicrodegreeSouth;
     pos2.longitude = microdegree(33, 22.55) * Longitude_oneMicrodegreeWest;
     EXPECT_TRUE(NearDistance(distance(pos1, pos2), 2440.0 * si::meter , 10.0 * si::meter));
 
-    ReferencePosition_t pos3;
+    SomeReferencePosition pos3;
     pos3.latitude = microdegree(37, 17.3) * Latitude_oneMicrodegreeNorth;
     pos3.longitude = microdegree(0, 13.14) * Longitude_oneMicrodegreeWest;
-    ReferencePosition_t pos4;
+    SomeReferencePosition pos4;
     pos4.latitude = microdegree(37, 17.19) * Latitude_oneMicrodegreeNorth;
     pos4.longitude = microdegree(0, 9.45) * Longitude_oneMicrodegreeEast;
     EXPECT_TRUE(NearDistance(distance(pos3, pos4), 33390.0 * si::meter , 10.0 * si::meter));
 
-    ReferencePosition_t pos5;
+    SomeReferencePosition pos5;
     pos5.latitude = microdegree(0, 19.24) * Latitude_oneMicrodegreeSouth;
     pos5.longitude = microdegree(83, 37.32) * Longitude_oneMicrodegreeEast;
-    ReferencePosition_t pos6;
+    SomeReferencePosition pos6;
     pos6.latitude = microdegree(0, 27.15) * Latitude_oneMicrodegreeNorth;
     pos6.longitude = microdegree(83, 04.45) * Longitude_oneMicrodegreeEast;
     EXPECT_TRUE(NearDistance(distance(pos5, pos6), 105010.0 * si::meter , 10.0 * si::meter));
 
-    ReferencePosition_t pos7;
+    SomeReferencePosition pos7;
     pos7.latitude = microdegree(48, 45.56) * Latitude_oneMicrodegreeNorth;
     pos7.longitude = microdegree(11, 26.01) * Longitude_oneMicrodegreeEast;
-    ReferencePosition_t pos8;
+    SomeReferencePosition pos8;
     pos8.latitude = microdegree(48, 45.566) * Latitude_oneMicrodegreeNorth;
     pos8.longitude = microdegree(11, 26.04) * Longitude_oneMicrodegreeEast;
     EXPECT_TRUE(NearDistance(distance(pos7, pos8), 38.0 * si::meter , 0.5 * si::meter));
 }
 
-TEST(CamFunctions, distance_refpos_latlon)
+TYPED_TEST(CamFunctionsReferencePosition, distance_refpos_latlon)
 {
-    ReferencePosition_t refpos;
+    using SomeReferencePosition = TypeParam;
+
+    SomeReferencePosition refpos;
     refpos.latitude = microdegree(6, 21.23) * Latitude_oneMicrodegreeSouth;
     refpos.longitude = microdegree(33, 22.12) * Longitude_oneMicrodegreeWest;
     GeoAngle lat = -(6 + (22.48 / 60.0)) * degree;
@@ -138,10 +164,12 @@ TEST(CamFunctions, distance_refpos_latlon)
     EXPECT_TRUE(NearDistance(distance(refpos, lat, lon), 2440.0 * si::meter , 10.0 * si::meter));
 }
 
-TEST(CamFunctions, distance_unavailable)
+TYPED_TEST(CamFunctionsReferencePosition, distance_unavailable)
 {
-    ReferencePosition_t pos1 {};
-    ReferencePosition_t pos2 {};
+    using SomeReferencePosition = TypeParam;
+
+    SomeReferencePosition pos1 {};
+    SomeReferencePosition pos2 {};
     EXPECT_TRUE(is_available(pos1));
     EXPECT_TRUE(is_available(pos2));
     EXPECT_FALSE(std::isnan(distance(pos1, pos2).value()));
@@ -156,4 +184,27 @@ TEST(CamFunctions, distance_unavailable)
     EXPECT_FALSE(is_available(pos1));
     EXPECT_TRUE(std::isnan(distance(pos1, pos2).value()));
     EXPECT_TRUE(std::isnan(distance(pos2, pos1).value()));
+}
+
+TYPED_TEST(CamFunctionsReferencePosition, copy)
+{
+    using SomeReferencePosition = TypeParam;
+
+    PositionFix src;
+    src.latitude = 1.23 * vanetza::units::degree;
+    src.longitude = 4.56 * vanetza::units::degree;
+    src.confidence.orientation = vanetza::units::TrueNorth::from_value(10.0);
+    src.confidence.semi_major = 20 * vanetza::units::si::meter;
+    src.confidence.semi_minor = 15 * vanetza::units::si::meter;
+
+    SomeReferencePosition dest;
+    copy(src, dest);
+
+    EXPECT_EQ(dest.latitude, 123 * 100000);
+    EXPECT_EQ(dest.longitude, 456 * 100000);
+    EXPECT_EQ(dest.positionConfidenceEllipse.semiMajorConfidence, 20 * 100);
+    EXPECT_EQ(dest.positionConfidenceEllipse.semiMinorConfidence, 15 * 100);
+    EXPECT_EQ(dest.positionConfidenceEllipse.semiMajorOrientation, 10 * 10);
+    EXPECT_EQ(dest.altitude.altitudeValue, AltitudeValue_unavailable);
+    EXPECT_EQ(dest.altitude.altitudeConfidence, AltitudeConfidence_unavailable);
 }
