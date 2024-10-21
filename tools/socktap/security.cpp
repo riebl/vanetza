@@ -193,7 +193,7 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
     } else if (name == "dummy" || name == "dummy-v3") {
         security = create_dummy_v3_security_entity(runtime);
     } else if (name == "dummy-v2") {
-        security == create_dummy_v2_security_entity(runtime);
+        security = create_dummy_v2_security_entity(runtime);
     } else if (name == "certs" || name == "certs-v3" || name == "certs-v2") {
         const unsigned version = name == "certs-v2" ? 2 : 3;
 
