@@ -99,7 +99,13 @@ public:
      */
     boost::optional<Certificate> canonicalize() const;
 
-private:
+    /**
+     * Encode certificate.
+     * \return encoded certificate
+     */
+    ByteBuffer encode() const;
+
+protected:
     const asn1::EtsiTs103097Certificate* m_cert = nullptr;
 };
 
@@ -115,6 +121,9 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
 
     Certificate(Certificate&&);
     Certificate& operator=(Certificate&&);
+
+    // resolve ambiguity
+    ByteBuffer encode() const;
 
     void add_permission(ItsAid aid, const ByteBuffer& ssp);
 

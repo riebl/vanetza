@@ -247,6 +247,16 @@ bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
     }
 }
 
+ByteBuffer CertificateView::encode() const
+{
+    return m_cert ? asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, m_cert) : ByteBuffer {};
+}
+
+ByteBuffer Certificate::encode() const
+{
+    return Wrapper::encode();
+}
+
 boost::optional<Certificate> CertificateView::canonicalize() const
 {
     return m_cert ? v3::canonicalize(*m_cert) : boost::none;
