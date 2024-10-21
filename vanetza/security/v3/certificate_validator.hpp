@@ -14,6 +14,8 @@ namespace v3
 {
 
 // forward declarations
+class Certificate;
+class CertificateCache;
 class CertificateView;
 
 class CertificateValidator
@@ -47,13 +49,17 @@ public:
     
     void use_runtime(const Runtime* runtime);
     void use_position_provider(PositionProvider* provider);
+    void use_certificate_cache(const CertificateCache* cache);
 
     void disable_time_checks(bool flag);
     void disable_location_checks(bool flag);
 
 private:
+    const Certificate* find_issuer_certificate(const CertificateView& certificate) const;
+
     const Runtime* m_runtime = nullptr;
     PositionProvider* m_position_provider = nullptr;
+    const CertificateCache* m_certificate_cache = nullptr;
     bool m_disable_time_checks = false;
     bool m_disable_location_checks = false;
 };
