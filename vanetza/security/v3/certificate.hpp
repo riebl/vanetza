@@ -64,6 +64,12 @@ public:
     bool is_at_certificate() const;
 
     /**
+     * Check if certificate has an region restriction
+     * \return true if certificate is only valid within a specific region
+     */
+    bool has_region_restriction() const;
+
+    /**
      * Check if certificate is valid at given location
      * 
      * \param location location to be checked

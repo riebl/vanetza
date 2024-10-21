@@ -200,6 +200,11 @@ boost::optional<HashedId8> CertificateView::issuer_digest() const
     return digest;
 }
 
+bool CertificateView::has_region_restriction() const
+{
+    return m_cert ? m_cert->toBeSigned.region != nullptr : false;
+}
+
 bool CertificateView::is_ca_certificate() const
 {
     return m_cert && m_cert->toBeSigned.certIssuePermissions != nullptr;
