@@ -51,7 +51,7 @@ TEST(PeerRequestTracker, keep_order)
     EXPECT_EQ(expected, tracker.all());
 
     // nothing left in tracker
-    EXPECT_FALSE(tracker.next_one().has_value());
+    EXPECT_FALSE(tracker.next_one());
 }
 
 TEST(PeerRequestTracker, next_one)
