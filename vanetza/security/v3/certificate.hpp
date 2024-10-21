@@ -46,6 +46,12 @@ public:
     KeyType get_verification_key_type() const;
 
     /**
+     * Get issuer digest (if any)
+     * \return issuer digest
+     */
+    boost::optional<HashedId8> issuer_digest() const;
+
+    /**
      * Check if certificate is a Certification Authority certificate
      * \return true if certificate is a CA certificate
      */

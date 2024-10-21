@@ -1,5 +1,6 @@
 #include <vanetza/asn1/security/Certificate.h>
 #include <vanetza/security/sha.hpp>
+#include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/distance.hpp>
 #include <boost/optional/optional.hpp>
@@ -178,6 +179,25 @@ bool valid_for_application(const asn1::EtsiTs103097Certificate& cert, ItsAid aid
 
     // only explicitly allowed applications are valid
     return false;
+}
+
+boost::optional<HashedId8> CertificateView::issuer_digest() const
+{
+    boost::optional<HashedId8> digest;
+    if (m_cert != nullptr) {
+        switch (m_cert->issuer.present)
+        {
+            case Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest:
+                digest = create_hashed_id8(m_cert->issuer.choice.sha256AndDigest);
+                break;
+            case Vanetza_Security_IssuerIdentifier_PR_sha384AndDigest:
+                digest = create_hashed_id8(m_cert->issuer.choice.sha384AndDigest);
+                break;
+            default:
+                break;
+        }
+    }
+    return digest;
 }
 
 bool CertificateView::is_ca_certificate() const
