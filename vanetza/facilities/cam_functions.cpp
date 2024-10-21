@@ -75,10 +75,11 @@ AltitudeConfidence_t to_altitude_confidence(units::Length confidence)
 AltitudeValue_t to_altitude_value(units::Length alt)
 {
     using boost::units::isnan;
+    static_assert(AltitudeValue_oneCentimeter == 1, "AltitudeValue encodes an integer number of centimeters");
 
     if (!isnan(alt)) {
         alt = boost::algorithm::clamp(alt, -1000.0 * units::si::meter, 8000.0 * units::si::meter);
-        return AltitudeValue_oneCentimeter * 100.0 * (alt / units::si::meter);
+        return round(alt, units::si::centi * units::si::meter);
     } else {
         return AltitudeValue_unavailable;
     }
