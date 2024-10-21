@@ -10,6 +10,9 @@ namespace vanetza
 namespace facilities
 {
 
+static_assert(Longitude_oneMicrodegreeEast == 10, "Longitude is an integer number of tenth microdegrees");
+static_assert(Latitude_oneMicrodegreeNorth == 10, "Latitude is an integer number of tenth microdegrees");
+
 units::Length distance(const ASN1_PREFIXED(ReferencePosition_t)& a, const ASN1_PREFIXED(ReferencePosition_t)& b)
 {
     using geonet::GeodeticPosition;
@@ -18,12 +21,12 @@ units::Length distance(const ASN1_PREFIXED(ReferencePosition_t)& a, const ASN1_P
     auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
     if (is_available(a) && is_available(b)) {
         GeodeticPosition geo_a {
-            GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * microdegree },
-            GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * microdegree }
+            GeoAngle { a.latitude * tenth_microdegree },
+            GeoAngle { a.longitude * tenth_microdegree }
         };
         GeodeticPosition geo_b {
-            GeoAngle { b.latitude / Latitude_oneMicrodegreeNorth * microdegree },
-            GeoAngle { b.longitude / Longitude_oneMicrodegreeEast * microdegree }
+            GeoAngle { b.latitude * tenth_microdegree },
+            GeoAngle { b.longitude * tenth_microdegree }
         };
         length = geonet::distance(geo_a, geo_b);
     }
@@ -38,8 +41,8 @@ units::Length distance(const ASN1_PREFIXED(ReferencePosition_t)& a, units::GeoAn
     auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
     if (is_available(a)) {
         GeodeticPosition geo_a {
-            GeoAngle { a.latitude / Latitude_oneMicrodegreeNorth * microdegree },
-            GeoAngle { a.longitude / Longitude_oneMicrodegreeEast * microdegree }
+            GeoAngle { a.latitude * tenth_microdegree },
+            GeoAngle { a.longitude * tenth_microdegree }
         };
         GeodeticPosition geo_b { lat, lon };
         length = geonet::distance(geo_a, geo_b);
@@ -52,9 +55,10 @@ bool is_available(const ASN1_PREFIXED(ReferencePosition)& pos)
     return pos.latitude != ASN1_PREFIXED(Latitude_unavailable) && pos.longitude != ASN1_PREFIXED(Longitude_unavailable);
 }
 
-void copy(const PositionFix& position, ASN1_PREFIXED(ReferencePosition)& reference_position) {
-    reference_position.longitude = round(position.longitude, microdegree) * Longitude_oneMicrodegreeEast;
-    reference_position.latitude = round(position.latitude, microdegree) * Latitude_oneMicrodegreeNorth;
+void copy(const PositionFix& position, ASN1_PREFIXED(ReferencePosition)& reference_position)
+{
+    reference_position.longitude = round(position.longitude, tenth_microdegree);
+    reference_position.latitude = round(position.latitude, tenth_microdegree);
     if (std::isfinite(position.confidence.semi_major.value())
         && std::isfinite(position.confidence.semi_minor.value()))
     {

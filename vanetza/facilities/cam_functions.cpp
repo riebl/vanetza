@@ -14,6 +14,7 @@ namespace facilities
 using vanetza::units::Angle;
 
 static const auto microdegree = units::degree * units::si::micro;
+static const auto tenth_microdegree = units::si::deci * microdegree;
 
 bool similar_heading(Angle a, Angle b, Angle limit)
 {
