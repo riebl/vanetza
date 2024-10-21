@@ -15,6 +15,7 @@
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
+#include <vanetza/security/v3/hash.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <boost/optional.hpp>
 
@@ -516,21 +517,8 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         return confirm;
     }
 
-    ByteBuffer encoded_cert;
-    try {
-        encoded_cert = asn1::encode_oer(asn_DEF_Vanetza_Security_CertificateBase, certificate);
-    } catch (...) {
-        confirm.report = VerificationReport::Invalid_Certificate;
-        return confirm;
-    }
-
-    HashAlgorithm hash_algo = msg.hash_id();
-    ByteBuffer data_hash = m_backend.calculate_hash(hash_algo, msg.signing_payload());
-    ByteBuffer cert_hash = m_backend.calculate_hash(hash_algo, encoded_cert);
-    ByteBuffer concat_hash = data_hash;
-    concat_hash.insert(concat_hash.end(), cert_hash.begin(), cert_hash.end());
-    ByteBuffer msg_hash = m_backend.calculate_hash(hash_algo, concat_hash);
-
+    ByteBuffer msg_hash = v3::calculate_message_hash(m_backend, msg.hash_id(),
+        msg.signing_payload(), v3::CertificateView { certificate });
     if (!m_backend.verify_digest(*public_key, msg_hash, *signature)) {
         confirm.report = VerificationReport::False_Signature;
         return confirm;
