@@ -150,12 +150,12 @@ public:
         return "IdentityHash";
     }
 
-    void Update(const CryptoPP::byte* input, size_t length) override
+    void Update(const uint8_t* input, size_t length) override
     {
         std::copy_n(input, std::min(length, m_hash.size()), m_hash.begin());;
     }
 
-    void TruncatedFinal(CryptoPP::byte* output, size_t len) override
+    void TruncatedFinal(uint8_t* output, size_t len) override
     {
         if (output != nullptr) {
             std::copy_n(m_hash.begin(), std::min(len, m_hash.size()), output);
@@ -169,7 +169,7 @@ public:
     }
 
 private:
-    std::array<CryptoPP::byte, N> m_hash;
+    std::array<uint8_t, N> m_hash;
 };
 
 template<size_t N>
