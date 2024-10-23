@@ -25,7 +25,7 @@ void copy(const facilities::PathHistory& ph, ASN1_PREFIXED(BasicVehicleContainer
         auto delta_latitude = point.latitude - ref.latitude; // positive: point is north
         auto delta_longitude = point.longitude - ref.longitude; // positive: point is east
 
-        while (!delta_time.is_negative() && path_points < scMaxPathPoints) {
+        while (delta_time.total_milliseconds() >= 10 && path_points < scMaxPathPoints) {
             ::ASN1_PREFIXED(PathPoint)* path_point = asn1::allocate<::ASN1_PREFIXED(PathPoint)>();
             path_point->pathDeltaTime = asn1::allocate<ASN1_PREFIXED(PathDeltaTime_t)>();
             *(path_point->pathDeltaTime) = std::min(delta_time, scMaxDeltaTime).total_milliseconds() /
