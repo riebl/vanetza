@@ -213,34 +213,34 @@ TYPED_TEST(CamFunctionsReferencePosition, copy)
 
 TYPED_TEST(CamFunctionsReferencePosition, copy_path_history)
 {
-	vanetza::facilities::PathHistory path_history;
-	vanetza::facilities::PathPoint path_point;
-	path_point.longitude = 40.906 * degree;
-	path_point.latitude = 29.155 * degree;
-	path_point.heading = vanetza::units::Angle{0.0 * boost::units::degree::degree};
-	path_point.time = boost::posix_time::microsec_clock::universal_time();
-	path_history.addSample(path_point);
+    vanetza::facilities::PathHistory path_history;
+    vanetza::facilities::PathPoint path_point;
+    path_point.longitude = 40.906 * degree;
+    path_point.latitude = 29.155 * degree;
+    path_point.heading = vanetza::units::Angle { 0.0 * boost::units::degree::degree };
+    path_point.time = boost::posix_time::microsec_clock::universal_time();
+    path_history.addSample(path_point);
 
-	LowFrequencyContainer_t lfc{};
-	lfc.present = LowFrequencyContainer_PR_basicVehicleContainerLowFrequency;
-	BasicVehicleContainerLowFrequency &bvc = lfc.choice.basicVehicleContainerLowFrequency;
-	bvc.vehicleRole = 0;
-	bvc.exteriorLights.size = 1;
-	bvc.exteriorLights.bits_unused = 0;
-	bvc.exteriorLights.buf = static_cast<uint8_t *>(calloc(1, 1));
-	copy(path_history, bvc);
+    LowFrequencyContainer_t lfc {};
+    lfc.present = LowFrequencyContainer_PR_basicVehicleContainerLowFrequency;
+    BasicVehicleContainerLowFrequency& bvc = lfc.choice.basicVehicleContainerLowFrequency;
+    bvc.vehicleRole = 0;
+    bvc.exteriorLights.size = 1;
+    bvc.exteriorLights.bits_unused = 0;
+    bvc.exteriorLights.buf = static_cast<uint8_t*>(calloc(1, 1));
+    copy(path_history, bvc);
 
-	int size = lfc.choice.basicVehicleContainerLowFrequency.pathHistory.list.count;
-	for (int i = 0; i < size; i++){
-		auto current_path_point = lfc.choice.basicVehicleContainerLowFrequency.pathHistory.list.array[i];
-		EXPECT_NE(current_path_point->pathDeltaTime, nullptr);
-		EXPECT_TRUE(*current_path_point->pathDeltaTime >= 1);
-		EXPECT_TRUE(*current_path_point->pathDeltaTime <= 65535);
-		EXPECT_TRUE(current_path_point->pathPosition.deltaLatitude >= -131071);
-		EXPECT_TRUE(current_path_point->pathPosition.deltaLatitude <= 131072);
-		EXPECT_TRUE(current_path_point->pathPosition.deltaLongitude >= -131071);
-		EXPECT_TRUE(current_path_point->pathPosition.deltaLongitude <= 131072);
-		EXPECT_TRUE(current_path_point->pathPosition.deltaAltitude >= -12700);
-		EXPECT_TRUE(current_path_point->pathPosition.deltaAltitude <= 12800);
-	}
+    int size = lfc.choice.basicVehicleContainerLowFrequency.pathHistory.list.count;
+    for (int i = 0; i < size; i++) {
+        auto current_path_point = lfc.choice.basicVehicleContainerLowFrequency.pathHistory.list.array[i];
+        EXPECT_NE(current_path_point->pathDeltaTime, nullptr);
+        EXPECT_TRUE(*current_path_point->pathDeltaTime >= 1);
+        EXPECT_TRUE(*current_path_point->pathDeltaTime <= 65535);
+        EXPECT_TRUE(current_path_point->pathPosition.deltaLatitude >= -131071);
+        EXPECT_TRUE(current_path_point->pathPosition.deltaLatitude <= 131072);
+        EXPECT_TRUE(current_path_point->pathPosition.deltaLongitude >= -131071);
+        EXPECT_TRUE(current_path_point->pathPosition.deltaLongitude <= 131072);
+        EXPECT_TRUE(current_path_point->pathPosition.deltaAltitude >= -12700);
+        EXPECT_TRUE(current_path_point->pathPosition.deltaAltitude <= 12800);
+    }
 }
