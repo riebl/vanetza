@@ -25,16 +25,26 @@ void copy(const facilities::PathHistory& src, SomePathSequence& dest)
 
     for (const PathPoint& point : concise_points) {
         auto delta_time = ref.time - point.time; // positive: point is in past
-        auto delta_latitude = point.latitude - ref.latitude; // positive: point is north
-        auto delta_longitude = point.longitude - ref.longitude; // positive: point is east
+        auto delta_latitude = round(point.latitude - ref.latitude, tenth_microdegree); // positive: point is north
+        auto delta_longitude = round(point.longitude - ref.longitude, tenth_microdegree); // positive: point is east
 
-        if (delta_time >= scDeltaTimeStepLength && delta_time <= scMaxDeltaTime && path_points < scMaxPathPoints) {
+        if (path_points >= scMaxPathPoints) {
+            // enough path points have been copied
+            break;
+        } else if (delta_latitude < -131071 || delta_latitude > 131071) {
+            // delta latitude value cannot be encoded, skip this point
+            continue;
+        } else if (delta_longitude < -131071 || delta_longitude > 131071) {
+            // delta longitude value cannot be encoded, skip this point
+            continue;
+        } else if (delta_time >= scDeltaTimeStepLength && delta_time <= scMaxDeltaTime) {
             SomePathPoint* path_point = asn1::allocate<SomePathPoint>();
+            path_point->pathPosition.deltaLatitude = delta_latitude;
+            path_point->pathPosition.deltaLongitude = delta_longitude;
+            path_point->pathPosition.deltaAltitude = DeltaAltitude::DeltaAltitude_unavailable;
+
             path_point->pathDeltaTime = asn1::allocate<SomePathDeltaTime>();
             *(path_point->pathDeltaTime) = delta_time.total_milliseconds() / scDeltaTimeStepLength.total_milliseconds();
-            path_point->pathPosition.deltaLatitude = round(delta_latitude, tenth_microdegree);
-            path_point->pathPosition.deltaLongitude = round(delta_longitude, tenth_microdegree);
-            path_point->pathPosition.deltaAltitude = DeltaAltitude::DeltaAltitude_unavailable;
 
             ASN_SEQUENCE_ADD(&dest, path_point);
             ++path_points;
