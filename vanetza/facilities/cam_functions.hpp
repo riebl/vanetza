@@ -11,9 +11,12 @@
 // forward declaration of asn1c generated struct
 struct BasicVehicleContainerLowFrequency;
 struct Heading;
+struct PathHistory;
 struct ReferencePosition;
 struct Vanetza_ITS2_BasicVehicleContainerLowFrequency;
 struct Vanetza_ITS2_Heading;
+struct Vanetza_ITS2_Path;
+struct Vanetza_ITS2_PathHistory;
 struct Vanetza_ITS2_ReferencePosition;
 
 namespace vanetza
@@ -32,11 +35,22 @@ class PathHistory;
 
 /**
  * Copy PathHistory into BasicVehicleContainerLowFrequency's pathHistory element
+ * \deprecated use function with PathHistory destination instead
  * \param Facilities' path history object (source)
  * \param ASN.1 CAM container (destination)
  */
 void copy(const PathHistory&, BasicVehicleContainerLowFrequency&);
 void copy(const PathHistory&, Vanetza_ITS2_BasicVehicleContainerLowFrequency&);
+
+/**
+ * Copy facilities::PathHistory into an ASN.1 PathHistory structure
+ * 
+ * \param src source path history
+ * \param dest destination path history
+ */
+void copy(const PathHistory& src, ::PathHistory&);
+void copy(const PathHistory& src, Vanetza_ITS2_PathHistory&);
+void copy(const PathHistory& src, Vanetza_ITS2_Path&);
 
 /**
  * Check if difference of two given heading values is within a limit

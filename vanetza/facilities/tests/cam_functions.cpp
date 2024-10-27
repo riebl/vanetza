@@ -1,14 +1,15 @@
 #include <gtest/gtest.h>
+#include <vanetza/facilities/path_history.hpp>
 #include <vanetza/asn1/its/Heading.h>
+#include <vanetza/asn1/its/PathHistory.h>
 #include <vanetza/asn1/its/ReferencePosition.h>
 #include <vanetza/asn1/its/r2/Heading.h>
+#include <vanetza/asn1/its/r2/PathHistory.h>
 #include <vanetza/asn1/its/r2/ReferencePosition.h>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/io.hpp>
 #include <cmath>
-#include <vanetza/asn1/its/LowFrequencyContainer.h>
-#include <vanetza/facilities/path_history.hpp>
 
 using namespace vanetza;
 using namespace vanetza::facilities;
@@ -211,36 +212,49 @@ TYPED_TEST(CamFunctionsReferencePosition, copy)
     EXPECT_EQ(dest.altitude.altitudeConfidence, AltitudeConfidence_unavailable);
 }
 
-TYPED_TEST(CamFunctionsReferencePosition, copy_path_history)
+using PathHistoryTypes = ::testing::Types<::PathHistory, Vanetza_ITS2_PathHistory>;
+template<typename T>
+class CamFunctionsPathHistory : public ::testing::Test
 {
+protected:
     vanetza::facilities::PathHistory path_history;
-    vanetza::facilities::PathPoint path_point;
-    path_point.longitude = 40.906 * degree;
-    path_point.latitude = 29.155 * degree;
-    path_point.heading = vanetza::units::Angle { 0.0 * boost::units::degree::degree };
-    path_point.time = boost::posix_time::microsec_clock::universal_time();
-    path_history.addSample(path_point);
 
-    LowFrequencyContainer_t lfc {};
-    lfc.present = LowFrequencyContainer_PR_basicVehicleContainerLowFrequency;
-    BasicVehicleContainerLowFrequency& bvc = lfc.choice.basicVehicleContainerLowFrequency;
-    bvc.vehicleRole = 0;
-    bvc.exteriorLights.size = 1;
-    bvc.exteriorLights.bits_unused = 0;
-    bvc.exteriorLights.buf = static_cast<uint8_t*>(calloc(1, 1));
-    copy(path_history, bvc);
+    void add_sample(double lat, double lon, const std::string& time)
+    {
+        vanetza::facilities::PathPoint path_point;
+        path_point.latitude = lat * degree;
+        path_point.longitude = lon * degree;
+        path_point.time = boost::posix_time::from_iso_string(time);
+        path_history.addSample(path_point);
+    }
+};
+TYPED_TEST_SUITE(CamFunctionsPathHistory, PathHistoryTypes);
 
-    int size = lfc.choice.basicVehicleContainerLowFrequency.pathHistory.list.count;
+TYPED_TEST(CamFunctionsPathHistory, copy_path_history)
+{
+    using SomePathHistory = TypeParam;
+
+    this->add_sample(40.906, 29.155, "20241027T031000");
+    this->add_sample(40.907, 29.156, "20241027T031010");
+    this->add_sample(40.908, 29.157, "20241027T031020");
+
+    SomePathHistory dest_path_history = {}; // zero-initialize struct
+    copy(this->path_history, dest_path_history);
+    
+    int size = dest_path_history.list.count;
+    EXPECT_EQ(size, 2);
     for (int i = 0; i < size; i++) {
-        auto current_path_point = lfc.choice.basicVehicleContainerLowFrequency.pathHistory.list.array[i];
-        EXPECT_NE(current_path_point->pathDeltaTime, nullptr);
-        EXPECT_TRUE(*current_path_point->pathDeltaTime >= 1);
-        EXPECT_TRUE(*current_path_point->pathDeltaTime <= 65535);
-        EXPECT_TRUE(current_path_point->pathPosition.deltaLatitude >= -131071);
-        EXPECT_TRUE(current_path_point->pathPosition.deltaLatitude <= 131072);
-        EXPECT_TRUE(current_path_point->pathPosition.deltaLongitude >= -131071);
-        EXPECT_TRUE(current_path_point->pathPosition.deltaLongitude <= 131072);
-        EXPECT_TRUE(current_path_point->pathPosition.deltaAltitude >= -12700);
-        EXPECT_TRUE(current_path_point->pathPosition.deltaAltitude <= 12800);
+        auto current_path_point = dest_path_history.list.array[i];
+        ASSERT_NE(current_path_point->pathDeltaTime, nullptr);
+
+        // check ASN.1 constraints
+        EXPECT_GE(*current_path_point->pathDeltaTime, 1);
+        EXPECT_LE(*current_path_point->pathDeltaTime, 65535);
+        EXPECT_GE(current_path_point->pathPosition.deltaLatitude, -131071);
+        EXPECT_LE(current_path_point->pathPosition.deltaLatitude, 131072);
+        EXPECT_GE(current_path_point->pathPosition.deltaLongitude, -131071);
+        EXPECT_LE(current_path_point->pathPosition.deltaLongitude, 131072);
+        EXPECT_GE(current_path_point->pathPosition.deltaAltitude, -12700);
+        EXPECT_LE(current_path_point->pathPosition.deltaAltitude, 12800);
     }
 }
