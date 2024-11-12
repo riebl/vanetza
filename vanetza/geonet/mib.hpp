@@ -40,7 +40,8 @@ enum class AddrConfMethod {
 
 enum class InterfaceType {
     Unspecified = 0,
-    ITS_G5 = 1
+    ITS_G5 = 1,
+    LTE_V2X = 2
 };
 
 enum class SecurityDecapHandling {
