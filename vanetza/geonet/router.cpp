@@ -649,6 +649,7 @@ void Router::execute_media_procedures(CommunicationProfile com_profile)
             execute_itsg5_procedures();
             break;
         case CommunicationProfile::Unspecified:
+        case CommunicationProfile::LTE_V2X:
             // do nothing
             break;
         default:
