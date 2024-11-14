@@ -469,8 +469,8 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
     }
 
     const v3::asn1::Certificate* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
-    if (!certificate && maybe_digest) {
-        if (msg.its_aid() == aid::CA && m_context_v3.m_sign_policy) {
+    if (!certificate) {
+        if (msg.its_aid() == aid::CA && m_context_v3.m_sign_policy && maybe_digest) {
             // for received CAMs (having digest as signer identifier) with unknown AT we request the full AT certificate
             m_context_v3.m_sign_policy->request_unrecognized_certificate(*maybe_digest);
         }
@@ -478,8 +478,11 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         return confirm;
     }
 
+    // code below can safely dereference certificate
+    assert(certificate != nullptr);
+
     // check AT certificate's validity
-    if (certificate && m_context_v3.m_cert_validator) {
+    if (m_context_v3.m_cert_validator) {
         auto verdict = m_context_v3.m_cert_validator->valid_for_signing(v3::CertificateView { certificate }, msg.its_aid());
         if (verdict != v3::CertificateValidator::Verdict::Valid) {
             confirm.report = VerificationReport::Invalid_Certificate;
@@ -538,7 +541,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         }
 
         // update certificate cache with received certificate
-        if (certificate && v3::contains_certificate(signer_identifier)) {
+        if (v3::contains_certificate(signer_identifier)) {
             cache.store(v3::Certificate { *certificate });
         }
     }
