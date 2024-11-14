@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/bin/bash
+set -eu
 HARNESS_DIR=$(realpath $(dirname $0))
 SOURCE_DIR=$HARNESS_DIR/../..
 

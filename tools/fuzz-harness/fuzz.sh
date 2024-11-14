@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/bin/bash
+set -eu
 : ${FUZZ_INPUT:="$HOME/input"}
 : ${FUZZ_OUTPUT:="$HOME/output"}
 : ${FUZZ_BUILD:="$HOME/build"}

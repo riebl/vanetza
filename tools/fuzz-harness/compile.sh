@@ -1,4 +1,5 @@
-#!/bin/bash -eu
+#!/bin/bash
+set -eu
 
 if [[ ! -d "/AFLplusplus" ]] ; then
     echo "This script shall be run inside the AFL++ container"
