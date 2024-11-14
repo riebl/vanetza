@@ -338,6 +338,9 @@ PacketVariant SecuredMessage::payload() const
         case Vanetza_Security_Ieee1609Dot2Content_PR_signedData:
             buffer = get_payload(m_struct->content->choice.signedData);
             break;
+        default:
+            // empty buffer as fallback
+            break;
     }
 
     return CohesivePacket { std::move(buffer), OsiLayer::Network };
@@ -352,6 +355,9 @@ void SecuredMessage::set_payload(const ByteBuffer& payload)
         case Vanetza_Security_Ieee1609Dot2Content_PR_signedData:
             vanetza::security::v3::set_payload(&m_struct->content->choice.signedData->tbsData->payload->data->content->choice.unsecuredData, payload);
             break;
+        default:
+          // cannot copy payload into secured message
+          break;
     }
 }
 
