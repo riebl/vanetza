@@ -2,6 +2,7 @@
 #define BYTE_VIEW_HPP_TXN2ISMB
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <boost/core/pointer_traits.hpp>
 #include <boost/range/iterator_range.hpp>
 #include <iterator>
 #include <memory>
@@ -23,7 +24,7 @@ public:
 
     byte_view_iterator() = default;
     explicit byte_view_iterator(pointer p) : m_iterator(p) {}
-    explicit byte_view_iterator(const ByteBuffer::const_iterator& it) : m_iterator(&*it) {}
+    explicit byte_view_iterator(const ByteBuffer::const_iterator& it) : m_iterator(boost::to_address(it)) {}
 
     constexpr value_type operator*() const
     {
@@ -153,7 +154,7 @@ public:
      * \param buffer pass buffer via rvalue
      * \note View is valid without limitation
      */
-    byte_view_range(ByteBuffer&&);
+    explicit byte_view_range(ByteBuffer&&);
 
     /**
      * Get pointer to start of contiguous buffer memory
