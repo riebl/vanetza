@@ -1,0 +1,60 @@
+diff --git a/IEEE1609dot2dot1Protocol.asn b/IEEE1609dot2dot1Protocol.asn
+index 78c0489..1bfb644 100644
+--- a/IEEE1609dot2dot1Protocol.asn
++++ b/IEEE1609dot2dot1Protocol.asn
+@@ -440,31 +440,35 @@ SignerSelf ::= SignerIdentifier (WITH COMPONENTS {
+ --                            Certificate Requests                           --
+ --***************************************************************************--
+ 
++ScmsPdu-RaAcaCertRequest ::= ScmsPdu-Scoped {
++  AcaRaInterfacePdu (WITH COMPONENTS {
++    raAcaCertRequest
++  })
++}
++ScmsPdu-EeEcaCertRequest ::= ScmsPdu-Scoped {
++  EcaEeInterfacePdu (WITH COMPONENTS {
++    eeEcaCertRequest
++  })
++}
++ScmsPdu-EeRaCertRequest ::= ScmsPdu-Scoped {
++  EeRaInterfacePdu (WITH COMPONENTS {
++    eeRaCertRequest
++  })
++}
++ScmsPdu-EeRaSuccessorEnrollmentCertRequest ::= ScmsPdu-Scoped {
++  EeRaInterfacePdu (WITH COMPONENTS {
++    eeRaSuccessorEnrollmentCertRequest
++  })
++}
++
++
+ /**
+ * @brief This structure defines the all certificate request structures as a
+ * scoped version of the ScmsPdu.
+ */
+ ScopedCertificateRequest ::= ScmsPdu (
+-  ScmsPdu-Scoped {
+-    AcaRaInterfacePdu (WITH COMPONENTS {
+-      raAcaCertRequest
+-    })
+-  } |
+-  ScmsPdu-Scoped {
+-    EcaEeInterfacePdu (WITH COMPONENTS {
+-      eeEcaCertRequest
+-    })
+-  } |
+-  ScmsPdu-Scoped {
+-    EeRaInterfacePdu (WITH COMPONENTS {
+-      eeRaCertRequest
+-    })
+-  } |
+-  ScmsPdu-Scoped {
+-    EeRaInterfacePdu (WITH COMPONENTS {
+-      eeRaSuccessorEnrollmentCertRequest
+-    })
+-  }
++ScmsPdu-RaAcaCertRequest | ScmsPdu-EeEcaCertRequest |
++ScmsPdu-EeRaCertRequest  | ScmsPdu-EeRaSuccessorEnrollmentCertRequest
+ )
+ 
+ /**
