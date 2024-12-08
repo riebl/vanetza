@@ -1,11 +1,13 @@
 set(_its_asn1_source_file "asn1c_its_sources.txt")
 set(_its_r2_asn1_source_file "asn1c_its_r2_sources.txt")
 set(_sec_asn1_source_file "asn1c_security_sources.txt")
+set(_sec_r2_asn1_source_file "asn1c_security_r2_sources.txt")
 set(_support_asn1_source_file "asn1c_support_sources.txt")
 
 set(_its_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its")
 set(_its_r2_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its/r2")
 set(_sec_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/security")
+set(_sec_r2_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/security/r2")
 set(_support_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/support")
 
 option(VANETZA_ASN1_WITH_ASN1C "Enable asn1c targets" OFF)
@@ -57,6 +59,24 @@ if(VANETZA_ASN1_WITH_ASN1C)
         set(_its_asn1_files ${_iso_asn1_files} ${_its_asn1_files} ${_its_asn1_files_depending_on_iso})
     endif()
 
+    set(_ieee_2_asn1_files
+        IEEE1609dot2.asn IEEE1609dot2BaseTypes.asn IEEE1609dot2crl.asn IEEE1609dot2crlBaseTypes.asn)
+    set(_ieee_21_asn1_files
+        IEEE1609dot2dot1AcaEeInterface.asn IEEE1609dot2dot1AcaLaInterface.asn IEEE1609dot2dot1AcaMaInterface.asn
+        IEEE1609dot2dot1AcaRaInterface.asn IEEE1609dot2dot1Acpc.asn IEEE1609dot2dot1CamRaInterface.asn
+        IEEE1609dot2dot1CertManagement.asn IEEE1609dot2dot1EcaEeInterface.asn IEEE1609dot2dot1EeMaInterface.asn
+        IEEE1609dot2dot1EeRaInterface.asn IEEE1609dot2dot1LaMaInterface.asn IEEE1609dot2dot1LaRaInterface.asn
+        IEEE1609dot2dot1MaRaInterface.asn IEEE1609dot2dot1Protocol.asn)
+    list(TRANSFORM _ieee_2_asn1_files PREPEND ${PROJECT_BINARY_DIR}/ieee/)
+    list(TRANSFORM _ieee_21_asn1_files PREPEND ${PROJECT_BINARY_DIR}/ieee/)
+
+    set(_ieee_asn1_files ${_ieee_2_asn1_files} ${_ieee_21_asn1_files})
+    add_custom_command(OUTPUT ${_ieee_asn1_files}
+        COMMAND ${CMAKE_COMMAND} -DDIRECTORY=${PROJECT_BINARY_DIR}/ieee -P fetch_ieee_asn1_files.cmake
+        COMMENT "Fetch and patch IEEE1609 ASN.1 file"
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        VERBATIM)
+
     set(_pki_asn1_files
         ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-BaseTypes.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-MessagesCa.asn
@@ -66,10 +86,29 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-TypesCaManagement.asn
         ${PROJECT_SOURCE_DIR}/asn1/TS102941v131-TypesEnrolment.asn
     )
+
+    set(_pki_r2_asn1_files
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/BaseTypes.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/MessagesCa.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/MessagesItss-OptionalPrivacy.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/MessagesItss.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/TrustLists.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/TypesAuthorization.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/TypesAuthorizationValidation.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/TypesCaManagement.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/TypesEnrolment.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS102941v221/TypesLinkCertificate.asn
+    )
+    
     set(_sec_asn1_files
         ${PROJECT_SOURCE_DIR}/asn1/TS103097v131.asn
         ${PROJECT_SOURCE_DIR}/asn1/IEEE1609dot2.asn
         ${PROJECT_SOURCE_DIR}/asn1/IEEE1609dot2BaseTypes.asn
+    )
+
+    set(_sec_r2_asn1_files
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103097v211.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103097v211-Extension.asn
     )
 
     add_custom_command(OUTPUT ${_support_asn1_dir}
@@ -125,11 +164,26 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P collect_asn1c_sources.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
 
+    add_custom_command(OUTPUT "${_sec_r2_asn1_dir}"
+        DEPENDS ${_sec_r2_asn1_files} ${_pki_r2_asn1_files} ${_ieee_asn1_files}
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${_sec_r2_asn1_dir}
+        COMMAND ${ASN1C_EXECUTABLE} ${_asn1c_flags} -fprefix=Vanetza_Security2_ -R -D ${_sec_r2_asn1_dir} ${_sec_r2_asn1_files} ${_pki_r2_asn1_files} ${_ieee_asn1_files}
+        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=security/r2 -DASN1C_PREFIX=Vanetza_Security2_
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/remove_prefix_from_filename.cmake
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Generating code from Security Release 2 (1609.2 and TS 103 097, TS 102 941) ASN.1 modules" VERBATIM)
+    add_custom_command(OUTPUT "${_sec_r2_asn1_source_file}"
+        DEPENDS ${_sec_r2_asn1_dir}
+        COMMAND ${CMAKE_COMMAND} -DASN1C_OUTPUT_DIR=security/r2 -DASN1C_SOURCE_FILE=${_sec_r2_asn1_source_file}
+            -P collect_asn1c_sources.cmake
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
+
     add_custom_target(generate_asn1c DEPENDS
         "${_support_asn1_dir}" "${_support_asn1_source_file}"
         "${_its_asn1_dir}" "${_its_asn1_source_file}"
         "${_its_r2_asn1_dir}" "${_its_r2_asn1_source_file}"
         "${_sec_asn1_dir}" "${_sec_asn1_source_file}"
+        "${_sec_r2_asn1_dir}" "${_sec_r2_asn1_source_file}"
         VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
         COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
@@ -151,6 +205,11 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
         COMMENT "Patching generated security asn1c files"
         WORKING_DIRECTORY ${_sec_asn1_dir} VERBATIM)
+    add_custom_command(TARGET generate_asn1c POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_Security2_
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
+        COMMENT "Patching generated security release2 asn1c files"
+        WORKING_DIRECTORY ${_sec_r2_asn1_dir} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
         COMMAND ${CMAKE_COMMAND} -DPATCH_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR}/patches
             -P ${CMAKE_CURRENT_SOURCE_DIR}/apply_patches.cmake
@@ -181,6 +240,10 @@ if(VANETZA_ASN1_WITH_ASN1C)
         COMMAND ${CMAKE_COMMAND}
           -DASN1C_OUTPUT_DIR=${_sec_asn1_dir}
           -DASN1C_SOURCE_FILE=${_sec_asn1_source_file}
+          -P clean_asn1c.cmake
+        COMMAND ${CMAKE_COMMAND}
+          -DASN1C_OUTPUT_DIR=${_sec_r2_asn1_dir}
+          -DASN1C_SOURCE_FILE=${_sec_r2_asn1_source_file}
           -P clean_asn1c.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
     add_dependencies(generate_asn1c clean_asn1c)
@@ -227,6 +290,7 @@ target_sources(asn1_support PRIVATE memory.c)
 add_asn1_component(its)
 add_asn1_component(its/r2)
 add_asn1_component(security)
+add_asn1_component(security/r2)
 
 add_vanetza_component(asn1 asn1c_wrapper.cpp)
 target_link_libraries(asn1 PUBLIC asn1_its Boost::boost)
