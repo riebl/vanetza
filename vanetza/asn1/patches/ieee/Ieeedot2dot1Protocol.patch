@@ -29,9 +29,9 @@ index 78c0489..1bfb644 100644
 +
 +
  /**
- * @brief This structure defines the all certificate request structures as a
- * scoped version of the ScmsPdu.
- */
+  * @brief This structure defines the all certificate request structures as a
+  * scoped version of the ScmsPdu.
+  */
  ScopedCertificateRequest ::= ScmsPdu (
 -  ScmsPdu-Scoped {
 -    AcaRaInterfacePdu (WITH COMPONENTS {
