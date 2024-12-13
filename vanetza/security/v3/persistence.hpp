@@ -45,7 +45,7 @@ Certificate load_certificate_from_file(const std::string& certificate_path);
  */
 void save_certificate_to_file(const std::string& certificate_path, const Certificate& certificate);
 
-} // namespace v2
+} // namespace v3
 } // namespace security
 } // namespace vanetza
 
