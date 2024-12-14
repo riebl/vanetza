@@ -5,6 +5,7 @@
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/signature.hpp>
+#include <future>
 
 namespace vanetza
 {
