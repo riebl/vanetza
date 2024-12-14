@@ -103,7 +103,7 @@ Certificate load_certificate_from_file(const std::string& certificate_path)
     return certificate;
 }
 
-void save_certificate_to_file(const std::string& certificate_path, Certificate& certificate)
+void save_certificate_to_file(const std::string& certificate_path, const Certificate& certificate)
 {
     std::ofstream dest;
     dest.open(certificate_path.c_str(), std::ios::out | std::ios::binary);

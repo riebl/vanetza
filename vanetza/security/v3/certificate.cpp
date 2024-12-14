@@ -622,7 +622,7 @@ Certificate fake_certificate()
     return certi;
 }
 
-void serialize(OutputArchive& ar, Certificate& certificate)
+void serialize(OutputArchive& ar, const Certificate& certificate)
 {
     ByteBuffer buffer = certificate.encode();
     ar.save_binary(buffer.data(), buffer.size());

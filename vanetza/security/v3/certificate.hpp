@@ -210,7 +210,7 @@ ByteBuffer get_app_permissions(const asn1::EtsiTs103097Certificate& cert, ItsAid
 
 void add_psid_group_permission(asn1::PsidGroupPermissions* group_permission, ItsAid aid, const ByteBuffer& ssp, const ByteBuffer& bitmask);
 
-void serialize(OutputArchive& ar, Certificate& certificate);
+void serialize(OutputArchive& ar, const Certificate& certificate);
 
 Certificate fake_certificate();
 

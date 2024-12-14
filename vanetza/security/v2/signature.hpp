@@ -7,7 +7,6 @@
 #include <vanetza/security/v2/serialization.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/variant/variant.hpp>
-#include <future>
 
 namespace vanetza
 {
