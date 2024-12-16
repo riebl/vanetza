@@ -1,0 +1,127 @@
+/*************************************************************************************
+   This file contains the EtsiTs102941Messages module containing all possible PKI messages.
+   It should be used when all PKI messages needs to be implemented (for example, for CA development)
+**************************************************************************************/
+EtsiTs102941MessagesCa
+  { itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) messagesCa(0) major-version-3(3) minor-version-3(3)}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+IMPORTS
+
+EtsiTs103097Data-Signed,
+EtsiTs103097Data-SignedExternalPayload,
+EtsiTs103097Data-Encrypted-Unicast,
+EtsiTs103097Data-SignedAndEncrypted-Unicast
+FROM EtsiTs103097Module
+{itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) secHeaders(103097) core(1) major-version-3(3) minor-version-1(1)} 
+WITH SUCCESSORS
+
+Version
+FROM EtsiTs102941BaseTypes
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) baseTypes(3) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
+
+InnerEcRequestSignedForPop, InnerEcResponse
+FROM EtsiTs102941TypesEnrolment
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) enrolment(4) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
+
+EtsiTs102941ButterflyAuthorizationRequest-X509Signed, InnerAtRequest, InnerAtResponse
+FROM EtsiTs102941TypesAuthorization
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) authorization(5) major-version-3(3) minor-version-2(2) }
+WITH SUCCESSORS
+
+ToBeSignedCrl, ToBeSignedTlmCtl, ToBeSignedRcaCtl
+FROM EtsiTs102941TrustLists
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) trustLists(6) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
+
+AuthorizationValidationRequest, AuthorizationValidationResponse 
+FROM EtsiTs102941TypesAuthorizationValidation
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) authValidation(7) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
+
+CaCertificateRequest
+FROM EtsiTs102941TypesCaManagement
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) caManagement(8) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
+
+ToBeSignedLinkCertificate, ToBeSignedLinkCertificateTlm, ToBeSignedLinkCertificateRca
+FROM EtsiTs102941TypesLinkCertificate
+{ itu-t(0) identified-organization(4) etsi(0) itsDomain(5) wg5(5) ts(102941) linkCertificate(9) major-version-3(3) minor-version-1(1) }
+WITH SUCCESSORS
+
+EeRaCertRequest, RaEeCertInfo, EeRaDownloadRequest
+FROM Ieee1609Dot2Dot1EeRaInterface
+{iso(1) identified-organization(3) ieee(111) standards-association-numbered-series-standards(2) wave-stds(1609) dot2(2) extension-standards(255) dot1(1) interfaces(1) ee-ra(11) major-version-3(3) minor-version-1(1)}
+WITH SUCCESSORS
+
+RaAcaCertRequest, AcaRaCertResponse 
+FROM Ieee1609Dot2Dot1AcaRaInterface
+{iso(1) identified-organization(3) ieee(111) standards-association-numbered-series-standards(2) wave-stds(1609) dot2(2) extension-standards(255) dot1(1) interfaces(1) aca-ra(4) major-version-3(3) minor-version-1(1)}
+WITH SUCCESSORS
+;
+
+/************
+-- Messages
+************/
+EnrolmentRequestMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{enrolmentRequest PRESENT})})} 
+EnrolmentResponseMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{enrolmentResponse PRESENT})})} 
+AuthorizationRequestMessage ::= EtsiTs103097Data-Encrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{authorizationRequest PRESENT})})} 
+AuthorizationRequestMessageWithPop ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{authorizationRequest PRESENT})})} 
+AuthorizationResponseMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{authorizationResponse PRESENT})})} 
+CertificateRevocationListMessage ::= EtsiTs103097Data-Signed{EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{certificateRevocationList PRESENT})})}
+TlmCertificateTrustListMessage ::= EtsiTs103097Data-Signed{EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{certificateTrustListTlm PRESENT})})}
+RcaCertificateTrustListMessage ::= EtsiTs103097Data-Signed{EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{certificateTrustListRca PRESENT})})}
+AuthorizationValidationRequestMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{authorizationValidationRequest PRESENT})})} 
+AuthorizationValidationResponseMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{authorizationValidationResponse PRESENT})})} 
+CaCertificateRequestMessage ::= EtsiTs103097Data-Signed {EtsiTs102941Data(WITH COMPONENTS{..., content (WITH COMPONENTS{caCertificateRequest PRESENT})})}
+CaCertificateRekeyingMessage ::= EtsiTs103097Data-Signed {EtsiTs103097Data-Signed {EtsiTs102941Data(WITH COMPONENTS{..., content (WITH COMPONENTS{caCertificateRequest PRESENT})})}}
+TlmLinkCertificateMessage ::= EtsiTs103097Data-Signed {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{linkCertificateTlm PRESENT})})}
+RcaSingleSignedLinkCertificateMessage ::= EtsiTs103097Data-Signed {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{singleSignedLinkCertificateRca PRESENT})})}
+RcaDoubleSignedLinkCertificateMessage ::= EtsiTs103097Data-Signed {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{doubleSignedlinkCertificateRca PRESENT})})}
+ButterflyAuthorizationRequestMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{butterflyAuthorizationRequest PRESENT})})}
+X509SignedButterflyAuthorizationRequestMessage ::= EtsiTs103097Data-Encrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{x509SignedbutterflyAuthorizationRequest PRESENT})})}
+ButterflyAuthorizationResponseMessage ::= EtsiTs103097Data-Signed {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{butterflyAuthorizationResponse PRESENT})})}
+ButterflyAtDownloadRequestMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{butterflyAtDownloadRequest PRESENT})})}
+ButterflyCertRequestMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{butterflyCertificateRequest PRESENT})})}
+ButterflyCertResponseMessage ::= EtsiTs103097Data-SignedAndEncrypted-Unicast {EtsiTs102941Data (WITH COMPONENTS{..., content (WITH COMPONENTS{butterflyCertificateResponse PRESENT})})}
+
+/************
+-- EtsiTs102941Data
+************/
+
+EtsiTs102941Data::= SEQUENCE {
+  version Version (v1),
+  content EtsiTs102941DataContent
+  }
+
+EtsiTs102941DataContent ::= CHOICE {
+  enrolmentRequest                        InnerEcRequestSignedForPop,
+  enrolmentResponse                       InnerEcResponse,
+  authorizationRequest                    InnerAtRequest,
+  authorizationResponse                   InnerAtResponse,
+  certificateRevocationList               ToBeSignedCrl,
+  certificateTrustListTlm                 ToBeSignedTlmCtl,
+  certificateTrustListRca                 ToBeSignedRcaCtl,
+  authorizationValidationRequest          AuthorizationValidationRequest,
+  authorizationValidationResponse         AuthorizationValidationResponse,
+  caCertificateRequest                    CaCertificateRequest,
+  ...,
+  linkCertificateTlm                      ToBeSignedLinkCertificateTlm,
+  singleSignedLinkCertificateRca          ToBeSignedLinkCertificateRca,
+  doubleSignedlinkCertificateRca          RcaSingleSignedLinkCertificateMessage,
+  /* Extension for butterfly key provisioning */
+  [[butterflyAuthorizationRequest         EeRaCertRequest,
+  x509SignedbutterflyAuthorizationRequest EtsiTs102941ButterflyAuthorizationRequest-X509Signed,
+  butterflyAuthorizationResponse          RaEeCertInfo,
+  butterflyCertificateRequest             RaAcaCertRequest,
+  butterflyCertificateResponse            AcaRaCertResponse,
+  butterflyAtDownloadRequest              EeRaDownloadRequest]]
+  }
+
+
+
+END
