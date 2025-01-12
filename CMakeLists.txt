@@ -1,17 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
-cmake_policy(VERSION 3.12...3.27)
+cmake_policy(VERSION 3.12...3.31)
 project(Vanetza VERSION 24.10)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
-# enable convenient CMake policies if available
-if(POLICY CMP0074)
-  # find_package() employs <package>_ROOT (since CMake 3.12)
-  cmake_policy(SET CMP0074 NEW)
-endif()
-if(POLICY CMP0077)
-  # option() honours normal variable (since CMake 3.13)
-  cmake_policy(SET CMP0077 NEW)
-endif()
 
 # Vanetza makes extensive use of C++11
 set(CMAKE_CXX_STANDARD 14)
