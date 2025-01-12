@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(VERSION 3.12...3.27)
-project(Vanetza VERSION 0.8)
+project(Vanetza VERSION 24.10)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # enable convenient CMake policies if available
