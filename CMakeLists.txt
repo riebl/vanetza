@@ -53,7 +53,6 @@ endforeach()
 include(CompatBoostTargets)
 find_package(CryptoPP 5.6.1 REQUIRED)
 find_package(GeographicLib 1.37 REQUIRED)
-find_package(Autotalks MODULE QUIET)
 
 if(Boost_VERSION_STRING STRGREATER_EQUAL 1.80)
   set(CMAKE_CXX_STANDARD 14)
