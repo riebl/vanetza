@@ -1,5 +1,5 @@
 diff --git a/vanetza/asn1/its/TimestampIts.c b/vanetza/asn1/its/TimestampIts.c
-index ffe9038a..c4bd5b2f 100644
+index ffe9038a..566e254c 100644
 --- a/vanetza/asn1/its/TimestampIts.c
 +++ b/vanetza/asn1/its/TimestampIts.c
 @@ -11,7 +11,7 @@ int
@@ -28,17 +28,45 @@ index ffe9038a..c4bd5b2f 100644
  		/* Constraint check succeeded */
  		return 0;
  	} else {
-@@ -49,7 +49,7 @@ static asn_oer_constraints_t asn_OER_type_TimestampIts_constr_1 CC_NOTUSED = {
+@@ -49,10 +49,15 @@ static asn_oer_constraints_t asn_OER_type_TimestampIts_constr_1 CC_NOTUSED = {
  #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
  #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
  asn_per_constraints_t asn_PER_type_TimestampIts_constr_1 CC_NOTUSED = {
 -	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103 }	/* (0..4398046511103) */,
-+	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103u }	/* (0..4398046511103) */,
++	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103ul }	/* (0..4398046511103) */,
  	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
  	0, 0	/* No PER value map */
  };
++const asn_INTEGER_specifics_t asn_SPC_TimestampIts_specs_1 = {
++	0,	0,	0,	0,	0,
++	0,	/* Native long size */
++	1	/* Unsigned representation */
++};
+ #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+ static const ber_tlv_tag_t asn_DEF_TimestampIts_tags_1[] = {
+ 	(ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
+@@ -80,6 +85,6 @@ asn_TYPE_descriptor_t asn_DEF_TimestampIts = {
+ 		TimestampIts_constraint
+ 	},
+ 	0, 0,	/* Defined elsewhere */
+-	0	/* No specifics */
++	&asn_SPC_TimestampIts_specs_1	/* Manually added specifics */
+ };
+ 
+diff --git a/vanetza/asn1/its/TimestampIts.h b/vanetza/asn1/its/TimestampIts.h
+index 0f2860ce..27ea1e60 100644
+--- a/vanetza/asn1/its/TimestampIts.h
++++ b/vanetza/asn1/its/TimestampIts.h
+@@ -30,6 +30,7 @@ typedef INTEGER_t	 TimestampIts_t;
+ /* Implementation */
+ extern asn_per_constraints_t asn_PER_type_TimestampIts_constr_1;
+ extern asn_TYPE_descriptor_t asn_DEF_TimestampIts;
++extern const asn_INTEGER_specifics_t asn_SPC_TimestampIts_specs_1;
+ asn_struct_free_f TimestampIts_free;
+ asn_struct_print_f TimestampIts_print;
+ asn_constr_check_f TimestampIts_constraint;
 diff --git a/vanetza/asn1/its/r2/TimestampIts.c b/vanetza/asn1/its/r2/TimestampIts.c
-index 03bc77a3..58543991 100644
+index 03bc77a3..241466c9 100644
 --- a/vanetza/asn1/its/r2/TimestampIts.c
 +++ b/vanetza/asn1/its/r2/TimestampIts.c
 @@ -11,7 +11,7 @@ int
@@ -67,12 +95,40 @@ index 03bc77a3..58543991 100644
  		/* Constraint check succeeded */
  		return 0;
  	} else {
-@@ -49,7 +49,7 @@ static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_TimestampIts_constr_1 CC_
+@@ -49,10 +49,15 @@ static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_TimestampIts_constr_1 CC_
  #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
  #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
  asn_per_constraints_t asn_PER_type_Vanetza_ITS2_TimestampIts_constr_1 CC_NOTUSED = {
 -	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103 }	/* (0..4398046511103) */,
-+	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103u }	/* (0..4398046511103) */,
++	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103ul }	/* (0..4398046511103) */,
  	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
  	0, 0	/* No PER value map */
  };
++const asn_INTEGER_specifics_t asn_SPC_Vanetza_ITS2_TimestampIts_specs_1 = {
++	0,	0,	0,	0,	0,
++	0,	/* Native long size */
++	1	/* Unsigned representation */
++};
+ #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
+ static const ber_tlv_tag_t asn_DEF_Vanetza_ITS2_TimestampIts_tags_1[] = {
+ 	(ASN_TAG_CLASS_UNIVERSAL | (2 << 2))
+@@ -80,6 +85,6 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_TimestampIts = {
+ 		Vanetza_ITS2_TimestampIts_constraint
+ 	},
+ 	0, 0,	/* No members */
+-	0	/* No specifics */
++	&asn_SPC_Vanetza_ITS2_TimestampIts_specs_1	/* Manually added specifics */
+ };
+ 
+diff --git a/vanetza/asn1/its/r2/TimestampIts.h b/vanetza/asn1/its/r2/TimestampIts.h
+index 23f80614..9681ac90 100644
+--- a/vanetza/asn1/its/r2/TimestampIts.h
++++ b/vanetza/asn1/its/r2/TimestampIts.h
+@@ -24,6 +24,7 @@ typedef INTEGER_t	 Vanetza_ITS2_TimestampIts_t;
+ /* Implementation */
+ extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_TimestampIts_constr_1;
+ extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_TimestampIts;
++extern const asn_INTEGER_specifics_t asn_SPC_Vanetza_ITS2_TimestampIts_specs_1;
+ asn_struct_free_f Vanetza_ITS2_TimestampIts_free;
+ asn_struct_print_f Vanetza_ITS2_TimestampIts_print;
+ asn_constr_check_f Vanetza_ITS2_TimestampIts_constraint;

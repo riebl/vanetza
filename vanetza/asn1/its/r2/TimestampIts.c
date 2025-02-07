@@ -49,9 +49,14 @@ static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_TimestampIts_constr_1 CC_
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_Vanetza_ITS2_TimestampIts_constr_1 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103u }	/* (0..4398046511103) */,
+	{ APC_CONSTRAINED,	 42, -1,  0,  4398046511103ul }	/* (0..4398046511103) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
+};
+const asn_INTEGER_specifics_t asn_SPC_Vanetza_ITS2_TimestampIts_specs_1 = {
+	0,	0,	0,	0,	0,
+	0,	/* Native long size */
+	1	/* Unsigned representation */
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_Vanetza_ITS2_TimestampIts_tags_1[] = {
@@ -80,6 +85,6 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_TimestampIts = {
 		Vanetza_ITS2_TimestampIts_constraint
 	},
 	0, 0,	/* No members */
-	0	/* No specifics */
+	&asn_SPC_Vanetza_ITS2_TimestampIts_specs_1	/* Manually added specifics */
 };
 
