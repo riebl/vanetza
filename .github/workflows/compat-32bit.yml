@@ -8,11 +8,12 @@ jobs:
   docker-unit-tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         platform:
           - name: linux/386
             tag: x86
-          - docker: linux/arm/v7
+          - name: linux/arm/v7
             tag: armv7
     steps:
       - uses: actions/checkout@v4
