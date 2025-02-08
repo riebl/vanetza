@@ -4,6 +4,7 @@
 
 using namespace vanetza::asn1;
 typedef vanetza::asn1::asn1c_wrapper<VanetzaTest_t> test_wrapper;
+typedef vanetza::asn1::asn1c_oer_wrapper<VanetzaTest_t> test_oer_wrapper;
 
 TEST(asn1c_wrapper, create) {
     EXPECT_NO_THROW({
@@ -19,6 +20,16 @@ TEST(asn1c_wrapper, size) {
     test_wrapper wrapper(asn_DEF_VanetzaTest);
     OCTET_STRING_fromString(&wrapper->string, "1234");
     EXPECT_EQ(wrapper.size(), 5);
+}
+
+TEST(asn1c_wrapper, oer_size) {
+    test_oer_wrapper wrapper(asn_DEF_VanetzaTest);
+    
+    OCTET_STRING_fromString(&wrapper->string, "1234");
+    EXPECT_EQ(wrapper.size(), 7);
+
+    OCTET_STRING_fromString(&wrapper->string, "12345");
+    EXPECT_EQ(wrapper.size(), 8);
 }
 
 TEST(asn1c_wrapper, dereferencing) {
