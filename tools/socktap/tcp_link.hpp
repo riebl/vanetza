@@ -8,7 +8,7 @@
 #include <array>
 #include <list>
 
-static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Link, vanetza::OsiLayer::Application);
+static constexpr std::size_t layers_ = num_osi_layers(vanetza::OsiLayer::Physical, vanetza::OsiLayer::Application);
 
 
 class TcpSocket
