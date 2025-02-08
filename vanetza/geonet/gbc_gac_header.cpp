@@ -1,5 +1,6 @@
 #include "gbc_gac_header.hpp"
 #include "areas.hpp"
+#include <cmath>
 
 namespace vanetza
 {
@@ -84,8 +85,8 @@ Area GbcGacHeader::destination(const decltype(Area::shape)& shape) const
 
 void GbcGacHeader::position(const GeodeticPosition& position)
 {
-    geo_area_pos_latitude = static_cast<geo_angle_i32t>(position.latitude);
-    geo_area_pos_longitude = static_cast<geo_angle_i32t>(position.longitude);
+    geo_area_pos_latitude = geo_angle_i32t::from_value(std::round(position.latitude.value() * 1e7));
+    geo_area_pos_longitude = geo_angle_i32t::from_value(std::round(position.longitude.value() * 1e7));
 }
 
 GeodeticPosition GbcGacHeader::position() const
