@@ -192,7 +192,7 @@ TEST_P(Routing, advanced_forwarding_receiver_inside_destination_cbf)
 TEST_P(Routing, advanced_forwarding_max_counter_exceeded)
 {
     GbcDataRequest gbc_request(net.get_mib(), aid::IPV6_ROUTING);
-    gbc_request.destination = circle_dest_area(2.0_m, 2.0_m, 0.0_m);
+    gbc_request.destination = circle_dest_area(3.0_m, 2.0_m, 0.0_m);
     gbc_request.upper_protocol = UpperProtocol::IPv6;
     auto confirm = net.get_router(cars[0])->request(gbc_request, create_packet());
     ASSERT_TRUE(confirm.accepted());
