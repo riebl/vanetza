@@ -155,6 +155,7 @@ its/r2/Iso3833VehicleType.c
 its/r2/IssuerIdentifier.c
 its/r2/ItineraryPath.c
 its/r2/ItsPduHeader.c
+its/r2/ItsPduHeaderVam.c
 its/r2/IviIdentificationNumber.c
 its/r2/IvimReference.c
 its/r2/IvimReferences.c
@@ -194,6 +195,7 @@ its/r2/MessageSegmentationInfo.c
 its/r2/MetaInformation.c
 its/r2/MitigationForTechnologies.c
 its/r2/MitigationPerTechnologyClass.c
+its/r2/MotorcylistSpecialContainer.c
 its/r2/NumberOfOccupants.c
 its/r2/ObjectClass.c
 its/r2/ObjectClassDescription.c
@@ -341,8 +343,10 @@ its/r2/TransmissionInterval.c
 its/r2/TurningDirection.c
 its/r2/TurningRadius.c
 its/r2/UsageIndication.c
+its/r2/VAM.c
 its/r2/VDS.c
 its/r2/ValidityDuration.c
+its/r2/VamParameters.c
 its/r2/VarLengthNumber.c
 its/r2/VehicleBreakdownSubCauseCode.c
 its/r2/VehicleHeight.c
@@ -361,11 +365,17 @@ its/r2/VelocityComponentValue.c
 its/r2/VelocityPolarWithZ.c
 its/r2/VerticalAcceleration.c
 its/r2/VerticalAccelerationValue.c
+its/r2/VruAwareness.c
 its/r2/VruClusterInformation.c
+its/r2/VruClusterInformationContainer.c
+its/r2/VruClusterOperationContainer.c
 its/r2/VruClusterProfiles.c
 its/r2/VruDeviceUsage.c
 its/r2/VruEnvironment.c
 its/r2/VruExteriorLights.c
+its/r2/VruHighFrequencyContainer.c
+its/r2/VruLowFrequencyContainer.c
+its/r2/VruMotionPredictionContainer.c
 its/r2/VruMovementControl.c
 its/r2/VruProfileAndSubprofile.c
 its/r2/VruSizeClass.c

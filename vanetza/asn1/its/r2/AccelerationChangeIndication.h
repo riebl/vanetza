@@ -35,6 +35,8 @@ typedef struct Vanetza_ITS2_AccelerationChangeIndication {
 
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_AccelerationChangeIndication;
+extern asn_SEQUENCE_specifics_t asn_SPC_Vanetza_ITS2_AccelerationChangeIndication_specs_1;
+extern asn_TYPE_member_t asn_MBR_Vanetza_ITS2_AccelerationChangeIndication_1[2];
 
 #ifdef __cplusplus
 }

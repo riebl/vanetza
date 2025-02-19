@@ -7,7 +7,7 @@
 
 #include "HeadingChangeIndication.h"
 
-static asn_TYPE_member_t asn_MBR_Vanetza_ITS2_HeadingChangeIndication_1[] = {
+asn_TYPE_member_t asn_MBR_Vanetza_ITS2_HeadingChangeIndication_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Vanetza_ITS2_HeadingChangeIndication, direction),
 		(ASN_TAG_CLASS_CONTEXT | (0 << 2)),
 		-1,	/* IMPLICIT tag at current level */
@@ -56,7 +56,7 @@ static const asn_TYPE_tag2member_t asn_MAP_Vanetza_ITS2_HeadingChangeIndication_
     { (ASN_TAG_CLASS_CONTEXT | (0 << 2)), 0, 0, 0 }, /* direction */
     { (ASN_TAG_CLASS_CONTEXT | (1 << 2)), 1, 0, 0 } /* actionDeltaTime */
 };
-static asn_SEQUENCE_specifics_t asn_SPC_Vanetza_ITS2_HeadingChangeIndication_specs_1 = {
+asn_SEQUENCE_specifics_t asn_SPC_Vanetza_ITS2_HeadingChangeIndication_specs_1 = {
 	sizeof(struct Vanetza_ITS2_HeadingChangeIndication),
 	offsetof(struct Vanetza_ITS2_HeadingChangeIndication, _asn_ctx),
 	asn_MAP_Vanetza_ITS2_HeadingChangeIndication_tag2el_1,
