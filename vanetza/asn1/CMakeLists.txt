@@ -42,6 +42,8 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-PerceivedObjectContainer.asn
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-PerceptionRegionContainer.asn
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-SensorInformationContainer.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103300v221/VAM-PDU-Descriptions.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103300v221/motorcyclist-special-container.asn
     )
 
     option(VANETZA_ASN1_WITH_ISO "Fetch ISO ASN.1 files for a more complete ITS message set" OFF)
