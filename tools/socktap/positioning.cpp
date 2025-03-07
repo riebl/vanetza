@@ -45,7 +45,7 @@ void add_positioning_options(po::options_description& options)
     options.add_options()
         ("positioning,p", po::value<std::string>()->default_value(default_positioning), "Select positioning provider")
 #ifdef SOCKTAP_WITH_GPSD
-        ("gpsd-host", po::value<std::string>()->default_value(gpsd::shared_memory), "gpsd's server hostname")
+        ("gpsd-host", po::value<std::string>()->default_value("localhost"), "gpsd's server hostname")
         ("gpsd-port", po::value<std::string>()->default_value(gpsd::default_port), "gpsd's listening port")
 #endif
         ("latitude", po::value<double>()->default_value(48.7668616), "Latitude of static position")
