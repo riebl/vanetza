@@ -7,7 +7,7 @@
 #include "router_context.hpp"
 #include "security.hpp"
 #include "time_trigger.hpp"
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
 #include <iostream>
@@ -72,8 +72,8 @@ int main(int argc, const char** argv)
     }
 
     try {
-        asio::io_service io_service;
-        TimeTrigger trigger(io_service);
+        asio::io_context io_context;
+        TimeTrigger trigger(io_context);
 
         const char* device_name = vm["interface"].as<std::string>().c_str();
         EthernetDevice device(device_name);
@@ -89,19 +89,19 @@ int main(int argc, const char** argv)
         }
 
         const std::string link_layer_name = vm["link-layer"].as<std::string>();
-        auto link_layer =  create_link_layer(io_service, device, link_layer_name, vm);
+        auto link_layer =  create_link_layer(io_context, device, link_layer_name, vm);
         if (!link_layer) {
             std::cerr << "No link layer '" << link_layer_name << "' found." << std::endl;
             return 1;
         }
 
-        auto signal_handler = [&io_service](const boost::system::error_code& ec, int signal_number) {
+        auto signal_handler = [&io_context](const boost::system::error_code& ec, int signal_number) {
             if (!ec) {
                 std::cout << "Termination requested." << std::endl;
-                io_service.stop();
+                io_context.stop();
             }
         };
-        asio::signal_set signals(io_service, SIGINT, SIGTERM);
+        asio::signal_set signals(io_context, SIGINT, SIGTERM);
         signals.async_wait(signal_handler);
 
         // configure management information base
@@ -120,7 +120,7 @@ int main(int argc, const char** argv)
             throw std::runtime_error("Unsupported GeoNetworking version, only version 0 and 1 are supported.");
         }
 
-        auto positioning = create_position_provider(io_service, vm, trigger.runtime());
+        auto positioning = create_position_provider(io_context, vm, trigger.runtime());
         if (!positioning) {
             std::cerr << "Requested positioning method is not available\n";
             return 1;
@@ -152,12 +152,12 @@ int main(int argc, const char** argv)
                 apps.emplace(app_name, std::move(ca));
             } else if (app_name == "hello") {
                 std::unique_ptr<HelloApplication> hello {
-                    new HelloApplication(io_service, std::chrono::milliseconds(800))
+                    new HelloApplication(io_context, std::chrono::milliseconds(800))
                 };
                 apps.emplace(app_name, std::move(hello));
             } else if (app_name == "benchmark") {
                 std::unique_ptr<BenchmarkApplication> benchmark {
-                    new BenchmarkApplication(io_service)
+                    new BenchmarkApplication(io_context)
                 };
                 apps.emplace(app_name, std::move(benchmark));
             } else {
@@ -174,7 +174,7 @@ int main(int argc, const char** argv)
             context.enable(app.second.get());
         }
 
-        io_service.run();
+        io_context.run();
     } catch (PositioningException& e) {
         std::cerr << "Exit because of positioning error: " << e.what() << std::endl;
         return 1;

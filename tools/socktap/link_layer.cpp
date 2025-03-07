@@ -4,6 +4,8 @@
 #include "udp_link.hpp"
 #include <vanetza/access/ethertype.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
+#include <boost/asio/ip/address.hpp>
+#include <boost/asio/ip/udp.hpp>
 #include <iostream>
 
 #ifdef SOCKTAP_WITH_CUBE_EVK
@@ -38,7 +40,7 @@ boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_po
     }
 
     boost::system::error_code ec;
-    boost::asio::ip::address ip = boost::asio::ip::address::from_string(ip_port.substr(0, ip_len), ec);
+    boost::asio::ip::address ip = boost::asio::ip::make_address(ip_port.substr(0, ip_len), ec);
     if (ec) {
         // error: IP-address invalid
         std::cerr << "[" << ip_port << "] Invalid IP-address: " << ec.message() << std::endl;
@@ -49,13 +51,13 @@ boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_po
 }
 
 std::unique_ptr<LinkLayer>
-create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& device, const std::string& name, const boost::program_options::variables_map& vm)
+create_link_layer(boost::asio::io_context& io_context, const EthernetDevice& device, const std::string& name, const boost::program_options::variables_map& vm)
 {
     std::unique_ptr<LinkLayer> link_layer;
 
     if (name == "ethernet" || name == "cohda") {
         boost::asio::generic::raw_protocol raw_protocol(AF_PACKET, vanetza::access::ethertype::GeoNetworking.net());
-        boost::asio::generic::raw_protocol::socket raw_socket(io_service, raw_protocol);
+        boost::asio::generic::raw_protocol::socket raw_socket(io_context, raw_protocol);
         raw_socket.bind(device.endpoint(AF_PACKET));
 
         if (name == "ethernet") {
@@ -67,12 +69,12 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
         }
     } else if (name == "udp") {
         namespace ip = boost::asio::ip;
-        ip::udp::endpoint multicast(ip::address::from_string("239.118.122.97"), 8947);
-        link_layer.reset(new UdpLink { io_service, multicast, device });
+        ip::udp::endpoint multicast(ip::make_address("239.118.122.97"), 8947);
+        link_layer.reset(new UdpLink { io_context, multicast, device });
     } else if (name == "tcp") {
         namespace ip = boost::asio::ip;
 
-        TcpLink* tcp = new TcpLink { io_service };
+        TcpLink* tcp = new TcpLink { io_context };
 
         if (vm.count("tcp-connect")) {
             for (const std::string& ip_port : vm["tcp-connect"].as<std::vector<std::string>>()) {
@@ -96,11 +98,11 @@ create_link_layer(boost::asio::io_service& io_service, const EthernetDevice& dev
 
     } else if (name == "autotalks") {
 #ifdef SOCKTAP_WITH_AUTOTALKS
-        link_layer.reset(new AutotalksLink { io_service });
+        link_layer.reset(new AutotalksLink { io_context });
 #endif
     } else if (name == "cube-evk") {
 #ifdef SOCKTAP_WITH_CUBE_EVK
-        link_layer.reset(new CubeEvkLink { io_service, boost::asio::ip::address_v4::from_string(vm["cube-ip"].as<std::string>()) });
+        link_layer.reset(new CubeEvkLink { io_context, boost::asio::ip::make_address(vm["cube-ip"].as<std::string>()) });
 #endif
     }
 

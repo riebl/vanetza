@@ -7,8 +7,8 @@ namespace asio = boost::asio;
 namespace posix_time = boost::posix_time;
 using namespace vanetza;
 
-TimeTrigger::TimeTrigger(asio::io_service& io_service) :
-    io_service_(io_service), timer_(io_service), runtime_(Clock::at(now()))
+TimeTrigger::TimeTrigger(asio::io_context& io_context) :
+    io_context_(io_context), timer_(io_context), runtime_(Clock::at(now()))
 {
     std::cout << "Starting runtime at " << now() <<"\n";
     schedule();

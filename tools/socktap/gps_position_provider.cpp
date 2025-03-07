@@ -55,12 +55,12 @@ vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
 
 } // namespace
 
-GpsPositionProvider::GpsPositionProvider(boost::asio::io_service& io) :
+GpsPositionProvider::GpsPositionProvider(boost::asio::io_context& io) :
     GpsPositionProvider(io, gpsd::shared_memory, nullptr)
 {
 }
 
-GpsPositionProvider::GpsPositionProvider(boost::asio::io_service& io, const std::string& hostname, const std::string& port) :
+GpsPositionProvider::GpsPositionProvider(boost::asio::io_context& io, const std::string& hostname, const std::string& port) :
     timer_(io)
 {
     if (gps_open(hostname.c_str(), port.c_str(), &gps_data_)) {
@@ -91,7 +91,7 @@ const vanetza::PositionFix& GpsPositionProvider::position_fix()
 
 void GpsPositionProvider::schedule_timer()
 {
-    timer_.expires_from_now(std::chrono::milliseconds(500));
+    timer_.expires_after(std::chrono::milliseconds(500));
     timer_.async_wait(std::bind(&GpsPositionProvider::on_timer, this, std::placeholders::_1));
 }
 

@@ -1,4 +1,5 @@
 #include "ethernet_device.hpp"
+#include <boost/asio/ip/address.hpp>
 #include <algorithm>
 #include <cstring>
 #include <system_error>
@@ -68,5 +69,5 @@ boost::asio::ip::address_v4 EthernetDevice::ip() const
     char host[NI_MAXHOST] = { 0 };
     ::getnameinfo(&data.ifr_addr, sizeof(sockaddr), host, NI_MAXHOST, nullptr, 0, NI_NUMERICHOST);
 
-    return boost::asio::ip::address_v4::from_string(host);
+    return boost::asio::ip::make_address_v4(host);
 }

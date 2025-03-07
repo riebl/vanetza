@@ -7,7 +7,7 @@
 
 using namespace vanetza;
 
-HelloApplication::HelloApplication(boost::asio::io_service& io, std::chrono::milliseconds interval) :
+HelloApplication::HelloApplication(boost::asio::io_context& io, std::chrono::milliseconds interval) :
     timer_(io), interval_(interval)
 {
     schedule_timer();
@@ -25,7 +25,7 @@ void HelloApplication::indicate(const DataIndication& indication, UpPacketPtr pa
 
 void HelloApplication::schedule_timer()
 {
-    timer_.expires_from_now(interval_);
+    timer_.expires_after(interval_);
     timer_.async_wait(std::bind(&HelloApplication::on_timer, this, std::placeholders::_1));
 }
 

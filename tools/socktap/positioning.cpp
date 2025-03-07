@@ -9,14 +9,14 @@ using namespace vanetza;
 namespace po = boost::program_options;
 
 std::unique_ptr<vanetza::PositionProvider>
-create_position_provider(boost::asio::io_service& io_service, const po::variables_map& vm, const Runtime& runtime)
+create_position_provider(boost::asio::io_context& io_context, const po::variables_map& vm, const Runtime& runtime)
 {
     std::unique_ptr<vanetza::PositionProvider> positioning;
 
     if (vm["positioning"].as<std::string>() == "gpsd") {
 #ifdef SOCKTAP_WITH_GPSD
         positioning.reset(new GpsPositionProvider {
-            io_service, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>()
+            io_context, vm["gpsd-host"].as<std::string>(), vm["gpsd-port"].as<std::string>()
         });
 #endif
     } else if (vm["positioning"].as<std::string>() == "static") {

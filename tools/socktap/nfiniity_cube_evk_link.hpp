@@ -2,7 +2,7 @@
 #define NFINIITY_CUBE_EVK_LINK_HPP_
 
 #include "link_layer.hpp"
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/udp.hpp>
 #include <vanetza/net/chunk_packet.hpp>
 
@@ -16,7 +16,7 @@ class LinkLayerTransmission;
 class CubeEvkLink : public LinkLayer
 {
 public:
-    CubeEvkLink(boost::asio::io_service&, boost::asio::ip::address_v4);
+    CubeEvkLink(boost::asio::io_context&, boost::asio::ip::address_v4);
 
     void handle_packet_received(const boost::system::error_code&, size_t);
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;
@@ -24,7 +24,7 @@ public:
     void indicate(IndicationCallback callback) override;
 
 private:
-    boost::asio::io_service& io_;
+    boost::asio::io_context& io_;
     IndicationCallback indicate_to_router_;
 
     boost::asio::ip::udp::socket tx_socket_;

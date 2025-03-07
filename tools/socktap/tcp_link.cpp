@@ -10,8 +10,8 @@
 namespace ip = boost::asio::ip;
 using namespace vanetza;
 
-TcpLink::TcpLink(boost::asio::io_service& io_service) :
-    io_service_(&io_service)
+TcpLink::TcpLink(boost::asio::io_context& io_context) :
+    io_context_(&io_context)
 {
 
 }
@@ -58,7 +58,7 @@ void TcpLink::request(const access::DataRequest& request, std::unique_ptr<ChunkP
 void TcpLink::connect(ip::tcp::endpoint ep)
 {
     if (callback_) {
-        sockets_.emplace_back(*io_service_, &callback_);
+        sockets_.emplace_back(*io_context_, &callback_);
         auto& sock = sockets_.back();
         sock.connect(ep);
     } else {
@@ -69,10 +69,10 @@ void TcpLink::connect(ip::tcp::endpoint ep)
 void TcpLink::accept(ip::tcp::endpoint ep)
 {
     if (acceptors_.count(ep) == 0) {
-        acceptors_.insert(std::make_pair(ep, ip::tcp::acceptor(*io_service_, ep)));
+        acceptors_.insert(std::make_pair(ep, ip::tcp::acceptor(*io_context_, ep)));
     }
 
-    sockets_.emplace_back(*io_service_, &callback_);
+    sockets_.emplace_back(*io_context_, &callback_);
     auto& sock = sockets_.back();
     sock.status(TcpSocket::ACCEPTING);
 
@@ -103,8 +103,8 @@ void TcpLink::accept_handler(boost::system::error_code& ec, ip::tcp::endpoint ep
  * TcpSocket
  */
 
-TcpSocket::TcpSocket(boost::asio::io_service& io_service, IndicationCallback* cb) :
-    socket_(io_service),
+TcpSocket::TcpSocket(boost::asio::io_context& io_context, IndicationCallback* cb) :
+    socket_(io_context),
     callback_(cb),
     rx_buffer_(2560, 0x00)
 {

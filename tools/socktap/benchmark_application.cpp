@@ -7,7 +7,7 @@
 using namespace std::chrono;
 using namespace vanetza;
 
-BenchmarkApplication::BenchmarkApplication(boost::asio::io_service& io) :
+BenchmarkApplication::BenchmarkApplication(boost::asio::io_context& io) :
     m_timer(io), m_interval(std::chrono::seconds(1))
 {
     schedule_timer();
@@ -35,7 +35,7 @@ void BenchmarkApplication::indicate(const DataIndication& indication, UpPacketPt
 
 void BenchmarkApplication::schedule_timer()
 {
-    m_timer.expires_from_now(m_interval);
+    m_timer.expires_after(m_interval);
     m_timer.async_wait(std::bind(&BenchmarkApplication::on_timer, this, std::placeholders::_1));
 }
 

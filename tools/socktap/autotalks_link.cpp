@@ -4,8 +4,7 @@
 
 const unsigned SendBufferSize = 2000;
 
-AutotalksLink::AutotalksLink(boost::asio::io_service& io)
-                             : io_(io)
+AutotalksLink::AutotalksLink(boost::asio::io_context& io) : io_(io)
 {
     vanetza::autotalks::autotalks_device_init();
     vanetza::autotalks::init_rx(this);

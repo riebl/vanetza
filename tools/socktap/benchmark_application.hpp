@@ -2,14 +2,14 @@
 #define BENCHMARK_APPLICATION_HPP_EUIC2VFR
 
 #include "application.hpp"
-#include <boost/asio/io_service.hpp>
+#include <boost/asio/io_context.hpp>
 #include <boost/asio/steady_timer.hpp>
 #include <chrono>
 
 class BenchmarkApplication : public Application, private Application::PromiscuousHook
 {
 public:
-    BenchmarkApplication(boost::asio::io_service&);
+    BenchmarkApplication(boost::asio::io_context&);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
     Application::PromiscuousHook* promiscuous_hook() override;

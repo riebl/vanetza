@@ -7,9 +7,9 @@
 namespace ip = boost::asio::ip;
 using namespace vanetza;
 
-UdpLink::UdpLink(boost::asio::io_service& io_service, const ip::udp::endpoint& endpoint, const EthernetDevice& device) :
+UdpLink::UdpLink(boost::asio::io_context& io_context, const ip::udp::endpoint& endpoint, const EthernetDevice& device) :
     multicast_endpoint_(endpoint),
-    tx_socket_(io_service), rx_socket_(io_service),
+    tx_socket_(io_context), rx_socket_(io_context),
     rx_buffer_(2560, 0x00)
 {
     auto ip = device.ip();
