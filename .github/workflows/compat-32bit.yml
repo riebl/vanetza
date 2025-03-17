@@ -23,7 +23,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: ${{matrix.platform.name}}
-          build-args: UBUNTU_VERSION=bionic
+          build-args: UBUNTU_VERSION=focal
           tags: vanetza/docker:${{matrix.platform.tag}}
           context: ${{github.workspace}}/tools/docker
           load: true
