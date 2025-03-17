@@ -16,7 +16,7 @@ class LinkLayerTransmission;
 class CubeEvkLink : public LinkLayer
 {
 public:
-    CubeEvkLink(boost::asio::io_context&, boost::asio::ip::address_v4);
+    CubeEvkLink(boost::asio::io_context&, boost::asio::ip::address);
 
     void handle_packet_received(const boost::system::error_code&, size_t);
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;

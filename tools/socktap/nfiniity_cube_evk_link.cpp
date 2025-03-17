@@ -12,7 +12,7 @@
 #include <boost/asio/placeholders.hpp>
 #include <boost/bind/bind.hpp>
 
-CubeEvkLink::CubeEvkLink(boost::asio::io_service& io, boost::asio::ip::address_v4 radio_ip)
+CubeEvkLink::CubeEvkLink(boost::asio::io_context& io, boost::asio::ip::address radio_ip)
     : io_(io), tx_socket_(io), rx_socket_(io)
 {
     const boost::asio::ip::udp::endpoint radio_endpoint_tx(radio_ip, cube_evk_radio_port_tx);
