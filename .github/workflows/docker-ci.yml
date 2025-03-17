@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ubuntu-version: [bionic, focal, jammy, noble]
+        ubuntu-version: [focal, jammy, noble]
     steps:
       - uses: actions/checkout@v4
       - run: >
