@@ -23,7 +23,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           platforms: ${{matrix.platform.name}}
-          build-args: UBUNTU_VERSION=focal
+          target: debian
           tags: vanetza/docker:${{matrix.platform.tag}}
           context: ${{github.workspace}}/tools/docker
           load: true
