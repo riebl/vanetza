@@ -88,8 +88,11 @@ int main(int argc, const char** argv)
             }
         }
 
+        // configure management information base
+        // TODO: make more MIB options configurable by command line flags
+        gn::MIB mib;
         const std::string link_layer_name = vm["link-layer"].as<std::string>();
-        auto link_layer =  create_link_layer(io_context, device, link_layer_name, vm);
+        auto link_layer =  create_link_layer(io_context, device, link_layer_name, vm, mib);
         if (!link_layer) {
             std::cerr << "No link layer '" << link_layer_name << "' found." << std::endl;
             return 1;
@@ -104,9 +107,6 @@ int main(int argc, const char** argv)
         asio::signal_set signals(io_context, SIGINT, SIGTERM);
         signals.async_wait(signal_handler);
 
-        // configure management information base
-        // TODO: make more MIB options configurable by command line flags
-        gn::MIB mib;
         mib.itsGnLocalGnAddr.mid(mac_address);
         mib.itsGnLocalGnAddr.is_manually_configured(true);
         mib.itsGnLocalAddrConfMethod = geonet::AddrConfMethod::Managed;
