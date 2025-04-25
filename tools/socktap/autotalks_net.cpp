@@ -408,13 +408,13 @@ kj::Promise<void> DataListenerImpl::onDataIndication(OnDataIndicationContext con
     auto timestamp = params.getTimestamp();
 
     printf("Received Data Indication:\n");
-    if (vanetza::rpc::LinkLayer::RxParameters::Timestamp::HARDWARE == timestamp.which())
+    if (timestamp.isHardware())
     {
         printf("  Timestamp: %" PRIu64 " (hardware)\n", timestamp.getHardware());
     }
-    else if (vanetza::rpc::LinkLayer::RxParameters::Timestamp::SOFTWARE == timestamp.which())
+    else if (timestamp.isSoftware())
     {
-        printf("  Timestamp: %" PRIu64 " (software)\n", timestamp.getHardware());
+        printf("  Timestamp: %" PRIu64 " (software)\n", timestamp.getSoftware());
     }
     else    // vanetza::rpc::LinkLayer::RxParameters::Timestamp::NONE == timestamp.which()
     {
@@ -437,7 +437,7 @@ kj::Promise<void> DataListenerImpl::onDataIndication(OnDataIndicationContext con
     }
 
     (void) printf("\n  Parameters:  ");
-    if (vanetza::rpc::LinkLayer::RxParameters::WLAN == params.which())
+    if (params.isWlan())
     {
         v2xFrame.WlanParameters.Datarate = params.getWlan().getDatarate();
         v2xFrame.WlanParameters.Power = params.getWlan().getPower();
@@ -446,10 +446,10 @@ kj::Promise<void> DataListenerImpl::onDataIndication(OnDataIndicationContext con
                                                                v2xFrame.WlanParameters.Power,
                                                                v2xFrame.WlanParameters.Priority);
     }
-    else if (vanetza::rpc::LinkLayer::RxParameters::CV2X == params.which())
+    else if (params.isCv2x())
     {
-        v2xFrame.Cv2xParameters.Power = params.getWlan().getPower();
-        v2xFrame.Cv2xParameters.Priority = params.getWlan().getPriority();
+        v2xFrame.Cv2xParameters.Power = params.getCv2x().getPower();
+        v2xFrame.Cv2xParameters.Priority = params.getCv2x().getPriority();
         (void) printf("power: %d, priority: %d", v2xFrame.Cv2xParameters.Power,
                                                  v2xFrame.Cv2xParameters.Priority);
     }
