@@ -18,7 +18,10 @@
 
 #ifdef SOCKTAP_WITH_AUTOTALKS
 #   include "autotalks_link.hpp"
-#   include "autotalks.hpp"
+#endif
+
+#ifdef SOCKTAP_WITH_RPC
+#   include "rpc_link.hpp"
 #endif
 
 boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_port(const std::string& ip_port)
@@ -51,7 +54,8 @@ boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_po
 }
 
 std::unique_ptr<LinkLayer>
-create_link_layer(boost::asio::io_context& io_context, const EthernetDevice& device, const std::string& name, const boost::program_options::variables_map& vm)
+create_link_layer(boost::asio::io_context& io_context, const EthernetDevice& device, const std::string& name,
+                  const boost::program_options::variables_map& vm, vanetza::geonet::MIB& mib)
 {
     std::unique_ptr<LinkLayer> link_layer;
 
@@ -98,7 +102,8 @@ create_link_layer(boost::asio::io_context& io_context, const EthernetDevice& dev
 
     } else if (name == "autotalks") {
 #ifdef SOCKTAP_WITH_AUTOTALKS
-        link_layer.reset(new AutotalksLink { io_context });
+        const char* ep = vm["autotalks-endpoint"].as<std::string>().c_str();
+        link_layer.reset(new AutotalksLink { io_context, ep, mib });
 #endif
     } else if (name == "cube-evk") {
 #ifdef SOCKTAP_WITH_CUBE_EVK
@@ -114,5 +119,6 @@ void add_link_layer_options(boost::program_options::options_description& options
     options.add_options()
         ("tcp-connect", boost::program_options::value<std::vector<std::string>>()->multitoken(), "Connect to TCP-Host(s). Comma separated list of [ip]:[port].")
         ("tcp-accept", boost::program_options::value<std::vector<std::string>>()->multitoken(), "Accept TCP-Connections. Comma separated list of [ip]:[port].")
+        ("autotalks-endpoint", boost::program_options::value<std::string>()->default_value("localhost:8947"), "Autotalks RPC endpoint (IP:PORT).")
     ;
 }

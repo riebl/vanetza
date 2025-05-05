@@ -3,6 +3,7 @@
 
 #include "ethernet_device.hpp"
 #include <vanetza/access/interface.hpp>
+#include <vanetza/geonet/mib.hpp>
 #include <vanetza/net/cohesive_packet.hpp>
 #include <vanetza/net/ethernet_header.hpp>
 #include <boost/asio/io_context.hpp>
@@ -28,7 +29,8 @@ class LinkLayer : public vanetza::access::Interface, public LinkLayerIndication
 boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_port(const std::string& ip_port);
 
 std::unique_ptr<LinkLayer>
-create_link_layer(boost::asio::io_context&, const EthernetDevice&, const std::string& name, const boost::program_options::variables_map& vm);
+create_link_layer(boost::asio::io_context&, const EthernetDevice&, const std::string& name,
+                  const boost::program_options::variables_map& vm, vanetza::geonet::MIB& mib);
 
 void add_link_layer_options(boost::program_options::options_description&);
 
