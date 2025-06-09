@@ -42,6 +42,7 @@ void RouterContext::set_link_layer(LinkLayer* link_layer)
     namespace dummy = std::placeholders;
 
     if (link_layer) {
+        link_layer->set_source_address(mib_.itsGnLocalGnAddr.mid());
         request_interface_.reset(new DccPassthrough { *link_layer, trigger_ });
         router_.set_access_interface(request_interface_.get());
         link_layer->indicate(std::bind(&RouterContext::indicate, this, dummy::_1, dummy::_2));

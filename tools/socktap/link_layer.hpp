@@ -23,6 +23,8 @@ public:
 
 class LinkLayer : public vanetza::access::Interface, public LinkLayerIndication
 {
+public:
+    virtual void set_source_address(const vanetza::MacAddress&) {};
 };
 
 boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_port(const std::string& ip_port);
