@@ -3,6 +3,7 @@
 #include "tcp_link.hpp"
 #include "udp_link.hpp"
 #include <vanetza/access/ethertype.hpp>
+#include <boost/asio/connect.hpp>
 #include <boost/asio/generic/raw_protocol.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/udp.hpp>
@@ -19,6 +20,10 @@
 #ifdef SOCKTAP_WITH_AUTOTALKS
 #   include "autotalks_link.hpp"
 #   include "autotalks.hpp"
+#endif
+
+#ifdef SOCKTAP_WITH_RPC
+#   include "rpc_link.hpp"
 #endif
 
 boost::optional<std::pair<boost::asio::ip::address, unsigned short>> parse_ip_port(const std::string& ip_port)
@@ -103,6 +108,20 @@ create_link_layer(boost::asio::io_context& io_context, const EthernetDevice& dev
     } else if (name == "cube-evk") {
 #ifdef SOCKTAP_WITH_CUBE_EVK
         link_layer.reset(new CubeEvkLink { io_context, boost::asio::ip::make_address(vm["cube-ip"].as<std::string>()) });
+#endif
+    } else if (name == "rpc") {
+#ifdef SOCKTAP_WITH_RPC
+        boost::asio::ip::tcp::socket socket(io_context);
+        boost::asio::ip::tcp::resolver resolver(io_context);
+        auto rpc_host = vm["rpc-host"].as<std::string>();
+        auto rpc_port = vm["rpc-port"].as<unsigned>();
+        auto endpoints = resolver.resolve(rpc_host, std::to_string(rpc_port));
+        boost::asio::connect(socket, endpoints);
+        link_layer.reset(new RpcLinkLayer {io_context, std::move(socket)});
+        if (auto rpc_link_layer = static_cast<RpcLinkLayer*>(link_layer.get())) {
+            rpc_link_layer->radio_technology(vm["rpc-radio-technology"].as<std::string>());
+            rpc_link_layer->enable_debug(vm["rpc-debug"].as<bool>());
+        }
 #endif
     }
 
