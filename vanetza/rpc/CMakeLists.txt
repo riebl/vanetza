@@ -8,7 +8,7 @@ if(CapnProto_FOUND)
       link_layer_client.cpp
       ${CAPNP_SOURCES} ${CAPNP_HEADERS})
     target_include_directories(rpc PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(rpc PUBLIC CapnProto::capnp-rpc)
+    target_link_libraries(rpc PUBLIC Boost::system CapnProto::capnp-rpc)
 else()
     message(STATUS "Disabled Vanetza RPC feature")
 endif()
