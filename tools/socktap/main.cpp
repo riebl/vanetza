@@ -1,7 +1,7 @@
 #include "ethernet_device.hpp"
 #include "benchmark_application.hpp"
 #include "cam_application.hpp"
-#include "its_lci.hpp"
+#include "udp_server.hpp"
 #include "hello_application.hpp"
 #include "link_layer.hpp"
 #include "positioning.hpp"
@@ -21,6 +21,7 @@ namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
 namespace po = boost::program_options;
 using namespace vanetza;
+
 
 int main(int argc, const char** argv)
 {
@@ -80,6 +81,7 @@ int main(int argc, const char** argv)
 
     try {
         asio::io_service io_service;
+        std::thread io_thread1;
         TimeTrigger trigger(io_service);
 
         const char* device_name = vm["interface"].as<std::string>().c_str();
@@ -171,25 +173,42 @@ int main(int argc, const char** argv)
                 apps.emplace(app_name, std::move(ca));
             } 
             else if (app_name == "its") {
+                /*
                 std::unique_ptr<ITC_LCI_Application> its {
-                    new ITC_LCI_Application(*positioning, trigger.runtime())
+                    new ITC_LCI_Application(trigger.runtime())
                 };
-                its->set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
-                its->print_received_message(vm.count("print-rx-cam") > 0);
-                its->print_generated_message(vm.count("print-tx-cam") > 0);
-                its->setStationID(vm["station-id"].as<unsigned>());
+                its->createRecvSocket();
+                apps.emplace(app_name, std::move(its));
+                /*/
+                UDPServer server = UDPServer(9001);
+                
+                io_service.post([&server](){
+                    server.handleReceivedUDP();
+                });
+                 io_thread1 = std::thread([&io_service]() {
+                    io_service.run();
+                });
+
+                std::unique_ptr<CamApplication> ca {
+                    new CamApplication(*positioning, trigger.runtime())
+                };
+                
+                ca->set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+                ca->print_received_message(vm.count("print-rx-cam") > 0);
+                ca->print_generated_message(vm.count("print-tx-cam") > 0);
+                ca->setStationID(vm["station-id"].as<unsigned>());
                 if(vm.count("send-to-server") > 0){
-                    its->setServerIP(vm["server-ip"].as<std::string>().data());
-                    its->setServerPort(vm["server-port"].as<unsigned>());
+                    ca->setServerIP(vm["server-ip"].as<std::string>().data());
+                    ca->setServerPort(vm["server-port"].as<unsigned>());
                     
-                    its->createSocket();
-                    its->setSendToServer(true);
+                    ca->createSocket();
+                    ca->setSendToServer(true);
                 }
                 if(vm.count("send-to-file") > 0){
                     context.setSendToFile(true);
                     context.setFile(vm["file"].as<std::string>().data());
                 }
-                apps.emplace(app_name, std::move(its));
+                apps.emplace(app_name, std::move(ca));
             } else if (app_name == "hello") {
                 std::unique_ptr<HelloApplication> hello {
                     new HelloApplication(io_service, std::chrono::milliseconds(800))
@@ -214,7 +233,11 @@ int main(int argc, const char** argv)
             context.enable(app.second.get());
         }
 
-        io_service.run();
+         std::thread io_thread2([&io_service]() {
+            io_service.run();
+        });
+        io_thread1.join();
+        io_thread2.join();
     } catch (PositioningException& e) {
         std::cerr << "Exit because of positioning error: " << e.what() << std::endl;
         return 1;
