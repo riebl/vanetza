@@ -180,14 +180,17 @@ int main(int argc, const char** argv)
                 its->createRecvSocket();
                 apps.emplace(app_name, std::move(its));
                 /*/
-                UDPServer server = UDPServer(9001);
+                UDPServer* server = new UDPServer(9001, *positioning, trigger.runtime());
                 
-                io_service.post([&server](){
-                    server.handleReceivedUDP();
+                io_service.post([server](){
+                    server->handleReceivedUDP();
                 });
                  io_thread1 = std::thread([&io_service]() {
                     io_service.run();
                 });
+
+                apps.emplace("server", std::move(server));
+                
 
                 std::unique_ptr<CamApplication> ca {
                     new CamApplication(*positioning, trigger.runtime())
