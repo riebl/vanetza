@@ -25,13 +25,25 @@
 namespace asio = boost::asio;
 using asio::ip::udp;
 
-class UDPServer
+struct Denm_Data{
+    int type;
+    int lat;
+    int lon;
+};
+
+class UDPServer  : public Application
 {
 public:
-    UDPServer(int port);
+    UDPServer(int port, vanetza::PositionProvider& positioning, vanetza::Runtime& rt);
     
+    PortType port() override;
+    void indicate(const DataIndication&, UpPacketPtr) override;
+
     void handleReceivedUDP();
 private:
+    vanetza::Runtime& runtime_;
+    vanetza::PositionProvider& positioning_;
+
     int port_;
     int server_port;
     
@@ -40,6 +52,9 @@ private:
     struct sockaddr_in client_addr;
 
     void initializeSocket();
+    void sendDenm(Denm_Data* data);
+    int splitData(char* buffer, Denm_Data* data);
+    void populateStruct(char* data, Denm_Data* denm_data, int index);    
     
 };
 
