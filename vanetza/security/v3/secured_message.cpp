@@ -5,6 +5,7 @@
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/net/packet.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
 
 #include <boost/iostreams/stream.hpp>
@@ -113,12 +114,35 @@ SecuredMessage SecuredMessage::with_signed_data()
     secured_message->content = asn1::allocate<asn1::Ieee1609Dot2Content>();
     secured_message->content->present = Vanetza_Security_Ieee1609Dot2Content_PR_signedData;
     secured_message->content->choice.signedData = asn1::allocate<asn1::SignedData>();
-    secured_message->content->choice.signedData->tbsData = asn1::allocate<asn1:: ToBeSignedData>();
+    secured_message->content->choice.signedData->tbsData = asn1::allocate<asn1::ToBeSignedData>();
     secured_message->content->choice.signedData->tbsData->payload = asn1::allocate<asn1::SignedDataPayload>();
     secured_message->content->choice.signedData->tbsData->payload->data = asn1::allocate<asn1::Ieee1609Dot2Data>();
     secured_message->content->choice.signedData->tbsData->payload->data->protocolVersion = 3;
     secured_message->content->choice.signedData->tbsData->payload->data->content = asn1::allocate<asn1::Ieee1609Dot2Content>();
     secured_message->content->choice.signedData->tbsData->payload->data->content->present = Vanetza_Security_Ieee1609Dot2Content_PR_unsecuredData;
+    return secured_message;
+}
+
+SecuredMessage SecuredMessage::with_signed_data_hash()
+{
+    SecuredMessage secured_message;
+    secured_message->protocolVersion = 3;
+    secured_message->content = asn1::allocate<asn1::Ieee1609Dot2Content>();
+    secured_message->content->present = Vanetza_Security_Ieee1609Dot2Content_PR_signedData;
+    secured_message->content->choice.signedData = asn1::allocate<asn1::SignedData>();
+    secured_message->content->choice.signedData->tbsData = asn1::allocate<asn1::ToBeSignedData>();
+    secured_message->content->choice.signedData->tbsData->payload = asn1::allocate<asn1::SignedDataPayload>();
+    secured_message->content->choice.signedData->tbsData->payload->extDataHash = asn1::allocate<asn1::HashedData>();
+    secured_message->content->choice.signedData->tbsData->payload->extDataHash->present = Vanetza_Security_HashedData_PR_sha256HashedData;
+    return secured_message;
+}
+
+SecuredMessage SecuredMessage::with_encrypted_data()
+{
+    SecuredMessage secured_message;
+    secured_message->protocolVersion = 3;
+    secured_message->content = asn1::allocate<asn1::Ieee1609Dot2Content>();
+    secured_message->content->present = Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData;
     return secured_message;
 }
 
@@ -174,6 +198,21 @@ void SecuredMessage::set_generation_location(const asn1::ThreeDLocation& locatio
         m_struct->content->choice.signedData->tbsData->headerInfo.generationLocation->longitude = location.longitude;
         m_struct->content->choice.signedData->tbsData->headerInfo.generationLocation->elevation = location.elevation;
     }
+}
+
+std::list<HashedId3> SecuredMessage::get_inline_p2pcd_request() const
+{
+    std::list<HashedId3> requests;
+    if (m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData) {
+        const asn1::SequenceOfHashedId3* inline_p2pcd_request = m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest;
+        if (inline_p2pcd_request) {
+            for (int i = 0; i < inline_p2pcd_request->list.count; i++) {
+                HashedId3 new_elem = truncate(convert(*inline_p2pcd_request->list.array[i]));
+                requests.push_back(new_elem);
+            }
+        }
+    }
+    return requests;
 }
 
 void SecuredMessage::set_inline_p2pcd_request(std::list<HashedId3> requests)
@@ -361,6 +400,15 @@ void SecuredMessage::set_payload(const ByteBuffer& payload)
     }
 }
 
+void SecuredMessage::set_external_payload_hash(const Sha256Digest& hash)
+{
+    assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
+    asn1::HashedData* hashed_data = m_struct->content->choice.signedData->tbsData->payload->extDataHash;
+    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_HashedData, hashed_data);
+    hashed_data->present = Vanetza_Security_HashedData_PR_sha256HashedData;
+    OCTET_STRING_fromBuf(&hashed_data->choice.sha256HashedData, reinterpret_cast<const char*>(hash.data()), hash.size());
+}
+
 HashAlgorithm SecuredMessage::hash_id() const
 {
     HashAlgorithm algo = HashAlgorithm::Unspecified;
@@ -397,6 +445,14 @@ void SecuredMessage::set_hash_id(HashAlgorithm hash)
     }
 }
 
+void SecuredMessage::set_signer_identifier_self()
+{
+    assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
+    asn1::SignerIdentifier* signer = &m_struct->content->choice.signedData->signer;
+    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_SignerIdentifier, signer);
+    signer->present = Vanetza_Security_SignerIdentifier_PR_self;
+}
+
 void SecuredMessage::set_signer_identifier(const HashedId8& digest)
 {
     assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
@@ -415,9 +471,114 @@ void SecuredMessage::set_signer_identifier(const Certificate& cert)
     ASN_SEQUENCE_ADD(&signer->choice.certificate, asn1::copy(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, cert.content()));
 }
 
+void SecuredMessage::get_aes_ccm_ciphertext(ByteBuffer &ccm_ciphertext, std::array<uint8_t, 12> &nonce) const
+{
+    assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData);
+
+    const asn1::SymmetricCiphertext &symmetric_ciphertext = m_struct->content->choice.encryptedData.ciphertext;
+    assert(symmetric_ciphertext.present == Vanetza_Security_SymmetricCiphertext_PR_aes128ccm);
+
+    const asn1::AesCcmCiphertext &aes_ccm_ciphertext = symmetric_ciphertext.choice.aes128ccm;
+    ccm_ciphertext = copy_octets(aes_ccm_ciphertext.ccmCiphertext);
+    std::memcpy(nonce.data(), aes_ccm_ciphertext.nonce.buf, nonce.size());
+}
+
+void SecuredMessage::set_aes_ccm_ciphertext(const ByteBuffer &ccm_ciphertext, const std::array<uint8_t, 12> &nonce)
+{
+    assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData);
+
+    asn1::SymmetricCiphertext &symmetric_ciphertext = m_struct->content->choice.encryptedData.ciphertext;
+    CHOICE_variant_set_presence(&asn_DEF_Vanetza_Security_SymmetricCiphertext, &symmetric_ciphertext, Vanetza_Security_SymmetricCiphertext_PR_aes128ccm);
+
+    asn1::AesCcmCiphertext &aes_ccm_ciphertext = symmetric_ciphertext.choice.aes128ccm;
+    OCTET_STRING_fromBuf(&aes_ccm_ciphertext.ccmCiphertext, reinterpret_cast<const char *>(ccm_ciphertext.data()), ccm_ciphertext.size());
+    OCTET_STRING_fromBuf(&aes_ccm_ciphertext.nonce, reinterpret_cast<const char *>(nonce.data()), nonce.size());
+}
+
+void SecuredMessage::set_cert_recip_info(const HashedId8& recipient_id,
+                                         const KeyType curve_type,
+                                         const std::array<uint8_t, 16>& ecies_ciphertext,
+                                         const std::array<uint8_t, 16>& ecies_tag,
+                                         const ecdsa256::PublicKey& ecies_pub_key)
+{
+    assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData);
+
+    asn1::RecipientInfo *cert_recip_info = asn1::allocate<asn1::RecipientInfo>();
+    CHOICE_variant_set_presence(&asn_DEF_Vanetza_Security_RecipientInfo, cert_recip_info, Vanetza_Security_RecipientInfo_PR_certRecipInfo);
+
+    asn1::PKRecipientInfo &pk_recip_info = cert_recip_info->choice.certRecipInfo;
+    // Set recipient certificate digest
+    OCTET_STRING_fromBuf(&pk_recip_info.recipientId, reinterpret_cast<const char *>(recipient_id.data()), recipient_id.size());
+
+    asn1::EncryptedDataEncryptionKey &enc_data_enc_key = pk_recip_info.encKey;
+    asn1::EciesP256EncryptedKey *ecies_enc_key_ptr;
+    if (curve_type == KeyType::NistP256) {
+        enc_data_enc_key.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesNistP256;
+        ecies_enc_key_ptr = &enc_data_enc_key.choice.eciesNistP256;
+    } else if (curve_type == KeyType::BrainpoolP256r1) {
+        enc_data_enc_key.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesBrainpoolP256r1;
+        ecies_enc_key_ptr = &enc_data_enc_key.choice.eciesBrainpoolP256r1;
+    } else {
+        throw std::invalid_argument("Unsupported EC curve");
+    }
+
+    asn1::EciesP256EncryptedKey &ecies_enc_key = *ecies_enc_key_ptr;
+    // Set ECIES ciphertext and tag
+    OCTET_STRING_fromBuf(&ecies_enc_key.c, reinterpret_cast<const char *>(ecies_ciphertext.data()), ecies_ciphertext.size());
+    OCTET_STRING_fromBuf(&ecies_enc_key.t, reinterpret_cast<const char *>(ecies_tag.data()), ecies_tag.size());
+
+    // Set ECIES ephemeral public key
+    CHOICE_variant_set_presence(&asn_DEF_Vanetza_Security_EccP256CurvePoint, &ecies_enc_key.v, Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256);
+    OCTET_STRING_fromBuf(&ecies_enc_key.v.choice.uncompressedP256.x, reinterpret_cast<const char *>(ecies_pub_key.x.data()), ecies_pub_key.x.size());
+    OCTET_STRING_fromBuf(&ecies_enc_key.v.choice.uncompressedP256.y, reinterpret_cast<const char *>(ecies_pub_key.y.data()), ecies_pub_key.y.size());
+
+    ASN_SEQUENCE_ADD(&m_struct->content->choice.encryptedData.recipients.list, cert_recip_info);
+}
+
+bool SecuredMessage::check_psk_match(const std::array<uint8_t, 16>& psk) const
+{
+    assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData);
+
+    // Wrap the given PSK into a PSKRecipientInfo_t to calculate the HashedId8
+    asn1::asn1c_oer_wrapper<asn1::SymmetricEncryptionKey> psk_key(asn_DEF_Vanetza_Security_SymmetricEncryptionKey);
+    asn1::SymmetricEncryptionKey *psk_key_ptr = &(*psk_key);
+    CHOICE_variant_set_presence(
+        &asn_DEF_Vanetza_Security_SymmetricEncryptionKey,
+        psk_key_ptr,
+        Vanetza_Security_SymmetricEncryptionKey_PR_aes128Ccm);
+    OCTET_STRING_fromBuf(&psk_key_ptr->choice.aes128Ccm, reinterpret_cast<const char *>(psk.data()), psk.size());
+
+    ByteBuffer bytes = psk_key.encode();
+    Sha256Digest psk_digest = calculate_sha256_digest(bytes.data(), bytes.size());
+    HashedId8 psk_id = create_hashed_id8(psk_digest);
+
+    // Check every RecipientInfo for a PSKRecipientInfo with matching PSK
+    const auto &recipient_list = m_struct->content->choice.encryptedData.recipients.list;
+
+    for (int i = 0; i < recipient_list.count; i++) {
+        const asn1::RecipientInfo &recipient_info = *recipient_list.array[i];
+        if (recipient_info.present != Vanetza_Security_RecipientInfo_PR_pskRecipInfo) {
+            continue;
+        }
+
+        HashedId8 message_psk_id;
+        std::memcpy(message_psk_id.data(), recipient_info.choice.pskRecipInfo.buf, message_psk_id.size());
+        if (psk_id == message_psk_id) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool SecuredMessage::is_signed() const
 {
     return m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData;
+}
+
+bool SecuredMessage::is_encrypted() const
+{
+    return m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData;
 }
 
 boost::optional<SecuredMessage::Time64> SecuredMessage::generation_time() const
