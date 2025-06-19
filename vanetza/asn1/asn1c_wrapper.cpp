@@ -189,8 +189,8 @@ std::size_t size_xer(asn_TYPE_descriptor_t& td, const void* t)
         throw std::runtime_error(error_msg.str());
     }
 
-    // Caution! ec.encoded are bits not bytes!
-    return (ec.encoded + 7) / 8;
+    // ec.encoded are bytes for XER encoding
+    return ec.encoded;
 }
 
 ByteBuffer encode_xer(asn_TYPE_descriptor_t& td, const void* t)
