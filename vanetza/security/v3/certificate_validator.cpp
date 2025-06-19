@@ -26,12 +26,12 @@ auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signi
         if (m_position_provider) {
             auto location = m_position_provider->position_fix();
             if (signing_cert.has_region_restriction()) {
-                if (!signing_cert.valid_at_location(location)) {
+                if (!signing_cert.valid_at_location(location, m_location_checker)) {
                     verdict = Verdict::OutsideRegion;
                 }
             } else {
                 auto issuing_cert = find_issuer_certificate(signing_cert);
-                if (issuing_cert && !issuing_cert->valid_at_location(location)) {
+                if (issuing_cert && !issuing_cert->valid_at_location(location, m_location_checker)) {
                     verdict = Verdict::OutsideRegion;
                 }
             }
@@ -53,6 +53,11 @@ void DefaultCertificateValidator::use_position_provider(PositionProvider* pp)
 void DefaultCertificateValidator::use_certificate_cache(const CertificateCache* cache)
 {
     m_certificate_cache = cache;
+}
+
+void DefaultCertificateValidator::use_location_checker(const LocationChecker* checker)
+{
+    m_location_checker = checker;
 }
 
 void DefaultCertificateValidator::disable_time_checks(bool flag)
