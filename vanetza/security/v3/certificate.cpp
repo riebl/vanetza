@@ -19,6 +19,8 @@ namespace
 bool copy_curve_point(PublicKey& to, const asn1::EccP256CurvePoint& from);
 bool copy_curve_point(PublicKey& to, const asn1::EccP384CurvePoint& from);
 ByteBuffer fetch_octets(const OCTET_STRING_t& octets);
+ByteBuffer get_x_coordinate(const asn1::EccP256CurvePoint& point);
+ByteBuffer get_x_coordinate(const asn1::EccP384CurvePoint& point);
 
 bool is_compressed(const Vanetza_Security_EccP256CurvePoint& point);
 bool is_compressed(const Vanetza_Security_EccP384CurvePoint& point);
@@ -200,6 +202,11 @@ boost::optional<HashedId8> CertificateView::issuer_digest() const
     return digest;
 }
 
+bool CertificateView::issuer_is_self() const
+{
+    return m_cert->issuer.present == Vanetza_Security_IssuerIdentifier_PR_self;
+}
+
 bool CertificateView::has_region_restriction() const
 {
     return m_cert ? m_cert->toBeSigned.region != nullptr : false;
@@ -218,6 +225,43 @@ bool CertificateView::is_at_certificate() const
 bool CertificateView::is_canonical() const
 {
     return m_cert ? v3::is_canonical(*m_cert) : false;
+}
+
+StartAndEndValidity CertificateView::get_start_and_end_validity() const
+{
+    StartAndEndValidity start_and_end;
+    start_and_end.start_validity = Time32(m_cert->toBeSigned.validityPeriod.start);
+    Time32 duration = 0;
+    switch (m_cert->toBeSigned.validityPeriod.duration.present)
+    {
+    case Vanetza_Security_Duration_PR_NOTHING:
+        break;
+    case Vanetza_Security_Duration_PR_microseconds:
+        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.microseconds/1000000;
+        break;
+    case Vanetza_Security_Duration_PR_milliseconds:
+        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.milliseconds/1000;
+        break;
+    case Vanetza_Security_Duration_PR_seconds:
+        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.seconds;
+        break;
+    case Vanetza_Security_Duration_PR_minutes:
+        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.minutes*60;
+        break;
+    case Vanetza_Security_Duration_PR_hours:
+        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.hours*60*60;
+        break;
+    case Vanetza_Security_Duration_PR_sixtyHours:
+        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.sixtyHours*60*60*60;
+        break;
+    case Vanetza_Security_Duration_PR_years:
+        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.years*60*60*24*365;
+        break;
+    default:
+        break;
+    }
+    start_and_end.end_validity = start_and_end.start_validity + duration;
+    return start_and_end;
 }
 
 bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
@@ -423,6 +467,80 @@ boost::optional<PublicKey> get_public_key(const asn1::EtsiTs103097Certificate& c
             return boost::none;
             break;
     }
+}
+
+boost::optional<PublicKey> get_public_encryption_key(const asn1::EtsiTs103097Certificate& cert)
+{
+    const asn1::PublicEncryptionKey* enc_key = cert.toBeSigned.encryptionKey;
+    if (!enc_key || enc_key->supportedSymmAlg != Vanetza_Security_SymmAlgorithm_aes128Ccm) {
+        return boost::none;
+    }
+
+    PublicKey output;
+    switch (enc_key->publicKey.present) {
+        case Vanetza_Security_BasePublicEncryptionKey_PR_eciesNistP256:
+            output.type = KeyType::NistP256;
+            if (copy_curve_point(output, enc_key->publicKey.choice.eciesNistP256)) {
+                return output;
+            } else {
+                return boost::none;
+            }
+            break;
+        case Vanetza_Security_BasePublicEncryptionKey_PR_eciesBrainpoolP256r1:
+            output.type = KeyType::BrainpoolP256r1;
+            if (copy_curve_point(output, enc_key->publicKey.choice.eciesBrainpoolP256r1)) {
+                return output;
+            } else {
+                return boost::none;
+            }
+            break;
+        default:
+            return boost::none;
+            break;
+    }
+}
+
+boost::optional<Signature> get_signature(const asn1::EtsiTs103097Certificate& cert)
+{
+    if (!cert.signature) {
+        return boost::none;
+    }
+
+    const asn1::Signature* asn = cert.signature;
+    Signature sig;
+    switch (asn->present) {
+        case Vanetza_Security_Signature_PR_ecdsaNistP256Signature:
+            sig.type = KeyType::NistP256;
+            sig.r = get_x_coordinate(asn->choice.ecdsaNistP256Signature.rSig);
+            sig.s = fetch_octets(asn->choice.ecdsaNistP256Signature.sSig);
+            break;
+        case Vanetza_Security_Signature_PR_ecdsaBrainpoolP256r1Signature:
+            sig.type = KeyType::BrainpoolP256r1;
+            sig.r = get_x_coordinate(asn->choice.ecdsaBrainpoolP256r1Signature.rSig);
+            sig.s = fetch_octets(asn->choice.ecdsaBrainpoolP256r1Signature.sSig);
+            break;
+        case Vanetza_Security_Signature_PR_ecdsaBrainpoolP384r1Signature:
+            sig.type = KeyType::BrainpoolP384r1;
+            sig.r = get_x_coordinate(asn->choice.ecdsaBrainpoolP384r1Signature.rSig);
+            sig.s = fetch_octets(asn->choice.ecdsaBrainpoolP384r1Signature.sSig);
+            break;
+        default:
+            return boost::none;
+    }
+
+    return sig;
+}
+
+std::list<ItsAid> get_aids(const asn1::EtsiTs103097Certificate& cert)
+{
+    std::list<ItsAid> aids;
+    const asn1::SequenceOfPsidSsp* seq = cert.toBeSigned.appPermissions;
+    if (seq) {
+        for (int i = 0; i < seq->list.count; ++i) {
+            aids.push_back(seq->list.array[i]->psid);
+        }
+    }
+    return aids;
 }
 
 ByteBuffer get_app_permissions(const asn1::EtsiTs103097Certificate& cert, ItsAid aid)
@@ -686,6 +804,38 @@ ByteBuffer fetch_octets(const OCTET_STRING_t& octets)
     ByteBuffer buffer(octets.size);
     std::memcpy(buffer.data(), octets.buf, octets.size);
     return buffer;
+}
+
+ByteBuffer get_x_coordinate(const asn1::EccP256CurvePoint& point)
+{
+    switch (point.present) {
+        case Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0:
+            return fetch_octets(point.choice.compressed_y_0);
+        case Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1:
+            return fetch_octets(point.choice.compressed_y_1);
+        case Vanetza_Security_EccP256CurvePoint_PR_x_only:
+            return fetch_octets(point.choice.x_only);
+        case Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256:
+            return fetch_octets(point.choice.uncompressedP256.x);
+        default:
+            return ByteBuffer {};
+    }
+}
+
+ByteBuffer get_x_coordinate(const asn1::EccP384CurvePoint& point)
+{
+    switch (point.present) {
+        case Vanetza_Security_EccP384CurvePoint_PR_compressed_y_0:
+            return fetch_octets(point.choice.compressed_y_0);
+        case Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1:
+            return fetch_octets(point.choice.compressed_y_1);
+        case Vanetza_Security_EccP384CurvePoint_PR_x_only:
+            return fetch_octets(point.choice.x_only);
+        case Vanetza_Security_EccP384CurvePoint_PR_uncompressedP384:
+            return fetch_octets(point.choice.uncompressedP384.x);
+        default:
+            return ByteBuffer {};
+    }
 }
 
 bool is_compressed(const Vanetza_Security_EccP256CurvePoint& point)

@@ -10,7 +10,9 @@
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/v3/asn1_types.hpp>
+#include <vanetza/security/v3/validity_restriction.hpp>
 #include <boost/optional/optional_fwd.hpp>
+#include <list>
 
 namespace vanetza
 {
@@ -40,6 +42,12 @@ public:
     boost::optional<HashedId8> calculate_digest() const;
 
     /**
+     * Get start and end validity
+     * \return certificate start and end validity
+     */
+    StartAndEndValidity get_start_and_end_validity() const;
+
+    /**
      * Get verification key type
      * \return verification key type if possible; otherwise unspecified
      */
@@ -50,6 +58,12 @@ public:
      * \return issuer digest
      */
     boost::optional<HashedId8> issuer_digest() const;
+
+    /**
+     * Check if certificate is self-signed
+     * \return true if certificate is self-signed
+     */
+    bool issuer_is_self() const;
 
     /**
      * Check if certificate is a Certification Authority certificate
@@ -199,6 +213,27 @@ boost::optional<PublicKey> get_public_key(const asn1::EtsiTs103097Certificate& c
  * \return verification key type (maybe unspecified)
  */
 KeyType get_verification_key_type(const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Extract the public key for encrypting out of a certificate
+ * \param cert certificate
+ * \return encryption key if possible
+ */
+boost::optional<PublicKey> get_public_encryption_key(const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Extract the signature out of a certificate
+ * \param cert certificate
+ * \return signature if possible
+ */
+boost::optional<Signature> get_signature(const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Get list of ITS AID permissions from certificate
+ * \param cert certificate
+ * \return list of ITS AIDs
+ */
+std::list<ItsAid> get_aids(const asn1::EtsiTs103097Certificate& cert);
 
 /**
  * Get application permissions (SSP = service specific permissions)
