@@ -8,6 +8,7 @@ add_vanetza_component(security
     ecdsa256.cpp
     encap_service.cpp
     hashed_id.cpp
+    hmac.cpp
     key_type.cpp
     peer_request_tracker.cpp
     secured_message.cpp
@@ -46,6 +47,7 @@ add_vanetza_component(security
     v2/validity_restriction.cpp
     v2/verification.cpp
     v3/asn1_conversions.cpp
+    v3/basic_elements.cpp
     v3/certificate.cpp
     v3/certificate_cache.cpp
     v3/certificate_validator.cpp
@@ -57,6 +59,8 @@ add_vanetza_component(security
     v3/sign_header_policy.cpp
     v3/static_certificate_provider.cpp
     v3/persistence.cpp
+    v3/trust_store.cpp
+    v3/validity_restriction.cpp
 )
 target_link_libraries(security PUBLIC asn1 asn1_security common net)
 target_link_libraries(security PRIVATE GeographicLib::GeographicLib)
