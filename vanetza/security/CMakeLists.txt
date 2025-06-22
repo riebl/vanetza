@@ -48,10 +48,12 @@ add_vanetza_component(security
     v2/verification.cpp
     v3/asn1_conversions.cpp
     v3/basic_elements.cpp
+    v3/boost_geometry.cpp
     v3/certificate.cpp
     v3/certificate_cache.cpp
     v3/certificate_validator.cpp
     v3/distance.cpp
+    v3/geometry.cpp
     v3/hash.cpp
     v3/location_checker.cpp
     v3/secured_message.cpp
@@ -64,7 +66,7 @@ add_vanetza_component(security
     v3/validity_restriction.cpp
 )
 target_link_libraries(security PUBLIC asn1 asn1_security common net)
-target_link_libraries(security PRIVATE GeographicLib::GeographicLib)
+target_link_libraries(security PRIVATE Boost::boost GeographicLib::GeographicLib)
 
 # crypto++ is a public mandatory dependency because of "NaiveCertificateProvider"
 if(TARGET CryptoPP::CryptoPP)

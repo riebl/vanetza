@@ -1,7 +1,7 @@
 #include <vanetza/security/v3/asn1_types.hpp>
 #include <vanetza/security/v3/distance.hpp>
+#include <vanetza/security/v3/geometry.hpp>
 #include <vanetza/security/v3/location_checker.hpp>
-
 
 namespace vanetza
 {
@@ -30,7 +30,7 @@ bool DefaultLocationChecker::valid_at_location(const asn1::EtsiTs103097Certifica
             case Vanetza_Security_GeographicRegion_PR_rectangularRegion:
                 return is_inside(location, region->choice.rectangularRegion);
             case Vanetza_Security_GeographicRegion_PR_polygonalRegion:
-                // not supported yet
+                return is_inside(location, region->choice.polygonalRegion);
                 return false;
             case Vanetza_Security_GeographicRegion_PR_identifiedRegion:
                 // not supported yet

@@ -39,41 +39,6 @@ units::GeoAngle convert_latitude(const asn1::Latitude& in);
  */
 units::GeoAngle convert_longitude(const asn1::Longitude& in);
 
-/**
- * Check if a TwoDLocation is valid
- * 
- * \param location TwoDLocation to be checked
- * \return true if latitude and longitude are within valid range
- */
-bool is_valid(const asn1::TwoDLocation& location);
-
-/**
- * Check if position is inside a circular region
- * 
- * \param pos position to be checked
- * \param region circular region
- * \return true if position is inside region
- */
-bool is_inside(const PositionFix& pos, const asn1::CircularRegion& region);
-
-/**
- * Check if position is inside at least one of the given regions
- * 
- * \param pos position to be checked
- * \param regions sequence of rectangular regions
- * \return true if position is inside at least one region
- */
-bool is_inside(const PositionFix& pos, const asn1::SequenceOfRectangularRegion& region);
-
-/**
- * Check if position is inside a rectangular region
- * 
- * \param pos position to be checked
- * \param region rectangular region
- * \return true if position is inside region
- */
-bool is_inside(const PositionFix& pos, const asn1::RectangularRegion& region);
-
 } // namespace v3
 } // namespace security
 } // namespace vanetza
