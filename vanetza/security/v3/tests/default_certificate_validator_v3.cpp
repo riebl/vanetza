@@ -100,7 +100,6 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
     EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
 
     // Invalid rectangular area
-    region->present = Vanetza_Security_GeographicRegion_PR_rectangularRegion;
     struct Vanetza_Security_RectangularRegion* rectReg = vanetza::asn1::allocate<Vanetza_Security_RectangularRegion_t>();
     rectReg->northWest.longitude = 84044170;
     rectReg->northWest.latitude = 490144200;
@@ -108,6 +107,7 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
     rectReg->southEast.latitude = 490144200;
     // Re-allocate the structure
     region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+    region->present = Vanetza_Security_GeographicRegion_PR_rectangularRegion;
     cert->toBeSigned.region = region;
     asn_sequence_add(&region->choice.rectangularRegion, rectReg);
     validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
@@ -115,12 +115,12 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
 
     // Valid rectangular area
     asn_sequence_empty(&region->choice.rectangularRegion);
-    rectReg->northWest.longitude = 80000000;
-    rectReg->northWest.latitude = 491000000;
-    rectReg->southEast.longitude = 81000000;
-    rectReg->southEast.latitude = 490000000;
+    rectReg->northWest.longitude = 83506870;
+    rectReg->northWest.latitude = 490464060;
+    rectReg->southEast.longitude = 84234710;
+    rectReg->southEast.latitude = 489982120;
     asn_sequence_add(&region->choice.rectangularRegion, rectReg);
     validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
-    EXPECT_EQ(CertificateValidator::Verdict::OutsideRegion, validity);
+    EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
 }
 
