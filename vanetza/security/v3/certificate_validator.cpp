@@ -3,6 +3,7 @@
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
+#include <iostream>
 
 namespace vanetza
 {
@@ -15,7 +16,7 @@ auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signi
 {
     if (!m_disable_time_checks && !m_runtime) {
         return Verdict::Misconfiguration;
-    } else if (!m_disable_location_checks && !m_position_provider) {
+    } else if (!m_disable_location_checks && (!m_position_provider || !m_location_checker)) {
         return Verdict::Misconfiguration;
     } else if (!signing_cert.valid_for_application(its_aid)) {
         return Verdict::InsufficientPermission;
@@ -23,16 +24,18 @@ auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signi
         return Verdict::Expired;
     } else {
         Verdict verdict = Verdict::Valid;
-        if (m_position_provider) {
-            auto location = m_position_provider->position_fix();
-            if (signing_cert.has_region_restriction()) {
-                if (!signing_cert.valid_at_location(location, m_location_checker)) {
-                    verdict = Verdict::OutsideRegion;
-                }
-            } else {
-                auto issuing_cert = find_issuer_certificate(signing_cert);
-                if (issuing_cert && !issuing_cert->valid_at_location(location, m_location_checker)) {
-                    verdict = Verdict::OutsideRegion;
+        if (!m_disable_location_checks) {
+            if (m_position_provider) {
+                auto location = m_position_provider->position_fix();
+                if (signing_cert.has_region_restriction()) {
+                    if (!signing_cert.valid_at_location(location, m_location_checker)) {
+                        verdict = Verdict::OutsideRegion;
+                    }
+                } else {
+                    auto issuing_cert = find_issuer_certificate(signing_cert);
+                    if (issuing_cert && !issuing_cert->valid_at_location(location, m_location_checker)) {
+                        verdict = Verdict::OutsideRegion;
+                    }
                 }
             }
         }

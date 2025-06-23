@@ -175,15 +175,6 @@ bool is_canonical(const asn1::EtsiTs103097Certificate& cert);
 boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& cert); 
 
 /**
- * Check if certificate is valid at given location
- * 
- * \param cert certificate to be checked
- * \param location location to be checked
- * \return true if certificate is valid at location
- */
-bool valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location);
-
-/**
  * Check if certificate is valid at given time point
  * 
  * \param cert certificate to be checked

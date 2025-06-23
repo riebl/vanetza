@@ -1,3 +1,4 @@
+#pragma once
 #include <vanetza/asn1/security/Certificate.h>
 #include <vanetza/security/v3/asn1_types.hpp>
 
@@ -50,7 +51,7 @@ class DenyLocationChecker : public LocationChecker
 class DefaultLocationChecker : public LocationChecker
 {
     public:
-        bool valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location);
+        bool valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location) const override;
 };
 
 } // namespace v3

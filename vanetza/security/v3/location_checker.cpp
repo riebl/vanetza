@@ -20,7 +20,7 @@ bool DenyLocationChecker::valid_at_location(const asn1::EtsiTs103097Certificate&
     return false;
 }
 
-bool DefaultLocationChecker::valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location)
+bool DefaultLocationChecker::valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location) const
 {
     const asn1::GeographicRegion* region = cert.toBeSigned.region;
     if (region) {

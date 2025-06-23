@@ -1,5 +1,6 @@
 #pragma once
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/v3/location_checker.hpp>
 
 namespace vanetza
 {
