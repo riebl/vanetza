@@ -3,7 +3,7 @@
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
-#include <iostream>
+
 
 namespace vanetza
 {
