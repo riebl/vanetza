@@ -28,6 +28,18 @@ add_executable(socktap
     udp_link.cpp
 )
 
+if (TARGET rpc)
+    set(SOCKTAP_WITH_RPC_DEFAULT ON)
+else()
+    set(SOCKTAP_WITH_RPC_DEFAULT OFF)
+endif()
+option(SOCKTAP_WITH_RPC "Enable RPC support for socktap" ${SOCKTAP_WITH_RPC_DEFAULT})
+if (SOCKTAP_WITH_RPC)
+    target_sources(socktap PRIVATE rpc_link.cpp)
+    target_link_libraries(socktap PUBLIC rpc)
+    target_compile_definitions(socktap PUBLIC SOCKTAP_WITH_RPC)
+endif()
+
 # cube evk board from nfiniity
 option(SOCKTAP_WITH_CUBE_EVK "Use cube evk for socktap" OFF)
 if (SOCKTAP_WITH_CUBE_EVK)

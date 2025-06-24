@@ -16,6 +16,10 @@
 #include "nfiniity_cube_evk.hpp"
 #endif
 
+#ifdef SOCKTAP_WITH_RPC
+#include "rpc_link.hpp"
+#endif
+
 namespace asio = boost::asio;
 namespace gn = vanetza::geonet;
 namespace po = boost::program_options;
@@ -44,6 +48,10 @@ int main(int argc, const char** argv)
 
 #ifdef SOCKTAP_WITH_CUBE_EVK
     nfiniity::add_cube_evk_options(options);
+#endif
+
+#ifdef SOCKTAP_WITH_RPC
+    RpcLinkLayer::add_options(options);
 #endif
 
     po::positional_options_description positional_options;

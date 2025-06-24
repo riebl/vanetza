@@ -73,6 +73,7 @@ add_subdirectory(vanetza/facilities)
 add_subdirectory(vanetza/geonet)
 add_subdirectory(vanetza/gnss)
 add_subdirectory(vanetza/net)
+add_subdirectory(vanetza/rpc)
 add_subdirectory(vanetza/security)
 add_subdirectory(vanetza/units)
 
