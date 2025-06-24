@@ -53,6 +53,7 @@ add_vanetza_component(security
     v3/certificate_validator.cpp
     v3/distance.cpp
     v3/hash.cpp
+    v3/location_checker.cpp
     v3/secured_message.cpp
     v3/sign_service.cpp
     v3/naive_certificate_provider.cpp

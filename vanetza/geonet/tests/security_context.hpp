@@ -13,6 +13,7 @@
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
+#include <vanetza/security/v3/location_checker.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 
@@ -40,6 +41,7 @@ public:
         // wire up v3 certificate validator
         certificate_validator_v3.use_runtime(&rt);
         certificate_validator_v3.use_position_provider(&position_provider);
+        certificate_validator_v3.use_location_checker(&location_checker);
     }
 
     security::SecurityEntity& entity()
@@ -88,6 +90,7 @@ private:
     }
 
     StoredPositionProvider position_provider;
+    security::v3::DefaultLocationChecker location_checker;
     std::unique_ptr<security::Backend> backend;
 
     security::v2::NaiveCertificateProvider certificate_provider;

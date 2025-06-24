@@ -86,6 +86,7 @@ public:
     {
         cert_validator.use_runtime(&runtime);
         cert_validator.use_position_provider(&positioning);
+        cert_validator.use_location_checker(&location_checker);
     }
 
     security::EncapConfirm encapsulate_packet(security::EncapRequest&& request) override
@@ -127,6 +128,7 @@ public:
     std::unique_ptr<security::v3::CertificateProvider> cert_provider;
     std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy;
     security::v3::DefaultCertificateValidator cert_validator;
+    security::v3::DefaultLocationChecker location_checker;
 };
 
 std::unique_ptr<security::SecurityEntity>

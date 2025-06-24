@@ -90,34 +90,9 @@ KeyType CertificateView::get_verification_key_type() const
     return m_cert ? v3::get_verification_key_type(*m_cert) : KeyType::Unspecified;
 }
 
-bool CertificateView::valid_at_location(const PositionFix& location) const
+bool CertificateView::valid_at_location(const PositionFix& location, const LocationChecker* lc) const
 {
-    return m_cert ? v3::valid_at_location(*m_cert, location) : false;
-}
-
-bool valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location)
-{
-    const asn1::GeographicRegion* region = cert.toBeSigned.region;
-    if (region) {
-        switch (region->present) {
-            case Vanetza_Security_GeographicRegion_PR_circularRegion:
-                return is_inside(location, region->choice.circularRegion);
-            case Vanetza_Security_GeographicRegion_PR_rectangularRegion:
-                return is_inside(location, region->choice.rectangularRegion);
-            case Vanetza_Security_GeographicRegion_PR_polygonalRegion:
-                // not supported yet
-                return false;
-            case Vanetza_Security_GeographicRegion_PR_identifiedRegion:
-                // not supported yet
-                return false;
-            default:
-                // unknown region restriction
-                return false;
-        }
-    } else {
-        // no region restriction applies
-        return true;
-    }
+    return m_cert ? lc ? lc->valid_at_location(*m_cert, location) : false :  false;
 }
 
 bool CertificateView::valid_at_timepoint(const Clock::time_point& timepoint) const
