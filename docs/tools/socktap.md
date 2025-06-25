@@ -21,6 +21,7 @@ You can choose via the `--link-layer` argument which implementation to use:
 - *cohda* employs Cohda's LLC API
 - *udp* runs GeoNetworking on top of IP/UDP multicast sockets
 - *tcp* runs GeoNetworking on top of IP/TCP sockets
+- *rpc* uses *Cap’n Proto* interchange format and RPC with external server
 
 
 ### Ethernet
@@ -67,6 +68,18 @@ The TCP implementation is similiar to the UDP one.
 However, TCP adds the arguments `--tcp-accept` and `--tcp-connect`, which allow the user to accept incoming TCP connections or connect to open TCP sockets, respectively.
 Both arguments expect a comma separated list of `ip:port`.
 Outgoing GeoNetworking packets will then be sent to all active TCP connections.
+
+### RPC
+
+RPC link layer lets socktap connect to an external RPC server over [Cap’n Proto](https://capnproto.org/). You can use an example [RPC server implementation](https://github.com/mach-systems/RPC-link) for developing the server on your own V2X hardware.
+
+#### Command line flags
+- `--rpc-host <HOST>` –⁠⁠⁠⁠⁠ hostname or IP of the RPC server (default: `localhost`)
+- `--rpc-port <PORT>` –⁠⁠⁠⁠⁠⁠ TCP port on which the server is listening (default: `23057`)
+- `--rpc-radio-technology <TECH>` –⁠⁠⁠⁠ radio technology to advertise to the server; valid values:  
+  - `ITS-G5` –⁠⁠⁠⁠⁠⁠ 802.11p / bd
+  - `LTE-V2X|C-V2X` –⁠⁠⁠⁠⁠⁠ LTE-V2X / 5G-V2X
+- `--rpc-debug` –⁠⁠⁠⁠⁠⁠ enable debugging output
 
 
 ## Positioning
