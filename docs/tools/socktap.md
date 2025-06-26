@@ -53,6 +53,9 @@ Please refer to our [Cohda SDK building recipe](../recipes/cohda-sdk-build.md) f
 Another option involving dedicated V2X hardware uses the Autotalks API.
 Please have a look at our [Building for Autotalks devices](../recipes/autotalks-sdk-build.md) guide how to incorporate the Autotalks SDK.
 
+> [!WARNING]
+> Our Autotalks link layer integration is deprecated. Please use the RPC link layer as a superior replacement.
+
 
 ### UDP
 
@@ -71,7 +74,9 @@ Outgoing GeoNetworking packets will then be sent to all active TCP connections.
 
 ### RPC
 
-RPC link layer lets socktap connect to an external RPC server over [Cap’n Proto](https://capnproto.org/). You can use an example [RPC server implementation](https://github.com/mach-systems/RPC-link) for developing the server on your own V2X hardware.
+RPC link layer lets socktap connect to an external RPC server over [Cap’n Proto](https://capnproto.org/).
+You can refer to [MACH SYSTEMS's RPC link](https://github.com/mach-systems/RPC-link) for developing the server on your own V2X hardware, e.g. Autotalks EVKs.
+The [cube V2X devices](https://cubesys.io) ship a compatible *cube-radio-rpc* service with *cube:os* 1.4 and later.
 
 #### Command line flags
 - `--rpc-host <HOST>` –⁠⁠⁠⁠⁠ hostname or IP of the RPC server (default: `localhost`)

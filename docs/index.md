@@ -31,7 +31,7 @@ Sources of these libraries, also known as Vanetza component, are bundled in thei
 | geonet | dcc, net, security | GeoNetworking layer featuring geographical routing |
 | gnss | - | Satellite navigation integration for positioning |
 | net | common | Utilities for socket API and packet handling |
-| rpc | - | RPC client with integration of *kj::EventLoop* with *boost::asio* |
+| rpc | access, dcc, net | Cap'n Proto RPC client with *Boost.Asio* support |
 | security | common, net | Security entity to sign and verify packets |
 
 For most of the code unit tests exist. We are using [Googletest](https://github.com/google/googletest) for those.
