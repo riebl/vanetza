@@ -27,19 +27,9 @@ CamApplication::CamApplication(PositionProvider& positioning, Runtime& rt) :
 }
 
 int CamApplication::createSocket(){
-    // Creating socket file descriptor 
-    if ( (this->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
-        perror("socket creation failed"); 
-        return -1;
-    } 
-    printf("socket created\n");
-   
-    memset(&this->servaddr, 0, sizeof(this->servaddr)); 
-       
-    // Filling server information 
-    this->servaddr.sin_family = AF_INET; 
-    this->servaddr.sin_port = htons(this->server_port); 
-    this->servaddr.sin_addr.s_addr = inet_addr(this->serverIP); 
+
+    
+
     return 0;
 }
 

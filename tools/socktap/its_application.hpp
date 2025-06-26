@@ -47,8 +47,7 @@ private:
 
     void start_receive();
     
-    int closeSocket();
-    int sendToServer(u_int64_t* dataToSend, int size);
+    void sendToServer(u_int64_t* dataToSend, int size);
 
     void sendDenm(Denm_Data* denm_data);
     void handle_message(std::size_t bytes_transferred);
@@ -65,15 +64,16 @@ private:
     bool print_tx_msg_ = false;
     bool send_to_server = false;
     
-    int sockfd; 
     int server_port;
     const char* serverIP;
-    
-    struct sockaddr_in servaddr; 
+
     int station_id;
 
     asio::ip::udp::socket denm_socket;                    // member socket
     asio::ip::udp::endpoint remote_endpoint;
+
+    asio::ip::udp::socket cam_socket;                    // member socket
+    asio::ip::udp::endpoint cam_endpoint;
 
     std::array<char, 1024> recv_buffer;
     
