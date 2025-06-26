@@ -21,7 +21,6 @@ CamApplication::CamApplication(PositionProvider& positioning, Runtime& rt) :
     positioning_(positioning), runtime_(rt), cam_interval_(seconds(1))
 {
     schedule_timer();    
-
     this->station_id = 1;
     this->server_port = 9000;
     this->serverIP = strdup("192.168.1.125");
@@ -138,6 +137,7 @@ int decodeCAM(const asn1::Cam& recvd, char* message){
 
 void CamApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
 {
+    printf("Received MEssage\n\n");
     asn1::PacketVisitor<asn1::Cam> visitor;
     std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(visitor, *packet);
 
@@ -160,7 +160,6 @@ void CamApplication::indicate(const DataIndication& indication, UpPacketPtr pack
 
 void CamApplication::schedule_timer()
 {
-    
     runtime_.schedule(cam_interval_, std::bind(&CamApplication::on_timer, this, std::placeholders::_1), this);
 }
 
