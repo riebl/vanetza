@@ -20,17 +20,15 @@ using namespace vanetza::facilities;
 using namespace std::chrono;
 namespace asio = boost::asio;
 
-ITSApplication::ITSApplication(PositionProvider& positioning, Runtime& rt, asio::io_service& io_service, unsigned short port) :
+ITSApplication::ITSApplication(PositionProvider& positioning, Runtime& rt, asio::io_service& io_service, unsigned short denm_port) :
     positioning_(positioning), runtime_(rt), cam_interval_(seconds(1)),
-    denm_socket(io_service),
-    remote_endpoint(asio::ip::udp::v4(), port)
+    denm_socket(io_service, asio::ip::udp::endpoint(asio::ip::udp::v4(), int(9001))),
+    cam_socket(io_service)
 {
     schedule_timer();    
     this->station_id = 1;
     this->server_port = 9000;
     this->serverIP = strdup("192.168.1.124");
-    denm_socket.open(remote_endpoint.protocol());
-    denm_socket.bind(remote_endpoint);
     this->start_receive();
 }
 
@@ -91,25 +89,15 @@ void ITSApplication::populateStruct(char* data, Denm_Data* denm_data, int index)
 }
 
 int ITSApplication::createSocket(){
-    // Creating socket file descriptor 
-    if ( (this->sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
-        perror("socket creation failed"); 
-        return -1;
-    } 
-    printf("socket created\n");
-   
-    memset(&this->servaddr, 0, sizeof(this->servaddr)); 
-       
-    // Filling server information 
-    this->servaddr.sin_family = AF_INET; 
-    this->servaddr.sin_port = htons(this->server_port); 
-    this->servaddr.sin_addr.s_addr = inet_addr(this->serverIP); 
+    
+    //this->cam_socket = asio::ip::udp::socket socket(io_service);
+    cam_socket.open(asio::ip::udp::v4());
+    this->cam_endpoint = asio::ip::udp::endpoint(asio::ip::address::from_string(this->serverIP), this->server_port);
+
     return 0;
 }
 
-int ITSApplication::closeSocket(){
-    return close(this->sockfd);
-}
+
 
 void ITSApplication::setSendToServer(bool send_to_server){
     this->send_to_server = send_to_server;
@@ -128,12 +116,18 @@ void ITSApplication::setStationID(int station_id){
     this->station_id = station_id;
 }
 
-int  ITSApplication::sendToServer(u_int64_t* dataToSend, int size){
-    int sent = sendto(this->sockfd, (const u_int64_t *)dataToSend, size, 
-        MSG_CONFIRM, (const struct sockaddr *) &this->servaddr,  
-            sizeof(this->servaddr)); 
-        std::cout<<"Sending message with " << size << " bytes to UDP Server:" << this->serverIP << " " << this->server_port <<std::endl; 
-    return sent;
+void  ITSApplication::sendToServer(u_int64_t* dataToSend, int size){
+    this->cam_socket.async_send_to(
+            asio::buffer(dataToSend, size),
+            this->cam_endpoint,
+            [dataToSend](const std::error_code& ec, std::size_t bytes_sent) {
+                if (!ec) {
+                    std::cout << "Async sent "<< bytes_sent << " bytes)" << std::endl;
+                } else {
+                    std::cerr << "Send failed: " << ec.message() << std::endl;
+                }
+            }
+    );
 }
 
 void ITSApplication::set_interval(Clock::duration interval)
