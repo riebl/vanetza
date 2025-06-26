@@ -1,6 +1,9 @@
 # Security
 
-This is the security module of Vanetza. It implements the ETSI C-ITS security extension of the GeoNetworking protocol based on [ETSI TS 103 097 v1.2.1](http://www.etsi.org/deliver/etsi_ts/103000_103099/103097/01.02.01_60/ts_103097v010201p.pdf).
+This is the security module of Vanetza. It implements the ETSI C-ITS security extension of the GeoNetworking protocol based on:
+- `vanetza::security::v2` namespace: [ETSI TS 103 097 v1.2.1](http://www.etsi.org/deliver/etsi_ts/103000_103099/103097/01.02.01_60/ts_103097v010201p.pdf)
+- `vanetza::security::v3` namespace: [ETSI TS 103 097 v1.3.1](https://www.etsi.org/deliver/etsi_ts/103000_103099/103097/01.03.01_60/ts_103097v010301p.pdf)
+
 
 ## Implemented Features
 
@@ -18,11 +21,13 @@ It has been verified to work correctly by interoperability tests with other impl
  - Revocation checks for certificate authorities<br>
    Certificates of CAs can be revoked via CRLs. There will be a new standard for the corresponding protocol in May 2018. It will be a new version of [ETSI TS 102 941](http://www.etsi.org/deliver/etsi_ts/102900_102999/102941/01.01.01_60/ts_102941v010101p.pdf).
 
- - Region checks for polygonal and identified regions<br>
+ - v2: region checks for polygonal and identified regions<br>
    There are `TODO` notes in the code of `region.cpp` within the `is_within()` functions. Implementing these checks is non-trivial.
 
- - Region consistency checks for regions other than circular and none region restrictions<br>
+ - v2: region consistency checks for regions other than circular and none region restrictions<br>
    There are `TODO` notes in the code of `region.cpp` within the `is_within()` functions. Implementing these checks is non-trivial.
+
+ - v3: region checks for identified regions
 
  - Certificate requests<br>
    Currently there's no support to request authorization tickets from an authorization authority or to do an enrolment.
