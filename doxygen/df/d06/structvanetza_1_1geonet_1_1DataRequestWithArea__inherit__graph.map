@@ -1,6 +1,9 @@
 <map id="vanetza::geonet::DataRequestWithArea" name="vanetza::geonet::DataRequestWithArea">
-<area shape="rect" id="node1" title=" " alt="" coords="92,219,289,311"/>
-<area shape="rect" id="node3" href="$d7/d84/structvanetza_1_1geonet_1_1GacDataRequest.html" title=" " alt="" coords="5,359,179,451"/>
-<area shape="rect" id="node4" href="$de/d7b/structvanetza_1_1geonet_1_1GbcDataRequest.html" title=" " alt="" coords="203,359,376,451"/>
-<area shape="rect" id="node2" href="$d1/d1f/structvanetza_1_1geonet_1_1DataRequest.html" title=" " alt="" coords="92,5,289,171"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="88,259,277,339"/>
+<area shape="rect" id="Node000003" href="$d7/d84/structvanetza_1_1geonet_1_1GacDataRequest.html" title=" " alt="" coords="5,387,171,467"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="147,351,120,388,115,385,143,348"/>
+<area shape="rect" id="Node000004" href="$de/d7b/structvanetza_1_1geonet_1_1GbcDataRequest.html" title=" " alt="" coords="195,387,360,467"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="222,348,250,385,246,388,218,351"/>
+<area shape="rect" id="Node000002" href="$d1/d1f/structvanetza_1_1geonet_1_1DataRequest.html" title=" " alt="" coords="88,5,277,211"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="185,225,185,258,180,258,180,225"/>
 </map>

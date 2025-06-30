@@ -1,0 +1,9 @@
+<map id="vanetza::security::v3::LocationChecker" name="vanetza::security::v3::LocationChecker">
+<area shape="rect" id="Node000001" title=" " alt="" coords="213,5,352,105"/>
+<area shape="rect" id="Node000002" href="$de/d90/classvanetza_1_1security_1_1v3_1_1AllowLocationChecker.html" title=" " alt="" coords="5,153,171,233"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="203,115,145,155,142,151,200,111"/>
+<area shape="rect" id="Node000003" href="$de/d22/classvanetza_1_1security_1_1v3_1_1DefaultLocationChecker.html" title=" " alt="" coords="195,153,370,233"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="285,119,285,153,280,153,280,119"/>
+<area shape="rect" id="Node000004" href="$d6/d28/classvanetza_1_1security_1_1v3_1_1DenyLocationChecker.html" title=" " alt="" coords="394,153,558,233"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="365,111,422,151,419,155,362,115"/>
+</map>

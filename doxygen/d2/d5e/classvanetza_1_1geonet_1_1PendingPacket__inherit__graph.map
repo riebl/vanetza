@@ -1,5 +1,9 @@
 <map id="vanetza::geonet::PendingPacket&lt; PDU, Args &gt;" name="vanetza::geonet::PendingPacket&lt; PDU, Args &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="100,5,267,273"/>
-<area shape="rect" id="node2" href="$d6/d26/classvanetza_1_1geonet_1_1PendingPacket.html" title=" " alt="" coords="5,351,172,633"/>
-<area shape="rect" id="node3" href="$d6/d26/classvanetza_1_1geonet_1_1PendingPacket.html" title=" " alt="" coords="196,351,363,633"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="245,5,404,325"/>
+<area shape="rect" id="Node000002" href="$d6/d26/classvanetza_1_1geonet_1_1PendingPacket.html" title=" " alt="" coords="5,416,164,751"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="236,222,201,248,168,279,137,313,112,351,99,382,90,417,85,415,94,381,108,348,133,310,164,275,198,244,232,218"/>
+<area shape="rect" id="Node000003" href="$d6/d26/classvanetza_1_1geonet_1_1PendingPacket.html" title=" " alt="" coords="245,423,404,743"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="327,339,327,423,322,423,322,339"/>
+<area shape="rect" id="Node000004" href="$d6/d26/classvanetza_1_1geonet_1_1PendingPacket.html" title=" " alt="" coords="429,446,690,721"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="413,318,485,444,480,447,408,320"/>
 </map>

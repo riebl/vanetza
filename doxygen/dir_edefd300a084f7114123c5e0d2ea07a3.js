@@ -10,6 +10,7 @@ var dir_edefd300a084f7114123c5e0d2ea07a3 =
     [ "geonet", "dir_b0af8d58c5e1a50def071c5615044c4f.html", "dir_b0af8d58c5e1a50def071c5615044c4f" ],
     [ "gnss", "dir_49fb97734d53c24be7bd943288e98f7c.html", "dir_49fb97734d53c24be7bd943288e98f7c" ],
     [ "net", "dir_1e9006f1c48aaaedd042dda5201c799b.html", "dir_1e9006f1c48aaaedd042dda5201c799b" ],
+    [ "rpc", "dir_5e730553d8ed29a97cf9ef3269922a66.html", "dir_5e730553d8ed29a97cf9ef3269922a66" ],
     [ "security", "dir_ce407276b81b6cc94fee3f5e0d561f0a.html", "dir_ce407276b81b6cc94fee3f5e0d561f0a" ],
     [ "units", "dir_554b7c3b0b057056732def01c4145c0d.html", "dir_554b7c3b0b057056732def01c4145c0d" ]
 ];

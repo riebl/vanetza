@@ -1,5 +1,15 @@
 <map id="vanetza::geonet::ExtendedPdu&lt; HEADER &gt;" name="vanetza::geonet::ExtendedPdu&lt; HEADER &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="39,417,215,700"/>
-<area shape="rect" id="node2" href="$dc/d8c/classvanetza_1_1geonet_1_1Pdu.html" title=" " alt="" coords="55,204,199,369"/>
-<area shape="rect" id="node3" href="$da/dcb/classvanetza_1_1geonet_1_1ConstAccessiblePdu.html" title=" " alt="" coords="5,5,248,156"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="293,455,461,795"/>
+<area shape="rect" id="Node000004" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="5,865,173,1205"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="286,736,236,800,188,867,176,885,171,882,183,864,232,797,282,733"/>
+<area shape="rect" id="Node000005" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="197,865,365,1205"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="337,809,324,866,318,865,332,807"/>
+<area shape="rect" id="Node000006" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="389,865,557,1205"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="431,807,433,818,444,864,439,866,428,819,426,809"/>
+<area shape="rect" id="Node000007" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="581,865,768,1205"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="473,714,518,764,561,817,591,864,587,867,557,820,514,767,469,717"/>
+<area shape="rect" id="Node000002" href="$dc/d8c/classvanetza_1_1geonet_1_1Pdu.html" title=" " alt="" coords="309,220,445,405"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="380,419,380,454,375,454,375,419"/>
+<area shape="rect" id="Node000003" href="$da/dcb/classvanetza_1_1geonet_1_1ConstAccessiblePdu.html" title=" " alt="" coords="260,5,495,171"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="380,184,380,220,375,220,375,184"/>
 </map>

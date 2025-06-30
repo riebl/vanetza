@@ -1,5 +1,7 @@
 <map id="vanetza::security::deserialization_error" name="vanetza::security::deserialization_error">
-<area shape="rect" id="node1" title="thrown when a deserialization error occurred" alt="" coords="5,256,144,348"/>
-<area shape="rect" id="node2" title=" " alt="" coords="13,131,137,208"/>
-<area shape="rect" id="node3" title=" " alt="" coords="23,5,126,83"/>
+<area shape="rect" id="Node000001" title="thrown when a deserialization error occurred" alt="" coords="5,232,136,312"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="13,119,129,184"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,198,73,232,68,232,68,198"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="23,5,118,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="73,84,73,119,68,119,68,84"/>
 </map>

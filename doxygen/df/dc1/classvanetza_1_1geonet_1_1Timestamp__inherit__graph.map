@@ -1,4 +1,5 @@
 <map id="vanetza::geonet::Timestamp" name="vanetza::geonet::Timestamp">
-<area shape="rect" id="node1" title=" " alt="" coords="5,145,192,384"/>
-<area shape="rect" id="node2" title=" " alt="" coords="25,5,172,97"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,133,184,419"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="25,5,164,85"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,99,97,133,92,133,92,99"/>
 </map>

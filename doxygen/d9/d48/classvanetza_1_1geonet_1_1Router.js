@@ -10,7 +10,9 @@ var classvanetza_1_1geonet_1_1Router =
       [ "Decap_Unsuccessful_Strict", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504a83387d89660e2cdecac69a41fcdfa10a", null ],
       [ "Hop_Limit", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504ae261e5cde1fe464ef22015b8ddd34337", null ],
       [ "Payload_Size", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504acf98326ae5dc8d81919208d73b9c308a", null ],
-      [ "Security_Entity_Missing", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504a12d908c3d8f783752b8c6e773eef40ad", null ]
+      [ "Security_Entity_Missing", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504a12d908c3d8f783752b8c6e773eef40ad", null ],
+      [ "Packet_Size", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504aa9ec706821026ec0d42813bf9aa91460", null ],
+      [ "Internal_Error", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a6ab988b408f6009f594a3e9005de9504a7addedfffb2702b44a0366d7dceaaf6e", null ]
     ] ],
     [ "area_advanced_forwarding", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a139bf31acd7da3bb93118c8e039aa6e8", null ],
     [ "area_contention_based_forwarding", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a42c0e6c458b1df83afdb707a1da3d6a4", null ],
@@ -21,7 +23,7 @@ var classvanetza_1_1geonet_1_1Router =
     [ "detect_duplicate_address", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a553746e74acaaa7b3ce25accbf639327", null ],
     [ "detect_duplicate_packet", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a1c5582b1891f2e33805941dd07da8f3f", null ],
     [ "dispatch_repetition", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a7e7c5828ef24e0059beb22334a52274d", null ],
-    [ "encap_packet", "d9/d48/classvanetza_1_1geonet_1_1Router.html#ad59ea72fc2aeb6916dbbd9cfd00937b2", null ],
+    [ "encap_packet", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a33a9c7456400bb5bbbf1eb94f33d7873", null ],
     [ "execute_itsg5_procedures", "d9/d48/classvanetza_1_1geonet_1_1Router.html#ae05704d592fea6bfbac81877a597e83d", null ],
     [ "execute_media_procedures", "d9/d48/classvanetza_1_1geonet_1_1Router.html#abb044a0bd162d51936d9d3847ba10483", null ],
     [ "flush_broadcast_forwarding_buffer", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a146127bce70f11b3904815a8bb4b064f", null ],
@@ -46,6 +48,7 @@ var classvanetza_1_1geonet_1_1Router =
     [ "process_extended", "d9/d48/classvanetza_1_1geonet_1_1Router.html#ae79ee5a42dca3bcb343c0dbbaf6e9b4c", null ],
     [ "process_extended", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a874438a81f07e567044d3c22793f9e58", null ],
     [ "process_extended", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a27c6534e25fa68c53b06ea34bd0de9f3", null ],
+    [ "process_extended", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a69cbf7a2df88320beb3935f85c23458b", null ],
     [ "request", "d9/d48/classvanetza_1_1geonet_1_1Router.html#adb61e1d123ba2b51728f695de6750ed2", null ],
     [ "request", "d9/d48/classvanetza_1_1geonet_1_1Router.html#a75c12837551604e34561c354c5f6251b", null ],
     [ "reset_beacon_timer", "d9/d48/classvanetza_1_1geonet_1_1Router.html#aa70cb05ac5419df3a5b8fd7ecc2915bd", null ],

@@ -1,6 +1,10 @@
 <map id="vanetza::geonet::CbfCounter" name="vanetza::geonet::CbfCounter">
-<area shape="rect" id="node1" title=" " alt="" coords="39,5,227,141"/>
-<area shape="rect" id="node2" href="$da/d5f/classvanetza_1_1geonet_1_1CbfCounterContending.html" title=" " alt="" coords="79,388,267,495"/>
-<area shape="rect" id="node3" href="$d4/d50/classvanetza_1_1geonet_1_1CbfCounterFading.html" title=" " alt="" coords="39,189,227,340"/>
-<area shape="rect" id="node4" href="$db/d11/classvanetza_1_1geonet_1_1CbfCounterImmortal.html" title=" " alt="" coords="251,197,439,333"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="40,5,220,151"/>
+<area shape="rect" id="Node000002" href="$da/d5f/classvanetza_1_1geonet_1_1CbfCounterContending.html" title=" " alt="" coords="78,407,258,507"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="49,163,30,200,15,244,9,280,13,316,30,357,51,386,79,410,76,414,47,390,25,360,8,317,3,280,10,242,25,198,45,161"/>
+<area shape="rect" id="Node000003" href="$d4/d50/classvanetza_1_1geonet_1_1CbfCounterFading.html" title=" " alt="" coords="40,199,220,359"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="133,164,133,199,128,199,128,164"/>
+<area shape="rect" id="Node000004" href="$db/d11/classvanetza_1_1geonet_1_1CbfCounterImmortal.html" title=" " alt="" coords="244,209,424,349"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="215,158,265,207,262,211,212,162"/>
+<area shape="poly" id="edge4_Node000004_Node000002" title=" " alt="" coords="261,361,216,408,212,404,257,357"/>
 </map>

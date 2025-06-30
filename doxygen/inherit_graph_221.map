@@ -1,3 +1,5 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$d2/d2e/structvanetza_1_1geonet_1_1Ellipse.html" title=" " alt="" coords="5,5,165,31"/>
+<area shape="rect" id="Node000000" href="$d2/d2e/classvanetza_1_1security_1_1v2_1_1SignHeaderPolicy.html" title=" " alt="" coords="5,5,153,45"/>
+<area shape="rect" id="Node000001" href="$d1/dc8/classvanetza_1_1security_1_1v2_1_1DefaultSignHeaderPolicy.html" title=" " alt="" coords="201,5,392,45"/>
+<area shape="poly" id="edge140_Node000000_Node000001" title=" " alt="" coords="167,23,201,23,201,28,167,28"/>
 </map>

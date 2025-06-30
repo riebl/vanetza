@@ -1,5 +1,7 @@
 <map id="vanetza::InputArchive::Exception" name="vanetza::InputArchive::Exception">
-<area shape="rect" id="node1" title=" " alt="" coords="5,256,152,348"/>
-<area shape="rect" id="node2" title=" " alt="" coords="17,131,141,208"/>
-<area shape="rect" id="node3" title=" " alt="" coords="27,5,130,83"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,232,144,312"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="17,119,133,184"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="77,198,77,232,72,232,72,198"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="27,5,122,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="77,84,77,119,72,119,72,84"/>
 </map>

@@ -1,4 +1,5 @@
 <map id="vanetza::dcc::TransmissionLite" name="vanetza::dcc::TransmissionLite">
-<area shape="rect" id="node1" title=" " alt="" coords="5,189,208,340"/>
-<area shape="rect" id="node2" href="$df/dd5/classvanetza_1_1dcc_1_1Transmission.html" title=" " alt="" coords="16,5,197,141"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,199,200,364"/>
+<area shape="rect" id="Node000002" href="$df/dd5/classvanetza_1_1dcc_1_1Transmission.html" title=" " alt="" coords="16,5,189,151"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,165,105,198,100,198,100,165"/>
 </map>

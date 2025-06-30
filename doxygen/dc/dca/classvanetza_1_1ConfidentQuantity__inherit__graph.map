@@ -1,5 +1,7 @@
 <map id="vanetza::ConfidentQuantity&lt; T &gt;" name="vanetza::ConfidentQuantity&lt; T &gt;">
-<area shape="rect" id="node1" title=" " alt="" coords="91,5,303,273"/>
-<area shape="rect" id="node2" href="$d2/d35/classvanetza_1_1ConfidentQuantity.html" title=" " alt="" coords="5,336,185,619"/>
-<area shape="rect" id="node3" href="$d2/d35/classvanetza_1_1ConfidentQuantity.html" title=" " alt="" coords="209,336,389,619"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="87,5,291,331"/>
+<area shape="rect" id="Node000002" href="$d2/d35/classvanetza_1_1ConfidentQuantity.html" title=" " alt="" coords="5,401,177,641"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,345,134,355,122,402,117,400,129,354,132,343"/>
+<area shape="rect" id="Node000003" href="$d2/d35/classvanetza_1_1ConfidentQuantity.html" title=" " alt="" coords="201,401,373,641"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="258,343,261,354,272,400,266,402,255,355,252,345"/>
 </map>

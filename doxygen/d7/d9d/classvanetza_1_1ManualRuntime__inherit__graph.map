@@ -1,4 +1,5 @@
 <map id="vanetza::ManualRuntime" name="vanetza::ManualRuntime">
-<area shape="rect" id="node1" title=" " alt="" coords="5,189,172,428"/>
-<area shape="rect" id="node2" href="$de/d11/classvanetza_1_1Runtime.html" title=" " alt="" coords="27,5,151,141"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,199,164,484"/>
+<area shape="rect" id="Node000002" href="$de/d11/classvanetza_1_1Runtime.html" title=" " alt="" coords="27,5,143,151"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="87,165,87,199,82,199,82,165"/>
 </map>

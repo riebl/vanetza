@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../../img/favicon.ico" />
-    <title>Building for CUBE EVK - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+    <title>Building for cube:evk - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
     <link rel="stylesheet" href="../../css/theme.css" />
     <link rel="stylesheet" href="../../css/theme_extra.css" />
         <link href="../../css/extra.css" rel="stylesheet" />
@@ -13,7 +13,7 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Building for CUBE EVK";
+        var mkdocs_page_name = "Building for cube:evk";
         var mkdocs_page_input_path = "recipes/cube-evk-build.md";
         var mkdocs_page_url = null;
       </script>
@@ -112,7 +112,7 @@
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Building for CUBE EVK</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Building for cube:evk</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#configuration">Configuration</a>
         <ul>
@@ -124,7 +124,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#building-and-running-socktap-for-wireless-remote-radio-mode">Building and Running Socktap for Wireless Remote Radio Mode</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#building-and-running-socktap-on-the-evk">Building and Running Socktap on the EVK</a>
+    <li class="toctree-l2"><a class="reference internal" href="#building-and-running-socktap-on-the-cubeevk">Building and Running Socktap on the cube:evk</a>
     </li>
     </ul>
                   </li>
@@ -163,6 +163,18 @@
     </li>
     </ul>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tools/fuzz-harness/">fuzz-harness</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/fuzz-harness/#requirements">Requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../../tools/fuzz-harness/#usage">Usage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/fuzz-harness/#analyse">Analyse</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tools/socktap/">Socktap</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../tools/socktap/#link-layer">Link layer</a>
@@ -178,6 +190,12 @@
     <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#udp">UDP</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#tcp">TCP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="../../tools/socktap/#rpc">RPC</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="../../tools/socktap/#command-line-flags">Command line flags</a>
+    </li>
+        </ul>
     </li>
         </ul>
     </li>
@@ -221,9 +239,9 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
-          <li>Recipes &raquo;</li>
-      <li class="breadcrumb-item active">Building for CUBE EVK</li>
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Recipes</li>
+      <li class="breadcrumb-item active">Building for cube:evk</li>
     <li class="wy-breadcrumbs-aside">
           <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/cube-evk-build.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
@@ -233,12 +251,12 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="building-for-cube-evk">Building for CUBE EVK</h1>
-<p>The CUBE EVK from <a href="https://www.nfiniity.com/#portfolio">nfiniity</a> fully supports the Vanetza stack and its socktap application. An integrated V2X module listens for requests whether from a local or remote application. The communication protocol between host and V2X module is covered in Google&rsquo;s Protobuf that is used in the respective link-layer implementation.</p>
+                <h1 id="building-for-cubeevk">Building for cube:evk</h1>
+<p>The cube:evk from <a href="https://www.nfiniity.com/#hardware-section">cubesys - an nfiniity company</a> fully supports the Vanetza stack and its socktap application. An integrated V2X module listens for requests whether from a local or remote application. The communication protocol between host and V2X module is covered in Google&rsquo;s Protobuf that is used in the respective link-layer implementation.</p>
 <h2 id="configuration">Configuration</h2>
 <p>Before building and running socktap you need to configure the V2X module and the WiFi once.</p>
 <h3 id="v2x-radio-configuration-c-v2x-or-dsrc">V2X Radio Configuration - C-V2X or DSRC</h3>
-<p>First of all select your desired radio configuration using the <code>v2xconfig</code> tool on the EVK:</p>
+<p>First of all select your desired radio configuration using the <code>v2xconfig</code> tool on the cube:evk:</p>
 <pre class="codehilite"><code class="language-shell"># start dsrc or cv2x and enable auto-start
 cube&gt; v2xconfig start enable dsrc
 </code></pre>
@@ -251,28 +269,28 @@ cube&gt; ip a
 </code></pre>
 
 <h2 id="building-and-running-socktap-for-wireless-remote-radio-mode">Building and Running Socktap for Wireless Remote Radio Mode</h2>
-<p>You can build and run socktap directly on your personal computer (host) and select <code>cube-evk</code> as link-layer. Further, gpsd daemon is running on the EVK that can feed socktap with GNSS data. </p>
-<p>In <code>wireless remote radio mode</code> you develop, debug and run Vanetza/socktap on your personal computer. There is no need to flash or transfer the application onto your EVK. The V2X radio on the EVK listens for incoming requests from remote. Both devices need to be pingable from each other only.</p>
+<p>You can build and run socktap directly on your personal computer (host) and select <code>cube-evk</code> as link-layer. Further, gpsd daemon is running on the cube:evk that can feed socktap with GNSS data. </p>
+<p>In <code>wireless remote radio mode</code> you develop, debug and run Vanetza/socktap on your personal computer. There is no need to flash or transfer the application onto your cube:evk. The V2X radio on the cube:evk listens for incoming requests from remote. Both devices need to be pingable from each other only.</p>
 <pre class="codehilite"><code class="language-shell">host&gt; mkdir build &amp;&amp; cd build
 host&gt; cmake -DBUILD_SOCKTAP=ON -DSOCKTAP_WITH_CUBE_EVK=ON ..
 
 # use fix position data
 host&gt; ./bin/socktap -l cube-evk -p static --cube-ip &lt;cube-ip&gt;
 
-# use the ublox module on the EVK for positioning data
+# use the ublox module on the cube:evk for positioning data
 host&gt; ./bin/socktap -l cube-evk -p gpsd --gpsd-host &lt;cube-ip&gt; --cube-ip &lt;cube-ip&gt;
 </code></pre>
 
-<p>Moreover, the integrated LTE module allows the user to do field tests with the EVK from remote.</p>
-<h2 id="building-and-running-socktap-on-the-evk">Building and Running Socktap on the EVK</h2>
-<p>You can also build and run socktap on the EVK itself and it will connect to the local V2X module.</p>
+<p>Moreover, the integrated LTE module allows the user to do field tests with the cube:evk from remote.</p>
+<h2 id="building-and-running-socktap-on-the-cubeevk">Building and Running Socktap on the cube:evk</h2>
+<p>You can also build and run socktap on the cube:evk itself and it will connect to the local V2X module.</p>
 <pre class="codehilite"><code class="language-shell">cube&gt; mkdir build &amp;&amp; cd build
 cube&gt; cmake -DBUILD_SOCKTAP=ON -DSOCKTAP_WITH_CUBE_EVK=ON ..
 
 # use fix position data
 cube&gt; ./bin/socktap -l cube-evk -p static
 
-# use the ublox module on the EVK for positioning data
+# use the ublox module on the cube:evk for positioning data
 cube&gt; ./bin/socktap -l cube-evk -p gpsd --gpsd-host 127.0.0.1
 </code></pre>
               

@@ -1,6 +1,9 @@
 <map id="vanetza::security::v2::CertificateProvider" name="vanetza::security::v2::CertificateProvider">
-<area shape="rect" id="node1" title=" " alt="" coords="225,5,383,141"/>
-<area shape="rect" id="node2" href="$d7/dff/classvanetza_1_1security_1_1v2_1_1NaiveCertificateProvider.html" title="A very simplistic certificate provider." alt="" coords="5,189,192,516"/>
-<area shape="rect" id="node3" href="$dc/d56/classvanetza_1_1security_1_1v2_1_1NullCertificateProvider.html" title=" " alt="" coords="216,277,392,428"/>
-<area shape="rect" id="node4" href="$d6/db8/classvanetza_1_1security_1_1v2_1_1StaticCertificateProvider.html" title="A simple certificate provider." alt="" coords="416,263,603,443"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="217,5,367,145"/>
+<area shape="rect" id="Node000002" href="$d7/dff/classvanetza_1_1security_1_1v2_1_1NaiveCertificateProvider.html" title="A very simplistic certificate provider." alt="" coords="5,193,184,583"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="225,158,198,195,186,213,182,210,194,192,221,155"/>
+<area shape="rect" id="Node000003" href="$dc/d56/classvanetza_1_1security_1_1v2_1_1NullCertificateProvider.html" title=" " alt="" coords="208,308,376,468"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="295,159,295,308,289,308,289,159"/>
+<area shape="rect" id="Node000004" href="$d6/db8/classvanetza_1_1security_1_1v2_1_1StaticCertificateProvider.html" title="A simple certificate provider." alt="" coords="400,288,579,488"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="363,155,390,192,445,286,440,289,386,195,359,158"/>
 </map>

@@ -1,5 +1,7 @@
 <map id="vanetza::geonet::IndicationContextDeserialize" name="vanetza::geonet::IndicationContextDeserialize">
-<area shape="rect" id="node1" title=" " alt="" coords="5,505,215,700"/>
-<area shape="rect" id="node2" href="$d6/d4a/classvanetza_1_1geonet_1_1IndicationContextBasic.html" title=" " alt="" coords="21,277,199,457"/>
-<area shape="rect" id="node3" href="$d0/db4/classvanetza_1_1geonet_1_1IndicationContext.html" title=" " alt="" coords="21,5,199,229"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,561,207,781"/>
+<area shape="rect" id="Node000002" href="$d6/d4a/classvanetza_1_1geonet_1_1IndicationContextBasic.html" title=" " alt="" coords="21,313,191,513"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,527,109,561,103,561,103,527"/>
+<area shape="rect" id="Node000003" href="$d0/db4/classvanetza_1_1geonet_1_1IndicationContext.html" title=" " alt="" coords="21,5,191,265"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="109,279,109,313,103,313,103,279"/>
 </map>

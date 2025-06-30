@@ -1,4 +1,5 @@
 <map id="vanetza::security::BackendNull" name="vanetza::security::BackendNull">
-<area shape="rect" id="node1" title="A backend doing nothing." alt="" coords="5,219,153,384"/>
-<area shape="rect" id="node2" href="$d1/d75/classvanetza_1_1security_1_1Backend.html" title=" " alt="" coords="5,5,153,171"/>
+<area shape="rect" id="Node000001" title="A backend doing nothing." alt="" coords="5,253,145,453"/>
+<area shape="rect" id="Node000002" href="$d1/d75/classvanetza_1_1security_1_1Backend.html" title=" " alt="" coords="5,5,145,205"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,219,78,253,73,253,73,219"/>
 </map>

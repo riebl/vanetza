@@ -1,3 +1,13 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="5,5,228,60"/>
+<area shape="rect" id="Node000000" href="$d5/d0a/structvanetza_1_1pdu__tags_1_1pdu__tag.html" title=" " alt="" coords="5,69,141,109"/>
+<area shape="rect" id="Node000001" href="$db/d41/structvanetza_1_1pdu__tags_1_1empty__pdu__tag.html" title=" " alt="" coords="189,5,325,45"/>
+<area shape="poly" id="edge118_Node000000_Node000001" title=" " alt="" coords="144,62,198,43,200,48,145,67"/>
+<area shape="rect" id="Node000002" href="$d0/df3/structvanetza_1_1pdu__tags_1_1mac__tag.html" title=" " alt="" coords="189,69,325,109"/>
+<area shape="poly" id="edge119_Node000000_Node000002" title=" " alt="" coords="155,87,189,87,189,92,155,92"/>
+<area shape="rect" id="Node000004" href="$dd/de8/structvanetza_1_1pdu__tags_1_1phy__tag.html" title=" " alt="" coords="189,133,325,173"/>
+<area shape="poly" id="edge121_Node000000_Node000004" title=" " alt="" coords="145,111,200,131,198,136,144,116"/>
+<area shape="rect" id="Node000003" href="$d9/df4/structvanetza_1_1pdu__tags_1_1ethernet__tag.html" title=" " alt="" coords="373,69,509,109"/>
+<area shape="poly" id="edge120_Node000002_Node000003" title=" " alt="" coords="339,87,373,87,373,92,339,92"/>
+<area shape="rect" id="Node000005" href="$d5/d6d/structvanetza_1_1pdu__tags_1_1mk2__tag.html" title=" " alt="" coords="373,133,509,173"/>
+<area shape="poly" id="edge122_Node000004_Node000005" title=" " alt="" coords="339,151,373,151,373,156,339,156"/>
 </map>

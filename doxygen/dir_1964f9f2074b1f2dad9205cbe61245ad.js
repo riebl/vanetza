@@ -1,5 +1,6 @@
 var dir_1964f9f2074b1f2dad9205cbe61245ad =
 [
+    [ "detail", "dir_82ae9ebfbf12361bdcc7f0315fb6ce2e.html", "dir_82ae9ebfbf12361bdcc7f0315fb6ce2e" ],
     [ "cam_functions.cpp", "df/d10/cam__functions_8cpp_source.html", null ],
     [ "cam_functions.hpp", "db/d2d/cam__functions_8hpp_source.html", null ],
     [ "path_history.cpp", "d8/dee/path__history_8cpp_source.html", null ],

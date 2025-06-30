@@ -1,3 +1,10 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$df/d55/structPsidSspRange.html" title=" " alt="" coords="5,5,113,31"/>
+<area shape="rect" id="Node000000" href="$db/d2d/classvanetza_1_1geonet_1_1CbfCounter.html" title=" " alt="" coords="5,32,193,58"/>
+<area shape="rect" id="Node000001" href="$da/d5f/classvanetza_1_1geonet_1_1CbfCounterContending.html" title=" " alt="" coords="477,29,665,69"/>
+<area shape="poly" id="edge89_Node000000_Node000001" title=" " alt="" coords="158,26,241,10,335,3,430,10,506,26,505,31,429,16,335,8,242,16,159,31"/>
+<area shape="rect" id="Node000003" href="$d4/d50/classvanetza_1_1geonet_1_1CbfCounterFading.html" title=" " alt="" coords="241,25,429,65"/>
+<area shape="poly" id="edge90_Node000000_Node000003" title=" " alt="" coords="207,42,241,42,241,48,207,48"/>
+<area shape="rect" id="Node000002" href="$db/d11/classvanetza_1_1geonet_1_1CbfCounterImmortal.html" title=" " alt="" coords="241,89,429,129"/>
+<area shape="poly" id="edge91_Node000000_Node000002" title=" " alt="" coords="161,59,261,86,260,91,160,64"/>
+<area shape="poly" id="edge92_Node000002_Node000001" title=" " alt="" coords="427,83,491,66,493,72,429,88"/>
 </map>

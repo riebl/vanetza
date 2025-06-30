@@ -112,7 +112,7 @@
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../../recipes/cube-evk-build/">Building for CUBE EVK</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../../recipes/cube-evk-build/">Building for cube:evk</a>
     <ul>
     <li class="toctree-l2"><a class="reference internal" href="../../recipes/cube-evk-build/#configuration">Configuration</a>
         <ul>
@@ -124,7 +124,7 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="../../recipes/cube-evk-build/#building-and-running-socktap-for-wireless-remote-radio-mode">Building and Running Socktap for Wireless Remote Radio Mode</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="../../recipes/cube-evk-build/#building-and-running-socktap-on-the-evk">Building and Running Socktap on the EVK</a>
+    <li class="toctree-l2"><a class="reference internal" href="../../recipes/cube-evk-build/#building-and-running-socktap-on-the-cubeevk">Building and Running Socktap on the cube:evk</a>
     </li>
     </ul>
                   </li>
@@ -163,7 +163,19 @@
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="./">Socktap</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../fuzz-harness/">fuzz-harness</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../fuzz-harness/#requirements">Requirements</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="../fuzz-harness/#usage">Usage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="../fuzz-harness/#analyse">Analyse</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Socktap</a>
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#link-layer">Link layer</a>
         <ul>
@@ -178,6 +190,12 @@
     <li class="toctree-l3"><a class="reference internal" href="#udp">UDP</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#tcp">TCP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#rpc">RPC</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#command-line-flags">Command line flags</a>
+    </li>
+        </ul>
     </li>
         </ul>
     </li>
@@ -221,8 +239,8 @@
       <div class="wy-nav-content">
         <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
   <ul class="wy-breadcrumbs">
-    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a> &raquo;</li>
-          <li>Tools &raquo;</li>
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Tools</li>
       <li class="breadcrumb-item active">Socktap</li>
     <li class="wy-breadcrumbs-aside">
           <a href="https://github.com/riebl/vanetza/edit/master/docs/tools/socktap.md" class="icon icon-github"> Edit on GitHub</a>
@@ -251,6 +269,7 @@ You can choose via the <code>--link-layer</code> argument which implementation t
 <li><em>cohda</em> employs Cohda&rsquo;s LLC API</li>
 <li><em>udp</em> runs GeoNetworking on top of IP/UDP multicast sockets</li>
 <li><em>tcp</em> runs GeoNetworking on top of IP/TCP sockets</li>
+<li><em>rpc</em> uses <em>Cap’n Proto</em> interchange format and RPC with external server</li>
 </ul>
 <h3 id="ethernet">Ethernet</h3>
 <p>The <em>ethernet</em> variant has been initially <em>socktap</em>&rsquo;s only available link-layer implementation.
@@ -269,6 +288,10 @@ Please refer to our <a href="../../recipes/cohda-sdk-build/">Cohda SDK building 
 <h3 id="autotalks">Autotalks</h3>
 <p>Another option involving dedicated V2X hardware uses the Autotalks API.
 Please have a look at our <a href="../../recipes/autotalks-sdk-build/">Building for Autotalks devices</a> guide how to incorporate the Autotalks SDK.</p>
+<blockquote>
+<p>[!WARNING]
+Our Autotalks link layer integration is deprecated. Please use the RPC link layer as a superior replacement.</p>
+</blockquote>
 <h3 id="udp">UDP</h3>
 <p>A relatively new addition is the <em>udp</em> mode, which allows running <em>socktap</em> without any privileges.
 GeoNetworking packets are wrapped into UDP datagrams and sent to the IP multicast group <strong>239.118.122.97</strong> on UDP port <strong>8947</strong>.
@@ -279,6 +302,19 @@ You can consider this as &ldquo;GeoNetworking over IP/UDP&rdquo;.</p>
 However, TCP adds the arguments <code>--tcp-accept</code> and <code>--tcp-connect</code>, which allow the user to accept incoming TCP connections or connect to open TCP sockets, respectively.
 Both arguments expect a comma separated list of <code>ip:port</code>.
 Outgoing GeoNetworking packets will then be sent to all active TCP connections.</p>
+<h3 id="rpc">RPC</h3>
+<p>RPC link layer lets socktap connect to an external RPC server over <a href="https://capnproto.org/">Cap’n Proto</a>.
+You can refer to <a href="https://github.com/mach-systems/RPC-link">MACH SYSTEMS&rsquo;s RPC link</a> for developing the server on your own V2X hardware, e.g. Autotalks EVKs.
+The <a href="https://cubesys.io">cube V2X devices</a> ship a compatible <em>cube-radio-rpc</em> service with <em>cube:os</em> 1.4 and later.</p>
+<h4 id="command-line-flags">Command line flags</h4>
+<ul>
+<li><code>--rpc-host &lt;HOST&gt;</code> –⁠⁠⁠⁠⁠ hostname or IP of the RPC server (default: <code>localhost</code>)</li>
+<li><code>--rpc-port &lt;PORT&gt;</code> –⁠⁠⁠⁠⁠⁠ TCP port on which the server is listening (default: <code>23057</code>)</li>
+<li><code>--rpc-radio-technology &lt;TECH&gt;</code> –⁠⁠⁠⁠ radio technology to advertise to the server; valid values:  </li>
+<li><code>ITS-G5</code> –⁠⁠⁠⁠⁠⁠ 802.11p / bd</li>
+<li><code>LTE-V2X|C-V2X</code> –⁠⁠⁠⁠⁠⁠ LTE-V2X / 5G-V2X</li>
+<li><code>--rpc-debug</code> –⁠⁠⁠⁠⁠⁠ enable debugging output</li>
+</ul>
 <h2 id="positioning">Positioning</h2>
 <p>Many components of an ITS-G5 system depend on positioning data.
 Ideally, you have a GPS receiver attached to the computer running <a href="http://catb.org/gpsd">gpsd</a> along with <em>socktap</em>.
@@ -325,7 +361,7 @@ Since then, <a href="https://github.com/kelunik">@kelunik</a> and <a href="https
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../certify/" class="btn btn-neutral float-left" title="Certify"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../fuzz-harness/" class="btn btn-neutral float-left" title="fuzz-harness"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../../legal/" class="btn btn-neutral float-right" title="Legal Notice">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
@@ -353,7 +389,7 @@ Since then, <a href="https://github.com/kelunik">@kelunik</a> and <a href="https
         </span>
     
     
-      <span><a href="../certify/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../fuzz-harness/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../../legal/" style="color: #fcfcfc">Next &raquo;</a></span>

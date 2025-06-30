@@ -1,3 +1,27 @@
 <map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
-<area shape="rect" id="node1" href="$db/dc4/structAaEntry.html" title=" " alt="" coords="5,5,76,31"/>
+<area shape="rect" id="Node000000" title=" " alt="" coords="26,13,131,38"/>
+<area shape="rect" id="Node000001" href="$de/d8f/classvanetza_1_1geonet_1_1SequenceNumber.html" title=" " alt="" coords="204,5,383,45"/>
+<area shape="poly" id="edge1_Node000000_Node000001" title=" " alt="" coords="146,23,204,23,204,28,146,28"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="19,70,138,95"/>
+<area shape="rect" id="Node000008" href="$d4/d40/classvanetza_1_1UnitInterval.html" title=" " alt="" coords="222,70,365,95"/>
+<area shape="poly" id="edge2_Node000010_Node000008" title=" " alt="" coords="152,80,222,80,222,85,152,85"/>
+<area shape="rect" id="Node000009" href="$dc/d86/classvanetza_1_1dcc_1_1ChannelLoad.html" title=" " alt="" coords="435,70,615,95"/>
+<area shape="poly" id="edge3_Node000008_Node000009" title=" " alt="" coords="379,80,435,80,435,85,379,85"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,255,152,281"/>
+<area shape="poly" id="edge11_Node000002_Node000001" title=" " alt="" coords="86,241,101,201,125,152,157,101,198,57,219,43,222,48,202,61,161,104,130,154,106,203,91,243"/>
+<area shape="poly" id="edge9_Node000002_Node000008" title=" " alt="" coords="90,241,131,174,162,137,199,106,224,93,226,98,201,110,166,141,136,177,94,244"/>
+<area shape="rect" id="Node000003" href="$dd/dba/classvanetza_1_1BitNumber.html" title=" " alt="" coords="225,461,362,501"/>
+<area shape="poly" id="edge4_Node000002_Node000003" title=" " alt="" coords="93,293,110,327,134,369,164,411,202,447,226,461,223,466,198,451,160,414,129,372,105,330,88,295"/>
+<area shape="rect" id="Node000004" href="$dd/dba/classvanetza_1_1BitNumber.html" title=" " alt="" coords="225,120,362,160"/>
+<area shape="poly" id="edge5_Node000002_Node000004" title=" " alt="" coords="101,244,145,206,199,170,224,158,227,162,201,174,148,211,105,248"/>
+<area shape="rect" id="Node000005" href="$dd/dba/classvanetza_1_1BitNumber.html" title=" " alt="" coords="225,184,362,224"/>
+<area shape="poly" id="edge6_Node000002_Node000005" title=" " alt="" coords="135,249,225,222,226,227,136,254"/>
+<area shape="rect" id="Node000006" href="$dd/dba/classvanetza_1_1BitNumber.html" title=" " alt="" coords="225,248,362,288"/>
+<area shape="poly" id="edge7_Node000002_Node000006" title=" " alt="" coords="166,265,225,265,225,271,166,271"/>
+<area shape="rect" id="Node000007" href="$db/da9/classvanetza_1_1MacAddress.html" title=" " alt="" coords="219,313,367,338"/>
+<area shape="poly" id="edge8_Node000002_Node000007" title=" " alt="" coords="141,282,246,310,244,315,140,287"/>
+<area shape="rect" id="Node000011" href="$d7/d9a/classvanetza_1_1geonet_1_1Lifetime.html" title=" " alt="" coords="210,362,377,387"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="107,288,150,319,201,348,232,359,230,364,199,353,147,323,104,292"/>
+<area shape="rect" id="Node000012" href="$d0/dc8/classvanetza_1_1geonet_1_1Timestamp.html" title=" " alt="" coords="200,411,387,437"/>
+<area shape="poly" id="edge12_Node000002_Node000012" title=" " alt="" coords="98,291,140,345,169,374,201,398,225,409,223,414,199,402,166,378,136,349,93,294"/>
 </map>

@@ -7,11 +7,8 @@ var searchData=
   ['gbcmemory_4',['GbcMemory',['../d1/d8e/classvanetza_1_1geonet_1_1GbcMemory.html',1,'vanetza::geonet']]],
   ['geobroadcastheader_5',['GeoBroadcastHeader',['../d1/db9/structvanetza_1_1geonet_1_1GeoBroadcastHeader.html',1,'vanetza::geonet']]],
   ['geodeticposition_6',['GeodeticPosition',['../d0/da6/structvanetza_1_1geonet_1_1GeodeticPosition.html',1,'vanetza::geonet']]],
-  ['geographicregion_7',['GeographicRegion',['../dd/d2e/structGeographicRegion.html',1,'']]],
-  ['geographicregion_5fu_8',['GeographicRegion_u',['../d7/d6a/unionGeographicRegion_1_1GeographicRegion__u.html',1,'GeographicRegion']]],
-  ['geounicastheader_9',['GeoUnicastHeader',['../d2/d16/structvanetza_1_1geonet_1_1GeoUnicastHeader.html',1,'vanetza::geonet']]],
-  ['gradualstatemachine_10',['GradualStateMachine',['../df/dd9/classvanetza_1_1dcc_1_1GradualStateMachine.html',1,'vanetza::dcc']]],
-  ['group_11',['Group',['../d0/dd1/classvanetza_1_1security_1_1openssl_1_1Group.html',1,'vanetza::security::openssl']]],
-  ['grouplinkagevalue_12',['GroupLinkageValue',['../d8/d19/structGroupLinkageValue.html',1,'']]],
-  ['gucdatarequest_13',['GucDataRequest',['../d0/db3/structvanetza_1_1geonet_1_1GucDataRequest.html',1,'vanetza::geonet']]]
+  ['geounicastheader_7',['GeoUnicastHeader',['../d2/d16/structvanetza_1_1geonet_1_1GeoUnicastHeader.html',1,'vanetza::geonet']]],
+  ['gradualstatemachine_8',['GradualStateMachine',['../df/dd9/classvanetza_1_1dcc_1_1GradualStateMachine.html',1,'vanetza::dcc']]],
+  ['group_9',['Group',['../d0/dd1/classvanetza_1_1security_1_1openssl_1_1Group.html',1,'vanetza::security::openssl']]],
+  ['gucdatarequest_10',['GucDataRequest',['../d0/db3/structvanetza_1_1geonet_1_1GucDataRequest.html',1,'vanetza::geonet']]]
 ];

@@ -1,4 +1,5 @@
 <map id="vanetza::security::SecurityEntity" name="vanetza::security::SecurityEntity">
-<area shape="rect" id="node1" title=" " alt="" coords="20,5,177,127"/>
-<area shape="rect" id="node2" href="$d0/dff/classvanetza_1_1security_1_1DelegatingSecurityEntity.html" title=" " alt="" coords="5,175,192,311"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="20,5,169,125"/>
+<area shape="rect" id="Node000002" href="$d0/dff/classvanetza_1_1security_1_1DelegatingSecurityEntity.html" title=" " alt="" coords="5,173,184,313"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,139,97,173,92,173,92,139"/>
 </map>

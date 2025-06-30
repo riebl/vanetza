@@ -1,0 +1,7 @@
+<map id="vanetza::geonet::InputArchive::Exception" name="vanetza::geonet::InputArchive::Exception">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,232,191,312"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="40,119,156,184"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,198,101,232,95,232,95,198"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="51,5,145,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="101,84,101,119,95,119,95,84"/>
+</map>
