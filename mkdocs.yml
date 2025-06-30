@@ -18,6 +18,5 @@ markdown_extensions:
     - codehilite:
         guess_lang: false
 plugins:
-    - awesome-pages:
-        collapse_single_pages: true
+    - awesome-nav
     - search
