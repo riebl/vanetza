@@ -317,7 +317,8 @@ void ITSApplication::sendDenm(Denm_Data* denm_data){
         //detection time
     const auto time_now = duration_cast<milliseconds>(runtime_.now().time_since_epoch());
     uint64_t time = 45000000000;
-    
+
+	// XXX: possible memory leak, free allocated memory 
     management.detectionTime.buf = (uint8_t*) malloc(sizeof(uint64_t));
     management.detectionTime.size = sizeof(uint64_t);
 
