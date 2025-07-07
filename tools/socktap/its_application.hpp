@@ -15,7 +15,8 @@
 #include <boost/asio/io_service.hpp>
 #include <boost/asio.hpp>
 
-
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 namespace asio = boost::asio;
 
 struct Denm_Data{
@@ -49,13 +50,12 @@ private:
     
     void sendToServer(u_int64_t* dataToSend, int size);
 
-    void sendDenm(Denm_Data* denm_data);
+    void sendDenm(const json& j);
     void handle_message(std::size_t bytes_transferred);
     void handle_receive_error(const std::error_code& error);
 
     int splitData(char* buffer, Denm_Data* data);
     void populateStruct(char* data, Denm_Data* denm_data, int index);    
-   
 
     vanetza::PositionProvider& positioning_;
     vanetza::Runtime& runtime_;
