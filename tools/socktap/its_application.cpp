@@ -46,10 +46,10 @@ void ITSApplication::handle_message(std::size_t bytes_transferred){
         // Parse JSON from received data
         nlohmann::json proto2json = nlohmann::json::parse(data);
         
-        // Pretty print JSON (4 spaces indentation)
+        // print json
         std::cout << "[Parsed proto2 received]:\n" << proto2json.dump(4) << std::endl;
         if (proto2json["proto2Objects"].empty()) {
-            //objects empty is evet object -> send DENM
+            //objects empty is event object -> send DENM
             std::cout << "Only proto2Event filled " << std::endl;
             this->sendDenm(proto2json);
         }else if(proto2json["proto2Events"].empty()){
@@ -59,20 +59,6 @@ void ITSApplication::handle_message(std::size_t bytes_transferred){
     } catch (nlohmann::json::parse_error& e) {
         std::cerr << "JSON parse error: " << e.what() << std::endl;
     }
-
-   /* std::vector<std::string> result;
-    std::stringstream ss(data);
-    std::string item;
-    int i = 0;
-    Denm_Data* denm_data = (Denm_Data*)malloc(sizeof(Denm_Data));
-    while (std::getline(ss, item, ',')) {
-        std::vector<char> vec(item.begin(), item.end());
-        vec.push_back('\0'); 
-        populateStruct(vec.data(), denm_data, i);
-        i ++;
-    }
-    this->sendDenm(denm_data);
-    free(denm_data);*/
 }
 
 void ITSApplication::start_receive(){
@@ -90,23 +76,6 @@ void ITSApplication::start_receive(){
         });
 }
 
-void ITSApplication::populateStruct(char* data, Denm_Data* denm_data, int index){
-     switch (index)
-    {
-        case 0:
-            denm_data->type = atoi(data);
-            break;
-        case 1:
-            denm_data->lat = atoi(data);
-            break;
-        case 2:
-            denm_data->lon = atoi(data);
-            break;
-        default:
-            break;
-    }
-}
-
 int ITSApplication::createSocket(){
     
     //this->cam_socket = asio::ip::udp::socket socket(io_service);
@@ -115,8 +84,6 @@ int ITSApplication::createSocket(){
 
     return 0;
 }
-
-
 
 void ITSApplication::setSendToServer(bool send_to_server){
     this->send_to_server = send_to_server;
@@ -438,10 +405,7 @@ void ITSApplication::sendDenm(const json& j){
     request.transport_type = geonet::TransportType::SHB;
     request.communication_profile = geonet::CommunicationProfile::ITS_G5;
 
-   
-    
     //print_indented_denm(std::cout, message, "  ", 1);
-    
 
     auto confirm = Application::request(request, std::move(packet));
     if (!confirm.accepted()) {
