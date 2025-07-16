@@ -2,6 +2,7 @@
 #include <vanetza/btp/ports.hpp>
 #include <vanetza/asn1/cam.hpp>
 #include <vanetza/asn1/denm.hpp>
+#include <vanetza/asn1/cpm.hpp>
 #include <vanetza/asn1/packet_visitor.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
@@ -28,18 +29,182 @@ ITSApplication::ITSApplication(PositionProvider& positioning, Runtime& rt, asio:
     schedule_timer();    
     this->station_id = 1;
     this->server_port = 9000;
-    this->serverIP = strdup("192.168.1.124");
+    this->serverIP = strdup("192.168.1.100");
+    createSocket();
     this->start_receive();
+	
+}
+void ITSApplication::sendCAMToServer(const std::string& data, int size) {
+    std::cout << "sending to server" << std::endl;
+    if (!cam_socket.is_open()) {
+    std::cerr << "Socket not open!" << std::endl;
+    return;
+}
+
+    auto bufferCopy = std::make_shared<std::string>(data);  // keep copy alive
+
+   // Capture cam_endpoint by value in the lambda (along with bufferCopy)
+auto endpoint = this->cam_endpoint;  // copy the endpoint
+
+    this->cam_socket.async_send_to(
+        asio::buffer(bufferCopy->data(), size),
+        endpoint,
+        [bufferCopy, endpoint](const std::error_code& ec, std::size_t bytes_sent) {
+            if (!ec) {
+                std::cout << "Sent " << bytes_sent << " bytes to "
+                        << endpoint.address().to_string()
+                        << ":" << endpoint.port() << std::endl;
+            } else {
+                std::cerr << "Send failed: " << ec.message() << std::endl;
+            }
+        }
+    );
+
 }
 
 
+void ITSApplication::create_CPM(const json& j){
+    vanetza::asn1::Cpm cpmmessage;
+    ItsPduHeader_t& header = cpmmessage->header;
+    header.protocolVersion = 2;
+    header.messageID = 14; //header for cpm and to see on wireshark
+    header.stationID = this->station_id;
+
+    CollectivePerceptionMessage_t& cpm = cpmmessage->cpm;
+
+    const auto time_now = duration_cast<milliseconds>(runtime_.now().time_since_epoch());
+    uint16_t gen_delta_time = time_now.count();
+
+    cpm.generationDeltaTime = gen_delta_time * GenerationDeltaTime_oneMilliSec;
+    CpmParameters_t& cpmparams = cpm.cpmParameters;
+    //managementContainer
+    CpmManagementContainer_t& management = cpmparams.managementContainer;
+    management.stationType = StationType_passengerCar;
+
+    //dummy values
+    management.referencePosition.altitude.altitudeValue = 0;
+    management.referencePosition.latitude = 1;
+    management.referencePosition.longitude = 2;
+    management.referencePosition.positionConfidenceEllipse.semiMajorOrientation=0;
+    management.referencePosition.altitude.altitudeValue=0;
+   
+  
+    //perceivedObjectContainer
+    cpmparams.perceivedObjectContainer=vanetza::asn1::allocate<PerceivedObjectContainer_t>();
+    
+     
+   for (const auto& obj : j) {
+
+        //  PerceivedObject_t* asn_obj = (PerceivedObject_t*)calloc(1, sizeof(PerceivedObject_t));
+        auto asn_obj = vanetza::asn1::allocate<PerceivedObject_t>();
+        
+        // 1. objectID (convert "obj-001" → 1)
+        std::string objIDStr = obj.value("objectID", "0");
+        asn_obj->objectID = std::stoi(objIDStr.substr(objIDStr.find_last_of('-') + 1));
+
+        // 2. TimeOfMeasurement (optional: set to now or 0)
+        asn_obj->timeOfMeasurement = 0;  // set appropriately if needed
+    
+        // 3. x/y Distance (lat/lon scaled)
+        asn_obj->xDistance.value = obj.value("lat", 0);  // WGS84 lat scaled
+        asn_obj->xDistance.confidence = obj.value("positionConfidence", 100);
+
+        asn_obj->yDistance.value = obj.value("lon", 0);
+        asn_obj->yDistance.confidence = obj.value("positionConfidence", 100);
+
+        // 4. zDistance (altitude, optional)
+        if (obj.contains("altitude")) {
+            //asn_obj->zDistance = (ObjectDistanceWithConfidence_t*)calloc(1, sizeof(ObjectDistanceWithConfidence_t));
+            asn_obj->zDistance = vanetza::asn1::allocate<ObjectDistanceWithConfidence_t>();
+            
+            asn_obj->zDistance->value = obj.value("altitude", 0.0); 
+            asn_obj->zDistance->confidence = obj.value("altitudeConfidence", 100);
+        }
+
+        // 5. Speed
+        asn_obj->xSpeed.value = obj.value("speed", 0);;  
+        asn_obj->xSpeed.confidence = obj.value("speedConfidence", 100);
+
+        asn_obj->ySpeed.value = 0;
+        asn_obj->ySpeed.confidence = 100;
+
+        // 6. Acceleration (longAcc → xAcceleration)
+        if (obj.contains("longAcc")) {
+        // asn_obj->xAcceleration = (LongitudinalAcceleration_t*)calloc(1, sizeof(LongitudinalAcceleration_t));
+            asn_obj->xAcceleration = vanetza::asn1::allocate<LongitudinalAcceleration_t>();
+            asn_obj->xAcceleration->longitudinalAccelerationValue = obj.value("longAcc", 0.0);  // m/s² → scaled
+            asn_obj->xAcceleration->longitudinalAccelerationConfidence = obj.value("longAccConfidence", 100);
+        }
+
+        // 7. Heading (mapped to yawAngle)
+        if (obj.contains("heading")) {
+        // asn_obj->yawAngle = (CartesianAngle_t*)calloc(1, sizeof(CartesianAngle_t));
+        asn_obj->yawAngle = vanetza::asn1::allocate<CartesianAngle_t>();
+            asn_obj->yawAngle->value = 0;  // degrees → 0.01 deg
+            asn_obj->yawAngle->confidence = obj.value("headingConfidence", 100);
+        }
+
+        // 8. Object dimension (length, etc.)
+        if (obj.contains("length")) {
+            //asn_obj->planarObjectDimension1 = (ObjectDimension_t*)calloc(1, sizeof(ObjectDimension_t));
+            asn_obj->planarObjectDimension1 = vanetza::asn1::allocate<ObjectDimension_t>();
+        
+            asn_obj->planarObjectDimension1->value =obj.value("length", 0.0); // meters → cm
+            asn_obj->planarObjectDimension1->confidence = obj.value("lengthConfidence", 100);
+        }
+        
+        // 9. Vertical dimension (vehicleLength)
+        if (obj.contains("vehicleLength")) {
+            //asn_obj->verticalObjectDimension = (ObjectDimension_t*)calloc(1, sizeof(ObjectDimension_t));
+            asn_obj->verticalObjectDimension = vanetza::asn1::allocate<ObjectDimension_t>();
+        
+            asn_obj->verticalObjectDimension->value = obj.value("vehicleLength", 0.0);
+            asn_obj->verticalObjectDimension->confidence = obj.value("vehicleLengthConfidence", 100);
+        }
+        // 10. Object confidence
+        asn_obj->objectConfidence = 0;
+
+        // 11. Set objectRefPoint explicitly (even if default in ASN.1)
+        asn_obj->objectRefPoint = 0;
+
+
+        // 12. Add to ASN.1 sequence
+        ASN_SEQUENCE_ADD(&cpmparams.perceivedObjectContainer->list, asn_obj);
+    }
+
+    //number of perceivedobjects value
+    cpmparams.numberOfPerceivedObjects = cpmparams.perceivedObjectContainer->list.count;
+
+
+    std::cout << "Generated Full CPM contains:\n";
+    asn_fprint(stdout, &asn_DEF_CPM, cpmmessage.operator->());
+
+    DownPacketPtr packet { new DownPacket() };
+    packet->layer(OsiLayer::Application) = std::move(cpmmessage);
+    DataRequest request;
+    request.its_aid = aid::CP;
+    request.transport_type = geonet::TransportType::SHB;
+    request.communication_profile = geonet::CommunicationProfile::ITS_G5;
+ 
+    //print_indented_denm(std::cout, message, "  ", 1);
+    
+    try {
+    auto confirm = Application::request(request, std::move(packet));
+    if (!confirm.accepted()) {
+        throw std::runtime_error("CPM application data request failed");
+    }
+    } catch(std::runtime_error& e) {
+        std::cout << "-- Vanetza UPER Encoding Error --\nCheck that the message format follows ETSI spec\n" << e.what() << std::endl;
+        
+        
+    }
+}
 void ITSApplication::handle_receive_error(const std::error_code& error){
     std::cerr << "Receive error: " << error.message() << std::endl;
     
 }
-
 void ITSApplication::handle_message(std::size_t bytes_transferred){
-    
+
     std::string data(this->recv_buffer.data(), bytes_transferred);  // Only use valid part of buffer
     std::cout << "[Received UDP data]: " << data << std::endl; 
     try {
@@ -48,14 +213,28 @@ void ITSApplication::handle_message(std::size_t bytes_transferred){
         
         // print json
         std::cout << "[Parsed proto2 received]:\n" << proto2json.dump(4) << std::endl;
-        if (proto2json["proto2Objects"].empty()) {
-            //objects empty is event object -> send DENM
-            std::cout << "Only proto2Event filled " << std::endl;
+        if(!proto2json["objects"].empty()){
+            //cpm
+            this->create_CPM(proto2json["objects"]);
+        }
+        if (!proto2json["events"].empty()) {
+            const auto& events = proto2json["events"];
+        if (events.is_array()) {
+            for (const auto& event : events) {
+                // Create a JSON object with the single event
+                nlohmann::json singleEventJson = proto2json;  // copy original JSON
+                singleEventJson["events"] = event;            // replace with single event
+                std::cout << "Sending DENM for one event" << std::endl;
+                this->sendDenm(singleEventJson);
+            }
+        } else if (events.is_object()) {
+            std::cout << "Sending DENM for single event" << std::endl;
             this->sendDenm(proto2json);
-        }else if(proto2json["proto2Events"].empty()){
-            //gonna be objects so prepare CPM
-            
-        }       
+        } else {
+            std::cerr << "events is neither array nor object" << std::endl;
+        }
+        }
+     
     } catch (nlohmann::json::parse_error& e) {
         std::cerr << "JSON parse error: " << e.what() << std::endl;
     }
@@ -76,14 +255,32 @@ void ITSApplication::start_receive(){
         });
 }
 
+void ITSApplication::populateStruct(char* data, Denm_Data* denm_data, int index){
+     switch (index)
+    {
+        case 0:
+            denm_data->type = atoi(data);
+            break;
+        case 1:
+            denm_data->lat = atoi(data);
+            break;
+        case 2:
+            denm_data->lon = atoi(data);
+            break;
+        default:
+            break;
+    }
+}
+
 int ITSApplication::createSocket(){
     
     //this->cam_socket = asio::ip::udp::socket socket(io_service);
     cam_socket.open(asio::ip::udp::v4());
-    this->cam_endpoint = asio::ip::udp::endpoint(asio::ip::address::from_string(this->serverIP), this->server_port);
-
-    return 0;
+   this->cam_endpoint = asio::ip::udp::endpoint(asio::ip::address::from_string(this->serverIP), this->server_port);
+   return 0;
 }
+
+
 
 void ITSApplication::setSendToServer(bool send_to_server){
     this->send_to_server = send_to_server;
@@ -174,26 +371,311 @@ int decode(const asn1::Cam& recvd, char* message){
     return strlen(message);
 }
 
+void print_indentedDENM(std::ostream& os, const asn1::Denm& message, const std::string& indent, unsigned level)
+{
+    auto prefix = [&](const char* field) -> std::ostream& {
+        for (unsigned i = 0; i < level; ++i) {
+            os << indent;
+        }
+        os << field << ": ";
+        return os;
+    };
+
+    // Print ITS PDU Header
+    const ItsPduHeader_t& header = message->header;
+    prefix("ITS PDU Header") << "\n";
+    ++level;
+    prefix("Protocol Version") << static_cast<int>(header.protocolVersion) << "\n";
+    prefix("Message ID") << static_cast<int>(header.messageID) << "\n";
+    prefix("Station ID") << header.stationID << "\n";
+    --level;
+
+    // DENM content
+   
+    // Management Container
+    prefix("Management Container") << "\n";
+    ++level;
+    const ManagementContainer_t& mgmt = message->denm.management;
+    
+    // ActionID
+    prefix("ActionID") << "\n";
+    ++level;
+    prefix("Originating Station ID") << mgmt.actionID.originatingStationID << "\n";
+    prefix("Sequence Number") << mgmt.actionID.sequenceNumber << "\n";
+    --level;
+
+    long detectionTimeValue = 0;
+    if (asn_INTEGER2long(&mgmt.detectionTime, &detectionTimeValue) == 0) {
+        prefix("Detection Time") << detectionTimeValue << "\n";
+    } else {
+        prefix("Detection Time") << "(invalid INTEGER)" << "\n";
+    }
+
+// Reference Time
+    long referenceTimeValue = 0;
+    if (asn_INTEGER2long(&mgmt.referenceTime, &referenceTimeValue) == 0) {
+        prefix("Reference Time") << referenceTimeValue << "\n";
+    } else {
+        prefix("Reference Time") << "(invalid INTEGER)" << "\n";
+    }
+    // Event Position
+    prefix("Event Position") << "\n";
+    ++level;
+    prefix("Latitude") << mgmt.eventPosition.latitude << "\n";
+    prefix("Longitude") << mgmt.eventPosition.longitude << "\n";
+
+    // Position Confidence Ellipse
+    prefix("Position Confidence Ellipse") << "\n";
+    ++level;
+    prefix("Semi Major Confidence") << mgmt.eventPosition.positionConfidenceEllipse.semiMajorConfidence << "\n";
+    prefix("Semi Minor Confidence") << mgmt.eventPosition.positionConfidenceEllipse.semiMinorConfidence << "\n";
+    prefix("Semi Major Orientation") << mgmt.eventPosition.positionConfidenceEllipse.semiMajorOrientation << "\n";
+    --level;
+
+    // Altitude
+    prefix("Altitude") << "\n";
+    ++level;
+    prefix("Altitude Value") << mgmt.eventPosition.altitude.altitudeValue << "\n";
+    prefix("Altitude Confidence") << static_cast<int>(mgmt.eventPosition.altitude.altitudeConfidence) << "\n";
+    --level;
+    --level; // end event position
+    
+   if (mgmt.relevanceDistance != nullptr) {
+    prefix("Relevance Distance") << static_cast<int>(*mgmt.relevanceDistance) << "\n";
+} else {
+    prefix("Relevance Distance") << "(null)" << "\n";
+}
+    prefix("Station Type") << static_cast<int>(mgmt.stationType) << "\n";
+    --level; // end management container
+
+    // Situation Container
+    prefix("Situation Container") << "\n";
+    ++level;
+    if (message->denm.situation != nullptr) {
+    const SituationContainer_t& situation = *(message->denm.situation);
+
+    prefix("Information Quality") << static_cast<int>(situation.informationQuality) << "\n";
+
+    // Event Type (CauseCode)
+    prefix("Event Type") << "\n";
+    ++level;
+    prefix("Cause Code") << static_cast<int>(situation.eventType.causeCode) << "\n";
+    prefix("Sub Cause Code") << static_cast<int>(situation.eventType.subCauseCode) << "\n";
+    --level; // end event type
+
+    --level; // end situation container
+} else {
+    prefix("Situation Container") << "(null)" << "\n";
+}
+}
+void print_indentedCPM(std::ostream& os, const asn1::Cpm& message, const std::string& indent, unsigned level)
+{
+    auto prefix = [&](const char* field) -> std::ostream& {
+        for (unsigned i = 0; i < level; ++i) {
+            os << indent;
+        }
+        os << field << ": ";
+        return os;
+    };
+
+    // ITS PDU Header
+    const ItsPduHeader_t& header = message->header;
+    prefix("ITS PDU Header") << "\n";
+    ++level;
+    prefix("Protocol Version") << static_cast<int>(header.protocolVersion) << "\n";
+    prefix("Message ID") << static_cast<int>(header.messageID) << "\n";
+    prefix("Station ID") << header.stationID << "\n";
+    --level;
+
+    // CPM content
+    const CollectivePerceptionMessage_t& cpm = message->cpm;
+    prefix("CPM") << "\n";
+    ++level;
+
+    prefix("Generation Delta Time") << cpm.generationDeltaTime << "\n";
+
+    // CPM Parameters
+    prefix("CPM Parameters") << "\n";
+    ++level;
+
+    // Management Container
+    prefix("Management Container") << "\n";
+    ++level;
+    const CpmManagementContainer_t& mgmt = cpm.cpmParameters.managementContainer;
+
+    prefix("Station Type") << static_cast<int>(mgmt.stationType) << "\n";
+
+    prefix("Reference Position") << "\n";
+    ++level;
+    prefix("Latitude") << mgmt.referencePosition.latitude << "\n";
+    prefix("Longitude") << mgmt.referencePosition.longitude << "\n";
+
+    prefix("Position Confidence Ellipse") << "\n";
+    ++level;
+    prefix("Semi Major Confidence") << mgmt.referencePosition.positionConfidenceEllipse.semiMajorConfidence << "\n";
+    prefix("Semi Minor Confidence") << mgmt.referencePosition.positionConfidenceEllipse.semiMinorConfidence << "\n";
+    prefix("Semi Major Orientation") << mgmt.referencePosition.positionConfidenceEllipse.semiMajorOrientation << "\n";
+    --level;
+
+    prefix("Altitude") << "\n";
+    ++level;
+    prefix("Altitude Value") << mgmt.referencePosition.altitude.altitudeValue << "\n";
+    prefix("Altitude Confidence") << static_cast<int>(mgmt.referencePosition.altitude.altitudeConfidence) << "\n";
+    --level; // end altitude
+    --level; // end reference position
+    --level; // end management container
+
+    // Perceived Object Container
+   prefix("Perceived Object Container") << "\n";
+    ++level;
+
+    // Iterate over perceived objects (if there are multiple)
+const PerceivedObjectContainer_t& perceived_objects = *cpm.cpmParameters.perceivedObjectContainer;
+
+for (int i = 0; i < perceived_objects.list.count; ++i) {
+    prefix(("Perceived Object " + std::to_string(i+1)).c_str()) << "\n";
+        ++level;
+        const PerceivedObject_t& obj = *perceived_objects.list.array[i];
+
+        prefix("Object ID") << obj.objectID << "\n";
+        prefix("Time Of Measurement") << obj.timeOfMeasurement << "\n";
+        prefix("Object Confidence") << static_cast<int>(obj.objectConfidence) << "\n";
+
+        prefix("X Distance") << "\n";
+        ++level;
+        prefix("Value") << obj.xDistance.value << "\n";
+        prefix("Confidence") << static_cast<int>(obj.xDistance.confidence) << "\n";
+        --level;
+
+        prefix("Y Distance") << "\n";
+        ++level;
+        prefix("Value") << obj.yDistance.value << "\n";
+        prefix("Confidence") << static_cast<int>(obj.yDistance.confidence) << "\n";
+        --level;
+
+        prefix("Z Distance") << "\n";
+        ++level;
+        prefix("Value") << obj.zDistance->value << "\n";
+        prefix("Confidence") << static_cast<int>(obj.zDistance->confidence) << "\n";
+        --level;
+
+        prefix("X Speed") << "\n";
+        ++level;
+        prefix("Value") << obj.xSpeed.value << "\n";
+        prefix("Confidence") << static_cast<int>(obj.xSpeed.confidence) << "\n";
+        --level;
+
+        prefix("Y Speed") << "\n";
+        ++level;
+        prefix("Value") << obj.ySpeed.value << "\n";
+        prefix("Confidence") << static_cast<int>(obj.ySpeed.confidence) << "\n";
+        --level;
+
+        prefix("X Acceleration") << "\n";
+        ++level;
+        prefix("Longitudinal Acceleration Value") << obj.xAcceleration->longitudinalAccelerationValue << "\n";
+        prefix("Longitudinal Acceleration Confidence") << static_cast<int>(obj.xAcceleration->longitudinalAccelerationConfidence) << "\n";
+        --level;
+
+        prefix("Yaw Angle") << "\n";
+        ++level;
+        prefix("Value") << obj.yawAngle->value << "\n";
+        prefix("Confidence") << static_cast<int>(obj.yawAngle->confidence) << "\n";
+        --level;
+
+        prefix("Planar Object Dimension 1") << "\n";
+        ++level;
+        prefix("Value") << obj.planarObjectDimension1->value << "\n";
+        prefix("Confidence") << static_cast<int>(obj.planarObjectDimension1->confidence) << "\n";
+        --level;
+
+        prefix("Vertical Object Dimension") << "\n";
+        ++level;
+        prefix("Value") << obj.verticalObjectDimension->value << "\n";
+        
+        prefix("Confidence") << static_cast<int>(obj.verticalObjectDimension->confidence) << "\n";
+        --level;
+        prefix("objectRefPoint") << obj.objectRefPoint << "\n";
+}
+    --level; // end perceived object container
+    prefix("Number Of Perceived Objects") << cpm.cpmParameters.numberOfPerceivedObjects << "\n";
+
+    
+    --level; // end cpmParameters
+    --level; // end CPM
+}
 void ITSApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
 {
-    printf("Received MEssage\n\n");
-    asn1::PacketVisitor<asn1::Cam> visitor;
-    std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(visitor, *packet);
+    printf("Received Message\n\n");
+
+    // Try decode as CAM
+    asn1::PacketVisitor<asn1::Cam> camVisitor;
+    std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(camVisitor, *packet);
+
+    // Try decode as DENM
+    asn1::PacketVisitor<asn1::Denm> denmVisitor;
+    std::shared_ptr<const asn1::Denm> denm = boost::apply_visitor(denmVisitor, *packet);
+
+    // Try decode as CPM
+    asn1::PacketVisitor<asn1::Cpm> cpmVisitor;
+    std::shared_ptr<const asn1::Cpm> cpm = boost::apply_visitor(cpmVisitor, *packet);
 
     packet.get();
 
-    std::cout << "CAM application received a packet with " << (cam ? "decodable" : "broken") << " content" << std::endl;
-    if (cam && print_rx_msg_) {
-        std::cout << "Received CAM contains\n";
-        print_indented(std::cout, *cam, "  ", 1);
+    if (cam) {
+        std::cout << "Received CAM with decodable content" << std::endl;
+        if (print_rx_msg_) {
+            std::cout << "Received CAM contains\n";
+            print_indented(std::cout, *cam, "  ", 1);
+            
+        }
+        if(send_to_server){
+            char message [500];
+            int size = decode(*cam, message);
+            json original = json::parse(message);  // your one object (not a full message)
+
+            // Build the outgoing message
+            json outgoing;
+
+            // Add version and timestamp manually
+            const auto time_now = duration_cast<milliseconds>(runtime_.now().time_since_epoch());   
+            uint16_t gen_delta_time = time_now.count();
+            // Copy version and timestamp
+            outgoing["version"] = 1.0;
+            outgoing["timestamp"] = gen_delta_time * GenerationDeltaTime_oneMilliSec;
+
+
+            // Wrap the single object into an array
+            outgoing["objects"] = json::array({ original });
+
+            // Add empty events object
+            outgoing["events"] = json::object();
+
+            // Serialize and send
+            std::string jsonStr = outgoing.dump();
+            std::cout << "A enviar Proto2 para a plataforma:\n" << outgoing.dump(4) << std::endl;
+            this->sendCAMToServer(jsonStr, jsonStr.size());
+           // this->sendToServer((u_int64_t*)message, size);
+        }
     }
-    
-    if(cam && send_to_server){
-        char message [500];
-        int size = decode(*cam, message);
-        this->sendToServer((u_int64_t*)message, size);
+    else if (denm) {
+        std::cout << "Received DENM with decodable content" << std::endl;
+        if (print_rx_msg_) {  
+            std::cout << "Received DENM contains\n";
+            print_indentedDENM(std::cout, *denm, "  ", 1);
+        }
+    }    
+    else if (cpm) {
+        
+        std::cout << "Received CPM with decodable content" << std::endl;
+        if (print_rx_msg_) {
+            std::cout << "Received CPM contains\n";
+            print_indentedCPM(std::cout, *cpm, "  ", 1);
+        }
     }
-    
+    else {
+        std::cout << "Received packet with broken or unknown content" << std::endl;
+    }
 }
 
 void ITSApplication::schedule_timer()
@@ -204,8 +686,6 @@ void ITSApplication::schedule_timer()
 void ITSApplication::on_timer(Clock::time_point)
 {
     schedule_timer();
-
-    
     vanetza::asn1::Cam message;
 
     ItsPduHeader_t& header = message->header;
@@ -229,7 +709,7 @@ void ITSApplication::on_timer(Clock::time_point)
     BasicContainer_t& basic = cam.camParameters.basicContainer;
     basic.stationType = StationType_passengerCar;
     copy(position, basic.referencePosition);
-
+    
     cam.camParameters.highFrequencyContainer.present = HighFrequencyContainer_PR_basicVehicleContainerHighFrequency;
 
     BasicVehicleContainerHighFrequency& bvc = cam.camParameters.highFrequencyContainer.choice.basicVehicleContainerHighFrequency;
@@ -282,7 +762,7 @@ void ITSApplication::on_timer(Clock::time_point)
 void ITSApplication::sendDenm(const json& j){
 
    // printf("sending denm: %ld %ld %d\n", denm_data->type, denm_data->lat, denm_data->lon );
-    const auto& proto2event = j["proto2Event"];
+    const auto& proto2event = j["events"];
     int counter  = 1;
     vanetza::asn1::Denm message;
 
@@ -381,16 +861,29 @@ void ITSApplication::sendDenm(const json& j){
 
     SituationContainer* situation = vanetza::asn1::allocate<SituationContainer_t>();
    // situation->eventType.causeCode = 9;
-    situation->eventType.causeCode = atoi(proto2event.value("eventType", "9").c_str());
+    
+    const std::string eventTypeStr = proto2event.value("eventType", "unknown");
+
+    int causeCode = 0;  // default code if not recognized
+
+    if (eventTypeStr == "speeding") {
+        causeCode = 7;
+    } else if (eventTypeStr == "accident") {
+        causeCode = 10;
+    } else if (eventTypeStr == "roadwork") {
+        causeCode = 12;
+    }
+// add other mappings as needed
+
+    situation->eventType.causeCode = causeCode;
     situation->eventType.subCauseCode = 0;
     message->denm.situation = situation;
      //print generated DENM
     std::cout << "Generated DENM contains\n";
     asn_fprint(stdout, &asn_DEF_DENM,message.operator->());
-
+        
     std::string error;
 	if (!message.validate(error)) {
-        vanetza::asn1::free(asn_DEF_DENM, message.operator->());
 		throw std::runtime_error("Invalid DENM: " + error);
 	}
     
@@ -414,3 +907,4 @@ void ITSApplication::sendDenm(const json& j){
 
 
 }
+
