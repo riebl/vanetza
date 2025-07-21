@@ -502,8 +502,12 @@ void ITSApplication::sendDenm(const json& j){
 
         //detection time
     const auto time_now = duration_cast<milliseconds>(runtime_.now().time_since_epoch());
+
     //uint64_t time = 45000000000;
    /* uint64_t time = time_now.count();
+    uint64_t time = 45000000000;
+
+	// XXX: possible memory leak, free allocated memory
     management.detectionTime.buf = (uint8_t*) malloc(sizeof(uint64_t));
     management.detectionTime.size = sizeof(uint64_t);
     
