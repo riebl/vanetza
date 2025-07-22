@@ -13,7 +13,7 @@
 #include <iostream>
 #include <boost/asio/io_service.hpp>
 #include <boost/asio.hpp>
-#include <nlohmann/json.hpp>
+#include "nlohmann/json.hpp"
 // This is a very simple CA application sending CAMs at a fixed rate.
 
 using namespace vanetza;
