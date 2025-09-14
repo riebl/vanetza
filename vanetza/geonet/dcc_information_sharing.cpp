@@ -8,7 +8,7 @@ namespace geonet
 {
 
 DccInformationSharing::DccInformationSharing(Runtime& rt, const LocationTable& lt, dcc::ChannelLoad target, UnitInterval delay) :
-    m_runtime(rt), m_location_table(lt), m_cbr_target(target),
+    m_runtime(rt), m_location_table(lt), m_cbr_target(target), m_tx_power(0),
     m_trigger_interval(std::chrono::milliseconds(100)),
     m_last_aggregation(m_runtime.now()),
     on_global_cbr_update(m_update_hook)
@@ -28,13 +28,18 @@ DccField DccInformationSharing::generate_dcc_field()
     DccMcoField dcc_mco;
     dcc_mco.local_cbr(m_aggregator.get_local_cbr());
     dcc_mco.neighbour_cbr(m_aggregator.get_one_hop_cbr());
-    // TODO set transmission power
+    dcc_mco.output_power(m_tx_power);
     return dcc_mco;
 }
 
 void DccInformationSharing::update_local_cbr(dcc::ChannelLoad local_cbr)
 {
     m_cbr_local = local_cbr;
+}
+
+void DccInformationSharing::set_tx_power(unsigned tx_power)
+{
+    m_tx_power = tx_power;
 }
 
 void DccInformationSharing::trigger()

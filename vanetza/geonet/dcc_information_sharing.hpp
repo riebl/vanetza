@@ -56,6 +56,13 @@ public:
      */
     void update_local_cbr(dcc::ChannelLoad cbr);
 
+    /**
+     * Set packet TX power
+     *
+     * \param power Packet transmission output power in dBm
+     */
+    void set_tx_power(unsigned power);
+
 private:
     void trigger();
 
@@ -63,6 +70,7 @@ private:
     const LocationTable& m_location_table;
     const dcc::ChannelLoad m_cbr_target;
     dcc::ChannelLoad m_cbr_local;
+    unsigned m_tx_power;
     CbrAggregator m_aggregator;
     Clock::duration m_trigger_interval;
     Timestamp m_last_aggregation;
