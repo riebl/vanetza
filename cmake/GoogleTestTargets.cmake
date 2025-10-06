@@ -1,7 +1,8 @@
-set(GTest_VERSION 1.10.0)
-set(GTest_ARCHIVE_NAME release-${GTest_VERSION})
+set(GTest_VERSION 1.16.0)
+set(GTest_ARCHIVE_NAME googletest-${GTest_VERSION})
 set(GTest_ARCHIVE ${GTest_ARCHIVE_NAME}.tar.gz)
-set(GTest_ARCHIVE_SHA1 9c89be7df9c5e8cb0bc20b3c4b39bf7e82686770)
+set(GTest_ARCHIVE_SHA1 517f27ed21b40f9927ab91f2abc147519cedb5a5)
+set(GTest_URL https://github.com/google/googletest/releases/download/v${GTest_VERSION}/${GTest_ARCHIVE})
 
 option(GTest_BUILD_DIRECTORY_DOWNLOAD "Download GoogleTest in build directory" OFF)
 mark_as_advanced(GTest_BUILD_DIRECTORY_DOWNLOAD)
@@ -10,7 +11,7 @@ if(GTest_BUILD_DIRECTORY_DOWNLOAD)
 else()
     set(GTest_DIR ${PROJECT_SOURCE_DIR}/gtest)
 endif()
-set(GTest_ARCHIVE_DIR ${GTest_DIR}/googletest-${GTest_ARCHIVE_NAME}/googletest)
+set(GTest_ARCHIVE_DIR ${GTest_DIR}/${GTest_ARCHIVE_NAME}/googletest)
 set(GTest_SOURCE_DIR ${GTest_ARCHIVE_DIR}/src)
 set(GTest_INCLUDE_DIR ${GTest_ARCHIVE_DIR}/include)
 
@@ -20,7 +21,7 @@ set(GTest_MAIN_LIBRARY gtest_main)
 set(GTest_MAIN_LIBRARY_SOURCES ${GTest_SOURCE_DIR}/gtest_main.cc)
 
 file(DOWNLOAD
-    https://github.com/google/googletest/archive/${GTest_ARCHIVE}
+    ${GTest_URL}
     ${GTest_DIR}/${GTest_ARCHIVE}
     EXPECTED_HASH SHA1=${GTest_ARCHIVE_SHA1})
 add_custom_target(download_gtest DEPENDS ${GTest_DIR}/${GTest_ARCHIVE})
