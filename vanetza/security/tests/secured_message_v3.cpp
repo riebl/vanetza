@@ -7,6 +7,8 @@
 #include <vanetza/security/v3/secured_message.hpp>
 #include <vanetza/security/v3/sign_service.hpp>
 
+#include "printer.hpp"
+
 using namespace vanetza;
 using namespace vanetza::security;
 

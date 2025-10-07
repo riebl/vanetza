@@ -1,8 +1,8 @@
-#ifndef DEA0116A_C521_407B_B2E3_B4C272C53C4C
-#define DEA0116A_C521_407B_B2E3_B4C272C53C4C
-
+#pragma once
+#include <boost/optional/optional_io.hpp>
 #include <vanetza/security/decap_service.hpp>
-#include <iostream>
+#include <vanetza/security/hashed_id.hpp>
+#include <ostream>
 
 namespace vanetza
 {
@@ -33,4 +33,20 @@ void PrintTo(const DecapReport& report, std::ostream* out)
 } // namespace security
 } // namespace vanetza
 
-#endif /* DEA0116A_C521_407B_B2E3_B4C272C53C4C */
+namespace std {
+
+/* HashedId3 and HashedId8 are mere type aliases of std::array<> */
+
+std::ostream& operator<<(std::ostream& os, const vanetza::security::HashedId3& id)
+{
+    os << vanetza::security::to_string(id);
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const vanetza::security::HashedId8& id)
+{
+    os << vanetza::security::to_string(id);
+    return os;
+}
+
+} // namespace std

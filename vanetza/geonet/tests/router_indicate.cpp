@@ -6,7 +6,7 @@
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
 #include <vanetza/geonet/tests/security_context.hpp>
 
-#include "decap_report_printer.hpp"
+#include "printer.hpp"
 
 using namespace vanetza;
 

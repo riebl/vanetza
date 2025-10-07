@@ -21,7 +21,7 @@
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
 
-#include "decap_report_printer.hpp"
+#include "printer.hpp"
 
 using namespace vanetza;
 using namespace vanetza::security;

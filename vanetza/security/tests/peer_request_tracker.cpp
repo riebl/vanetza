@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/peer_request_tracker.hpp>
 
+#include "printer.hpp"
+
 using namespace vanetza::security;
 
 HashedId3 create_id(uint32_t id)
