@@ -1,0 +1,85 @@
+POIM-PDU-Description {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) poi(103916) poim(0) major-version-1 (1) minor-version-1 (1)} 
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS 
+
+ItsPduHeader
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) major-version-4 (4) minor-version-1 (1)} WITH SUCCESSORS
+
+ParkingAvailabilityBlock
+FROM POIM-ParkingAvailability {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) poi(103916) parkingAvailability(1) major-version-1 (1) minor-version-1 (1)}  WITH SUCCESSORS
+
+-- other block imports from separate standards to be added here when needed.
+;
+
+/** 
+ * This type represents the POIM PDU.
+ *
+ * It shall include the following components: 
+ *
+ * @field header: the header of the POIM PDU.
+ *
+ * @field payload: the payload of the POIM PDU.
+*/
+
+POIM ::= SEQUENCE { 
+    header  	ItsPduHeader (WITH COMPONENTS {... , protocolVersion (1), messageId(poim)}),        
+    payload     WrappedPoiInformationBlocks
+} 
+
+/**
+ * This DF represents a list of POI information blocks, each with their type identifier. 
+*/
+WrappedPoiInformationBlocks::= SEQUENCE (SIZE (1..8,...)) OF WrappedPoiInformationBlock
+
+/**
+ * This information object class is an abstract template to instantiate POI Information Blocks.
+ *
+ * It shall include the following components: 
+ *
+ * @field &id: the identifier of the block type.
+ *
+ * @field &Type: the block content.
+ *
+*/
+BLOCK-TYPE ::= CLASS {
+    &id        PoiType,
+    &Content
+} WITH SYNTAX {&Content IDENTIFIED BY &id} 
+
+/**
+ * This DE represents the identifier of the container type. 
+ *
+*/
+PoiType::= INTEGER(1..128,...)
+
+/**
+ * These value assignements represent specific values of the block type identifier. 
+*/
+parkingAvailability    PoiType ::= 1
+
+/**
+ * This information object set represents the association between the block type and the block content.
+*/
+
+PoiInformationSet BLOCK-TYPE ::= {
+   {ParkingAvailabilityBlock    IDENTIFIED BY parkingAvailability}, ...
+}
+
+/**
+ * This DF represents a POI Information Block preceded by its type identifier and a lenght indicator.
+ *
+ * It shall include the following components: 
+ *
+ * @field poiType: the identifier of the POI Information Block type.
+ *
+ * @field poiBlock: the POI Information Block.
+ *
+*/
+WrappedPoiInformationBlock ::= SEQUENCE {
+    poiType      BLOCK-TYPE.&id({PoiInformationSet}),
+    poiBlock     BLOCK-TYPE.&Content({PoiInformationSet}{@poiType})
+}
+
+END

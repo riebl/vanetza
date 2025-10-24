@@ -1,0 +1,68 @@
+POIM-CommonContainers {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) poi(103916) common(99) major-version-1 (1) minor-version-1 (1)} 
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS
+
+Identifier2B, IvimReferences, MapReferences, Provider, TimestampIts
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) major-version-4 (4) minor-version-1 (1)} WITH SUCCESSORS
+
+PoiType
+FROM POIM-PDU-Description {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) poi(103916) poim(0) major-version-1 (1) minor-version-1 (1)} 
+;
+
+/**
+ * This type represents the common management container of the POI Information Blocks. 
+ *
+ * It shall include the following components: 
+ *
+ * @field serviceProviderId: identifier of the organization that provided the POI Information Block.
+ *
+ * @field blockIdentificationNumber: identifier of the POI Information Block, as assigned by the organization identified in serviceProviderId.
+ *
+ * @field timestamp: timestamp of the generation or last change of the POI Information Block
+ *
+ * @field linkedIvims: the optional list of references to IVIMs that are semantically connected because providing signage information applying to the POI.
+ *
+ * @field linkedMapem: the optional list of references to MAPEMs that are semantically connected because providing information applying to the POI.
+ *
+*/
+PoiBlockManagementContainer::= SEQUENCE {
+	serviceProviderId			Provider, 
+	blockIdentificationNumber	Identifier2B,
+	timestamp					TimestampIts,
+	linkedIvims                 IvimReferences OPTIONAL,
+    linkedMapems                MapReferences OPTIONAL,
+    ...  
+}
+
+/**
+ * This type can be used to reference to other related POI Information Blocks. 
+ *
+ * It shall include the following components: 
+ *
+ * @field poiInfoBlockType: the type of related POI Information Blocks
+ *
+ * @field serviceProviderId: identifier of the organization that provided the related POI Information Block.
+ *
+ * @field blockIdentificationNumber: identifier of the related POI Information Block, as assigned by the organization identified in serviceProviderId.
+ *
+ * @field timestamp: optional timestamp of the generation or last change of the related POI Information Block
+ *
+*/	
+
+RelatedPoiInfoBlock::= SEQUENCE{
+   poiInfoBlockType             PoiType,
+   serviceProviderId			Provider, 
+   blockIdentificationNumber	Identifier2B, 
+   timestamp					TimestampIts OPTIONAL,
+    ...
+}
+
+/** 
+ * This DF shall contain a list of @ref RelatedPoiInfoBlock and represents a commmon container to refer to other POI Information Blocks.
+ *
+*/
+RelatedPoiInfoBlockContainer::= SEQUENCE OF RelatedPoiInfoBlock
+
+END

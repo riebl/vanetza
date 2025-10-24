@@ -44,7 +44,14 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103324v211/CPM-SensorInformationContainer.asn
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103300v221/VAM-PDU-Descriptions.asn
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103300v221/motorcyclist-special-container.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103916v211/POIM-PDU-Description.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103916v211/POIM-ParkingAvailability.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/TS103916v211/POIM-CommonContainers.asn
     )
+
+    # set(_its_r2_asn1_files_depending_on_iso
+    #     ${PROJECT_SOURCE_DIR}/asn1/release2/TS103916v211/POIM-ParkingAvailability.asn
+    # )
 
     option(VANETZA_ASN1_WITH_ISO "Fetch ISO ASN.1 files for a more complete ITS message set" OFF)
     if(VANETZA_ASN1_WITH_ISO)
@@ -59,6 +66,17 @@ if(VANETZA_ASN1_WITH_ASN1C)
             VERBATIM)
 
         set(_its_asn1_files ${_iso_asn1_files} ${_its_asn1_files} ${_its_asn1_files_depending_on_iso})
+
+        # set(_iso_r2_asn1_files
+        #     # ISO17573-3-1.asn)
+        # list(TRANSFORM _iso_r2_asn1_files PREPEND ${PROJECT_BINARY_DIR}/iso/)
+        # add_custom_command(OUTPUT ${_iso_r2_asn1_files}
+        #     COMMAND ${CMAKE_COMMAND} -DDIRECTORY=${PROJECT_BINARY_DIR}/iso -P fetch_iso_r2_asn1_files.cmake
+        #     COMMENT "Fetch and patch ISO 19091 ASN.1 file"
+        #     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        #     VERBATIM)
+
+        # set(_its_r2_asn1_files ${_iso_r2_asn1_files} ${_its_r2_asn1_files} ${_its_r2_asn1_files_depending_on_iso})
     endif()
 
     set(_ieee_2_asn1_files
