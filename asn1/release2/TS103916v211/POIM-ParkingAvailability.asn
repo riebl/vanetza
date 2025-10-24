@@ -1,0 +1,743 @@
+POIM-ParkingAvailability {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) poi(103916) parkingAvailability(1) major-version-1 (1) minor-version-1 (1)}   
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS
+
+AltitudeValue, ConfidenceLevel, DangerousGoodsBasic, DeltaLatitude, DeltaLongitude, DeltaReferencePosition, EuVehicleCategoryCode, GeoPosition, Identifier2B, Latitude, Longitude, 
+SpecialTransportType, TimestampIts, VehicleHeight, Wgs84Angle
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) major-version-4 (4) minor-version-1 (1)} WITH SUCCESSORS
+
+PoiBlockManagementContainer, RelatedPoiInfoBlockContainer 
+FROM POIM-CommonContainers {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) poi(103916) common(99) major-version-1 (1) minor-version-1 (1)} WITH SUCCESSORS
+;
+
+-- Parking Availability Block for usage within the Point of Interest Message (POIM):
+
+/**
+ * This type represents the POI Information Block concerning a parking availability at a given facility.  
+ *
+ * It shall include the following components: 
+ *
+ * @field managementContainer: the management container of the parking availability POI Information Block.
+ *
+ * @field placeInfo: general information about the parking facility.
+ *
+ * @field aggregatedStatus: aggregated status information about the parking facility.
+ *
+ * @field detailedStatus: detailed topology and status information about the parking areas and spaces.
+ *
+ * @field relatedPoi: reference to other relevant POI Information Blocks.  
+ *
+*/	
+ParkingAvailabilityBlock::= SEQUENCE{
+   managementContainer     PoiBlockManagementContainer,
+   placeInfo               GeneralParkingPlaceContainer,
+   aggregatedStatus        ParkingStatusContainer,
+   detailedStatus          ParkingSupplyCapabilitiesContainer OPTIONAL,
+   relatedPoi              RelatedPoiInfoBlockContainer OPTIONAL,
+   ...
+}   
+
+-- POIM-PA Containers: 
+
+/** 
+ * This type represents the General Parking Facility Container.
+ *
+ * It shall include the following components: 
+ *
+ * @field position: the position of the parking facility.
+ *
+ * @field name: the name of the parking facility.
+ *
+ * @field openingPeriods: the optional opening periods of the parking facility.
+ *
+ * @field address: the address of the parking facility.
+ *
+ * @field phoneNumber: the phone number of the operator of the parking facility. 
+ *
+ * @field website: the URL of the website of the operator of the parking facility.
+ *
+*/
+GeneralParkingPlaceContainer::= SEQUENCE{
+   position              GeoPosition,
+   name 		         UTF8String (SIZE (1..31)),
+   openingPeriods    	 Periods OPTIONAL,
+   address 		         UTF8String (SIZE (1..255)) OPTIONAL,
+   phoneNumber 	         UTF8String (SIZE (1..31)) OPTIONAL,
+   website               UTF8String (SIZE (1..31)) OPTIONAL,
+   ...
+} 
+
+/** 
+ * This type represents the Parking Status Container.
+ *
+ * It shall include the following components: 
+ *
+ * @field currentFacilityStatus: the current status of the facility.
+ *
+ * @field currentOccupancy: the optional current occupancy of the entire facility.
+ * This component is only representative if the entire facility has areas and spaces of the same type. e.g. personal car parking spaces only. 
+ *
+ * @field detailedStatus: the optional detailed parking availability status of the facility.
+ *
+*/
+ParkingStatusContainer::= SEQUENCE {
+	currentFacilityStatus    OpeningStatus,
+    currentOccupancy         OccupancyInformation OPTIONAL,           
+	detailedStatus           ParkingStatusList OPTIONAL,
+    ...
+}
+
+/** 
+ * This type represents the ParkingSupplyCapabilitiesContainer and is a list of @ref ParkingAreas.
+ *
+*/
+ParkingSupplyCapabilitiesContainer::= SEQUENCE OF ParkingAreas
+
+-- DFs for parking availability:
+
+/** 
+ * This DF indicates a geographical position with reference to a reference position.
+ *
+ * It shall include the following components: 
+ *
+ * @field deltaLatitude: the delta latitude of the geographical position.
+ *
+ * @field deltaLongitude: the delta longitude of the geographical position.
+ *
+*/
+DeltaPosition::=SEQUENCE{
+	deltaLatitude 		DeltaLatitude,
+	deltaLongitude		DeltaLongitude
+	}
+
+/**
+ * This DF shall contain an an ordered sequence of @ref DeltaPosition with respect to the previous position 
+ * with the first instance referring to a reference position and with the order implicitly defining a direction.
+ *
+*/
+DeltaPositions::= SEQUENCE (SIZE (1..32, ...))  OF DeltaPosition
+
+/** 
+ * This DF indicates a geographical position.
+ *
+ * It shall include the following components: 
+ *
+ * @field latitude: the latitude of the geographical position.
+ *
+ * @field longitude: the longitude of the geographical position.
+ *
+ * @field altitude: the altitude of the geographical position.
+ *
+*/
+-- Redundant with GeoPosition from CDD (TS102894-2v221-CDD.asn)
+-- GeoPosition::= SEQUENCE{
+-- 	latitude  Latitude,
+-- 	longitude Longitude,
+--     altitude  AltitudeValue DEFAULT unavailable
+-- 	}
+
+/** 
+ * This DF indicates a the load type of the vehicle.
+ *
+ * It shall include the following components: 
+ *
+ * @field goodsType: optional information about the goods being transported.
+ *
+ * @field dangerousGoodsType: the optional type of dangerous goods according to the European Agreement concerning the International Carriage of Dangerous Goods by Road (ADR). 
+ *
+ * @field specialTransportType: the type of special transport according to local regulations.
+ *
+*/
+LoadType::= SEQUENCE{
+	goodsType				GoodsType OPTIONAL,
+	dangerousGoodsType		DangerousGoodsBasic OPTIONAL,
+	specialTransportType	SpecialTransportType,
+    ...
+	}
+
+/**
+ * This DF represents occupancy information. 
+ *
+ * It shall include the following components: 
+ *
+ * @field rate: the current occupancy in percentage, nominally = ((totalSpaces-freeSpaces)/totalSpaces) * 100.
+ *
+ * @field trend: the current trend of the occupancy.
+ *
+ * @field freeSpaces: the number of spaces that are actually available.
+ *
+ * @field totalSpaces: the total number of spaces.
+ *
+ * @field confidence: the confidence level of the above information.
+ *
+*/
+OccupancyInformation::= SEQUENCE{
+   rate            OccupancyRate,
+   trend           OccupancyTrend, 
+   freeSpaces      NumberOfSpaces,
+   totalSpaces	   NumberOfSpaces,
+   confidence      ConfidenceLevel,
+   ...
+} 
+
+/**
+ * This DF provides information about the parking capabilities and availabilities of a parking identified area. 
+ * 
+ * @note:a parking area possibly groups all spaces with the same characteristics.
+ *
+ * It shall include the following components: 
+ *
+ * @field id: the identifier of the parking area within the parking place/facility.
+ *
+ * @field currentOccupancy: the current occupancy information of the parking area.
+ *
+ * @field location: the location of the parking area.
+ *
+ * @field level: the level under/over ground floor of the parking area.
+ *
+ * @field arrangementType: the common arrangement of the parking spaces within the area.
+ * the value ´mixed´ shall be used if there is no common arrangement. In this case the arrangement of the single spaces may be defined in the component spacesDetailed.
+ *
+ * @field boundary: the optional physical boundary of the parking area as a polygon using the component location as reference position.
+ *
+ * @field orientation: the optional common orientation of the parking spaces within the area.
+ * This is component shall be absent if there is no common orientation. In this case the orientation of the single spaces may be defined in the component spacesDetailed.
+ *
+ * @field accessViaLane: the optional identifier of a lane that provides access to the parking area.
+ *
+ * @field allowedVehicleCategories: the categories of vehicles that are allowed in the parking area.
+ *
+ * @field notAllowedEngineCharacteristics: the optional characteristic(s) of engines that are not allowed in the parking area.
+ *
+ * @field allowedLoadTypes: the optional load type(s) that are allowed in the parking area.
+ *
+ * @field notallowedLoadTypes: the optional load type(s) that are not allowed in the parking area.
+ *
+ * @field heightRestriction: the optional applicable vehicle height restriction.
+ *
+ * @field reservationType: the optional parking reservation type(s) associated to the parking area.
+ * This is component shall be absent if there is no common reservation type. In this case the reservation type of the single spaces may be defined in the component spacesDetailed.
+ *
+ * @field pricingInformation: the optional pricing information applicable to the parking area.
+ *
+ * @field paymentInformation: the optional payment information applicable to the parking area.
+ *
+ * @field bookingContactInfo: the optional booking contact information applicable to the parking area.
+ *
+ * @field accessCharachteristics: the optional access information to the area.
+ *
+ * @field freeSpacesPosition: the optional list of positions of free spaces.
+ *
+ * @field freeSpacesId: the optional list of Ids of free spaces.
+ *
+ * @field spacesBasic: the optional basic information about none, some or all parking spaces within the area.
+ *
+ * @field spacesDetailed: the optional detailed information about none, some or all parking spaces within the area.
+ *
+*/
+ParkingArea::=SEQUENCE{
+   id                                 Identifier2B,
+   currentOccupancy                   OccupancyInformation, 
+   location                           GeoPosition,
+   level                              INTEGER(-8..16,...) DEFAULT 0,
+   arrangementType                    ParkingAreaArrangementType,
+   boundary                           DeltaPositions OPTIONAL, 
+   orientation                        Wgs84Angle OPTIONAL, 
+   accessViaLane			          Identifier2B OPTIONAL,
+   allowedVehicleCategories           SEQUENCE (SIZE(1..4,...)) OF EuVehicleCategoryCode, 
+   notAllowedEngineCharacteristics    SEQUENCE (SIZE(1..4,...)) OF EngineCharacteristicsFromIso  OPTIONAL,
+   allowedLoadTypes                   SEQUENCE (SIZE(1..4,...)) OF LoadType OPTIONAL, 
+   notAllowedLoadTypes                SEQUENCE (SIZE(1..4,...)) OF LoadType OPTIONAL,
+   heightRestriction                  VehicleHeight OPTIONAL,
+   reservationType                    SEQUENCE (SIZE(1..4,...)) OF ParkingReservationType OPTIONAL,
+   pricingInformation                 UTF8String OPTIONAL,
+   paymentInformation                 UTF8String OPTIONAL, 
+   bookingContactInfo                 UTF8String OPTIONAL, 
+   accessCharachteristics             UTF8String OPTIONAL,
+   freeSpacesPosition                 SEQUENCE OF DeltaPosition OPTIONAL,
+   freeSpacesId                       SEQUENCE OF Identifier2B OPTIONAL,
+   spacesBasic                        ParkingSpacesBasic OPTIONAL,
+   spacesDetailed                     ParkingSpacesDetailed OPTIONAL,
+   ...
+}
+
+/**
+ * This DF shall contain a list of @ref ParkingArea.  
+ *
+*/
+ParkingAreas::= SEQUENCE OF ParkingArea
+
+/** 
+ * This DF indicates the allowed type of occupancy of a parking space/area in terms of time and/or usage.
+ *
+ * The following options are available:
+ * 
+ * @field unknown: indicates that the allowed type of occupancy is unknown.
+ *
+ * @field unlimitedOccupancy: indicates that it can be occupied without limits.
+ *
+ * @field onlyWhileCharging: indicates that it can be occupied only while charging an electric vehicle.
+ *
+ * @field limitedDuration: indicates that it can be occupied for a limited and indicated duration in minutes.
+ *
+ * @field onlyWhileChargingLimitedDuration: indicates that it can be occupied only while charging an electric vehicle and only for a limited and indicated duration in minutes.
+ *
+ * @field parkingAllowedUntil: indicates that it can be occupied only until an indicated moment in time.
+ *
+ * @field forcedParkingUntil: indicates that it can be occupied and departure is possible only after an indicated moment in time.
+ *
+*/
+ParkingOccupancyInfo::= CHOICE { 
+   unknown                              NULL, 
+   unlimitedOccupancy                   NULL,
+   onlyWhileCharging                    NULL,  
+   limitedDuration                      INTEGER,  
+   onlyWhileChargingLimitedDuration     INTEGER, 
+   parkingAllowedUntil                  TimestampIts,
+   forcedParkingUntil                   TimestampIts,
+   ...
+} 
+
+/**
+ * This DF provides basic information about the parking capabilities and availabilities of a single parking space. 
+ *
+ * It shall include the following components: 
+ *
+ * @field id: the unqiue identifier of the parking space within the parking area.
+ *
+ * @field location: the optional location of the geometrical center of the parking space w.r.t. the location of the parking area.
+ *
+ * @field status: the actual status of the parking space.
+ *
+*/
+ParkingSpaceBasic ::= SEQUENCE{
+   id         Identifier2B,
+   location   DeltaReferencePosition OPTIONAL, 
+   status     ParkingSpaceStatus
+}
+
+/**
+ * This DF provides detailed information about the parking capabilities and availabilities of a single parking space. 
+ * 
+ * It is an extension of @ref ParkingSpaceBasic and it shall additionally include the following additional components: 
+ *
+ * @field arrangementType: the optional arrangement of the parking space w.r.t. other spaces.
+ * This is component, if present, overrides the common arrangementType defined in the @ref ParkingArea.
+ *
+ * @field boundary: the optional physical boundary of the parking space as a polygon w.r.t. the location of the parking space.
+ *
+ * @field orientation: the optional orientation of the parking space.
+ * This is component, if present, overrides the common orientation defined in the @ref ParkingArea.
+ *
+ * @field occupancyRule: the occupancy rule applicable to the parking space.
+ *
+ * @field chargingStationId: the optional identitfier of a charging station that serves the parking space.
+ *
+ * @field accessViaLane: the optional identifier of a lane that provides access to the parking space.
+ *
+ * @field accessViaParkingSpaces: the optional identifier(s) of a parking spaces that provide access to the parking space.
+ * 
+ * @field reservationType: the optional parking reservation type(s) associated to the parking space.
+ * This is component, if present, overrides the common reservationType defined in the @ref ParkingArea.
+ *
+*/
+ParkingSpaceDetailed ::= SEQUENCE{
+   COMPONENTS OF            ParkingSpaceBasic,
+   arrangementType          ParkingAreaArrangementType OPTIONAL,
+   boundary                 DeltaPositions OPTIONAL,
+   orientation              Wgs84Angle OPTIONAL,
+   occupancyRule            ParkingOccupancyInfo, 
+   chargingStationId        Identifier2B OPTIONAL,
+   accessViaLane			Identifier2B OPTIONAL,
+   accessViaParkingSpaces	SEQUENCE (SIZE(0..7)) OF Identifier2B OPTIONAL,	
+   reservationType          SEQUENCE (SIZE(1..4,...)) OF ParkingReservationType OPTIONAL,			
+   ...
+}
+
+/**
+ * This DF shall contain a list of @ref ParkingSpaceBasic.  
+ *
+*/
+ParkingSpacesBasic ::= SEQUENCE OF ParkingSpaceBasic
+
+/**
+ * This DF shall contain a list of @ref ParkingSpaceDetailed.  
+ *
+*/
+ParkingSpacesDetailed ::= SEQUENCE OF ParkingSpaceDetailed
+
+/** 
+ * This DF indicates the status of parking space.
+ *
+ * The following options are available:
+ * 
+ * @field unknown: indicates that the status is unknown.
+ *
+ * @field free: indicates that the parking space is free and hence available to be used.
+ *
+ * @field freeUntil: indicates that the parking space is free to be used until an indicated moment in time.
+ *
+ * @field fullyOccupied: indicates that the parking space is interely occupied.
+ *
+ * @field partiallyOccupied: indicates that the parking space that allows parking of multiple vehicles is occupied by an indicated percentage.
+ *
+ * @field occupiedUntil: indicates that the parking space is entirely occupied until an indicated moment in time.
+ *
+ * @field reservedUntil: indicates that the parking space is reserved (but not necessarily occupied) until an indicated moment in time.
+ *
+ * @field accessBlocked: indicates that the parking space cannot accessed, e.g. due to obstructing vehicles.
+ *
+ * @field retrictedUsage: indicates that the parking space is available but that it is not an official parking space and that there are some phyiscal restrictions applicable, 
+ * such as parking behind or in front of other vehicles that, depending on the situation, may then have problems entering or leaving their respective parking spaces.
+ *
+*/ 
+ParkingSpaceStatus::= CHOICE { 
+   unknown             NULL, 
+   free                NULL,  
+   freeUntil           TimestampIts, 
+   fullyOccupied       NULL,
+   partiallyOccupied   INTEGER(0..100), 
+   occupiedUntil       TimestampIts,
+   reservedUntil       TimestampIts, 
+   accessBlocked       NULL,
+   retrictedUsage      NULL,
+   ...
+} 
+
+/**
+ * This DF provides information about the status of a defined type of parking.
+ *
+ * It shall include the following components: 
+ *
+ * @field vehicleTypes: the optional types of vehicle for which the parking status is provided.
+ *
+ * @field reservationTypes: the optional reservation types for which the parking status is provided.
+ *
+ * @field loadTypes: the optional load types for which the parking status is provided.
+ *
+ * @field parkingFeeTypes: the optional fee types for which the parking status is provided.
+ *
+ * @field occupancyTypes: the optional occupancy types for which the parking status is provided.
+ *
+ * @field currentOccupancy: the occupancy for the logical AND combination of the components defined above.
+ *
+*/
+ParkingStatus ::= SEQUENCE {
+   vehicleTypes            SEQUENCE (SIZE(1..4,...)) OF EuVehicleCategoryCode OPTIONAL,
+   reservationTypes        SEQUENCE (SIZE(1..4,...)) OF ParkingReservationType OPTIONAL,
+   loadTypes               SEQUENCE (SIZE(1..4,...)) OF LoadType OPTIONAL,
+   parkingFeeTypes         SEQUENCE (SIZE(1..4,...)) OF ParkingFeeType OPTIONAL, 
+   occupancyTypes          SEQUENCE (SIZE(1..4,...)) OF ParkingOccupancyInfo OPTIONAL,
+   currentOccupancy        OccupancyInformation,
+   ...
+}
+   ((WITH COMPONENTS {..., vehicleTypes PRESENT}) |
+    (WITH COMPONENTS {..., reservationTypes PRESENT}) |
+    (WITH COMPONENTS {..., loadTypes PRESENT}) | 
+    (WITH COMPONENTS {..., parkingFeeTypes PRESENT}) |
+    (WITH COMPONENTS {..., occupancyTypes PRESENT}))
+
+
+/**
+ * This DF shall contain a list of @ref ParkingStatus.  
+ *
+*/
+ParkingStatusList::= SEQUENCE (SIZE(1..16,...)) OF ParkingStatus
+
+/** 
+ * This DF indicates a period occuring on defined days of the week.
+ *
+ * It shall include the following components: 
+ *
+ * @field days: the applicable day(s) of the week.
+ *
+ * @field opening: the opening time in local time.
+ *
+ * @field closing: the closing time in local time.
+ *
+*/ 
+Period ::= SEQUENCE {
+    days      DayOfWeek,         
+	opening	  TimeOfDay,	
+	closing	  TimeOfDay 	
+}
+
+/**
+ * This DF shall contain a list of up to 8 @ref Period.  
+ *
+*/
+Periods ::= SEQUENCE (SIZE(1..8,...)) OF Period
+
+/** 
+ * This DF indicates the time of the day.
+ *
+ * It shall include the following components: 
+ *
+ * @field hours: the number of hours after midnight.
+ *
+ * @field mins: the number of minutes after the hour.
+ *
+*/ 
+TimeOfDay::= SEQUENCE {
+   hours      INTEGER (0..23),
+   mins       INTEGER (0..59) 
+   }
+
+-- DEs for parking availability:
+
+/** 
+ * This DE indicates the applicable day(s) of the week.
+ *
+*/ 
+DayOfWeek::= BIT STRING {unused(0), monday(1), tuesday(2), wednesday(3), thursday(4), friday(5), saturday(6), sunday(7)} (SIZE (8))
+
+/** 
+ * This DE indicates the type of goods of a vehicle.
+ *
+ * The value shall be set to:
+ * - `0` to indicate: 	Transport of ammunition.
+ * - `1` to indicate:	Transport of chemicals of unspecified type.
+ * - `2` to indicate: 	Empty load.
+ * - `3` to indicate: 	Transport of fuel of unspecified type.
+ * - `4` to indicate: 	Transport of glass.
+ * - `5` to indicate: 	Transport of materials classified as of dangerous or hazardous nature.
+ * - `6` to indicate: 	Transport of liquids of an unspecified nature.
+ * - `7` to indicate: 	Transport of livestock.
+ * - `8` to indicate: 	Transport of materials classed as being of a danger to people or animals.
+ * - `9` to indicate: 	Transport of materials classed as being potentially dangerous to the environment.
+ * - `10` to indicate: 	Transport of materials classed as being dangerous when exposed to water.
+ * - `11` to indicate: 	Transport of fresh products or produce that will significantly degrade in quality or freshness over a short period of time.
+ * - `12` to indicate: 	Transport of pharmaceutical materials.
+ * - `13` to indicate: 	Transport of vehicles of any type.
+ * - `14` to indicate: 	Refrigerated transport.
+ *
+*/ 
+GoodsType::= INTEGER {
+	ammunition					(0),
+	chemicals					(1),
+	empty 						(2),
+	fuel						(3),
+	glass						(4),
+	dangerous					(5),
+	liquid						(6),
+	liveStock					(7),
+	dangerousForPeople			(8),
+	dangerousForTheEnvironment	(9),
+	dangerousForWater			(10),
+	perishableProducts			(11),
+	pharmaceutical				(12),
+	vehicles					(13),
+    refrigerated                (14)
+	-- other values  reserved for future use
+	} (0..15,...)
+
+
+/** 
+ * This DE represents a number of parking spaces.
+ * 
+ * The value shall be set to:
+ * - `n` (`n > 0` and `n < 16383`) : for the number of spaces.
+ * - `16383`                       : in case the number of spaces is not available.
+ *
+*/
+NumberOfSpaces ::= INTEGER {
+    unavailable (16383)  
+} (1..16383)
+
+/** 
+ * This DE represents an occupancy rate in percentage.
+ * 
+ * The value shall be set to:
+ * - `n` (`n > 0` and `n < 101`) : for the occupany rate in %,
+ * - `101`                   : in case the occupany rate is not available.
+ *
+*/
+OccupancyRate ::= INTEGER {
+    unavailable (101)  
+} (1..101)
+
+/** 
+ * This DE indicates the trend of occupancy.
+ *
+ * The value shall be set to:
+ * - `0` to indicate that occupancy is decreasing,
+ * - `1` to indicate that occupancy is decreasing quickly,
+ * - `2` to indicate that occupancy is decreasing slowly,
+ * - `3` to indicate that occupancy is increasing,
+ * - `4` to indicate that occupancy is increasing quickly,
+ * - `5` to indicate that occupancy is increasing slowly,
+ * - `6` to indicate that occupancy is stable,
+ * - `7` to indicate that occupancy is variable with no clear trend,
+ * - `15` to indicate that occupancy is unknown,
+ * - 8-14   - reserved for future usage. 
+ *
+*/
+OccupancyTrend ::= INTEGER {
+	decreasing				(0),
+	decreasingQuickly		(1),
+	decreasingSlowly		(2),
+	increasing				(3),
+    increasingQuickly       (4),
+    increasingSlowly        (5),
+    stable                  (6),
+    variable                (7),
+    unknown                 (15)
+} (0..15)
+
+/** 
+ * This DE indicates the opening status.
+ *
+ * The value shall be set to:
+ * - `0` to indicate that the opening status is: closed,
+ * - `1` to indicate that the opening status is: open,
+ * - `2` to indicate that the opening status is: open for subscribers only,
+ * - `3` to indicate that the opening status is: open but currently full, i.e. no parking spaces available,
+ * - `15` to indicate that occupancy is unknown,
+ * - 4-14 - reserved for future usage. 
+ *
+*/
+OpeningStatus ::= INTEGER {
+	closed				(0),
+	open				(1),
+	subscribersOnly		(2),
+    full                (3),
+	unknown				(15)
+} (0..15)
+
+/** 
+ * This DE indicates the arrangement of parking space in a parking area.
+ *
+ * The value shall be set to:
+ * - `0` to indicate that the parking spaces are arranged in a line and parallel to a road or curb,
+ * - `1` to indicate that the parking spaces are arranged side-by-side and diagonally to a curb,
+ * - `2` to indicate that the parking spaces are arranged side-by-side and perpendicularly to a curb,
+ * - `3` to indicate that the parking spaces are arranged so that vehicles form a queue,
+ * - `4` to indicate that the parking spaces are arranged in a mixed fashion, 
+ * - 5-7 - reserved for future usage. 
+ *
+*/ 
+ParkingAreaArrangementType ::= INTEGER { 
+   parallelParkingSpace(0), 
+   diagonalParkingSpace(1), 
+   perpendicularParkingSpace(2),
+   queueParking (3),
+   mixed(4),
+   unknown(7)   
+} (0..7)
+
+/** 
+ * This DE indicates the type of a reservation of a parking space/area.
+ *
+ * The value shall be set to:
+ * - `0` to indicate that it is reserved to disabled persons,
+ * - `1` to indicate that it is reserved to pregnant women,
+ * - `2` to indicate that it is reserved to women,
+ * - `3` to indicate that it is reserved to parents with small children,
+ * - `4` to indicate that it is reserved for loading and unloading of goods,
+ * - `5` to indicate that it is reserved for manual charging of electric vehicles,
+ * - `6` to indicate that it is reserved for automated charging of electric vehicles,
+ * - `7` to indicate that it is reserved for vehicles carrying out refrigerated transport of goods,
+ * - `8` to indicate that it is reserved for VIPs,
+ * - `9` to indicate that it is reserved for pre-booked reservations only,
+ * - `10` to indicate that it is not reserved and can still be reserved,
+ * - `11` to indicate that it cannot be reserved,
+ * - `12` to indicate that it reserved for drop-off and pick-up of vehicles for automated valet parking,
+ * - `13` to indicate that it is reserved for vehicles with a permit,
+ * - 14-31  - reserved for future usage. 
+ *
+*/
+ParkingReservationType ::= INTEGER { 
+   disabled(0), 
+   pregnant(1), 
+   womenOnly(2), 
+   parentAndChild(3), 
+   loadAndOffloadGoods(4), 
+   manualElectricVehicleCharging (5), 
+   automatedElectricVehicleCharging (6), 
+   refriferatedTransport(7),
+   vip(8),
+   preBooking (9), 
+   freeToBeReserved (10),
+   reservationNotPossible (11),
+   automatedValetparking (12), 
+   permit (13)
+}(0..31)
+
+
+/** 
+ * This DE indicates the applicable type of parking fee.
+ *
+ * The value shall be set to:
+ * - `0` to indicate that the applicable fee is time dependent, e.g. an hourly fee,
+ * - `1` to indicate that ithe applicable fee is flat for a certain period, e.g. a flat fee for daily parking,
+ * - `2` to indicate that the applicable fee is included in the subscription, e.g. a monthly subscription,
+ * - 3-7  - reserved for future usage. 
+ *
+*/
+ParkingFeeType::= INTEGER { 
+   timeDependentFee(0), 
+   flatFee(1), 
+   subscription(2) 
+}(0..7)
+
+EngineCharacteristicsFromIso ::= INTEGER {
+	noEntry										(0),
+	noEngine									(1),
+	petrolUnleaded								(2),
+	petrolLeaded								(3),
+	diesel										(4),
+	lpg											(5),
+	battery										(6), 
+	solar										(7),
+	hybrid										(8), 
+	hydrogen									(9),
+	multiFuel									(10), 
+	bivalentPetrolLpg							(11), 
+	bivalentPetrolCng							(12),
+	combinedPetrolElectric						(13), 
+	cng											(14), 
+	lng											(15), 
+	combinedDieselElectric						(16), 
+	combinedHydrogenElectric					(17), 
+	bivalentHydrogenPetrol						(18), 
+	bivalentHydrogenPetrolElectricEngine		(19), 
+	fuelCellHydrogen							(20), 
+	fuelCellPetrol								(21), 
+	fuelCellMethanol							(22), 
+	fuelCellEthanol								(23), 
+	fuelCellDiesel								(24), 
+	combinedMultiFuelElectricEngine				(25), 
+	combinedCngElectricEngine					(26), 
+	combinedLngElectricEngine					(27), 
+	petrolEthanol								(28), 
+	combinedLpgElectricEngine					(29), 
+	hybridPetrolExternalBattery					(30), 
+	hybridDieselExternalBattery					(31), 
+	hybridLpgExternalBattery					(32), 
+	hybridHydrogenExternalBattery				(33), 
+	hybridMultiFuelExternalBattery				(34), 
+	hybridCngExternalBattery					(35), 
+	hybridLngExternalBattery					(36),
+	hybridBivalentHydrogenPetrolExternalBattery (37),
+	hydrogenCng									(38), 
+	hydrogenLng									(39), 
+	hybridHydrogenCngExternalBattery			(40), 
+	hybridHydrogenLngExternalBattery			(41), 
+	ethanol										(42), 
+	hybridFuelCellHydrogen						(43), 
+	hybridFuelCellHydrogenExternalBattery		(44), 
+	dualFuelLngDiesel							(45), 
+	electricExternal							(46), 
+	biogas										(47), 
+	bioDiesel									(48), 
+	bioPetrol									(49), 
+	bivalentPetrolBiogas						(50), 
+	combinedBiogasElectricEngine				(51), 
+	dualFuelCngDiesel							(52),
+	-- (53-254) are reserved for future CEN and ISO use
+	other										(255)
+} (0..255)
+
+END

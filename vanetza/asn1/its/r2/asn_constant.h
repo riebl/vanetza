@@ -290,6 +290,22 @@ extern "C" {
 #define Vanetza_ITS2_defaultValidity (600)
 #define min_val_Vanetza_ITS2_CpmContainerId (1)
 #define max_val_Vanetza_ITS2_CpmContainerId (16)
+#define min_val_Vanetza_ITS2_NumberOfSpaces (1)
+#define max_val_Vanetza_ITS2_NumberOfSpaces (16383)
+#define min_val_Vanetza_ITS2_OccupancyRate (1)
+#define max_val_Vanetza_ITS2_OccupancyRate (101)
+#define min_val_Vanetza_ITS2_OccupancyTrend (0)
+#define max_val_Vanetza_ITS2_OccupancyTrend (15)
+#define min_val_Vanetza_ITS2_OpeningStatus (0)
+#define max_val_Vanetza_ITS2_OpeningStatus (15)
+#define min_val_Vanetza_ITS2_ParkingAreaArrangementType (0)
+#define max_val_Vanetza_ITS2_ParkingAreaArrangementType (7)
+#define min_val_Vanetza_ITS2_ParkingReservationType (0)
+#define max_val_Vanetza_ITS2_ParkingReservationType (31)
+#define min_val_Vanetza_ITS2_ParkingFeeType (0)
+#define max_val_Vanetza_ITS2_ParkingFeeType (7)
+#define min_val_Vanetza_ITS2_EngineCharacteristicsFromIso (0)
+#define max_val_Vanetza_ITS2_EngineCharacteristicsFromIso (255)
 
 
 #ifdef __cplusplus
