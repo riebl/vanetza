@@ -41,7 +41,10 @@ enum class SignConfirmError
 // mandatory SN-SIGN.confirm parameters
 struct SignConfirm
 {
-    SignConfirm() = delete;
+    SignConfirm(SignConfirmError error, boost::optional<SecuredMessage> message)
+        : error(error), secured_message(std::move(message))
+    {
+    }
 
     static SignConfirm success(SecuredMessage&& message)
     {
