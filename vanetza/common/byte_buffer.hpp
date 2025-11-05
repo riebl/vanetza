@@ -44,7 +44,7 @@ const MASK* buffer_cast(const ByteBuffer& buffer)
 template<class T>
 ByteBuffer buffer_copy(const T& object)
 {
-    static_assert(std::is_pod<T>::value, "T has to be POD data type");
+    static_assert(std::is_standard_layout<T>::value, "T has to be standard layout type");
     auto ptr = reinterpret_cast<const uint8_t*>(&object);
     return ByteBuffer(ptr, ptr + sizeof(T));
 }
