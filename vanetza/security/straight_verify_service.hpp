@@ -41,6 +41,7 @@ class SignHeaderPolicy;
 class StraightVerifyService : public VerifyService
 {
 public:
+    StraightVerifyService(const Runtime&, Backend&);
     StraightVerifyService(const Runtime&, Backend&, PositionProvider&);
 
     void use_certificate_cache(v2::CertificateCache*);
@@ -59,7 +60,7 @@ public:
 private:
     const Runtime& m_runtime;
     Backend& m_backend;
-    PositionProvider& m_position_provider;
+    PositionProvider* m_position_provider = nullptr;
 
     struct {
         v2::CertificateCache* m_cert_cache = nullptr;

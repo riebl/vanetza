@@ -53,9 +53,13 @@ bool assign_permissions(const v2::Certificate& certificate, VerifyConfirm& confi
 
 } // namespace
 
+StraightVerifyService::StraightVerifyService(const Runtime& runtime, Backend& backend) :
+    m_runtime(runtime), m_backend(backend)
+{
+}
 
 StraightVerifyService::StraightVerifyService(const Runtime& runtime, Backend& backend, PositionProvider& position) :
-    m_runtime(runtime), m_backend(backend),m_position_provider(position)
+    m_runtime(runtime), m_backend(backend), m_position_provider(&position)
 {
 }
 
@@ -134,7 +138,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
         return confirm;
     }
 
-    if (!m_context_v2.complete()) {
+    if (!m_context_v2.complete() || !m_position_provider) {
         confirm.report = VerificationReport::Configuration_Problem;
         return confirm;
     }
@@ -222,7 +226,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
                         // We won't cache outdated or premature certificates in the cache and abort early.
                         // This check isn't required as it would just fail below or in the consistency checks,
                         // but it's an optimization and saves us from polluting the cache with such certificates.
-                        if (!check_certificate_time(cert, m_runtime.now()) || !check_certificate_region(cert, m_position_provider.position_fix())) {
+                        if (!check_certificate_time(cert, m_runtime.now()) || !check_certificate_region(cert, m_position_provider->position_fix())) {
                             confirm.report = VerificationReport::Invalid_Certificate;
                             return confirm;
                         }
@@ -356,7 +360,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
         return confirm;
     }
 
-    if (!check_certificate_region(*signer, m_position_provider.position_fix())) {
+    if (!check_certificate_region(*signer, m_position_provider->position_fix())) {
         confirm.report = VerificationReport::Invalid_Certificate;
         confirm.certificate_validity = CertificateInvalidReason::Off_Region;
         return confirm;
