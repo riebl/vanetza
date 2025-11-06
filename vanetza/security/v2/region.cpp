@@ -1,3 +1,4 @@
+#include <vanetza/common/annotation.hpp>
 #include <vanetza/common/serialization.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/v2/region.hpp>
@@ -693,6 +694,7 @@ bool is_within(const GeographicRegion& inner, const std::list<RectangularRegion>
             // TODO: Implement.
             return false;
         }
+
         const std::list<RectangularRegion>& outer;
     };
 
@@ -703,6 +705,8 @@ bool is_within(const GeographicRegion& inner, const std::list<RectangularRegion>
 bool is_within(const GeographicRegion& inner, const PolygonalRegion& outer)
 {
     // TODO: Implement check whether inner is within the polygon
+    mark_unused(inner);
+    mark_unused(outer);
     return false;
 }
 
@@ -710,6 +714,8 @@ bool is_within(const GeographicRegion& inner, const IdentifiedRegion& outer)
 {
     // TODO: Implement check whether inner is within the polygon identified by the outer region
     // Note: The identified region can be converted to a polygon and its implementation be reused then.
+    mark_unused(inner);
+    mark_unused(outer);
     return false;
 }
 
