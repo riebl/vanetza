@@ -124,7 +124,7 @@ template<typename T, ByteOrder ORDER>
 class EndianType
 {
 public:
-    static_assert(std::is_pod<T>::value == true, "EndianType is only availabe for POD types");
+    static_assert(std::is_arithmetic<T>::value == true, "EndianType is only availabe for arithmetic types");
     typedef T value_type;
     typedef EndianType<T, getHostByteOrder()> host_type;
     typedef EndianType<T, ByteOrder::BigEndian> network_type;
