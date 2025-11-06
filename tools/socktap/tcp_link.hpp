@@ -30,7 +30,7 @@ public:
     void request(std::array<boost::asio::const_buffer, layers_>);
     void do_receive();
     void receive_handler(boost::system::error_code, std::size_t);
-    uint16_t get_next_packet_size();
+    std::size_t get_next_packet_size();
     void pass_up(vanetza::ByteBuffer&&);
 
     boost::asio::ip::tcp::socket& socket() { return socket_; }

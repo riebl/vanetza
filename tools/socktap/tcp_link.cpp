@@ -151,7 +151,7 @@ void TcpSocket::receive_handler(boost::system::error_code ec, std::size_t length
         // While we have enough bytes stored to construct a packet, pass it up
         while (rx_store_.size() >= get_next_packet_size() + 2)
         {
-            uint16_t packet_length = get_next_packet_size() + 2;
+            auto packet_length = get_next_packet_size() + 2;
             ByteBuffer packet_buffer(rx_store_.begin() + 2, rx_store_.begin() + packet_length);
             pass_up(std::move(packet_buffer));
             rx_store_.erase(rx_store_.begin(), rx_store_.begin() + packet_length);
@@ -178,7 +178,7 @@ void TcpSocket::pass_up(ByteBuffer&& packet_buffer)
     }
 }
 
-uint16_t TcpSocket::get_next_packet_size()
+std::size_t TcpSocket::get_next_packet_size()
 {
     if (rx_store_.size() >= 2) {
         return (rx_store_[0] << 8) + rx_store_[1];
