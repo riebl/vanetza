@@ -95,7 +95,7 @@ std::size_t deserialize(InputArchive& ar, std::list<T>& list, ARGS&&... args)
 
     const auto length = trim_size(deserialize_length(ar));
     if (length <= length_limit) {
-        std::intmax_t remainder = length;
+        std::size_t remainder = length;
         while (remainder > 0) {
             T t;
             std::size_t size = deserialize(ar, t, std::forward<ARGS>(args)...);

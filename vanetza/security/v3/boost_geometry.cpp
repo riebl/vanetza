@@ -55,7 +55,7 @@ TwoDLocationModel TwoDLocationIterator::dereference() const
 {
     assert(m_region != nullptr);
     assert(m_region->list.array != nullptr);
-    assert(m_region->list.count > m_index);
+    assert(m_region->list.count > static_cast<decltype(m_region->list.count)>(m_index));
     return make_model(*m_region->list.array[m_index]);
 }
 
