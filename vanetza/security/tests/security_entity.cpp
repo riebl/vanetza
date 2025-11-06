@@ -1053,7 +1053,7 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
     public:
         using DefaultSignHeaderPolicy::DefaultSignHeaderPolicy;
 
-        std::list<HeaderField> prepare_header(const SignRequest& request, v2::CertificateProvider& certificate_provider) override
+        std::list<HeaderField> prepare_header(const SignRequest&, v2::CertificateProvider&) override
         {
             std::list<HeaderField> header_fields;
             return header_fields;
