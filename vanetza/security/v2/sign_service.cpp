@@ -71,7 +71,6 @@ SignConfirm DeferredSignService::sign(SignRequest&& request)
 
     const auto& private_key = m_certificates.own_private_key();
     static const EcdsaSignature placeholder = signature_placeholder();
-    static const size_t signature_size = get_size(placeholder);
     static const std::list<TrailerField> trailer_fields = { Signature { placeholder } };
 
     auto future = std::async(std::launch::deferred, [this, secured_message, private_key]() {
