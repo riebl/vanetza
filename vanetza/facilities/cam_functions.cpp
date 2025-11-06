@@ -27,7 +27,7 @@ bool similar_heading(Angle a, Angle b, Angle limit)
 }
 
 template<typename T, typename U>
-long round(const boost::units::quantity<T>& q, const U& u)
+long round(const boost::units::quantity<T>& q, const U&)
 {
     boost::units::quantity<U> v { q };
     return std::round(v.value());
