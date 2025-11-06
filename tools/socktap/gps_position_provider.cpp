@@ -56,7 +56,7 @@ vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
 } // namespace
 
 GpsPositionProvider::GpsPositionProvider(boost::asio::io_context& io) :
-    GpsPositionProvider(io, gpsd::shared_memory, nullptr)
+    GpsPositionProvider(io, gpsd::shared_memory, "")
 {
 }
 
