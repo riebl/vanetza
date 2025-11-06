@@ -195,8 +195,8 @@ TEST_F(LocationTableTest, visit) {
     }
 
     std::unordered_set<Address> visited_addresses;
-    loct->visit([&visited_addresses](const MacAddress& mac, const LocationTableEntry& entry) {
-            visited_addresses.insert(entry.geonet_address());
+    loct->visit([&visited_addresses](const MacAddress&, const LocationTableEntry& entry) {
+        visited_addresses.insert(entry.geonet_address());
     });
 
     EXPECT_EQ(addresses.size(), visited_addresses.size());
