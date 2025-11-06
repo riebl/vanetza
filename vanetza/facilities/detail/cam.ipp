@@ -274,8 +274,7 @@ void print_indented(std::ostream& os, const ASN1_PREFIXED(CAM_t)* message, const
             if (ptc.ptActivation) {
                 prefix("PT Activation Type") << ptc.ptActivation->ptActivationType << "\n";
                 if (0 != ptc.ptActivation->ptActivationData.size) {
-                    int size = ptc.ptActivation->ptActivationData.size;
-                    for (int i = 0; i < ptc.ptActivation->ptActivationData.size; i++)
+                    for (size_t i = 0; i < ptc.ptActivation->ptActivationData.size; i++)
                     prefix("PT Activation Data") << (unsigned) ptc.ptActivation->ptActivationData.buf[i] << "\n";
                 }
             }
