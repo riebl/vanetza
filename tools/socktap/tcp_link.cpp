@@ -93,9 +93,11 @@ void TcpLink::accept(ip::tcp::endpoint ep)
 
 void TcpLink::accept_handler(boost::system::error_code& ec, ip::tcp::endpoint ep, TcpSocket* sock)
 {
-    sock->status(TcpSocket::CONNECTED);
-    sock->do_receive();
-    accept(ep);
+    if (!ec) {
+       sock->status(TcpSocket::CONNECTED);
+       sock->do_receive();
+       accept(ep);
+    }
 }
 
 
