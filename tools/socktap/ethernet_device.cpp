@@ -34,7 +34,7 @@ EthernetDevice::~EthernetDevice()
 
 EthernetDevice::protocol::endpoint EthernetDevice::endpoint(int family) const
 {
-    sockaddr_ll socket_address = {0};
+    sockaddr_ll socket_address = {};
     socket_address.sll_family = family;
     socket_address.sll_protocol = htons(ETH_P_ALL);
     socket_address.sll_ifindex = index();
