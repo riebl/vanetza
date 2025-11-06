@@ -47,7 +47,7 @@ ByteBuffer::const_pointer byte_view_range::data() const
 
 ByteBuffer::value_type byte_view_range::operator[](size_type pos) const
 {
-    assert(!std::numeric_limits<size_type>::is_signed || pos >= 0);
+    static_assert(std::numeric_limits<size_type>::is_signed == false, "size_type shall be unsigned");
     assert(pos < size());
     return begin()[pos];
 }
