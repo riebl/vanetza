@@ -1,3 +1,4 @@
+#include <vanetza/common/annotation.hpp>
 #include <vanetza/rpc/asio_stream.hpp>
 
 #include <boost/asio/read.hpp>
@@ -24,6 +25,7 @@ kj::Promise<void> AsioStream::write(const void* buffer, size_t size)
     auto paf = kj::newPromiseAndFulfiller<void>();
     boost::asio::const_buffer buf(buffer, size);
     boost::asio::async_write(socket_, buf, [fulfiller = std::move(paf.fulfiller)](const boost::system::error_code& ec, std::size_t bytes_transferred) mutable {
+        mark_unused(bytes_transferred);
         if (ec) {
             fulfiller->reject(KJ_EXCEPTION(FAILED, "write", ec.message()));
         } else {
@@ -43,6 +45,7 @@ kj::Promise<void> AsioStream::write(kj::ArrayPtr<const kj::ArrayPtr<const kj::by
         buffers.push_back(boost::asio::buffer(piece.begin(), piece.size()));
     }
     boost::asio::async_write(socket_, buffers, [fulfiller = std::move(paf.fulfiller)](const boost::system::error_code& ec, std::size_t bytes_transferred) mutable {
+        mark_unused(bytes_transferred);
         if (ec) {
             fulfiller->reject(KJ_EXCEPTION(FAILED, "write", ec.message()));
         } else {
