@@ -10,6 +10,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/signal_set.hpp>
 #include <boost/program_options.hpp>
+#include <vanetza/common/annotation.hpp>
 #include <iostream>
 
 #ifdef SOCKTAP_WITH_CUBE_EVK
@@ -104,6 +105,7 @@ int main(int argc, const char** argv)
         }
 
         auto signal_handler = [&io_context](const boost::system::error_code& ec, int signal_number) {
+            mark_unused(signal_number);
             if (!ec) {
                 std::cout << "Termination requested." << std::endl;
                 io_context.stop();

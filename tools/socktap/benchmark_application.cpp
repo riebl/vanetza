@@ -23,12 +23,12 @@ Application::PromiscuousHook* BenchmarkApplication::promiscuous_hook()
     return this;
 }
 
-void BenchmarkApplication::tap_packet(const DataIndication& indication, const UpPacket& packet)
+void BenchmarkApplication::tap_packet(const DataIndication&, const UpPacket&)
 {
     ++m_received_messages;
 }
 
-void BenchmarkApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
+void BenchmarkApplication::indicate(const DataIndication&, UpPacketPtr)
 {
     // do nothing here
 }

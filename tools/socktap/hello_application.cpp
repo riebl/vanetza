@@ -18,7 +18,7 @@ HelloApplication::PortType HelloApplication::port()
     return host_cast<uint16_t>(42);
 }
 
-void HelloApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
+void HelloApplication::indicate(const DataIndication&, UpPacketPtr)
 {
     std::cout << "Hello application received a packet" << std::endl;
 }

@@ -6,9 +6,9 @@
 #include <boost/units/cmath.hpp>
 #include <boost/units/systems/si/prefixes.hpp>
 #include <chrono>
-#include <exception>
 #include <functional>
 #include <iostream>
+#include <stdexcept>
 
 // This is a very simple CA application sending CAMs at a fixed rate.
 
@@ -44,7 +44,7 @@ CamApplication::PortType CamApplication::port()
     return btp::ports::CAM;
 }
 
-void CamApplication::indicate(const DataIndication& indication, UpPacketPtr packet)
+void CamApplication::indicate(const DataIndication&, UpPacketPtr packet)
 {
     asn1::PacketVisitor<asn1::Cam> visitor;
     std::shared_ptr<const asn1::Cam> cam = boost::apply_visitor(visitor, *packet);
