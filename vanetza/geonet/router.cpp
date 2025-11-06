@@ -1,5 +1,6 @@
 #include <vanetza/btp/data_indication.hpp>
 #include <vanetza/btp/data_request.hpp>
+#include <vanetza/common/annotation.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/common/runtime.hpp>
@@ -1270,6 +1271,7 @@ void Router::flush_broadcast_forwarding_buffer()
 void Router::flush_unicast_forwarding_buffer(const Address& source)
 {
     // TODO flush only packets for given source address (required for GUC packets)
+    mark_unused(source);
     m_uc_forward_buffer.flush(m_runtime.now());
 }
 
