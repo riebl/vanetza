@@ -1368,7 +1368,7 @@ Router::DownPacketPtr Router::encap_packet(ItsAid its_aid, ByteBuffer ssp, Pdu& 
                 return std::move(m_packet);
             }
 
-            DownPacketPtr operator() (security::SignConfirmError signing_error)
+            DownPacketPtr operator() (const security::SignConfirmError&)
             {
                 // SN-SIGN encapsulation failed
                 return nullptr;
