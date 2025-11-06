@@ -10,12 +10,12 @@ namespace security
 namespace v3
 {
 
-bool AllowLocationChecker::valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location) const
+bool AllowLocationChecker::valid_at_location(const asn1::EtsiTs103097Certificate&, const PositionFix&) const
 {
     return true;
 }
 
-bool DenyLocationChecker::valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location) const
+bool DenyLocationChecker::valid_at_location(const asn1::EtsiTs103097Certificate&, const PositionFix&) const
 {
     return false;
 }

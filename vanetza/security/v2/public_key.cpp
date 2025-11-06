@@ -14,11 +14,12 @@ PublicKeyAlgorithm get_type(const PublicKey& key)
 {
     struct public_key_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
-        PublicKeyAlgorithm operator()(const ecdsa_nistp256_with_sha256& ecdsa)
+        PublicKeyAlgorithm operator()(const ecdsa_nistp256_with_sha256&)
         {
             return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
-        PublicKeyAlgorithm operator()(const ecies_nistp256& ecies)
+
+        PublicKeyAlgorithm operator()(const ecies_nistp256&)
         {
             return PublicKeyAlgorithm::ECIES_NISTP256;
         }
@@ -36,15 +37,18 @@ void serialize(OutputArchive& ar, const PublicKey& key)
             m_archive(ar), m_algo(algo)
         {
         }
+
         void operator()(const ecdsa_nistp256_with_sha256& ecdsa)
         {
             serialize(m_archive, ecdsa.public_key, m_algo);
         }
+
         void operator()(const ecies_nistp256& ecies)
         {
             serialize(m_archive, ecies.supported_symm_alg);
             serialize(m_archive, ecies.public_key, m_algo);
         }
+
         OutputArchive& m_archive;
         PublicKeyAlgorithm m_algo;
     };
@@ -117,6 +121,7 @@ size_t get_size(const PublicKey& key)
         {
             return get_size(key.public_key);
         }
+
         size_t operator()(ecies_nistp256 key)
         {
             return get_size(key.public_key) + sizeof(key.supported_symm_alg);

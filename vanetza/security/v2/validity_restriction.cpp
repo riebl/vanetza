@@ -60,19 +60,19 @@ ValidityRestrictionType get_type(const ValidityRestriction& restriction)
 {
     struct validity_restriction_visitor : public boost::static_visitor<ValidityRestrictionType>
     {
-        ValidityRestrictionType operator()(const EndValidity& validity)
+        ValidityRestrictionType operator()(const EndValidity&)
         {
             return ValidityRestrictionType::Time_End;
         }
-        ValidityRestrictionType operator()(const StartAndEndValidity& validity)
+        ValidityRestrictionType operator()(const StartAndEndValidity&)
         {
             return ValidityRestrictionType::Time_Start_And_End;
         }
-        ValidityRestrictionType operator()(const StartAndDurationValidity& validity)
+        ValidityRestrictionType operator()(const StartAndDurationValidity&)
         {
             return ValidityRestrictionType::Time_Start_And_Duration;
         }
-        ValidityRestrictionType operator()(const GeographicRegion& region)
+        ValidityRestrictionType operator()(const GeographicRegion&)
         {
             return ValidityRestrictionType::Region;
         }
@@ -82,17 +82,17 @@ ValidityRestrictionType get_type(const ValidityRestriction& restriction)
     return boost::apply_visitor(visit, restriction);
 }
 
-size_t get_size(const Time32& time)
+size_t get_size(const Time32&)
 {
     return sizeof(Time32);
 }
 
-size_t get_size(const Time64& time)
+size_t get_size(const Time64&)
 {
     return sizeof(Time64);
 }
 
-size_t get_size(const Duration& duration)
+size_t get_size(const Duration&)
 {
     return sizeof(uint16_t);
 }

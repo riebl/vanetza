@@ -14,12 +14,12 @@ PublicKeyAlgorithm get_type(const Signature& sig)
 {
     struct Signature_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
-        PublicKeyAlgorithm operator()(const EcdsaSignature& sig)
+        PublicKeyAlgorithm operator()(const EcdsaSignature&)
         {
             return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
 
-        PublicKeyAlgorithm operator()(const EcdsaSignatureFuture& sig)
+        PublicKeyAlgorithm operator()(const EcdsaSignatureFuture&)
         {
             return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }

@@ -14,12 +14,12 @@ PublicKeyAlgorithm get_type(const Key& key)
 {
     struct key_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
-        PublicKeyAlgorithm operator()(const EciesEncryptedKey& key)
+        PublicKeyAlgorithm operator()(const EciesEncryptedKey&)
         {
             return PublicKeyAlgorithm::ECIES_NISTP256;
         }
 
-        PublicKeyAlgorithm operator()(const OpaqueKey& key)
+        PublicKeyAlgorithm operator()(const OpaqueKey&)
         {
             // TODO: could be anything except ECIES_NISTP256
             return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;

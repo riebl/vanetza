@@ -18,19 +18,19 @@ SignerInfoType get_type(const SignerInfo& info)
         {
             return SignerInfoType::Self;
         }
-        SignerInfoType operator()(const HashedId8& id)
+        SignerInfoType operator()(const HashedId8&)
         {
             return SignerInfoType::Certificate_Digest_With_SHA256;
         }
-        SignerInfoType operator()(const Certificate& cert)
+        SignerInfoType operator()(const Certificate&)
         {
             return SignerInfoType::Certificate;
         }
-        SignerInfoType operator()(const std::list<Certificate>& list)
+        SignerInfoType operator()(const std::list<Certificate>&)
         {
             return SignerInfoType::Certificate_Chain;
         }
-        SignerInfoType operator()(const CertificateDigestWithOtherAlgorithm& cert)
+        SignerInfoType operator()(const CertificateDigestWithOtherAlgorithm&)
         {
             return SignerInfoType::Certificate_Digest_With_Other_Algorithm;
         }

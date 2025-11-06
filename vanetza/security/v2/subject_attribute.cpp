@@ -12,27 +12,27 @@ SubjectAttributeType get_type(const SubjectAttribute& sub)
 {
     struct subject_attribute_visitor : public boost::static_visitor<SubjectAttributeType>
     {
-        SubjectAttributeType operator()(VerificationKey key)
+        SubjectAttributeType operator()(const VerificationKey&)
         {
             return SubjectAttributeType::Verification_Key;
         }
-        SubjectAttributeType operator()(EncryptionKey key)
+        SubjectAttributeType operator()(const EncryptionKey&)
         {
             return SubjectAttributeType::Encryption_Key;
         }
-        SubjectAttributeType operator()(SubjectAssurance assurance)
+        SubjectAttributeType operator()(const SubjectAssurance&)
         {
             return SubjectAttributeType::Assurance_Level;
         }
-        SubjectAttributeType operator()(std::list<IntX> list)
+        SubjectAttributeType operator()(const std::list<IntX>&)
         {
             return SubjectAttributeType::ITS_AID_List;
         }
-        SubjectAttributeType operator()(EccPoint ecc)
+        SubjectAttributeType operator()(const EccPoint&)
         {
             return SubjectAttributeType::Reconstruction_Value;
         }
-        SubjectAttributeType operator()(std::list<ItsAidSsp> list)
+        SubjectAttributeType operator()(const std::list<ItsAidSsp>&)
         {
             return SubjectAttributeType::ITS_AID_SSP_List;
         }
@@ -147,7 +147,7 @@ void serialize(OutputArchive& ar, const SubjectAttribute& subjectAttribute)
         {
             serialize(m_archive, list);
         }
-        void operator()(const EccPoint& ecc)
+        void operator()(const EccPoint&)
         {
             // TODO: specification of corresponding public key algorithm is missing
             throw serialization_error("unsupported serialization of SubjectAttribute with EccPoint");

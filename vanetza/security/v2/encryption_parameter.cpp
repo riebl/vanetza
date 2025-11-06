@@ -15,7 +15,7 @@ SymmetricAlgorithm get_type(const EncryptionParameter& param)
 {
     struct Encryption_visitor : public boost::static_visitor<SymmetricAlgorithm>
     {
-        SymmetricAlgorithm operator()(const Nonce& nonce)
+        SymmetricAlgorithm operator()(const Nonce&)
         {
             return SymmetricAlgorithm::AES128_CCM;
         }
@@ -33,12 +33,14 @@ void serialize(OutputArchive& ar, const EncryptionParameter& param)
             m_archive(ar)
         {
         }
+
         void operator()(const Nonce& nonce)
         {
             for (auto& byte : nonce) {
                 m_archive << byte;
             }
         }
+
         OutputArchive& m_archive;
     };
 

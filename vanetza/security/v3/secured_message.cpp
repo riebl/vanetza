@@ -753,12 +753,12 @@ boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdenti
 bool contains_certificate(const SecuredMessage::SignerIdentifier& identifier)
 {
     struct visitor : public boost::static_visitor<bool> {
-        bool operator()(const asn1::HashedId8* digest) const
+        bool operator()(const asn1::HashedId8*) const
         {
             return false;
         }
 
-        bool operator()(const asn1::Certificate* cert) const
+        bool operator()(const asn1::Certificate*) const
         {
             return true;
         }

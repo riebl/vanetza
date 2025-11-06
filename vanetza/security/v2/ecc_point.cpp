@@ -21,14 +21,17 @@ size_t get_size(const EccPoint& point)
         {
             return coord.x.size();
         }
+
         size_t operator()(Compressed_Lsb_Y_0 coord)
         {
             return coord.x.size();
         }
+
         size_t operator()(Compressed_Lsb_Y_1 coord)
         {
             return coord.x.size();
         }
+
         size_t operator()(Uncompressed coord)
         {
             return coord.x.size() + coord.y.size();
@@ -46,19 +49,22 @@ EccPointType get_type(const EccPoint& point)
 {
     struct ecc_point_visitor : public boost::static_visitor<EccPointType>
     {
-        EccPointType operator()(X_Coordinate_Only coord)
+        EccPointType operator()(const X_Coordinate_Only&)
         {
             return EccPointType::X_Coordinate_Only;
         }
-        EccPointType operator()(Compressed_Lsb_Y_0 coord)
+
+        EccPointType operator()(const Compressed_Lsb_Y_0&)
         {
             return EccPointType::Compressed_Lsb_Y_0;
         }
-        EccPointType operator()(Compressed_Lsb_Y_1 coord)
+
+        EccPointType operator()(const Compressed_Lsb_Y_1&)
         {
             return EccPointType::Compressed_Lsb_Y_1;
         }
-        EccPointType operator()(Uncompressed coord)
+
+        EccPointType operator()(const Uncompressed&)
         {
             return EccPointType::Uncompressed;
         }
@@ -76,6 +82,7 @@ void serialize(OutputArchive& ar, const EccPoint& point, PublicKeyAlgorithm algo
             m_archive(ar), m_algo(algo)
         {
         }
+
         void operator()(X_Coordinate_Only coord)
         {
             assert(coord.x.size() == field_size(m_algo));
@@ -83,6 +90,7 @@ void serialize(OutputArchive& ar, const EccPoint& point, PublicKeyAlgorithm algo
                 m_archive << byte;
             }
         }
+
         void operator()(Compressed_Lsb_Y_0 coord)
         {
             assert(coord.x.size() == field_size(m_algo));
@@ -90,6 +98,7 @@ void serialize(OutputArchive& ar, const EccPoint& point, PublicKeyAlgorithm algo
                 m_archive << byte;
             }
         }
+
         void operator()(Compressed_Lsb_Y_1 coord)
         {
             assert(coord.x.size() == field_size(m_algo));
@@ -97,6 +106,7 @@ void serialize(OutputArchive& ar, const EccPoint& point, PublicKeyAlgorithm algo
                 m_archive << byte;
             }
         }
+
         void operator()(Uncompressed coord)
         {
             assert(coord.x.size() == field_size(m_algo));
@@ -108,6 +118,7 @@ void serialize(OutputArchive& ar, const EccPoint& point, PublicKeyAlgorithm algo
                 m_archive << byte;
             }
         }
+
         OutputArchive& m_archive;
         PublicKeyAlgorithm m_algo;
     };

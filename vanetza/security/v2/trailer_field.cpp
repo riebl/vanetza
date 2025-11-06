@@ -14,7 +14,7 @@ TrailerFieldType get_type(const TrailerField& field)
 {
     struct trailerFieldVisitor : public boost::static_visitor<TrailerFieldType>
     {
-        TrailerFieldType operator()(const Signature& sig)
+        TrailerFieldType operator()(const Signature&)
         {
             return TrailerFieldType::Signature;
         }
