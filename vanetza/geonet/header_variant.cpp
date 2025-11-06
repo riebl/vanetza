@@ -53,7 +53,7 @@ class HeaderVariantLengthVisitor : public boost::static_visitor<std::size_t>
 {
 public:
     template<typename T>
-    std::size_t operator()(const T& header)
+    std::size_t operator()(const T&)
     {
         return T::length_bytes;
     }
