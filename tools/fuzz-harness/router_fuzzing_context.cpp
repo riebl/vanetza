@@ -14,7 +14,8 @@ class FuzzingTransportInterface : public geonet::TransportInterface
 };
 
 RouterFuzzingContext::RouterFuzzingContext() :
-    runtime(vanetza::Clock::at("2010-12-23 18:29")), security(runtime),
+    runtime(vanetza::Clock::at("2010-12-23 18:29")),
+    security(runtime),
     req_ifc(std::make_unique<FuzzingRequestInterface>()),
     ind_ifc(std::make_unique<FuzzingTransportInterface>())
 {

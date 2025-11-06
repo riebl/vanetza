@@ -18,11 +18,11 @@ public:
 
 private:
     ManualRuntime runtime;
+    SecurityContext security;
     geonet::ManagementInformationBase mib;
     std::unique_ptr<geonet::Router> router;
     std::unique_ptr<dcc::RequestInterface> req_ifc;
     std::unique_ptr<geonet::TransportInterface> ind_ifc;
-    SecurityContext security;
 };
 
 } // namespace vanetza
