@@ -1,5 +1,6 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
+#include <array>
 
 namespace vanetza
 {
@@ -167,7 +168,7 @@ void NaiveCertificateProvider::sign_authorization_ticket(Certificate& certificat
     certificate.set_signature(m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer));
 }
 
-Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string& subject_name)
+Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string& name)
 {
     Certificate aa_certificate;
 
@@ -185,21 +186,11 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     }
 
     aa_certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_name;
-    std::string root_name = "AA-cert";
-    ByteBuffer root_name_encoded(root_name.begin(), root_name.end());
-        OCTET_STRING_fromBuf(
-        &aa_certificate->toBeSigned.id.choice.name,
-        reinterpret_cast<const char*>(root_name_encoded.data()),
-        root_name_encoded.size()
-    );
+    OCTET_STRING_fromBuf(&aa_certificate->toBeSigned.id.choice.name, name.data(), name.size());
 
     // section 6 in TS 103 097 v2.1.1
-    std::vector<uint8_t> craciId(3, 0);
-    OCTET_STRING_fromBuf(
-        &aa_certificate->toBeSigned.cracaId,
-        reinterpret_cast<const char*>(craciId.data()),
-        craciId.size()
-    );
+    static const std::array<char, 3> craciId { 0, 0, 0 };
+    OCTET_STRING_fromBuf(&aa_certificate->toBeSigned.cracaId, craciId.data(), craciId.size());
     aa_certificate->version = 3;
     aa_certificate->toBeSigned.crlSeries = 0;
 
@@ -253,28 +244,18 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     return aa_certificate;
 }
 
-Certificate NaiveCertificateProvider::generate_root_certificate(const std::string& subject_name)
+Certificate NaiveCertificateProvider::generate_root_certificate(const std::string& name)
 {
     Certificate root_certificate;
 
     //section 7.2.3 in TS 103 097 v2.1.1
     root_certificate->issuer.present = Vanetza_Security_IssuerIdentifier_PR_self;
     root_certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_name;
-    std::string root_name = "Root-CA";
-    ByteBuffer root_name_encoded(root_name.begin(), root_name.end());
-        OCTET_STRING_fromBuf(
-        &root_certificate->toBeSigned.id.choice.name,
-        reinterpret_cast<const char*>(root_name_encoded.data()),
-        root_name_encoded.size()
-    );
+    OCTET_STRING_fromBuf(&root_certificate->toBeSigned.id.choice.name, name.data(), name.size());
 
     // section 6 in TS 103 097 v2.1.1
-    std::vector<uint8_t> craciId(3, 0);
-    OCTET_STRING_fromBuf(
-        &root_certificate->toBeSigned.cracaId,
-        reinterpret_cast<const char*>(craciId.data()),
-        craciId.size()
-    );
+    static const std::array<char, 3> craciId = { 0, 0, 0 };
+    OCTET_STRING_fromBuf(&root_certificate->toBeSigned.cracaId, craciId.data(), craciId.size());
     root_certificate->version = 3;
     root_certificate->toBeSigned.crlSeries = 0;
 
