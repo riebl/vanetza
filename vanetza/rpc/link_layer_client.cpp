@@ -274,7 +274,7 @@ const char* stringify(LinkLayerClient::ErrorCode ec)
     static const std::array<const char*, 4> strings = { "ok", "invalid argument", "unsupported", "internal error" };
     static_assert(static_cast<std::size_t>(ErrorCode::Ok) == 0, "ErrorCode 'ok' is at index 0");
     const auto idx = static_cast<std::size_t>(ec);
-    if (idx < 0 || idx >= strings.size()) {
+    if (idx >= strings.size()) {
         return "unknown";
     } else {
         return strings[idx]; 
