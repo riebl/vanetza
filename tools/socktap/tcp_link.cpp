@@ -107,8 +107,8 @@ void TcpLink::accept_handler(boost::system::error_code& ec, ip::tcp::endpoint ep
 
 TcpSocket::TcpSocket(boost::asio::io_context& io_context, IndicationCallback* cb) :
     socket_(io_context),
-    callback_(cb),
-    rx_buffer_(2560, 0x00)
+    rx_buffer_(2560, 0x00),
+    callback_(cb)
 {
 }
 
