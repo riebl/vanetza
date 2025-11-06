@@ -52,16 +52,6 @@ void serialize(OutputArchive&, const TrailerField&);
 size_t deserialize(InputArchive&, TrailerField&);
 
 /**
- * \brief Extract binary signature from trailer field
- *
- * Serializes signature's s and ECC point x elements.
- *
- * \param trailer_field field to be converted
- * \return ByteBuffer if trailer field contains a signature
- */
-boost::optional<ByteBuffer> extract_signature_buffer(const TrailerField& trailer_field);
-
-/**
  * \brief resolve type for matching TrailerFieldType
  *
  * This is kind of the reverse function of get_type(const TrailerField&)
