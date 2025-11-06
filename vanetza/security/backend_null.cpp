@@ -32,7 +32,7 @@ bool BackendNull::verify_digest(const PublicKey&, const ByteBuffer&, const Signa
     return true;
 }
 
-boost::optional<Uncompressed> BackendNull::decompress_point(const EccPoint& ecc_point)
+boost::optional<Uncompressed> BackendNull::decompress_point(const EccPoint&)
 {
     return boost::none;
 }
@@ -49,7 +49,7 @@ EcdsaSignature BackendNull::fake_signature() const
     return signature;
 }
 
-ByteBuffer BackendNull::calculate_hash(HashAlgorithm algo, const ByteBuffer& buffer)
+ByteBuffer BackendNull::calculate_hash(HashAlgorithm algo, const ByteBuffer&)
 {
     ByteBuffer hash;
     switch (algo) {
