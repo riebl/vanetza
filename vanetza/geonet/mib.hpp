@@ -102,6 +102,7 @@ struct ManagementInformationBase
     units::Duration vanetzaFadingCbfCounterLifetime; /*< lifetime until counter vanishes */
     Clock::duration vanetzaNeighbourFlagExpiry; /*< reset LocTE neighbour state without explicit updates */
     std::size_t vanetzaGbcMemoryCapacity; /*< do not pass up duplicate GBC packets (0 to disable this filter) */
+    bool vanetzaGbcPassUpOutsideDestination; /*< pass up received GBC packets even when outside of destination area */
 };
 
 // This name is too clumsy to write it out every time

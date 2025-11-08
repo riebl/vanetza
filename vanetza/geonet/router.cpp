@@ -1252,10 +1252,13 @@ bool Router::process_extended(const ExtendedPduConstRefs<GeoBroadcastHeader>& pd
 
 bool Router::decide_pass_up(bool within_destination, const GeoBroadcastHeader& gbc)
 {
+    // accept only GBC within destination area if not explicitly requested
+    const bool accept = within_destination || m_mib.vanetzaGbcPassUpOutsideDestination;
+
     if (m_mib.vanetzaGbcMemoryCapacity == 0) {
         // classic pass up: suppress only GBCs outside of destination area
-        return within_destination;
-    } else if (within_destination) {
+        return accept;
+    } else if (accept) {
         // modified pass up: suppress passing up duplicate GBC packets
         return !m_gbc_memory.remember(std::make_tuple(gbc.source_position.gn_addr, gbc.sequence_number));
     } else {

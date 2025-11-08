@@ -56,7 +56,8 @@ ManagementInformationBase::ManagementInformationBase() :
     vanetzaFadingCbfCounter(false),
     vanetzaFadingCbfCounterLifetime(4.0 * itsGnCbfMaxTime),
     vanetzaNeighbourFlagExpiry(Clock::duration::zero()),
-    vanetzaGbcMemoryCapacity(0)
+    vanetzaGbcMemoryCapacity(0),
+    vanetzaGbcPassUpOutsideDestination(false)
 {
 }
 
