@@ -14,7 +14,7 @@ namespace aid
 
 /**
  * ITS-AID assigned for ETSI ITS
- * \see TS 102 965 V2.2.1 Annex A
+ * \see TS 102 965 V2.4.1 Annex A
  */
 constexpr ItsAid CA = 36;
 constexpr ItsAid DEN = 37;
@@ -36,6 +36,9 @@ constexpr ItsAid IPV6_ROUTING = 270549118;
 constexpr ItsAid MR = 1618;
 constexpr ItsAid AVM = 71;
 constexpr ItsAid POI = 1619;
+constexpr ItsAid RMO = 1620;
+constexpr ItsAid PI = 1621;
+constexpr ItsAid MDM = 1622;
 
 } // namespace aid
 } // namespace vanetza
