@@ -713,9 +713,7 @@ ByteBuffer convert_to_payload(vanetza::DownPacket packet)
 
 void set_payload(asn1::Opaque* unsecured, const ByteBuffer& buffer)
 {
-    unsecured->size = buffer.size();
-    unsecured->buf = new uint8_t[unsecured->size]; // Allocate memory for the buffer
-    std::copy(buffer.begin(), buffer.end(), unsecured->buf);
+    OCTET_STRING_fromBuf(unsecured, reinterpret_cast<const char*>(buffer.data()), buffer.size());
 }
 
 ByteBuffer get_payload(const asn1::SignedData* signed_data)
