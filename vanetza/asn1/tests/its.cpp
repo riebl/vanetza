@@ -7,6 +7,7 @@
 #include <vanetza/asn1/ssem.hpp>
 #include <vanetza/asn1/srem.hpp>
 #include <vanetza/asn1/ivim.hpp>
+#include <vanetza/asn1/vam.hpp>
 #include <vanetza/asn1/its/TimestampIts.h>
 
 using namespace vanetza;
@@ -70,3 +71,24 @@ TEST(ItsAsn1, create_ivim)
     asn1::Ivim ivim;
 }
 
+TEST(ItsAsn1, validate_vam)
+{
+	asn1::r2::Vam vam;
+
+	vam->header.messageId = Vanetza_ITS2_MessageId_vam;
+	vam->header.protocolVersion = 2;
+	vam->header.stationId = 123;
+
+	vam->vam.generationDeltaTime = 0;
+	vam->vam.vamParameters.basicContainer.referencePosition.latitude = Vanetza_ITS2_Latitude_unavailable;
+	vam->vam.vamParameters.basicContainer.referencePosition.longitude = Vanetza_ITS2_Longitude_unavailable;
+	vam->vam.vamParameters.basicContainer.stationType = 5;
+
+	vam->vam.vamParameters.vruHighFrequencyContainer.heading.value = 0;
+	vam->vam.vamParameters.vruHighFrequencyContainer.heading.confidence = Vanetza_ITS2_HeadingConfidence_unavailable;
+
+	vam->vam.vamParameters.vruHighFrequencyContainer.speed.speedValue = 0;
+	vam->vam.vamParameters.vruHighFrequencyContainer.speed.speedConfidence = Vanetza_ITS2_SpeedConfidence_unavailable;
+
+	EXPECT_TRUE(vam.validate());
+}

@@ -23,7 +23,7 @@ Vanetza_ITS2_ItsPduHeaderVam_constraint(const asn_TYPE_descriptor_t *td, const v
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	return SEQUENCE_constraint(td, sptr, ctfailcb, app_key);
 }
 
 /*
@@ -71,4 +71,3 @@ asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_ItsPduHeaderVam = {
 	3,	/* Elements count */
 	&asn_SPC_Vanetza_ITS2_ItsPduHeader_specs_1	/* Additional specs */
 };
-
