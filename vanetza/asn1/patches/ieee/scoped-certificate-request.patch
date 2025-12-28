@@ -1,7 +1,7 @@
-diff --git a/IEEE1609dot2dot1Protocol.asn b/IEEE1609dot2dot1Protocol.asn
+diff --git a/Ieee1609Dot2Dot1Protocol.asn b/Ieee1609Dot2Dot1Protocol.asn
 index 78c0489..1bfb644 100644
---- a/IEEE1609dot2dot1Protocol.asn
-+++ b/IEEE1609dot2dot1Protocol.asn
+--- a/Ieee1609Dot2Dot1Protocol.asn
++++ b/Ieee1609Dot2Dot1Protocol.asn
 @@ -440,31 +440,35 @@ SignerSelf ::= SignerIdentifier (WITH COMPONENTS {
  --                            Certificate Requests                           --
  --***************************************************************************--
@@ -53,8 +53,8 @@ index 78c0489..1bfb644 100644
 -      eeRaSuccessorEnrollmentCertRequest
 -    })
 -  }
-+ScmsPdu-RaAcaCertRequest | ScmsPdu-EeEcaCertRequest |
-+ScmsPdu-EeRaCertRequest  | ScmsPdu-EeRaSuccessorEnrollmentCertRequest
++  ScmsPdu-RaAcaCertRequest | ScmsPdu-EeEcaCertRequest |
++  ScmsPdu-EeRaCertRequest  | ScmsPdu-EeRaSuccessorEnrollmentCertRequest
  )
  
  /**
