@@ -60,6 +60,7 @@ support/NULL_uper.c
 support/NULL_xer.c
 support/NativeEnumerated.c
 support/NativeEnumerated_aper.c
+support/NativeEnumerated_ber.c
 support/NativeEnumerated_jer.c
 support/NativeEnumerated_oer.c
 support/NativeEnumerated_uper.c
