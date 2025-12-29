@@ -29,6 +29,7 @@ typedef enum ITS_Container_Temperature {
 typedef long	 ITS_Container_Temperature_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ITS_Container_Temperature_constr_1;
 extern asn_per_constraints_t asn_PER_type_ITS_Container_Temperature_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ITS_Container_Temperature;
 asn_struct_free_f ITS_Container_Temperature_free;

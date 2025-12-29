@@ -33,6 +33,7 @@ typedef enum RTCM_Revision {
 typedef long	 RTCM_Revision_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RTCM_Revision_constr_1;
 extern asn_per_constraints_t asn_PER_type_RTCM_Revision_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RTCM_Revision;
 extern const asn_INTEGER_specifics_t asn_SPC_RTCM_Revision_specs_1;

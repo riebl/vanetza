@@ -278,8 +278,8 @@ REAL__jer_body_decode(const asn_TYPE_descriptor_t *td,
             struct specialRealValue_s *srv = &specialRealValue_jer[i];
             double dv;
 
-            if(srv->length != chunk_size
-            || memcmp(srv->string, chunk_buf, chunk_size))
+            if(srv->length > chunk_size
+            || memcmp(srv->string, chunk_buf, srv->length))
                 continue;
 
             /*

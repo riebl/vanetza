@@ -48,9 +48,12 @@ BIT_STRING_encode_xer(const asn_TYPE_descriptor_t *td, const void *sptr,
         p += 8;
     }
 
+    //if(!xcan && ((buf - st->buf) % 8) == 0)
+    //    ASN__TEXT_INDENT(1, ilevel);
+    //ASN__CALLBACK(scratch, p - scratch);
+    ASN__CALLBACK(scratch, p - scratch);
     if(!xcan && ((buf - st->buf) % 8) == 0)
         ASN__TEXT_INDENT(1, ilevel);
-    ASN__CALLBACK(scratch, p - scratch);
     p = scratch;
 
     if(buf == end) {

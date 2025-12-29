@@ -47,6 +47,7 @@ typedef enum LaneType {
 typedef long	 LaneType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_LaneType_constr_1;
 extern asn_per_constraints_t asn_PER_type_LaneType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_LaneType;
 asn_struct_free_f LaneType_free;

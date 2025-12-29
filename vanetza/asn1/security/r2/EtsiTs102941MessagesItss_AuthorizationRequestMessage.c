@@ -23,7 +23,12 @@ Vanetza_Security2_EtsiTs102941MessagesItss_AuthorizationRequestMessage_constrain
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_EtsiTs102941MessagesItss_AuthorizationRequestMessage_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*

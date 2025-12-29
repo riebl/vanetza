@@ -46,6 +46,7 @@ typedef enum DangerousGoodsBasic {
 typedef long	 DangerousGoodsBasic_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DangerousGoodsBasic_constr_1;
 extern asn_per_constraints_t asn_PER_type_DangerousGoodsBasic_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DangerousGoodsBasic;
 extern const asn_INTEGER_specifics_t asn_SPC_DangerousGoodsBasic_specs_1;

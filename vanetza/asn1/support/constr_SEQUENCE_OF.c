@@ -7,6 +7,22 @@
 #include "constr_SEQUENCE_OF.h"
 #include "asn_SEQUENCE_OF.h"
 
+/*
+ * Generic placeholder descriptor for anonymous SEQUENCE OF.
+ * NOTE: not a concrete "OF T" — used only to satisfy references from
+ * some codegen paths. Concrete OF types still have their own descriptors.
+ */
+asn_TYPE_descriptor_t asn_DEF_SEQUENCE_OF = {
+    "SEQUENCE OF",
+    "SEQUENCE OF",
+    &asn_OP_SEQUENCE_OF,
+    0, 0,
+    0, 0,
+    0,              /* No constraints */
+    0, 0,           /* No members */
+    0               /* No specifics */
+};
+
 asn_TYPE_operation_t asn_OP_SEQUENCE_OF = {
     SEQUENCE_OF_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)

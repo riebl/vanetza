@@ -33,6 +33,7 @@ typedef enum TrafficRule {
 typedef long	 TrafficRule_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_TrafficRule_constr_1;
 extern asn_per_constraints_t asn_PER_type_TrafficRule_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_TrafficRule;
 extern const asn_INTEGER_specifics_t asn_SPC_TrafficRule_specs_1;

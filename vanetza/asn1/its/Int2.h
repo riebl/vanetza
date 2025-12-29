@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 Int2_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Int2_constr_1;
 extern asn_per_constraints_t asn_PER_type_Int2_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Int2;
 asn_struct_free_f Int2_free;

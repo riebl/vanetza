@@ -23,7 +23,12 @@ Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P0_constraint(const asn_TYPE_des
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P0_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -46,7 +51,12 @@ Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P1_constraint(const asn_TYPE_des
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P1_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -69,7 +79,12 @@ Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P2_constraint(const asn_TYPE_des
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P2_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -92,7 +107,12 @@ Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P3_constraint(const asn_TYPE_des
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P3_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -100,7 +120,7 @@ Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P3_constraint(const asn_TYPE_des
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P0_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P0_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -112,7 +132,7 @@ asn_per_constraints_t asn_PER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P1_constr_2 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P1_constr_2 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -124,7 +144,7 @@ asn_per_constraints_t asn_PER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P2_constr_3 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P2_constr_3 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -136,7 +156,7 @@ asn_per_constraints_t asn_PER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P3_constr_4 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_Encrypted_276P3_constr_4 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

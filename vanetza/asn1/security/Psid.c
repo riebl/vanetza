@@ -26,7 +26,12 @@ Vanetza_Security_Psid_constraint(const asn_TYPE_descriptor_t *td, const void *sp
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security_Psid_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -34,7 +39,7 @@ Vanetza_Security_Psid_constraint(const asn_TYPE_descriptor_t *td, const void *sp
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security_Psid_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security_Psid_constr_1 CC_NOTUSED = {
 	{ 0, 1 }	/* (0..MAX) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

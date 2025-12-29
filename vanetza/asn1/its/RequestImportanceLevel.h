@@ -42,6 +42,7 @@ typedef enum RequestImportanceLevel {
 typedef long	 RequestImportanceLevel_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RequestImportanceLevel_constr_1;
 extern asn_per_constraints_t asn_PER_type_RequestImportanceLevel_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RequestImportanceLevel;
 extern const asn_INTEGER_specifics_t asn_SPC_RequestImportanceLevel_specs_1;

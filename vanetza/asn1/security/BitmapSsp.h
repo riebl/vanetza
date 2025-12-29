@@ -22,6 +22,7 @@ extern "C" {
 typedef OCTET_STRING_t	 Vanetza_Security_BitmapSsp_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security_BitmapSsp_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security_BitmapSsp_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security_BitmapSsp;
 asn_struct_free_f Vanetza_Security_BitmapSsp_free;

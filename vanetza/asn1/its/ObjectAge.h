@@ -27,6 +27,7 @@ typedef enum ObjectAge {
 typedef long	 ObjectAge_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ObjectAge_constr_1;
 extern asn_per_constraints_t asn_PER_type_ObjectAge_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ObjectAge;
 asn_struct_free_f ObjectAge_free;

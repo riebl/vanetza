@@ -42,6 +42,7 @@ typedef struct Vanetza_ITS2_MapPosition {
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_MapPosition;
 extern asn_SEQUENCE_specifics_t asn_SPC_Vanetza_ITS2_MapPosition_specs_1;
 extern asn_TYPE_member_t asn_MBR_Vanetza_ITS2_MapPosition_1[4];
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_MapPosition_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_MapPosition_constr_1;
 
 #ifdef __cplusplus

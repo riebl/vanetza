@@ -23,7 +23,12 @@ Vanetza_Security_EtsiTs103097Data_Signed_55P0_constraint(const asn_TYPE_descript
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security_EtsiTs103097Data_Signed_55P0_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -46,7 +51,12 @@ Vanetza_Security_EtsiTs103097Data_Signed_55P1_constraint(const asn_TYPE_descript
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security_EtsiTs103097Data_Signed_55P1_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -69,7 +79,12 @@ Vanetza_Security_EtsiTs103097Data_Signed_55P2_constraint(const asn_TYPE_descript
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security_EtsiTs103097Data_Signed_55P2_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -77,7 +92,7 @@ Vanetza_Security_EtsiTs103097Data_Signed_55P2_constraint(const asn_TYPE_descript
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P0_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P0_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -89,7 +104,7 @@ asn_per_constraints_t asn_PER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P0
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P1_constr_2 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P1_constr_2 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -101,7 +116,7 @@ asn_per_constraints_t asn_PER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P1
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P2_constr_3 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security_EtsiTs103097Data_Signed_55P2_constr_3 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

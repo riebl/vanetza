@@ -23,7 +23,12 @@ Vanetza_Security2_SignerSingleCert_constraint(const asn_TYPE_descriptor_t *td, c
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_SignerSingleCert_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*

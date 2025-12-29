@@ -37,7 +37,7 @@ Vanetza_ITS2_Wgs84AngleConfidence_constraint(const asn_TYPE_descriptor_t *td, co
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_Wgs84AngleConfidence_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_Wgs84AngleConfidence_constr_1 CC_NOTUSED = {
 	{ 1, 1 }	/* (1..127) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

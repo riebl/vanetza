@@ -32,6 +32,7 @@ typedef enum CurvatureCalculationMode {
 typedef long	 CurvatureCalculationMode_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_CurvatureCalculationMode_constr_1;
 extern asn_per_constraints_t asn_PER_type_CurvatureCalculationMode_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_CurvatureCalculationMode;
 extern const asn_INTEGER_specifics_t asn_SPC_CurvatureCalculationMode_specs_1;

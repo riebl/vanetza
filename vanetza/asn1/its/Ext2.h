@@ -43,6 +43,7 @@ typedef struct Ext2 {
 extern asn_TYPE_descriptor_t asn_DEF_Ext2;
 extern asn_CHOICE_specifics_t asn_SPC_Ext2_specs_1;
 extern asn_TYPE_member_t asn_MBR_Ext2_1[2];
+extern asn_oer_constraints_t asn_OER_type_Ext2_constr_1;
 extern asn_per_constraints_t asn_PER_type_Ext2_constr_1;
 
 #ifdef __cplusplus

@@ -229,16 +229,22 @@ static ssize_t OCTET_STRING__convert_hexadecimal(void *sptr, const void *chunk_b
             break;
         }
     }
-    --pend;
-    for (; pend >= p; --pend) {
-        if (*pend == CQUOTE)
-            break;
+    /* Find ending quote - ensure we don't go below the start */
+    if (pend > (const char *)chunk_buf) {
+        --pend;
+        for (; pend >= p; --pend) {
+            if (*pend == CQUOTE)
+                break;
+        }
     }
-    if (pend - p < 0) return -1;
+    if (pend < p) return -1;
     chunk_size = pend - p;
 
     /* Reallocate buffer according to high cap estimation */
-    size_t new_size = st->size + (chunk_size + 1) / 2;
+    size_t hex_byte_count = (chunk_size + 1) / 2;
+    /* Check for potential overflow */
+    if (hex_byte_count > SIZE_MAX - st->size - 1) return -1;
+    size_t new_size = st->size + hex_byte_count;
     void *nptr = REALLOC(st->buf, new_size + 1);
     if(!nptr) return -1;
     st->buf = (uint8_t *)nptr;
@@ -299,7 +305,10 @@ static ssize_t OCTET_STRING__convert_hexadecimal(void *sptr, const void *chunk_b
     assert(st->size <= new_size);
     st->buf[st->size] = 0;  /* Courtesy termination */
 
-    return (chunk_stop - (const char *)chunk_buf);  /* Converted size */
+    /* Ensure return value is valid */
+    ssize_t consumed = chunk_stop - (const char *)chunk_buf;
+    if (consumed < 0 || (size_t)consumed > chunk_size + 2) return -1;  /* +2 for quotes */
+    return consumed;  /* Converted size */
 }
 
 /*

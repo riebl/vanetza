@@ -34,6 +34,7 @@ typedef struct FreeSpaceAddendumContainer {
 extern asn_TYPE_descriptor_t asn_DEF_FreeSpaceAddendumContainer;
 extern asn_SET_OF_specifics_t asn_SPC_FreeSpaceAddendumContainer_specs_1;
 extern asn_TYPE_member_t asn_MBR_FreeSpaceAddendumContainer_1[1];
+extern asn_oer_constraints_t asn_OER_type_FreeSpaceAddendumContainer_constr_1;
 extern asn_per_constraints_t asn_PER_type_FreeSpaceAddendumContainer_constr_1;
 
 #ifdef __cplusplus

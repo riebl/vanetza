@@ -30,6 +30,7 @@ typedef enum RoadType {
 typedef long	 RoadType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RoadType_constr_1;
 extern asn_per_constraints_t asn_PER_type_RoadType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RoadType;
 extern const asn_INTEGER_specifics_t asn_SPC_RoadType_specs_1;

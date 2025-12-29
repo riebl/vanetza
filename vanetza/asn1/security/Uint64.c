@@ -27,7 +27,7 @@ Vanetza_Security_Uint64_constraint(const asn_TYPE_descriptor_t *td, const void *
 		return -1;
 	}
 	
-	if((value >= 0UL && value <= 18446744073709551615UL)) {
+	if((value <= 18446744073709551615UL)) {
 		/* Constraint check succeeded */
 		return 0;
 	} else {
@@ -43,13 +43,13 @@ Vanetza_Security_Uint64_constraint(const asn_TYPE_descriptor_t *td, const void *
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security_Uint64_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security_Uint64_constr_1 CC_NOTUSED = {
 	{ 8, 1 }	/* (0..18446744073709551615) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
 #if !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT)
 asn_per_constraints_t asn_PER_type_Vanetza_Security_Uint64_constr_1 CC_NOTUSED = {
-	{ APC_CONSTRAINED,	 64, -1,  0,  18446744073709551615ul }	/* (0..18446744073709551615) */,
+	{ APC_CONSTRAINED,	 64, -1,  0,  18446744073709551615UL }	/* (0..18446744073709551615) */,
 	{ APC_UNCONSTRAINED,	-1, -1,  0,  0 },
 	0, 0	/* No PER value map */
 };

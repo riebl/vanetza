@@ -28,7 +28,9 @@ typedef enum Vanetza_Security2_EndEntityType {
 typedef BIT_STRING_t	 Vanetza_Security2_EndEntityType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security2_EndEntityType_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security2_EndEntityType_constr_1;
+extern asn_jer_constraints_t asn_JER_type_Vanetza_Security2_EndEntityType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security2_EndEntityType;
 asn_struct_free_f Vanetza_Security2_EndEntityType_free;
 asn_struct_print_f Vanetza_Security2_EndEntityType_print;

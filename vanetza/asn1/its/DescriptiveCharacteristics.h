@@ -77,6 +77,7 @@ typedef enum DescriptiveCharacteristics {
 typedef long	 DescriptiveCharacteristics_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DescriptiveCharacteristics_constr_1;
 extern asn_per_constraints_t asn_PER_type_DescriptiveCharacteristics_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DescriptiveCharacteristics;
 asn_struct_free_f DescriptiveCharacteristics_free;

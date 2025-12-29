@@ -61,6 +61,7 @@ typedef struct DetectionArea {
 extern asn_TYPE_descriptor_t asn_DEF_DetectionArea;
 extern asn_CHOICE_specifics_t asn_SPC_DetectionArea_specs_1;
 extern asn_TYPE_member_t asn_MBR_DetectionArea_1[6];
+extern asn_oer_constraints_t asn_OER_type_DetectionArea_constr_1;
 extern asn_per_constraints_t asn_PER_type_DetectionArea_constr_1;
 
 #ifdef __cplusplus

@@ -64,6 +64,7 @@ typedef struct VehicleCharacteristicsFixValues {
 extern asn_TYPE_descriptor_t asn_DEF_VehicleCharacteristicsFixValues;
 extern asn_CHOICE_specifics_t asn_SPC_VehicleCharacteristicsFixValues_specs_1;
 extern asn_TYPE_member_t asn_MBR_VehicleCharacteristicsFixValues_1[7];
+extern asn_oer_constraints_t asn_OER_type_VehicleCharacteristicsFixValues_constr_1;
 extern asn_per_constraints_t asn_PER_type_VehicleCharacteristicsFixValues_constr_1;
 
 #ifdef __cplusplus

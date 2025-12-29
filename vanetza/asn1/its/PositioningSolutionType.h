@@ -35,6 +35,7 @@ typedef enum PositioningSolutionType {
 typedef long	 PositioningSolutionType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_PositioningSolutionType_constr_1;
 extern asn_per_constraints_t asn_PER_type_PositioningSolutionType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_PositioningSolutionType;
 extern const asn_INTEGER_specifics_t asn_SPC_PositioningSolutionType_specs_1;

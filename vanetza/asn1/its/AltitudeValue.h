@@ -29,6 +29,7 @@ typedef enum AltitudeValue {
 typedef long	 AltitudeValue_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_AltitudeValue_constr_1;
 extern asn_per_constraints_t asn_PER_type_AltitudeValue_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_AltitudeValue;
 asn_struct_free_f AltitudeValue_free;

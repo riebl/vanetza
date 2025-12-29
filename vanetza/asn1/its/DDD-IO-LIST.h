@@ -34,6 +34,7 @@ typedef struct DDD_IO_LIST {
 extern asn_TYPE_descriptor_t asn_DEF_DDD_IO_LIST;
 extern asn_SET_OF_specifics_t asn_SPC_DDD_IO_LIST_specs_1;
 extern asn_TYPE_member_t asn_MBR_DDD_IO_LIST_1[1];
+extern asn_oer_constraints_t asn_OER_type_DDD_IO_LIST_constr_1;
 extern asn_per_constraints_t asn_PER_type_DDD_IO_LIST_constr_1;
 
 #ifdef __cplusplus

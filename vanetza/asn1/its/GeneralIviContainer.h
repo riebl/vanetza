@@ -34,6 +34,7 @@ typedef struct GeneralIviContainer {
 extern asn_TYPE_descriptor_t asn_DEF_GeneralIviContainer;
 extern asn_SET_OF_specifics_t asn_SPC_GeneralIviContainer_specs_1;
 extern asn_TYPE_member_t asn_MBR_GeneralIviContainer_1[1];
+extern asn_oer_constraints_t asn_OER_type_GeneralIviContainer_constr_1;
 extern asn_per_constraints_t asn_PER_type_GeneralIviContainer_constr_1;
 
 #ifdef __cplusplus

@@ -32,6 +32,7 @@ typedef struct EnabledLaneList {
 extern asn_TYPE_descriptor_t asn_DEF_EnabledLaneList;
 extern asn_SET_OF_specifics_t asn_SPC_EnabledLaneList_specs_1;
 extern asn_TYPE_member_t asn_MBR_EnabledLaneList_1[1];
+extern asn_oer_constraints_t asn_OER_type_EnabledLaneList_constr_1;
 extern asn_per_constraints_t asn_PER_type_EnabledLaneList_constr_1;
 
 #ifdef __cplusplus

@@ -43,6 +43,7 @@ typedef enum Vanetza_Security2_EnrolmentResponseCode {
 typedef long	 Vanetza_Security2_EnrolmentResponseCode_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security2_EnrolmentResponseCode_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security2_EnrolmentResponseCode_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security2_EnrolmentResponseCode;
 extern const asn_INTEGER_specifics_t asn_SPC_Vanetza_Security2_EnrolmentResponseCode_specs_1;

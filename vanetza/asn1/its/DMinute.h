@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 DMinute_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DMinute_constr_1;
 extern asn_per_constraints_t asn_PER_type_DMinute_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DMinute;
 asn_struct_free_f DMinute_free;

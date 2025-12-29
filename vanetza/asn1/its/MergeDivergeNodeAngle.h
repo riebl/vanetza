@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 MergeDivergeNodeAngle_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_MergeDivergeNodeAngle_constr_1;
 extern asn_per_constraints_t asn_PER_type_MergeDivergeNodeAngle_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_MergeDivergeNodeAngle;
 asn_struct_free_f MergeDivergeNodeAngle_free;

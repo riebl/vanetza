@@ -29,6 +29,7 @@ typedef enum EuVehicleCategoryM {
 typedef long	 EuVehicleCategoryM_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_EuVehicleCategoryM_constr_1;
 extern asn_per_constraints_t asn_PER_type_EuVehicleCategoryM_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_EuVehicleCategoryM;
 extern const asn_INTEGER_specifics_t asn_SPC_EuVehicleCategoryM_specs_1;

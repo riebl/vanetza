@@ -38,7 +38,7 @@ Vanetza_Security2_AcpcNodeValue_constraint(const asn_TYPE_descriptor_t *td, cons
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_AcpcNodeValue_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_AcpcNodeValue_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	16	/* (SIZE(16..16)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

@@ -28,6 +28,7 @@ typedef enum Vanetza_ITS2_Temperature {
 typedef long	 Vanetza_ITS2_Temperature_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_Temperature_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_Temperature_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_Temperature;
 asn_struct_free_f Vanetza_ITS2_Temperature_free;

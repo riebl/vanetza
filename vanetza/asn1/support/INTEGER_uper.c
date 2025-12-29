@@ -66,6 +66,8 @@ INTEGER_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
                 ASN_DEBUG("Got value %"ASN_PRIuMAX" + low %"ASN_PRIdMAX"",
                     uvalue, ct->lower_bound);
                 uvalue += ct->lower_bound;
+                if (uvalue > (uintmax_t)ct->upper_bound)
+                    ASN__DECODE_FAILED;
                 if(asn_umax2INTEGER(st, uvalue))
                     ASN__DECODE_FAILED;
             } else {
@@ -107,6 +109,33 @@ INTEGER_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
         st->size += len;
     } while(repeat);
     st->buf[st->size] = 0;  /* JIC */
+
+    /* 
+     * Canonical UPER validation: X.691 11.3.6 - minimum octet encoding check.
+     * For unconstrained integers, verify that the encoding uses the minimum
+     * number of octets (leading 8 bits shall not all be zero unless the field
+     * is precisely 8 bits long).
+     */
+    if(opt_codec_ctx && opt_codec_ctx->uper_canonical && !ct && st->size > 1) {
+        /* Check for non-minimal encoding */
+        if(st->buf[0] == 0x00 && (st->buf[1] & 0x80) == 0) {
+            /* Leading zeros in positive number - not minimal */
+            if(opt_codec_ctx->uper_canonical_lenient) {
+                ASN_DEBUG("Non-canonical UPER: leading zeros in positive integer (lenient mode - continuing)");
+            } else {
+                ASN_DEBUG("Non-canonical UPER: leading zeros in positive integer");
+                ASN__DECODE_FAILED;
+            }
+        } else if(st->buf[0] == 0xFF && (st->buf[1] & 0x80) != 0) {
+            /* Leading ones in negative number - not minimal */
+            if(opt_codec_ctx->uper_canonical_lenient) {
+                ASN_DEBUG("Non-canonical UPER: leading ones in negative integer (lenient mode - continuing)");
+            } else {
+                ASN_DEBUG("Non-canonical UPER: leading ones in negative integer");
+                ASN__DECODE_FAILED;
+            }
+        }
+    }
 
     /* #12.2.3 */
     if(ct && ct->lower_bound) {

@@ -66,6 +66,7 @@ typedef enum TimeConfidence {
 typedef long	 TimeConfidence_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_TimeConfidence_constr_1;
 extern asn_per_constraints_t asn_PER_type_TimeConfidence_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_TimeConfidence;
 extern const asn_INTEGER_specifics_t asn_SPC_TimeConfidence_specs_1;

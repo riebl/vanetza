@@ -40,7 +40,9 @@ typedef enum IntersectionStatusObject {
 typedef BIT_STRING_t	 IntersectionStatusObject_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_IntersectionStatusObject_constr_1;
 extern asn_per_constraints_t asn_PER_type_IntersectionStatusObject_constr_1;
+extern asn_jer_constraints_t asn_JER_type_IntersectionStatusObject_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IntersectionStatusObject;
 asn_struct_free_f IntersectionStatusObject_free;
 asn_struct_print_f IntersectionStatusObject_print;

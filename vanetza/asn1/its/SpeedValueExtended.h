@@ -29,6 +29,7 @@ typedef enum SpeedValueExtended {
 typedef long	 SpeedValueExtended_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_SpeedValueExtended_constr_1;
 extern asn_per_constraints_t asn_PER_type_SpeedValueExtended_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SpeedValueExtended;
 asn_struct_free_f SpeedValueExtended_free;

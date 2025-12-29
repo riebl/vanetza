@@ -42,6 +42,7 @@ typedef enum SpeedLimitType {
 typedef long	 SpeedLimitType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_SpeedLimitType_constr_1;
 extern asn_per_constraints_t asn_PER_type_SpeedLimitType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SpeedLimitType;
 extern const asn_INTEGER_specifics_t asn_SPC_SpeedLimitType_specs_1;

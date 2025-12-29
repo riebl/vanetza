@@ -52,7 +52,7 @@ Vanetza_ITS2_VDS_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_VDS_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_VDS_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	6	/* (SIZE(6..6)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

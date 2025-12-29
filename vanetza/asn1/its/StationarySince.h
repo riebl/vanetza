@@ -30,6 +30,7 @@ typedef enum StationarySince {
 typedef long	 StationarySince_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_StationarySince_constr_1;
 extern asn_per_constraints_t asn_PER_type_StationarySince_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_StationarySince;
 extern const asn_INTEGER_specifics_t asn_SPC_StationarySince_specs_1;

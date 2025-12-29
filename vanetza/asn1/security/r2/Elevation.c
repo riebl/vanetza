@@ -37,7 +37,7 @@ Vanetza_Security2_Elevation_constraint(const asn_TYPE_descriptor_t *td, const vo
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Elevation_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Elevation_constr_1 CC_NOTUSED = {
 	{ 2, 1 }	/* (0..65535) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

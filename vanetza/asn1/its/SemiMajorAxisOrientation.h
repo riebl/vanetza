@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 SemiMajorAxisOrientation_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_SemiMajorAxisOrientation_constr_1;
 extern asn_per_constraints_t asn_PER_type_SemiMajorAxisOrientation_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SemiMajorAxisOrientation;
 asn_struct_free_f SemiMajorAxisOrientation_free;

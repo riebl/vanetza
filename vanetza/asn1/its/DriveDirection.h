@@ -29,6 +29,7 @@ typedef enum DriveDirection {
 typedef long	 DriveDirection_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DriveDirection_constr_1;
 extern asn_per_constraints_t asn_PER_type_DriveDirection_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DriveDirection;
 extern const asn_INTEGER_specifics_t asn_SPC_DriveDirection_specs_1;

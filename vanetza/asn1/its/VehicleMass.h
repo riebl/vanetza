@@ -28,6 +28,7 @@ typedef enum VehicleMass {
 typedef long	 VehicleMass_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_VehicleMass_constr_1;
 extern asn_per_constraints_t asn_PER_type_VehicleMass_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_VehicleMass;
 asn_struct_free_f VehicleMass_free;

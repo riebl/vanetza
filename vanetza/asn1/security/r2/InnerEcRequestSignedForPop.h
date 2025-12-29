@@ -22,6 +22,7 @@ extern "C" {
 typedef Vanetza_Security2_EtsiTs103097Data_Signed_63P2_t	 Vanetza_Security2_InnerEcRequestSignedForPop_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security2_InnerEcRequestSignedForPop_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security2_InnerEcRequestSignedForPop_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security2_InnerEcRequestSignedForPop;
 asn_struct_free_f Vanetza_Security2_InnerEcRequestSignedForPop_free;

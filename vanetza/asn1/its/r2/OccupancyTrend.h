@@ -35,6 +35,7 @@ typedef enum Vanetza_ITS2_OccupancyTrend {
 typedef long	 Vanetza_ITS2_OccupancyTrend_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_OccupancyTrend_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_OccupancyTrend_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_OccupancyTrend;
 asn_struct_free_f Vanetza_ITS2_OccupancyTrend_free;

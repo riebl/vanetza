@@ -22,6 +22,7 @@ extern "C" {
 typedef unsigned long	 Int4_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Int4_constr_1;
 extern asn_per_constraints_t asn_PER_type_Int4_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Int4;
 extern const asn_INTEGER_specifics_t asn_SPC_Int4_specs_1;

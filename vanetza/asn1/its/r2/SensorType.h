@@ -40,6 +40,7 @@ typedef enum Vanetza_ITS2_SensorType {
 typedef long	 Vanetza_ITS2_SensorType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_SensorType_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_SensorType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_SensorType;
 asn_struct_free_f Vanetza_ITS2_SensorType_free;

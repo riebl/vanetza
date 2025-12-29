@@ -22,6 +22,7 @@ extern "C" {
 typedef OCTET_STRING_t	 AviEriDateTime_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_AviEriDateTime_constr_1;
 extern asn_per_constraints_t asn_PER_type_AviEriDateTime_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_AviEriDateTime;
 asn_struct_free_f AviEriDateTime_free;

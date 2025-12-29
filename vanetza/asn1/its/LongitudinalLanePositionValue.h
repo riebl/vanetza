@@ -27,6 +27,7 @@ typedef enum LongitudinalLanePositionValue {
 typedef long	 LongitudinalLanePositionValue_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_LongitudinalLanePositionValue_constr_1;
 extern asn_per_constraints_t asn_PER_type_LongitudinalLanePositionValue_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_LongitudinalLanePositionValue;
 asn_struct_free_f LongitudinalLanePositionValue_free;

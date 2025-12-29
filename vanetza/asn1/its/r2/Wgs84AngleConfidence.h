@@ -28,6 +28,7 @@ typedef enum Vanetza_ITS2_Wgs84AngleConfidence {
 typedef long	 Vanetza_ITS2_Wgs84AngleConfidence_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_Wgs84AngleConfidence_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_Wgs84AngleConfidence_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_Wgs84AngleConfidence;
 asn_struct_free_f Vanetza_ITS2_Wgs84AngleConfidence_free;

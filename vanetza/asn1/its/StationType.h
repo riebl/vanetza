@@ -39,6 +39,7 @@ typedef enum StationType {
 typedef long	 StationType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_StationType_constr_1;
 extern asn_per_constraints_t asn_PER_type_StationType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_StationType;
 asn_struct_free_f StationType_free;

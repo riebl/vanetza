@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 ApproachID_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ApproachID_constr_1;
 extern asn_per_constraints_t asn_PER_type_ApproachID_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ApproachID;
 asn_struct_free_f ApproachID_free;

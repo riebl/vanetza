@@ -38,7 +38,7 @@ Vanetza_Security_PreSharedKeyRecipientInfo_constraint(const asn_TYPE_descriptor_
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security_PreSharedKeyRecipientInfo_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security_PreSharedKeyRecipientInfo_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	8	/* (SIZE(8..8)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

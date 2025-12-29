@@ -28,7 +28,9 @@ typedef enum EmergencyPriority {
 typedef BIT_STRING_t	 EmergencyPriority_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_EmergencyPriority_constr_1;
 extern asn_per_constraints_t asn_PER_type_EmergencyPriority_constr_1;
+extern asn_jer_constraints_t asn_JER_type_EmergencyPriority_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_EmergencyPriority;
 asn_struct_free_f EmergencyPriority_free;
 asn_struct_print_f EmergencyPriority_print;

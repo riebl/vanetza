@@ -8,7 +8,7 @@
 #include "EventHistory.h"
 
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_EventHistory_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_EventHistory_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(1..23)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

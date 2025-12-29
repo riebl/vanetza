@@ -43,7 +43,7 @@ DayOfWeek_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_DayOfWeek_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_DayOfWeek_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	8	/* (SIZE(8..8)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -55,7 +55,7 @@ asn_per_constraints_t asn_PER_type_DayOfWeek_constr_1 CC_NOTUSED = {
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-static asn_jer_constraints_t asn_JER_type_DayOfWeek_constr_1 CC_NOTUSED = {
+asn_jer_constraints_t asn_JER_type_DayOfWeek_constr_1 CC_NOTUSED = {
 	8};
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_DayOfWeek_tags_1[] = {

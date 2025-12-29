@@ -23,7 +23,12 @@ Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P0_constraint(const asn_
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P0_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -46,7 +51,12 @@ Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P1_constraint(const asn_
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P1_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*
@@ -54,7 +64,7 @@ Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P1_constraint(const asn_
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P0_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P0_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -66,7 +76,7 @@ asn_per_constraints_t asn_PER_type_Vanetza_Security2_Ieee1609Dot2Data_SignedCert
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P1_constr_2 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Ieee1609Dot2Data_SignedCertRequest_290P1_constr_2 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

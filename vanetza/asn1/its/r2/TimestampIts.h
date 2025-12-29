@@ -22,9 +22,9 @@ extern "C" {
 typedef INTEGER_t	 Vanetza_ITS2_TimestampIts_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_TimestampIts_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_TimestampIts_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_TimestampIts;
-extern const asn_INTEGER_specifics_t asn_SPC_Vanetza_ITS2_TimestampIts_specs_1;
 asn_struct_free_f Vanetza_ITS2_TimestampIts_free;
 asn_struct_print_f Vanetza_ITS2_TimestampIts_print;
 asn_constr_check_f Vanetza_ITS2_TimestampIts_constraint;

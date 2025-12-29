@@ -23,7 +23,12 @@ Vanetza_Security2_EeRa1609Dot2AuthenticatedCertRequestSpdu_constraint(const asn_
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_EeRa1609Dot2AuthenticatedCertRequestSpdu_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*

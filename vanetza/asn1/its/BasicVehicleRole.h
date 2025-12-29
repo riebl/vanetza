@@ -52,6 +52,7 @@ typedef enum BasicVehicleRole {
 typedef long	 BasicVehicleRole_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_BasicVehicleRole_constr_1;
 extern asn_per_constraints_t asn_PER_type_BasicVehicleRole_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_BasicVehicleRole;
 extern const asn_INTEGER_specifics_t asn_SPC_BasicVehicleRole_specs_1;

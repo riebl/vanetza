@@ -34,6 +34,7 @@ typedef struct MlcParts {
 extern asn_TYPE_descriptor_t asn_DEF_MlcParts;
 extern asn_SET_OF_specifics_t asn_SPC_MlcParts_specs_1;
 extern asn_TYPE_member_t asn_MBR_MlcParts_1[1];
+extern asn_oer_constraints_t asn_OER_type_MlcParts_constr_1;
 extern asn_per_constraints_t asn_PER_type_MlcParts_constr_1;
 
 #ifdef __cplusplus

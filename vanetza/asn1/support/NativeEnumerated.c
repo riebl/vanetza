@@ -28,14 +28,14 @@ asn_TYPE_operation_t asn_OP_NativeEnumerated = {
     NativeInteger_compare,
     NativeInteger_copy,
 #if !defined(ASN_DISABLE_BER_SUPPORT)
-    NativeInteger_decode_ber,
-    NativeInteger_encode_der,
+    NativeEnumerated_decode_ber,
+    NativeEnumerated_encode_der,
 #else
     0,
     0,
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */
 #if !defined(ASN_DISABLE_XER_SUPPORT)
-    NativeInteger_decode_xer,
+    NativeEnumerated_decode_xer,
     NativeEnumerated_encode_xer,
 #else
     0,
@@ -76,6 +76,23 @@ asn_TYPE_operation_t asn_OP_NativeEnumerated = {
 #endif  /* !defined(ASN_DISABLE_RFILL_SUPPORT) */
     0  /* Use generic outmost tag fetcher */
 };
+
+int
+NativeEnumerated_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
+                      asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+    const asn_INTEGER_specifics_t *specs =
+        (const asn_INTEGER_specifics_t *)td->specifics;
+    const long *native = (const long *)sptr;
+    const asn_INTEGER_enum_map_t *el;
+    el = INTEGER_map_value2enum(specs, *native);
+    if(el) {
+        return 0;
+    } else {
+        ASN_DEBUG("No element corresponds to the value %ld", *native);
+        return -1;
+    }
+}
+
 asn_TYPE_descriptor_t asn_DEF_NativeEnumerated = {
     "ENUMERATED",  /* The ASN.1 type is still ENUMERATED */
     "ENUMERATED",
@@ -94,7 +111,7 @@ asn_TYPE_descriptor_t asn_DEF_NativeEnumerated = {
 #if !defined(ASN_DISABLE_JER_SUPPORT)
         0,
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
-        asn_generic_no_constraint
+        NativeEnumerated_constraint
     },
     0, 0,  /* No members */
     0  /* No specifics */

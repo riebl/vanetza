@@ -37,7 +37,7 @@ Vanetza_ITS2_CoordinateConfidence_constraint(const asn_TYPE_descriptor_t *td, co
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_CoordinateConfidence_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_CoordinateConfidence_constr_1 CC_NOTUSED = {
 	{ 2, 1 }	/* (1..4096) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

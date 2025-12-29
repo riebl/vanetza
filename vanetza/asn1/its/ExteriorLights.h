@@ -34,7 +34,9 @@ typedef enum ExteriorLights {
 typedef BIT_STRING_t	 ExteriorLights_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ExteriorLights_constr_1;
 extern asn_per_constraints_t asn_PER_type_ExteriorLights_constr_1;
+extern asn_jer_constraints_t asn_JER_type_ExteriorLights_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ExteriorLights;
 asn_struct_free_f ExteriorLights_free;
 asn_struct_print_f ExteriorLights_print;

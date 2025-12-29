@@ -10,6 +10,7 @@
 int
 Vanetza_ITS2_StationId_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	unsigned long value;
 	
 	if(!sptr) {
 		ASN__CTFAIL(app_key, td, sptr,
@@ -18,9 +19,17 @@ Vanetza_ITS2_StationId_constraint(const asn_TYPE_descriptor_t *td, const void *s
 		return -1;
 	}
 	
+	value = *(const unsigned long *)sptr;
 	
-	/* Constraint check succeeded */
-	return 0;
+	if((value <= 4294967295UL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
 }
 
 /*
@@ -28,7 +37,7 @@ Vanetza_ITS2_StationId_constraint(const asn_TYPE_descriptor_t *td, const void *s
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_StationId_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_StationId_constr_1 CC_NOTUSED = {
 	{ 4, 1 }	/* (0..4294967295) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

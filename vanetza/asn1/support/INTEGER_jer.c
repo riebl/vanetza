@@ -204,7 +204,7 @@ INTEGER_encode_jer(const asn_TYPE_descriptor_t *td,
     if(!st || !st->buf)
         ASN__ENCODE_FAILED;
 
-    er.encoded = INTEGER__dump(td, st, cb, app_key, 1);
+    er.encoded = INTEGER__dump(td, st, cb, app_key, 2);
     if(er.encoded < 0) ASN__ENCODE_FAILED;
 
     ASN__ENCODED_OK(er);

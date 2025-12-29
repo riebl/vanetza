@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 ManufacturerIdentifier_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ManufacturerIdentifier_constr_1;
 extern asn_per_constraints_t asn_PER_type_ManufacturerIdentifier_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ManufacturerIdentifier;
 asn_struct_free_f ManufacturerIdentifier_free;

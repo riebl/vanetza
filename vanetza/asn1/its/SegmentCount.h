@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 SegmentCount_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_SegmentCount_constr_1;
 extern asn_per_constraints_t asn_PER_type_SegmentCount_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SegmentCount;
 asn_struct_free_f SegmentCount_free;

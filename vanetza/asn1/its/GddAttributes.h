@@ -34,6 +34,7 @@ typedef struct GddAttributes {
 extern asn_TYPE_descriptor_t asn_DEF_GddAttributes;
 extern asn_SET_OF_specifics_t asn_SPC_GddAttributes_specs_1;
 extern asn_TYPE_member_t asn_MBR_GddAttributes_1[1];
+extern asn_oer_constraints_t asn_OER_type_GddAttributes_constr_1;
 extern asn_per_constraints_t asn_PER_type_GddAttributes_constr_1;
 
 #ifdef __cplusplus

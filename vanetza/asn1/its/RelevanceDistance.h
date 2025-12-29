@@ -34,6 +34,7 @@ typedef enum RelevanceDistance {
 typedef long	 RelevanceDistance_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RelevanceDistance_constr_1;
 extern asn_per_constraints_t asn_PER_type_RelevanceDistance_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RelevanceDistance;
 extern const asn_INTEGER_specifics_t asn_SPC_RelevanceDistance_specs_1;

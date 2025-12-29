@@ -33,7 +33,9 @@ typedef enum EnergyStorageType {
 typedef BIT_STRING_t	 EnergyStorageType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_EnergyStorageType_constr_1;
 extern asn_per_constraints_t asn_PER_type_EnergyStorageType_constr_1;
+extern asn_jer_constraints_t asn_JER_type_EnergyStorageType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_EnergyStorageType;
 asn_struct_free_f EnergyStorageType_free;
 asn_struct_print_f EnergyStorageType_print;

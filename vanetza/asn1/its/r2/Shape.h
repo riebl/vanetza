@@ -61,6 +61,7 @@ typedef struct Vanetza_ITS2_Shape {
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_Shape;
 extern asn_CHOICE_specifics_t asn_SPC_Vanetza_ITS2_Shape_specs_1;
 extern asn_TYPE_member_t asn_MBR_Vanetza_ITS2_Shape_1[6];
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_Shape_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_Shape_constr_1;
 
 #ifdef __cplusplus

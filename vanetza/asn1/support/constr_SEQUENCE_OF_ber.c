@@ -30,7 +30,7 @@ SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *ptr,
         void *memb_ptr = list->array[edx];
         if(!memb_ptr) continue;
         erval = elm->type->op->der_encoder(elm->type, memb_ptr,
-                                           0, elm->tag,
+                                           elm->tag_mode, elm->tag,
                                            0, 0);
         if(erval.encoded == -1)
             return erval;
@@ -64,7 +64,7 @@ SEQUENCE_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *ptr,
         void *memb_ptr = list->array[edx];
         if(!memb_ptr) continue;
         erval = elm->type->op->der_encoder(elm->type, memb_ptr,
-                                           0, elm->tag,
+                                           elm->tag_mode, elm->tag,
                                            cb, app_key);
         if(erval.encoded == -1)
             return erval;

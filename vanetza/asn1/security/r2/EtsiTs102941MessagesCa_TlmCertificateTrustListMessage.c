@@ -23,7 +23,12 @@ Vanetza_Security2_EtsiTs102941MessagesCa_TlmCertificateTrustListMessage_constrai
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_EtsiTs102941MessagesCa_TlmCertificateTrustListMessage_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*

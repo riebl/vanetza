@@ -32,6 +32,7 @@ typedef struct LanePositions {
 extern asn_TYPE_descriptor_t asn_DEF_LanePositions;
 extern asn_SET_OF_specifics_t asn_SPC_LanePositions_specs_1;
 extern asn_TYPE_member_t asn_MBR_LanePositions_1[1];
+extern asn_oer_constraints_t asn_OER_type_LanePositions_constr_1;
 extern asn_per_constraints_t asn_PER_type_LanePositions_constr_1;
 
 #ifdef __cplusplus

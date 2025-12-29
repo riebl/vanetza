@@ -35,6 +35,7 @@ typedef enum Condition {
 typedef long	 Condition_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Condition_constr_1;
 extern asn_per_constraints_t asn_PER_type_Condition_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Condition;
 asn_struct_free_f Condition_free;

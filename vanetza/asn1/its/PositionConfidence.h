@@ -42,6 +42,7 @@ typedef enum PositionConfidence {
 typedef long	 PositionConfidence_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_PositionConfidence_constr_1;
 extern asn_per_constraints_t asn_PER_type_PositionConfidence_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_PositionConfidence;
 extern const asn_INTEGER_specifics_t asn_SPC_PositionConfidence_specs_1;

@@ -28,6 +28,7 @@ typedef enum CurvatureValue {
 typedef long	 CurvatureValue_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_CurvatureValue_constr_1;
 extern asn_per_constraints_t asn_PER_type_CurvatureValue_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_CurvatureValue;
 asn_struct_free_f CurvatureValue_free;

@@ -205,6 +205,16 @@ OCTET_STRING_new_fromBuf(const asn_TYPE_descriptor_t *td, const char *str,
                       : &asn_SPC_OCTET_STRING_specs;
     OCTET_STRING_t *st;
 
+    /* 
+     * Sanity check: struct_size should be at least as large as OCTET_STRING_t.
+     * If it's smaller, accessing OCTET_STRING_t fields could cause memory corruption.
+     */
+    if(specs->struct_size < sizeof(OCTET_STRING_t)) {
+        ASN_DEBUG("Type descriptor %s has struct_size %u which is smaller than OCTET_STRING_t (%zu)",
+                  td->name ? td->name : "unknown", specs->struct_size, sizeof(OCTET_STRING_t));
+        return NULL;
+    }
+
 	st = (OCTET_STRING_t *)CALLOC(1, specs->struct_size);
 	if(st && str && OCTET_STRING_fromBuf(st, str, len)) {
 		FREEMEM(st);

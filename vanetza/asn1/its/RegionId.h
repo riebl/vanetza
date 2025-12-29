@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 RegionId_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RegionId_constr_1;
 extern asn_per_constraints_t asn_PER_type_RegionId_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RegionId;
 asn_struct_free_f RegionId_free;

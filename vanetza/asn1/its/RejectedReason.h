@@ -35,6 +35,7 @@ typedef enum RejectedReason {
 typedef long	 RejectedReason_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RejectedReason_constr_1;
 extern asn_per_constraints_t asn_PER_type_RejectedReason_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RejectedReason;
 extern const asn_INTEGER_specifics_t asn_SPC_RejectedReason_specs_1;

@@ -258,7 +258,7 @@ static asn_per_constraints_t asn_PER_memb_Vanetza_ITS2_occupancyTypes_constr_10 
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_ParkingStatus_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_ParkingStatus_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

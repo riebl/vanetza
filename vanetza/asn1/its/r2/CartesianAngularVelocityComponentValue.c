@@ -37,7 +37,7 @@ Vanetza_ITS2_CartesianAngularVelocityComponentValue_constraint(const asn_TYPE_de
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_CartesianAngularVelocityComponentValue_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_CartesianAngularVelocityComponentValue_constr_1 CC_NOTUSED = {
 	{ 2, 0 }	/* (-255..256) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

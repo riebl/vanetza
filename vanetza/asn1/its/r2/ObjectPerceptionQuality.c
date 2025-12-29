@@ -37,7 +37,7 @@ Vanetza_ITS2_ObjectPerceptionQuality_constraint(const asn_TYPE_descriptor_t *td,
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_ObjectPerceptionQuality_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_ObjectPerceptionQuality_constr_1 CC_NOTUSED = {
 	{ 1, 1 }	/* (0..15) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

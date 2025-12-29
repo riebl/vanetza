@@ -53,6 +53,7 @@ typedef enum CauseCodeType {
 typedef long	 CauseCodeType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_CauseCodeType_constr_1;
 extern asn_per_constraints_t asn_PER_type_CauseCodeType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_CauseCodeType;
 asn_struct_free_f CauseCodeType_free;

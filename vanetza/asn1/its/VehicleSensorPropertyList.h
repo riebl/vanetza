@@ -34,6 +34,7 @@ typedef struct VehicleSensorPropertyList {
 extern asn_TYPE_descriptor_t asn_DEF_VehicleSensorPropertyList;
 extern asn_SET_OF_specifics_t asn_SPC_VehicleSensorPropertyList_specs_1;
 extern asn_TYPE_member_t asn_MBR_VehicleSensorPropertyList_1[1];
+extern asn_oer_constraints_t asn_OER_type_VehicleSensorPropertyList_constr_1;
 extern asn_per_constraints_t asn_PER_type_VehicleSensorPropertyList_constr_1;
 
 #ifdef __cplusplus

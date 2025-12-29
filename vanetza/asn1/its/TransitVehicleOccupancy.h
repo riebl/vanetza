@@ -34,6 +34,7 @@ typedef enum TransitVehicleOccupancy {
 typedef long	 TransitVehicleOccupancy_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_TransitVehicleOccupancy_constr_1;
 extern asn_per_constraints_t asn_PER_type_TransitVehicleOccupancy_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_TransitVehicleOccupancy;
 extern const asn_INTEGER_specifics_t asn_SPC_TransitVehicleOccupancy_specs_1;

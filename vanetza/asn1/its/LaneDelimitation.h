@@ -33,6 +33,7 @@ typedef enum LaneDelimitation {
 typedef long	 LaneDelimitation_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_LaneDelimitation_constr_1;
 extern asn_per_constraints_t asn_PER_type_LaneDelimitation_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_LaneDelimitation;
 asn_struct_free_f LaneDelimitation_free;

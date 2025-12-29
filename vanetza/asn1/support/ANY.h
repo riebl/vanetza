@@ -73,6 +73,7 @@ ANY_t *ANY_new_fromType_aper(asn_TYPE_descriptor_t *td, void *sptr);
 int ANY_to_type(ANY_t *, asn_TYPE_descriptor_t *td, void **struct_ptr);
 #if !defined(ASN_DISABLE_APER_SUPPORT)
 int ANY_to_type_aper(ANY_t *, asn_TYPE_descriptor_t *td, void **struct_ptr);
+int ANY_to_type_aper_checked(ANY_t *, asn_TYPE_descriptor_t *td, void **struct_ptr);
 #endif  /* !defined(ASN_DISABLE_APER_SUPPORT) */
 
 #define	ANY_fromBuf(s, buf, size)	OCTET_STRING_fromBuf((s), (buf), (size))

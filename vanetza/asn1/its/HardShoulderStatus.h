@@ -29,6 +29,7 @@ typedef enum HardShoulderStatus {
 typedef long	 HardShoulderStatus_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_HardShoulderStatus_constr_1;
 extern asn_per_constraints_t asn_PER_type_HardShoulderStatus_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_HardShoulderStatus;
 extern const asn_INTEGER_specifics_t asn_SPC_HardShoulderStatus_specs_1;

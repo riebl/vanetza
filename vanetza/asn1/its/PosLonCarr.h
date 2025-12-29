@@ -28,6 +28,7 @@ typedef enum PosLonCarr {
 typedef long	 PosLonCarr_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_PosLonCarr_constr_1;
 extern asn_per_constraints_t asn_PER_type_PosLonCarr_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_PosLonCarr;
 asn_struct_free_f PosLonCarr_free;

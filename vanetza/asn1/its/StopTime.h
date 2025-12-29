@@ -22,6 +22,7 @@ extern "C" {
 typedef AviEriDateTime_t	 StopTime_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_StopTime_constr_1;
 extern asn_per_constraints_t asn_PER_type_StopTime_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_StopTime;
 asn_struct_free_f StopTime_free;

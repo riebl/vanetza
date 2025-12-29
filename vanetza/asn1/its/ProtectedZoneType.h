@@ -31,6 +31,7 @@ typedef enum ProtectedZoneType {
 typedef long	 ProtectedZoneType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ProtectedZoneType_constr_1;
 extern asn_per_constraints_t asn_PER_type_ProtectedZoneType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ProtectedZoneType;
 extern const asn_INTEGER_specifics_t asn_SPC_ProtectedZoneType_specs_1;

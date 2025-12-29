@@ -6,6 +6,21 @@
 #include "asn_internal.h"
 #include "constr_SET_OF.h"
 
+/*
+ * Generic placeholder descriptor for anonymous SET OF.
+ * NOTE: not a concrete "OF T" — used only to satisfy references.
+ */
+asn_TYPE_descriptor_t asn_DEF_SET_OF = {
+    "SET OF",
+    "SET OF",
+    &asn_OP_SET_OF,
+    0, 0,
+    0, 0,
+    0,              /* No constraints */
+    0, 0,           /* No members */
+    0               /* No specifics */
+};
+
 asn_TYPE_operation_t asn_OP_SET_OF = {
     SET_OF_free,
 #if !defined(ASN_DISABLE_PRINT_SUPPORT)
@@ -167,7 +182,7 @@ SET_OF__encode_sorted(const asn_TYPE_member_t *elm,
         switch(method) {
 #if !defined(ASN_DISABLE_BER_SUPPORT)
         case SOES_DER:
-            erval = elm->type->op->der_encoder(elm->type, memb_ptr, 0, elm->tag,
+            erval = elm->type->op->der_encoder(elm->type, memb_ptr, elm->tag_mode, elm->tag,
                                                _el_addbytes, encoding_el);
             break;
 #endif  /* !defined(ASN_DISABLE_BER_SUPPORT) */

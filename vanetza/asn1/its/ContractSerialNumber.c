@@ -10,6 +10,7 @@
 int
 ContractSerialNumber_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
 			asn_app_constraint_failed_f *ctfailcb, void *app_key) {
+	unsigned long value;
 	
 	if(!sptr) {
 		ASN__CTFAIL(app_key, td, sptr,
@@ -18,9 +19,17 @@ ContractSerialNumber_constraint(const asn_TYPE_descriptor_t *td, const void *spt
 		return -1;
 	}
 	
+	value = *(const unsigned long *)sptr;
 	
-	/* Constraint check succeeded */
-	return 0;
+	if((value <= 4294967295UL)) {
+		/* Constraint check succeeded */
+		return 0;
+	} else {
+		ASN__CTFAIL(app_key, td, sptr,
+			"%s: constraint failed (%s:%d)",
+			td->name, __FILE__, __LINE__);
+		return -1;
+	}
 }
 
 /*

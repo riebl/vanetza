@@ -43,7 +43,7 @@ LaneAttributes_Bike_constraint(const asn_TYPE_descriptor_t *td, const void *sptr
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_LaneAttributes_Bike_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_LaneAttributes_Bike_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	16	/* (SIZE(16..16)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -55,7 +55,7 @@ asn_per_constraints_t asn_PER_type_LaneAttributes_Bike_constr_1 CC_NOTUSED = {
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-static asn_jer_constraints_t asn_JER_type_LaneAttributes_Bike_constr_1 CC_NOTUSED = {
+asn_jer_constraints_t asn_JER_type_LaneAttributes_Bike_constr_1 CC_NOTUSED = {
 	16};
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_LaneAttributes_Bike_tags_1[] = {

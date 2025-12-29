@@ -100,7 +100,7 @@ asn_TYPE_descriptor_t asn_DEF_INTEGER = {
  * INTEGER specific human-readable output.
  */
 ssize_t
-INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_bytes_f *cb, void *app_key, int plainOrXER) {
+INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_consume_bytes_f *cb, void *app_key, int plainOrXEROrJER) {
     const asn_INTEGER_specifics_t *specs =
         (const asn_INTEGER_specifics_t *)td->specifics;
 	char scratch[32];
@@ -122,13 +122,16 @@ INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_cons
 		el = (value >= 0 || !specs || !specs->field_unsigned)
 			? INTEGER_map_value2enum(specs, value) : 0;
 		if(el) {
-			if(plainOrXER == 0)
+			if(plainOrXEROrJER == 0)
 				return asn__format_to_callback(cb, app_key,
 					"%" ASN_PRIdMAX " (%s)", value, el->enum_name);
-			else
+			else if (plainOrXEROrJER == 1)
 				return asn__format_to_callback(cb, app_key,
 					"<%s/>", el->enum_name);
-		} else if(plainOrXER && specs && specs->strict_enumeration) {
+			else if (plainOrXEROrJER == 2)
+				return asn__format_to_callback(cb, app_key,
+					"\"%s\"", el->enum_name);
+		} else if(plainOrXEROrJER && specs && specs->strict_enumeration) {
 			ASN_DEBUG("ASN.1 forbids dealing with "
 				"unknown value of ENUMERATED type");
 			errno = EPERM;
@@ -140,7 +143,7 @@ INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_cons
                                                : "%" ASN_PRIdMAX,
                                            value);
         }
-	} else if(plainOrXER && specs && specs->strict_enumeration) {
+	} else if(plainOrXEROrJER && specs && specs->strict_enumeration) {
 		/*
 		 * Here and earlier, we cannot encode the ENUMERATED values
 		 * if there is no corresponding identifier.
@@ -153,6 +156,13 @@ INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_cons
 
 	/* Output in the long xx:yy:zz... format */
 	/* TODO: replace with generic algorithm (Knuth TAOCP Vol 2, 4.3.1) */
+	
+	/* For JER (JSON), large integers should be quoted as strings */
+	if(plainOrXEROrJER == 2) {
+		if(cb("\"", 1, app_key) < 0) return -1;
+		wrote += 1;
+	}
+	
 	for(p = scratch; buf < buf_end; buf++) {
 		const char * const h2c = "0123456789ABCDEF";
 		if((p - scratch) >= (ssize_t)(sizeof(scratch) - 4)) {
@@ -170,7 +180,15 @@ INTEGER__dump(const asn_TYPE_descriptor_t *td, const INTEGER_t *st, asn_app_cons
 		p--;	/* Remove the last ":" */
 
 	wrote += p - scratch;
-	return (cb(scratch, p - scratch, app_key) < 0) ? -1 : wrote;
+	if((cb(scratch, p - scratch, app_key) < 0)) return -1;
+	
+	/* Close quote for JER (JSON) */
+	if(plainOrXEROrJER == 2) {
+		if(cb("\"", 1, app_key) < 0) return -1;
+		wrote += 1;
+	}
+	
+	return wrote;
 }
 
 static int

@@ -37,7 +37,7 @@ AltitudeValue_constraint(const asn_TYPE_descriptor_t *td, const void *sptr,
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_AltitudeValue_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_AltitudeValue_constr_1 CC_NOTUSED = {
 	{ 4, 0 }	/* (-100000..800001) */,
 	-1};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

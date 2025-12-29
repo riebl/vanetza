@@ -22,6 +22,7 @@ extern "C" {
 typedef unsigned long	 Vanetza_Security2_Uint32_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security2_Uint32_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security2_Uint32_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security2_Uint32;
 extern const asn_INTEGER_specifics_t asn_SPC_Vanetza_Security2_Uint32_specs_1;

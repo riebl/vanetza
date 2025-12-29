@@ -61,6 +61,7 @@ typedef struct NodeOffsetPointXY {
 extern asn_TYPE_descriptor_t asn_DEF_NodeOffsetPointXY;
 extern asn_CHOICE_specifics_t asn_SPC_NodeOffsetPointXY_specs_1;
 extern asn_TYPE_member_t asn_MBR_NodeOffsetPointXY_1[8];
+extern asn_oer_constraints_t asn_OER_type_NodeOffsetPointXY_constr_1;
 extern asn_per_constraints_t asn_PER_type_NodeOffsetPointXY_constr_1;
 
 #ifdef __cplusplus

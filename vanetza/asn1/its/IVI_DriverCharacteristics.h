@@ -30,6 +30,7 @@ typedef enum IVI_DriverCharacteristics {
 typedef long	 IVI_DriverCharacteristics_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_IVI_DriverCharacteristics_constr_1;
 extern asn_per_constraints_t asn_PER_type_IVI_DriverCharacteristics_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IVI_DriverCharacteristics;
 asn_struct_free_f IVI_DriverCharacteristics_free;

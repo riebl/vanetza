@@ -30,7 +30,9 @@ typedef enum RepeatingPeriodDayTypes {
 typedef BIT_STRING_t	 RepeatingPeriodDayTypes_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RepeatingPeriodDayTypes_constr_1;
 extern asn_per_constraints_t asn_PER_type_RepeatingPeriodDayTypes_constr_1;
+extern asn_jer_constraints_t asn_JER_type_RepeatingPeriodDayTypes_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RepeatingPeriodDayTypes;
 asn_struct_free_f RepeatingPeriodDayTypes_free;
 asn_struct_print_f RepeatingPeriodDayTypes_print;

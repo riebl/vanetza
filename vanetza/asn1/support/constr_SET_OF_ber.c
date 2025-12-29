@@ -214,7 +214,7 @@ SET_OF_decode_ber(const asn_codec_ctx_t *opt_codec_ctx,
              */
             rval = elm->type->op->ber_decoder(opt_codec_ctx,
                                               elm->type, &ctx->ptr,
-                                              ptr, LEFT, 0);
+                                              ptr, LEFT, elm->tag_mode);
             ASN_DEBUG("In %s SET OF %s code %d consumed %d",
                       td->name, elm->type->name,
                       rval.code, (int)rval.consumed);
@@ -298,7 +298,7 @@ SET_OF_encode_der(const asn_TYPE_descriptor_t *td, const void *sptr,
         if(!memb_ptr) ASN__ENCODE_FAILED;
 
         erval =
-            elm->type->op->der_encoder(elm->type, memb_ptr, 0, elm->tag, 0, 0);
+            elm->type->op->der_encoder(elm->type, memb_ptr, elm->tag_mode, elm->tag, 0, 0);
         if(erval.encoded == -1) return erval;
         computed_size += erval.encoded;
     }

@@ -34,6 +34,7 @@ typedef enum VcOption {
 typedef long	 VcOption_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_VcOption_constr_1;
 extern asn_per_constraints_t asn_PER_type_VcOption_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_VcOption;
 asn_struct_free_f VcOption_free;

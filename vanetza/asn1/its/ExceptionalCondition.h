@@ -42,6 +42,7 @@ typedef enum ExceptionalCondition {
 typedef long	 ExceptionalCondition_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ExceptionalCondition_constr_1;
 extern asn_per_constraints_t asn_PER_type_ExceptionalCondition_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ExceptionalCondition;
 extern const asn_INTEGER_specifics_t asn_SPC_ExceptionalCondition_specs_1;

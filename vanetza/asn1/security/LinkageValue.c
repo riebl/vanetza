@@ -38,7 +38,7 @@ Vanetza_Security_LinkageValue_constraint(const asn_TYPE_descriptor_t *td, const 
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security_LinkageValue_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security_LinkageValue_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	9	/* (SIZE(9..9)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 Scale_B12_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Scale_B12_constr_1;
 extern asn_per_constraints_t asn_PER_type_Scale_B12_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Scale_B12;
 asn_struct_free_f Scale_B12_free;

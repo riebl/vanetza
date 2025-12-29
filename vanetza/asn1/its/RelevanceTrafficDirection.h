@@ -30,6 +30,7 @@ typedef enum RelevanceTrafficDirection {
 typedef long	 RelevanceTrafficDirection_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RelevanceTrafficDirection_constr_1;
 extern asn_per_constraints_t asn_PER_type_RelevanceTrafficDirection_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RelevanceTrafficDirection;
 extern const asn_INTEGER_specifics_t asn_SPC_RelevanceTrafficDirection_specs_1;

@@ -51,6 +51,10 @@ SET_OF_decode_uper(const asn_codec_ctx_t *opt_codec_ctx,
                   (long)nelems, ct->lower_bound, td->name);
         if(nelems < 0)  ASN__DECODE_STARVED;
         nelems += ct->lower_bound;
+	/* check if nelem is in root, when it is not extensible */
+        if (nelems > ct->upper_bound && !(ct->flags & APC_EXTENSIBLE)) {
+            ASN__DECODE_FAILED;
+        }
     } else {
         nelems = -1;
     }

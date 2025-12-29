@@ -29,6 +29,7 @@ typedef enum DeltaLongitude {
 typedef long	 DeltaLongitude_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DeltaLongitude_constr_1;
 extern asn_per_constraints_t asn_PER_type_DeltaLongitude_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DeltaLongitude;
 asn_struct_free_f DeltaLongitude_free;

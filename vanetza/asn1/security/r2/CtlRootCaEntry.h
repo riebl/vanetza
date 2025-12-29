@@ -22,6 +22,7 @@ extern "C" {
 typedef Vanetza_Security2_HashedId32_t	 Vanetza_Security2_CtlRootCaEntry_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security2_CtlRootCaEntry_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security2_CtlRootCaEntry_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security2_CtlRootCaEntry;
 asn_struct_free_f Vanetza_Security2_CtlRootCaEntry_free;

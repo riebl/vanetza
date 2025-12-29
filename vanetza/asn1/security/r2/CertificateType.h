@@ -31,6 +31,7 @@ typedef enum Vanetza_Security2_CertificateType {
 typedef long	 Vanetza_Security2_CertificateType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security2_CertificateType_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security2_CertificateType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security2_CertificateType;
 extern const asn_INTEGER_specifics_t asn_SPC_Vanetza_Security2_CertificateType_specs_1;

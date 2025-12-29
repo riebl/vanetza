@@ -132,20 +132,29 @@ SEQUENCE_decode_aper(const asn_codec_ctx_t *opt_codec_ctx,
         if(elm->flags & ATF_OPEN_TYPE) {
             if (OPEN_TYPE_aper_is_unknown_type(td, st, elm)) {
                 rv = OPEN_TYPE_aper_unknown_type_discard_bytes(pd);
-                FREEMEM(opres);
-                return rv;
+                if(rv.code != RC_OK) {
+                    FREEMEM(opres);
+                    return rv;
+                }
+            } else {
+                rv = OPEN_TYPE_aper_get(opt_codec_ctx, td, st, elm, pd);
+                if(rv.code != RC_OK) {
+                    ASN_DEBUG("Failed decode %s in %s",
+                              elm->name, td->name);
+                    FREEMEM(opres);
+                    return rv;
+                }
             }
-            rv = OPEN_TYPE_aper_get(opt_codec_ctx, td, st, elm, pd);
         } else {
             rv = elm->type->op->aper_decoder(opt_codec_ctx, elm->type,
                                              elm->encoding_constraints.per_constraints,
                                              memb_ptr2, pd);
-        }
-        if(rv.code != RC_OK) {
-            ASN_DEBUG("Failed decode %s in %s",
-                      elm->name, td->name);
-            FREEMEM(opres);
-            return rv;
+            if(rv.code != RC_OK) {
+                ASN_DEBUG("Failed decode %s in %s",
+                          elm->name, td->name);
+                FREEMEM(opres);
+                return rv;
+            }
         }
     }
 

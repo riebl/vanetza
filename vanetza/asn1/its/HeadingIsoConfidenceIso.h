@@ -34,6 +34,7 @@ typedef enum HeadingIsoConfidenceIso {
 typedef long	 HeadingIsoConfidenceIso_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_HeadingIsoConfidenceIso_constr_1;
 extern asn_per_constraints_t asn_PER_type_HeadingIsoConfidenceIso_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_HeadingIsoConfidenceIso;
 extern const asn_INTEGER_specifics_t asn_SPC_HeadingIsoConfidenceIso_specs_1;

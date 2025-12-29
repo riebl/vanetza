@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 DrivenLineOffsetLg_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DrivenLineOffsetLg_constr_1;
 extern asn_per_constraints_t asn_PER_type_DrivenLineOffsetLg_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DrivenLineOffsetLg;
 asn_struct_free_f DrivenLineOffsetLg_free;

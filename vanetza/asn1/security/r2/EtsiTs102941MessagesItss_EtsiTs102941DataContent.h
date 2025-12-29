@@ -25,7 +25,6 @@
 #include "EtsiTs102941ButterflyAuthorizationRequest-X509Signed.h"
 #include "RaEeCertInfo.h"
 #include "EeRaDownloadRequest.h"
-#include "constr_SEQUENCE.h"
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
@@ -49,7 +48,12 @@ typedef enum Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_
 	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_linkCertificateTlm,
 	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_singleSignedLinkCertificateRca,
 	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_doubleSignedlinkCertificateRca,
-	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_ext1
+	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_butterflyAuthorizationRequest,
+	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_x509SignedbutterflyAuthorizationRequest,
+	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_butterflyAuthorizationResponse,
+	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_butterflyCertificateRequest,
+	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_butterflyCertificateResponse,
+	Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR_butterflyAtDownloadRequest
 } Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_PR;
 
 /* Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent */
@@ -73,17 +77,12 @@ typedef struct Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataConten
 		Vanetza_Security2_ToBeSignedLinkCertificateTlm_t	 linkCertificateTlm;
 		NULL_t	 singleSignedLinkCertificateRca;
 		NULL_t	 doubleSignedlinkCertificateRca;
-		struct Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent__ext1 {
-			Vanetza_Security2_EeRaCertRequest_t	 butterflyAuthorizationRequest;
-			Vanetza_Security2_EtsiTs102941ButterflyAuthorizationRequest_X509Signed_t	 x509SignedbutterflyAuthorizationRequest;
-			Vanetza_Security2_RaEeCertInfo_t	 butterflyAuthorizationResponse;
-			NULL_t	 butterflyCertificateRequest;
-			NULL_t	 butterflyCertificateResponse;
-			Vanetza_Security2_EeRaDownloadRequest_t	 butterflyAtDownloadRequest;
-			
-			/* Context for parsing across buffer boundaries */
-			asn_struct_ctx_t _asn_ctx;
-		} *ext1;
+		Vanetza_Security2_EeRaCertRequest_t	 butterflyAuthorizationRequest;
+		Vanetza_Security2_EtsiTs102941ButterflyAuthorizationRequest_X509Signed_t	 x509SignedbutterflyAuthorizationRequest;
+		Vanetza_Security2_RaEeCertInfo_t	 butterflyAuthorizationResponse;
+		NULL_t	 butterflyCertificateRequest;
+		NULL_t	 butterflyCertificateResponse;
+		Vanetza_Security2_EeRaDownloadRequest_t	 butterflyAtDownloadRequest;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */
@@ -93,7 +92,8 @@ typedef struct Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataConten
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent;
 extern asn_CHOICE_specifics_t asn_SPC_Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_specs_1;
-extern asn_TYPE_member_t asn_MBR_Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_1[14];
+extern asn_TYPE_member_t asn_MBR_Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_1[19];
+extern asn_oer_constraints_t asn_OER_type_Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_Security2_EtsiTs102941MessagesItss_EtsiTs102941DataContent_constr_1;
 
 #ifdef __cplusplus

@@ -22,7 +22,9 @@ extern "C" {
 typedef BIT_STRING_t	 ServiceNumber_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ServiceNumber_constr_1;
 extern asn_per_constraints_t asn_PER_type_ServiceNumber_constr_1;
+extern asn_jer_constraints_t asn_JER_type_ServiceNumber_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ServiceNumber;
 asn_struct_free_f ServiceNumber_free;
 asn_struct_print_f ServiceNumber_print;

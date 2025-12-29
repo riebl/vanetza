@@ -29,6 +29,7 @@ typedef enum IviPurpose {
 typedef long	 IviPurpose_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_IviPurpose_constr_1;
 extern asn_per_constraints_t asn_PER_type_IviPurpose_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_IviPurpose;
 asn_struct_free_f IviPurpose_free;

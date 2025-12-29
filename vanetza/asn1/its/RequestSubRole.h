@@ -42,6 +42,7 @@ typedef enum RequestSubRole {
 typedef long	 RequestSubRole_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RequestSubRole_constr_1;
 extern asn_per_constraints_t asn_PER_type_RequestSubRole_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RequestSubRole;
 extern const asn_INTEGER_specifics_t asn_SPC_RequestSubRole_specs_1;

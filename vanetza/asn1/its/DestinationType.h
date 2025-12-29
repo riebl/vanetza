@@ -42,6 +42,7 @@ typedef enum DestinationType {
 typedef long	 DestinationType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DestinationType_constr_1;
 extern asn_per_constraints_t asn_PER_type_DestinationType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DestinationType;
 asn_struct_free_f DestinationType_free;

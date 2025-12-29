@@ -34,7 +34,9 @@ typedef enum GeoGraphicalLimit {
 typedef BIT_STRING_t	 GeoGraphicalLimit_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_GeoGraphicalLimit_constr_1;
 extern asn_per_constraints_t asn_PER_type_GeoGraphicalLimit_constr_1;
+extern asn_jer_constraints_t asn_JER_type_GeoGraphicalLimit_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_GeoGraphicalLimit;
 asn_struct_free_f GeoGraphicalLimit_free;
 asn_struct_print_f GeoGraphicalLimit_print;

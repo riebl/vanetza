@@ -43,6 +43,7 @@ typedef enum RestrictionAppliesTo {
 typedef long	 RestrictionAppliesTo_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RestrictionAppliesTo_constr_1;
 extern asn_per_constraints_t asn_PER_type_RestrictionAppliesTo_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RestrictionAppliesTo;
 extern const asn_INTEGER_specifics_t asn_SPC_RestrictionAppliesTo_specs_1;

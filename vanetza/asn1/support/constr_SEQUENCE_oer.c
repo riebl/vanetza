@@ -264,28 +264,39 @@ SEQUENCE_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
         }
 
         if(len == 0) {
-            /* 16.4.1-2 */
-            RETURN(RC_FAIL);
+            /* 
+             * Empty extension addition presence bitmap.
+             * This can be valid when no extension additions are present.
+             * Create an empty bitmap to handle extension members with defaults.
+             */
+            static const uint8_t empty_byte = 0;
+            extadds = asn_bit_data_new_contiguous(&empty_byte, 0);
+            if(!extadds) {
+                RETURN(RC_FAIL);
+            }
+            FREEMEM(preamble);
+            ctx->ptr = extadds;
+            /* No ADVANCE needed for len == 0 */
         } else if(len > size) {
             RETURN(RC_WMORE);
-        }
+        } else {
+            /* Account for unused bits */
+            unused_bits = 0x7 & *(const uint8_t *)ptr;
+            ADVANCE(1);
+            len--;
+            if(unused_bits && len == 0) {
+                RETURN(RC_FAIL);
+            }
 
-        /* Account for unused bits */
-        unused_bits = 0x7 & *(const uint8_t *)ptr;
-        ADVANCE(1);
-        len--;
-        if(unused_bits && len == 0) {
-            RETURN(RC_FAIL);
+            /* Get the extensions map */
+            extadds = asn_bit_data_new_contiguous(ptr, len * 8 - unused_bits);
+            if(!extadds) {
+                RETURN(RC_FAIL);
+            }
+            FREEMEM(preamble);
+            ctx->ptr = extadds;
+            ADVANCE(len);
         }
-
-        /* Get the extensions map */
-        extadds = asn_bit_data_new_contiguous(ptr, len * 8 - unused_bits);
-        if(!extadds) {
-            RETURN(RC_FAIL);
-        }
-        FREEMEM(preamble);
-        ctx->ptr = extadds;
-        ADVANCE(len);
     }
         NEXT_PHASE(ctx);
         ctx->step =

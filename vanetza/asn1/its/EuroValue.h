@@ -42,6 +42,7 @@ typedef enum EuroValue {
 typedef long	 EuroValue_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_EuroValue_constr_1;
 extern asn_per_constraints_t asn_PER_type_EuroValue_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_EuroValue;
 extern const asn_INTEGER_specifics_t asn_SPC_EuroValue_specs_1;

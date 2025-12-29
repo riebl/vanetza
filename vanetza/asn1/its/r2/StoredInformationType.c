@@ -43,7 +43,7 @@ Vanetza_ITS2_StoredInformationType_constraint(const asn_TYPE_descriptor_t *td, c
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_StoredInformationType_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_StoredInformationType_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(0..MAX)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */
@@ -55,7 +55,7 @@ asn_per_constraints_t asn_PER_type_Vanetza_ITS2_StoredInformationType_constr_1 C
 };
 #endif  /* !defined(ASN_DISABLE_UPER_SUPPORT) || !defined(ASN_DISABLE_APER_SUPPORT) */
 #if !defined(ASN_DISABLE_JER_SUPPORT)
-static asn_jer_constraints_t asn_JER_type_Vanetza_ITS2_StoredInformationType_constr_1 CC_NOTUSED = {
+asn_jer_constraints_t asn_JER_type_Vanetza_ITS2_StoredInformationType_constr_1 CC_NOTUSED = {
 	-1};
 #endif  /* !defined(ASN_DISABLE_JER_SUPPORT) */
 static const ber_tlv_tag_t asn_DEF_Vanetza_ITS2_StoredInformationType_tags_1[] = {

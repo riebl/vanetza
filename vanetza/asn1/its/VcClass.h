@@ -34,6 +34,7 @@ typedef enum VcClass {
 typedef long	 VcClass_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_VcClass_constr_1;
 extern asn_per_constraints_t asn_PER_type_VcClass_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_VcClass;
 asn_struct_free_f VcClass_free;

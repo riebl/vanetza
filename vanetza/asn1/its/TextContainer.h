@@ -34,6 +34,7 @@ typedef struct TextContainer {
 extern asn_TYPE_descriptor_t asn_DEF_TextContainer;
 extern asn_SET_OF_specifics_t asn_SPC_TextContainer_specs_1;
 extern asn_TYPE_member_t asn_MBR_TextContainer_1[1];
+extern asn_oer_constraints_t asn_OER_type_TextContainer_constr_1;
 extern asn_per_constraints_t asn_PER_type_TextContainer_constr_1;
 
 #ifdef __cplusplus

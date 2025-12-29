@@ -34,6 +34,7 @@ typedef struct SpeedLimitList {
 extern asn_TYPE_descriptor_t asn_DEF_SpeedLimitList;
 extern asn_SET_OF_specifics_t asn_SPC_SpeedLimitList_specs_1;
 extern asn_TYPE_member_t asn_MBR_SpeedLimitList_1[1];
+extern asn_oer_constraints_t asn_OER_type_SpeedLimitList_constr_1;
 extern asn_per_constraints_t asn_PER_type_SpeedLimitList_constr_1;
 
 #ifdef __cplusplus

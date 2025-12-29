@@ -28,6 +28,7 @@ typedef enum PosFrontAx {
 typedef long	 PosFrontAx_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_PosFrontAx_constr_1;
 extern asn_per_constraints_t asn_PER_type_PosFrontAx_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_PosFrontAx;
 asn_struct_free_f PosFrontAx_free;

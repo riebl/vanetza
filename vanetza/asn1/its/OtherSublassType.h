@@ -28,6 +28,7 @@ typedef enum OtherSublassType {
 typedef long	 OtherSublassType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_OtherSublassType_constr_1;
 extern asn_per_constraints_t asn_PER_type_OtherSublassType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_OtherSublassType;
 asn_struct_free_f OtherSublassType_free;

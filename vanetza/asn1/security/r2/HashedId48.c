@@ -38,7 +38,7 @@ Vanetza_Security2_HashedId48_constraint(const asn_TYPE_descriptor_t *td, const v
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_Security2_HashedId48_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_Security2_HashedId48_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	48	/* (SIZE(48..48)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

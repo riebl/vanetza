@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 Offset_B09_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Offset_B09_constr_1;
 extern asn_per_constraints_t asn_PER_type_Offset_B09_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Offset_B09;
 asn_struct_free_f Offset_B09_free;

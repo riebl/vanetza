@@ -28,6 +28,7 @@ typedef enum DistanceValue {
 typedef long	 DistanceValue_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_DistanceValue_constr_1;
 extern asn_per_constraints_t asn_PER_type_DistanceValue_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_DistanceValue;
 asn_struct_free_f DistanceValue_free;

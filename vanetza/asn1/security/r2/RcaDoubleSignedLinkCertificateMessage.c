@@ -23,7 +23,12 @@ Vanetza_Security2_RcaDoubleSignedLinkCertificateMessage_constraint(const asn_TYP
 		/* Nothing is here. See below */
 	}
 	
-	return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	/* prevent infinite recursion */
+	if(td->encoding_constraints.general_constraints != Vanetza_Security2_RcaDoubleSignedLinkCertificateMessage_constraint) {
+		return td->encoding_constraints.general_constraints(td, sptr, ctfailcb, app_key);
+	} else {
+		return 0;
+	}
 }
 
 /*

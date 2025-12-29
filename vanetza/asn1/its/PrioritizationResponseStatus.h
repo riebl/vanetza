@@ -37,6 +37,7 @@ typedef enum PrioritizationResponseStatus {
 typedef long	 PrioritizationResponseStatus_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_PrioritizationResponseStatus_constr_1;
 extern asn_per_constraints_t asn_PER_type_PrioritizationResponseStatus_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_PrioritizationResponseStatus;
 extern const asn_INTEGER_specifics_t asn_SPC_PrioritizationResponseStatus_specs_1;

@@ -20,7 +20,6 @@
 #include "AutomatedVehicleContainer.h"
 #include "MapLocationContainer.h"
 #include "RoadSurfaceContainer.h"
-#include "constr_SEQUENCE.h"
 #include "constr_CHOICE.h"
 
 #ifdef __cplusplus
@@ -36,7 +35,9 @@ typedef enum IviContainer_PR {
 	IviContainer_PR_tc,
 	IviContainer_PR_lac,
 	/* Extensions may appear below */
-	IviContainer_PR_ext1
+	IviContainer_PR_avc,
+	IviContainer_PR_mlc,
+	IviContainer_PR_rsc
 } IviContainer_PR;
 
 /* IviContainer */
@@ -52,14 +53,9 @@ typedef struct IviContainer {
 		 * This type is extensible,
 		 * possible extensions are below.
 		 */
-		struct IviContainer__ext1 {
-			AutomatedVehicleContainer_t	 avc;
-			MapLocationContainer_t	 mlc;
-			RoadSurfaceContainer_t	 rsc;
-			
-			/* Context for parsing across buffer boundaries */
-			asn_struct_ctx_t _asn_ctx;
-		} *ext1;
+		AutomatedVehicleContainer_t	 avc;
+		MapLocationContainer_t	 mlc;
+		RoadSurfaceContainer_t	 rsc;
 	} choice;
 	
 	/* Context for parsing across buffer boundaries */
@@ -69,7 +65,8 @@ typedef struct IviContainer {
 /* Implementation */
 extern asn_TYPE_descriptor_t asn_DEF_IviContainer;
 extern asn_CHOICE_specifics_t asn_SPC_IviContainer_specs_1;
-extern asn_TYPE_member_t asn_MBR_IviContainer_1[6];
+extern asn_TYPE_member_t asn_MBR_IviContainer_1[8];
+extern asn_oer_constraints_t asn_OER_type_IviContainer_constr_1;
 extern asn_per_constraints_t asn_PER_type_IviContainer_constr_1;
 
 #ifdef __cplusplus

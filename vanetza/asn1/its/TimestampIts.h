@@ -28,9 +28,9 @@ typedef enum TimestampIts {
 typedef INTEGER_t	 TimestampIts_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_TimestampIts_constr_1;
 extern asn_per_constraints_t asn_PER_type_TimestampIts_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_TimestampIts;
-extern const asn_INTEGER_specifics_t asn_SPC_TimestampIts_specs_1;
 asn_struct_free_f TimestampIts_free;
 asn_struct_print_f TimestampIts_print;
 asn_constr_check_f TimestampIts_constraint;

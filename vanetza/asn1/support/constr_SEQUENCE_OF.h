@@ -62,6 +62,13 @@ per_type_encoder_f SEQUENCE_OF_encode_aper;
 
 extern asn_TYPE_operation_t asn_OP_SEQUENCE_OF;
 
+/*
+ * Generic descriptor for anonymous SEQUENCE OF (placeholder only).
+ * Not a concrete "OF T" for runtime encoding/decoding. Concrete OF types
+ * generated for specific elements still have their own descriptors.
+ */
+extern asn_TYPE_descriptor_t asn_DEF_SEQUENCE_OF;
+
 #ifdef __cplusplus
 }
 #endif

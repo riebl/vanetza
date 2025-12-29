@@ -28,6 +28,7 @@ typedef enum ObjectDimensionValue {
 typedef long	 ObjectDimensionValue_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ObjectDimensionValue_constr_1;
 extern asn_per_constraints_t asn_PER_type_ObjectDimensionValue_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ObjectDimensionValue;
 asn_struct_free_f ObjectDimensionValue_free;

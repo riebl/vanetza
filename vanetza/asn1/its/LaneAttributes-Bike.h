@@ -33,7 +33,9 @@ typedef enum LaneAttributes_Bike {
 typedef BIT_STRING_t	 LaneAttributes_Bike_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_LaneAttributes_Bike_constr_1;
 extern asn_per_constraints_t asn_PER_type_LaneAttributes_Bike_constr_1;
+extern asn_jer_constraints_t asn_JER_type_LaneAttributes_Bike_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_LaneAttributes_Bike;
 asn_struct_free_f LaneAttributes_Bike_free;
 asn_struct_print_f LaneAttributes_Bike_print;

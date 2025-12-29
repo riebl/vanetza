@@ -28,6 +28,7 @@ typedef enum SemiRangeLength {
 typedef long	 SemiRangeLength_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_SemiRangeLength_constr_1;
 extern asn_per_constraints_t asn_PER_type_SemiRangeLength_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SemiRangeLength;
 asn_struct_free_f SemiRangeLength_free;

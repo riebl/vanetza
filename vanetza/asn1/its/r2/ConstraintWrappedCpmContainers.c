@@ -38,7 +38,7 @@ Vanetza_ITS2_ConstraintWrappedCpmContainers_constraint(const asn_TYPE_descriptor
  * so here we adjust the DEF accordingly.
  */
 #if !defined(ASN_DISABLE_OER_SUPPORT)
-static asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_ConstraintWrappedCpmContainers_constr_1 CC_NOTUSED = {
+asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_ConstraintWrappedCpmContainers_constr_1 CC_NOTUSED = {
 	{ 0, 0 },
 	-1	/* (SIZE(1..8)) */};
 #endif  /* !defined(ASN_DISABLE_OER_SUPPORT) */

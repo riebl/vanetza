@@ -34,6 +34,7 @@ typedef struct TextLines {
 extern asn_TYPE_descriptor_t asn_DEF_TextLines;
 extern asn_SET_OF_specifics_t asn_SPC_TextLines_specs_1;
 extern asn_TYPE_member_t asn_MBR_TextLines_1[1];
+extern asn_oer_constraints_t asn_OER_type_TextLines_constr_1;
 extern asn_per_constraints_t asn_PER_type_TextLines_constr_1;
 
 #ifdef __cplusplus

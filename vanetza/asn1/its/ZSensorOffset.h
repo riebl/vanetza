@@ -28,6 +28,7 @@ typedef enum ZSensorOffset {
 typedef long	 ZSensorOffset_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ZSensorOffset_constr_1;
 extern asn_per_constraints_t asn_PER_type_ZSensorOffset_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ZSensorOffset;
 asn_struct_free_f ZSensorOffset_free;

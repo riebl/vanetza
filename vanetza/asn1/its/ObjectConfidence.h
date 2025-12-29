@@ -30,6 +30,7 @@ typedef enum ObjectConfidence {
 typedef long	 ObjectConfidence_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_ObjectConfidence_constr_1;
 extern asn_per_constraints_t asn_PER_type_ObjectConfidence_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_ObjectConfidence;
 asn_struct_free_f ObjectConfidence_free;

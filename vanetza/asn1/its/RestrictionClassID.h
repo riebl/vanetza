@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 RestrictionClassID_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_RestrictionClassID_constr_1;
 extern asn_per_constraints_t asn_PER_type_RestrictionClassID_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_RestrictionClassID;
 asn_struct_free_f RestrictionClassID_free;

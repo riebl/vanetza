@@ -22,6 +22,7 @@ extern "C" {
 typedef long	 Identifier_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Identifier_constr_1;
 extern asn_per_constraints_t asn_PER_type_Identifier_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Identifier;
 asn_struct_free_f Identifier_free;

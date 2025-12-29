@@ -38,6 +38,7 @@ typedef enum SensorType {
 typedef long	 SensorType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_SensorType_constr_1;
 extern asn_per_constraints_t asn_PER_type_SensorType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SensorType;
 asn_struct_free_f SensorType_free;

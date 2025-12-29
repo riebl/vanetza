@@ -34,6 +34,7 @@ typedef enum SpeedConfidenceIso {
 typedef long	 SpeedConfidenceIso_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_SpeedConfidenceIso_constr_1;
 extern asn_per_constraints_t asn_PER_type_SpeedConfidenceIso_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_SpeedConfidenceIso;
 extern const asn_INTEGER_specifics_t asn_SPC_SpeedConfidenceIso_specs_1;

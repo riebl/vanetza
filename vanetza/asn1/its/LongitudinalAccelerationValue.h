@@ -29,6 +29,7 @@ typedef enum LongitudinalAccelerationValue {
 typedef long	 LongitudinalAccelerationValue_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_LongitudinalAccelerationValue_constr_1;
 extern asn_per_constraints_t asn_PER_type_LongitudinalAccelerationValue_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_LongitudinalAccelerationValue;
 asn_struct_free_f LongitudinalAccelerationValue_free;

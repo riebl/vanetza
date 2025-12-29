@@ -49,6 +49,7 @@ typedef struct Vanetza_ITS2_PathDeltaTimeChoice {
 extern asn_TYPE_descriptor_t asn_DEF_Vanetza_ITS2_PathDeltaTimeChoice;
 extern asn_CHOICE_specifics_t asn_SPC_Vanetza_ITS2_PathDeltaTimeChoice_specs_1;
 extern asn_TYPE_member_t asn_MBR_Vanetza_ITS2_PathDeltaTimeChoice_1[2];
+extern asn_oer_constraints_t asn_OER_type_Vanetza_ITS2_PathDeltaTimeChoice_constr_1;
 extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_PathDeltaTimeChoice_constr_1;
 
 #ifdef __cplusplus

@@ -73,6 +73,12 @@ asn_random_fill_f SET_OF_random_fill;
 extern asn_TYPE_operation_t asn_OP_SET_OF;
 
 /*
+ * Generic descriptor for anonymous SET OF (placeholder only).
+ * Not a concrete "OF T".
+ */
+extern asn_TYPE_descriptor_t asn_DEF_SET_OF;
+
+/*
  * Internally visible buffer holding a single encoded element.
  */
 struct _el_buffer {

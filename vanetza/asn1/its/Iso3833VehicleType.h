@@ -67,6 +67,7 @@ typedef enum Iso3833VehicleType {
 typedef long	 Iso3833VehicleType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_Iso3833VehicleType_constr_1;
 extern asn_per_constraints_t asn_PER_type_Iso3833VehicleType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_Iso3833VehicleType;
 asn_struct_free_f Iso3833VehicleType_free;

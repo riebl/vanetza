@@ -34,6 +34,7 @@ typedef enum InternationalSign_directionalFlowOfLane {
 typedef long	 InternationalSign_directionalFlowOfLane_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_InternationalSign_directionalFlowOfLane_constr_1;
 extern asn_per_constraints_t asn_PER_type_InternationalSign_directionalFlowOfLane_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_InternationalSign_directionalFlowOfLane;
 asn_struct_free_f InternationalSign_directionalFlowOfLane_free;

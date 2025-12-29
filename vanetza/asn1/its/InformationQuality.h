@@ -29,6 +29,7 @@ typedef enum InformationQuality {
 typedef long	 InformationQuality_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_InformationQuality_constr_1;
 extern asn_per_constraints_t asn_PER_type_InformationQuality_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_InformationQuality;
 asn_struct_free_f InformationQuality_free;

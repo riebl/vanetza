@@ -34,6 +34,7 @@ typedef struct ConstraintTextLines2 {
 extern asn_TYPE_descriptor_t asn_DEF_ConstraintTextLines2;
 extern asn_SET_OF_specifics_t asn_SPC_ConstraintTextLines2_specs_1;
 extern asn_TYPE_member_t asn_MBR_ConstraintTextLines2_1[1];
+extern asn_oer_constraints_t asn_OER_type_ConstraintTextLines2_constr_1;
 extern asn_per_constraints_t asn_PER_type_ConstraintTextLines2_constr_1;
 
 #ifdef __cplusplus

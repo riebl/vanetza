@@ -32,7 +32,9 @@ typedef enum LaneAttributes_Striping {
 typedef BIT_STRING_t	 LaneAttributes_Striping_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_LaneAttributes_Striping_constr_1;
 extern asn_per_constraints_t asn_PER_type_LaneAttributes_Striping_constr_1;
+extern asn_jer_constraints_t asn_JER_type_LaneAttributes_Striping_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_LaneAttributes_Striping;
 asn_struct_free_f LaneAttributes_Striping_free;
 asn_struct_print_f LaneAttributes_Striping_print;

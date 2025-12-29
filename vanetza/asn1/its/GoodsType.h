@@ -40,6 +40,7 @@ typedef enum GoodsType {
 typedef long	 GoodsType_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_GoodsType_constr_1;
 extern asn_per_constraints_t asn_PER_type_GoodsType_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_GoodsType;
 asn_struct_free_f GoodsType_free;

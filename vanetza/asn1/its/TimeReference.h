@@ -27,6 +27,7 @@ typedef enum TimeReference {
 typedef long	 TimeReference_t;
 
 /* Implementation */
+extern asn_oer_constraints_t asn_OER_type_TimeReference_constr_1;
 extern asn_per_constraints_t asn_PER_type_TimeReference_constr_1;
 extern asn_TYPE_descriptor_t asn_DEF_TimeReference;
 asn_struct_free_f TimeReference_free;
