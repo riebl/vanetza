@@ -4,18 +4,28 @@ Title: Generate code from ASN.1
 
 Generating new ASN.1 structs based on ASN.1 definitions can be a daunting task requiring the appropriate ASN.1 compiler.
 In particular, we use the **asn1c** fork maintained by [mouse07410](https://github.com/mouse07410/asn1c).
-At the time of writing, we employ [this particular revision](https://github.com/mouse07410/asn1c/commit/18e565032e52af8002c2353be20bdbba9233e700) of **asn1c**.
 
 Though the Vanetza repository comes with various pre-generated ASN.1 messages, you may want to add further or revised versions of these messages.
 In this case, the following steps guide you how to generate code from ASN.1 definitions on your own.
 
 ## Prerequisites
 
-1. Install the required build tools and libraries for **asn1c** (e.g. **flex** and **bison**)
-2. Download the right version of the **asn1c** compiler
-3. Compile and install the **asn1c** compiler on your system
+We have streamlined the process of installing and using **asn1c** by relying on a Docker container.
+
+1. Install Docker on your system
+2. Build the Docker container from the `vanetza/asn1/Dockerfile` as `vanetza-asn1c:latest`
+
+```bash
+docker build --tag vanetza-asn1c:latest vanetza/asn1
+```
 
 ## Generate ASN.1 code
+
+Our CMake build environment comes with a `generate_asn1c` code generation target.
+This target is available if the the `VANETZA_ASN1_WITH_ASN1C` CMake option is enabled.
+When you invoke this target, CMake will run the Docker container for you with suitable arguments.
+You can specify a custom image by modifying the `VANETZA_ASN1C_CONTAINER` CMake cache variable.
+By default, CMake will use the `vanetza-asn1c:latest` image.
 
 1. Update your copy of Vanetza with the new or updated ASN.1 definitions
 2. Update the **CMakeLists.txt** file at **vanetza/asn1** accordingly
