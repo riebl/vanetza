@@ -1,7 +1,0 @@
-<map id="vanetza::security::VerifyService" name="vanetza::security::VerifyService">
-<area shape="rect" id="Node000001" title=" " alt="" coords="119,5,239,105"/>
-<area shape="rect" id="Node000002" href="$d7/db6/classvanetza_1_1security_1_1DummyVerifyService.html" title=" " alt="" coords="5,343,164,463"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,119,103,344,98,342,160,118"/>
-<area shape="rect" id="Node000003" href="$de/d9b/classvanetza_1_1security_1_1StraightVerifyService.html" title=" " alt="" coords="188,153,363,653"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,118,209,152,204,154,194,119"/>
-</map>

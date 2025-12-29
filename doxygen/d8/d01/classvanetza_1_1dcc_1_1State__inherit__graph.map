@@ -1,9 +1,0 @@
-<map id="vanetza::dcc::State" name="vanetza::dcc::State">
-<area shape="rect" id="Node000001" title=" " alt="" coords="187,5,344,111"/>
-<area shape="rect" id="Node000002" href="$de/d96/classvanetza_1_1dcc_1_1Active.html" title=" " alt="" coords="5,159,163,304"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,122,162,160,158,156,199,118"/>
-<area shape="rect" id="Node000003" href="$da/d03/classvanetza_1_1dcc_1_1Relaxed.html" title=" " alt="" coords="187,189,344,274"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="268,125,268,188,263,188,263,125"/>
-<area shape="rect" id="Node000004" href="$de/d46/classvanetza_1_1dcc_1_1Restrictive.html" title=" " alt="" coords="368,189,525,274"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="332,119,404,186,400,190,328,122"/>
-</map>

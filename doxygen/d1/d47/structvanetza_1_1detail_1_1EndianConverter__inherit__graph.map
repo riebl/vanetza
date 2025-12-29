@@ -1,9 +1,0 @@
-<map id="vanetza::detail::EndianConverter&lt; T, FROM, TO &gt;" name="vanetza::detail::EndianConverter&lt; T, FROM, TO &gt;">
-<area shape="rect" id="Node000001" title=" " alt="" coords="232,5,435,85"/>
-<area shape="rect" id="Node000002" href="$d2/dfe/structvanetza_1_1detail_1_1EndianConverter_3_01T_00_01ByteOrder_1_1BigEndian_00_01ByteOrder_1_1LittleEndian_01_4.html" title=" " alt="" coords="5,176,208,271"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="220,76,189,91,162,111,138,142,122,177,117,175,133,139,158,107,186,87,218,71"/>
-<area shape="rect" id="Node000003" href="$de/de8/structvanetza_1_1detail_1_1EndianConverter_3_01T_00_01ByteOrder_1_1LittleEndian_00_01ByteOrder_1_1BigEndian_01_4.html" title=" " alt="" coords="232,176,435,271"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="336,99,336,176,331,176,331,99"/>
-<area shape="rect" id="Node000004" href="$dd/def/structvanetza_1_1detail_1_1EndianConverter_3_01T_00_01ORDER_00_01ORDER_01_4.html" title=" " alt="" coords="459,183,661,263"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="449,68,484,85,515,107,529,124,541,143,555,182,550,184,536,146,525,127,512,111,481,89,447,73"/>
-</map>

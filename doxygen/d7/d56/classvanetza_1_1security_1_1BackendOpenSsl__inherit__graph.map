@@ -1,5 +1,0 @@
-<map id="vanetza::security::BackendOpenSsl" name="vanetza::security::BackendOpenSsl">
-<area shape="rect" id="Node000001" title="Backend implementation based on OpenSSL." alt="" coords="5,253,183,593"/>
-<area shape="rect" id="Node000002" href="$d1/d75/classvanetza_1_1security_1_1Backend.html" title=" " alt="" coords="24,5,164,205"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,219,97,253,91,253,91,219"/>
-</map>

@@ -5,7 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="shortcut icon" href="../../img/favicon.ico" />
-    <title>Building for Autotalks devices - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
+    <title>Generate code from ASN.1 - Vanetza - Your open-source ETSI C-ITS protocol stack</title>
     <link rel="stylesheet" href="../../css/theme.css" />
     <link rel="stylesheet" href="../../css/theme_extra.css" />
         <link href="../../css/extra.css" rel="stylesheet" />
@@ -13,8 +13,8 @@
     
       <script>
         // Current page data
-        var mkdocs_page_name = "Building for Autotalks devices";
-        var mkdocs_page_input_path = "recipes/autotalks-sdk-build.md";
+        var mkdocs_page_name = "Generate code from ASN.1";
+        var mkdocs_page_input_path = "recipes/generate-asn1.md";
         var mkdocs_page_url = null;
       </script>
     
@@ -80,21 +80,21 @@
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Building for Autotalks devices</a>
-    <ul class="current">
-    <li class="toctree-l2"><a class="reference internal" href="#autotalks-sdk">Autotalks SDK</a>
+                  <li class="toctree-l1"><a class="reference internal" href="../autotalks-sdk-build/">Building for Autotalks devices</a>
+    <ul>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#autotalks-sdk">Autotalks SDK</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#code-corrections">Code corrections</a>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#code-corrections">Code corrections</a>
     </li>
         </ul>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#vanetza-build-dependencies">Vanetza build dependencies</a>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#vanetza-build-dependencies">Vanetza build dependencies</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#compile-vanetza">Compile Vanetza</a>
+    <li class="toctree-l2"><a class="reference internal" href="../autotalks-sdk-build/#compile-vanetza">Compile Vanetza</a>
         <ul>
-    <li class="toctree-l3"><a class="reference internal" href="#compiling-for-craton">Compiling for Craton</a>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#compiling-for-craton">Compiling for Craton</a>
     </li>
-    <li class="toctree-l3"><a class="reference internal" href="#compiling-for-secton">Compiling for Secton</a>
+    <li class="toctree-l3"><a class="reference internal" href="../autotalks-sdk-build/#compiling-for-secton">Compiling for Secton</a>
     </li>
         </ul>
     </li>
@@ -138,11 +138,11 @@
     </li>
     </ul>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../generate-asn1/">Generate code from ASN.1</a>
-    <ul>
-    <li class="toctree-l2"><a class="reference internal" href="../generate-asn1/#prerequisites">Prerequisites</a>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Generate code from ASN.1</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="../generate-asn1/#generate-asn1-code">Generate ASN.1 code</a>
+    <li class="toctree-l2"><a class="reference internal" href="#generate-asn1-code">Generate ASN.1 code</a>
     </li>
     </ul>
                   </li>
@@ -259,9 +259,9 @@
   <ul class="wy-breadcrumbs">
     <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
           <li class="breadcrumb-item">Recipes</li>
-      <li class="breadcrumb-item active">Building for Autotalks devices</li>
+      <li class="breadcrumb-item active">Generate code from ASN.1</li>
     <li class="wy-breadcrumbs-aside">
-          <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/autotalks-sdk-build.md" class="icon icon-github"> Edit on GitHub</a>
+          <a href="https://github.com/riebl/vanetza/edit/master/docs/recipes/generate-asn1.md" class="icon icon-github"> Edit on GitHub</a>
     </li>
   </ul>
   <hr/>
@@ -269,56 +269,50 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
             <div class="section" itemprop="articleBody">
               
-                <h1 id="building-vanetza-for-autotalks-craton-using-autotalks-sdk">Building Vanetza for Autotalks Craton using Autotalks SDK</h1>
-<p>This document describes building Vanetza for the Autotalks device. There is a difference between building for Craton and Secton.
-Steps for building Vanetza for Autotalks Craton are very similar to build for Cohda MK5 devices (you can see steps in the <a href="../cohda-sdk-build/">building for Cohda MK5 document</a>). Difference is that there is no virtual machine provided from Autotalks.</p>
-<p>Autotalks SDK can used only in the <code>socktap</code> example, so you must always compile it when you want the SDK.</p>
-<h2 id="autotalks-sdk">Autotalks SDK</h2>
-<p>SDK is shipped with Autotalks devices, you should have obtained one. Until Release 18, it was recommended to build the SDK in Ubuntu 16.04, now Ubuntu 18.04 or 20.04 should be used; it was tested on the latter. For Secton, there is used gcc version 9.4.0, for Craton <code>arm-poky-linux-gnueabi-g++</code> version 11.2.0, that is installed with the poky container.</p>
-<h3 id="code-corrections">Code corrections</h3>
-<p>With Autotalks SDK version &lt;= 5.15.0, you will have to do a correction in file <code>autotalks_*_api/include/atlk/ddm_service.h</code> on line 615 and add there an explicit cast to <code>stats_tlv_t *</code>. Without this, you won&rsquo;t be able to build the project because of the <code>-fpermissive</code> flag. As of version 5.16.0, this problem is fixed.</p>
-<p>In version 5.17 (Release 18), there are another problems:
-* In autotalks_{craton,secton}<em>api/include/common/counters.h change line 110 from <code>uint8_t data[]</code> to <code>uint8_t* data</code>
-* In autotalks</em>{craton,secton}_api/include/atlk/generic_compensator.h, there is missing <code>}</code> for the <code>extern "C"</code> directive (this should be solved in newer SDK)</p>
-<p>Another thing you must note is in the initialization in the <code>socktap</code> example. The initialization code in <code>v2x_device_init()</code> was used directly from the example in the Autotalks SDK, therefore it should not be distributed with the library. You will have to write it yourself, but it really is almost the same as <code>main()</code> function in the basic example from the SDK.</p>
-<p>In the initialization, there is a define for <code>SECTON_NET_NAME</code>. This is a network interface name which determines how is the SoC seen in Linux. It should be <em>enx0002ccf00006</em> by default, but if it is set to something else, you can change this define. You can use <code>ifconfig</code> output to determine the actual name (see Autotalks documentation for more details).</p>
-<h2 id="vanetza-build-dependencies">Vanetza build dependencies</h2>
-<p>Please see <a href="../cross-compile-dependencies/">this document</a> about cross-compiling Vanetza&rsquo;s dependencies.
-This guide  was tested with precompiled libraries downloadable <a href="../cohda-sdk-build/">from here</a>.</p>
-<h2 id="compile-vanetza">Compile Vanetza</h2>
-<h3 id="compiling-for-craton">Compiling for Craton</h3>
-<p>We assume you have copy of the Vanetza repository in your home directory at <code>$HOME</code>.
-Furthermore, there should be a symbolic link named <code>autotalks_craton_api</code> in your home directory, that links to the root of Craton SDK (e.g., from <code>/home/your_user/autotalks_craton_api</code> to the API compilation directory). If you have Poky toolchain installed in other directory than /opt/poky-craton2/4.0.1 (e.g. /tools/gcc/arm/new_toolchain as suggested by Autotalks), change the path in cmake/Toolchain-Autotalks-Craton.cmake.
-Create a build directory and tell CMake to use the cross-compiler installed on your machine and to look up additional dependencies in <code>vanetza-deps</code>:</p>
-<pre class="codehilite"><code class="language-shell">mkdir vanetza/vanetza-build
-cd vanetza/vanetza-build
-cmake .. \
-    -DCMAKE_TOOLCHAIN_FILE=../cmake/Toolchain-Autotalks-Craton.cmake \
-    -DCMAKE_FIND_ROOT_PATH=$HOME/vanetza-deps \
-    -DCMAKE_INSTALL_RPATH=\$ORIGIN/../lib \
-    -DCMAKE_INSTALL_PREFIX=$HOME/vanetza-dist \
-    -DBUILD_SOCKTAP=ON \
-    -DSOCKTAP_WITH_AUTOTALKS=ON
-make
+                <h1 id="how-to-generate-code-from-asn1-definitions">How to generate code from ASN.1 definitions</h1>
+<p>Generating new ASN.1 structs based on ASN.1 definitions can be a daunting task requiring the appropriate ASN.1 compiler.
+In particular, we use the <strong>asn1c</strong> fork maintained by <a href="https://github.com/mouse07410/asn1c">mouse07410</a>.</p>
+<p>Though the Vanetza repository comes with various pre-generated ASN.1 messages, you may want to add further or revised versions of these messages.
+In this case, the following steps guide you how to generate code from ASN.1 definitions on your own.</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<p>We have streamlined the process of installing and using <strong>asn1c</strong> by relying on a Docker container.</p>
+<ol>
+<li>Install Docker on your system</li>
+<li>Build the Docker container from the <code>vanetza/asn1/Dockerfile</code> as <code>vanetza-asn1c:latest</code></li>
+</ol>
+<pre class="codehilite"><code class="language-bash">docker build --tag vanetza-asn1c:latest vanetza/asn1
 </code></pre>
 
-<p>This builds the Vanetza libraries and <em>socktap</em> example as well. When you do <code>make install</code>, binaries are copied to <code>$HOME/vanetza-dist</code>. You can copy the binary with libraries to the Craton now. You should start the binary in the same directory as you would be running code from Autotalks examples (it needs their configuration files). You must run the binary with parameter <code>-l autotalks</code> for correct choosing of the link layer.</p>
-<h3 id="compiling-for-secton">Compiling for Secton</h3>
-<p>We assume you have copy of the Vanetza repository in your home directory at <code>$HOME</code>.
-Furthermore, there should be a symbolic link named <code>autotalks_secton_api</code> in your home directory, that links to the root of Secton SDK (e.g., from <code>/home/your_user/autotalks_secton_api</code> to the API compilation directory). The build steps are then identical with the ones described in <a href="../../how-to-build/">How to build</a>. Just note that for using Autotalks SDK you should use enable compilation of socktap, e.g. like this:</p>
-<pre class="codehilite"><code class="language-shell">cmake .. \
-    -DBUILD_SOCKTAP=ON \
-    -DSOCKTAP_WITH_AUTOTALKS=ON
-make
-</code></pre>
+<h2 id="generate-asn1-code">Generate ASN.1 code</h2>
+<p>Our CMake build environment comes with a <code>generate_asn1c</code> code generation target.
+This target is available if the the <code>VANETZA_ASN1_WITH_ASN1C</code> CMake option is enabled.
+When you invoke this target, CMake will run the Docker container for you with suitable arguments.
+You can specify a custom image by modifying the <code>VANETZA_ASN1C_CONTAINER</code> CMake cache variable.
+By default, CMake will use the <code>vanetza-asn1c:latest</code> image.</p>
+<ol>
+<li>Update your copy of Vanetza with the new or updated ASN.1 definitions</li>
+<li>Update the <strong>CMakeLists.txt</strong> file at <strong>vanetza/asn1</strong> accordingly</li>
+<li>Create a fresh build directory and configure CMake with enabled ASN.1 targets</li>
+<li>Invoke <strong>asn1c</strong> and compile Vanetza with newly generated code</li>
+</ol>
+<pre class="codehilite"><code class="language-bash"># Create a new build directory at the project's root
+mkdir build.asn1 &amp;&amp; cd build.asn1
 
-<p>Binary then can be ran from the same directory you would be running the Autotalks example (it needs their configuration files). You must run the binary with parameter <code>-l autotalks</code> for correct choosing of the link layer.</p>
+# Configure the build with enabled ASN.1 targets and retrieval of ISO ASN.1 files
+cmake -DVANETZA_ASN1_WITH_ASN1C=ON -DVANETZA_ASN1_WITH_ISO=ON ..
+
+# Invoke the target calling asn1c
+make generate_asn1c
+
+# Compile Vanetza with newly generated ASN.1 code
+cmake --build .
+</code></pre>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../arm64-build/" class="btn btn-neutral float-left" title="Building for generic ARM64 device"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../cohda-sdk-build/" class="btn btn-neutral float-right" title="Building for Cohda MK5">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../cube-evk-build/" class="btn btn-neutral float-left" title="Building for cube:evk"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../tools/benchmark/" class="btn btn-neutral float-right" title="Benchmark">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -345,10 +339,10 @@ make
         </span>
     
     
-      <span><a href="../arm64-build/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../cube-evk-build/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../cohda-sdk-build/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../../tools/benchmark/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

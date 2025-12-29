@@ -1,5 +1,0 @@
-<map id="vanetza::dcc::FlowControl::PendingTransmission" name="vanetza::dcc::FlowControl::PendingTransmission">
-<area shape="rect" id="Node000001" title=" " alt="" coords="9,199,175,379"/>
-<area shape="rect" id="Node000002" href="$df/dd5/classvanetza_1_1dcc_1_1Transmission.html" title=" " alt="" coords="5,5,179,151"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="95,164,95,198,89,198,89,164"/>
-</map>

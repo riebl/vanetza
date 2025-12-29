@@ -1,7 +1,0 @@
-<map id="vanetza::security::v2::CertificateValidator" name="vanetza::security::v2::CertificateValidator">
-<area shape="rect" id="Node000001" title=" " alt="" coords="126,5,279,105"/>
-<area shape="rect" id="Node000002" href="$de/d37/classvanetza_1_1security_1_1v2_1_1DefaultCertificateValidator.html" title="The default certificate validator." alt="" coords="5,153,195,293"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="168,118,145,154,141,151,163,115"/>
-<area shape="rect" id="Node000003" href="$d2/d3a/classvanetza_1_1security_1_1v2_1_1NullCertificateValidator.html" title=" " alt="" coords="219,163,392,283"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="242,116,271,162,267,165,238,119"/>
-</map>
