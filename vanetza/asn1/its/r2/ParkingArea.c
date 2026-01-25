@@ -556,7 +556,7 @@ static asn_TYPE_member_t asn_MBR_Vanetza_ITS2_reservationType_19[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		0,
-		&asn_DEF_Vanetza_ITS2_ParkingReservationType,
+		&asn_DEF_Vanetza_ITS2_POIM_ParkingAvailability_ParkingReservationType,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -615,7 +615,7 @@ static asn_TYPE_member_t asn_MBR_Vanetza_ITS2_freeSpacesPosition_25[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (16 << 2)),
 		0,
-		&asn_DEF_Vanetza_ITS2_DeltaPosition,
+		&asn_DEF_Vanetza_ITS2_POIM_ParkingAvailability_DeltaPosition,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -814,7 +814,7 @@ asn_TYPE_member_t asn_MBR_Vanetza_ITS2_ParkingArea_1[] = {
 	{ ATF_NOFLAGS, 0, offsetof(struct Vanetza_ITS2_ParkingArea, arrangementType),
 		(ASN_TAG_CLASS_CONTEXT | (4 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_Vanetza_ITS2_ParkingAreaArrangementType,
+		&asn_DEF_Vanetza_ITS2_POIM_ParkingAvailability_ParkingAreaArrangementType,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -834,7 +834,7 @@ asn_TYPE_member_t asn_MBR_Vanetza_ITS2_ParkingArea_1[] = {
 	{ ATF_POINTER, 3, offsetof(struct Vanetza_ITS2_ParkingArea, boundary),
 		(ASN_TAG_CLASS_CONTEXT | (5 << 2)),
 		-1,	/* IMPLICIT tag at current level */
-		&asn_DEF_Vanetza_ITS2_DeltaPositions,
+		&asn_DEF_Vanetza_ITS2_POIM_ParkingAvailability_DeltaPositions,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

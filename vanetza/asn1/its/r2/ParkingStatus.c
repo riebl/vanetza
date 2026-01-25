@@ -332,7 +332,7 @@ static asn_TYPE_member_t asn_MBR_Vanetza_ITS2_reservationTypes_4[] = {
 	{ ATF_POINTER, 0, 0,
 		(ASN_TAG_CLASS_UNIVERSAL | (2 << 2)),
 		0,
-		&asn_DEF_Vanetza_ITS2_ParkingReservationType,
+		&asn_DEF_Vanetza_ITS2_POIM_ParkingAvailability_ParkingReservationType,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)
@@ -509,7 +509,7 @@ static asn_TYPE_member_t asn_MBR_Vanetza_ITS2_occupancyTypes_10[] = {
 	{ ATF_POINTER, 0, 0,
 		-1 /* Ambiguous tag (CHOICE?) */,
 		0,
-		&asn_DEF_Vanetza_ITS2_ParkingOccupancyInfo,
+		&asn_DEF_Vanetza_ITS2_POIM_ParkingAvailability_ParkingOccupancyInfo,
 		0,
 		{
 #if !defined(ASN_DISABLE_OER_SUPPORT)

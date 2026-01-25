@@ -15,7 +15,7 @@
 #include "OccupancyInformation.h"
 #include "asn_SEQUENCE_OF.h"
 #include "constr_SEQUENCE_OF.h"
-#include "ParkingReservationType.h"
+#include "POIM-ParkingAvailability_ParkingReservationType.h"
 #include "ParkingFeeType.h"
 #include "constr_SEQUENCE.h"
 
@@ -37,7 +37,7 @@ typedef struct Vanetza_ITS2_ParkingStatus {
 		asn_struct_ctx_t _asn_ctx;
 	} *vehicleTypes;
 	struct Vanetza_ITS2_ParkingStatus__reservationTypes {
-		A_SEQUENCE_OF(Vanetza_ITS2_ParkingReservationType_t) list;
+		A_SEQUENCE_OF(Vanetza_ITS2_POIM_ParkingAvailability_ParkingReservationType_t) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
@@ -84,7 +84,7 @@ extern asn_per_constraints_t asn_PER_type_Vanetza_ITS2_ParkingStatus_constr_1;
 /* Referred external types */
 #include "EuVehicleCategoryCode.h"
 #include "LoadType.h"
-#include "ParkingOccupancyInfo.h"
+#include "POIM-ParkingAvailability_ParkingOccupancyInfo.h"
 
 #endif	/* _Vanetza_ITS2_ParkingStatus_H_ */
 #include "asn_internal.h"

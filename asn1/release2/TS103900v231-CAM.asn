@@ -1,0 +1,542 @@
+--! @options: no-fields-header
+
+CAM-PDU-Descriptions  {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) camPduRelease2 (103900) 
+                       major-version-2 (2) minor-version-3 (3)} 
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS 
+ItsPduHeader, CauseCodeV2, ReferencePosition, AccelerationControl, Curvature, CurvatureCalculationMode, Heading, LanePosition, 
+EmergencyPriority, EmbarkationStatus, Speed, DriveDirection, AccelerationComponent, StationType, ExteriorLights, DangerousGoodsBasic, 
+SpecialTransportType, LightBarSirenInUse, VehicleRole, VehicleLength, VehicleWidth, Path, RoadworksSubCauseCode, ClosedLanes, 
+TrafficRule, SpeedLimit, SteeringWheelAngle, PerformanceClass, YawRate, PtActivation, ProtectedCommunicationZonesRSU, 
+CenDsrcTollingZone, GenerationDeltaTime, BasicContainer, BrakeControl, VehicleHeight2, WiperStatus, GeneralizedLanePositions, 
+PathPredictedList, CartesianAngle, Wgs84Angle, StabilityChangeIndication, VruSubProfileBicyclist, VruMovementControl,
+BasicLaneConfiguration, PolygonalLine, MetaInformation, ConfidenceLevels, VehicleMovementControl
+
+FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) 102894 cdd (2) 
+                   major-version-4 (4) minor-version-3 (3)} WITH SUCCESSORS
+;
+
+
+--	The root data frame for cooperative awareness messages
+
+/** 
+* This type represents the CAM PDU.
+*
+* It shall include the following componenets:
+*
+* @field header: the header of the CAM PDU.
+*
+* @field cam: the payload of the CAM PDU.
+*/ 
+
+CAM ::= SEQUENCE {
+	header ItsPduHeader (WITH COMPONENTS {... , protocolVersion (2), messageId(cam)}),
+	cam    CamPayload
+}
+
+/**
+* This type represents the CAM payload. 
+*
+* It shall include the following components: 
+*
+* @field generationDeltaTime: Time corresponding to the time of the reference position in the CAM, considered as time of the CAM generation.
+*
+* @field camParameters: The sequence of CAM mandatory and optional container.
+*
+*/
+CamPayload ::= SEQUENCE {
+	generationDeltaTime GenerationDeltaTime,
+	camParameters       CamParameters
+}
+
+/**
+* @field basicContainer: the mandatory basic container of the CAM.
+*
+* @field highFrequencyContainer: the mandatory container represents the high frequency of the CAM.
+* 
+* @field lowFrequencyContainer: the optional conatainer represents the low frequency of the CAM.
+*
+* @field specialVehicleContainer: The special container of the CAM shall be present as defined in clause 6.1.2. 
+* The content of the container shall be set according to the value of the vehicleRole component as specified in Table 5. 
+*
+* @field extensionContainers: the list of CAM extension containers, including its container type identifier and the container itself.
+*/
+CamParameters ::= SEQUENCE {
+	basicContainer           BasicContainer,
+	highFrequencyContainer   HighFrequencyContainer,
+	lowFrequencyContainer    LowFrequencyContainer OPTIONAL,
+	specialVehicleContainer  SpecialVehicleContainer OPTIONAL,
+	...,
+	extensionContainers		 WrappedExtensionContainers OPTIONAL
+}
+
+/**
+* This type represents the high frequency container.
+* 
+* It shall include the following components: 
+*
+* @field basicVehicleContainerHighFrequency: The mandatory high frequency container of the CAM when the originating ITS-S is of the type vehicle ITS-S.
+*
+* @field rsuContainerHighFrequency: The mandatory high frequency container of CAM when the type of the originating ITS-S is RSU ITS-S.
+*/
+HighFrequencyContainer ::= CHOICE {
+	basicVehicleContainerHighFrequency BasicVehicleContainerHighFrequency,
+	rsuContainerHighFrequency          RSUContainerHighFrequency,
+	...
+}
+
+/**
+* This type represents the low frequency container.
+* 
+* It shall include the following components: 
+*
+* The low frequency container of the CAM when the originating ITS-S is of the type vehicle ITS-S. It shall be present as defined in clause 6.1.2.
+*/
+ LowFrequencyContainer ::= CHOICE {
+  basicVehicleContainerLowFrequency BasicVehicleContainerLowFrequency (WITH COMPONENTS {..., pathHistory (SIZE (0..23))}),
+	...
+}
+
+/**
+* This type represent the Special Vehicle Container.
+*
+* It shall include the following components:
+*
+* @field publicTransportContainer: If the vehicleRole component is set to publicTransport(1) this container shall be present.
+*
+* @field specialTransportContainer: If the vehicleRole component is set to specialTransport(2) this container shall be present.
+*
+* @field dangerousGoodsContainer: If the vehicleRole component is set to dangerousGoods(3) this container shall be present.
+*
+* @field roadWorksContainerBasic: If the vehicleRole component is set to roadWork(4) this container shall be present. 
+*
+* @field rescueContainer: If the vehicleRole component is set to rescue(5) this container shall be present. 
+*
+* @field emergencyContainer: If the vehicleRole component is set to emergency(6) this container shall be present.
+*
+* @field safetyCarContainer: If the vehicleRole component is set to safetyCar(7) this container shall be present. 
+*/
+SpecialVehicleContainer ::= CHOICE {
+	publicTransportContainer  PublicTransportContainer,
+	specialTransportContainer SpecialTransportContainer,
+	dangerousGoodsContainer   DangerousGoodsContainer,
+	roadWorksContainerBasic   RoadWorksContainerBasic,
+	rescueContainer           RescueContainer,
+	emergencyContainer        EmergencyContainer,
+	safetyCarContainer        SafetyCarContainer,
+	...
+}
+
+/**
+* This type contains detaild information of the Basic Vehicle Container High Frequency.
+*
+* It shall include the following components:
+*
+* @field heading: It represent the heading and heading accuracy of the vehicle movement of the originating ITS-S with regards to the true north. 
+* The heading accuracy provided in the heading Confidence value shall provide the accuracy of the measured vehicle heading with a confidence level 
+* of 95 %. Otherwise, the value of the headingConfidence shall be set to unavailable.
+*
+* @field speed: It represent driving speed and speed accuracy of the originating ITS-S. The speed accuracy provided in the speedConfidence shall 
+* provide the accuracy of the speed value with a confidence level of 95 %. Otherwise, the speedConfidence shall be set to unavailable.
+*
+* @field driveDirection: This component represent the vehicle drive direction (forward or backward) of the originating ITS-S.
+*
+* @field vehicleLength: This component represent the vehicle length value and vehicle length confidence indication of the vehicle ITS-S that 
+* originate the CAM. 
+*
+* @field vehicleWidth: This component represents the Vehicle Width of the vehicle ITS-S that originates the CAM excluding side mirrors and possible
+* similar extensions.
+*
+* @field longitudinalAcceleration: It represent the vehicle Longitudinal Acceleration of the originating ITS-S in the centre of the mass of the 
+* empty vehicle. It shall include the measured vehicle longitudinal acceleration and its accuracy value with the confidence level of 95 %. 
+* Otherwise, the longitudinalAccelerationConfidence shall be set to unavailable. 
+*
+* @field curvature: this component reppresent the actual trajectory of the vehicle. 
+*
+* @field curvatureCalculationMode: It indicates whether vehicle yaw-rate is used in the calculation of the curvature of the vehicle ITS-S that
+* originates the CAM.
+*
+* @field yawRate: It denotes the vehicle rotation around the centre of mass of the empty vehicle. The leading sign denotes the direction of 
+* rotation. The value is negative if the motion is clockwise when viewing from the top.
+* yawRateConfidence denotes the accuracy for the 95 % confidence level for the measured yawRateValue. Otherwise, the value of yawRateConfidence
+* shall be set to unavailable.
+*
+* @field accelerationControl: an optional component which represents the current status of the vehcile mechnanisms controlling the longitudinal movement of the vehcile ITS-S
+* (e.g. brake pedal,  gas pedal, etc. engaged) that originate the CAM.
+*
+* @field lanePosition: an optional component which represents the lanePosition of the referencePosition of a vehicle. This component shall be present if the data is 
+* available at the originating ITS-S.
+*
+* @field steeringWheelAngle: an optional component which indicates the steering wheel angle and accuracy as measured at the vehicle ITS-S that originates the CAM.
+*
+* @field lateralAcceleration: an optional component which represents the vehicle lateral acceleration of the originating ITS-S in the centre of the mass of the empty vehicle. 
+* It shall include the measured vehicle lateral acceleration and its accuracy value with the confidence level of 95%.
+*
+* @field verticalAcceleration: an optional component which indicates the originating ITS-S in the centre of the mass of the empty vehicle.
+* 
+* @field performanceClass: an optional component characterizes the maximum age of the CAM data elements with regard to the generation delta time.
+*
+* @field cenDsrcTollingZone: an optional component which represents the information about the position of a CEN DSRC Tolling Station operating in the 5,8 GHz frequency band.
+*/
+BasicVehicleContainerHighFrequency ::= SEQUENCE {
+	heading Heading,
+	speed Speed,
+	driveDirection DriveDirection,
+	vehicleLength VehicleLength,
+	vehicleWidth VehicleWidth,
+	longitudinalAcceleration AccelerationComponent,
+	curvature Curvature,
+	curvatureCalculationMode CurvatureCalculationMode,
+	yawRate YawRate,
+	accelerationControl AccelerationControl OPTIONAL,
+	lanePosition LanePosition OPTIONAL,
+	steeringWheelAngle SteeringWheelAngle OPTIONAL,
+	lateralAcceleration AccelerationComponent OPTIONAL,
+	verticalAcceleration AccelerationComponent OPTIONAL,
+	performanceClass PerformanceClass OPTIONAL,
+	cenDsrcTollingZone CenDsrcTollingZone OPTIONAL
+}
+
+/**
+* This type contains detaild information of the Basic Vehicle Container Low Frequency.
+*
+* It shall include the following components:
+*
+* @field vehicleRole: represent the role of the vehicle ITS-S that originates the CAM. Only values 0 to 7 shall be used.
+*
+* @field exteriorLights: represent the status of the most important exterior lights switches of the vehicle ITS-S that originates the CAM.
+*
+* @field pathHistory: which represents the vehicle's recent movement over some past time and/or distance. It consists of a list of path points,
+* each represented as DF PathPoint. The list of path points may consist of up to 23 elements. 
+*/
+BasicVehicleContainerLowFrequency  ::= SEQUENCE {
+	vehicleRole VehicleRole,
+	exteriorLights ExteriorLights,
+	pathHistory Path
+}
+
+/**
+* This type contains detaild information of the Public Transport Container.
+*
+* It shall include the following components:
+*
+* @field embarkationStatus: It indicates whether the passenger embarkation is currently ongoing. 
+*
+* @field ptActivation: an optional component used for controlling traffic lights, barriers, bollards, etc.
+*/
+PublicTransportContainer ::= SEQUENCE {
+	embarkationStatus EmbarkationStatus,
+	ptActivation PtActivation OPTIONAL
+}
+
+/**
+* This type contains detaild information of the Special Transport Container.
+*
+* It shall include the following components:
+*
+* @field specialTransportType: which indicates whether the originating ITS-S is mounted on a special transport vehicle with heavy or oversized load
+* or both. It shall be present if the data is available in originating ITS-S.
+*
+* @field lightBarSirenInUse: indicates whether light-bar or a siren is in use by the vehicle originating the CAM.
+*/
+SpecialTransportContainer ::= SEQUENCE {
+	specialTransportType SpecialTransportType,
+	lightBarSirenInUse LightBarSirenInUse
+}
+
+/**
+* This type contains detaild information of the Dangerous Goods Container.
+*
+* It shall include the following components:
+*
+* @field dangerousGoodsBasic: identifies the type of the dangerous goods transported by the vehicle that originates the CAM. It shall be present if
+* the data is available in the originating ITS S.
+*/
+ DangerousGoodsContainer ::= SEQUENCE {
+  dangerousGoodsBasic DangerousGoodsBasic
+ }
+ 
+ /**
+* This type contains detaild information of the Road Works Container Basic.
+*
+* It shall include the following components:
+*
+* @field roadworksSubCauseCode: The optional component, in case the originating ITS-S is mounted to a vehicle ITS-S participating to roadwork. It 
+* provides information on the type of roadwork that it is currently undertaking. This component shall be present if the data is available in 
+* originating ITS S.
+*
+* @field lightBarSirenInUse: it indicates whether light-bar or a siren is in use by the vehicle originating the CAM.
+*
+* @field closedLanes: an optional component which provides information about the opening/closure status of the lanes ahead. Lanes are counted from
+* the inside boarder of the road. If a lane is closed to traffic, the corresponding bit shall be set to 1.
+*/
+ RoadWorksContainerBasic ::= SEQUENCE {
+  roadworksSubCauseCode RoadworksSubCauseCode OPTIONAL,
+  lightBarSirenInUse LightBarSirenInUse,
+  closedLanes ClosedLanes OPTIONAL
+ }
+
+/**
+* This type contains detaild information of the Rescue Container.
+*
+* It shall include the following components:
+*
+* @field lightBarSirenInUse: it indicates whether light-bar or a siren is in use by the vehicle originating the CAM.
+*/
+RescueContainer ::= SEQUENCE {
+	lightBarSirenInUse LightBarSirenInUse
+}
+
+/**
+* This type contains detaild information of the Emergency Container.
+*
+* It shall include the following components:
+*
+* @field lightBarSirenInUse: it indicates whether light-bar or a siren is in use by the vehicle originating the CAM.
+*
+* @field incidentIndication: the optional incident related to the roadworks to provide additional information of the roadworks zone.
+*
+* @field emergencyPriority: the optional component represent right of way indicator of the vehicle ITS-S that originates the CAM PDU.
+*/
+EmergencyContainer ::= SEQUENCE {
+	lightBarSirenInUse LightBarSirenInUse,
+	incidentIndication CauseCodeV2 OPTIONAL,
+	emergencyPriority EmergencyPriority OPTIONAL
+}
+
+/**
+* This type contains detaild information of the Safety Car Container.
+*
+* It shall include the following components:
+*
+* @field lightBarSirenInUse: it indicates whether light-bar or a siren is in use by the vehicle originating the CAM.
+*
+* @field incidentIndication: the optional incident related to the roadworks to provide additional information of the roadworks zone.
+*
+* @field trafficRule: an optional rule indicates whether vehicles are allowed to overtake a safety car that is originating this CAM.
+*
+* @field speedLimit: an optional speed indicates whether a speed limit is applied to vehicles following the safety car. 
+*/
+SafetyCarContainer ::= SEQUENCE {
+	lightBarSirenInUse LightBarSirenInUse,
+	incidentIndication CauseCodeV2 OPTIONAL,
+	trafficRule TrafficRule OPTIONAL,
+	speedLimit SpeedLimit OPTIONAL
+}
+
+/**
+* This type contains detaild information of the RSU Container High Frequency.
+*
+* It shall include the following components:
+*
+* @field protectedCommunicationZonesRSU: an optional Information about position of a CEN DSRC Tolling Station operating in the 5,8 GHz frequency 
+* band. If this information is provided by RSUs a receiving vehicle ITS-S is prepared to adopt mitigation techniques when being in the vicinity of
+* CEN DSRC tolling stations. 
+*/
+RSUContainerHighFrequency ::= SEQUENCE {
+	protectedCommunicationZonesRSU ProtectedCommunicationZonesRSU OPTIONAL,
+	...	
+}
+
+/**
+* This information object class is an abstract template to instantiate containers.
+*
+* It shall include the following components:
+*
+* @field &id: the identifier of the container type.
+*
+* @field &Type: the container content.
+*
+*/
+EXTENSION-CONTAINER-ID-AND-TYPE ::= CLASS {
+    &id     ExtensionContainerId UNIQUE,
+    &Type
+} WITH SYNTAX {&Type IDENTIFIED BY &id}
+
+/**
+* This DE represents the identifier of the container type.
+*/
+ExtensionContainerId ::= INTEGER (1..16,...)
+
+/**
+* These value assignments represent specific values of the container type identifier. 
+*/
+twoWheelerContainer ExtensionContainerId ::= 1
+eHorizonLocationSharingContainer ExtensionContainerId ::= 2
+veryLowFrequencyContainer ExtensionContainerId ::= 3
+pathPredictionContainer ExtensionContainerId ::= 4
+generalizedLanePositionsContainer ExtensionContainerId ::= 5
+vehicleMovementControlContainer ExtensionContainerId ::= 6
+
+/**
+* This information object set represents the association between the container type and the container content.
+*/
+ExtensionContainers EXTENSION-CONTAINER-ID-AND-TYPE ::= {
+    {TwoWheelerContainer IDENTIFIED BY twoWheelerContainer} |
+    {EHorizonLocationSharingContainer IDENTIFIED BY eHorizonLocationSharingContainer} |
+    {VeryLowFrequencyContainer IDENTIFIED BY veryLowFrequencyContainer} |
+    {PathPredictionContainer IDENTIFIED BY pathPredictionContainer} |
+    {GeneralizedLanePositionsContainer IDENTIFIED BY generalizedLanePositionsContainer} |
+    {VehicleMovementControlContainer IDENTIFIED BY vehicleMovementControlContainer},
+	...
+}
+
+/**
+* This DF represents a CAM container preceded by its type identifier and a length indicator.
+*
+* It shall include the following components:
+*
+* @field containerId: the identifier of the container type.
+*
+* @field containerData: the container content consistent with the container type.
+*
+*/
+WrappedExtensionContainer ::= SEQUENCE {
+   containerId     EXTENSION-CONTAINER-ID-AND-TYPE.&id( {ExtensionContainers} ),
+   containerData   EXTENSION-CONTAINER-ID-AND-TYPE.&Type( {ExtensionContainers}{@containerId} )
+}
+
+/**
+* This DF represents a list of CAM containers, each with their type identifier.
+*/
+WrappedExtensionContainers ::= SEQUENCE SIZE(1..8,...) OF WrappedExtensionContainer
+
+/**
+* This type contains detailed information about two wheelers. It is meant to use for StationType
+* cyclist, moped and motorcycle.
+*
+* It shall include the following components:
+*
+* @field typeSpecificInformation: this data field contains type specific information about two wheelers.
+*
+* @field rollAngle: this data field describes the roll angle of the two wheeler.
+*
+* @field orientation: this data field describes the orientation of the two wheeler.
+*
+* @field stabilityChangeIndication: this data field describes if the two wheeler is about to lose control.
+*
+*/
+TwoWheelerContainer ::= SEQUENCE {
+    typeSpecificInformation     TwoWheelerTypeSpecificInformation OPTIONAL,
+    rollAngle                   CartesianAngle OPTIONAL,
+    orientation                 Wgs84Angle OPTIONAL,
+    stabilityChangeIndication   StabilityChangeIndication OPTIONAL,
+    ...
+}
+
+/**
+* This type contains type specific information about a two wheeler.
+*
+* It includes one of the following components:
+*
+* @field cyclist: it contains cyclist-specific information.
+*
+*/
+TwoWheelerTypeSpecificInformation ::= CHOICE {
+    cyclist CyclistTypeSpecificInformation,
+    ...
+}
+
+/**
+* This type contains type-specific information about cyclists.
+*
+* It shall include the following components:
+*
+* @field vruSubProfileBicyclist: it indicates the detailed type of the cyclist.
+*
+* @field vruMovementControl: it includes information about the movement control of the bicycle.
+*
+*/
+CyclistTypeSpecificInformation ::= SEQUENCE {
+    vruSubProfileBicyclist  VruSubProfileBicyclist (unavailable | bicyclist | e-scooter | pedelec | speed-pedelec | roadbike | childrensbike) OPTIONAL,
+    vruMovementControl      VruMovementControl OPTIONAL,
+    ...
+}
+
+/**
+* This type contains contextual, map-based location information.
+* eHorizon is defined as a tool to convey the part of the road network and its characteristics derived from map data located in front of and behind the vehicle along the road.
+*
+* It shall include the following components:
+*
+* @field segmentAhead: the road segment that the vehicle is predicted to reach, starting from the reference position.
+* At least one node must be filled in so that the current map position can be calculated on the receiver side.
+*
+* @field nodeProbabilities: confidence values for each node in segmentAhead, indicating how confident we are that the ITS station will reach that point.
+*
+* @field segmentBehind: the road segment that the vehicle has passed, based on the collected data, starting from the reference position.
+* At least one node must be filled in so that the current map position can be calculated on the receiver side.
+*
+* @field laneLevelDetails: provides information about the configuration of the road at the position indicated by the component referencePosition of the Basic Container and for a given reference direction.
+*
+* @field segmentSource: it represents the origin of the map-specific data.
+*
+*/
+EHorizonLocationSharingContainer ::= SEQUENCE {
+    segmentAhead        PolygonalLine,
+    nodeProbabilities   ConfidenceLevels OPTIONAL,
+    segmentBehind       PolygonalLine,
+    laneLevelDetails    BasicLaneConfiguration OPTIONAL,
+    segmentSource       MetaInformation (WITH COMPONENTS {..., confidenceValue ABSENT}) OPTIONAL,
+    ...
+}
+
+/**
+* This type represents the very low frequency container.
+*
+* It shall include the following components:
+*
+* @field vehicleHeight: this component represents the height of the vehicle that originates the CAM.
+*
+* @field wiperStatus: this component represents the status of the wipers of the vehicle that originates the CAM, at the time indicated by generationDeltaTime.
+*
+* @field brakeControl: this component represents the status of the brake control system of the vehicle that originates the CAM, 
+* at the time indicated by generationDeltaTime and during the period 10 seconds before that time.
+*/
+VeryLowFrequencyContainer ::= SEQUENCE {
+    vehicleHeight  VehicleHeight2 OPTIONAL,
+    wiperStatus    WiperStatus OPTIONAL,
+    brakeControl   BrakeControl OPTIONAL,
+    ...
+}
+
+/**
+* This type represents the path prediction container.
+*
+* Contains information about the possible future paths of ITS station.
+*/
+PathPredictionContainer ::= SEQUENCE {   
+	pathPredictedList	PathPredictedList,
+	...
+}
+
+/**
+* This type represents the generalized lane positions container.
+*
+* Contains detailed information about the transversal position of the ITS station with respect to the road and potentially about the lane type.
+*/
+GeneralizedLanePositionsContainer ::= SEQUENCE {   
+	generalizedLanePositions	GeneralizedLanePositions,
+	...
+}
+
+/**
+* This type represents the vehicle movement control container.
+*
+* Contains information about the current vehicle movement control status 
+* of ITS station.
+*  This contains: 
+*	- brake and acceleration pedal position status information
+* 	- mechanism for lateral, longitudinal movements dimensions 
+*	  of the vehicle 
+*/
+VehicleMovementControlContainer ::= SEQUENCE {   
+	vehicleMovementControl	VehicleMovementControl,
+	...
+}
+
+END

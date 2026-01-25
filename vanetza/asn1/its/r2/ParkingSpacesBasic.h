@@ -40,7 +40,7 @@ extern asn_TYPE_member_t asn_MBR_Vanetza_ITS2_ParkingSpacesBasic_1[1];
 #endif
 
 /* Referred external types */
-#include "ParkingSpaceBasic.h"
+#include "POIM-ParkingAvailability_ParkingSpaceBasic.h"
 
 #endif	/* _Vanetza_ITS2_ParkingSpacesBasic_H_ */
 #include "asn_internal.h"

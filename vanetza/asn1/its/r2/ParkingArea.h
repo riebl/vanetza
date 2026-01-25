@@ -16,13 +16,13 @@
 #include "OccupancyInformation.h"
 #include "GeoPosition.h"
 #include "NativeInteger.h"
-#include "ParkingAreaArrangementType.h"
+#include "POIM-ParkingAvailability_ParkingAreaArrangementType.h"
 #include "VehicleHeight.h"
 #include "UTF8String.h"
 #include "asn_SEQUENCE_OF.h"
 #include "constr_SEQUENCE_OF.h"
 #include "EngineCharacteristicsFromIso.h"
-#include "ParkingReservationType.h"
+#include "POIM-ParkingAvailability_ParkingReservationType.h"
 #include "constr_SEQUENCE.h"
 
 #ifdef __cplusplus
@@ -44,7 +44,7 @@ typedef struct Vanetza_ITS2_ParkingArea {
 	Vanetza_ITS2_OccupancyInformation_t	 currentOccupancy;
 	Vanetza_ITS2_GeoPosition_t	 location;
 	long	 level;	/* DEFAULT 0 */
-	Vanetza_ITS2_ParkingAreaArrangementType_t	 arrangementType;
+	Vanetza_ITS2_POIM_ParkingAvailability_ParkingAreaArrangementType_t	 arrangementType;
 	struct Vanetza_ITS2_DeltaPositions	*boundary;	/* OPTIONAL */
 	struct Vanetza_ITS2_Wgs84Angle	*orientation;	/* OPTIONAL */
 	Vanetza_ITS2_Identifier2B_t	*accessViaLane;	/* OPTIONAL */
@@ -74,7 +74,7 @@ typedef struct Vanetza_ITS2_ParkingArea {
 	} *notAllowedLoadTypes;
 	Vanetza_ITS2_VehicleHeight_t	*heightRestriction;	/* OPTIONAL */
 	struct Vanetza_ITS2_ParkingArea__reservationType {
-		A_SEQUENCE_OF(Vanetza_ITS2_ParkingReservationType_t) list;
+		A_SEQUENCE_OF(Vanetza_ITS2_POIM_ParkingAvailability_ParkingReservationType_t) list;
 		
 		/* Context for parsing across buffer boundaries */
 		asn_struct_ctx_t _asn_ctx;
@@ -116,13 +116,13 @@ extern asn_TYPE_member_t asn_MBR_Vanetza_ITS2_ParkingArea_1[22];
 #endif
 
 /* Referred external types */
-#include "DeltaPositions.h"
+#include "POIM-ParkingAvailability_DeltaPositions.h"
 #include "Wgs84Angle.h"
 #include "ParkingSpacesBasic.h"
 #include "ParkingSpacesDetailed.h"
 #include "EuVehicleCategoryCode.h"
 #include "LoadType.h"
-#include "DeltaPosition.h"
+#include "POIM-ParkingAvailability_DeltaPosition.h"
 
 #endif	/* _Vanetza_ITS2_ParkingArea_H_ */
 #include "asn_internal.h"

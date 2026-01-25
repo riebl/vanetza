@@ -1,0 +1,229 @@
+-- Draft V0.0.4_2.2.1 - VAM TS 103 300-1 ASN.1 module
+-- Based on the official version available at @url https://forge.etsi.org/rep/ITS/asn1/vam-ts103300_3/-/tree/v2.1.1
+-- Modified to import from the CDD module V2.1.1
+
+VAM-PDU-Descriptions {itu-t(0) identified-organization(4) etsi(0) itsDomain(5)
+    wg1(1) 103300 vam(1) major-version-3(3) minor-version-1(1)}
+DEFINITIONS AUTOMATIC TAGS ::=
+BEGIN
+
+    IMPORTS
+    AccelerationChangeIndication, BasicContainer, CartesianAngle, ClusterBreakupInfo,
+    ClusterJoinInfo, ClusterLeaveInfo, Curvature, CurvatureCalculationMode, 
+    DeltaTimeQuarterSecond, GenerationDeltaTime, HeadingChangeIndication, ItsPduHeader, LanePosition, 
+    LateralAcceleration, LongitudinalAcceleration, PathHistory, PathPredicted, 
+    SequenceOfSafeDistanceIndication, SequenceOfTrajectoryInterceptionIndication, 
+    SequenceOfTrajectoryInterceptionIndication, Speed, StabilityChangeIndication, StationId, 
+    TrajectoryInterceptionIndication, VerticalAcceleration, VruClusterInformation, VruDeviceUsage, 
+    VruEnvironment, VruExteriorLights, GeneralizedLanePosition, VruProfileAndSubprofile, VruMovementControl,  
+    VruSizeClass, YawRate, Wgs84Angle
+    FROM ETSI-ITS-CDD {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) 102894 cdd (2) major-version-3 (4) minor-version-3 (3) }
+    WITH SUCCESSORS
+    ;
+
+    VAM ::= SEQUENCE {
+        header ItsPduHeaderVam,
+        vam    VruAwareness
+    }
+
+/**
+ * @details ItsPduHeaderVam
+ * The ITS PDU header for the VAM.
+ *
+ * This DF includes DEs for the VAM _protocolVersion_, the VAM message type identifier _messageID_ 
+ * and the station identifier _stationID_ of the originating ITS-S.
+ *
+ * @category: Communication information
+ * @revision: V2.2.1
+ */
+   ItsPduHeaderVam ::= ItsPduHeader(WITH COMPONENTS {..., protocolVersion(3), messageId(vam)})
+
+
+/**
+ * @details VruAwareness
+ * VAM payload.
+ *
+ * It includes the time stamp of the VAM and the VAM different containers
+ *
+ * @category: Communication information
+ * @revision: V2.2.1
+ */
+    VruAwareness ::= SEQUENCE {
+        generationDeltaTime  GenerationDeltaTime,
+        vamParameters        VamParameters 
+    }
+
+/**
+ * @details VamParameters
+ * The VAM payload includes the @ref BasicContainer and @ref VruHighFrequencyContainer. 
+ * The VAM payload may also include additional containers: @ref VruLowFrequencyContainer,
+ * @ref VruClusterInformationContainer, @ref VruClusterOperationContainer and @ref VruMotionPredictionContainer.
+ * The selection of the additional containers depends on the dissemination criteria, 
+ * e.g. _vruCluster_ or _MotionDynamicPrediction_ availability.
+ * 
+ * @category: Communication information
+ * @revision: V2.2.1
+**/
+    VamParameters ::= SEQUENCE {
+        basicContainer                 BasicContainer,
+        vruHighFrequencyContainer      VruHighFrequencyContainer, 
+        vruLowFrequencyContainer       VruLowFrequencyContainer OPTIONAL,
+        vruClusterInformationContainer VruClusterInformationContainer OPTIONAL,
+        vruClusterOperationContainer   VruClusterOperationContainer OPTIONAL,
+        vruMotionPredictionContainer   VruMotionPredictionContainer OPTIONAL,
+        ...
+    }
+ 
+/**
+ * @details VruHighFrequencyContainer
+ * The VRU HF container of the VAM contains potentially fast-changing status information of the VRU ITS-S.
+ * It includes the following components (setting indications are specified in clause 7.3.3 of TS 103 300-3): 
+ * 
+ * @field heading: heading and heading confidence of the originating VRU with regards to the true north. 
+ * @field speed: speed in moving direction and speed confidence of the originating VRU.   
+ * @field longitudinalAcceleration: longitudinal acceleration of the originating VRU. 
+ * @field curvature: related to the actual trajectory of the originating VRU vehicle.
+          _(recommended for VRU Profile 2)_
+ * @field curvatureCalculationMode: indicates whether vehicle yaw-rate is used in the calculation of
+ *        the curvature of the VRU vehicle ITS-S that originates the VAM. _(recommended for VRU Profile 2)_
+ * @field yawRate: yaw rate of originating VRU vehicle. _(recommended for VRU Profile 2)_
+ * @field lateralAcceleration: originating VRU lateral acceleration in the street plane.
+ *        This field shall be present if the data is available at the originating ITS-S. _(recommended for VRU Profile 2)_ 
+ * @field verticalAcceleration: vertical acceleration of the originating VRU.
+ *        This field shall be present if the data is available at the originating ITS-S.
+ * @field vruLanePosition: lane position of the referencePosition of a VRU, which is either a VRU-specific non-traffic lane  
+ *        or a standard traffic lane. This field shall be present if the data is available at the originating ITS-S.
+ * @field environment: provides contextual awareness of the VRU among other road users.
+ *        This field shall be present only if the data is available at the originating ITS-S.
+ * @field movementControl: indicates the mechanism used by the VRU to control the  longitudinal movement of the VRU vehicle.
+ *        This field shall be present only if the data is available at the originating ITS-S. _(recommended for VRU Profile 2)_
+ * @field orientation : complements the dimensions of the VRU vehicle by defining the angle of the VRU vehicle longitudinal
+ *        axis with regards to the WGS84 north. _(recommended for VRU Profile 2)_
+ * @field rollAngle: provides the angle and angle accuracy between the ground plane and the current orientation of a vehicle's
+ *        y-axis with respect to the ground plane about the x-axis according to the ISO 8855. 
+ *        This field shall be present only if the data is available at the originating ITS-S. _(recommended for VRU Profile 2)_
+ * @field deviceUsage: provides indications from the personal device about the potential 
+ *        activity of the VRU. This field shall be present only if the data is available at the originating ITS-S.
+ *        _(recommended for VRU Profile 1)_
+ * 
+ * @category: VRU information
+ * @revision: V2.2.1
+ */
+    VruHighFrequencyContainer ::= SEQUENCE {
+        heading                  Wgs84Angle,  
+        speed                    Speed, 
+        longitudinalAcceleration LongitudinalAcceleration, 
+        curvature                Curvature OPTIONAL, 
+        curvatureCalculationMode CurvatureCalculationMode OPTIONAL, 
+        yawRate                  YawRate OPTIONAL, 
+        lateralAcceleration      LateralAcceleration OPTIONAL, 
+        verticalAcceleration     VerticalAcceleration OPTIONAL, 
+        vruLanePosition          GeneralizedLanePosition OPTIONAL, 
+        environment              VruEnvironment OPTIONAL,
+        movementControl          VruMovementControl OPTIONAL,
+        orientation              Wgs84Angle OPTIONAL, 
+        rollAngle                CartesianAngle OPTIONAL,  
+        deviceUsage              VruDeviceUsage OPTIONAL,
+        ...
+    }
+
+/**
+ * @details VruLowFrequencyContainer
+ * The VRU LF container of the VAM contains potentially slow-changing information of the VRU ITS-S.
+ * It is mandatory with higher periodicity as specified in clause 6.2 or when VRU cluster operation container is present.
+ * It includes the following components (setting indications are specified in clause 7.3.4 of TS 103 300-3): 
+ *
+ * @field profileAndSubprofile: profile of the ITS-S that originates the VAM, including sub-profile information. 
+ * @field sizeClass: information about the size of the VRU. 
+ * @field exteriorLights: status of the most important exterior lights switches of the VRU ITS-S that originates the VAM. 
+ *        _(conditional mandatory as specified in clause 7.3.4 of TS 103 300-3)_ 
+ * 
+ * @category: VRU information
+ * @revision: V2.2.1
+ */
+    VruLowFrequencyContainer ::= SEQUENCE {
+        profileAndSubprofile     VruProfileAndSubprofile,
+        sizeClass                VruSizeClass OPTIONAL,        
+		exteriorLights           VruExteriorLights OPTIONAL,
+       ...
+    }
+
+ /**
+ * @details VruClusterInformationContainer
+ * The VRU Cluster Information container of the VAM provides the information/parameters relevant to the VRU cluster.
+ * It is mandatory if the VAM is transmitted by VRU cluster leader.
+ * It includes the following components (setting indications are specified in clause 7.3.5 of TS 103 300-3): 
+ *
+ * @field vruClusterInformation: set of parammeters releated to the VRU cluster. 
+ *        When transmitted by a VRU ITS-S, the clusterId and clusterBoundingBoxShape fields inside this DF shall be present.
+ *        The clusterBoundingBoxShape is positioned with respect to the position sent in the BasicContainer.
+ * 
+ * @category: VRU information
+ * @revision: V2.2.1
+ */
+    VruClusterInformationContainer::= SEQUENCE{ 
+        vruClusterInformation    VruClusterInformation (WITH COMPONENTS{..., clusterId, clusterBoundingBoxShape PRESENT}), 
+        ...
+    }
+
+
+ /**
+ * @details VruClusterOperationContainer
+ * The VRU Cluster Operation container of the VAM provides information relevant to change of cluster state and composition.
+ * It is mandatory if the VAM is transmitted by a VRU joining, leaving or breaking up a cluster.
+ * It includes the following components (setting indications are specified in clause 7.3.5 of TS 103 300-3). 
+ * At least one of the fields below shall be present if the container is present in the VAM: 
+ *
+ * @field clusterJoinInfo: indicates the intent of an individual VAM transmitter to join a cluster. 
+ * @field clusterLeaveInfo : indicates that an individual VAM transmitter has recently left the VRU cluster. 
+ * @field clusterBreakupInfo: indicates the intent of a cluster VAM transmitter to stop sending cluster VAMs. 
+ * @field clusterIdChangeTimeInfo: indicates the intent of a cluster VAM transmitter to change cluster ID. 
+ * 
+ * @category: VRU information
+ * @revision: V2.2.1
+ */
+    VruClusterOperationContainer ::= SEQUENCE {
+        clusterJoinInfo         ClusterJoinInfo OPTIONAL,
+        clusterLeaveInfo        ClusterLeaveInfo OPTIONAL,
+        clusterBreakupInfo      ClusterBreakupInfo OPTIONAL,
+        clusterIdChangeTimeInfo DeltaTimeQuarterSecond OPTIONAL,
+        ...
+    }
+
+ /**
+ * @details VruMotionPredictionContainer
+ * The VRU Motion Prediction container of the VAM carries the past and future motion state information of the VRU.
+ * It includes the following components (setting indications are specified in clause 7.3.6 of TS 103 300-3). 
+ * At least one of the fields below shall be present if the container is present in the VAM: 
+ *
+ * @field pathHistory: represents the VRU's recent movement over some past time and/or distance. 
+ *        It consists of a list of path points. 
+ * @field pathPrediction: provides the set of predicted locations of the ITS-S, confidence values 
+ *        and the corresponding future time instants. 
+ * @field safeDistance: provides indication of safe distance between an ego-VRU and up to 8 other ITS-S 
+ *        or entity on the road to indicate whether the ego-VRU is at a safe distance (that is less likely to 
+ *        physically collide) from another ITS-S or entity on the road. 
+ * @field trajectoryInterceptionIndication: provides the indication for possible trajectory interception 
+ *        with up to 8 VRUs or other objects on the road.. 
+ * @field accelerationChangeIndication: provides an acceleration change indication of the VRU. 
+ *        When present this DF indicates an anticipated change in the VRU speed for period of actionDeltaTime.
+ * @field headingChangeIndication: provides additional data elements associated to heading change indicators 
+ *        such as a change of travel direction (left or right). 
+ *        The direction change action is performed for a period of actionDeltaTime. 
+ * @field stabilityChangeIndication: provides an estimation of the VRU stability. 
+ * 
+ * @category: GeoReference information, VRU information
+ * @revision: V2.2.1
+ */
+    VruMotionPredictionContainer ::= SEQUENCE {
+        pathHistory                      PathHistory OPTIONAL,
+        pathPrediction                   PathPredicted OPTIONAL,  
+        safeDistance                     SequenceOfSafeDistanceIndication OPTIONAL,
+        trajectoryInterceptionIndication SequenceOfTrajectoryInterceptionIndication OPTIONAL,
+        accelerationChangeIndication     AccelerationChangeIndication OPTIONAL,
+        headingChangeIndication          HeadingChangeIndication OPTIONAL,
+        stabilityChangeIndication        StabilityChangeIndication OPTIONAL,
+        ...
+    }
+
+END
