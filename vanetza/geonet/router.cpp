@@ -375,25 +375,18 @@ DataConfirm Router::request(const TsbDataRequest&, DownPacketPtr)
 void Router::indicate(UpPacketPtr packet, const MacAddress& sender, const MacAddress& destination)
 {
     assert(packet);
-    const auto size_limit = m_mib.itsGnMaxSduSize + m_mib.itsGnMaxGeoNetworkingHeaderSize;
-    if (size(*packet) <= size_limit) {
-        IndicationContext::LinkLayer link_layer;
-        link_layer.sender = sender;
-        link_layer.destination = destination;
+    IndicationContext::LinkLayer link_layer;
+    link_layer.sender = sender;
+    link_layer.destination = destination;
 
-        if (auto cohesive = boost::get<CohesivePacket>(packet.get())) {
-            IndicationContextDeserialize ctx(std::move(packet), *cohesive, link_layer);
-            indicate_basic(ctx);
-
-        } else if (auto chunk = boost::get<ChunkPacket>(packet.get())) {
-            IndicationContextCast ctx(std::move(packet), *chunk, link_layer);
-            indicate_basic(ctx);
-        } else {
-            packet_dropped(PacketDropReason::Internal_Error);
-        }
+    if (auto cohesive = boost::get<CohesivePacket>(packet.get())) {
+        IndicationContextDeserialize ctx(std::move(packet), *cohesive, link_layer);
+        indicate_basic(ctx);
+    } else if (auto chunk = boost::get<ChunkPacket>(packet.get())) {
+        IndicationContextCast ctx(std::move(packet), *chunk, link_layer);
+        indicate_basic(ctx);
     } else {
-        packet_dropped(PacketDropReason::Packet_Size);
-        return;
+        packet_dropped(PacketDropReason::Internal_Error);
     }
 }
 
