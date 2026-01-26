@@ -1,5 +1,8 @@
 #include <vanetza/asn1/asn1c_wrapper.hpp>
+#include <vanetza/asn1/its/r2/EventHistory.h>
+#include <vanetza/asn1/its/r2/EventZone.h>
 #include <vanetza/asn1/its/r2/HeadingConfidence.h>
+#include <vanetza/asn1/its/r2/SituationContainer.h>
 #include <vanetza/asn1/its/r2/TimestampIts.h>
 #include <vanetza/asn1/vam.hpp>
 #include <gtest/gtest.h>
@@ -40,4 +43,11 @@ TEST(ItsAsn1R2, validate_vam)
     vam->vam.vamParameters.vruHighFrequencyContainer.speed.speedConfidence = Vanetza_ITS2_SpeedConfidence_unavailable;
 
     EXPECT_TRUE(vam.validate());
+}
+
+TEST(ItsAsn1R2, event_zone)
+{
+    // just needs to compile (SituationContainer's eventZone is patched)
+    Vanetza_ITS2_SituationContainer_t container {};
+    container.eventZone = vanetza::asn1::allocate<Vanetza_ITS2_EventZone_t>();
 }
