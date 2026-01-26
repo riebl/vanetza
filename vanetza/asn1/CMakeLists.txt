@@ -78,7 +78,10 @@ if(VANETZA_ASN1_WITH_ASN1C)
 
     set(_ieee_asn1_files ${_ieee_1609dot2_asn1_files} ${_ieee_1609dot2dot1_asn1_files})
     add_custom_command(OUTPUT ${_ieee_asn1_files}
-        COMMAND ${CMAKE_COMMAND} -DDIRECTORY=${CMAKE_CURRENT_BINARY_DIR}/ieee -P fetch_ieee_asn1_files.cmake
+        COMMAND ${CMAKE_COMMAND}
+          -DOUTPUT_DIRECTORY=${CMAKE_CURRENT_BINARY_DIR}/ieee
+          -DPATCH_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR}/patches/ieee
+          -P fetch_ieee_asn1_files.cmake
         COMMENT "Fetch and patch IEEE 1609 ASN.1 files"
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
         VERBATIM)
@@ -125,7 +128,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
 
     macro(generate_asn1c)
         cmake_parse_arguments(gen_asn1c "" "DESCRIPTION;OUTPUT_DIRECTORY;PREFIX;SOURCE_FILE" "SOURCES" ${ARGN})
-        
+
         if(NOT gen_asn1c_OUTPUT_DIRECTORY)
             message(FATAL_ERROR "Missing output directory for generated ASN.1 code (OUTPUT_DIRECTORY)")
         endif()
