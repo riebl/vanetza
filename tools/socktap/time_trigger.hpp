@@ -3,7 +3,7 @@
 
 #include <vanetza/common/manual_runtime.hpp>
 #include <boost/asio/io_context.hpp>
-#include <boost/asio/deadline_timer.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 
 class TimeTrigger
@@ -19,7 +19,7 @@ private:
     void update_runtime();
 
     boost::asio::io_context& io_context_;
-    boost::asio::deadline_timer timer_;
+    boost::asio::steady_timer timer_;
     vanetza::ManualRuntime runtime_;
 };
 

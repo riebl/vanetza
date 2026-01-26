@@ -24,7 +24,8 @@ void TimeTrigger::schedule()
     update_runtime();
     auto next = runtime_.next();
     if (next < Clock::time_point::max()) {
-        timer_.expires_at(Clock::at(next));
+        auto timeout = next - runtime_.now();
+        timer_.expires_after(timeout);
         timer_.async_wait(std::bind(&TimeTrigger::on_timeout, this, std::placeholders::_1));
     } else {
         timer_.cancel();
