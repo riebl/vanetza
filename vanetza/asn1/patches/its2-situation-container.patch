@@ -1,0 +1,34 @@
+From 14774309f6b18136037adb5c0d15fa73aac657a7 Mon Sep 17 00:00:00 2001
+From: Raphael Riebl <raphael@riebl.net>
+Date: Mon, 26 Jan 2026 09:50:36 +0100
+Subject: [PATCH] asn1: patch ITS2 SituationContainer #277
+
+---
+ vanetza/asn1/its/r2/SituationContainer.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/vanetza/asn1/its/r2/SituationContainer.h b/vanetza/asn1/its/r2/SituationContainer.h
+index 441b6df81..9a5b0235e 100644
+--- a/vanetza/asn1/its/r2/SituationContainer.h
++++ b/vanetza/asn1/its/r2/SituationContainer.h
+@@ -25,7 +25,7 @@ extern "C" {
+ 
+ /* Forward declarations */
+ struct Vanetza_ITS2_CauseCodeV2;
+-struct Vanetza_ITS2_EventZone;
++struct Vanetza_ITS2_EventHistory;
+ struct Vanetza_ITS2_ActionIdList;
+ 
+ /* Vanetza_ITS2_SituationContainer */
+@@ -33,7 +33,7 @@ typedef struct Vanetza_ITS2_SituationContainer {
+ 	Vanetza_ITS2_InformationQuality_t	 informationQuality;
+ 	Vanetza_ITS2_CauseCodeV2_t	 eventType;
+ 	struct Vanetza_ITS2_CauseCodeV2	*linkedCause;	/* OPTIONAL */
+-	struct Vanetza_ITS2_EventZone	*eventZone;	/* OPTIONAL */
++	struct Vanetza_ITS2_EventHistory	*eventZone;	/* OPTIONAL */
+ 	/*
+ 	 * This type is extensible,
+ 	 * possible extensions are below.
+-- 
+2.52.0
+
