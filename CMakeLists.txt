@@ -150,3 +150,7 @@ if(VANETZA_INSTALL)
     export(PACKAGE ${PROJECT_NAME})
   endif()
 endif(VANETZA_INSTALL)
+
+# mark build directory as cache dir, see https://bford.info/cachedir
+file(WRITE ${PROJECT_BINARY_DIR}/CACHEDIR.TAG
+  "Signature: 8a477f597d28d172789f06886806bc55")
