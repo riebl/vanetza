@@ -5,7 +5,10 @@
 #include <vanetza/units/length.hpp>
 #include <cmath>
 
-static_assert(GPSD_API_MAJOR_VERSION >= 5 && GPSD_API_MAJOR_VERSION <= 16, "libgps has incompatible API");
+static_assert(GPSD_API_MAJOR_VERSION >= 5, "libgps has incompatible API");
+#if GPSD_API_MAJOR_VERSION > 16
+#warning "Your API version of libgps is not yet checked for compatibility"
+#endif
 
 namespace
 {
