@@ -23,6 +23,14 @@ struct PositionFix
     boost::optional<ConfidentQuantity<units::Length>> altitude;
 };
 
+/**
+ * Check if PositionFix contains a horizontal (2D) position.
+ * At least latitude and longitude must be valid.
+ * \param posfix position fix to be checked
+ * \return true if horizontal position is valid
+ */
+bool has_horizontal_position(const PositionFix& posfix);
+
 } // namespace vanetza
 
 #endif /* POSITION_FIX_HPP_BGU14Q9D */

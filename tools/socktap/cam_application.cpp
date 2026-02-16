@@ -3,8 +3,6 @@
 #include <vanetza/asn1/cam.hpp>
 #include <vanetza/asn1/packet_visitor.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
-#include <boost/units/cmath.hpp>
-#include <boost/units/systems/si/prefixes.hpp>
 #include <chrono>
 #include <functional>
 #include <iostream>
@@ -78,9 +76,8 @@ void CamApplication::on_timer(Clock::time_point)
     cam.generationDeltaTime = gen_delta_time * GenerationDeltaTime_oneMilliSec;
 
     auto position = positioning_.position_fix();
-
-    if (!std::isfinite(position.latitude.value()) || !std::isfinite(position.longitude.value())) {
-        std::cerr << "Skipping CAM, because no good position is available, yet." << std::endl;
+    if (!has_horizontal_position(position)) {
+        std::cerr << "Skip CAM generation without position fix" << std::endl;
         return;
     }
 
