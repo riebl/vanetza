@@ -9,7 +9,7 @@ This comprises the following protocols and features among others:
 * Security
 * Support for ASN.1 messages (Facilities) such as CAM and DENM
 
-Though originally designed to operate on ITS-G5 channels in a Vehicular Ad Hoc Network (VANET) using IEEE 802.11p, Vanetza and its components can be combined with other communication technologies as well, e.g. GeoNetworking over IP multicast.
+Though originally designed to operate on ITS-G5 channels in a Vehicular Ad Hoc Network (VANET) using IEEE 802.11p, Vanetza and its components can be combined with other communication technologies as well, e.g. GeoNetworking over IP multicast or C-V2X.
 
 ## How to build
 
@@ -32,7 +32,8 @@ At the moment, the three latest Ubuntu LTS versions are run on GitHub's Actions 
 
 ## Authors
 
-Development of Vanetza is part of ongoing research work at [Technische Hochschule Ingolstadt](https://www.thi.de/forschung/carissma/labore/car2x-labor/).
+Development of Vanetza started as research project at [Technische Hochschule Ingolstadt](https://www.thi.de/forschung/carissma/labore/car2x-labor/).
+Since 2024, [nfiniity GmbH](https://www.nfiniity.com) has been sponsoring the active development.
 Maintenance is coordinated by Raphael Riebl. Contributions are happily accepted.
 
 ## License
