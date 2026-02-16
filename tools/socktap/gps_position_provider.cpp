@@ -10,12 +10,28 @@ static_assert(GPSD_API_MAJOR_VERSION >= 5, "libgps has incompatible API");
 #warning "Your API version of libgps is not yet checked for compatibility"
 #endif
 
+#if GPSD_API_MAJOR_VERSION >= 7
+# define GPSD_READ_WITH_MESSAGE
+#endif
+
+#if GPSD_API_MAJOR_VERSION < 9
+# define GPSD_HAS_TIMESTAMP_T
+#endif
+
+#if GPSD_API_MAJOR_VERSION >= 9
+# define GPSD_HAS_ALTITUDE_HAE
+#endif
+
+#if GPSD_API_MAJOR_VERSION >= 15
+# define GPSD_HAS_ERROR_ELLIPSE
+#endif
+
 namespace
 {
 
 static const vanetza::units::TrueNorth north = vanetza::units::TrueNorth::from_value(0.0);
 
-#if GPSD_API_MAJOR_VERSION < 9
+#ifdef GPSD_HAS_TIMESTAMP_T
 using gpsd_timestamp = timestamp_t;
 #else
 using gpsd_timestamp = timespec_t;
@@ -23,16 +39,16 @@ using gpsd_timestamp = timespec_t;
 
 int gpsd_read(gps_data_t& data)
 {
-#if GPSD_API_MAJOR_VERSION < 7
-    return gps_read(&data);
-#else
+#ifdef GPSD_READ_WITH_MESSAGE
     return gps_read(&data, nullptr, 0);
+#else
+    return gps_read(&data);
 #endif
 }
 
 constexpr double gpsd_get_altitude(const gps_data_t& data)
 {
-#if GPSD_API_MAJOR_VERSION > 8
+#ifdef GPSD_HAS_ALTITUDE_HAE
     return data.fix.altHAE;
 #else
     return data.fix.altitude;
@@ -44,7 +60,7 @@ vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
     namespace posix = boost::posix_time;
 
     static const boost::gregorian::date posix_epoch(1970, boost::gregorian::Jan, 1);
-#if GPSD_API_MAJOR_VERSION < 9
+#ifdef GPSD_HAS_TIMESTAMP_T
     // gpsd's timestamp_t is UNIX time (UTC) with fractional seconds
     const posix::time_duration::fractional_seconds_type posix_ticks(gpstime * posix::time_duration::ticks_per_second());
     const posix::ptime posix_time { posix_epoch, posix::time_duration(0, 0, 0, posix_ticks) };
@@ -63,7 +79,7 @@ vanetza::PositionConfidence convert_gps_error_ellipse(const gps_fix_t& fix)
     using namespace vanetza::units;
     vanetza::PositionConfidence confidence;
 
-#if GPSD_API_MAJOR_VERSION >= 15
+#ifdef GPSD_HAS_ERROR_ELLIPSE
     if (std::isfinite(fix.errEllipseOrient) && std::isfinite(fix.errEllipseMajor) && std::isfinite(fix.errEllipseMinor)) {
         confidence.semi_minor = fix.errEllipseMinor * si::meter;
         confidence.semi_major = fix.errEllipseMajor * si::meter;
