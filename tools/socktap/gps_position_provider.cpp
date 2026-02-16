@@ -18,6 +18,10 @@ static_assert(GPSD_API_MAJOR_VERSION >= 5, "libgps has incompatible API");
 # define GPSD_HAS_TIMESTAMP_T
 #endif
 
+#if GPSD_API_MAJOR_VERSION > 9 || (GPSD_API_MAJOR_VERSION == 9 && GPSD_API_MINOR_VERSION >= 1)
+# define GPSD_HAS_LEAP_SECONDS
+#endif
+
 #if GPSD_API_MAJOR_VERSION >= 9
 # define GPSD_HAS_ALTITUDE_HAE
 #endif
@@ -55,11 +59,12 @@ constexpr double gpsd_get_altitude(const gps_data_t& data)
 #endif
 }
 
-vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
+vanetza::Clock::time_point convert_gps_time(const gps_data_t& data)
 {
     namespace posix = boost::posix_time;
 
     static const boost::gregorian::date posix_epoch(1970, boost::gregorian::Jan, 1);
+    const auto& gpstime = data.fix.time;
 #ifdef GPSD_HAS_TIMESTAMP_T
     // gpsd's timestamp_t is UNIX time (UTC) with fractional seconds
     const posix::time_duration::fractional_seconds_type posix_ticks(gpstime * posix::time_duration::ticks_per_second());
@@ -71,7 +76,17 @@ vanetza::Clock::time_point convert_gps_time(gpsd_timestamp gpstime)
 
     // TAI has some seconds bias compared to UTC
     const auto tai_utc_bias = posix::seconds(37); // 37 seconds since 1st January 2017
+    const auto tai_gps_bias = posix::seconds(19); // TAI offset to GPS time is fixed
+#ifdef GPSD_HAS_LEAP_SECONDS
+    // prefer leap seconds when they are reported, fall back to UTC conversion
+    if (data.leap_seconds > 0) {
+        return vanetza::Clock::at(posix_time + tai_gps_bias + posix::seconds(data.leap_seconds));
+    } else {
+        return vanetza::Clock::at(posix_time + tai_utc_bias);
+    }
+#else
     return vanetza::Clock::at(posix_time + tai_utc_bias);
+#endif
 }
 
 vanetza::PositionConfidence convert_gps_error_ellipse(const gps_fix_t& fix)
@@ -180,7 +195,7 @@ bool GpsPositionProvider::apply_gps_data(const gps_data_t& gps_data)
         return false;
     }
 
-    fetched_position_fix_.timestamp = convert_gps_time(gps_data.fix.time);
+    fetched_position_fix_.timestamp = convert_gps_time(gps_data);
     fetched_position_fix_.latitude = gps_data.fix.latitude * degree;
     fetched_position_fix_.longitude = gps_data.fix.longitude * degree;
     fetched_position_fix_.speed.assign(gps_data.fix.speed * si::meter_per_second, gps_data.fix.eps * si::meter_per_second);
