@@ -35,6 +35,10 @@ namespace
 
 static const vanetza::units::TrueNorth north = vanetza::units::TrueNorth::from_value(0.0);
 
+// gpsd claims to report errors as standard deviations (1-sigma). Need to scale them for 95% confidence.
+static const double scale_1dof95 = 2.0;
+static const double scale_2dof95 = std::sqrt(5.991);
+
 #ifdef GPSD_HAS_TIMESTAMP_T
 using gpsd_timestamp = timestamp_t;
 #else
@@ -96,19 +100,19 @@ vanetza::PositionConfidence convert_gps_error_ellipse(const gps_fix_t& fix)
 
 #ifdef GPSD_HAS_ERROR_ELLIPSE
     if (std::isfinite(fix.errEllipseOrient) && std::isfinite(fix.errEllipseMajor) && std::isfinite(fix.errEllipseMinor)) {
-        confidence.semi_minor = fix.errEllipseMinor * si::meter;
-        confidence.semi_major = fix.errEllipseMajor * si::meter;
-        confidence.orientation = north + fix.errEllipseOrient * degree;
+        confidence.semi_minor = scale_2dof95 * fix.errEllipseMinor * si::meter;
+        confidence.semi_major = scale_2dof95 * fix.errEllipseMajor * si::meter;
+        confidence.orientation = north + scale_1dof95 * fix.errEllipseOrient * degree;
     } else
 #endif
     if (std::isfinite(fix.epx) && std::isfinite(fix.epy)) {
         if (fix.epx > fix.epy) {
-            confidence.semi_minor = fix.epy * si::meter;
-            confidence.semi_major = fix.epx * si::meter;
+            confidence.semi_minor = scale_2dof95 * fix.epy * si::meter;
+            confidence.semi_major = scale_2dof95 * fix.epx * si::meter;
             confidence.orientation = north + 90.0 * degree;
         } else {
-            confidence.semi_minor = fix.epx * si::meter;
-            confidence.semi_major = fix.epy * si::meter;
+            confidence.semi_minor = scale_2dof95 * fix.epx * si::meter;
+            confidence.semi_major = scale_2dof95 * fix.epy * si::meter;
             confidence.orientation = north;
         }
     }
@@ -198,12 +202,12 @@ bool GpsPositionProvider::apply_gps_data(const gps_data_t& gps_data)
     fetched_position_fix_.timestamp = convert_gps_time(gps_data);
     fetched_position_fix_.latitude = gps_data.fix.latitude * degree;
     fetched_position_fix_.longitude = gps_data.fix.longitude * degree;
-    fetched_position_fix_.speed.assign(gps_data.fix.speed * si::meter_per_second, gps_data.fix.eps * si::meter_per_second);
-    fetched_position_fix_.course.assign(north + gps_data.fix.track * degree, north + gps_data.fix.epd * degree);
+    fetched_position_fix_.speed.assign(gps_data.fix.speed * si::meter_per_second, scale_1dof95 * gps_data.fix.eps * si::meter_per_second);
+    fetched_position_fix_.course.assign(north + gps_data.fix.track * degree, north + scale_1dof95 * gps_data.fix.epd * degree);
     fetched_position_fix_.confidence = convert_gps_error_ellipse(gps_data.fix);
     if (gps_data.fix.mode == MODE_3D) {
         fetched_position_fix_.altitude = vanetza::ConfidentQuantity<vanetza::units::Length> {
-            gpsd_get_altitude(gps_data) * si::meter, gps_data.fix.epv * si::meter };
+            gpsd_get_altitude(gps_data) * si::meter, scale_1dof95 * gps_data.fix.epv * si::meter };
     } else {
         fetched_position_fix_.altitude = boost::none;
     }
