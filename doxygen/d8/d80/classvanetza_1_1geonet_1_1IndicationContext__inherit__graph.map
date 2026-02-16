@@ -1,0 +1,15 @@
+<map id="vanetza::geonet::IndicationContext" name="vanetza::geonet::IndicationContext">
+<area shape="rect" id="Node000001" title=" " alt="" coords="352,5,540,296"/>
+<area shape="rect" id="Node000002" href="$d6/d4a/classvanetza_1_1geonet_1_1IndicationContextBasic.html" title=" " alt="" coords="236,344,424,567"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="387,307,374,345,370,343,384,312"/>
+<area shape="rect" id="Node000005" href="$db/d97/classvanetza_1_1geonet_1_1IndicationContextSecured.html" title=" " alt="" coords="461,344,665,567"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="508,307,523,344,518,343,506,312"/>
+<area shape="rect" id="Node000003" href="$dc/dad/classvanetza_1_1geonet_1_1IndicationContextCast.html" title=" " alt="" coords="5,637,193,838"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="228,581,183,639,178,636,231,576"/>
+<area shape="rect" id="Node000004" href="$dd/d8e/classvanetza_1_1geonet_1_1IndicationContextDeserialize.html" title=" " alt="" coords="217,615,442,861"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="331,580,332,616,327,614,329,584"/>
+<area shape="rect" id="Node000006" href="$db/d0c/classvanetza_1_1geonet_1_1IndicationContextSecuredCast.html" title=" " alt="" coords="466,651,660,824"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="565,580,565,653,561,650,562,584"/>
+<area shape="rect" id="Node000007" href="$d4/d6d/classvanetza_1_1geonet_1_1IndicationContextSecuredDeserialize.html" title=" " alt="" coords="685,640,879,836"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="660,576,709,641,704,639,658,581"/>
+</map>

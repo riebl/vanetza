@@ -1,0 +1,5 @@
+<map id="vanetza::geonet::TransportInterface" name="vanetza::geonet::TransportInterface">
+<area shape="rect" id="Node000001" title=" " alt="" coords="19,5,203,117"/>
+<area shape="rect" id="Node000002" href="$d0/d42/classvanetza_1_1btp_1_1PortDispatcher.html" title=" " alt="" coords="5,165,216,428"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="111,129,113,166,108,165,110,134"/>
+</map>

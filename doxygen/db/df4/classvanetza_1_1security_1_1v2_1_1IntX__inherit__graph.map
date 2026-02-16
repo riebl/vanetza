@@ -1,0 +1,7 @@
+<map id="vanetza::security::v2::IntX" name="vanetza::security::v2::IntX">
+<area shape="rect" id="Node000001" title="IntX specified in TS 103 097 v1.2.1, section 4.2.1." alt="" coords="144,143,274,388"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,197,95"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="130,105,150,143,145,143,130,110"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="221,5,413,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="290,106,273,144,269,141,287,110"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="vanetza::geonet::SequenceNumber" name="vanetza::geonet::SequenceNumber">
+<area shape="rect" id="Node000001" title=" " alt="" coords="87,143,274,411"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,5,161,95"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,106,126,143,120,143,108,111"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="185,5,371,95"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="254,106,240,144,236,141,252,111"/>
+</map>

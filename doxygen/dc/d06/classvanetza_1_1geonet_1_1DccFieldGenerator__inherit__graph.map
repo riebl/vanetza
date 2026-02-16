@@ -1,0 +1,7 @@
+<map id="vanetza::geonet::DccFieldGenerator" name="vanetza::geonet::DccFieldGenerator">
+<area shape="rect" id="Node000001" title=" " alt="" coords="138,5,317,117"/>
+<area shape="rect" id="Node000002" href="$d4/d6e/classvanetza_1_1geonet_1_1DccInformationSharing.html" title=" " alt="" coords="5,165,229,567"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,129,193,166,188,164,202,133"/>
+<area shape="rect" id="Node000003" href="$d1/dd1/classvanetza_1_1geonet_1_1NullDccFieldGenerator.html" title=" " alt="" coords="253,321,427,411"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="255,129,326,321,321,322,252,133"/>
+</map>

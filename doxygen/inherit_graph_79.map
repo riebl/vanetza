@@ -1,0 +1,10 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$db/d2d/classvanetza_1_1geonet_1_1CbfCounter.html" title=" " alt="" coords="5,35,213,62"/>
+<area shape="rect" id="Node000001" href="$da/d5f/classvanetza_1_1geonet_1_1CbfCounterContending.html" title=" " alt="" coords="516,32,723,76"/>
+<area shape="poly" id="edge88_Node000000_Node000001" title=" " alt="" coords="174,28,260,11,364,3,468,11,550,31,545,31,468,17,364,8,261,17,175,33"/>
+<area shape="rect" id="Node000003" href="$d4/d50/classvanetza_1_1geonet_1_1CbfCounterFading.html" title=" " alt="" coords="261,26,468,71"/>
+<area shape="poly" id="edge89_Node000000_Node000003" title=" " alt="" coords="228,46,263,48,258,49,229,51"/>
+<area shape="rect" id="Node000002" href="$db/d11/classvanetza_1_1geonet_1_1CbfCounterImmortal.html" title=" " alt="" coords="261,96,468,140"/>
+<area shape="poly" id="edge90_Node000000_Node000002" title=" " alt="" coords="177,64,282,94,277,96,177,70"/>
+<area shape="poly" id="edge91_Node000002_Node000001" title=" " alt="" coords="470,89,525,77,530,76,471,94"/>
+</map>

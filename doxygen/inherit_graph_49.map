@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d4/dce/structvanetza_1_1convertible_1_1byte__buffer.html" title=" " alt="" coords="5,168,160,213"/>
+<area shape="rect" id="Node000001" href="$d9/d3a/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01ByteBuffer_01_4.html" title=" " alt="" coords="208,5,446,50"/>
+<area shape="poly" id="edge66_Node000000_Node000001" title=" " alt="" coords="107,154,150,105,177,81,206,60,233,49,229,52,209,65,180,85,154,109,111,157"/>
+<area shape="rect" id="Node000002" href="$d2/d99/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01btp_1_1HeaderA_01_4.html" title=" " alt="" coords="239,74,414,136"/>
+<area shape="poly" id="edge67_Node000000_Node000002" title=" " alt="" coords="162,160,241,134,237,137,164,165"/>
+<area shape="rect" id="Node000003" href="$d8/dda/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01btp_1_1HeaderB_01_4.html" title=" " alt="" coords="239,160,414,221"/>
+<area shape="poly" id="edge68_Node000000_Node000003" title=" " alt="" coords="174,188,241,189,236,192,176,193"/>
+<area shape="rect" id="Node000004" href="$da/dac/structvanetza_1_1convertible_1_1byte__buffer__impl_3_01geonet_1_1SecuredPdu_01_4.html" title=" " alt="" coords="227,245,426,306"/>
+<area shape="poly" id="edge69_Node000000_Node000004" title=" " alt="" coords="163,216,239,243,234,245,163,221"/>
+<area shape="rect" id="Node000005" href="$d7/deb/structvanetza_1_1convertible_1_1byte__buffer__impl.html" title=" " alt="" coords="238,331,416,375"/>
+<area shape="poly" id="edge70_Node000000_Node000005" title=" " alt="" coords="110,223,154,272,180,296,209,316,240,333,235,333,206,321,177,300,150,275,108,228"/>
+</map>

@@ -1,0 +1,17 @@
+<map id="vanetza::BitNumber&lt; T, WIDTH &gt;" name="vanetza::BitNumber&lt; T, WIDTH &gt;">
+<area shape="rect" id="Node000001" title=" " alt="" coords="423,144,563,390"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,541,146,630"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="406,277,334,292,252,318,211,336,173,358,137,384,107,415,89,444,79,477,75,511,74,542,69,541,70,510,74,476,85,442,103,412,134,380,170,353,209,331,250,313,333,287,410,274"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="171,541,311,630"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="407,299,369,320,328,345,290,377,259,415,245,445,238,478,237,542,232,540,233,478,240,444,254,412,286,373,324,341,366,315,411,296"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="335,541,480,630"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="417,376,405,414,398,447,397,480,401,542,397,540,391,480,393,446,399,413,414,380"/>
+<area shape="rect" id="Node000006" href="$dd/dba/classvanetza_1_1BitNumber.html" title=" " alt="" coords="507,463,647,708"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="549,401,553,413,564,464,559,462,548,414,546,406"/>
+<area shape="rect" id="Node000007" href="$dd/dba/classvanetza_1_1BitNumber.html" title=" " alt="" coords="672,474,813,697"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="576,318,630,361,676,412,695,442,711,475,706,473,691,444,672,415,626,365,575,323"/>
+<area shape="rect" id="Node000008" href="$dd/dba/classvanetza_1_1BitNumber.html" title=" " alt="" coords="837,474,978,697"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="577,287,636,307,698,334,760,369,816,412,842,440,864,475,858,473,838,444,813,416,757,373,696,339,634,312,578,293"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="392,5,594,95"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="494,107,496,145,490,143,492,112"/>
+</map>

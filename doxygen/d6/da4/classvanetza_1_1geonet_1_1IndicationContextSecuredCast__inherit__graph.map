@@ -1,0 +1,7 @@
+<map id="vanetza::geonet::IndicationContextSecuredCast" name="vanetza::geonet::IndicationContextSecuredCast">
+<area shape="rect" id="Node000001" title=" " alt="" coords="10,615,204,788"/>
+<area shape="rect" id="Node000002" href="$db/d97/classvanetza_1_1geonet_1_1IndicationContextSecured.html" title=" " alt="" coords="5,344,209,567"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,580,110,616,105,615,107,585"/>
+<area shape="rect" id="Node000003" href="$d0/db4/classvanetza_1_1geonet_1_1IndicationContext.html" title=" " alt="" coords="14,5,201,296"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="108,308,110,344,105,344,107,313"/>
+</map>

@@ -1,0 +1,11 @@
+<map id="vanetza::dcc::ChannelLoad" name="vanetza::dcc::ChannelLoad">
+<area shape="rect" id="Node000001" title=" " alt="" coords="149,531,333,737"/>
+<area shape="rect" id="Node000002" href="$d4/d40/classvanetza_1_1UnitInterval.html" title=" " alt="" coords="167,143,315,483"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="242,496,243,532,239,530,240,500"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,5,138,95"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="108,104,170,198,165,199,108,110"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="162,5,320,95"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="242,107,244,143,238,142,240,112"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="344,5,498,95"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="381,109,317,206,312,204,384,105"/>
+</map>

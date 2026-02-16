@@ -1,0 +1,13 @@
+<map id="vanetza::asn1::r2::Vam" name="vanetza::asn1::r2::Vam">
+<area shape="rect" id="Node000001" title=" " alt="" coords="138,1262,298,1334"/>
+<area shape="rect" id="Node000002" href="$dc/dbf/classvanetza_1_1asn1_1_1asn1c__per__wrapper.html" title=" " alt="" coords="136,861,301,1213"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="220,1226,221,1263,216,1261,217,1230"/>
+<area shape="rect" id="Node000003" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="13,413,223,788"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="165,800,181,861,175,861,164,805"/>
+<area shape="rect" id="Node000004" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="5,5,215,340"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="114,353,118,414,112,413,114,358"/>
+<area shape="rect" id="Node000005" href="$dc/dbf/classvanetza_1_1asn1_1_1asn1c__per__wrapper.html" title=" " alt="" coords="263,511,411,690"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="310,702,269,862,264,860,308,707"/>
+<area shape="rect" id="Node000006" href="$d0/d68/classvanetza_1_1asn1_1_1asn1c__wrapper__common.html" title=" " alt="" coords="240,5,450,340"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="342,353,341,512,336,511,341,358"/>
+</map>

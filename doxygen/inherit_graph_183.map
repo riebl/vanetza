@@ -1,0 +1,7 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d0/d13/classvanetza_1_1security_1_1v2_1_1CertificateValidator.html" title=" " alt="" coords="5,40,176,85"/>
+<area shape="rect" id="Node000001" href="$de/d37/classvanetza_1_1security_1_1v2_1_1DefaultCertificateValidator.html" title="The default certificate validator." alt="" coords="224,5,442,50"/>
+<area shape="poly" id="edge137_Node000000_Node000001" title=" " alt="" coords="191,45,226,43,221,44,192,51"/>
+<area shape="rect" id="Node000002" href="$d2/d3a/classvanetza_1_1security_1_1v2_1_1NullCertificateValidator.html" title=" " alt="" coords="235,75,431,119"/>
+<area shape="poly" id="edge138_Node000000_Node000002" title=" " alt="" coords="192,74,237,83,232,83,191,79"/>
+</map>

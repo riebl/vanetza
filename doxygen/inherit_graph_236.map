@@ -1,0 +1,9 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d2/dce/classvanetza_1_1security_1_1v3_1_1LocationChecker.html" title=" " alt="" coords="5,75,158,119"/>
+<area shape="rect" id="Node000001" href="$de/d90/classvanetza_1_1security_1_1v3_1_1AllowLocationChecker.html" title=" " alt="" coords="212,5,400,50"/>
+<area shape="poly" id="edge145_Node000000_Node000001" title=" " alt="" coords="169,67,233,49,229,52,171,72"/>
+<area shape="rect" id="Node000002" href="$de/d22/classvanetza_1_1security_1_1v3_1_1DefaultLocationChecker.html" title=" " alt="" coords="206,75,406,119"/>
+<area shape="poly" id="edge146_Node000000_Node000002" title=" " alt="" coords="173,94,208,96,203,98,174,100"/>
+<area shape="rect" id="Node000003" href="$d6/d28/classvanetza_1_1security_1_1v3_1_1DenyLocationChecker.html" title=" " alt="" coords="213,144,399,189"/>
+<area shape="poly" id="edge147_Node000000_Node000003" title=" " alt="" coords="171,122,234,143,228,144,170,127"/>
+</map>

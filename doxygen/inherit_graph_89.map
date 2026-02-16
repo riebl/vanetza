@@ -1,0 +1,17 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d1/d1f/structvanetza_1_1geonet_1_1DataRequest.html" title=" " alt="" coords="5,118,224,146"/>
+<area shape="rect" id="Node000001" href="$d4/d96/structvanetza_1_1geonet_1_1DataRequestWithAddress.html" title=" " alt="" coords="272,5,490,50"/>
+<area shape="poly" id="edge100_Node000000_Node000001" title=" " alt="" coords="158,109,271,60,307,49,303,52,273,65,160,113"/>
+<area shape="rect" id="Node000003" href="$d9/d1d/structvanetza_1_1geonet_1_1DataRequestWithArea.html" title=" " alt="" coords="272,75,490,119"/>
+<area shape="poly" id="edge102_Node000000_Node000003" title=" " alt="" coords="238,113,274,110,269,112,240,118"/>
+<area shape="rect" id="Node000006" href="$d0/d57/structvanetza_1_1geonet_1_1ShbDataRequest.html" title=" " alt="" coords="286,144,476,189"/>
+<area shape="poly" id="edge105_Node000000_Node000006" title=" " alt="" coords="239,145,288,153,283,155,239,151"/>
+<area shape="rect" id="Node000007" href="$d4/d19/structvanetza_1_1geonet_1_1TsbDataRequest.html" title=" " alt="" coords="288,213,474,258"/>
+<area shape="poly" id="edge106_Node000000_Node000007" title=" " alt="" coords="160,150,273,199,308,213,302,213,271,203,159,155"/>
+<area shape="rect" id="Node000002" href="$d0/db3/structvanetza_1_1geonet_1_1GucDataRequest.html" title=" " alt="" coords="538,5,728,50"/>
+<area shape="poly" id="edge101_Node000001_Node000002" title=" " alt="" coords="505,25,540,27,535,28,506,30"/>
+<area shape="rect" id="Node000004" href="$d7/d84/structvanetza_1_1geonet_1_1GacDataRequest.html" title=" " alt="" coords="538,75,728,119"/>
+<area shape="poly" id="edge103_Node000003_Node000004" title=" " alt="" coords="505,94,540,97,535,97,506,100"/>
+<area shape="rect" id="Node000005" href="$de/d7b/structvanetza_1_1geonet_1_1GbcDataRequest.html" title=" " alt="" coords="538,144,728,189"/>
+<area shape="poly" id="edge104_Node000003_Node000005" title=" " alt="" coords="479,121,552,143,547,144,479,127"/>
+</map>

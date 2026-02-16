@@ -1,0 +1,11 @@
+<map id="vanetza::dcc::TransmitRateThrottle" name="vanetza::dcc::TransmitRateThrottle">
+<area shape="rect" id="Node000001" title=" " alt="" coords="257,5,443,139"/>
+<area shape="rect" id="Node000002" href="$de/d9c/classvanetza_1_1dcc_1_1TransmitRateControl.html" title=" " alt="" coords="257,187,443,277"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="351,152,353,188,347,186,349,156"/>
+<area shape="rect" id="Node000003" href="$d1/d1c/classvanetza_1_1dcc_1_1BurstyTransmitRateControl.html" title=" " alt="" coords="5,325,217,526"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="277,287,230,327,219,336,216,332,227,323,281,284"/>
+<area shape="rect" id="Node000004" href="$df/d62/classvanetza_1_1dcc_1_1LimericTransmitRateControl.html" title=" " alt="" coords="241,336,459,514"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="351,290,352,337,348,335,349,294"/>
+<area shape="rect" id="Node000005" href="$dc/d2b/classvanetza_1_1dcc_1_1SingleReactiveTransmitRateControl.html" title=" " alt="" coords="484,327,694,523"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="421,283,473,323,487,335,481,335,470,327,420,288"/>
+</map>

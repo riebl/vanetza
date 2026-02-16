@@ -1,0 +1,7 @@
+<map id="vanetza::dcc::StateMachine" name="vanetza::dcc::StateMachine">
+<area shape="rect" id="Node000001" title=" " alt="" coords="133,5,323,122"/>
+<area shape="rect" id="Node000002" href="$d2/d3b/classvanetza_1_1dcc_1_1FullyMeshedStateMachine.html" title=" " alt="" coords="5,170,224,505"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="200,134,186,172,182,170,197,138"/>
+<area shape="rect" id="Node000003" href="$df/dd9/classvanetza_1_1dcc_1_1GradualStateMachine.html" title=" " alt="" coords="249,226,434,450"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="259,134,298,227,293,226,257,139"/>
+</map>

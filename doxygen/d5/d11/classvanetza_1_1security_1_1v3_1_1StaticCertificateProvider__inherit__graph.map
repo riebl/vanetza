@@ -1,0 +1,7 @@
+<map id="vanetza::security::v3::StaticCertificateProvider" name="vanetza::security::v3::StaticCertificateProvider">
+<area shape="rect" id="Node000001" title="A simple certificate provider." alt="" coords="5,392,200,570"/>
+<area shape="rect" id="Node000002" href="$d3/dd7/classvanetza_1_1security_1_1v3_1_1BaseCertificateProvider.html" title=" " alt="" coords="9,232,197,344"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="104,356,105,392,100,391,102,361"/>
+<area shape="rect" id="Node000003" href="$d7/d65/classvanetza_1_1security_1_1v3_1_1CertificateProvider.html" title=" " alt="" coords="18,5,187,184"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,196,105,233,100,232,102,201"/>
+</map>

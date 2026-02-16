@@ -1,0 +1,23 @@
+<map id="vanetza::geonet::ConstAccessiblePdu" name="vanetza::geonet::ConstAccessiblePdu">
+<area shape="rect" id="Node000001" title=" " alt="" coords="411,5,664,189"/>
+<area shape="rect" id="Node000002" href="$d5/d01/classvanetza_1_1geonet_1_1ExtendedPduConstRefs.html" title=" " alt="" coords="428,239,616,551"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="533,202,533,240,527,239,531,207"/>
+<area shape="rect" id="Node000003" href="$dc/d8c/classvanetza_1_1geonet_1_1Pdu.html" title=" " alt="" coords="640,292,788,498"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="605,199,629,237,661,292,655,292,625,240,605,205"/>
+<area shape="rect" id="Node000004" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="220,1053,405,1433"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="664,513,650,535,629,554,591,573,556,581,522,580,489,576,456,572,424,573,391,581,357,603,304,650,261,696,228,743,204,791,191,842,186,898,191,959,204,1029,223,1084,217,1084,199,1030,185,960,181,898,185,841,199,789,223,740,257,693,300,646,353,599,389,576,423,567,456,567,489,571,522,575,555,575,590,568,625,549,646,531,667,508"/>
+<area shape="rect" id="Node000005" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="5,1053,190,1433"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="666,512,651,535,628,554,610,563,587,569,532,575,398,573,329,571,266,574,215,583,195,591,179,603,141,649,111,701,90,758,75,817,67,878,63,938,68,1054,62,1053,58,938,61,877,70,816,85,756,107,699,137,646,176,599,192,587,213,578,266,568,329,566,398,567,531,570,586,564,608,558,626,549,647,531,669,508"/>
+<area shape="rect" id="Node000006" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="733,1053,918,1433"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="795,500,816,537,831,575,846,635,857,696,868,822,867,944,858,1055,853,1052,862,943,863,822,852,697,841,636,826,576,812,539,795,506"/>
+<area shape="rect" id="Node000007" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="480,1053,683,1433"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="749,510,787,649,816,800,824,873,826,938,820,991,812,1013,802,1031,784,1045,764,1047,744,1047,723,1056,684,1089,681,1085,720,1051,743,1042,764,1042,782,1040,798,1028,808,1011,814,990,821,937,819,873,811,801,781,650,748,515"/>
+<area shape="rect" id="Node000008" href="$d9/d6e/classvanetza_1_1geonet_1_1ExtendedPdu.html" title=" " alt="" coords="367,601,551,980"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="653,509,629,553,554,665,549,662,625,550,650,513"/>
+<area shape="rect" id="Node000009" href="$d7/d84/classvanetza_1_1geonet_1_1VariantPdu.html" title=" " alt="" coords="898,609,1092,972"/>
+<area shape="poly" id="edge12_Node000003_Node000009" title=" " alt="" coords="798,476,842,524,881,574,904,609,899,609,877,577,838,527,798,481"/>
+<area shape="poly" id="edge8_Node000008_Node000004" title=" " alt="" coords="362,955,345,1005,332,1055,327,1053,339,1004,359,959"/>
+<area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="354,874,289,936,226,1006,192,1055,187,1052,222,1003,285,932,357,870"/>
+<area shape="poly" id="edge10_Node000008_Node000006" title=" " alt="" coords="562,896,631,972,697,1052,736,1105,731,1104,693,1055,627,976,561,902"/>
+<area shape="poly" id="edge11_Node000008_Node000007" title=" " alt="" coords="454,992,463,1029,483,1085,478,1084,458,1030,452,997"/>
+</map>

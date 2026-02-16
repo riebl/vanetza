@@ -1,0 +1,21 @@
+<map id="vanetza::security::v2::header_field_type&lt; HeaderFieldType &gt;" name="vanetza::security::v2::header_field_type&lt; HeaderFieldType &gt;">
+<area shape="rect" id="Node000001" title="resolve type for matching HeaderFieldType" alt="" coords="971,5,1122,112"/>
+<area shape="rect" id="Node000002" href="$da/d2b/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Encryption__Parameters_01_4.html" title=" " alt="" coords="5,229,216,353"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="954,59,779,63,564,73,458,83,361,96,280,115,222,138,196,157,174,180,140,231,135,228,170,176,193,153,219,133,279,109,360,91,457,77,564,68,779,58,959,58"/>
+<area shape="rect" id="Node000003" href="$d3/d31/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Expiration_01_4.html" title=" " alt="" coords="241,238,463,344"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="954,65,836,75,699,90,573,110,523,123,486,138,456,159,428,184,384,240,381,236,424,181,452,155,484,133,522,118,572,105,699,84,836,70,959,64"/>
+<area shape="rect" id="Node000004" href="$d0/d46/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Generation__Location_01_4.html" title=" " alt="" coords="488,229,702,353"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="954,71,802,99,733,117,686,138,664,157,646,181,617,232,614,228,641,178,660,154,683,133,731,112,801,93,959,70"/>
+<area shape="rect" id="Node000005" href="$df/d7c/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Generation__Time_01_4.html" title=" " alt="" coords="725,229,939,353"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="960,91,926,113,898,138,881,159,868,182,848,232,844,228,863,180,877,156,894,134,923,109,955,93"/>
+<area shape="rect" id="Node000006" href="$d3/d48/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Generation__Time__Confidence_01_4.html" title=" " alt="" coords="962,229,1176,353"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="1046,125,1051,205,1055,231,1051,228,1046,206,1043,129"/>
+<area shape="rect" id="Node000007" href="$df/dea/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Its__Aid_01_4.html" title=" " alt="" coords="1200,238,1400,344"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="1137,66,1173,75,1210,89,1244,108,1273,134,1288,158,1298,184,1305,239,1301,236,1293,186,1283,160,1269,137,1241,112,1207,94,1172,80,1137,71"/>
+<area shape="rect" id="Node000008" href="$d4/df8/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Recipient__Info_01_4.html" title=" " alt="" coords="1424,229,1627,353"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1137,65,1222,75,1311,90,1391,109,1422,121,1446,134,1467,154,1485,178,1510,231,1505,228,1481,180,1463,157,1442,138,1420,126,1389,114,1310,95,1221,81,1137,71"/>
+<area shape="rect" id="Node000009" href="$dc/d24/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Request__Unrecognized__Certificate_01_4.html" title=" " alt="" coords="1650,229,1846,353"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1137,60,1265,67,1412,80,1547,101,1601,116,1641,133,1667,153,1689,177,1724,231,1719,229,1685,180,1664,157,1639,138,1600,121,1546,107,1411,85,1265,72,1137,65"/>
+<area shape="rect" id="Node000010" href="$d5/df4/structvanetza_1_1security_1_1v2_1_1header__field__type_3_01HeaderFieldType_1_1Signer__Info_01_4.html" title=" " alt="" coords="1870,229,2053,353"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="1137,61,1329,70,1560,85,1764,106,1836,119,1877,133,1901,153,1919,177,1946,231,1941,228,1915,180,1897,157,1875,138,1834,124,1763,111,1559,90,1329,75,1137,66"/>
+</map>

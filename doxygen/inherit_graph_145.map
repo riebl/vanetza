@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$d5/d0a/structvanetza_1_1pdu__tags_1_1pdu__tag.html" title=" " alt="" coords="5,75,154,119"/>
+<area shape="rect" id="Node000001" href="$db/d41/structvanetza_1_1pdu__tags_1_1empty__pdu__tag.html" title=" " alt="" coords="202,5,350,50"/>
+<area shape="poly" id="edge117_Node000000_Node000001" title=" " alt="" coords="158,67,213,49,208,52,160,71"/>
+<area shape="rect" id="Node000002" href="$d0/df3/structvanetza_1_1pdu__tags_1_1mac__tag.html" title=" " alt="" coords="202,75,350,119"/>
+<area shape="poly" id="edge118_Node000000_Node000002" title=" " alt="" coords="169,94,204,96,199,98,170,100"/>
+<area shape="rect" id="Node000004" href="$dd/de8/structvanetza_1_1pdu__tags_1_1phy__tag.html" title=" " alt="" coords="202,144,350,189"/>
+<area shape="poly" id="edge120_Node000000_Node000004" title=" " alt="" coords="159,122,213,143,208,144,159,128"/>
+<area shape="rect" id="Node000003" href="$d9/df4/structvanetza_1_1pdu__tags_1_1ethernet__tag.html" title=" " alt="" coords="398,75,546,119"/>
+<area shape="poly" id="edge119_Node000002_Node000003" title=" " alt="" coords="365,94,400,97,395,97,366,100"/>
+<area shape="rect" id="Node000005" href="$d5/d6d/structvanetza_1_1pdu__tags_1_1mk2__tag.html" title=" " alt="" coords="398,144,546,189"/>
+<area shape="poly" id="edge121_Node000004_Node000005" title=" " alt="" coords="365,164,400,166,395,166,365,169"/>
+</map>

@@ -1,0 +1,7 @@
+#projectname {
+    display: none;
+}
+
+html.dark-mode #projectlogo img {
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9));
+}

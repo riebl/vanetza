@@ -1,0 +1,13 @@
+<map id="vanetza::pdu_tags::pdu_tag" name="vanetza::pdu_tags::pdu_tag">
+<area shape="rect" id="Node000001" title=" " alt="" coords="167,5,304,95"/>
+<area shape="rect" id="Node000002" href="$db/d41/structvanetza_1_1pdu__tags_1_1empty__pdu__tag.html" title=" " alt="" coords="5,143,143,232"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,106,128,145,124,141,174,102"/>
+<area shape="rect" id="Node000003" href="$d0/df3/structvanetza_1_1pdu__tags_1_1mac__tag.html" title=" " alt="" coords="167,143,304,232"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="237,107,238,144,233,142,234,112"/>
+<area shape="rect" id="Node000005" href="$dd/de8/structvanetza_1_1pdu__tags_1_1phy__tag.html" title=" " alt="" coords="328,143,466,232"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="299,101,348,143,343,143,298,107"/>
+<area shape="rect" id="Node000004" href="$d9/df4/structvanetza_1_1pdu__tags_1_1ethernet__tag.html" title=" " alt="" coords="167,280,304,369"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="237,245,238,282,233,279,234,249"/>
+<area shape="rect" id="Node000006" href="$d5/d6d/structvanetza_1_1pdu__tags_1_1mk2__tag.html" title=" " alt="" coords="328,280,466,369"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="399,245,399,282,395,279,395,249"/>
+</map>

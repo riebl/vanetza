@@ -1,0 +1,8 @@
+<map id="vanetza::geonet::CbfCounterContending" name="vanetza::geonet::CbfCounterContending">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,419,202,531"/>
+<area shape="rect" id="Node000002" href="$db/d2d/classvanetza_1_1geonet_1_1CbfCounter.html" title=" " alt="" coords="5,5,202,167"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="68,184,64,215,54,293,56,328,64,371,79,420,74,420,58,372,51,328,49,293,58,215,69,179"/>
+<area shape="rect" id="Node000003" href="$db/d11/classvanetza_1_1geonet_1_1CbfCounterImmortal.html" title=" " alt="" coords="73,215,270,371"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="135,178,149,215,143,215,135,184"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="139,383,126,421,122,418,136,387"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="Graphical Class Hierarchy" name="Graphical Class Hierarchy">
+<area shape="rect" id="Node000000" href="$de/d08/classvanetza_1_1security_1_1SignService.html" title=" " alt="" coords="5,144,146,189"/>
+<area shape="rect" id="Node000001" href="$d3/d37/classvanetza_1_1security_1_1v2_1_1DeferredSignService.html" title=" " alt="" coords="194,5,372,50"/>
+<area shape="poly" id="edge129_Node000000_Node000001" title=" " alt="" coords="106,131,146,94,192,60,218,49,214,52,195,65,149,98,111,134"/>
+<area shape="rect" id="Node000002" href="$dd/d92/classvanetza_1_1security_1_1v2_1_1DummySignService.html" title=" " alt="" coords="196,75,370,119"/>
+<area shape="poly" id="edge130_Node000000_Node000002" title=" " alt="" coords="157,136,216,118,212,122,160,141"/>
+<area shape="rect" id="Node000003" href="$d7/d8c/classvanetza_1_1security_1_1v2_1_1StraightSignService.html" title=" " alt="" coords="197,144,369,189"/>
+<area shape="poly" id="edge131_Node000000_Node000003" title=" " alt="" coords="160,164,199,165,194,168,162,169"/>
+<area shape="rect" id="Node000004" href="$d4/d1f/classvanetza_1_1security_1_1v3_1_1DummySignService.html" title=" " alt="" coords="196,213,370,258"/>
+<area shape="poly" id="edge132_Node000000_Node000004" title=" " alt="" coords="159,191,216,212,211,214,159,197"/>
+<area shape="rect" id="Node000005" href="$d8/d79/classvanetza_1_1security_1_1v3_1_1StraightSignService.html" title=" " alt="" coords="197,283,369,327"/>
+<area shape="poly" id="edge133_Node000000_Node000005" title=" " alt="" coords="109,198,149,234,195,268,219,282,213,282,192,273,146,238,108,203"/>
+</map>

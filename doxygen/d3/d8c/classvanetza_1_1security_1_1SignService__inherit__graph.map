@@ -1,0 +1,13 @@
+<map id="vanetza::security::SignService" name="vanetza::security::SignService">
+<area shape="rect" id="Node000001" title=" " alt="" coords="406,5,535,117"/>
+<area shape="rect" id="Node000002" href="$d3/d37/classvanetza_1_1security_1_1v2_1_1DeferredSignService.html" title=" " alt="" coords="5,176,175,332"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="389,84,293,118,239,141,189,167,172,179,169,174,186,163,237,136,291,113,394,81"/>
+<area shape="rect" id="Node000003" href="$dd/d92/classvanetza_1_1security_1_1v2_1_1DummySignService.html" title=" " alt="" coords="200,187,365,321"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="409,126,349,190,345,186,404,129"/>
+<area shape="rect" id="Node000004" href="$d7/d8c/classvanetza_1_1security_1_1v2_1_1StraightSignService.html" title=" " alt="" coords="388,176,552,332"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="472,130,473,178,468,175,469,134"/>
+<area shape="rect" id="Node000005" href="$d4/d1f/classvanetza_1_1security_1_1v3_1_1DummySignService.html" title=" " alt="" coords="576,198,741,310"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="535,125,607,199,602,198,533,130"/>
+<area shape="rect" id="Node000006" href="$d8/d79/classvanetza_1_1security_1_1v3_1_1StraightSignService.html" title=" " alt="" coords="764,165,928,344"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="549,79,650,112,704,135,754,163,767,173,762,172,752,167,701,140,648,117,549,84"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="vanetza::dcc::HookedChannelProbeProcessor" name="vanetza::dcc::HookedChannelProbeProcessor">
+<area shape="rect" id="Node000001" title=" " alt="" coords="16,165,255,299"/>
+<area shape="rect" id="Node000003" href="$d2/d7c/classvanetza_1_1dcc_1_1SmoothingChannelProbeProcessor.html" title=" " alt="" coords="5,347,265,503"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="136,312,138,348,133,346,134,317"/>
+<area shape="rect" id="Node000002" href="$d5/d39/classvanetza_1_1dcc_1_1ChannelProbeProcessor.html" title=" " alt="" coords="35,5,236,117"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,129,138,166,133,165,135,135"/>
+</map>
