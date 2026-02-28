@@ -18,15 +18,10 @@ HashedId8 convert(const Vanetza_Security_HashedId8_t& in)
     return out;
 }
 
-namespace
-{
-
 void assign(OCTET_STRING_t* dst, const ByteBuffer& src)
 {
     OCTET_STRING_fromBuf(dst, reinterpret_cast<const char*>(src.data()), src.size());
 }
-
-} // namespace
 
 asn1::EccP256CurvePoint to_asn1(const EccPoint& point)
 {

@@ -100,11 +100,6 @@ ByteBuffer get_x_coordinate(const asn1::EccP384CurvePoint& point)
     }
 }
 
-void assign(OCTET_STRING_t* dst, const ByteBuffer& src)
-{
-    OCTET_STRING_fromBuf(dst, reinterpret_cast<const char*>(src.data()), src.size());
-}
-
 } // namespace
 
 SecuredMessage SecuredMessage::with_signed_data()

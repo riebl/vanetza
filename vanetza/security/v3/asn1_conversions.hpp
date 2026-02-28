@@ -20,6 +20,13 @@ namespace v3
 HashedId8 convert(const Vanetza_Security_HashedId8_t&);
 
 /**
+ * Assign ByteBuffer content to an ASN.1 OCTET_STRING
+ * \param dst destination OCTET_STRING
+ * \param src source byte buffer
+ */
+void assign(OCTET_STRING_t* dst, const ByteBuffer& src);
+
+/**
  * Convert an EccPoint to its ASN.1 EccP256CurvePoint representation
  * \param point ECC point to convert
  * \return ASN.1 EccP256CurvePoint
