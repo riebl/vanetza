@@ -217,8 +217,7 @@ void SecuredMessage::set_inline_p2pcd_request(std::list<HashedId3> requests)
         assert(m_struct->content->choice.signedData->tbsData);
 
         if (m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest) {
-            ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_SequenceOfHashedId3,
-                &m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest);
+            asn1::reset(m_struct->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest);
         }
 
         for (HashedId3 request : requests) {
@@ -245,7 +244,7 @@ void SecuredMessage::set_dummy_signature()
         asn1::SignedData* signed_data = m_struct->content->choice.signedData;
         if (signed_data) {
             // Reset the signature structure
-            ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_Signature, &(signed_data->signature));
+            asn1::reset(signed_data->signature);
 
             // Set the signature type to ECDSA NIST P256
             signed_data->signature.present = Vanetza_Security_Signature_PR_ecdsaNistP256Signature;
@@ -269,7 +268,7 @@ void SecuredMessage::set_signature(const Signature& signature)
         asn1::SignedData* signed_data = m_struct->content->choice.signedData;
         if (signed_data) {
             // Reset the signature structure
-            ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_Signature, &(signed_data->signature));
+            asn1::reset(signed_data->signature);
 
             // Set the signature type to ECDSA NIST P256
             switch (signature.type)
@@ -324,7 +323,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
         }
     };
 
-    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_Signature, &m_struct->content->choice.signedData->signature);
+    asn1::reset(m_struct->content->choice.signedData->signature);
     m_struct->content->choice.signedData->signature = boost::apply_visitor(signature_visitor(), signature);
 }
 
@@ -365,7 +364,7 @@ void SecuredMessage::set_external_payload_hash(const Sha256Digest& hash)
 {
     assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
     asn1::HashedData* hashed_data = m_struct->content->choice.signedData->tbsData->payload->extDataHash;
-    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_HashedData, hashed_data);
+    asn1::reset(hashed_data);
     hashed_data->present = Vanetza_Security_HashedData_PR_sha256HashedData;
     OCTET_STRING_fromBuf(&hashed_data->choice.sha256HashedData, reinterpret_cast<const char*>(hash.data()), hash.size());
 }
@@ -410,7 +409,7 @@ void SecuredMessage::set_signer_identifier_self()
 {
     assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
     asn1::SignerIdentifier* signer = &m_struct->content->choice.signedData->signer;
-    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_SignerIdentifier, signer);
+    asn1::reset(signer);
     signer->present = Vanetza_Security_SignerIdentifier_PR_self;
 }
 
@@ -418,7 +417,7 @@ void SecuredMessage::set_signer_identifier(const HashedId8& digest)
 {
     assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
     asn1::SignerIdentifier* signer = &m_struct->content->choice.signedData->signer;
-    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_SignerIdentifier, signer);
+    asn1::reset(signer);
     signer->present = Vanetza_Security_SignerIdentifier_PR_digest;
     OCTET_STRING_fromBuf(&signer->choice.digest, reinterpret_cast<const char*>(digest.data()), digest.size());
 }
@@ -427,7 +426,7 @@ void SecuredMessage::set_signer_identifier(const Certificate& cert)
 {
     assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData);
     asn1::SignerIdentifier* signer = &m_struct->content->choice.signedData->signer;
-    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_SignerIdentifier, signer);
+    asn1::reset(signer);
     signer->present = Vanetza_Security_SignerIdentifier_PR_certificate;
     ASN_SEQUENCE_ADD(&signer->choice.certificate, asn1::copy(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, cert.content()));
 }

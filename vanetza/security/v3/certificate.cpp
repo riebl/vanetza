@@ -605,7 +605,7 @@ void Certificate::set_signature(const SomeEcdsaSignature& signature)
     if (!m_struct->signature) {
         m_struct->signature = asn1::allocate<asn1::Signature>();
     } else {
-        ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_Signature, m_struct->signature);
+        asn1::reset(m_struct->signature);
     }
 
     struct signature_visitor : public boost::static_visitor<>

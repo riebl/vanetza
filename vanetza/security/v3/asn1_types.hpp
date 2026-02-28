@@ -3,10 +3,18 @@
 // forward declarations of base types
 typedef struct OCTET_STRING OCTET_STRING_t;
 typedef struct ASN__PRIMITIVE_TYPE_s INTEGER_t;
+typedef struct asn_TYPE_descriptor_s asn_TYPE_descriptor_t;
 using Vanetza_Security_Uint64_t = INTEGER_t;
+
+namespace vanetza {
+namespace asn1 {
+template<typename T> struct asn1_type_traits;
+} // namespace asn1
+} // namespace vanetza
 
 #define ASN1_TYPE_ALIAS(name) Vanetza_Security_ ## name ## _t
 #define ASN1_TYPE_NAME(name) Vanetza_Security_ ## name
+#define ASN1_TYPE_DESC(name) asn_DEF_Vanetza_Security_ ## name
 
 #define FWD_ALIAS(name, base) \
   using ASN1_TYPE_ALIAS(name) = ASN1_TYPE_ALIAS(base); \
@@ -24,7 +32,13 @@ using Vanetza_Security_Uint64_t = INTEGER_t;
   typedef struct ASN1_TYPE_NAME(name) ASN1_TYPE_ALIAS(name); \
   namespace vanetza { namespace security { namespace v3 { namespace asn1 { \
     using name = ::ASN1_TYPE_ALIAS(name); \
-  }}}}
+  }}}} \
+  extern "C" { extern asn_TYPE_descriptor_t ASN1_TYPE_DESC(name); } \
+  namespace vanetza { namespace asn1 { \
+    template<> struct asn1_type_traits<::ASN1_TYPE_NAME(name)> { \
+      static asn_TYPE_descriptor_t& descriptor() { return ::ASN1_TYPE_DESC(name); } \
+    }; \
+  }}
 
 #define FWD_NATIVE_INTEGER(name) \
   using ASN1_TYPE_ALIAS(name) = long; \
@@ -95,6 +109,19 @@ namespace vanetza
 {
 namespace asn1
 {
+
+template<typename T>
+void reset(T& value)
+{
+    ASN_STRUCT_RESET(asn1_type_traits<T>::descriptor(), &value);
+}
+
+template<typename T>
+void reset(T* ptr)
+{
+    ASN_STRUCT_RESET(asn1_type_traits<T>::descriptor(), ptr);
+}
+
 } // namespace asn1
 
 namespace security
