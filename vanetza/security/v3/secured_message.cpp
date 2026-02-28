@@ -312,50 +312,15 @@ void SecuredMessage::set_signature(const Signature& signature)
 
 void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
 {
-    struct ecc_point_visitor : public boost::static_visitor<asn1::EccP256CurvePoint> {
-        asn1::EccP256CurvePoint operator()(const X_Coordinate_Only& x_only) const
-        {
-            asn1::EccP256CurvePoint* to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
-            assign(&to_return->choice.x_only, x_only.x);
-            return *to_return;
-        }
-        asn1::EccP256CurvePoint operator()(const Compressed_Lsb_Y_0& y0) const
-        {
-            asn1::EccP256CurvePoint* to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0;
-            assign(&to_return->choice.compressed_y_0, y0.x);
-            return *to_return;
-        }
-        asn1::EccP256CurvePoint operator()(const Compressed_Lsb_Y_1& y1) const
-        {
-            asn1::EccP256CurvePoint* to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1;
-            assign(&to_return->choice.compressed_y_1, y1.x);
-            return *to_return;
-        }
-        asn1::EccP256CurvePoint operator()(const Uncompressed& unc) const
-        {
-            asn1::EccP256CurvePoint* to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256;
-            assign(&to_return->choice.uncompressedP256.x, unc.x);
-            assign(&to_return->choice.uncompressedP256.y, unc.y);
-            return *to_return;
-        }
-    };
-
     struct signature_visitor : public boost::static_visitor<asn1::Signature>
     {
         asn1::Signature operator()(const EcdsaSignature& signature) const
         {
-            asn1::Signature* final_signature = asn1::allocate<asn1::Signature>();
-            final_signature->present = Vanetza_Security_Signature_PR_ecdsaNistP256Signature;
-            assign(&final_signature->choice.ecdsaNistP256Signature.sSig, signature.s);
-            final_signature->choice.ecdsaNistP256Signature.rSig = boost::apply_visitor(
-                ecc_point_visitor(),
-                signature.R
-            );
-            return *final_signature;
+            asn1::Signature final_signature = {};
+            final_signature.present = Vanetza_Security_Signature_PR_ecdsaNistP256Signature;
+            assign(&final_signature.choice.ecdsaNistP256Signature.sSig, signature.s);
+            final_signature.choice.ecdsaNistP256Signature.rSig = to_asn1(signature.R);
+            return final_signature;
         }
 
         asn1::Signature operator()(const EcdsaSignatureFuture& signature) const

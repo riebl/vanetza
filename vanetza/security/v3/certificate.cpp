@@ -602,62 +602,6 @@ void Certificate::add_cert_permission(asn1::PsidGroupPermissions* group_permissi
 
 void Certificate::set_signature(const SomeEcdsaSignature& signature)
 {
-    struct ecc_point_visitor : public boost::static_visitor<asn1::EccP256CurvePoint>
-    {
-        asn1::EccP256CurvePoint operator()(const X_Coordinate_Only& x_only) const
-        {
-            auto to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.x_only),
-                reinterpret_cast<const char*>(x_only.x.data()),
-                x_only.x.size()
-            );
-            return *to_return;
-        }
-
-        asn1::EccP256CurvePoint operator()(const Compressed_Lsb_Y_0& y0) const
-        {
-            auto to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.compressed_y_0),
-                reinterpret_cast<const char*>(y0.x.data()),
-                y0.x.size()
-            );
-            return *to_return;
-        }
-
-        asn1::EccP256CurvePoint operator()(const Compressed_Lsb_Y_1& y1) const
-        {
-            auto to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.compressed_y_1),
-                reinterpret_cast<const char*>(y1.x.data()),
-                y1.x.size()
-            );
-            return *to_return;
-        }
-
-        asn1::EccP256CurvePoint operator()(const Uncompressed& unc) const
-        {
-            auto to_return = asn1::allocate<asn1::EccP256CurvePoint>();
-            to_return->present = Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256;
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.uncompressedP256.x),
-                reinterpret_cast<const char*>(unc.x.data()),
-                unc.x.size()
-            );
-            OCTET_STRING_fromBuf(
-                &(to_return->choice.uncompressedP256.y),
-                reinterpret_cast<const char*>(unc.y.data()),
-                unc.y.size()
-            );
-            return *to_return;
-        }
-    };
-
     struct signature_visitor : public boost::static_visitor<asn1::Signature*>
     {
         asn1::Signature* operator()(const EcdsaSignature& signature) const
@@ -669,10 +613,7 @@ void Certificate::set_signature(const SomeEcdsaSignature& signature)
                 reinterpret_cast<const char*>(signature.s.data()),
                 signature.s.size()
             );
-            final_signature->choice.ecdsaNistP256Signature.rSig = boost::apply_visitor(
-                ecc_point_visitor(),
-                signature.R
-            );
+            final_signature->choice.ecdsaNistP256Signature.rSig = to_asn1(signature.R);
             return final_signature;
         }
 
