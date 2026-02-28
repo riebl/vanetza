@@ -602,28 +602,34 @@ void Certificate::add_cert_permission(asn1::PsidGroupPermissions* group_permissi
 
 void Certificate::set_signature(const SomeEcdsaSignature& signature)
 {
-    struct signature_visitor : public boost::static_visitor<asn1::Signature*>
+    if (!m_struct->signature) {
+        m_struct->signature = asn1::allocate<asn1::Signature>();
+    } else {
+        ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_Signature, m_struct->signature);
+    }
+
+    struct signature_visitor : public boost::static_visitor<>
     {
-        asn1::Signature* operator()(const EcdsaSignature& signature) const
+        asn1::Signature* sig;
+
+        explicit signature_visitor(asn1::Signature* s) : sig(s)
         {
-            auto final_signature = asn1::allocate<asn1::Signature>();
-            final_signature->present = Vanetza_Security_Signature_PR_ecdsaNistP256Signature;
-            OCTET_STRING_fromBuf(
-                &(final_signature->choice.ecdsaNistP256Signature.sSig),
-                reinterpret_cast<const char*>(signature.s.data()),
-                signature.s.size()
-            );
-            final_signature->choice.ecdsaNistP256Signature.rSig = to_asn1(signature.R);
-            return final_signature;
         }
 
-        asn1::Signature* operator()(const EcdsaSignatureFuture& signature) const
+        void operator()(const EcdsaSignature& signature) const
         {
-            return this->operator()(signature.get());
+            sig->present = Vanetza_Security_Signature_PR_ecdsaNistP256Signature;
+            assign(&sig->choice.ecdsaNistP256Signature.sSig, signature.s);
+            sig->choice.ecdsaNistP256Signature.rSig = to_asn1(signature.R);
+        }
+
+        void operator()(const EcdsaSignatureFuture& signature) const
+        {
+            this->operator()(signature.get());
         }
     };
 
-    m_struct->signature = boost::apply_visitor(signature_visitor(), signature);
+    boost::apply_visitor(signature_visitor(m_struct->signature), signature);
 }
 
 Certificate fake_certificate()
