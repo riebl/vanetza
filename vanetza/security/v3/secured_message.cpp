@@ -324,6 +324,7 @@ void SecuredMessage::set_signature(const SomeEcdsaSignature& signature)
         }
     };
 
+    ASN_STRUCT_RESET(asn_DEF_Vanetza_Security_Signature, &m_struct->content->choice.signedData->signature);
     m_struct->content->choice.signedData->signature = boost::apply_visitor(signature_visitor(), signature);
 }
 
