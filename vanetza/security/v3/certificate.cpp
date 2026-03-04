@@ -800,7 +800,9 @@ bool compress(Vanetza_Security_EccP256CurvePoint& point)
 {
     if (point.present == Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256) {
         auto& unc = point.choice.uncompressedP256;
-        if (unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01) {
+        const bool y_odd = unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01;
+        asn1::reset(&unc.y);
+        if (y_odd) {
             assert(&point.choice.uncompressedP256.x == &point.choice.compressed_y_1);
             point.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1;
         } else {
@@ -819,7 +821,9 @@ bool compress(Vanetza_Security_EccP384CurvePoint& point)
 {
     if (point.present == Vanetza_Security_EccP384CurvePoint_PR_uncompressedP384) {
         auto& unc = point.choice.uncompressedP384;
-        if (unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01) {
+        const bool y_odd = unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01;
+        asn1::reset(&unc.y);
+        if (y_odd) {
             assert(&point.choice.uncompressedP384.x == &point.choice.compressed_y_1);
             point.present = Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1;
         } else {
