@@ -841,6 +841,7 @@ bool compress(Vanetza_Security_EccP384CurvePoint& point)
 bool make_x_only(Vanetza_Security_EccP256CurvePoint& point)
 {
     if (point.present == Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256) {
+        asn1::reset(&point.choice.uncompressedP256.y);
         assert(&point.choice.uncompressedP256.x == &point.choice.x_only);
         point.present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
         return true;
@@ -854,6 +855,7 @@ bool make_x_only(Vanetza_Security_EccP256CurvePoint& point)
 bool make_x_only(Vanetza_Security_EccP384CurvePoint& point)
 {
     if (point.present == Vanetza_Security_EccP384CurvePoint_PR_uncompressedP384) {
+        asn1::reset(&point.choice.uncompressedP384.y);
         assert(&point.choice.uncompressedP384.x == &point.choice.x_only);
         point.present = Vanetza_Security_EccP384CurvePoint_PR_x_only;
         return true;
