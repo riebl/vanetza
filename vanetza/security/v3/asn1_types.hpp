@@ -1,16 +1,11 @@
 #pragma once
+#include <vanetza/asn1/type_traits.hpp>
 
 // forward declarations of base types
-typedef struct OCTET_STRING OCTET_STRING_t;
-typedef struct ASN__PRIMITIVE_TYPE_s INTEGER_t;
-typedef struct asn_TYPE_descriptor_s asn_TYPE_descriptor_t;
+using OCTET_STRING_t = struct OCTET_STRING;
+using INTEGER_t = struct ASN__PRIMITIVE_TYPE_s;
+using asn_TYPE_descriptor_t = struct asn_TYPE_descriptor_s;
 using Vanetza_Security_Uint64_t = INTEGER_t;
-
-namespace vanetza {
-namespace asn1 {
-template<typename T> struct asn1_type_traits;
-} // namespace asn1
-} // namespace vanetza
 
 #define ASN1_TYPE_ALIAS(name) Vanetza_Security_ ## name ## _t
 #define ASN1_TYPE_NAME(name) Vanetza_Security_ ## name
@@ -102,28 +97,11 @@ FWD_ALIAS(Time64, Uint64)
 #undef ASN1_TYPE_NAME
 #undef FWD_ALIAS
 #undef FWD_NATIVE_INTEGER
-#undef FWT_OCTET_STRING
+#undef FWD_OCTET_STRING
 #undef FWD_STRUCT
 
 namespace vanetza
 {
-namespace asn1
-{
-
-template<typename T>
-void reset(T& value)
-{
-    ASN_STRUCT_RESET(asn1_type_traits<T>::descriptor(), &value);
-}
-
-template<typename T>
-void reset(T* ptr)
-{
-    ASN_STRUCT_RESET(asn1_type_traits<T>::descriptor(), ptr);
-}
-
-} // namespace asn1
-
 namespace security
 {
 namespace v3

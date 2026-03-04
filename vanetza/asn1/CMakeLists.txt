@@ -344,7 +344,7 @@ add_asn1_component(its/r2)
 add_asn1_component(security)
 add_asn1_component(security/r2)
 
-add_vanetza_component(asn1 asn1c_wrapper.cpp)
+add_vanetza_component(asn1 asn1c_wrapper.cpp type_traits.cpp)
 target_link_libraries(asn1 PUBLIC asn1_its Boost::boost)
 
 add_test_subdirectory(tests)
