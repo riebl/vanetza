@@ -14,8 +14,9 @@ namespace v2
 {
 
 NaiveCertificateProvider::NaiveCertificateProvider(const Runtime& rt) :
+    m_crypto_backend(create_backend("default")),
     m_runtime(rt),
-    m_own_key_pair(m_crypto_backend.generate_key_pair()),
+    m_own_key_pair(m_crypto_backend->generate_key_pair()),
     m_own_certificate(generate_authorization_ticket()) { }
 
 const Certificate& NaiveCertificateProvider::own_certificate()
@@ -47,14 +48,14 @@ const ecdsa256::PrivateKey& NaiveCertificateProvider::own_private_key()
 
 const ecdsa256::KeyPair& NaiveCertificateProvider::aa_key_pair()
 {
-    static const ecdsa256::KeyPair aa_key_pair = m_crypto_backend.generate_key_pair();
+    static const ecdsa256::KeyPair aa_key_pair = m_crypto_backend->generate_key_pair();
 
     return aa_key_pair;
 }
 
 const ecdsa256::KeyPair& NaiveCertificateProvider::root_key_pair()
 {
-    static const ecdsa256::KeyPair root_key_pair = m_crypto_backend.generate_key_pair();
+    static const ecdsa256::KeyPair root_key_pair = m_crypto_backend->generate_key_pair();
 
     return root_key_pair;
 }
@@ -125,7 +126,7 @@ void NaiveCertificateProvider::sign_authorization_ticket(Certificate& certificat
     sort(certificate);
 
     ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = m_crypto_backend.sign_data(aa_key_pair().private_key, data_buffer);
+    certificate.signature = m_crypto_backend->sign_data(aa_key_pair().private_key, data_buffer);
 }
 
 Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string& subject_name)
@@ -175,7 +176,7 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = m_crypto_backend.sign_data(root_key_pair().private_key, data_buffer);
+    certificate.signature = m_crypto_backend->sign_data(root_key_pair().private_key, data_buffer);
 
     return certificate;
 }
@@ -227,7 +228,7 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
 
     // set signature
     ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = m_crypto_backend.sign_data(root_key_pair().private_key, data_buffer);
+    certificate.signature = m_crypto_backend->sign_data(root_key_pair().private_key, data_buffer);
 
     return certificate;
 }

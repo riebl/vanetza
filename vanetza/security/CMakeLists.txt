@@ -68,11 +68,10 @@ add_vanetza_component(security
 target_link_libraries(security PUBLIC asn1 asn1_security common net)
 target_link_libraries(security PRIVATE Boost::boost GeographicLib::GeographicLib)
 
-# crypto++ is a public mandatory dependency because of "NaiveCertificateProvider"
 if(TARGET CryptoPP::CryptoPP)
     set_property(TARGET security APPEND PROPERTY
         SOURCES backend_cryptopp.cpp)
-    target_link_libraries(security PUBLIC CryptoPP::CryptoPP)
+    target_link_libraries(security PRIVATE CryptoPP::CryptoPP)
     target_compile_definitions(security PUBLIC "VANETZA_WITH_CRYPTOPP")
 endif()
 

@@ -65,5 +65,14 @@ ByteBuffer BackendNull::calculate_hash(HashAlgorithm algo, const ByteBuffer&)
     return hash;
 }
 
+ecdsa256::KeyPair BackendNull::generate_key_pair()
+{
+    ecdsa256::KeyPair key_pair;
+    key_pair.private_key.key.fill(0);
+    key_pair.public_key.x.fill(0);
+    key_pair.public_key.y.fill(0);
+    return key_pair;
+}
+
 } // namespace security
 } // namespace vanetza

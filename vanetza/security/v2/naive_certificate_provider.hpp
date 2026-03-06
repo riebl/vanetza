@@ -1,9 +1,10 @@
 #ifndef NAIVE_CERTIFICATE_PROVIDER_HPP_MTULFLKX
 #define NAIVE_CERTIFICATE_PROVIDER_HPP_MTULFLKX
 
+#include <memory>
 #include <string>
 #include <vanetza/common/runtime.hpp>
-#include <vanetza/security/backend_cryptopp.hpp>
+#include <vanetza/security/backend.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_provider.hpp>
 
@@ -96,7 +97,7 @@ private:
      */
     Certificate generate_root_certificate(const std::string& subject_name);
 
-    BackendCryptoPP m_crypto_backend; /*< key generation is not a generic backend feature */
+    std::unique_ptr<Backend> m_crypto_backend;
     const Runtime& m_runtime;
     const ecdsa256::KeyPair m_own_key_pair;
     Certificate m_own_certificate;

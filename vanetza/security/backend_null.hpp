@@ -37,6 +37,9 @@ public:
     /// \see Backend::calculate_hash
     ByteBuffer calculate_hash(HashAlgorithm, const ByteBuffer&) override;
 
+    /// \see Backend::generate_key_pair
+    ecdsa256::KeyPair generate_key_pair() override;
+
 private:
     EcdsaSignature fake_signature() const;
 };

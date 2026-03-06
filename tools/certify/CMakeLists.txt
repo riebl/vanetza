@@ -3,6 +3,11 @@ if(NOT TARGET Boost::program_options)
     return()
 endif()
 
+if(NOT TARGET CryptoPP::CryptoPP)
+    message(STATUS "Skip build of certify because of missing CryptoPP dependency")
+    return()
+endif()
+
 add_executable(certify
     commands/extract-public-key.cpp
     commands/generate-aa.cpp

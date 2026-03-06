@@ -46,6 +46,9 @@ public:
     /// \see Backend::decompress_point
     boost::optional<Uncompressed> decompress_point(const EccPoint& ecc_point) override;
 
+    /// \see Backend::generate_key_pair
+    ecdsa256::KeyPair generate_key_pair() override;
+
 private:
     /// calculate SHA256 digest of data buffer
     std::array<uint8_t, 32> calculate_sha256_digest(const ByteBuffer& data) const;

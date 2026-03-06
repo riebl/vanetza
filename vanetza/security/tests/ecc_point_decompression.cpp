@@ -59,11 +59,12 @@ TEST_P(EccPointDecompressionTest, LSB_Y_1)
     EXPECT_EQ(y_expected, decompressed->y);
 }
 
-auto values = ::testing::Values(
-#ifdef VANETZA_WITH_OPENSSL
-    "OpenSSL",
+#if defined VANETZA_WITH_OPENSSL && defined VANETZA_WITH_CRYPTOPP
+static auto backends = ::testing::Values("OpenSSL", "CryptoPP");
+#elif defined VANETZA_WITH_OPENSSL
+static auto backends = ::testing::Values("OpenSSL");
+#elif defined VANETZA_WITH_CRYPTOPP
+static auto backends = ::testing::Values("CryptoPP");
 #endif
-    "CryptoPP"
-);
 
-INSTANTIATE_TEST_SUITE_P(EccPointDecompression, EccPointDecompressionTest, values);
+INSTANTIATE_TEST_SUITE_P(EccPointDecompression, EccPointDecompressionTest, backends);

@@ -297,6 +297,42 @@ openssl::Key BackendOpenSsl::internal_public_key(const PublicKey& generic) const
     return key;
 }
 
+ecdsa256::KeyPair BackendOpenSsl::generate_key_pair()
+{
+    ecdsa256::KeyPair key_pair;
+    openssl::Key key(NID_X9_62_prime256v1);
+    openssl::check(EC_KEY_generate_key(key));
+
+    const BIGNUM* priv_bn = EC_KEY_get0_private_key(key);
+    const EC_POINT* pub_point = EC_KEY_get0_public_key(key);
+    const EC_GROUP* group = EC_KEY_get0_group(key);
+
+    // extract private key
+    key_pair.private_key.key.fill(0);
+    auto priv_bytes = BN_num_bytes(priv_bn);
+    BN_bn2bin(priv_bn, key_pair.private_key.key.data() + key_pair.private_key.key.size() - priv_bytes);
+
+    // extract public key coordinates
+    openssl::BigNumber x;
+    openssl::BigNumber y;
+    openssl::BigNumberContext ctx;
+#if OPENSSL_API_COMPAT < 0x10101000L
+    EC_POINT_get_affine_coordinates_GFp(group, pub_point, x, y, ctx);
+    auto x_bytes = BN_num_bytes(static_cast<BIGNUM*>(x));
+    auto y_bytes = BN_num_bytes(static_cast<BIGNUM*>(y));
+    key_pair.public_key.x.fill(0);
+    key_pair.public_key.y.fill(0);
+    BN_bn2bin(x, key_pair.public_key.x.data() + key_pair.public_key.x.size() - x_bytes);
+    BN_bn2bin(y, key_pair.public_key.y.data() + key_pair.public_key.y.size() - y_bytes);
+#else
+    EC_POINT_get_affine_coordinates(group, pub_point, x, y, ctx);
+    BN_bn2binpad(x, key_pair.public_key.x.data(), key_pair.public_key.x.size());
+    BN_bn2binpad(y, key_pair.public_key.y.data(), key_pair.public_key.y.size());
+#endif
+
+    return key_pair;
+}
+
 openssl::Point BackendOpenSsl::internal_ec_point(const PublicKey& generic) const
 {
     openssl::Group group { openssl_nid(generic.type) };

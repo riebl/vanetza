@@ -79,6 +79,12 @@ public:
      */
     virtual ByteBuffer calculate_hash(HashAlgorithm algo, const ByteBuffer& data) = 0;
 
+    /**
+     * \brief generate a private key and the corresponding public key
+     * \return generated key pair
+     */
+    virtual ecdsa256::KeyPair generate_key_pair() = 0;
+
     virtual ~Backend() = default;
 };
 

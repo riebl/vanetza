@@ -39,11 +39,8 @@ public:
     /// \see Backend::calculate_hash
     ByteBuffer calculate_hash(HashAlgorithm, const ByteBuffer&) override;
 
-    /**
-     * \brief generate a private key and the corresponding public key
-     * \return generated key pair
-     */
-    ecdsa256::KeyPair generate_key_pair();
+    /// \see Backend::generate_key_pair
+    ecdsa256::KeyPair generate_key_pair() override;
 
 private:
     /// internal sign method using crypto++ private key
