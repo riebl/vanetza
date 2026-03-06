@@ -19,5 +19,13 @@ using KeyTag = std::array<uint8_t, 16>;
 */
 KeyTag create_hmac_tag(const vanetza::ByteBuffer& data, const HmacKey& hmacKey);
 
+#if defined VANETZA_WITH_OPENSSL
+KeyTag create_hmac_tag_openssl(const vanetza::ByteBuffer& data, const HmacKey& hmacKey);
+#endif
+
+#if defined VANETZA_WITH_CRYPTOPP
+KeyTag create_hmac_tag_cryptopp(const vanetza::ByteBuffer& data, const HmacKey& hmacKey);
+#endif
+
 } // namespace security
 } // namespace vanetza
