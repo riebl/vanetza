@@ -10,6 +10,7 @@ add_vanetza_component(security
     hashed_id.cpp
     hmac.cpp
     key_type.cpp
+    persistence.cpp
     peer_request_tracker.cpp
     secured_message.cpp
     sha.cpp
