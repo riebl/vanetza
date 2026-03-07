@@ -166,8 +166,12 @@ ecdsa256::KeyPair load_private_key_from_pem_file_cryptopp(const std::string& key
 
 ecdsa256::KeyPair load_private_key_from_der_file_cryptopp(const std::string& key_path)
 {
-    CryptoPP::FileSource source(key_path.c_str(), true);
-    return load_and_validate_der(source);
+    try {
+        CryptoPP::FileSource source(key_path.c_str(), true);
+        return load_and_validate_der(source);
+    } catch (const CryptoPP::FileStore::OpenErr&) {
+        throw std::runtime_error("Cannot open key file: " + key_path);
+    }
 }
 #endif /* VANETZA_WITH_CRYPTOPP */
 
