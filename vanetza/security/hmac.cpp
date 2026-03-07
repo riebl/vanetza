@@ -33,7 +33,7 @@ KeyTag create_hmac_tag_openssl(const ByteBuffer& data, const HmacKey& hmacKey)
 KeyTag create_hmac_tag_cryptopp(const ByteBuffer& data, const HmacKey& hmacKey)
 {
     KeyTag keyTag;
-    std::array<CryptoPP::byte, 32> tag;
+    std::array<std::uint8_t, 32> tag;
     CryptoPP::HMAC<CryptoPP::SHA256> mac(hmacKey.data(), hmacKey.size());
     mac.Update(data.data(), data.size());
     mac.Final(tag.data());
