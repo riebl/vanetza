@@ -3,9 +3,9 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <boost/core/noncopyable.hpp>
-#include <openssl/bn.h>
-#include <openssl/ecdsa.h>
+#include <openssl/ec.h>
 #include <openssl/err.h>
+#include <openssl/types.h>
 #include <array>
 #include <cstdint>
 #include <stdexcept>
@@ -134,6 +134,7 @@ class Key
 public:
     Key();
     explicit Key(int nid);
+    explicit Key(EC_KEY* key);
     // non-copyable
     Key(const Key&) = delete;
     Key& operator=(const Key&) = delete;
@@ -143,9 +144,42 @@ public:
     ~Key();
 
     operator EC_KEY*() { return eckey; }
+    operator bool() const { return eckey != nullptr; }
 
 private:
     EC_KEY* eckey;
+};
+
+
+class Bio : private boost::noncopyable
+{
+public:
+    explicit Bio(BIO* bio);
+    Bio(Bio&&);
+    Bio& operator=(Bio&&);
+    ~Bio();
+
+    operator BIO*() { return bio; }
+    operator bool() const { return bio != nullptr; }
+
+private:
+    BIO* bio;
+};
+
+
+class EvpKey : private boost::noncopyable
+{
+public:
+    explicit EvpKey(EVP_PKEY* pkey);
+    EvpKey(EvpKey&&);
+    EvpKey& operator=(EvpKey&&);
+    ~EvpKey();
+
+    operator EVP_PKEY*() { return pkey; }
+    operator bool() const { return pkey != nullptr; }
+
+private:
+    EVP_PKEY* pkey;
 };
 
 } // namespace openssl

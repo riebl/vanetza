@@ -2,6 +2,9 @@
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <cassert>
+#include <openssl/bio.h>
+#include <openssl/bn.h>
+#include <openssl/evp.h>
 
 namespace vanetza
 {
@@ -149,6 +152,10 @@ Key::Key(int nid) : eckey(EC_KEY_new_by_curve_name(nid))
     check(eckey);
 }
 
+Key::Key(EC_KEY* key) : eckey(key)
+{
+}
+
 Key::Key(Key&& other) : eckey(nullptr)
 {
     std::swap(eckey, other.eckey);
@@ -163,6 +170,46 @@ Key& Key::operator=(Key&& other)
 Key::~Key()
 {
     EC_KEY_free(eckey);
+}
+
+Bio::Bio(BIO* bio) : bio(bio)
+{
+}
+
+Bio::Bio(Bio&& other) : bio(nullptr)
+{
+    std::swap(bio, other.bio);
+}
+
+Bio& Bio::operator=(Bio&& other)
+{
+    std::swap(bio, other.bio);
+    return *this;
+}
+
+Bio::~Bio()
+{
+    BIO_free(bio);
+}
+
+EvpKey::EvpKey(EVP_PKEY* pkey) : pkey(pkey)
+{
+}
+
+EvpKey::EvpKey(EvpKey&& other) : pkey(nullptr)
+{
+    std::swap(pkey, other.pkey);
+}
+
+EvpKey& EvpKey::operator=(EvpKey&& other)
+{
+    std::swap(pkey, other.pkey);
+    return *this;
+}
+
+EvpKey::~EvpKey()
+{
+    EVP_PKEY_free(pkey);
 }
 
 } // namespace openssl
