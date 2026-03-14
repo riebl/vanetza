@@ -1,6 +1,7 @@
 #include <vanetza/common/factory.hpp>
 #include <vanetza/security/backend.hpp>
 #include <cassert>
+#include <stdexcept>
 
 namespace
 {
@@ -58,6 +59,15 @@ std::unique_ptr<Backend> create_backend(const std::string& name, const Factory<B
     } else {
         return factory.create(name);
     }
+}
+
+std::unique_ptr<Backend> create_backend_or_throw(const std::string& name)
+{
+    auto backend = create_backend(name);
+    if (!backend) {
+        throw std::runtime_error("security backend unavailable");
+    }
+    return backend;
 }
 
 } // namespace security

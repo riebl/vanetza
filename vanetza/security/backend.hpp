@@ -109,6 +109,17 @@ const Factory<Backend>& builtin_backends();
  */
 std::unique_ptr<Backend> create_backend(const std::string& name, const Factory<Backend>& = builtin_backends());
 
+/**
+ * \brief create a backend instance
+ * 
+ * Will never return a nullptr but throw an exception if backend is unavailable.
+ * 
+ * \param name identifying name of backend implementation
+ * \throws runtime_error if backend is unavailable
+ * \return backend instance
+ */
+std::unique_ptr<Backend> create_backend_or_throw(const std::string& name);
+
 } // namespace security
 } // namespace vanetza
 
