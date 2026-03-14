@@ -1,16 +1,13 @@
 #include "generate-key.hpp"
 #include <boost/program_options.hpp>
-#include <cryptopp/eccrypto.h>
-#include <cryptopp/files.h>
-#include <cryptopp/oids.h>
-#include <cryptopp/osrng.h>
-#include <cryptopp/queue.h>
-#include <cryptopp/sha.h>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <vanetza/security/backend.hpp>
+#include <vanetza/security/persistence.hpp>
 
 namespace po = boost::program_options;
-using namespace CryptoPP;
+using namespace vanetza::security;
 
 bool GenerateKeyCommand::parse(const std::vector<std::string>& opts)
 {
@@ -45,22 +42,16 @@ bool GenerateKeyCommand::parse(const std::vector<std::string>& opts)
 
 int GenerateKeyCommand::execute()
 {
-    std::cout << "Generating key..." << std::endl;
+    auto backend = create_backend_or_throw("default");
 
-    AutoSeededRandomPool rng;
-    OID oid(CryptoPP::ASN1::secp256r1());
-    ECDSA<ECP, SHA256>::PrivateKey private_key;
-    private_key.Initialize(rng, oid);
+    std::cout << "Generating key... ";
+    auto key_pair = backend->generate_key_pair();
+    std::cout << "OK" << std::endl;
 
-    if (!private_key.Validate(rng, 3)) {
-        throw std::runtime_error("Private key validation failed");
-    }
-
-    ByteQueue queue;
-    private_key.Save(queue);
-    CryptoPP::FileSink file(output.c_str());
-    queue.CopyTo(file);
-    file.MessageEnd();
+    std::cout << "Writing key to '" << output << "'... ";
+    std::ofstream ofs(output, std::ios::binary);
+    save_private_key_pkcs8_der(ofs, key_pair);
+    std::cout << "OK" << std::endl;
 
     return 0;
 }

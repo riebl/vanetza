@@ -53,7 +53,7 @@ bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
 
 int GenerateRootCommand::execute()
 {
-    BackendCryptoPP crypto_backend;
+    auto backend = create_backend_or_throw("default");
 
     std::cout << "Loading key... ";
     auto subject_key = v2::load_private_key_from_file(subject_key_path);
@@ -112,7 +112,7 @@ int GenerateRootCommand::execute()
 
     sort(certificate);
     vanetza::ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = crypto_backend.sign_data(subject_key.private_key, data_buffer);
+    certificate.signature = backend->sign_data(subject_key.private_key, data_buffer);
 
     std::cout << "OK" << std::endl;
 

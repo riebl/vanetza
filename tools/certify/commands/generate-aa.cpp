@@ -6,7 +6,7 @@
 #include <boost/variant/get.hpp>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/security/backend_cryptopp.hpp>
+#include <vanetza/security/backend.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/persistence.hpp>
@@ -57,7 +57,7 @@ bool GenerateAaCommand::parse(const std::vector<std::string>& opts)
 
 int GenerateAaCommand::execute()
 {
-    BackendCryptoPP crypto_backend;
+    auto backend = create_backend_or_throw("default");
 
     std::cout << "Loading keys... ";
     auto sign_key = v2::load_private_key_from_file(sign_key_path);
@@ -65,7 +65,7 @@ int GenerateAaCommand::execute()
     try {
         auto subject_private_key = v2::load_private_key_from_file(subject_key_path);
         subject_key = subject_private_key.public_key;
-    } catch (CryptoPP::BERDecodeErr& e) {
+    } catch (std::exception& e) {
         auto subject_key_etsi = v2::load_public_key_from_file(subject_key_path);
         if (get_type(subject_key_etsi) != PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256) {
             std::cerr << "Wrong public key algorithm." << std::endl;
@@ -73,7 +73,7 @@ int GenerateAaCommand::execute()
         }
 
         auto subject_key_etsi_ecdsa = boost::get<ecdsa_nistp256_with_sha256>(subject_key_etsi);
-        auto uncompressed_subject_ecc_point = crypto_backend.decompress_point(subject_key_etsi_ecdsa.public_key);
+        auto uncompressed_subject_ecc_point = backend->decompress_point(subject_key_etsi_ecdsa.public_key);
         if (!uncompressed_subject_ecc_point) {
             std::cerr << "Cannot get uncompressed ECC point from public key.";
             return 1;
@@ -126,7 +126,7 @@ int GenerateAaCommand::execute()
 
     sort(certificate);
     auto data_buffer = convert_for_signing(certificate);
-    certificate.signature = crypto_backend.sign_data(sign_key.private_key, data_buffer);
+    certificate.signature = backend->sign_data(sign_key.private_key, data_buffer);
 
     std::cout << "OK" << std::endl;
 

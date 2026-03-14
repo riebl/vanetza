@@ -59,7 +59,7 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
 
 int GenerateTicketCommand::execute()
 {
-    BackendCryptoPP crypto_backend;
+    auto backend = create_backend_or_throw("default");
 
     std::cout << "Loading keys... ";
     auto sign_key = v2::load_private_key_from_file(sign_key_path);
@@ -141,7 +141,7 @@ int GenerateTicketCommand::execute()
 
     sort(certificate);
     auto data_buffer = convert_for_signing(certificate);
-    certificate.signature = crypto_backend.sign_data(sign_key.private_key, data_buffer);
+    certificate.signature = backend->sign_data(sign_key.private_key, data_buffer);
 
     std::cout << "OK" << std::endl;
 
