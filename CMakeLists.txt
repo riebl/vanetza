@@ -41,24 +41,17 @@ include(UseVanetza)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find project dependencies
-set(Boost_COMPONENTS date_time) # used by VanetzaConfig generator
-find_package(Boost 1.69 REQUIRED COMPONENTS ${Boost_COMPONENTS})
-# query optional Boost components one by one quietly
-foreach(component IN ITEMS program_options)
-  find_package(Boost 1.69 QUIET COMPONENTS ${component})
-  if (Boost_${component}_FOUND)
-    list(APPEND Boost_COMPONENTS ${component})
-  endif()
-endforeach()
+find_package(Boost 1.70 REQUIRED COMPONENTS date_time OPTIONAL_COMPONENTS program_options CONFIG)
+if(Boost_VERSION_STRING STRGREATER_EQUAL 1.80)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 option(VANETZA_WITH_CRYPTOPP "Enable Crypto++ support" ON)
 if(VANETZA_WITH_CRYPTOPP)
     find_package(CryptoPP 5.6.1 REQUIRED)
 endif()
-find_package(GeographicLib 1.37 REQUIRED)
 
-if(Boost_VERSION_STRING STRGREATER_EQUAL 1.80)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+find_package(GeographicLib 1.37 REQUIRED)
 
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
 if (VANETZA_WITH_OPENSSL)

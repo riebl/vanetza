@@ -2,10 +2,7 @@
 list(APPEND CMAKE_MODULE_PATH "@PROJECT_SOURCE_DIR@/cmake")
 
 include(CMakeFindDependencyMacro)
-include(MacroFindDependencyComponents)
-
-find_dependency_components(Boost VERSION @Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@ COMPONENTS @Boost_COMPONENTS@)
-
+find_dependency(Boost @Boost_VERSION_STRING@ CONFIG COMPONENTS date_time)
 find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
 
 if(@CryptoPP_FOUND@)
