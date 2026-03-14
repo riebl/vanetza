@@ -4,6 +4,10 @@
 #include <gtest/gtest.h>
 #include <array>
 #include <cstdint>
+#include <cstdio>
+#include <fstream>
+#include <iterator>
+#include <sstream>
 
 using namespace vanetza::security;
 
@@ -36,6 +40,21 @@ void check_key_pair(const ecdsa256::KeyPair& kp)
     EXPECT_EQ(kp.private_key.key, expected_private_key);
     EXPECT_EQ(kp.public_key.x, expected_public_x);
     EXPECT_EQ(kp.public_key.y, expected_public_y);
+}
+
+ecdsa256::KeyPair make_test_key_pair()
+{
+    ecdsa256::KeyPair kp;
+    kp.private_key.key = expected_private_key;
+    kp.public_key.x = expected_public_x;
+    kp.public_key.y = expected_public_y;
+    return kp;
+}
+
+std::string read_file_bytes(const std::string& path)
+{
+    std::ifstream file(path, std::ios::binary);
+    return {std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
 }
 
 } // namespace
@@ -117,3 +136,24 @@ TEST(Persistence, cryptopp_load_der)
     check_key_pair(kp);
 }
 #endif /* VANETZA_WITH_CRYPTOPP */
+
+TEST(Persistence, save_and_load_pkcs8_der)
+{
+    auto kp = make_test_key_pair();
+    const std::string path = "test_save.der";
+    std::ofstream ofs(path, std::ios::binary);
+    EXPECT_TRUE(save_private_key_pkcs8_der(ofs, kp));
+    ofs.flush();
+    auto loaded = load_private_key_from_der_file(path);
+    std::remove(path.c_str());
+    check_key_pair(loaded);
+}
+
+TEST(Persistence, save_der_matches_reference_file)
+{
+    auto kp = make_test_key_pair();
+    std::ostringstream oss(std::ios::binary);
+    EXPECT_TRUE(save_private_key_pkcs8_der(oss, kp));
+    auto reference = read_file_bytes("test_key.der");
+    EXPECT_EQ(oss.str(), reference);
+}
