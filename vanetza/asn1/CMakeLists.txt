@@ -331,8 +331,9 @@ function(add_asn1_component NAME)
     endif()
 
     if(VANETZA_INSTALL)
+        get_filename_component(_dir ${NAME} DIRECTORY)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${NAME}
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/${_dir}
             FILES_MATCHING PATTERN "*.h")
     endif()
 endfunction()
