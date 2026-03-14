@@ -136,9 +136,15 @@ if(VANETZA_INSTALL)
 
   install(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaTargets.cmake DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 
-  install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/vanetza
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    FILES_MATCHING PATTERN "*.hpp" PATTERN "/tests/*.hpp" EXCLUDE)
+  file(GLOB_RECURSE _vanetza_headers
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+      ${CMAKE_CURRENT_SOURCE_DIR}/vanetza/*.hpp)
+  list(FILTER _vanetza_headers EXCLUDE REGEX "/tests/")
+  foreach(_header IN LISTS _vanetza_headers)
+      get_filename_component(_dir ${_header} DIRECTORY)
+      install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/${_header}
+          DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/${_dir})
+  endforeach()
   install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/vanetza/asn1/memory.h
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1)
 
