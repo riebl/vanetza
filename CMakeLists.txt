@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(VERSION 3.12...3.31)
-project(Vanetza VERSION 24.10)
+project(Vanetza VERSION 26.02)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Vanetza makes extensive use of C++11
