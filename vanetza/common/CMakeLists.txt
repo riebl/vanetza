@@ -13,9 +13,4 @@ set(CXX_SOURCES
 add_vanetza_component(common ${CXX_SOURCES})
 target_link_libraries(common PUBLIC Boost::date_time)
 
-if(TARGET Threads::Threads)
-    target_link_libraries(common INTERFACE Threads::Threads)
-endif()
-
 add_test_subdirectory(tests)
-
