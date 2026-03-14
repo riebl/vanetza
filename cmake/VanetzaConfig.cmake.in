@@ -6,6 +6,11 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 include(CMakeFindDependencyMacro)
 include(MacroFindDependencyComponents)
 
+# FindBoost.cmake and BoostConfig.cmake are fine
+if(POLICY CMP0167)
+    cmake_policy(SET CMP0167 NEW)
+endif()
+
 find_dependency_components(Boost VERSION @Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@ COMPONENTS @Boost_COMPONENTS@)
 find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
 find_dependency(Threads)
