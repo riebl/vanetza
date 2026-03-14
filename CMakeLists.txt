@@ -50,7 +50,6 @@ foreach(component IN ITEMS program_options)
     list(APPEND Boost_COMPONENTS ${component})
   endif()
 endforeach()
-include(CompatBoostTargets)
 option(VANETZA_WITH_CRYPTOPP "Enable Crypto++ support" ON)
 if(VANETZA_WITH_CRYPTOPP)
     find_package(CryptoPP 5.6.1 REQUIRED)
@@ -64,7 +63,6 @@ endif()
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
 if (VANETZA_WITH_OPENSSL)
   find_package(OpenSSL 1.0.1 REQUIRED)
-  include(CompatOpenSSLTargets)
 endif()
 
 add_subdirectory(vanetza/access)
@@ -131,8 +129,7 @@ if(VANETZA_INSTALL)
     DESTINATION ${CMAKECONFIG_INSTALL_DIR}
     FILES_MATCHING
     PATTERN "MacroFindDependencyComponents.cmake"
-    PATTERN "Find*.cmake"
-    PATTERN "Compat*Targets.cmake")
+    PATTERN "Find*.cmake")
 
   install(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaTargets.cmake DESTINATION ${CMAKECONFIG_INSTALL_DIR})
 

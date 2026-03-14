@@ -5,7 +5,6 @@ include(CMakeFindDependencyMacro)
 include(MacroFindDependencyComponents)
 
 find_dependency_components(Boost VERSION @Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@ COMPONENTS @Boost_COMPONENTS@)
-include(CompatBoostTargets)
 
 find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
 find_dependency(Threads)
@@ -24,7 +23,6 @@ if(@OPENSSL_FOUND@)
         variable_watch(OPENSSL_FOUND fix_openssl_found)
     endif()
     find_dependency(OpenSSL ${OPENSSL_VERSION_WITHOUT_PATCH})
-    include(CompatOpenSSLTargets)
 endif()
 
 # Restore previous module path

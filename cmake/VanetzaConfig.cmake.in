@@ -38,8 +38,6 @@ endif()
 # Restore previous module path
 list(REMOVE_AT CMAKE_MODULE_PATH -1)
 
-include("${CMAKE_CURRENT_LIST_DIR}/CompatBoostTargets.cmake")
-include("${CMAKE_CURRENT_LIST_DIR}/CompatOpenSSLTargets.cmake")
 include("${CMAKE_CURRENT_LIST_DIR}/VanetzaTargets.cmake")
 
 set_and_check(VANETZA_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
