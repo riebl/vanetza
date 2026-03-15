@@ -34,23 +34,14 @@ BigNumber::BigNumber() : bignum(BN_new())
     check(bignum != nullptr);
 }
 
-BigNumber::BigNumber(const uint8_t* arr, std::size_t len) : BigNumber()
+BigNumber::BigNumber(const uint8_t* arr, std::size_t len) : bignum(BN_bin2bn(arr, len, nullptr))
 {
-    BN_bin2bn(arr, len, bignum);
-}
-
-BIGNUM* BigNumber::move()
-{
-    BIGNUM* ptr = nullptr;
-    std::swap(ptr, bignum);
-    return ptr;
+    check(bignum != nullptr);
 }
 
 BigNumber::~BigNumber()
 {
-    if (bignum) {
-        BN_clear_free(bignum);
-    }
+    BN_clear_free(bignum);
 }
 
 BigNumberContext::BigNumberContext() : ctx(BN_CTX_new())
@@ -115,10 +106,14 @@ Signature::Signature(const ByteBuffer& r, const ByteBuffer& s) :
     signature(ECDSA_SIG_new())
 {
     check(signature);
-    BigNumber bn_r { r };
-    BigNumber bn_s { s };
     // ownership of big numbers is transfered by calling ECDSA_SIG_set0!
-    ECDSA_SIG_set0(signature, bn_r.move(), bn_s.move());
+    BIGNUM* bn_r = BN_bin2bn(r.data(), r.size(), nullptr);
+    BIGNUM* bn_s = BN_bin2bn(s.data(), s.size(), nullptr);
+    if (!ECDSA_SIG_set0(signature, bn_r, bn_s)) {
+        BN_clear_free(bn_r);
+        BN_clear_free(bn_s);
+        throw Exception();
+    }
 }
 
 Signature::Signature(Signature&& other) : signature(nullptr)

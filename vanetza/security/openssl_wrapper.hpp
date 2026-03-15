@@ -57,7 +57,6 @@ public:
     }
 
     operator BIGNUM*() { return bignum; }
-    BIGNUM* move();
 
 private:
     BigNumber(const uint8_t*, std::size_t);
