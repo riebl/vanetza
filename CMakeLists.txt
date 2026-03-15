@@ -137,7 +137,7 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/vanetza/asn1/memory.h
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1)
 
 # export build tree (allows import by outside projects)
-option(VANETZA_EXPORT_PACKAGE "Export Vanetza build directory to CMake package registry" ON)
+option(VANETZA_EXPORT_PACKAGE "Export Vanetza build directory to CMake package registry" OFF)
 if(VANETZA_EXPORT_PACKAGE)
   export(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaExports.cmake)
   file(COPY ${CMAKECONFIG_BUILD_DIR}/VanetzaConfigVersion.cmake
