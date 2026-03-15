@@ -37,7 +37,9 @@ constexpr ItsAid MR = 1618;
 constexpr ItsAid AVM = 71;
 constexpr ItsAid POI = 1619;
 constexpr ItsAid RMO = 1620;
+#ifndef PI /*< some code defines the mathematical constant as macro */
 constexpr ItsAid PI = 1621;
+#endif
 constexpr ItsAid MDM = 1622;
 
 } // namespace aid
