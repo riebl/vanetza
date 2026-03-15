@@ -8,7 +8,7 @@ function(add_vanetza_component name)
     add_library(Vanetza::${name} ALIAS ${name})
     target_include_directories(${name} PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
-        $<INSTALL_INTERFACE:include>)
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
     set_target_properties(${name} PROPERTIES
         OUTPUT_NAME vanetza_${name}
         SOVERSION ${VANETZA_SOVERSION})
