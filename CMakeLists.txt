@@ -4,10 +4,6 @@ project(Vanetza VERSION 26.02)
 set(VANETZA_SOVERSION 0)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
-# Vanetza makes extensive use of C++11
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED OFF)
-
 # Look up threading library (usually pthread)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
 set(THREADS_PREFER_PTHREAD_FLAG TRUE)
@@ -34,9 +30,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find project dependencies
 find_package(Boost 1.70 REQUIRED COMPONENTS date_time OPTIONAL_COMPONENTS program_options CONFIG)
-if(Boost_VERSION_STRING STRGREATER_EQUAL 1.80)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
 
 option(VANETZA_WITH_CRYPTOPP "Enable Crypto++ support" ON)
 if(VANETZA_WITH_CRYPTOPP)
