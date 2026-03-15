@@ -1,5 +1,3 @@
-include(CMakeParseArguments)
-
 #
 # configure_gtest_directory(
 #   [SOURCES <srcs...>]
