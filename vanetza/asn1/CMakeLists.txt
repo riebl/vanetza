@@ -145,7 +145,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
             list(APPEND _asn1c_source_binds --mount type=bind,src=${_abs_file},dst=/workdir/${_filename},ro)
         endforeach()
 
-        set(_asn1c_exec docker run --rm -it
+        set(_asn1c_exec docker run --rm
             -v ${gen_asn1c_OUTPUT_DIRECTORY}:/out ${_asn1c_source_binds} -w /workdir
             -u ${USER_ID}:${GROUP_ID}
             ${VANETZA_ASN1C_CONTAINER_IMAGE}
@@ -189,7 +189,7 @@ if(VANETZA_ASN1_WITH_ASN1C)
     add_custom_command(OUTPUT ${_support_asn1_dir}
         COMMAND ${CMAKE_COMMAND} -E rm -rf ${CMAKE_CURRENT_BINARY_DIR}/asn1c_skeleton
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/asn1c_skeleton
-        COMMAND docker run --rm -it
+        COMMAND docker run --rm
             -v ${CMAKE_CURRENT_BINARY_DIR}/asn1c_skeleton:/dest
             -u ${USER_ID}:${GROUP_ID}
             ${VANETZA_ASN1C_CONTAINER_IMAGE}
