@@ -30,13 +30,18 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find project dependencies
 find_package(Boost 1.70 REQUIRED COMPONENTS date_time OPTIONAL_COMPONENTS program_options CONFIG)
+find_package(GeographicLib 1.37 REQUIRED)
+
+find_package(CapnProto QUIET)
+option(VANETZA_WITH_RPC "Enable RPC support" ${CapnProto_FOUND})
+if(VANETZA_WITH_RPC)
+    find_package(CapnProto REQUIRED)
+endif()
 
 option(VANETZA_WITH_CRYPTOPP "Enable Crypto++ support" ON)
 if(VANETZA_WITH_CRYPTOPP)
     find_package(CryptoPP 5.6.1 REQUIRED)
 endif()
-
-find_package(GeographicLib 1.37 REQUIRED)
 
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
 if (VANETZA_WITH_OPENSSL)

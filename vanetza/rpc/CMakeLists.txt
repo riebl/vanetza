@@ -1,5 +1,4 @@
-find_package(CapnProto CONFIG)
-if(CapnProto_FOUND)
+if(VANETZA_WITH_RPC)
     message(STATUS "Enabled Vanetza RPC feature")
     capnp_generate_cpp(CAPNP_SOURCES CAPNP_HEADERS vanetza.capnp)
     add_vanetza_component(rpc
