@@ -330,12 +330,10 @@ function(add_asn1_component NAME)
         set_property(SOURCE ${_sources} APPEND PROPERTY COMPILE_OPTIONS "-Wno-parentheses-equality")
     endif()
 
-    if(VANETZA_INSTALL)
-        get_filename_component(_dir ${NAME} DIRECTORY)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${NAME}
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/${_dir}
-            FILES_MATCHING PATTERN "*.h")
-    endif()
+    get_filename_component(_dir ${NAME} DIRECTORY)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${NAME}
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/${_dir}
+        FILES_MATCHING PATTERN "*.h")
 endfunction()
 
 add_asn1_component(support)
