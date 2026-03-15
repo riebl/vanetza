@@ -69,8 +69,8 @@ endif()
 
 install(TARGETS socktap EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 
-find_file(COHDA_LLC_API_HEADER llc-api.c
-    PATHS "/home/duser"
+find_file(COHDA_LLC_API_HEADER llc-api.h
+    HINTS "/home/duser"
     PATH_SUFFIXES "cohda/kernel/include/linux/cohda/llc"
     CMAKE_FIND_ROOT_PATH_BOTH
     DOC "Cohda LLC API header")
