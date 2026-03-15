@@ -66,8 +66,8 @@ add_vanetza_component(security
     v3/trust_store.cpp
     v3/validity_restriction.cpp
 )
-target_link_libraries(security PUBLIC asn1 asn1_security common net)
-target_link_libraries(security PRIVATE Boost::boost GeographicLib::GeographicLib)
+target_link_libraries(security PUBLIC Boost::headers asn1 asn1_security common net)
+target_link_libraries(security PRIVATE GeographicLib::GeographicLib)
 
 if(TARGET CryptoPP::CryptoPP)
     set_property(TARGET security APPEND PROPERTY
