@@ -11,6 +11,8 @@
 
 using namespace vanetza::security;
 
+#define WRITEABLE(path) WORK_DIR "/" path
+
 namespace
 {
 
@@ -140,7 +142,7 @@ TEST(Persistence, cryptopp_load_der)
 TEST(Persistence, save_and_load_pkcs8_der)
 {
     auto kp = make_test_key_pair();
-    const std::string path = "test_save.der";
+    const std::string path = WRITEABLE("test_save.der");
     std::ofstream ofs(path, std::ios::binary);
     EXPECT_TRUE(save_private_key_pkcs8_der(ofs, kp));
     ofs.flush();
