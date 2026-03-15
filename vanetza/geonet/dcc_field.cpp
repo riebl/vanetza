@@ -30,7 +30,7 @@ struct dcc_mco_extractor : boost::static_visitor< boost::optional<DccMcoField> >
 
 boost::optional<DccMcoField> get_dcc_mco(const DccField& field)
 {
-    return boost::apply_visitor(dcc_mco_extractor {}, field);
+    return boost::apply_visitor(dcc_mco_extractor(), field);
 }
 
 void serialize(const DccField& field, OutputArchive& ar)
@@ -41,7 +41,7 @@ void serialize(const DccField& field, OutputArchive& ar)
         uint32_t operator()(const uint32_t& raw) const { return raw; }
     };
 
-    uint32_t raw = boost::apply_visitor(serialize_visitor {}, field);
+    uint32_t raw = boost::apply_visitor(serialize_visitor(), field);
     serialize(host_cast(raw), ar);
 }
 

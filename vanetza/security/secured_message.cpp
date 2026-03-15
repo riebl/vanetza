@@ -118,12 +118,12 @@ struct PayloadCopyVisitor : boost::static_visitor<PacketVariant>
 
 PacketVariant get_payload_copy(const SecuredMessage& msg)
 {
-    return boost::apply_visitor(PayloadCopyVisitor {}, msg);
+    return boost::apply_visitor(PayloadCopyVisitor(), msg);
 }
 
 PacketVariant get_payload_copy(const SecuredMessageView& msg)
 {
-    return boost::apply_visitor(PayloadCopyVisitor {}, msg);
+    return boost::apply_visitor(PayloadCopyVisitor(), msg);
 }
 
 } // namespace security

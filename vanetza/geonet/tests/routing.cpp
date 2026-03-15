@@ -11,7 +11,7 @@ using namespace vanetza;
 using namespace vanetza::geonet;
 
 // user literal for convenient length definition
-vanetza::units::Length operator"" _m(long double length)
+vanetza::units::Length operator""_m(long double length)
 {
     return vanetza::units::Length(length * vanetza::units::si::meters);
 }
