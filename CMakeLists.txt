@@ -54,7 +54,7 @@ find_package(GeographicLib 1.37 REQUIRED)
 
 option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
 if (VANETZA_WITH_OPENSSL)
-  find_package(OpenSSL 1.0.1 REQUIRED)
+  find_package(OpenSSL 1.1.0 REQUIRED)
 endif()
 
 add_subdirectory(vanetza/access)

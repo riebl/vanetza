@@ -115,15 +115,10 @@ Signature::Signature(const ByteBuffer& r, const ByteBuffer& s) :
     signature(ECDSA_SIG_new())
 {
     check(signature);
-#if OPENSSL_API_COMPAT < 0x10100000L
-    BN_bin2bn(r.data(), r.size(), signature->r);
-    BN_bin2bn(s.data(), s.size(), signature->s);
-#else
     BigNumber bn_r { r };
     BigNumber bn_s { s };
     // ownership of big numbers is transfered by calling ECDSA_SIG_set0!
     ECDSA_SIG_set0(signature, bn_r.move(), bn_s.move());
-#endif
 }
 
 Signature::Signature(Signature&& other) : signature(nullptr)

@@ -42,11 +42,7 @@ int openssl_nid(KeyType key)
 
 BackendOpenSsl::BackendOpenSsl()
 {
-#if OPENSSL_API_COMPAT < 0x10100000L
-    ERR_load_crypto_strings();
-#else
     OPENSSL_init_crypto(OPENSSL_INIT_LOAD_CRYPTO_STRINGS, nullptr);
-#endif
 }
 
 EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const ByteBuffer& data)
@@ -56,14 +52,9 @@ EcdsaSignature BackendOpenSsl::sign_data(const ecdsa256::PrivateKey& key, const 
 
     // sign message data represented by the digest
     openssl::Signature signature { ECDSA_do_sign(digest.data(), digest.size(), priv_key) };
-#if OPENSSL_API_COMPAT < 0x10100000L
-    const BIGNUM* sig_r = signature->r;
-    const BIGNUM* sig_s = signature->s;
-#else
     const BIGNUM* sig_r = nullptr;
     const BIGNUM* sig_s = nullptr;
     ECDSA_SIG_get0(signature, &sig_r, &sig_s);
-#endif
 
     EcdsaSignature ecdsa_signature;
     X_Coordinate_Only coordinate;
@@ -93,14 +84,9 @@ Signature BackendOpenSsl::sign_digest(const PrivateKey& key, const ByteBuffer& d
     // sign message data represented by the digest
     auto priv_key = internal_private_key(key);
     openssl::Signature signature { ECDSA_do_sign(digest.data(), digest.size(), priv_key) };
-#if OPENSSL_API_COMPAT < 0x10100000L
-    const BIGNUM* sig_r = signature->r;
-    const BIGNUM* sig_s = signature->s;
-#else
     const BIGNUM* sig_r = nullptr;
     const BIGNUM* sig_s = nullptr;
     ECDSA_SIG_get0(signature, &sig_r, &sig_s);
-#endif
 
     Signature ecdsa_signature;
     ecdsa_signature.type = key.type;
@@ -180,21 +166,9 @@ boost::optional<Uncompressed> BackendOpenSsl::decompress_point(const EccPoint& e
             result.x = x;
             result.y.resize(result.x.size());
 
-#if OPENSSL_API_COMPAT < 0x10101000L
-            EC_POINT_set_compressed_coordinates_GFp(group, point, x_coordinate, y_bit, ctx);
-            EC_POINT_get_affine_coordinates_GFp(group, point, nullptr, y_coordinate, ctx);
-            std::size_t y_coordinate_bytes = BN_num_bytes(y_coordinate);
-            if (y_coordinate_bytes <= result.y.size()) {
-                BN_bn2bin(y_coordinate, result.y.data() + (result.y.size() - y_coordinate_bytes));
-                return true;
-            } else {
-                return false;
-            }
-#else
             EC_POINT_set_compressed_coordinates(group, point, x_coordinate, y_bit, ctx);
             EC_POINT_get_affine_coordinates(group, point, nullptr, y_coordinate, ctx);
             return (BN_bn2binpad(y_coordinate, result.y.data(), result.y.size()) != -1);
-#endif
         }
 
         Uncompressed result;
@@ -316,19 +290,9 @@ ecdsa256::KeyPair BackendOpenSsl::generate_key_pair()
     openssl::BigNumber x;
     openssl::BigNumber y;
     openssl::BigNumberContext ctx;
-#if OPENSSL_API_COMPAT < 0x10101000L
-    EC_POINT_get_affine_coordinates_GFp(group, pub_point, x, y, ctx);
-    auto x_bytes = BN_num_bytes(static_cast<BIGNUM*>(x));
-    auto y_bytes = BN_num_bytes(static_cast<BIGNUM*>(y));
-    key_pair.public_key.x.fill(0);
-    key_pair.public_key.y.fill(0);
-    BN_bn2bin(x, key_pair.public_key.x.data() + key_pair.public_key.x.size() - x_bytes);
-    BN_bn2bin(y, key_pair.public_key.y.data() + key_pair.public_key.y.size() - y_bytes);
-#else
     EC_POINT_get_affine_coordinates(group, pub_point, x, y, ctx);
     BN_bn2binpad(x, key_pair.public_key.x.data(), key_pair.public_key.x.size());
     BN_bn2binpad(y, key_pair.public_key.y.data(), key_pair.public_key.y.size());
-#endif
 
     return key_pair;
 }

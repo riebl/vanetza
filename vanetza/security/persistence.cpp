@@ -43,19 +43,9 @@ ecdsa256::KeyPair extract_key_pair(openssl::EvpKey& pkey)
     openssl::BigNumber x;
     openssl::BigNumber y;
     openssl::BigNumberContext ctx;
-#if OPENSSL_API_COMPAT < 0x10101000L
-    EC_POINT_get_affine_coordinates_GFp(group, pub_point, x, y, ctx);
-    key_pair.public_key.x.fill(0);
-    key_pair.public_key.y.fill(0);
-    int x_bytes = BN_num_bytes(static_cast<BIGNUM*>(x));
-    int y_bytes = BN_num_bytes(static_cast<BIGNUM*>(y));
-    BN_bn2bin(x, key_pair.public_key.x.data() + key_pair.public_key.x.size() - x_bytes);
-    BN_bn2bin(y, key_pair.public_key.y.data() + key_pair.public_key.y.size() - y_bytes);
-#else
     EC_POINT_get_affine_coordinates(group, pub_point, x, y, ctx);
     BN_bn2binpad(x, key_pair.public_key.x.data(), key_pair.public_key.x.size());
     BN_bn2binpad(y, key_pair.public_key.y.data(), key_pair.public_key.y.size());
-#endif
 
     return key_pair;
 }
