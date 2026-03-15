@@ -110,7 +110,6 @@ install(FILES
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/cmake/
   DESTINATION ${CMAKECONFIG_INSTALL_DIR}
   FILES_MATCHING
-  PATTERN "MacroFindDependencyComponents.cmake"
   PATTERN "Find*.cmake")
 
 install(EXPORT ${PROJECT_NAME} NAMESPACE Vanetza:: FILE VanetzaTargets.cmake DESTINATION ${CMAKECONFIG_INSTALL_DIR})
