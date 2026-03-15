@@ -338,6 +338,8 @@ endfunction()
 
 add_asn1_component(support)
 target_sources(asn1_support PRIVATE memory.c)
+install(FILES memory.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1)
+
 add_asn1_component(its)
 add_asn1_component(its/r2)
 add_asn1_component(security)
