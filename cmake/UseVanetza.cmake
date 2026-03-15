@@ -10,7 +10,8 @@ function(add_vanetza_component name)
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}>
         $<INSTALL_INTERFACE:include>)
     set_target_properties(${name} PROPERTIES
-        OUTPUT_NAME vanetza_${name})
+        OUTPUT_NAME vanetza_${name}
+        SOVERSION ${VANETZA_SOVERSION})
     install(TARGETS ${name} EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
     set_property(GLOBAL APPEND PROPERTY VANETZA_COMPONENTS ${name})
 endfunction()
