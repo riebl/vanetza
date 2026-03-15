@@ -5,7 +5,6 @@
 #include <boost/core/noncopyable.hpp>
 #include <openssl/ec.h>
 #include <openssl/err.h>
-#include <openssl/types.h>
 #include <array>
 #include <cstdint>
 #include <stdexcept>
