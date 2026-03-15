@@ -6,6 +6,10 @@ include(CMakeFindDependencyMacro)
 find_dependency(Boost @Boost_VERSION_STRING@ CONFIG COMPONENTS date_time)
 find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
 
+if(@CapnProto_FOUND@)
+    find_dependency(CapnProto @CapnProto_VERSION@)
+endif()
+
 if(@CryptoPP_FOUND@)
     find_dependency(CryptoPP @CryptoPP_VERSION_STRING@)
 endif()
