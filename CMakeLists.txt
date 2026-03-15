@@ -1,19 +1,11 @@
 cmake_minimum_required(VERSION 3.12)
 cmake_policy(VERSION 3.12...3.31)
 project(Vanetza VERSION 26.02)
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 # Vanetza makes extensive use of C++11
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED OFF)
-
-# Load conan configuration if available
-if(EXISTS ${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
-    include(${PROJECT_BINARY_DIR}/conanbuildinfo.cmake)
-    conan_basic_setup(TARGETS)
-    set(Boost_NO_SYSTEM_PATHS ON)
-    set(GeographicLib_PREFER_PACKAGE_CONFIG OFF)
-endif()
 
 # Look up threading library (usually pthread)
 set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
