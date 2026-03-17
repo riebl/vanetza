@@ -4,6 +4,7 @@
 
 #ifdef VANETZA_WITH_OPENSSL
 #include <vanetza/security/openssl_wrapper.hpp>
+#include <openssl/bn.h>
 #include <openssl/ec.h>
 #include <openssl/pem.h>
 #endif
