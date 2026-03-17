@@ -136,7 +136,7 @@ TYPED_TEST(CamFunctionsReferencePosition, distance_reference_positions)
     SomeReferencePosition pos4;
     pos4.latitude = microdegree(37, 17.19) * Latitude_oneMicrodegreeNorth;
     pos4.longitude = microdegree(0, 9.45) * Longitude_oneMicrodegreeEast;
-    EXPECT_TRUE(NearDistance(distance(pos3, pos4), 33390.0 * si::meter , 10.0 * si::meter));
+    EXPECT_TRUE(NearDistance(distance(pos3, pos4), 33390.0 * si::meter , 100.0 * si::meter));
 
     SomeReferencePosition pos5;
     pos5.latitude = microdegree(0, 19.24) * Latitude_oneMicrodegreeSouth;
@@ -144,7 +144,7 @@ TYPED_TEST(CamFunctionsReferencePosition, distance_reference_positions)
     SomeReferencePosition pos6;
     pos6.latitude = microdegree(0, 27.15) * Latitude_oneMicrodegreeNorth;
     pos6.longitude = microdegree(83, 04.45) * Longitude_oneMicrodegreeEast;
-    EXPECT_TRUE(NearDistance(distance(pos5, pos6), 105010.0 * si::meter , 10.0 * si::meter));
+    EXPECT_TRUE(NearDistance(distance(pos5, pos6), 105010.0 * si::meter , 300.0 * si::meter));
 
     SomeReferencePosition pos7;
     pos7.latitude = microdegree(48, 45.56) * Latitude_oneMicrodegreeNorth;

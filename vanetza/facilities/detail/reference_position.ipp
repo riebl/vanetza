@@ -1,7 +1,7 @@
 #include <vanetza/asn1/its/ReferencePosition.h>
 #include <vanetza/asn1/its/r2/ReferencePosition.h>
 #include <vanetza/facilities/detail/macros.ipp>
-#include <vanetza/geonet/areas.hpp>
+#include <vanetza/geodesy/geodesy.hpp>
 #include <vanetza/units/length.hpp>
 #include <limits>
 
@@ -15,7 +15,7 @@ static_assert(Latitude_oneMicrodegreeNorth == 10, "Latitude is an integer number
 
 units::Length distance(const ASN1_PREFIXED(ReferencePosition_t)& a, const ASN1_PREFIXED(ReferencePosition_t)& b)
 {
-    using geonet::GeodeticPosition;
+    using geodesy::GeodeticPosition;
     using units::GeoAngle;
 
     auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
@@ -28,14 +28,14 @@ units::Length distance(const ASN1_PREFIXED(ReferencePosition_t)& a, const ASN1_P
             GeoAngle { b.latitude * tenth_microdegree },
             GeoAngle { b.longitude * tenth_microdegree }
         };
-        length = geonet::distance(geo_a, geo_b);
+        length = geodesy::distance(geo_a, geo_b);
     }
     return length;
 }
 
 units::Length distance(const ASN1_PREFIXED(ReferencePosition_t)& a, units::GeoAngle lat, units::GeoAngle lon)
 {
-    using geonet::GeodeticPosition;
+    using geodesy::GeodeticPosition;
     using units::GeoAngle;
 
     auto length = units::Length::from_value(std::numeric_limits<double>::quiet_NaN());
@@ -45,7 +45,7 @@ units::Length distance(const ASN1_PREFIXED(ReferencePosition_t)& a, units::GeoAn
             GeoAngle { a.longitude * tenth_microdegree }
         };
         GeodeticPosition geo_b { lat, lon };
-        length = geonet::distance(geo_a, geo_b);
+        length = geodesy::distance(geo_a, geo_b);
     }
     return length;
 }

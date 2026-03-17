@@ -30,7 +30,12 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find project dependencies
 find_package(Boost 1.70 REQUIRED COMPONENTS date_time OPTIONAL_COMPONENTS program_options CONFIG)
-find_package(GeographicLib 1.37 REQUIRED)
+
+find_package(GeographicLib 1.37 QUIET)
+option(VANETZA_WITH_GEOGRAPHICLIB "Use GeographicLib for precise geodesy" ${GeographicLib_FOUND})
+if(VANETZA_WITH_GEOGRAPHICLIB)
+    find_package(GeographicLib 1.37 REQUIRED)
+endif()
 
 find_package(CapnProto QUIET)
 option(VANETZA_WITH_RPC "Enable RPC support" ${CapnProto_FOUND})
@@ -54,6 +59,7 @@ add_subdirectory(vanetza/btp)
 add_subdirectory(vanetza/common)
 add_subdirectory(vanetza/dcc)
 add_subdirectory(vanetza/facilities)
+add_subdirectory(vanetza/geodesy)
 add_subdirectory(vanetza/geonet)
 add_subdirectory(vanetza/gnss)
 add_subdirectory(vanetza/net)

@@ -10,9 +10,6 @@
 #include <vanetza/geonet/tests/network_topology.hpp>
 #include <vanetza/net/mac_address.hpp>
 #include <boost/optional.hpp>
-#include <GeographicLib/Geocentric.hpp>
-#include <GeographicLib/Geodesic.hpp>
-#include <GeographicLib/LocalCartesian.hpp>
 #include <list>
 #include <stdexcept>
 #include <unordered_map>
@@ -330,18 +327,11 @@ void NetworkTopology::build_fully_meshed_reachability()
 
 GeodeticPosition convert_cartesian_geodetic(const CartesianPosition& cart)
 {
-    using namespace vanetza::units;
-    using namespace vanetza::units::si;
-
-    const GeographicLib::Geocentric& earth = GeographicLib::Geocentric::WGS84();
-    double lat = 0.0, lon = 0.0, unused_h = 0.0;
-    GeographicLib::LocalCartesian proj(lat, lon, unused_h, earth);
-    double x = cart.x / meter;
-    double y = cart.y / meter;
-    double unused_z = 0.0;
-    proj.Reverse(x, y, unused_z, lat, lon, unused_h);
-
-    return GeodeticPosition(lat * degree, lon * degree);
+    // simple equirectangular reverse projection is sufficient for testing
+    static const units::Length earth_radius = 6371000.0 * units::si::meter;
+    units::Angle lat = cart.y / earth_radius * units::si::radians;
+    units::Angle lon = cart.x / earth_radius * units::si::radians;
+    return GeodeticPosition(units::GeoAngle(lat), units::GeoAngle(lon));
 }
 
 Area circle_dest_area(units::Length radius, units::Length midpoint_x, units::Length midpoint_y)

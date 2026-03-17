@@ -42,8 +42,7 @@ set(CXX_SOURCES
 )
 
 add_vanetza_component(geonet ${CXX_SOURCES})
-target_link_libraries(geonet PRIVATE GeographicLib::GeographicLib)
 target_link_libraries(geonet PUBLIC Boost::date_time)
-target_link_libraries(geonet PUBLIC dcc net security)
+target_link_libraries(geonet PUBLIC dcc geodesy net security)
 
 add_test_subdirectory(tests)

@@ -1,9 +1,6 @@
 #include "areas.hpp"
 #include <boost/math/constants/constants.hpp>
 #include <boost/units/cmath.hpp>
-#include <GeographicLib/Geocentric.hpp>
-#include <GeographicLib/Geodesic.hpp>
-#include <GeographicLib/LocalCartesian.hpp>
 #include <algorithm>
 #include <cassert>
 #include <limits>
@@ -12,11 +9,6 @@ namespace vanetza
 {
 namespace geonet
 {
-
-CartesianPosition operator-(const CartesianPosition& a, const CartesianPosition& b)
-{
-    return CartesianPosition { a.x - b.x, a.y - b.y };
-}
 
 double geometric_function(const Circle& c, const CartesianPosition& p)
 {
@@ -70,25 +62,6 @@ double geometric_function(const decltype(Area::shape)& shape, const CartesianPos
     return boost::apply_visitor(visitor, shape);
 }
 
-CartesianPosition local_cartesian(
-        const GeodeticPosition& origin,
-        const GeodeticPosition& position)
-{
-    namespace si = units::si;
-    using namespace GeographicLib;
-    const Geocentric& earth = Geocentric::WGS84();
-    LocalCartesian proj {
-            origin.latitude / units::degree,
-            origin.longitude / units::degree,
-            0.0, earth
-    };
-    double result_x, result_y, unused_z = 0.0;
-    proj.Forward(position.latitude / units::degree,
-            position.longitude / units::degree, 0.0,
-            result_x, result_y, unused_z);
-    return CartesianPosition(result_x * si::meter, result_y * si::meter);
-}
-
 CartesianPosition canonicalize(const CartesianPosition& point, units::Angle azimuth)
 {
     using namespace boost::math::double_constants;
@@ -130,20 +103,8 @@ units::Area area_size(const Area& area)
     return boost::apply_visitor(area_size_visitor(), area.shape);
 }
 
-units::Length distance(const GeodeticPosition& lhs, const GeodeticPosition& rhs)
-{
-    using namespace GeographicLib;
-    const Geodesic& geod = Geodesic::WGS84();
-    double distance_m = 0.0;
-    geod.Inverse(lhs.latitude / units::degree, lhs.longitude / units::degree,
-            rhs.latitude / units::degree, rhs.longitude / units::degree,
-            distance_m);
-    return (distance_m >= 0.0 ? distance_m : std::numeric_limits<double>::quiet_NaN()) * units::si::meters;
-}
-
 bool inside_or_at_border(const Area& area, const GeodeticPosition& geo_position)
 {
-    using units::si::meter;
     const CartesianPosition local = local_cartesian(area.position, geo_position);
     const CartesianPosition canonical = canonicalize(local, area.angle);
     return !outside_shape(area.shape, canonical);

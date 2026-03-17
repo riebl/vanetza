@@ -67,7 +67,7 @@ add_vanetza_component(security
     v3/validity_restriction.cpp
 )
 target_link_libraries(security PUBLIC Boost::headers asn1 asn1_security common net)
-target_link_libraries(security PRIVATE GeographicLib::GeographicLib)
+target_link_libraries(security PRIVATE geodesy)
 
 if(TARGET CryptoPP::CryptoPP)
     set_property(TARGET security APPEND PROPERTY

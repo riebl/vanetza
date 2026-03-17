@@ -6,7 +6,10 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
 
 include(CMakeFindDependencyMacro)
 find_dependency(Boost @Boost_VERSION_STRING@ CONFIG COMPONENTS date_time)
-find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
+
+if(@VANETZA_WITH_GEOGRAPHICLIB@)
+    find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
+endif()
 
 if(@CapnProto_FOUND@)
     find_dependency(CapnProto @CapnProto_VERSION@)

@@ -1,9 +1,8 @@
 #ifndef AREAS_HPP_CVK1NIAI
 #define AREAS_HPP_CVK1NIAI
 
-#include <vanetza/units/angle.hpp>
+#include <vanetza/geodesy/geodesy.hpp>
 #include <vanetza/units/area.hpp>
-#include <vanetza/units/length.hpp>
 #include <boost/variant.hpp>
 
 namespace vanetza
@@ -11,38 +10,10 @@ namespace vanetza
 namespace geonet
 {
 
-/**
- * Cartesian position.
- * As it is not strictly specified in any GeoNet standard document,
- * I define it as point in an ENU coordinate system and its units as meters.
- */
-struct CartesianPosition
-{
-    CartesianPosition() : x(0.0 * units::si::meter), y(0.0 * units::si::meter) {}
-    CartesianPosition(units::Length x_, units::Length y_) : x(x_), y(y_) {}
-    units::Length x;
-    units::Length y;
-};
-
-CartesianPosition operator-(const CartesianPosition&, const CartesianPosition&);
-
-struct GeodeticPosition
-{
-    GeodeticPosition() :
-        latitude(0.0 * units::degree), longitude(0.0 * units::degree) {}
-    GeodeticPosition(units::GeoAngle lat, units::GeoAngle lon) :
-        latitude(lat), longitude(lon) {}
-    units::GeoAngle latitude;
-    units::GeoAngle longitude;
-};
-
-/**
- * Get distance between two geodetic positions on WGS84 ellipsoid
- * \param lhs left hand side
- * \param rhs right hand side
- * \return distance in meters (always positive) or NaN for invalid input
- */
-units::Length distance(const GeodeticPosition& lhs, const GeodeticPosition& rhs);
+using geodesy::CartesianPosition;
+using geodesy::GeodeticPosition;
+using geodesy::distance;
+using geodesy::local_cartesian;
 
 struct Circle
 {
@@ -75,17 +46,6 @@ double geometric_function(const Circle&, const CartesianPosition&);
 double geometric_function(const Rectangle&, const CartesianPosition&);
 double geometric_function(const Ellipse&, const CartesianPosition&);
 double geometric_function(const decltype(Area::shape)&, const CartesianPosition&);
-
-/**
- * Derive cartesian position ENU from geodetic WGS84 coordinates
- * and a WGS84 reference point which becomes the cartesian origin.
- * \param origin WGS84 reference point becoming origin
- * \param position Calculate cartesian coordinates for this point
- * \return Cartesian coordinates of position relative to origin
- */
-CartesianPosition local_cartesian(
-        const GeodeticPosition& origin,
-        const GeodeticPosition& position);
 
 /**
  * Canonicalize a point in a shape's coordinate system w.r.t. its azimuth angle

@@ -2,6 +2,7 @@
 #define POSITION_VECTOR_HPP_WJAGEOCS
 
 #include <vanetza/common/bit_number.hpp>
+#include <vanetza/geodesy/position.hpp>
 #include <vanetza/geonet/address.hpp>
 #include <vanetza/geonet/serialization.hpp>
 #include <vanetza/geonet/timestamp.hpp>
@@ -15,7 +16,7 @@ namespace vanetza
 namespace geonet
 {
 
-struct GeodeticPosition;
+using geodesy::GeodeticPosition;
 
 class LongPositionVector
 {

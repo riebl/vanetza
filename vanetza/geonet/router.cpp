@@ -7,6 +7,7 @@
 #include <vanetza/dcc/data_request.hpp>
 #include <vanetza/dcc/interface.hpp>
 #include <vanetza/dcc/profile.hpp>
+#include <vanetza/geodesy/geodesy.hpp>
 #include <vanetza/net/mac_address.hpp>
 #include <vanetza/net/osi_layer.hpp>
 #include <vanetza/units/frequency.hpp>

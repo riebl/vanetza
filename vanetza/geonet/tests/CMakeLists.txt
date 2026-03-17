@@ -13,8 +13,7 @@ add_gtest(DccMcoField dcc_mco_field.cpp)
 add_gtest(DuplicatePacketList duplicate_packet_list.cpp)
 add_gtest(GbcGacHeader gbc_gac_header.cpp)
 add_gtest(GbcMemory
-    SOURCES gbc_memory.cpp network_topology.cpp
-    LINK_LIBRARIES GeographicLib::GeographicLib)
+    SOURCES gbc_memory.cpp network_topology.cpp)
 add_gtest(Lifetime lifetime.cpp)
 add_gtest(LocationTable location_table.cpp)
 add_gtest(PacketBuffer packet_buffer.cpp)
@@ -28,6 +27,5 @@ add_gtest(SequenceNumber sequence_number.cpp)
 add_gtest(Timestamp timestamp.cpp)
 add_gtest(TrafficClass traffic_class.cpp)
 add_gtest(Routing
-    SOURCES network_topology.cpp routing.cpp
-    LINK_LIBRARIES GeographicLib::GeographicLib)
+    SOURCES network_topology.cpp routing.cpp)
 add_gtest(RouterRequest router_request.cpp)

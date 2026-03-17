@@ -1,5 +1,6 @@
 #include <vanetza/common/annotation.hpp>
 #include <vanetza/common/serialization.hpp>
+#include <vanetza/geodesy/geodesy.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/v2/region.hpp>
 #include <vanetza/units/angle.hpp>
@@ -8,7 +9,6 @@
 #include <boost/units/cmath.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <boost/variant/apply_visitor.hpp>
-#include <GeographicLib/Geodesic.hpp>
 #include <cmath>
 
 namespace vanetza
@@ -478,15 +478,10 @@ bool is_within(const TwoDLocation& position, const GeographicRegion& reg)
 
 bool is_within(const TwoDLocation& position, const CircularRegion& circular)
 {
-    const auto& geod = GeographicLib::Geodesic::WGS84();
-    double dist = 0.0;
-    const units::GeoAngle pos_lat { position.latitude };
-    const units::GeoAngle pos_lon { position.longitude };
-    const units::GeoAngle center_lat { circular.center.latitude };
-    const units::GeoAngle center_lon { circular.center.longitude };
-    geod.Inverse(pos_lat / units::degree, pos_lon / units::degree,
-            center_lat / units::degree, center_lon / units::degree, dist);
-    return dist <= circular.radius / units::si::meter;
+    geodesy::GeodeticPosition pos(units::GeoAngle{position.latitude}, units::GeoAngle{position.longitude});
+    geodesy::GeodeticPosition center(units::GeoAngle{circular.center.latitude}, units::GeoAngle{circular.center.longitude});
+    auto dist = geodesy::distance(pos, center);
+    return dist <= circular.radius;
 }
 
 bool is_within(const TwoDLocation& position, const std::list<RectangularRegion>& rectangles)
@@ -598,15 +593,10 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
                 return true;
             }
 
-            const auto& geod = GeographicLib::Geodesic::WGS84();
-            double center_dist = 0.0;
-            const units::GeoAngle inner_lat { inner.center.latitude };
-            const units::GeoAngle inner_long { inner.center.longitude };
-            const units::GeoAngle outer_lat { outer.center.latitude };
-            const units::GeoAngle outer_long { outer.center.longitude };
-            geod.Inverse(inner_lat / units::degree, inner_long / units::degree,
-                    outer_lat / units::degree, outer_long / units::degree, center_dist);
-            return center_dist + inner.radius / units::si::meter <= outer.radius / units::si::meter;
+            geodesy::GeodeticPosition inner_pos(units::GeoAngle{inner.center.latitude}, units::GeoAngle{inner.center.longitude});
+            geodesy::GeodeticPosition outer_pos(units::GeoAngle{outer.center.latitude}, units::GeoAngle{outer.center.longitude});
+            auto center_dist = geodesy::distance(inner_pos, outer_pos);
+            return center_dist + inner.radius <= outer.radius;
         }
 
         bool operator()(const std::list<RectangularRegion>&)
