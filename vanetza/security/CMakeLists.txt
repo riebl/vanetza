@@ -81,6 +81,7 @@ if(TARGET OpenSSL::Crypto)
         SOURCES backend_openssl.cpp openssl_wrapper.cpp)
     target_link_libraries(security PRIVATE OpenSSL::Crypto)
     target_compile_definitions(security PUBLIC "VANETZA_WITH_OPENSSL")
+    target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10101000L")
 endif()
 
 add_test_subdirectory(tests)
