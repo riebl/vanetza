@@ -7,15 +7,18 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
+        capnproto \
         cmake \
         git \
         libboost-date-time-dev \
         libboost-program-options-dev \
         libboost-system-dev \
+        libcapnp-dev \
         libcrypto++-dev \
         libgeographiclib-dev \
         libssl-dev \
         ninja-build \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 COPY build_and_run_tests.sh /usr/local/bin/build_and_run_tests.sh
 RUN useradd -m build-user
@@ -31,15 +34,18 @@ COPY --chmod=755 update_cmake.sh apt_pkg_name.sh /usr/local/bin/
 RUN update_cmake.sh && apt-get update && \
     apt-get install -y --no-install-recommends \
         build-essential \
+        capnproto \
         cmake \
         git \
         libboost-date-time-dev \
         libboost-program-options-dev \
         libboost-system-dev \
+        libcapnp-dev \
         libcrypto++-dev \
         $(apt_pkg_name.sh geographiclib) \
         libssl-dev \
         ninja-build \
+        pkg-config \
     && rm -rf /var/lib/apt/lists/*
 COPY build_and_run_tests.sh /usr/local/bin/build_and_run_tests.sh
 RUN useradd -m build-user
