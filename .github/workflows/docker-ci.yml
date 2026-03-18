@@ -10,7 +10,7 @@ jobs:
       matrix:
         ubuntu-version: [focal, jammy, noble]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: >
           docker build
           --build-arg UBUNTU_VERSION=${{matrix.ubuntu-version}}
