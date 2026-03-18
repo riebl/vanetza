@@ -69,14 +69,14 @@ add_vanetza_component(security
 target_link_libraries(security PUBLIC Boost::headers asn1 asn1_security common net)
 target_link_libraries(security PRIVATE geodesy)
 
-if(TARGET CryptoPP::CryptoPP)
+if(VANETZA_WITH_CRYPTOPP)
     set_property(TARGET security APPEND PROPERTY
         SOURCES backend_cryptopp.cpp)
     target_link_libraries(security PRIVATE CryptoPP::CryptoPP)
     target_compile_definitions(security PUBLIC "VANETZA_WITH_CRYPTOPP")
 endif()
 
-if(TARGET OpenSSL::Crypto)
+if(VANETZA_WITH_OPENSSL)
     set_property(TARGET security APPEND PROPERTY
         SOURCES backend_openssl.cpp openssl_wrapper.cpp)
     target_link_libraries(security PRIVATE OpenSSL::Crypto)
@@ -84,7 +84,7 @@ if(TARGET OpenSSL::Crypto)
     target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10101000L")
 endif()
 
-if(NOT TARGET CryptoPP::CryptoPP AND NOT TARGET OpenSSL::Crypto)
+if(NOT VANETZA_WITH_CRYPTOPP AND NOT VANETZA_WITH_OPENSSL)
     message(WARNING "Vanetza is built without proper security backend")
 endif()
 
