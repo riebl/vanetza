@@ -30,28 +30,10 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Find project dependencies
 find_package(Boost 1.70 REQUIRED COMPONENTS date_time OPTIONAL_COMPONENTS program_options CONFIG)
-
-find_package(GeographicLib 1.37 QUIET)
-option(VANETZA_WITH_GEOGRAPHICLIB "Use GeographicLib for precise geodesy" ${GeographicLib_FOUND})
-if(VANETZA_WITH_GEOGRAPHICLIB)
-    find_package(GeographicLib 1.37 REQUIRED)
-endif()
-
-find_package(CapnProto QUIET)
-option(VANETZA_WITH_RPC "Enable RPC support" ${CapnProto_FOUND})
-if(VANETZA_WITH_RPC)
-    find_package(CapnProto REQUIRED)
-endif()
-
-option(VANETZA_WITH_CRYPTOPP "Enable Crypto++ support" ON)
-if(VANETZA_WITH_CRYPTOPP)
-    find_package(CryptoPP 5.6.1 REQUIRED)
-endif()
-
-option(VANETZA_WITH_OPENSSL "Enable OpenSSL extensions" OFF)
-if (VANETZA_WITH_OPENSSL)
-  find_package(OpenSSL 1.1.0 REQUIRED)
-endif()
+vanetza_optional_dependency(GeographicLib 1.37 VANETZA_WITH_GEOGRAPHICLIB "Use GeographicLib for precise geodesy")
+vanetza_optional_dependency(CapnProto 0.8 VANETZA_WITH_RPC "Enable RPC support")
+vanetza_optional_dependency(CryptoPP 5.6.1 VANETZA_WITH_CRYPTOPP "Enable Crypto++ support")
+vanetza_optional_dependency(OpenSSL 1.1.1 VANETZA_WITH_OPENSSL "Enable OpenSSL extensions")
 
 add_subdirectory(vanetza/access)
 add_subdirectory(vanetza/asn1)

@@ -11,15 +11,15 @@ if(@VANETZA_WITH_GEOGRAPHICLIB@)
     find_dependency(GeographicLib @GeographicLib_VERSION_STRING@)
 endif()
 
-if(@CapnProto_FOUND@)
+if(@VANETZA_WITH_RPC@)
     find_dependency(CapnProto @CapnProto_VERSION@)
 endif()
 
-if(@CryptoPP_FOUND@)
+if(@VANETZA_WITH_CRYPTOPP@)
     find_dependency(CryptoPP @CryptoPP_VERSION_STRING@)
 endif()
 
-if(@OpenSSL_FOUND@)
+if(@VANETZA_WITH_OPENSSL@)
     # remove patch letter found with OpenSSL 1.x
     string(REGEX REPLACE "[a-z]+$" "" OpenSSL_VERSION_WITHOUT_PATCH @OpenSSL_VERSION@)
     find_dependency(OpenSSL ${OpenSSL_VERSION_WITHOUT_PATCH})

@@ -1,4 +1,30 @@
 #
+# vanetza_optional_dependency(<package> [<version>] <option> <description>)
+#
+# Probe for <package> quietly, create a CMake option defaulting to whether it
+# was found, and require it if the option is enabled.
+#
+macro(vanetza_optional_dependency package)
+    if(${ARGC} EQUAL 4)
+        set(_vanetza_dep_version ${ARGV1})
+        set(_vanetza_dep_option ${ARGV2})
+        set(_vanetza_dep_description "${ARGV3}")
+    else()
+        set(_vanetza_dep_version)
+        set(_vanetza_dep_option ${ARGV1})
+        set(_vanetza_dep_description "${ARGV2}")
+    endif()
+    find_package(${package} ${_vanetza_dep_version} QUIET)
+    option(${_vanetza_dep_option} "${_vanetza_dep_description}" ${${package}_FOUND})
+    if(${_vanetza_dep_option})
+        find_package(${package} ${_vanetza_dep_version} REQUIRED)
+    endif()
+    unset(_vanetza_dep_version)
+    unset(_vanetza_dep_option)
+    unset(_vanetza_dep_description)
+endmacro()
+
+#
 # add_vanetza_component(<name> <sources...>)
 #
 function(add_vanetza_component name)
