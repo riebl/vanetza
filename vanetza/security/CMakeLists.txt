@@ -84,5 +84,9 @@ if(TARGET OpenSSL::Crypto)
     target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10101000L")
 endif()
 
+if(NOT TARGET CryptoPP::CryptoPP AND NOT TARGET OpenSSL::Crypto)
+    message(WARNING "Vanetza is built without proper security backend")
+endif()
+
 add_test_subdirectory(tests)
 add_test_subdirectory(v3/tests)
