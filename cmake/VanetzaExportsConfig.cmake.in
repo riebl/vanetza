@@ -19,7 +19,7 @@ endif()
 
 if(@VANETZA_WITH_OPENSSL@)
     # remove patch letter found with OpenSSL 1.x
-    string(REGEX REPLACE "[a-z]+$" "" OpenSSL_VERSION_WITHOUT_PATCH @OpenSSL_VERSION@)
+    string(REGEX REPLACE "[a-z]+$" "" OpenSSL_VERSION_WITHOUT_PATCH "@OpenSSL_VERSION@")
     find_dependency(OpenSSL ${OpenSSL_VERSION_WITHOUT_PATCH})
 endif()
 
