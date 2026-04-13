@@ -1,6 +1,7 @@
 #include <vanetza/common/annotation.hpp>
 #include <vanetza/rpc/asio_stream.hpp>
 
+#include <boost/asio/buffer.hpp>
 #include <boost/asio/read.hpp>
 #include <boost/asio/write.hpp>
 #include <kj/debug.h>
@@ -9,6 +10,56 @@ namespace vanetza
 {
 namespace rpc
 {
+
+namespace
+{
+
+class KjBufferSequence
+{
+public:
+    using value_type = boost::asio::const_buffer;
+
+    class const_iterator
+    {
+    public:
+        using value_type = boost::asio::const_buffer;
+        using difference_type = std::ptrdiff_t;
+        using pointer = const value_type*;
+        using reference = value_type;
+        using iterator_category = std::forward_iterator_tag;
+
+        const_iterator() = default;
+        explicit const_iterator(const kj::ArrayPtr<const kj::byte>* ptr) : ptr_(ptr) {}
+
+        value_type operator*() const { return boost::asio::const_buffer(ptr_->begin(), ptr_->size()); }
+        const_iterator& operator++()
+        {
+            ++ptr_;
+            return *this;
+        }
+        const_iterator operator++(int)
+        {
+            auto tmp = *this;
+            ++ptr_;
+            return tmp;
+        }
+        bool operator==(const const_iterator& other) const { return ptr_ == other.ptr_; }
+        bool operator!=(const const_iterator& other) const { return ptr_ != other.ptr_; }
+
+    private:
+        const kj::ArrayPtr<const kj::byte>* ptr_ = nullptr;
+    };
+
+    explicit KjBufferSequence(kj::ArrayPtr<const kj::ArrayPtr<const kj::byte>> pieces) : pieces_(pieces) {}
+
+    const_iterator begin() const { return const_iterator(pieces_.begin()); }
+    const_iterator end() const { return const_iterator(pieces_.end()); }
+
+private:
+    kj::ArrayPtr<const kj::ArrayPtr<const kj::byte>> pieces_;
+};
+
+} // namespace
 
 AsioStream::AsioStream(boost::asio::ip::tcp::socket socket) :
     socket_(std::move(socket))
@@ -39,12 +90,7 @@ kj::Promise<void> AsioStream::write(const void* buffer, size_t size)
 kj::Promise<void> AsioStream::write(kj::ArrayPtr<const kj::ArrayPtr<const kj::byte>> pieces)
 {
     auto paf = kj::newPromiseAndFulfiller<void>();
-    std::vector<boost::asio::const_buffer> buffers;
-    buffers.reserve(pieces.size());
-    for (const auto& piece : pieces) {
-        buffers.push_back(boost::asio::buffer(piece.begin(), piece.size()));
-    }
-    boost::asio::async_write(socket_, buffers, [fulfiller = std::move(paf.fulfiller)](const boost::system::error_code& ec, std::size_t bytes_transferred) mutable {
+    boost::asio::async_write(socket_, KjBufferSequence(pieces), [fulfiller = std::move(paf.fulfiller)](const boost::system::error_code& ec, std::size_t bytes_transferred) mutable {
         mark_unused(bytes_transferred);
         if (ec) {
             fulfiller->reject(KJ_EXCEPTION(FAILED, "write", ec.message()));
