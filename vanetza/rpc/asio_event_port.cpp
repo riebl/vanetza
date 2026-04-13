@@ -33,10 +33,11 @@ bool AsioEventPort::poll()
 
 void AsioEventPort::setRunnable(bool runnable)
 {
-    if (runnable && loop_) {
+    if (runnable) {
         boost::asio::post(io_, [this]() {
-            if (loop_ && loop_->isRunnable()) {
-                loop_->run();
+            auto* loop = loop_.load(std::memory_order_acquire);
+            if (loop && loop->isRunnable()) {
+                loop->run();
             }
         });
     }

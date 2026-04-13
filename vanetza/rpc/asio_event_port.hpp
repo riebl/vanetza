@@ -3,6 +3,7 @@
 #include <boost/asio/steady_timer.hpp>
 #include <kj/async.h>
 #include <kj/timer.h>
+#include <atomic>
 
 namespace vanetza
 {
@@ -20,7 +21,7 @@ public:
 
     void setLoop(kj::EventLoop* loop)
     {
-        loop_ = loop;
+        loop_.store(loop, std::memory_order_release);
     }
 
     kj::Timer& getTimer()
@@ -34,7 +35,7 @@ private:
 
     boost::asio::io_context& io_;
     boost::asio::steady_timer steady_timer_;
-    kj::EventLoop* loop_ = nullptr;
+    std::atomic<kj::EventLoop*> loop_ { nullptr };
     const kj::MonotonicClock& clock_;
     kj::TimerImpl timer_;
 };
