@@ -28,6 +28,7 @@ bool AsioEventPort::poll()
 {
     io_.poll();
     advanceTime();
+    armTimeout();
     return false;
 }
 
@@ -60,6 +61,7 @@ void AsioEventPort::armTimeout()
         steady_timer_.async_wait([this](const boost::system::error_code& ec) {
             if (!ec) {
                 advanceTime();
+                armTimeout();
             }
         });
     }
