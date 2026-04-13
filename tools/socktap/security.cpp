@@ -80,12 +80,14 @@ public:
 class SecurityContextV3 : public security::SecurityEntity
 {
 public:
-    SecurityContextV3(const Runtime& runtime, PositionProvider& positioning) :
+    SecurityContextV3(const Runtime& runtime, PositionProvider& positioning,
+                      bool permissive_identified_region = false) :
         runtime(runtime), positioning(positioning),
         backend(security::create_backend("default"))
     {
         cert_validator.use_runtime(&runtime);
         cert_validator.use_position_provider(&positioning);
+        location_checker.set_permissive_identified_region(permissive_identified_region);
         cert_validator.use_location_checker(&location_checker);
     }
 
@@ -212,7 +214,9 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
             }
 
             if (version == 3) {
-                auto context = std::make_unique<SecurityContextV3>(runtime, positioning);
+                bool permissive_ir = vm.count("security.permissive-identified-region") &&
+                                     vm["security.permissive-identified-region"].as<bool>();
+                auto context = std::make_unique<SecurityContextV3>(runtime, positioning, permissive_ir);
                 context->cert_provider = load_v3_certificates(cert_path, cert_key_path, chain_paths);
                 context->build_entity();
                 security = std::move(context);
@@ -230,7 +234,9 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
             }
         } else {
             if (version == 3) {
-                auto context = std::make_unique<SecurityContextV3>(runtime, positioning);
+                bool permissive_ir = vm.count("security.permissive-identified-region") &&
+                                     vm["security.permissive-identified-region"].as<bool>();
+                auto context = std::make_unique<SecurityContextV3>(runtime, positioning, permissive_ir);
                 context->cert_provider = std::make_unique<security::v3::NaiveCertificateProvider>(runtime);
                 context->build_entity();
                 security = std::move(context);
@@ -260,6 +266,8 @@ void add_security_options(po::options_description& options)
         ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
         ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed.")
+        ("security.permissive-identified-region", po::bool_switch()->default_value(false),
+         "Accept IdentifiedRegion certificate constraints without verification (opt-in fallback; see issue #262). Default: reject (OutsideRegion).")
     ;
 }
 

@@ -45,13 +45,32 @@ class DenyLocationChecker : public LocationChecker
 };
 
 /**
- * Default implementation that uses basic logic to check if a position is inside a region.
- * It supports a few region types (e.g., None, Circular, Rectangular) and defaults to false for others.
+ * Default implementation that checks whether a position lies within a certificate's GeographicRegion.
+ * Supports: no restriction, CircularRegion, RectangularRegion, PolygonalRegion.
+ * IdentifiedRegion (ISO 3166 country codes): unsupported; returns false (conservative) unless
+ * permissive_identified_region is enabled by the operator (see issue #262).
+ * Unknown region types: returns false (conservative).
  */
 class DefaultLocationChecker : public LocationChecker
 {
     public:
         bool valid_at_location(const asn1::EtsiTs103097Certificate& cert, const PositionFix& location) const override;
+
+        /**
+         * When set to true, IdentifiedRegion constraints are accepted without verification
+         * until a proper country-boundary dataset is integrated (see issue #262).
+         * Default: false — conservative rejection, operator must explicitly opt in.
+         */
+        void set_permissive_identified_region(bool permissive) {
+            permissive_identified_region_ = permissive;
+        }
+
+        bool permissive_identified_region() const {
+            return permissive_identified_region_;
+        }
+
+    private:
+        bool permissive_identified_region_ = false;
 };
 
 } // namespace v3

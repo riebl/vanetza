@@ -122,5 +122,30 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
     asn_sequence_add(&region->choice.rectangularRegion, rectReg);
     validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
     EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
+
+    // IdentifiedRegion — flag OFF (default conservative behaviour): OutsideRegion
+    {
+        DefaultLocationChecker strictChecker;
+        // permissive_identified_region_ defaults to false
+        cert_validator.use_location_checker(&strictChecker);
+        region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+        region->present = Vanetza_Security_GeographicRegion_PR_identifiedRegion;
+        cert->toBeSigned.region = region;
+        validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+        EXPECT_EQ(CertificateValidator::Verdict::OutsideRegion, validity);
+    }
+
+    // IdentifiedRegion — flag ON (operator opt-in permissive fallback, issue #262): Valid
+    {
+        DefaultLocationChecker permissiveChecker;
+        permissiveChecker.set_permissive_identified_region(true);
+        cert_validator.use_location_checker(&permissiveChecker);
+        region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+        region->present = Vanetza_Security_GeographicRegion_PR_identifiedRegion;
+        cert->toBeSigned.region = region;
+        validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+        EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
+        cert_validator.use_location_checker(&defaultLocationChecker);
+    }
 }
 
