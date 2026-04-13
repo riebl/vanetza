@@ -228,7 +228,7 @@ void LinkLayerClient::do_indicate(Indication indication)
     VANETZA_RPC_LOG_DEBUG(context_->logger_, "LinkLayerClient/indicate", stringify(indication.technology))
     std::lock_guard<std::mutex> lock(callback_mutex_);
     if (indication_callback_) {
-        indication_callback_(indication);
+        indication_callback_(std::move(indication));
     }
 }
 
