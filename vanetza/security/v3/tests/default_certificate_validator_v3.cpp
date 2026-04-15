@@ -1,5 +1,7 @@
+#include <vanetza/common/byte_order.hpp>
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
+#include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/geonet/units.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
@@ -7,6 +9,7 @@
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
 #include <gtest/gtest.h>
+#include <cstring>
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -147,5 +150,141 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
         EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
         cert_validator.use_location_checker(&defaultLocationChecker);
     }
+}
+
+namespace
+{
+
+template<vanetza::ByteOrder Order, typename T>
+void append(std::vector<uint8_t>& buf, T v)
+{
+    vanetza::EndianType<T, Order> e;
+    e = vanetza::host_cast(v);
+    auto raw = e.get();
+    const auto* p = reinterpret_cast<const uint8_t*>(&raw);
+    buf.insert(buf.end(), p, p + sizeof(raw));
+}
+
+void append_u16le(std::vector<uint8_t>& buf, uint16_t v)
+{
+    append<vanetza::ByteOrder::LittleEndian>(buf, v);
+}
+
+void append_u32le(std::vector<uint8_t>& buf, uint32_t v)
+{
+    append<vanetza::ByteOrder::LittleEndian>(buf, v);
+}
+
+void append_f64le(std::vector<uint8_t>& buf, double v)
+{
+    uint64_t bits;
+    std::memcpy(&bits, &v, sizeof(bits));
+    append<vanetza::ByteOrder::LittleEndian>(buf, bits);
+}
+
+// Build a country data binary with Germany bounding box around Karlsruhe (test position: 49.014, 8.404)
+std::vector<uint8_t> make_germany_data()
+{
+    std::vector<uint8_t> wkb;
+    wkb.push_back(0x01); // LE
+    append_u32le(wkb, 3);  // Polygon
+    append_u32le(wkb, 1);  // 1 ring
+    append_u32le(wkb, 5);  // 5 points (closed)
+    double ring[][2] = {{5.9, 47.3}, {15.0, 47.3}, {15.0, 55.1}, {5.9, 55.1}, {5.9, 47.3}};
+    for (const auto& p : ring) {
+        append_f64le(wkb, p[0]);
+        append_f64le(wkb, p[1]);
+    }
+
+    std::vector<uint8_t> data;
+    append_u16le(data, 1); // format version
+    append_u16le(data, 276); // Germany M.49
+    append_u32le(data, static_cast<uint32_t>(wkb.size()));
+    data.insert(data.end(), wkb.begin(), wkb.end());
+    return data;
+}
+
+} // anonymous namespace
+
+TEST_F(DefaultCertificateValidatorTest, identified_region_country_only_with_database)
+{
+    auto country_data = make_germany_data();
+    geodesy::CountryDatabase country_db;
+    ASSERT_TRUE(country_db.load(country_data.data(), country_data.size()));
+
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    auto* region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+    region->present = Vanetza_Security_GeographicRegion_PR_identifiedRegion;
+    cert->toBeSigned.region = region;
+
+    auto* id_region = vanetza::asn1::allocate<Vanetza_Security_IdentifiedRegion_t>();
+    id_region->present = Vanetza_Security_IdentifiedRegion_PR_countryOnly;
+    id_region->choice.countryOnly = 276;
+    asn_sequence_add(&region->choice.identifiedRegion, id_region);
+
+    // With database: position (49.014, 8.404) is inside Germany box
+    DefaultLocationChecker checker;
+    checker.use_country_database(&country_db);
+    cert_validator.use_location_checker(&checker);
+    auto validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+    EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
+
+    // Change country to France (250), not in database, permissive=false
+    id_region->choice.countryOnly = 250;
+    validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+    EXPECT_EQ(CertificateValidator::Verdict::OutsideRegion, validity);
+
+    // Same but with permissive=true (still reject with countryOnly)
+    checker.set_permissive_identified_region(true);
+    validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+    EXPECT_EQ(CertificateValidator::Verdict::OutsideRegion, validity);
+}
+
+TEST_F(DefaultCertificateValidatorTest, identified_region_without_database_permissive)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    auto* region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+    region->present = Vanetza_Security_GeographicRegion_PR_identifiedRegion;
+    cert->toBeSigned.region = region;
+
+    auto* id_region = vanetza::asn1::allocate<Vanetza_Security_IdentifiedRegion_t>();
+    id_region->present = Vanetza_Security_IdentifiedRegion_PR_countryOnly;
+    id_region->choice.countryOnly = 276;
+    asn_sequence_add(&region->choice.identifiedRegion, id_region);
+
+    // No database, permissive=false
+    DefaultLocationChecker checker;
+    cert_validator.use_location_checker(&checker);
+    auto validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+    EXPECT_EQ(CertificateValidator::Verdict::OutsideRegion, validity);
+
+    // No database, permissive=true
+    checker.set_permissive_identified_region(true);
+    validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+    EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
+}
+
+TEST_F(DefaultCertificateValidatorTest, identified_region_country_and_regions_fallback)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    auto* region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+    region->present = Vanetza_Security_GeographicRegion_PR_identifiedRegion;
+    cert->toBeSigned.region = region;
+
+    auto* id_region = vanetza::asn1::allocate<Vanetza_Security_IdentifiedRegion_t>();
+    id_region->present = Vanetza_Security_IdentifiedRegion_PR_countryAndRegions;
+    id_region->choice.countryAndRegions.countryOnly = 276;
+    asn_sequence_add(&region->choice.identifiedRegion, id_region);
+
+    // countryAndRegions always falls back to permissive regardless of database
+    DefaultLocationChecker checker;
+    checker.set_permissive_identified_region(false);
+    cert_validator.use_location_checker(&checker);
+    auto validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+    EXPECT_EQ(CertificateValidator::Verdict::OutsideRegion, validity);
+
+    checker.set_permissive_identified_region(true);
+    validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
+    EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
 }
 

@@ -1,4 +1,4 @@
 include(UseGTest)
-configure_gtest_directory(LINK_LIBRARIES security)
+configure_gtest_directory(LINK_LIBRARIES geodesy security)
 add_gtest(Distance distance.cpp)
 add_gtest(DefaultCertificateValidatorV3 default_certificate_validator_v3.cpp)
