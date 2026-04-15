@@ -1,5 +1,6 @@
 add_vanetza_component(geodesy
     country_data_reader.cpp
+    country_database.cpp
     geodesy.cpp
     haversine.cpp
 )
