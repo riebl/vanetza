@@ -35,6 +35,8 @@ vanetza_optional_dependency(CapnProto 0.8 VANETZA_WITH_RPC "Enable RPC support")
 vanetza_optional_dependency(CryptoPP 5.6.1 VANETZA_WITH_CRYPTOPP "Enable Crypto++ support")
 vanetza_optional_dependency(OpenSSL 1.1.1 VANETZA_WITH_OPENSSL "Enable OpenSSL extensions")
 
+option(VANETZA_EMBED_COUNTRY_DATA "Embed country boundary data into geodesy library" OFF)
+
 add_subdirectory(vanetza/access)
 add_subdirectory(vanetza/asn1)
 add_subdirectory(vanetza/btp)
