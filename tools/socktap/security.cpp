@@ -1,4 +1,5 @@
 #include "security.hpp"
+#include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
@@ -83,11 +84,13 @@ public:
     SecurityContextV3(const Runtime& runtime, PositionProvider& positioning,
                       bool permissive_identified_region = false) :
         runtime(runtime), positioning(positioning),
-        backend(security::create_backend("default"))
+        backend(security::create_backend("default")),
+        country_database(geodesy::CountryDatabase::embedded())
     {
         cert_validator.use_runtime(&runtime);
         cert_validator.use_position_provider(&positioning);
         location_checker.set_permissive_identified_region(permissive_identified_region);
+        location_checker.use_country_database(&country_database);
         cert_validator.use_location_checker(&location_checker);
     }
 
@@ -131,6 +134,7 @@ public:
     std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy;
     security::v3::DefaultCertificateValidator cert_validator;
     security::v3::DefaultLocationChecker location_checker;
+    geodesy::CountryDatabase country_database;
 };
 
 std::unique_ptr<security::SecurityEntity>
