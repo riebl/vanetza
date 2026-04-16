@@ -29,8 +29,9 @@ units::Length distance(const PositionFix& one, const asn1::TwoDLocation& other)
 
 units::GeoAngle convert_latitude(const asn1::Latitude& in)
 {
+    static constexpr long latitude_scale = Vanetza_Security_NinetyDegreeInt_max;
     if (in >= Vanetza_Security_NinetyDegreeInt_min && in <= Vanetza_Security_NinetyDegreeInt_max) {
-        return in * 90.0 / Vanetza_Security_NinetyDegreeInt_max * units::degree;
+        return in * 90.0 / latitude_scale * units::degree;
     } else {
         return units::GeoAngle::from_value(std::numeric_limits<double>::quiet_NaN());
     }
@@ -38,8 +39,9 @@ units::GeoAngle convert_latitude(const asn1::Latitude& in)
 
 units::GeoAngle convert_longitude(const asn1::Longitude& in)
 {
+    static constexpr long longitude_scale = Vanetza_Security_OneEightyDegreeInt_max;
     if (in >= Vanetza_Security_OneEightyDegreeInt_min && in <= Vanetza_Security_OneEightyDegreeInt_max) {
-        return in * 180.0 / Vanetza_Security_OneEightyDegreeInt_max * units::degree;
+        return in * 180.0 / longitude_scale * units::degree;
     } else {
         return units::GeoAngle::from_value(std::numeric_limits<double>::quiet_NaN());
     }

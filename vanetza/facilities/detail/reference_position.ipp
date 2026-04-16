@@ -62,9 +62,9 @@ void copy(const PositionFix& position, ASN1_PREFIXED(ReferencePosition)& referen
     if (std::isfinite(position.confidence.semi_major.value())
         && std::isfinite(position.confidence.semi_minor.value()))
     {
-        if ((position.confidence.semi_major.value() * 100 < ASN1_PREFIXED(SemiAxisLength_outOfRange))
-            && (position.confidence.semi_minor.value() * 100 < ASN1_PREFIXED(SemiAxisLength_outOfRange))
-            && (position.confidence.orientation.value() * 10 < ASN1_PREFIXED(HeadingValue_unavailable)))
+        if ((position.confidence.semi_major.value() * 100 < static_cast<long>(ASN1_PREFIXED(SemiAxisLength_outOfRange)))
+            && (position.confidence.semi_minor.value() * 100 < static_cast<long>(ASN1_PREFIXED(SemiAxisLength_outOfRange)))
+            && (position.confidence.orientation.value() * 10 < static_cast<long>(ASN1_PREFIXED(HeadingValue_unavailable))))
         {
             reference_position.positionConfidenceEllipse.semiMajorConfidence = position.confidence.semi_major.value() * 100;    // Value in centimeters
             reference_position.positionConfidenceEllipse.semiMinorConfidence = position.confidence.semi_minor.value() * 100;

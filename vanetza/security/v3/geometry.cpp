@@ -57,8 +57,10 @@ bool is_inside(const PositionFix& location, const asn1::RectangularRegion& regio
             // equal longitudes are invalid
             return false;
         } else {
-            Vanetza_Security_NinetyDegreeInt_t loc_lat = location.latitude / (90.0 * units::degree) * Vanetza_Security_NinetyDegreeInt_max;
-            Vanetza_Security_OneEightyDegreeInt_t loc_lon = location.longitude / (180.0 * units::degree) * Vanetza_Security_OneEightyDegreeInt_max;
+            static constexpr long scale_90deg = Vanetza_Security_NinetyDegreeInt_max / 90;
+            static constexpr long scale_180deg = Vanetza_Security_OneEightyDegreeInt_max / 180;
+            Vanetza_Security_NinetyDegreeInt_t loc_lat = location.latitude / units::degree * scale_90deg;
+            Vanetza_Security_OneEightyDegreeInt_t loc_lon = location.longitude / units::degree * scale_180deg;
 
             if (loc_lat >= region.southEast.latitude && loc_lat <= region.northWest.latitude) {
                 if (region.northWest.longitude < region.southEast.longitude) {

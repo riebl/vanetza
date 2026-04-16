@@ -15,9 +15,14 @@ using namespace vanetza;
 using namespace vanetza::facilities;
 using namespace vanetza::units;
 
-constexpr double microdegree(double degree, double min)
+constexpr long latitude(double degree, double arc_minute)
 {
-    return 1000.0 * 1000.0 * (degree + min / 60.0);
+    return std::round(1e7 * (degree + arc_minute / 60.0));
+}
+
+constexpr long longitude(double degree, double arc_minute)
+{
+    return std::round(1e7 * (degree + arc_minute / 60.0));
 }
 
 ::testing::AssertionResult NearDistance(const Length& a, const Length& b, Length delta)
@@ -123,35 +128,35 @@ TYPED_TEST(CamFunctionsReferencePosition, distance_reference_positions)
     using SomeReferencePosition = TypeParam;
 
     SomeReferencePosition pos1;
-    pos1.latitude = microdegree(6, 21.23) * Latitude_oneMicrodegreeSouth;
-    pos1.longitude = microdegree(33, 22.12) * Longitude_oneMicrodegreeWest;
+    pos1.latitude = -latitude(6, 21.23);
+    pos1.longitude = -longitude(33, 22.12);
     SomeReferencePosition pos2;
-    pos2.latitude = microdegree(6, 22.48) * Latitude_oneMicrodegreeSouth;
-    pos2.longitude = microdegree(33, 22.55) * Longitude_oneMicrodegreeWest;
+    pos2.latitude = -latitude(6, 22.48);
+    pos2.longitude = -longitude(33, 22.55);
     EXPECT_TRUE(NearDistance(distance(pos1, pos2), 2440.0 * si::meter , 10.0 * si::meter));
 
     SomeReferencePosition pos3;
-    pos3.latitude = microdegree(37, 17.3) * Latitude_oneMicrodegreeNorth;
-    pos3.longitude = microdegree(0, 13.14) * Longitude_oneMicrodegreeWest;
+    pos3.latitude = latitude(37, 17.3);
+    pos3.longitude = -longitude(0, 13.14);
     SomeReferencePosition pos4;
-    pos4.latitude = microdegree(37, 17.19) * Latitude_oneMicrodegreeNorth;
-    pos4.longitude = microdegree(0, 9.45) * Longitude_oneMicrodegreeEast;
+    pos4.latitude = latitude(37, 17.19);
+    pos4.longitude = longitude(0, 9.45);
     EXPECT_TRUE(NearDistance(distance(pos3, pos4), 33390.0 * si::meter , 100.0 * si::meter));
 
     SomeReferencePosition pos5;
-    pos5.latitude = microdegree(0, 19.24) * Latitude_oneMicrodegreeSouth;
-    pos5.longitude = microdegree(83, 37.32) * Longitude_oneMicrodegreeEast;
+    pos5.latitude = -latitude(0, 19.24);
+    pos5.longitude = longitude(83, 37.32);
     SomeReferencePosition pos6;
-    pos6.latitude = microdegree(0, 27.15) * Latitude_oneMicrodegreeNorth;
-    pos6.longitude = microdegree(83, 04.45) * Longitude_oneMicrodegreeEast;
+    pos6.latitude = latitude(0, 27.15);
+    pos6.longitude = longitude(83, 04.45);
     EXPECT_TRUE(NearDistance(distance(pos5, pos6), 105010.0 * si::meter , 300.0 * si::meter));
 
     SomeReferencePosition pos7;
-    pos7.latitude = microdegree(48, 45.56) * Latitude_oneMicrodegreeNorth;
-    pos7.longitude = microdegree(11, 26.01) * Longitude_oneMicrodegreeEast;
+    pos7.latitude = latitude(48, 45.56);
+    pos7.longitude = longitude(11, 26.01);
     SomeReferencePosition pos8;
-    pos8.latitude = microdegree(48, 45.566) * Latitude_oneMicrodegreeNorth;
-    pos8.longitude = microdegree(11, 26.04) * Longitude_oneMicrodegreeEast;
+    pos8.latitude = latitude(48, 45.566);
+    pos8.longitude = longitude(11, 26.04);
     EXPECT_TRUE(NearDistance(distance(pos7, pos8), 38.0 * si::meter , 0.5 * si::meter));
 }
 
@@ -160,8 +165,8 @@ TYPED_TEST(CamFunctionsReferencePosition, distance_refpos_latlon)
     using SomeReferencePosition = TypeParam;
 
     SomeReferencePosition refpos;
-    refpos.latitude = microdegree(6, 21.23) * Latitude_oneMicrodegreeSouth;
-    refpos.longitude = microdegree(33, 22.12) * Longitude_oneMicrodegreeWest;
+    refpos.latitude = -latitude(6, 21.23);
+    refpos.longitude = -longitude(33, 22.12);
     GeoAngle lat = -(6 + (22.48 / 60.0)) * degree;
     GeoAngle lon = -(33 + (22.55 / 60.0)) * degree;
     EXPECT_TRUE(NearDistance(distance(refpos, lat, lon), 2440.0 * si::meter , 10.0 * si::meter));

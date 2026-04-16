@@ -16,15 +16,17 @@ namespace v3
 asn1::ThreeDLocation build_location(const PositionFix& fix)
 {
     asn1::ThreeDLocation location;
-    
-    long lat = std::round(fix.latitude / units::degree / 90.0 * Vanetza_Security_NinetyDegreeInt_max);
+    static constexpr long latitude_scale = Vanetza_Security_NinetyDegreeInt_max;
+    static constexpr long longitude_scale = Vanetza_Security_OneEightyDegreeInt_max;
+
+    long lat = std::round((fix.latitude / units::degree / 90.0) * latitude_scale);
     if (lat >= Vanetza_Security_NinetyDegreeInt_min && lat <= Vanetza_Security_NinetyDegreeInt_max) {
         location.latitude = lat;
     } else {
         location.latitude = Vanetza_Security_NinetyDegreeInt_unknown;
     }
 
-    long lon = std::round(fix.longitude / units::degree / 180.0 * Vanetza_Security_OneEightyDegreeInt_max);
+    long lon = std::round((fix.longitude / units::degree / 180.0) * longitude_scale);
     if (lon >= Vanetza_Security_OneEightyDegreeInt_min && lon <= Vanetza_Security_OneEightyDegreeInt_max) {
         location.longitude = lon;
     } else {
