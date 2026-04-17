@@ -35,6 +35,16 @@ public:
 
     Exception();
     explicit Exception(code_type err);
+    explicit Exception(const std::string& msg);
+    explicit Exception(code_type, const std::string& msg);
+    ~Exception() override = default;
+
+    code_type error_code() const { return m_error; }
+    const char* reason() const;
+    const char* library() const;
+
+private:
+    code_type m_error = 0;
 };
 
 

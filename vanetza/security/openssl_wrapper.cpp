@@ -4,6 +4,7 @@
 #include <cassert>
 #include <openssl/bio.h>
 #include <openssl/bn.h>
+#include <openssl/err.h>
 #include <openssl/evp.h>
 
 namespace vanetza
@@ -20,13 +21,47 @@ void check(bool valid)
     }
 }
 
+static const char* reason_error_string(Exception::code_type err)
+{
+    const char* msg = ERR_reason_error_string(err);
+    return msg ? msg : "unknown reason";
+}
+
+static const char* library_error_string(Exception::code_type err)
+{
+    const char* msg = ERR_lib_error_string(err);
+    return msg ? msg : "unknown library";
+}
+
 Exception::Exception() : Exception(ERR_get_error())
 {
 }
 
 Exception::Exception(code_type err) :
-    std::runtime_error(ERR_reason_error_string(err))
+    Exception(err, reason_error_string(err))
 {
+}
+
+Exception::Exception(const std::string& msg) :
+    std::runtime_error(msg),
+    m_error(ERR_get_error())
+{
+}
+
+Exception::Exception(code_type err, const std::string& msg) :
+    std::runtime_error(msg),
+    m_error(err)
+{
+}
+
+const char* Exception::reason() const
+{
+    return reason_error_string(m_error);
+}
+
+const char* Exception::library() const
+{
+    return library_error_string(m_error);
 }
 
 BigNumber::BigNumber() : bignum(BN_new())
