@@ -29,5 +29,11 @@ struct PublicKey
  */
 std::string canonical_hexstring(const PublicKey&);
 
+/**
+ * Encode public key as SubjectPublicKeyInfo according to RFC 5480.
+ * \return DER-encoded SubjectPublicKeyInfo, or empty buffer if the key is malformed
+ */
+ByteBuffer encode_subject_public_key_info(const PublicKey&);
+
 } // namespace security
 } // namespace vanetza
