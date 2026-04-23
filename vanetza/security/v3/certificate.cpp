@@ -530,6 +530,10 @@ ByteBuffer get_app_permissions(const asn1::EtsiTs103097Certificate& cert, ItsAid
                     const asn1::BitmapSsp& bitmap = ssp.choice.bitmapSsp;
                     perms.assign(bitmap.buf, bitmap.buf + bitmap.size);
                     break;
+                } else if (ssp.present == Vanetza_Security_ServiceSpecificPermissions_PR_opaque) {
+                    const asn1::Opaque& opaque = ssp.choice.opaque;
+                    perms.assign(opaque.buf, opaque.buf + opaque.size);
+                    break;
                 }
             }
         }
