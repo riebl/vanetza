@@ -124,10 +124,10 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     certificate->toBeSigned.crlSeries = 0;
 
     // section 7.2.1 in TS 103 097 v2.1.1
-    certificate.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
-    certificate.add_permission(aid::DEN, ByteBuffer({ 1, 0xff, 0xff, 0xff}));
-    certificate.add_permission(aid::GN_MGMT, ByteBuffer({})); // required for beacons
-    certificate.add_permission(aid::IPV6_ROUTING, ByteBuffer({})); // required for routing tests
+    certificate.add_app_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    certificate.add_app_permission(aid::DEN, ByteBuffer({ 1, 0xff, 0xff, 0xff}));
+    certificate.add_app_permission(aid::GN_MGMT, ByteBuffer({})); // required for beacons
+    certificate.add_app_permission(aid::IPV6_ROUTING, ByteBuffer({})); // required for routing tests
 
     // section 6 in TS 103 097 v2.1.1
     // set subject attributes
@@ -201,14 +201,14 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     // I.3.8. certIssuePermissions with predefined values
     asn1::PsidGroupPermissions* cert_permission_message = asn1::allocate<asn1::PsidGroupPermissions>();
     cert_permission_message->subjectPermissions.present = Vanetza_Security_SubjectPermissions_PR_explicit;
-    add_psid_group_permission(cert_permission_message,aid::CA,{0x01, 0xff, 0xfc}, {0xff, 0x00, 0x03});
-    add_psid_group_permission(cert_permission_message,aid::DEN,{0x01, 0xff, 0xff, 0xff}, {0xff, 0x00, 0x00, 0x00});
-    add_psid_group_permission(cert_permission_message,aid::TLM,{0x01, 0xe0}, {0xff, 0x1f});
-    add_psid_group_permission(cert_permission_message,aid::RLT,{0x01, 0xc0}, {0xff,0x3f});
-    add_psid_group_permission(cert_permission_message,aid::IVI,{0x01, 0xff, 0xff,0xff,0xff,0xf8}, {0xff,0x00,0x00,0x00,0x00,0x07});
-    add_psid_group_permission(cert_permission_message,aid::TLC_R,{0x02, 0xff, 0xff,0xe0}, {0xff, 0x00, 0x00, 0x1f});
-    add_psid_group_permission(cert_permission_message,aid::GN_MGMT,{0x00}, {0xff});
-    aa_certificate.add_cert_permission(cert_permission_message);
+    add_psid_group_permission(cert_permission_message,aid::CA, {0x01, 0xff, 0xfc}, {0xff, 0x00, 0x03});
+    add_psid_group_permission(cert_permission_message,aid::DEN, {0x01, 0xff, 0xff, 0xff}, {0xff, 0x00, 0x00, 0x00});
+    add_psid_group_permission(cert_permission_message,aid::TLM, {0x01, 0xe0}, {0xff, 0x1f});
+    add_psid_group_permission(cert_permission_message,aid::RLT, {0x01, 0xc0}, {0xff, 0x3f});
+    add_psid_group_permission(cert_permission_message,aid::IVI, {0x01, 0xff, 0xff, 0xff, 0xff, 0xf8}, {0xff, 0x00, 0x00, 0x00, 0x00, 0x07});
+    add_psid_group_permission(cert_permission_message,aid::TLC_R, {0x02, 0xff, 0xff, 0xe0}, {0xff, 0x00, 0x00, 0x1f});
+    add_psid_group_permission(cert_permission_message,aid::GN_MGMT, {0x00}, {0xff});
+    aa_certificate.add_cert_issue_permission(cert_permission_message);
 
     // section 6 in TS 103 097 v2.1.1
     // set subject attributes
@@ -261,8 +261,8 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     root_certificate->toBeSigned.crlSeries = 0;
 
     // section 7.2.3 in TS 103 097 v2.1.1
-    root_certificate.add_permission(aid::CRL, ByteBuffer({0x01}));
-    root_certificate.add_permission(aid::CTL, ByteBuffer({0x018}));
+    root_certificate.add_app_permission(aid::CRL, ByteBuffer({0x01}));
+    root_certificate.add_app_permission(aid::CTL, ByteBuffer({0x018}));
 
     // section 7.2.3 in TS 103 097 v2.1.1
     // certIssuePermissions shall be used to indicate issuing permissions
@@ -270,19 +270,19 @@ Certificate NaiveCertificateProvider::generate_root_certificate(const std::strin
     // I.3.8. certIssuePermissions with predefined values
     auto cert_permission = asn1::allocate<asn1::PsidGroupPermissions>();
     cert_permission->subjectPermissions.present = Vanetza_Security_SubjectPermissions_PR_explicit;
-    add_psid_group_permission(cert_permission,aid::SCR,{0x01, 0x3e}, {0xff, 0xc1});
-    root_certificate.add_cert_permission(cert_permission);
+    add_psid_group_permission(cert_permission, aid::SCR, {0x01, 0x3e}, {0xff, 0xc1});
+    root_certificate.add_cert_issue_permission(cert_permission);
 
     auto cert_permission_message = asn1::allocate<asn1::PsidGroupPermissions>();
     cert_permission_message->subjectPermissions.present = Vanetza_Security_SubjectPermissions_PR_explicit;
-    add_psid_group_permission(cert_permission_message,aid::CA,{0x01, 0xff, 0xfc}, {0xff, 0x00, 0x03});
-    add_psid_group_permission(cert_permission_message,aid::DEN,{0x01, 0xff, 0xff, 0xff}, {0xff, 0x00, 0x00, 0x00});
-    add_psid_group_permission(cert_permission_message,aid::TLM,{0x01, 0xe0}, {0xff, 0x1f});
-    add_psid_group_permission(cert_permission_message,aid::RLT,{0x01, 0xc0}, {0xff,0x3f});
-    add_psid_group_permission(cert_permission_message,aid::IVI,{0x01, 0xff, 0xff,0xff,0xff,0xf8}, {0xff,0x00,0x00,0x00,0x00,0x07});
-    add_psid_group_permission(cert_permission_message,aid::TLC_R,{0x02, 0xff, 0xff,0xe0}, {0xff, 0x00, 0x00, 0x1f});
-    add_psid_group_permission(cert_permission_message,aid::GN_MGMT,{0x00}, {0xff});
-    root_certificate.add_cert_permission(cert_permission_message);
+    add_psid_group_permission(cert_permission_message,aid::CA, {0x01, 0xff, 0xfc}, {0xff, 0x00, 0x03});
+    add_psid_group_permission(cert_permission_message,aid::DEN, {0x01, 0xff, 0xff, 0xff}, {0xff, 0x00, 0x00, 0x00});
+    add_psid_group_permission(cert_permission_message,aid::TLM, {0x01, 0xe0}, {0xff, 0x1f});
+    add_psid_group_permission(cert_permission_message,aid::RLT, {0x01, 0xc0}, {0xff,0x3f});
+    add_psid_group_permission(cert_permission_message,aid::IVI, {0x01, 0xff, 0xff,0xff,0xff,0xf8}, {0xff, 0x00, 0x00, 0x00, 0x00, 0x07});
+    add_psid_group_permission(cert_permission_message,aid::TLC_R, {0x02, 0xff, 0xff,0xe0}, {0xff, 0x00, 0x00, 0x1f});
+    add_psid_group_permission(cert_permission_message,aid::GN_MGMT, {0x00}, {0xff});
+    root_certificate.add_cert_issue_permission(cert_permission_message);
 
     // section 6 in TS 103 097 v2.1.1
     // set subject attributes

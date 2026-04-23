@@ -146,9 +146,20 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
     // resolve ambiguity
     ByteBuffer encode() const;
 
-    void add_permission(ItsAid aid, const ByteBuffer& ssp);
+    /**
+     * \brief add application permissions as bitmap
+     * 
+     * \param aid application identifier
+     * \param ssp permission bitmap
+     */
+    void add_app_permission(ItsAid aid, const ByteBuffer& ssp);
 
-    void add_cert_permission(asn1::PsidGroupPermissions* group_permission);
+    /**
+     * \brief add cert issuing permission
+     * 
+     * \param group_permission to be added permission
+     */
+    void add_cert_issue_permission(asn1::PsidGroupPermissions* group_permission);
 
     void set_signature(const SomeEcdsaSignature& signature);
 };

@@ -556,20 +556,7 @@ void add_psid_group_permission(asn1::PsidGroupPermissions* group_permission, Its
     ASN_SEQUENCE_ADD(&group_permission->subjectPermissions.choice.Explicit, psid_range_scr);
 }
 
-void add_app_permissions(Certificate& cert, ItsAid aid)
-{
-    asn1::SequenceOfPsidSsp* seq = cert->toBeSigned.appPermissions;
-    if (!seq) {
-        seq = asn1::allocate<asn1::SequenceOfPsidSsp>();
-        cert->toBeSigned.appPermissions = seq;
-    }
-    // Allocate the memory
-    auto psid_ptr = asn1::allocate<asn1::PsidSsp>();
-    psid_ptr->psid = aid;
-    ASN_SEQUENCE_ADD(seq, psid_ptr);
-}
-
-void Certificate::add_permission(ItsAid aid, const ByteBuffer& ssp)
+void Certificate::add_app_permission(ItsAid aid, const ByteBuffer& ssp)
 {
     asn1::SequenceOfPsidSsp* seq = m_struct->toBeSigned.appPermissions;
     if (!seq) {
@@ -590,7 +577,7 @@ void Certificate::add_permission(ItsAid aid, const ByteBuffer& ssp)
 
 }
 
-void Certificate::add_cert_permission(asn1::PsidGroupPermissions* group_permission)
+void Certificate::add_cert_issue_permission(asn1::PsidGroupPermissions* group_permission)
 {
     asn1::SequenceOfPsidGroupPermissions* seq = m_struct->toBeSigned.certIssuePermissions;
     if (!seq) {
@@ -658,7 +645,7 @@ Certificate fake_certificate()
         reinterpret_cast<const char*>(dummy_r.data()),
         dummy_r.size()
     );
-    certi.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    certi.add_app_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
     return certi;
 }
 
