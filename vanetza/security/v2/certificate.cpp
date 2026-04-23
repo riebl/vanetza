@@ -254,18 +254,6 @@ void Certificate::add_permission(ItsAid aid, const ByteBuffer& ssp)
     subject_attributes.push_back(std::list<ItsAidSsp>({ permission }));
 }
 
-/*
-std::unique_ptr<security::Certificate> Certificate::clone() const
-{
-    return std::unique_ptr<Certificate> { new Certificate(*this) };
-}
-
-bool Certificate::is_root_ca() const
-{
-    return subject_info.subject_type == SubjectType::Root_CA;
-}
-*/
-
 } // ns v2
 } // ns security
 } // ns vanetza

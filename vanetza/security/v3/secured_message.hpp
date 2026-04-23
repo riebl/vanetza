@@ -38,6 +38,7 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Data>
     uint8_t protocol_version() const;
     ItsAid its_aid() const;
     PacketVariant payload() const;
+    boost::optional<HashedId8> certificate_id() const;
     bool is_signed() const;
     bool is_encrypted() const;
     boost::optional<Time64> generation_time() const;
@@ -110,6 +111,12 @@ boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdenti
  * \param true if signer identifier contains a full certificate
  */
 bool contains_certificate(const SecuredMessage::SignerIdentifier& signer_identifier);
+
+/**
+ * Fetch certificate from identifier if full certificate is included.
+ * \return certificate or nullptr
+ */
+const asn1::Certificate* get_certificate(const SecuredMessage::SignerIdentifier&);
 
 } // namespace v3
 } // namespace security

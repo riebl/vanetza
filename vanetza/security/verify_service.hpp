@@ -6,7 +6,6 @@
 #include <vanetza/security/certificate_validity.hpp>
 #include <vanetza/security/hashed_id.hpp>
 #include <vanetza/security/secured_message.hpp>
-#include <functional>
 
 namespace vanetza
 {
@@ -65,6 +64,8 @@ public:
     virtual VerifyConfirm verify(const VerifyRequest&) = 0;
 };
 
+// forward declaration
+namespace v3 { class CertificateCache; }
 
 /**
  * Get insecure dummy verify service without any checks
@@ -79,9 +80,16 @@ public:
     DummyVerifyService(VerificationReport report, CertificateValidity validity);
     VerifyConfirm verify(const VerifyRequest&) override;
 
+    /**
+     * \brief register certificate cache for optional permission lookup
+     * \param cache certificate cache
+     */
+    void use_certificate_cache(v3::CertificateCache* cache);
+
 private:
     VerificationReport m_report;
     CertificateValidity m_validity;
+    v3::CertificateCache* m_cert_cache = nullptr;
 };
 
 } // namespace security

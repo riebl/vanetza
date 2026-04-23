@@ -151,14 +151,17 @@ uint8_t SecuredMessage::protocol_version() const
     return m_struct->protocolVersion;
 }
 
+boost::optional<HashedId8> SecuredMessage::certificate_id() const
+{
+    return get_certificate_id(signer_identifier());
+}
+
 ItsAid SecuredMessage::its_aid() const
 {
     ItsAid aid = 0;
-    if (m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData) {
-        const asn1::SignedData* signed_data = m_struct->content->choice.signedData;
-        if (signed_data && signed_data->tbsData) {
-            aid = signed_data->tbsData->headerInfo.psid;
-        }
+    const asn1::SignedData* signed_data = get_signed_data(m_struct);
+    if (signed_data && signed_data->tbsData) {
+        aid = signed_data->tbsData->headerInfo.psid;
     }
     return aid;
 }
@@ -719,6 +722,22 @@ bool contains_certificate(const SecuredMessage::SignerIdentifier& identifier)
         bool operator()(const asn1::Certificate*) const
         {
             return true;
+        }
+    };
+    return boost::apply_visitor(visitor(), identifier);
+}
+
+const asn1::Certificate* get_certificate(const SecuredMessage::SignerIdentifier& identifier)
+{
+    struct visitor : public boost::static_visitor<const asn1::Certificate*> {
+        const asn1::Certificate* operator()(const asn1::HashedId8*) const
+        {
+            return nullptr;
+        }
+
+        const asn1::Certificate* operator()(const asn1::Certificate* cert) const
+        {
+            return cert;
         }
     };
     return boost::apply_visitor(visitor(), identifier);
