@@ -571,14 +571,13 @@ void Certificate::add_app_permission(ItsAid aid, const ByteBuffer& ssp)
     auto psid_ptr = asn1::allocate<asn1::PsidSsp>();
     psid_ptr->psid = aid;
     psid_ptr->ssp = asn1::allocate<asn1::ServiceSpecificPermissions>();
-    psid_ptr->ssp->present = Vanetza_Security_ServiceSpecificPermissions_PR_opaque;
+    psid_ptr->ssp->present = Vanetza_Security_ServiceSpecificPermissions_PR_bitmapSsp;
     OCTET_STRING_fromBuf(
-        &(psid_ptr->ssp->choice.opaque),
+        &psid_ptr->ssp->choice.bitmapSsp,
         reinterpret_cast<const char *>(ssp.data()),
         ssp.size()
     );
     ASN_SEQUENCE_ADD(seq, psid_ptr);
-
 }
 
 void Certificate::add_cert_issue_permission(asn1::PsidGroupPermissions* group_permission)
