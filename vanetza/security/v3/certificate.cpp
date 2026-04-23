@@ -624,32 +624,26 @@ void Certificate::set_signature(const SomeEcdsaSignature& signature)
 
 Certificate fake_certificate()
 {
-    Certificate certi;
-    certi->issuer.present = Vanetza_Security_IssuerIdentifier_PR_self;
-    certi->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_none;
-    std::vector<uint8_t> craciId(3, 0); // Correct length for P256 signature part
+    Certificate cert;
+    cert->issuer.present = Vanetza_Security_IssuerIdentifier_PR_self;
+    cert->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_none;
+    std::array<char, 3> craca_id = { 0, 0, 0};
+    OCTET_STRING_fromBuf(&cert->toBeSigned.cracaId, craca_id.data(), craca_id.size());
+    cert->version = 3;
+    cert->toBeSigned.crlSeries = 0;
+    cert->toBeSigned.validityPeriod.start = 0;
+    cert->toBeSigned.validityPeriod.duration.present = Vanetza_Security_Duration_PR_minutes;
+    cert->toBeSigned.validityPeriod.duration.choice.minutes = 10080;
+    cert->toBeSigned.verifyKeyIndicator.present = Vanetza_Security_VerificationKeyIndicator_PR_verificationKey;
+    cert->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256;
+    cert->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0;
+    std::array<char, 32> dummy_r {}; // 32 octets for P256 signature
     OCTET_STRING_fromBuf(
-        &certi->toBeSigned.cracaId,
-        reinterpret_cast<const char*>(craciId.data()),
-        craciId.size()
+        &cert->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.choice.x_only,
+        dummy_r.data(), dummy_r.size()
     );
-    certi->version = 3;
-    certi->toBeSigned.crlSeries = 0;
-    certi->toBeSigned.validityPeriod.start = 0;
-    certi->toBeSigned.validityPeriod.duration.present = Vanetza_Security_Duration_PR_minutes;
-    certi->toBeSigned.validityPeriod.duration.choice.minutes = 10080;
-    certi->toBeSigned.verifyKeyIndicator.present = Vanetza_Security_VerificationKeyIndicator_PR_verificationKey;
-    certi->toBeSigned.verifyKeyIndicator.choice.verificationKey.present = Vanetza_Security_PublicVerificationKey_PR_ecdsaNistP256;
-    certi->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
-    std::vector<uint8_t> dummy_r(32, 0); // Correct length for P256 signature part
-    dummy_r[0] = 0; // Ensure the leading byte is set to zero if needed
-    OCTET_STRING_fromBuf(
-        &certi->toBeSigned.verifyKeyIndicator.choice.verificationKey.choice.ecdsaNistP256.choice.x_only,
-        reinterpret_cast<const char*>(dummy_r.data()),
-        dummy_r.size()
-    );
-    certi.add_app_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
-    return certi;
+    cert.add_app_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    return cert;
 }
 
 void serialize(OutputArchive& ar, const Certificate& certificate)
