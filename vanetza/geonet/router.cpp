@@ -1326,7 +1326,7 @@ std::unique_ptr<BeaconPdu> Router::create_beacon_pdu()
     pdu->common().next_header = NextHeaderCommon::Any;
     pdu->common().header_type = HeaderType::Beacon;
     pdu->common().maximum_hop_limit = 1;
-    // TODO: Beacons are sent with itsGnDefaultTrafficClass (DP0) at the moment, but DP3 may be more appropriate?
+    pdu->common().traffic_class = m_mib.itsGnDefaultTrafficClass;
     pdu->extended().source_position = m_local_position_vector;
     return pdu;
 }
