@@ -707,6 +707,10 @@ void Router::on_beacon_timer_expired()
     if (m_mib.vanetzaDisableBeaconing) {
         // bail out immediately if beaconing has been disabled
         return;
+    } else if (m_local_position_vector.timestamp == Timestamp {}) {
+        // no position fix received yet, skip for now
+        reset_beacon_timer();
+        return;
     }
 
     // Beacons originate in GeoNet layer, therefore no upper layer payload
