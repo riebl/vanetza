@@ -286,9 +286,8 @@ boost::optional<Certificate> CertificateView::canonicalize() const
     return m_cert ? v3::canonicalize(*m_cert) : boost::none;
 }
 
-boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& cert)
+static boost::optional<Certificate> canonicalize(Certificate&& canonical)
 {
-    Certificate canonical { cert };
     bool success = true;
 
     if (canonical->toBeSigned.verifyKeyIndicator.present == Vanetza_Security_VerificationKeyIndicator_PR_verificationKey) {
@@ -332,6 +331,16 @@ boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& c
         assert(is_canonical(*canonical));
         return canonical;
     } else {
+        return boost::none;
+    }
+}
+
+boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& cert)
+{
+    try {
+        Certificate copy { cert };
+        return canonicalize(std::move(copy));
+    } catch (const std::exception&) {
         return boost::none;
     }
 }
