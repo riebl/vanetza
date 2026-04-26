@@ -112,11 +112,15 @@ Signature BackendOpenSsl::sign_digest(const PrivateKey& key, const ByteBuffer& d
 
 bool BackendOpenSsl::verify_data(const ecdsa256::PublicKey& key, const ByteBuffer& data, const EcdsaSignature& sig)
 {
-    auto digest = calculate_sha256_digest(data);
-    auto pub = internal_public_key(key);
-    openssl::Signature signature(sig);
+    try {
+        auto digest = calculate_sha256_digest(data);
+        auto pub = internal_public_key(key);
+        openssl::Signature signature(sig);
 
-    return (ECDSA_do_verify(digest.data(), digest.size(), signature, pub) == 1);
+        return (ECDSA_do_verify(digest.data(), digest.size(), signature, pub) == 1);
+    } catch (const openssl::Exception&) {
+        return false;
+    }
 }
 
 bool BackendOpenSsl::verify_digest(const PublicKey& gpub, const ByteBuffer& digest, const Signature& gsig)
@@ -125,9 +129,13 @@ bool BackendOpenSsl::verify_digest(const PublicKey& gpub, const ByteBuffer& dige
         return false;
     }
 
-    openssl::Key pub = internal_public_key(gpub);
-    openssl::Signature sig { gsig };
-    return ECDSA_do_verify(digest.data(), digest.size(), sig, pub) == 1;
+    try {
+        openssl::Key pub = internal_public_key(gpub);
+        openssl::Signature sig { gsig };
+        return ECDSA_do_verify(digest.data(), digest.size(), sig, pub) == 1;
+    } catch (const openssl::Exception&) {
+        return false;
+    }
 }
 
 boost::optional<Uncompressed> BackendOpenSsl::decompress_point(const EccPoint& ecc_point)
@@ -157,18 +165,22 @@ boost::optional<Uncompressed> BackendOpenSsl::decompress_point(const EccPoint& e
 
         bool decompress(const ByteBuffer& x, int y_bit)
         {
-            openssl::BigNumberContext ctx;
-            openssl::BigNumber x_coordinate(x);
-            openssl::Group group(NID_X9_62_prime256v1);
-            openssl::Point point(group);
-            openssl::BigNumber y_coordinate;
+            try {
+                openssl::BigNumberContext ctx;
+                openssl::BigNumber x_coordinate(x);
+                openssl::Group group(NID_X9_62_prime256v1);
+                openssl::Point point(group);
+                openssl::BigNumber y_coordinate;
 
-            result.x = x;
-            result.y.resize(result.x.size());
+                result.x = x;
+                result.y.resize(result.x.size());
 
-            EC_POINT_set_compressed_coordinates(group, point, x_coordinate, y_bit, ctx);
-            EC_POINT_get_affine_coordinates(group, point, nullptr, y_coordinate, ctx);
-            return (BN_bn2binpad(y_coordinate, result.y.data(), result.y.size()) != -1);
+                EC_POINT_set_compressed_coordinates(group, point, x_coordinate, y_bit, ctx);
+                EC_POINT_get_affine_coordinates(group, point, nullptr, y_coordinate, ctx);
+                return (BN_bn2binpad(y_coordinate, result.y.data(), result.y.size()) != -1);
+            } catch (const openssl::Exception&) {
+                return false;
+            }
         }
 
         Uncompressed result;
