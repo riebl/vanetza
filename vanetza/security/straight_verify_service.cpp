@@ -532,10 +532,16 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         return confirm;
     }
 
-    ByteBuffer msg_hash = v3::calculate_message_hash(m_backend, msg.hash_id(),
-        msg.signing_payload(), v3::CertificateView { certificate });
-    if (!m_backend.verify_digest(*public_key, msg_hash, *signature)) {
-        confirm.report = VerificationReport::False_Signature;
+    try {
+        ByteBuffer msg_hash = v3::calculate_message_hash(m_backend, msg.hash_id(),
+            msg.signing_payload(), v3::CertificateView { certificate });
+        if (!m_backend.verify_digest(*public_key, msg_hash, *signature)) {
+            confirm.report = VerificationReport::False_Signature;
+            return confirm;
+        }
+    } catch (const std::exception&) {
+        // malformed input data, e.g. failing certificate encoding
+        confirm.report = VerificationReport::Incompatible_Protocol;
         return confirm;
     }
 
