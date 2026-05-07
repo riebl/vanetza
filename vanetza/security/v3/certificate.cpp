@@ -5,6 +5,7 @@
 #include <vanetza/security/v3/distance.hpp>
 #include <boost/optional/optional.hpp>
 #include <cassert>
+#include <cstdlib>
 #include <cstring>
 
 namespace vanetza
@@ -797,6 +798,8 @@ bool compress(Vanetza_Security_EccP256CurvePoint& point)
         auto& unc = point.choice.uncompressedP256;
         const bool y_odd = unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01;
         asn1::reset(&unc.y);
+        std::free(unc._asn_ctx.ptr);
+        unc._asn_ctx.ptr = nullptr;
         if (y_odd) {
             assert(&point.choice.uncompressedP256.x == &point.choice.compressed_y_1);
             point.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1;
@@ -818,6 +821,8 @@ bool compress(Vanetza_Security_EccP384CurvePoint& point)
         auto& unc = point.choice.uncompressedP384;
         const bool y_odd = unc.y.size > 0 && unc.y.buf[unc.y.size - 1] & 0x01;
         asn1::reset(&unc.y);
+        std::free(unc._asn_ctx.ptr);
+        unc._asn_ctx.ptr = nullptr;
         if (y_odd) {
             assert(&point.choice.uncompressedP384.x == &point.choice.compressed_y_1);
             point.present = Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1;
@@ -836,8 +841,11 @@ bool compress(Vanetza_Security_EccP384CurvePoint& point)
 bool make_x_only(Vanetza_Security_EccP256CurvePoint& point)
 {
     if (point.present == Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256) {
-        asn1::reset(&point.choice.uncompressedP256.y);
-        assert(&point.choice.uncompressedP256.x == &point.choice.x_only);
+        auto& unc = point.choice.uncompressedP256;
+        asn1::reset(&unc.y);
+        std::free(unc._asn_ctx.ptr);
+        unc._asn_ctx.ptr = nullptr;
+        assert(&unc.x == &point.choice.x_only);
         point.present = Vanetza_Security_EccP256CurvePoint_PR_x_only;
         return true;
     } else if (point.present == Vanetza_Security_EccP256CurvePoint_PR_x_only) {
@@ -850,8 +858,11 @@ bool make_x_only(Vanetza_Security_EccP256CurvePoint& point)
 bool make_x_only(Vanetza_Security_EccP384CurvePoint& point)
 {
     if (point.present == Vanetza_Security_EccP384CurvePoint_PR_uncompressedP384) {
-        asn1::reset(&point.choice.uncompressedP384.y);
-        assert(&point.choice.uncompressedP384.x == &point.choice.x_only);
+        auto& unc = point.choice.uncompressedP384;
+        asn1::reset(&unc.y);
+        std::free(unc._asn_ctx.ptr);
+        unc._asn_ctx.ptr = nullptr;
+        assert(&unc.x == &point.choice.x_only);
         point.present = Vanetza_Security_EccP384CurvePoint_PR_x_only;
         return true;
     } else if (point.present == Vanetza_Security_EccP384CurvePoint_PR_x_only) {
