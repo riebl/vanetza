@@ -49,7 +49,7 @@ INTEGER_decode_oer(const asn_codec_ctx_t *opt_codec_ctx,
         size -= consumed;
     }
 
-    if(req_bytes > size) {
+    if(req_bytes == 0 || req_bytes > size) {
         ASN__DECODE_STARVED;
     }
 
