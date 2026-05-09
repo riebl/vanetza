@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/facilities/path_history.hpp>
+#include <vanetza/asn1/type_traits.hpp>
 #include <vanetza/asn1/its/Heading.h>
 #include <vanetza/asn1/its/PathHistory.h>
 #include <vanetza/asn1/its/ReferencePosition.h>
@@ -10,6 +11,24 @@
 #include <boost/units/cmath.hpp>
 #include <boost/units/io.hpp>
 #include <cmath>
+
+namespace vanetza
+{
+namespace asn1
+{
+
+template<> struct asn1_type_traits<::PathHistory>
+{
+    static asn_TYPE_descriptor_t& descriptor() { return ::asn_DEF_PathHistory; }
+};
+
+template<> struct asn1_type_traits<::Vanetza_ITS2_PathHistory>
+{
+    static asn_TYPE_descriptor_t& descriptor() { return ::asn_DEF_Vanetza_ITS2_PathHistory; }
+};
+
+} // namespace asn1
+} // namespace vanetza
 
 using namespace vanetza;
 using namespace vanetza::facilities;
@@ -262,4 +281,6 @@ TYPED_TEST(CamFunctionsPathHistory, copy_path_history)
         EXPECT_GE(current_path_point->pathPosition.deltaAltitude, -12700);
         EXPECT_LE(current_path_point->pathPosition.deltaAltitude, 12800);
     }
+
+    asn1::reset(dest_path_history);
 }

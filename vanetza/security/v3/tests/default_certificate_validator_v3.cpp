@@ -109,6 +109,7 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
     rectReg->southEast.longitude = 84044170;
     rectReg->southEast.latitude = 490144200;
     // Re-allocate the structure
+    vanetza::asn1::free(asn_DEF_Vanetza_Security_GeographicRegion, cert->toBeSigned.region);
     region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
     region->present = Vanetza_Security_GeographicRegion_PR_rectangularRegion;
     cert->toBeSigned.region = region;
@@ -131,6 +132,7 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
         DefaultLocationChecker strictChecker;
         // permissive_identified_region_ defaults to false
         cert_validator.use_location_checker(&strictChecker);
+        vanetza::asn1::free(asn_DEF_Vanetza_Security_GeographicRegion, cert->toBeSigned.region);
         region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
         region->present = Vanetza_Security_GeographicRegion_PR_identifiedRegion;
         cert->toBeSigned.region = region;
@@ -143,6 +145,7 @@ TEST_F(DefaultCertificateValidatorTest, region_validator)
         DefaultLocationChecker permissiveChecker;
         permissiveChecker.set_permissive_identified_region(true);
         cert_validator.use_location_checker(&permissiveChecker);
+        vanetza::asn1::free(asn_DEF_Vanetza_Security_GeographicRegion, cert->toBeSigned.region);
         region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
         region->present = Vanetza_Security_GeographicRegion_PR_identifiedRegion;
         cert->toBeSigned.region = region;

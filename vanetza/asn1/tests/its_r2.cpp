@@ -50,4 +50,5 @@ TEST(ItsAsn1R2, event_zone)
     // just needs to compile (SituationContainer's eventZone is patched)
     Vanetza_ITS2_SituationContainer_t container {};
     container.eventZone = vanetza::asn1::allocate<Vanetza_ITS2_EventZone_t>();
+    vanetza::asn1::free(asn_DEF_Vanetza_ITS2_EventZone, container.eventZone);
 }
