@@ -51,7 +51,7 @@ size_t deserialize(InputArchive& ar, Certificate& cert)
     deserialize(ar, version);
     size_t size = sizeof(cert.version());
     if (2 == version) {
-        size += deserialize(ar, cert.signer_info);
+        size += deserialize_certificate_signer(ar, cert.signer_info);
         size += deserialize(ar, cert.subject_info);
         size += deserialize(ar, cert.subject_attributes);
         size += length_coding_size(get_size(cert.subject_attributes));

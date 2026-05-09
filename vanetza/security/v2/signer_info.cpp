@@ -189,6 +189,43 @@ size_t deserialize(InputArchive& ar, SignerInfo& info)
     return size;
 }
 
+size_t deserialize_certificate_signer(InputArchive& ar, SignerInfo& info)
+{
+    SignerInfoType type;
+    size_t size = 0;
+    deserialize(ar, type);
+    size += sizeof(SignerInfoType);
+    switch (type) {
+        case SignerInfoType::Certificate:
+        case SignerInfoType::Certificate_Chain:
+            // TS 103 097 v1.2.1 clause 6.1 forbids these signer info types for certificates
+            throw deserialization_error("Illegal SignerInfo for Certificate");
+            break;
+        case SignerInfoType::Certificate_Digest_With_SHA256: {
+            HashedId8 cert;
+            for (size_t c = 0; c < 8; c++) {
+                ar >> cert[c];
+            }
+            info = cert;
+            size += sizeof(cert);
+            break;
+        }
+        case SignerInfoType::Certificate_Digest_With_Other_Algorithm: {
+            CertificateDigestWithOtherAlgorithm cert;
+            size += deserialize(ar, cert);
+            info = cert;
+            break;
+        }
+        case SignerInfoType::Self:
+            info = nullptr;
+            break;
+        default:
+            throw deserialization_error("Unknown SignerInfoType");
+            break;
+    }
+    return size;
+}
+
 } // ns v2
 } // ns security
 } // ns vanetza

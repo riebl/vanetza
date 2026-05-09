@@ -91,6 +91,15 @@ size_t deserialize(InputArchive&, CertificateDigestWithOtherAlgorithm&);
  */
 size_t deserialize(InputArchive&, SignerInfo&);
 
+/**
+ * \brief Deserialize SignerInfo of a Certificate from a binary archive
+ * This function rejects SignerInfo types which are invalid for certificates.
+ * \param ar archive with a (legal) SignerInfo at the beginning
+ * \param info SignerInfo to deserialize
+ * \return size of the deserialized SignerInfo
+ */
+size_t deserialize_certificate_signer(InputArchive& ar, SignerInfo& info);
+
 } // namespace v2
 } // namespace security
 } // namespace vanetza
