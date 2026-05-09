@@ -1,4 +1,5 @@
 #include <vanetza/asn1/support/asn_application.h>
+#include <vanetza/asn1/support/asn_internal.h>
 #include <vanetza/asn1/support/constraints.h>
 #include <vanetza/asn1/support/uper_decoder.h>
 #include <vanetza/asn1/support/uper_encoder.h>
@@ -7,8 +8,8 @@
 #include <boost/format.hpp>
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <iterator>
-#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -131,6 +132,7 @@ bool decode_per(asn_TYPE_descriptor_t& td, void** t, const ByteBuffer& buffer)
 bool decode_per(asn_TYPE_descriptor_t& td, void** t, const void* buffer, std::size_t size)
 {
     asn_codec_ctx_t ctx {};
+    ctx.max_stack_size = ASN__DEFAULT_STACK_MAX;
     asn_dec_rval_t ec = uper_decode_complete(&ctx, &td, t, buffer, size);
     return ec.code == RC_OK;
 }
@@ -173,6 +175,7 @@ bool decode_oer(asn_TYPE_descriptor_t& td, void** t, const ByteBuffer& buffer)
 bool decode_oer(asn_TYPE_descriptor_t& td, void** t, const void* buffer, std::size_t size)
 {
     asn_codec_ctx_t ctx {};
+    ctx.max_stack_size = ASN__DEFAULT_STACK_MAX;
     asn_dec_rval_t ec = oer_decode(&ctx, &td, t, buffer, size);
     return ec.code == RC_OK;
 }
@@ -215,6 +218,7 @@ bool decode_xer(asn_TYPE_descriptor_t& td, void** t, const ByteBuffer& buffer)
 bool decode_xer(asn_TYPE_descriptor_t& td, void** t, const void* buffer, std::size_t size)
 {
     asn_codec_ctx_t ctx {};
+    ctx.max_stack_size = ASN__DEFAULT_STACK_MAX;
     asn_dec_rval_t ec = xer_decode(&ctx, &td, t, buffer, size);
     return ec.code == RC_OK;
 }
