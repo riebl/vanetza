@@ -49,7 +49,7 @@ KeyTag create_hmac_tag(const ByteBuffer& data, const HmacKey& hmacKey)
 #elif defined VANETZA_WITH_CRYPTOPP
     return create_hmac_tag_cryptopp(data, hmacKey);
 #else
-#   warn "no HMAC implementation available"
+#   warning "no HMAC implementation available"
     return KeyTag {};
 #endif
 }
