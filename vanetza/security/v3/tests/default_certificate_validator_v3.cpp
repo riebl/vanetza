@@ -3,8 +3,8 @@
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/geonet/units.hpp>
-#include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
+#include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/location_checker.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
@@ -21,11 +21,10 @@ public:
     DefaultCertificateValidatorTest() :
         runtime(Clock::at("2016-08-01 00:00")),
         backend(create_backend("default")),
-        cert_provider(runtime),
-        cert_cache()
+        cert_provider(runtime)
     {
         cert_validator.use_runtime(&runtime);
-        cert_validator.use_certificate_cache(&cert_cache);
+        cert_validator.use_issuer_lookup(&issuer_lookup);
 
         PositionFix position_fix;
         position_fix.latitude = 49.014420 * units::degree;
@@ -37,7 +36,7 @@ public:
         cert_validator.use_position_provider(&position_provider);
 
         trust_store.insert(cert_provider.root_certificate());
-        cert_cache.store(cert_provider.aa_certificate());
+        issuer_lookup.insert(cert_provider.aa_certificate());
     }
 
 protected:
@@ -46,7 +45,7 @@ protected:
     std::unique_ptr<Backend> backend;
     NaiveCertificateProvider cert_provider;
     TrustStore trust_store;
-    CertificateCache cert_cache;
+    IssuerMemoryLookup issuer_lookup;
     DefaultCertificateValidator cert_validator;
 };
 

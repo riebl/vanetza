@@ -1,8 +1,8 @@
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/v3/certificate.hpp>
-#include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
+#include <vanetza/security/v3/issuer_lookup.hpp>
 
 
 namespace vanetza
@@ -53,9 +53,9 @@ void DefaultCertificateValidator::use_position_provider(PositionProvider* pp)
     m_position_provider = pp;
 }
 
-void DefaultCertificateValidator::use_certificate_cache(const CertificateCache* cache)
+void DefaultCertificateValidator::use_issuer_lookup(const IssuerLookup* lookup)
 {
-    m_certificate_cache = cache;
+    m_issuer_lookup = lookup;
 }
 
 void DefaultCertificateValidator::use_location_checker(const LocationChecker* checker)
@@ -75,10 +75,10 @@ void DefaultCertificateValidator::disable_location_checks(bool flag)
 
 const Certificate* DefaultCertificateValidator::find_issuer_certificate(const CertificateView& at_cert) const
 {
-    if (m_certificate_cache) {
+    if (m_issuer_lookup) {
         auto maybe_issuer_digest = at_cert.issuer_digest();
         if (maybe_issuer_digest) {
-            return m_certificate_cache->lookup(*maybe_issuer_digest);
+            return m_issuer_lookup->find_issuer(*maybe_issuer_digest);
         }
     }
 
