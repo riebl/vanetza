@@ -7,6 +7,7 @@
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/location_checker.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
+#include <vanetza/security/v3/revocation_lookup.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
 #include <gtest/gtest.h>
 #include <cstring>
@@ -264,6 +265,100 @@ TEST_F(DefaultCertificateValidatorTest, identified_region_without_database_permi
     checker.set_permissive_identified_region(true);
     validity = cert_validator.valid_for_signing(cert, vanetza::aid::CA);
     EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
+}
+
+TEST_F(DefaultCertificateValidatorTest, crl_not_attached_is_valid)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, crl_empty_is_valid)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+
+    RevocationMemoryLookup revocation_lookup;
+    cert_validator.use_revocation_lookup(&revocation_lookup);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, crl_at_revoked_by_aa)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+
+    RevocationMemoryLookup revocation_lookup;
+    cert_validator.use_revocation_lookup(&revocation_lookup);
+
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
+    auto at_digest = cert.calculate_digest();
+    ASSERT_TRUE(aa_digest);
+    ASSERT_TRUE(at_digest);
+    revocation_lookup.revoke(*aa_digest, *at_digest);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Revoked,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, crl_aa_revoked_by_root)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+    // Make root reachable so the chain walk can step AT -> AA -> root.
+    ASSERT_TRUE(issuer_lookup.insert(cert_provider.root_certificate()));
+
+    RevocationMemoryLookup revocation_lookup;
+    cert_validator.use_revocation_lookup(&revocation_lookup);
+
+    auto root_digest = cert_provider.root_certificate().calculate_digest();
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
+    ASSERT_TRUE(root_digest);
+    ASSERT_TRUE(aa_digest);
+    revocation_lookup.revoke(*root_digest, *aa_digest);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Revoked,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, crl_unrelated_entry_does_not_revoke)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+
+    RevocationMemoryLookup revocation_lookup;
+    cert_validator.use_revocation_lookup(&revocation_lookup);
+
+    HashedId8 other_issuer { { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 } };
+    HashedId8 other_cert { { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x00, 0x11 } };
+    revocation_lookup.revoke(other_issuer, other_cert);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, crl_expiry_reported_before_revocation)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+
+    RevocationMemoryLookup revocation_lookup;
+    cert_validator.use_revocation_lookup(&revocation_lookup);
+
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
+    auto at_digest = cert.calculate_digest();
+    ASSERT_TRUE(aa_digest);
+    ASSERT_TRUE(at_digest);
+    revocation_lookup.revoke(*aa_digest, *at_digest);
+
+    // Expiry is evaluated before revocation: an expired AT reports Expired, not Revoked.
+    runtime.trigger(Clock::at("2099-01-01 00:00"));
+    EXPECT_EQ(CertificateValidator::Verdict::Expired,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 }
 
 TEST_F(DefaultCertificateValidatorTest, identified_region_country_and_regions_fallback)

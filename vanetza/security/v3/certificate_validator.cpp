@@ -3,6 +3,7 @@
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/issuer_lookup.hpp>
+#include <vanetza/security/v3/revocation_lookup.hpp>
 
 
 namespace vanetza
@@ -22,6 +23,8 @@ auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signi
         return Verdict::InsufficientPermission;
     } else if (m_runtime && !signing_cert.valid_at_timepoint(m_runtime->now())) {
         return Verdict::Expired;
+    } else if (chain_is_revoked(signing_cert)) {
+        return Verdict::Revoked;
     } else {
         Verdict verdict = Verdict::Valid;
         if (!m_disable_location_checks) {
@@ -63,6 +66,11 @@ void DefaultCertificateValidator::use_location_checker(const LocationChecker* ch
     m_location_checker = checker;
 }
 
+void DefaultCertificateValidator::use_revocation_lookup(const RevocationLookup* lookup)
+{
+    m_revocation_lookup = lookup;
+}
+
 void DefaultCertificateValidator::disable_time_checks(bool flag)
 {
     m_disable_time_checks = flag;
@@ -83,6 +91,34 @@ const Certificate* DefaultCertificateValidator::find_issuer_certificate(const Ce
     }
 
     return nullptr;
+}
+
+bool DefaultCertificateValidator::chain_is_revoked(const CertificateView& signing_cert) const
+{
+    if (!m_revocation_lookup || !m_issuer_lookup) {
+        return false;
+    }
+
+    // C-ITS chains are AT -> AA -> RCA (depth 3). The bound is defense against IssuerLookup cycles.
+    // The walk stops at the self-signed root: RCA revocation is the ECTL's job, not a CRL's.
+    constexpr int max_chain_depth = 8;
+    const CertificateView* cert = &signing_cert;
+    for (int depth = 0; depth < max_chain_depth; ++depth) {
+        const auto cert_digest = cert->calculate_digest();
+        const auto issuer_digest = cert->issuer_digest();
+        if (!cert_digest || !issuer_digest) {
+            break;
+        }
+        if (m_revocation_lookup->is_revoked(*issuer_digest, *cert_digest)) {
+            return true;
+        }
+        const Certificate* issuer = m_issuer_lookup->find_issuer(*issuer_digest);
+        if (!issuer || issuer->issuer_is_self()) {
+            break;
+        }
+        cert = issuer;
+    }
+    return false;
 }
 
 } // namespace v3

@@ -18,6 +18,7 @@ namespace v3
 class Certificate;
 class CertificateView;
 class IssuerLookup;
+class RevocationLookup;
 
 class CertificateValidator
 {
@@ -52,17 +53,20 @@ public:
     void use_position_provider(PositionProvider* provider);
     void use_issuer_lookup(const IssuerLookup* lookup);
     void use_location_checker(const LocationChecker* checker);
+    void use_revocation_lookup(const RevocationLookup* lookup);
 
     void disable_time_checks(bool flag);
     void disable_location_checks(bool flag);
 
 private:
     const Certificate* find_issuer_certificate(const CertificateView& certificate) const;
+    bool chain_is_revoked(const CertificateView& signing_cert) const;
 
     const Runtime* m_runtime = nullptr;
     PositionProvider* m_position_provider = nullptr;
     const IssuerLookup* m_issuer_lookup = nullptr;
     const LocationChecker* m_location_checker = nullptr;
+    const RevocationLookup* m_revocation_lookup = nullptr;
     bool m_disable_time_checks = false;
     bool m_disable_location_checks = false;
 };
