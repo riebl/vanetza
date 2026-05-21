@@ -385,3 +385,67 @@ TEST_F(DefaultCertificateValidatorTest, identified_region_country_and_regions_fa
     EXPECT_EQ(CertificateValidator::Verdict::Valid, validity);
 }
 
+TEST_F(DefaultCertificateValidatorTest, trust_store_not_attached_is_valid)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+    // No use_trust_store() call: anchoring check is skipped, validator falls through to Valid.
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, anchored_chain_is_valid)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+    ASSERT_TRUE(issuer_lookup.insert(cert_provider.root_certificate()));
+    cert_validator.use_trust_store(&trust_store);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, untrusted_when_root_not_in_trust_store)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+    ASSERT_TRUE(issuer_lookup.insert(cert_provider.root_certificate()));
+
+    TrustStore empty_trust_store;
+    cert_validator.use_trust_store(&empty_trust_store);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Untrusted,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, untrusted_when_chain_breaks)
+{
+    // Root is in trust_store but NOT in issuer_lookup, so the chain walk hits an
+    // unknown issuer at the AA step and cannot reach the trusted root.
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+    cert_validator.use_trust_store(&trust_store);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Untrusted,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, untrusted_reported_before_revocation)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+    cert_validator.use_trust_store(&trust_store);
+
+    RevocationMemoryLookup revocation_lookup;
+    cert_validator.use_revocation_lookup(&revocation_lookup);
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
+    auto at_digest = cert.calculate_digest();
+    ASSERT_TRUE(aa_digest);
+    ASSERT_TRUE(at_digest);
+    revocation_lookup.revoke(*aa_digest, *at_digest);
+
+    // Untrusted is reported, not Revoked — anchoring check runs first.
+    EXPECT_EQ(CertificateValidator::Verdict::Untrusted,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+

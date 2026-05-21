@@ -4,6 +4,7 @@
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/issuer_lookup.hpp>
 #include <vanetza/security/v3/revocation_lookup.hpp>
+#include <vanetza/security/v3/trust_store.hpp>
 
 
 namespace vanetza
@@ -23,6 +24,8 @@ auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signi
         return Verdict::InsufficientPermission;
     } else if (m_runtime && !signing_cert.valid_at_timepoint(m_runtime->now())) {
         return Verdict::Expired;
+    } else if (!is_chain_anchored(signing_cert)) {
+        return Verdict::Untrusted;
     } else if (chain_is_revoked(signing_cert)) {
         return Verdict::Revoked;
     } else {
@@ -71,6 +74,11 @@ void DefaultCertificateValidator::use_revocation_lookup(const RevocationLookup* 
     m_revocation_lookup = lookup;
 }
 
+void DefaultCertificateValidator::use_trust_store(const TrustStore* store)
+{
+    m_trust_store = store;
+}
+
 void DefaultCertificateValidator::disable_time_checks(bool flag)
 {
     m_disable_time_checks = flag;
@@ -91,6 +99,34 @@ const Certificate* DefaultCertificateValidator::find_issuer_certificate(const Ce
     }
 
     return nullptr;
+}
+
+bool DefaultCertificateValidator::is_chain_anchored(const CertificateView& signing_cert) const
+{
+    if (!m_trust_store || !m_issuer_lookup) {
+        // No anchoring policy configured: fail open, matching the existing optional-injection pattern.
+        return true;
+    }
+
+    constexpr int max_chain_depth = 8;
+    const CertificateView* cert = &signing_cert;
+    for (int depth = 0; depth < max_chain_depth; ++depth) {
+        if (cert->issuer_is_self()) {
+            // Reached a self-signed cert: anchored iff it's in the trust store.
+            const auto cert_digest = cert->calculate_digest();
+            return cert_digest && !m_trust_store->lookup(*cert_digest).empty();
+        }
+        const auto issuer_digest = cert->issuer_digest();
+        if (!issuer_digest) {
+            return false;
+        }
+        const Certificate* issuer = m_issuer_lookup->find_issuer(*issuer_digest);
+        if (!issuer) {
+            return false;
+        }
+        cert = issuer;
+    }
+    return false;
 }
 
 bool DefaultCertificateValidator::chain_is_revoked(const CertificateView& signing_cert) const
