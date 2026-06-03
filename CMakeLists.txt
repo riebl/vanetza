@@ -71,6 +71,11 @@ if(BUILD_FUZZ)
   add_subdirectory(tools/fuzz-harness)
 endif()
 
+option(BUILD_PKI "Build PKI tools" OFF)
+if(BUILD_PKI)
+  add_subdirectory(tools/pki)
+endif()
+
 # interface library for convenience
 get_property(_components GLOBAL PROPERTY VANETZA_COMPONENTS)
 add_library(vanetza INTERFACE)
