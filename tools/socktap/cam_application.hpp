@@ -13,6 +13,7 @@ public:
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
     void set_interval(vanetza::Clock::duration);
+    void set_station_id(std::uint32_t station_id);
     void print_received_message(bool flag);
     void print_generated_message(bool flag);
 
@@ -23,6 +24,7 @@ private:
     vanetza::PositionProvider& positioning_;
     vanetza::Runtime& runtime_;
     vanetza::Clock::duration cam_interval_;
+    std::uint32_t station_id_ = 1;
     bool print_rx_msg_ = false;
     bool print_tx_msg_ = false;
 };

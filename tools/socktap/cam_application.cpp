@@ -27,6 +27,11 @@ void CamApplication::set_interval(Clock::duration interval)
     schedule_timer();
 }
 
+void CamApplication::set_station_id(std::uint32_t station_id)
+{
+    station_id_ = station_id;
+}
+
 void CamApplication::print_generated_message(bool flag)
 {
     print_tx_msg_ = flag;
@@ -67,7 +72,7 @@ void CamApplication::on_timer(Clock::time_point)
     ItsPduHeader_t& header = message->header;
     header.protocolVersion = 2;
     header.messageID = ItsPduHeader__messageID_cam;
-    header.stationID = 1; // some dummy value
+    header.stationID = station_id_;
 
     const auto time_now = duration_cast<milliseconds>(runtime_.now().time_since_epoch());
     uint16_t gen_delta_time = time_now.count();
