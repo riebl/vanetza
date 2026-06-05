@@ -12,13 +12,13 @@
 #include <boost/asio/placeholders.hpp>
 #include <boost/bind/bind.hpp>
 
-CubeEvkLink::CubeEvkLink(boost::asio::io_context& io, boost::asio::ip::address radio_ip)
+CubeEvkLink::CubeEvkLink(boost::asio::io_context& io, boost::asio::ip::address radio_ip, unsigned int tx_port, unsigned int rx_port)
     : io_(io), tx_socket_(io), rx_socket_(io)
 {
-    const boost::asio::ip::udp::endpoint radio_endpoint_tx(radio_ip, cube_evk_radio_port_tx);
+    const boost::asio::ip::udp::endpoint radio_endpoint_tx(radio_ip, tx_port);
     tx_socket_.connect(radio_endpoint_tx);
 
-    boost::asio::ip::udp::endpoint radio_endpoint_rx(boost::asio::ip::udp::v4(), cube_evk_radio_port_rx);
+    boost::asio::ip::udp::endpoint radio_endpoint_rx(boost::asio::ip::udp::v4(), rx_port);
     rx_socket_.open(radio_endpoint_rx.protocol());
     rx_socket_.bind(radio_endpoint_rx);
 

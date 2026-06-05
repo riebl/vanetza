@@ -107,7 +107,12 @@ create_link_layer(boost::asio::io_context& io_context, const EthernetDevice& dev
 #endif
     } else if (name == "cube-evk") {
 #ifdef SOCKTAP_WITH_CUBE_EVK
-        link_layer.reset(new CubeEvkLink { io_context, boost::asio::ip::make_address(vm["cube-ip"].as<std::string>()) });
+        link_layer.reset(new CubeEvkLink {
+            io_context,
+            boost::asio::ip::make_address(vm["cube-ip"].as<std::string>()),
+            vm["cube-tx-port"].as<unsigned>(),
+            vm["cube-rx-port"].as<unsigned>()
+        });
 #endif
     } else if (name == "rpc") {
 #ifdef SOCKTAP_WITH_RPC
