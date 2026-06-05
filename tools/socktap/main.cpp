@@ -37,6 +37,7 @@ int main(int argc, const char** argv)
         ("require-gnss-fix", "Suppress transmissions while GNSS position fix is missing")
         ("gn-version", po::value<unsigned>()->default_value(1), "GeoNetworking protocol version to use.")
         ("cam-interval", po::value<unsigned>()->default_value(1000), "CAM sending interval in milliseconds.")
+        ("station-id", po::value<unsigned>()->default_value(1), "CAM station ID used in generated messages.")
         ("print-rx-cam", "Print received CAMs")
         ("print-tx-cam", "Print generated CAMs")
         ("benchmark", "Enable benchmarking")
@@ -157,6 +158,7 @@ int main(int argc, const char** argv)
                     new CamApplication(*positioning, trigger.runtime())
                 };
                 ca->set_interval(std::chrono::milliseconds(vm["cam-interval"].as<unsigned>()));
+                ca->set_station_id(vm["station-id"].as<unsigned>());
                 ca->print_received_message(vm.count("print-rx-cam") > 0);
                 ca->print_generated_message(vm.count("print-tx-cam") > 0);
                 apps.emplace(app_name, std::move(ca));
