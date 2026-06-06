@@ -3,14 +3,10 @@ set -euo pipefail
 
 source /etc/os-release
 case $VERSION_CODENAME in
-  bionic)
-    ;&
-  focal)
-    ;&
-  jammy)
+  bionic|focal|jammy)
     GEOGRAPHICLIB=libgeographic-dev
     ;;
-  noble)
+  noble|resolute)
     GEOGRAPHICLIB=libgeographiclib-dev
     ;;
   *)

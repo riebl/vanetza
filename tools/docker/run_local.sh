@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-: ${UBUNTU_VERSION:=bionic}
+: ${UBUNTU_VERSION:=resolute}
 SCRIPT_DIR=$(dirname ${BASH_SOURCE[0]})
 ROOT_DIR=$(readlink -m "${SCRIPT_DIR}/../..")
 
