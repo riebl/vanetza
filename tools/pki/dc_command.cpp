@@ -33,22 +33,28 @@ struct Context
         }
     }
 
+    const std::string& url() const
+    {
+        return url_override.empty() ? cfg.dc_url : url_override;
+    }
+
     const MainConfig& cfg;
     HashedId8 hid8;
+    std::string url_override;
     bool print = false;
     std::function<void()> action;
 };
 
 void show_info(Context& ctx)
 {
-    std::cout << "DC URL: " << (ctx.cfg.dc_url.empty() ? "[not set]" : ctx.cfg.dc_url) << "\n";
+    std::cout << "DC URL: " << (ctx.url().empty() ? "[not set]" : ctx.url()) << "\n";
 }
 
 void fetch_ctl(Context& ctx, CLI::Option* hid8_opt, CLI::Option* dry_flag)
 {
     ctx.lookup_root_ca(hid8_opt);
     DistributionCentre dc;
-    dc.set_url(ctx.cfg.dc_url);
+    dc.set_url(ctx.url());
     auto ctl = dc.fetch_trust_list(ctx.hid8);
     if (ctl) {
         if (ctx.print) {
@@ -89,7 +95,7 @@ void fetch_crl(Context& ctx, CLI::Option* hid8_opt, CLI::Option* dry_flag)
 {
     ctx.lookup_root_ca(hid8_opt);
     DistributionCentre dc;
-    dc.set_url(ctx.cfg.dc_url);
+    dc.set_url(ctx.url());
     auto crl = dc.fetch_revocation_list(ctx.hid8);
     if (!crl) {
         throw std::runtime_error("DC has no revocation list matching HashedId8 " + hexstring(ctx.hid8));
@@ -141,6 +147,7 @@ std::shared_ptr<CLI::App> build_info_command(std::shared_ptr<Context> ctx)
 {
     auto app = std::make_shared<CLI::App>("Distribution Centre info", "info");
     app->callback([ctx]() { ctx->action = [ctx]() { show_info(*ctx); }; });
+    app->fallthrough();
     return app;
 }
 
@@ -185,6 +192,7 @@ std::shared_ptr<CLI::App> build_dc_command(const MainConfig& cfg)
     auto ctx = std::make_shared<Context>(cfg);
     auto app = std::make_shared<CLI::App>("PKI Distribution Centre", "dc");
     app->add_flag("--print", ctx->print, "print received data in addition");
+    app->add_option("--url", ctx->url_override, "override the Distribution Centre URL");
 
     app->add_subcommand(build_info_command(ctx));
     app->add_subcommand(build_ctl_command(ctx));
