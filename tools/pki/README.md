@@ -43,9 +43,9 @@ Prints the DC URL as found in the ECTL for the previously selected Root CA.
 
 `pki dc getctl --print`
 
-> - EA: http://0.eu-ea.l0.c-its-pki.eu/ [AA]
-> - AA: http://0.eu-aa.l0.c-its-pki.eu/
-> Fetched CTL matches Root CA digest
+> - EA: http://0.eu-ea.l0.c-its-pki.eu/ [AA] \
+> - AA: http://0.eu-aa.l0.c-its-pki.eu/ \
+> Fetched CTL matches Root CA digest \
 > CTL is valid. Added to local trust list storage.
 
 Writes ~/.local/share/vanetza/pki/ctls/1B5CB4BEBE6FE9E9.ctl
@@ -55,12 +55,12 @@ Writes ~/.local/share/vanetza/pki/ctls/1B5CB4BEBE6FE9E9.ctl
 
 `pki enrol init --canonical-id station_name --canonical-keyfile ~/station_key.pem`
 
-> Root CA 1B5CB4BEBE6FE9E9
-> Canonical identifier: station_name
-> Canonical public key X=1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF
-> Enroling against EA certificate: D07F4E6D4D1DFA70
-> Enroling at EA URL: http://0.eu-ea.l0.c-its-pki.eu/
-> Stored new EC with HashedId8 = 1234567890ABCDEF
+> Root CA 1B5CB4BEBE6FE9E9 \
+> Canonical identifier: station_name \
+> Canonical public key X=1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF \
+> Enroling against EA certificate: D07F4E6D4D1DFA70 \
+> Enroling at EA URL: http://0.eu-ea.l0.c-its-pki.eu/ \
+> Stored new EC with HashedId8 = 1234567890ABCDEF \
 > Station can sign with received EC
 
 
@@ -68,11 +68,11 @@ Writes ~/.local/share/vanetza/pki/ctls/1B5CB4BEBE6FE9E9.ctl
 
 `pki station`
 
-> Canonical identifier: station_name
-> Enrolled: yes
-> EC digest: 1234567890ABCDEF
-> EC certificate: [available]
-> Root CA: 1B5CB4BEBE6FE9E9
+> Canonical identifier: station_name \
+> Enrolled: yes \
+> EC digest: 1234567890ABCDEF \
+> EC certificate: [available] \
+> Root CA: 1B5CB4BEBE6FE9E9 \
 > DC URL: https://0.eu-dc.l0.c-its-pki.eu/
 
 
@@ -91,8 +91,8 @@ permission = ["36:01FFFC", "37:01FFFFFF", "141"]
 
 `pki at request`
 
-> Authorizing against AA AF65A276F2D4EBC9 at http://0.eu-aa.l0.c-its-pki.eu/
-> Stored new AT ABCDEF1234567890
-> ABCDEF1234567890 [valid now]
->  valid: 2026-06-06 07:06:29 until 2026-06-13 07:06:29
+> Authorizing against AA AF65A276F2D4EBC9 at http://0.eu-aa.l0.c-its-pki.eu/ \
+> Stored new AT ABCDEF1234567890 \
+> ABCDEF1234567890 [valid now] \
+>  valid: 2026-06-06 07:06:29 until 2026-06-13 07:06:29 \
 >  permissions: 36:01FFFC 37:01FFFFFF 141
