@@ -8,11 +8,61 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/ecc_point.hpp>
 #include <vanetza/security/v2/persistence.hpp>
+#include <vanetza/security/v2/public_key.hpp>
 
 namespace po = boost::program_options;
 using namespace vanetza;
 using namespace vanetza::security;
+
+namespace {
+
+std::string hex_buffer(const ByteBuffer& buffer)
+{
+    std::string bytes(buffer.begin(), buffer.end());
+    return boost::algorithm::hex(bytes);
+}
+
+void print_ecc_point(const EccPoint& point, const std::string& indent)
+{
+    switch (v2::get_type(point)) {
+        case v2::EccPointType::X_Coordinate_Only:
+            std::cout << indent << "X: " << hex_buffer(boost::get<X_Coordinate_Only>(point).x)
+                      << " (x-coordinate only)" << std::endl;
+            break;
+        case v2::EccPointType::Compressed_Lsb_Y_0:
+            std::cout << indent << "X: " << hex_buffer(boost::get<Compressed_Lsb_Y_0>(point).x)
+                      << " (compressed, y LSB 0)" << std::endl;
+            break;
+        case v2::EccPointType::Compressed_Lsb_Y_1:
+            std::cout << indent << "X: " << hex_buffer(boost::get<Compressed_Lsb_Y_1>(point).x)
+                      << " (compressed, y LSB 1)" << std::endl;
+            break;
+        case v2::EccPointType::Uncompressed: {
+            const Uncompressed& uncompressed = boost::get<Uncompressed>(point);
+            std::cout << indent << "X: " << hex_buffer(uncompressed.x) << std::endl;
+            std::cout << indent << "Y: " << hex_buffer(uncompressed.y) << " (uncompressed)" << std::endl;
+            break;
+        }
+    }
+}
+
+void print_public_key(const v2::PublicKey& key, const std::string& indent)
+{
+    switch (v2::get_type(key)) {
+        case v2::PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256:
+            std::cout << indent << "Algorithm: ECDSA NISTP256 with SHA-256" << std::endl;
+            print_ecc_point(boost::get<v2::ecdsa_nistp256_with_sha256>(key).public_key, indent);
+            break;
+        case v2::PublicKeyAlgorithm::ECIES_NISTP256:
+            std::cout << indent << "Algorithm: ECIES NISTP256" << std::endl;
+            print_ecc_point(boost::get<v2::ecies_nistp256>(key).public_key, indent);
+            break;
+    }
+}
+
+} // namespace
 
 bool ShowCertificateCommand::parse(const std::vector<std::string>& opts)
 {
@@ -102,13 +152,23 @@ int ShowCertificateCommand::execute()
 
     std::cout << std::endl;
 
-    // TODO Support Verification_Key, Encryption_Key, Reconstruction_Value
-
     unsigned certificate_application_ids = 0;
 
     for (auto& subject_attr : cert.subject_attributes) {
         v2::SubjectAttributeType attr_type = get_type(subject_attr);
-        if (attr_type == v2::SubjectAttributeType::Assurance_Level) {
+        if (attr_type == v2::SubjectAttributeType::Verification_Key) {
+            std::cout << "Verification Key:" << std::endl;
+            print_public_key(boost::get<v2::VerificationKey>(subject_attr).key, " - ");
+            std::cout << std::endl;
+        } else if (attr_type == v2::SubjectAttributeType::Encryption_Key) {
+            std::cout << "Encryption Key:" << std::endl;
+            print_public_key(boost::get<v2::EncryptionKey>(subject_attr).key, " - ");
+            std::cout << std::endl;
+        } else if (attr_type == v2::SubjectAttributeType::Reconstruction_Value) {
+            std::cout << "Reconstruction Value:" << std::endl;
+            print_ecc_point(boost::get<EccPoint>(subject_attr), " - ");
+            std::cout << std::endl;
+        } else if (attr_type == v2::SubjectAttributeType::Assurance_Level) {
             v2::SubjectAssurance assurance = boost::get<v2::SubjectAssurance>(subject_attr);
             std::cout << "Assurance: " << (assurance.raw & assurance.assurance_mask);
             std::cout << " with a confidence of " <<  (assurance.raw & assurance.confidence_mask);
