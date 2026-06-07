@@ -215,7 +215,10 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
 
     auto response = http_post(query, "application/x-its-request", encoded_encrypted_data);
     if (response.result() != boost::beast::http::status::ok) {
-        throw HttpException("EA returned an unexpected HTTP status for the enrolment request");
+        const auto& body = response.body();
+        std::string body_str(reinterpret_cast<const char*>(body.data()), body.size());
+        throw HttpException("EA returned an unexpected HTTP status for the enrolment request: "
+            + std::to_string(response.result_int()) + " (" + body_str + ")");
     } else if (response[boost::beast::http::field::content_type] != "application/x-its-response") {
         throw HttpException("expected application/x-its-response");
     }
