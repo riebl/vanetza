@@ -45,7 +45,10 @@ Certificate fetch_tlm_certificate(const std::string& base_url, const HashedId8* 
     auto query = HttpQuery::from_url(base_url + "/gettlmcertificate/" + (id ? hexstring(*id) : ""));
     auto response = http_get(query);
     if (response.result() != boost::beast::http::status::ok) {
-        throw HttpException("CPOC returned an unexpected HTTP status when fetching TLM certificate");
+        const auto& body = response.body();
+        std::string body_str(reinterpret_cast<const char*>(body.data()), body.size());
+        throw HttpException("CPOC returned an unexpected HTTP status when fetching TLM certificate: "
+            + std::to_string(response.result_int()) + " (" + body_str + ")");
     } else if (response[boost::beast::http::field::content_type] != "application/octet-stream") {
         throw HttpException("did not receive bytes from CPOC when fetching TLM certificate");
     } else {
@@ -211,7 +214,10 @@ void fetch_ectl(Context& context, const HashedId8* tlm_id, bool dry_run)
     auto query = HttpQuery::from_url(context.cpoc_url + "/getectl/" + hexstring(tlm_hid8));
     auto response = http_get(query);
     if (response.result() != boost::beast::http::status::ok) {
-        throw HttpException("CPOC returned an unexpected HTTP status when fetching full ECTL");
+        const auto& body = response.body();
+        std::string body_str(reinterpret_cast<const char*>(body.data()), body.size());
+        throw HttpException("CPOC returned an unexpected HTTP status when fetching full ECTL: "
+            + std::to_string(response.result_int()) + " (" + body_str + ")");
     } else if (response[boost::beast::http::field::content_type] != "application/octet-stream") {
         throw HttpException("did not receive bytes from CPOC when fetching full ECTL");
     }
