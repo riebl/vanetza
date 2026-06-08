@@ -277,6 +277,11 @@ ByteBuffer CertificateView::encode() const
     return m_cert ? asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, m_cert) : ByteBuffer {};
 }
 
+const asn1::EtsiTs103097Certificate* CertificateView::raw_certificate() const
+{
+    return m_cert;
+}
+
 ByteBuffer Certificate::encode() const
 {
     return Wrapper::encode();
@@ -523,6 +528,36 @@ std::list<ItsAid> get_aids(const asn1::EtsiTs103097Certificate& cert)
     if (seq) {
         for (int i = 0; i < seq->list.count; ++i) {
             aids.push_back(seq->list.array[i]->psid);
+        }
+    }
+    return aids;
+}
+
+std::list<ItsAid> get_issuer_aids(const asn1::EtsiTs103097Certificate& cert)
+{
+    std::list<ItsAid> aids;
+    const asn1::SequenceOfPsidGroupPermissions* seq = cert.toBeSigned.certIssuePermissions;
+    if (seq) {
+        for (int i = 0; i < seq->list.count; ++i) {
+            const auto* group = seq->list.array[i];
+            if (!group) {
+                continue;
+            }
+            switch (group->subjectPermissions.present) {
+                case Vanetza_Security_SubjectPermissions_PR_explicit: {
+                    const auto& explicit_perms = group->subjectPermissions.choice.Explicit;
+                    for (int j = 0; j < explicit_perms.list.count; ++j) {
+                        if (explicit_perms.list.array[j]) {
+                            aids.push_back(explicit_perms.list.array[j]->psid);
+                        }
+                    }
+                    break;
+                }
+                case Vanetza_Security_SubjectPermissions_PR_all:
+                    return {};
+                default:
+                    break;
+            }
         }
     }
     return aids;

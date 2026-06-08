@@ -63,7 +63,9 @@ public:
 
 private:
     const Certificate* find_issuer_certificate(const CertificateView& certificate) const;
+    bool chain_is_consistent(const CertificateView& signing_cert, ItsAid its_aid) const;
     bool chain_is_revoked(const CertificateView& signing_cert) const;
+    bool check_consistency(const CertificateView& subject, const CertificateView& issuer, ItsAid its_aid) const;
     bool is_chain_anchored(const CertificateView& signing_cert) const;
 
     const Runtime* m_runtime = nullptr;

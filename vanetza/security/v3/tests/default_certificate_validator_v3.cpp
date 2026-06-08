@@ -10,6 +10,7 @@
 #include <vanetza/security/v3/revocation_lookup.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
 #include <gtest/gtest.h>
+#include <vanetza/asn1/support/OCTET_STRING.h>
 #include <cstring>
 
 using namespace vanetza;
@@ -205,6 +206,16 @@ std::vector<uint8_t> make_germany_data()
     append_u32le(data, static_cast<uint32_t>(wkb.size()));
     data.insert(data.end(), wkb.begin(), wkb.end());
     return data;
+}
+
+void set_issuer_digest(Certificate& cert, const HashedId8& digest)
+{
+    cert->issuer.present = Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
+    OCTET_STRING_fromBuf(
+        &cert->issuer.choice.sha256AndDigest,
+        reinterpret_cast<const char*>(digest.data()),
+        digest.size()
+    );
 }
 
 } // anonymous namespace
@@ -449,3 +460,66 @@ TEST_F(DefaultCertificateValidatorTest, untrusted_reported_before_revocation)
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 }
 
+TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_validity_outside_issuer_validity)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert->toBeSigned.validityPeriod.start = v2::convert_time32(runtime.now() - std::chrono::hours(2));
+    cert_validator.disable_location_checks(true);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, consistency_rejects_permission_not_issued_by_parent)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert_validator.disable_location_checks(true);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+              cert_validator.valid_for_signing(cert, vanetza::aid::IPV6_ROUTING));
+}
+
+TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_assurance_without_issuer_assurance)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert->toBeSigned.assuranceLevel = vanetza::asn1::allocate<Vanetza_Security_SubjectAssurance_t>();
+    const char assurance = 0x20;
+    OCTET_STRING_fromBuf(cert->toBeSigned.assuranceLevel, &assurance, sizeof(assurance));
+    cert_validator.disable_location_checks(true);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
+TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_region_outside_issuer_region)
+{
+    Certificate aa = cert_provider.aa_certificate();
+    aa->toBeSigned.region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+    aa->toBeSigned.region->present = Vanetza_Security_GeographicRegion_PR_circularRegion;
+    aa->toBeSigned.region->choice.circularRegion.center.latitude = 490144200;
+    aa->toBeSigned.region->choice.circularRegion.center.longitude = 84044170;
+    aa->toBeSigned.region->choice.circularRegion.radius = 500;
+
+    auto aa_digest = aa.calculate_digest();
+    ASSERT_TRUE(aa_digest);
+
+    IssuerMemoryLookup local_issuer_lookup;
+    ASSERT_TRUE(local_issuer_lookup.insert(aa));
+    cert_validator.use_issuer_lookup(&local_issuer_lookup);
+    cert_validator.disable_location_checks(true);
+
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    set_issuer_digest(cert, *aa_digest);
+    cert->toBeSigned.region = vanetza::asn1::allocate<vanetza::security::v3::asn1::GeographicRegion>();
+    cert->toBeSigned.region->present = Vanetza_Security_GeographicRegion_PR_circularRegion;
+    cert->toBeSigned.region->choice.circularRegion.center.latitude = 490144200;
+    cert->toBeSigned.region->choice.circularRegion.center.longitude = 84044170;
+    cert->toBeSigned.region->choice.circularRegion.radius = 1000;
+
+    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+
+    cert->toBeSigned.region->choice.circularRegion.radius = 100;
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}

@@ -126,6 +126,8 @@ public:
      */
     ByteBuffer encode() const;
 
+    const asn1::EtsiTs103097Certificate* raw_certificate() const;
+
 protected:
     const asn1::EtsiTs103097Certificate* m_cert = nullptr;
 };
@@ -237,6 +239,13 @@ boost::optional<Signature> get_signature(const asn1::EtsiTs103097Certificate& ce
  * \return list of ITS AIDs
  */
 std::list<ItsAid> get_aids(const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Get list of ITS AID permissions a certificate is allowed to issue
+ * \param cert certificate
+ * \return list of ITS AIDs or empty list if all permissions are granted
+ */
+std::list<ItsAid> get_issuer_aids(const asn1::EtsiTs103097Certificate& cert);
 
 /**
  * Get application permissions (SSP = service specific permissions)
