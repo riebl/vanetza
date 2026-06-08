@@ -195,7 +195,7 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
 {
     std::unique_ptr<security::SecurityEntity> security;
     const std::string name = vm["security"].as<std::string>();
-    const std::string backend_name = vm["backend"].as<std::string>();
+    const std::string backend_name = vm["crypto-backend"].as<std::string>();
 
     if (name.empty() || name == "none") {
         // no operation
@@ -267,7 +267,7 @@ void add_security_options(po::options_description& options)
 {
     options.add_options()
         ("security", po::value<std::string>()->default_value("dummy"), "Security entity [none,dummy,certs] (with optional -v2 or -v3 suffix)")
-        ("backend", po::value<std::string>()->default_value("default"), "Crypto backend [default,OpenSSL,CryptoPP,Null]")
+        ("crypto-backend", po::value<std::string>()->default_value("default"), "Crypto backend [default,OpenSSL,CryptoPP,Null]")
         ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
         ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
