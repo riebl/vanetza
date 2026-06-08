@@ -26,9 +26,9 @@ namespace po = boost::program_options;
 class SecurityContextV2 : public security::SecurityEntity
 {
 public:
-    SecurityContextV2(const Runtime& runtime, PositionProvider& positioning) :
+    SecurityContextV2(const Runtime& runtime, PositionProvider& positioning, const std::string& backend_name) :
         runtime(runtime), positioning(positioning),
-        backend(security::create_backend("default")),
+        backend(security::create_backend(backend_name)),
         sign_header_policy(runtime, positioning),
         cert_cache(runtime),
         cert_validator(*backend, cert_cache, trust_store)
@@ -82,9 +82,9 @@ class SecurityContextV3 : public security::SecurityEntity
 {
 public:
     SecurityContextV3(const Runtime& runtime, PositionProvider& positioning,
-                      bool permissive_identified_region = false) :
+                      const std::string& backend_name, bool permissive_identified_region = false) :
         runtime(runtime), positioning(positioning),
-        backend(security::create_backend("default")),
+        backend(security::create_backend(backend_name)),
         country_database(geodesy::CountryDatabase::embedded())
     {
         cert_validator.use_runtime(&runtime);
@@ -195,6 +195,7 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
 {
     std::unique_ptr<security::SecurityEntity> security;
     const std::string name = vm["security"].as<std::string>();
+    const std::string backend_name = vm["backend"].as<std::string>();
 
     if (name.empty() || name == "none") {
         // no operation
@@ -220,12 +221,12 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
             if (version == 3) {
                 bool permissive_ir = vm.count("security.permissive-identified-region") &&
                                      vm["security.permissive-identified-region"].as<bool>();
-                auto context = std::make_unique<SecurityContextV3>(runtime, positioning, permissive_ir);
+                auto context = std::make_unique<SecurityContextV3>(runtime, positioning, backend_name, permissive_ir);
                 context->cert_provider = load_v3_certificates(cert_path, cert_key_path, chain_paths);
                 context->build_entity();
                 security = std::move(context);
             } else {
-                auto context = std::make_unique<SecurityContextV2>(runtime, positioning);
+                auto context = std::make_unique<SecurityContextV2>(runtime, positioning, backend_name);
                 context->cert_provider = load_v2_certificates(cert_path, cert_key_path, chain_paths, context->cert_cache);
                 if (vm.count("trusted-certificate")) {
                     for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
@@ -240,12 +241,12 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
             if (version == 3) {
                 bool permissive_ir = vm.count("security.permissive-identified-region") &&
                                      vm["security.permissive-identified-region"].as<bool>();
-                auto context = std::make_unique<SecurityContextV3>(runtime, positioning, permissive_ir);
+                auto context = std::make_unique<SecurityContextV3>(runtime, positioning, backend_name, permissive_ir);
                 context->cert_provider = std::make_unique<security::v3::NaiveCertificateProvider>(runtime);
                 context->build_entity();
                 security = std::move(context);
             } else {
-                auto context = std::make_unique<SecurityContextV2>(runtime, positioning);
+                auto context = std::make_unique<SecurityContextV2>(runtime, positioning, backend_name);
                 context->cert_provider = std::make_unique<security::v2::NaiveCertificateProvider>(runtime);
                 context->build_entity();
                 security = std::move(context);
@@ -266,6 +267,7 @@ void add_security_options(po::options_description& options)
 {
     options.add_options()
         ("security", po::value<std::string>()->default_value("dummy"), "Security entity [none,dummy,certs] (with optional -v2 or -v3 suffix)")
+        ("backend", po::value<std::string>()->default_value("default"), "Crypto backend [default,OpenSSL,CryptoPP,Null]")
         ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
         ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
@@ -274,4 +276,3 @@ void add_security_options(po::options_description& options)
          "Accept IdentifiedRegion certificate constraints without verification (opt-in fallback; see issue #262). Default: reject (OutsideRegion).")
     ;
 }
-
