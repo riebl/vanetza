@@ -479,6 +479,33 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_permission_not_issue
               cert_validator.valid_for_signing(cert, vanetza::aid::IPV6_ROUTING));
 }
 
+TEST_F(DefaultCertificateValidatorTest, consistency_accepts_permission_issued_by_parent_with_all_permissions)
+{
+    Certificate aa = cert_provider.aa_certificate();
+    ASSERT_TRUE(aa->toBeSigned.certIssuePermissions);
+    ASSERT_GT(aa->toBeSigned.certIssuePermissions->list.count, 0);
+    ASSERT_TRUE(aa->toBeSigned.certIssuePermissions->list.array[0]);
+
+    auto& subject_permissions = aa->toBeSigned.certIssuePermissions->list.array[0]->subjectPermissions;
+    asn_sequence_empty(&subject_permissions.choice.Explicit);
+    subject_permissions.present = Vanetza_Security_SubjectPermissions_PR_all;
+    subject_permissions.choice.all = 0;
+
+    auto aa_digest = aa.calculate_digest();
+    ASSERT_TRUE(aa_digest);
+
+    IssuerMemoryLookup local_issuer_lookup;
+    ASSERT_TRUE(local_issuer_lookup.insert(aa));
+    cert_validator.use_issuer_lookup(&local_issuer_lookup);
+    cert_validator.disable_location_checks(true);
+
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    set_issuer_digest(cert, *aa_digest);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::IPV6_ROUTING));
+}
+
 TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_assurance_without_issuer_assurance)
 {
     Certificate cert = cert_provider.generate_authorization_ticket();

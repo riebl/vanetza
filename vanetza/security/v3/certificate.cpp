@@ -3,6 +3,7 @@
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/distance.hpp>
+#include <vanetza/security/v3/geometry.hpp>
 #include <boost/optional/optional.hpp>
 #include <cassert>
 #include <cstdlib>
@@ -28,6 +29,14 @@ bool is_compressed(const Vanetza_Security_EccP384CurvePoint& point);
 bool is_signature_x_only(const Vanetza_Security_Signature_t& sig);
 bool compress(Vanetza_Security_EccP256CurvePoint&);
 bool compress(Vanetza_Security_EccP384CurvePoint&);
+bool contains_permission(const Vanetza_Security_SequenceOfPsidSspRange_t& permissions, ItsAid aid);
+bool equal(const asn1::TwoDLocation& lhs, const asn1::TwoDLocation& rhs);
+bool equal(const asn1::RectangularRegion& lhs, const asn1::RectangularRegion& rhs);
+bool equal(const asn1::SequenceOfRectangularRegion& lhs, const asn1::SequenceOfRectangularRegion& rhs);
+bool is_within(const asn1::GeographicRegion& inner, const asn1::CircularRegion& outer);
+bool is_within(const asn1::GeographicRegion& inner, const asn1::SequenceOfRectangularRegion& outer);
+bool is_within(const asn1::GeographicRegion& inner, const asn1::PolygonalRegion& outer);
+bool is_within(const asn1::GeographicRegion& inner, const asn1::GeographicRegion& outer);
 bool make_x_only(Vanetza_Security_EccP256CurvePoint&);
 bool make_x_only(Vanetza_Security_EccP384CurvePoint&);
 bool make_signature_x_only(Vanetza_Security_Signature_t& sig);
@@ -142,6 +151,59 @@ bool valid_at_timepoint(const asn1::EtsiTs103097Certificate& cert, const Clock::
 bool CertificateView::valid_for_application(ItsAid aid) const
 {
     return m_cert ? v3::valid_for_application(*m_cert, aid) : false;
+}
+
+bool CertificateView::is_allowed_to_issue(ItsAid aid) const
+{
+    if (!m_cert) {
+        return false;
+    }
+
+    if (const auto* seq = m_cert->toBeSigned.certIssuePermissions; seq) {
+        for (int i = 0; i < seq->list.count; ++i) {
+            const auto* group = seq->list.array[i];
+            if (!group) {
+                continue;
+            }
+
+            const auto& subject_permissions = group->subjectPermissions;
+            if (subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_all) {
+                return true;
+            } else if (
+                    subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_explicit &&
+                    contains_permission(subject_permissions.choice.Explicit, aid)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+boost::optional<std::uint8_t> CertificateView::assurance_level() const
+{
+    if (!m_cert || !m_cert->toBeSigned.assuranceLevel || m_cert->toBeSigned.assuranceLevel->size == 0) {
+        return boost::none;
+    }
+
+    return m_cert->toBeSigned.assuranceLevel->buf[0];
+}
+
+bool CertificateView::region_is_within(const CertificateView& issuer) const
+{
+    if (!m_cert || !issuer.m_cert) {
+        return false;
+    }
+
+    const auto* issuer_region = issuer.m_cert->toBeSigned.region;
+    const auto* subject_region = m_cert->toBeSigned.region;
+    if (!issuer_region) {
+        return true;
+    } else if (!subject_region) {
+        return false;
+    } else {
+        return is_within(*subject_region, *issuer_region);
+    }
 }
 
 bool valid_for_application(const asn1::EtsiTs103097Certificate& cert, ItsAid aid)
@@ -275,11 +337,6 @@ bool is_canonical(const asn1::EtsiTs103097Certificate& cert)
 ByteBuffer CertificateView::encode() const
 {
     return m_cert ? asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, m_cert) : ByteBuffer {};
-}
-
-const asn1::EtsiTs103097Certificate* CertificateView::raw_certificate() const
-{
-    return m_cert;
 }
 
 ByteBuffer Certificate::encode() const
@@ -533,36 +590,6 @@ std::list<ItsAid> get_aids(const asn1::EtsiTs103097Certificate& cert)
     return aids;
 }
 
-std::list<ItsAid> get_issuer_aids(const asn1::EtsiTs103097Certificate& cert)
-{
-    std::list<ItsAid> aids;
-    const asn1::SequenceOfPsidGroupPermissions* seq = cert.toBeSigned.certIssuePermissions;
-    if (seq) {
-        for (int i = 0; i < seq->list.count; ++i) {
-            const auto* group = seq->list.array[i];
-            if (!group) {
-                continue;
-            }
-            switch (group->subjectPermissions.present) {
-                case Vanetza_Security_SubjectPermissions_PR_explicit: {
-                    const auto& explicit_perms = group->subjectPermissions.choice.Explicit;
-                    for (int j = 0; j < explicit_perms.list.count; ++j) {
-                        if (explicit_perms.list.array[j]) {
-                            aids.push_back(explicit_perms.list.array[j]->psid);
-                        }
-                    }
-                    break;
-                }
-                case Vanetza_Security_SubjectPermissions_PR_all:
-                    return {};
-                default:
-                    break;
-            }
-        }
-    }
-    return aids;
-}
-
 ByteBuffer get_app_permissions(const asn1::EtsiTs103097Certificate& cert, ItsAid aid)
 {
     ByteBuffer perms;
@@ -701,6 +728,87 @@ void serialize(OutputArchive& ar, const Certificate& certificate)
 
 namespace
 {
+
+bool contains_permission(const Vanetza_Security_SequenceOfPsidSspRange_t& permissions, ItsAid aid)
+{
+    for (int i = 0; i < permissions.list.count; ++i) {
+        const auto* permission = permissions.list.array[i];
+        if (permission && permission->psid == aid) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool equal(const asn1::TwoDLocation& lhs, const asn1::TwoDLocation& rhs)
+{
+    return lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude;
+}
+
+bool equal(const asn1::RectangularRegion& lhs, const asn1::RectangularRegion& rhs)
+{
+    return equal(lhs.northWest, rhs.northWest) && equal(lhs.southEast, rhs.southEast);
+}
+
+bool equal(const asn1::SequenceOfRectangularRegion& lhs, const asn1::SequenceOfRectangularRegion& rhs)
+{
+    if (lhs.list.count != rhs.list.count) {
+        return false;
+    }
+
+    for (int i = 0; i < lhs.list.count; ++i) {
+        if (!lhs.list.array[i] || !rhs.list.array[i] || !equal(*lhs.list.array[i], *rhs.list.array[i])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool is_within(const asn1::GeographicRegion& inner, const asn1::CircularRegion& outer)
+{
+    if (inner.present != Vanetza_Security_GeographicRegion_PR_circularRegion) {
+        return false;
+    }
+
+    const auto& circle = inner.choice.circularRegion;
+    if (!is_valid(circle.center) || !is_valid(outer.center) || circle.radius < 0 || outer.radius < 0) {
+        return false;
+    }
+
+    PositionFix inner_center;
+    inner_center.latitude = convert_latitude(circle.center.latitude);
+    inner_center.longitude = convert_longitude(circle.center.longitude);
+    return distance(inner_center, outer.center) + circle.radius * units::si::meter <= outer.radius * units::si::meter;
+}
+
+bool is_within(const asn1::GeographicRegion& inner, const asn1::SequenceOfRectangularRegion& outer)
+{
+    return inner.present == Vanetza_Security_GeographicRegion_PR_rectangularRegion &&
+        equal(inner.choice.rectangularRegion, outer);
+}
+
+bool is_within(const asn1::GeographicRegion&, const asn1::PolygonalRegion&)
+{
+    return false;
+}
+
+bool is_within(const asn1::GeographicRegion& inner, const asn1::GeographicRegion& outer)
+{
+    switch (outer.present) {
+        case Vanetza_Security_GeographicRegion_PR_circularRegion:
+            return is_within(inner, outer.choice.circularRegion);
+        case Vanetza_Security_GeographicRegion_PR_rectangularRegion:
+            return is_within(inner, outer.choice.rectangularRegion);
+        case Vanetza_Security_GeographicRegion_PR_polygonalRegion:
+            return is_within(inner, outer.choice.polygonalRegion);
+        case Vanetza_Security_GeographicRegion_PR_NOTHING:
+            return true;
+        default:
+            return false;
+    }
+}
 
 bool copy_curve_point(PublicKey& to, const asn1::EccP256CurvePoint& from)
 {
