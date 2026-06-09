@@ -6,6 +6,7 @@
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/ssl.hpp>
+#include <ostream>
 #include <regex>
 
 namespace vanetza
@@ -16,6 +17,19 @@ namespace pki
 namespace asio = boost::asio;
 namespace beast = boost::beast;
 namespace ssl = boost::asio::ssl;
+
+std::ostream& operator<<(std::ostream& os, const HttpException& e)
+{
+    os << e.what();
+    if (const auto& response = e.response()) {
+        os << " (HTTP " << response->result_int();
+        if (!response->body().empty()) {
+            os << ": " << response->body();
+        }
+        os << ")";
+    }
+    return os;
+}
 
 HttpQuery HttpQuery::from_url(const std::string& url)
 {

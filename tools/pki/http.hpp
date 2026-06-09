@@ -2,8 +2,11 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <boost/beast/http.hpp>
+#include <boost/optional/optional.hpp>
+#include <iosfwd>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 namespace vanetza
 {
@@ -15,7 +18,20 @@ using HttpResponse = boost::beast::http::response<boost::beast::http::string_bod
 struct HttpException : public std::runtime_error
 {
     using std::runtime_error::runtime_error;
+
+    HttpException(const std::string& what, HttpResponse response) :
+        std::runtime_error(what), m_response(std::move(response))
+    {
+    }
+
+    // Server response associated with the failure, if any.
+    const boost::optional<HttpResponse>& response() const { return m_response; }
+
+private:
+    boost::optional<HttpResponse> m_response;
 };
+
+std::ostream& operator<<(std::ostream& os, const HttpException& e);
 
 struct HttpQuery
 {
