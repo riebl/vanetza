@@ -159,7 +159,7 @@ bool CertificateView::is_allowed_to_issue(ItsAid aid) const
         return false;
     }
 
-    if (const auto* seq = m_cert->toBeSigned.certIssuePermissions; seq) {
+    if (const auto* seq = m_cert->toBeSigned.certIssuePermissions) {
         for (int i = 0; i < seq->list.count; ++i) {
             const auto* group = seq->list.array[i];
             if (!group) {
@@ -169,10 +169,8 @@ bool CertificateView::is_allowed_to_issue(ItsAid aid) const
             const auto& subject_permissions = group->subjectPermissions;
             if (subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_all) {
                 return true;
-            } else if (
-                    subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_explicit &&
-                    contains_permission(subject_permissions.choice.Explicit, aid)) {
-                return true;
+            } else if (subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_explicit) {
+                return contains_permission(subject_permissions.choice.Explicit, aid);
             }
         }
     }
@@ -182,7 +180,7 @@ bool CertificateView::is_allowed_to_issue(ItsAid aid) const
 
 boost::optional<std::uint8_t> CertificateView::assurance_level() const
 {
-    if (!m_cert || !m_cert->toBeSigned.assuranceLevel || m_cert->toBeSigned.assuranceLevel->size == 0) {
+    if (!m_cert || !m_cert->toBeSigned.assuranceLevel || m_cert->toBeSigned.assuranceLevel->size < 1) {
         return boost::none;
     }
 
