@@ -169,8 +169,10 @@ bool CertificateView::is_allowed_to_issue(ItsAid aid) const
             const auto& subject_permissions = group->subjectPermissions;
             if (subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_all) {
                 return true;
-            } else if (subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_explicit) {
-                return contains_permission(subject_permissions.choice.Explicit, aid);
+            } else if (
+                    subject_permissions.present == Vanetza_Security_SubjectPermissions_PR_explicit &&
+                    contains_permission(subject_permissions.choice.Explicit, aid)) {
+                return true;
             }
         }
     }
