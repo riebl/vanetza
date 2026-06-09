@@ -60,6 +60,8 @@ public:
 
     void disable_time_checks(bool flag);
     void disable_location_checks(bool flag);
+    void disable_chain_consistency_checks(bool flag);
+    void disable_region_consistency_checks(bool flag);
 
 private:
     const Certificate* find_issuer_certificate(const CertificateView& certificate) const;
@@ -76,6 +78,8 @@ private:
     const TrustStore* m_trust_store = nullptr;
     bool m_disable_time_checks = false;
     bool m_disable_location_checks = false;
+    bool m_disable_chain_consistency_checks = false;
+    bool m_disable_region_consistency_checks = false;
 };
 
 class NullCertificateValidator : public CertificateValidator

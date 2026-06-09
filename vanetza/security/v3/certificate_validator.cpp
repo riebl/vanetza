@@ -143,6 +143,16 @@ void DefaultCertificateValidator::disable_location_checks(bool flag)
     m_disable_location_checks = flag;
 }
 
+void DefaultCertificateValidator::disable_chain_consistency_checks(bool flag)
+{
+    m_disable_chain_consistency_checks = flag;
+}
+
+void DefaultCertificateValidator::disable_region_consistency_checks(bool flag)
+{
+    m_disable_region_consistency_checks = flag;
+}
+
 const Certificate* DefaultCertificateValidator::find_issuer_certificate(const CertificateView& at_cert) const
 {
     if (m_issuer_lookup) {
@@ -185,6 +195,10 @@ bool DefaultCertificateValidator::is_chain_anchored(const CertificateView& signi
 
 bool DefaultCertificateValidator::chain_is_consistent(const CertificateView& signing_cert, ItsAid its_aid) const
 {
+    if (m_disable_chain_consistency_checks) {
+        return true;
+    }
+
     if (!m_issuer_lookup) {
         return true;
     }
@@ -239,7 +253,7 @@ bool DefaultCertificateValidator::check_consistency(
     return check_time_consistency(subject, issuer) &&
         check_permission_consistency(subject, issuer, its_aid) &&
         check_assurance_consistency(subject, issuer) &&
-        check_region_consistency(subject, issuer);
+        (m_disable_region_consistency_checks || check_region_consistency(subject, issuer));
 }
 
 } // namespace v3

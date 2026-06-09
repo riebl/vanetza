@@ -518,6 +518,22 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_assurance_wi
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 }
 
+TEST_F(DefaultCertificateValidatorTest, consistency_can_be_disabled)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert->toBeSigned.assuranceLevel = vanetza::asn1::allocate<Vanetza_Security_SubjectAssurance_t>();
+    const char assurance = 0x20;
+    OCTET_STRING_fromBuf(cert->toBeSigned.assuranceLevel, &assurance, sizeof(assurance));
+    cert_validator.disable_location_checks(true);
+
+    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+
+    cert_validator.disable_chain_consistency_checks(true);
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+}
+
 TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_region_outside_issuer_region)
 {
     Certificate aa = cert_provider.aa_certificate();
@@ -546,6 +562,11 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_region_outsi
     EXPECT_EQ(CertificateValidator::Verdict::Unknown,
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 
+    cert_validator.disable_region_consistency_checks(true);
+    EXPECT_EQ(CertificateValidator::Verdict::Valid,
+              cert_validator.valid_for_signing(cert, vanetza::aid::CA));
+
+    cert_validator.disable_region_consistency_checks(false);
     cert->toBeSigned.region->choice.circularRegion.radius = 100;
     EXPECT_EQ(CertificateValidator::Verdict::Valid,
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
