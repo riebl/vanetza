@@ -6,6 +6,7 @@
 #include "dc_command.hpp"
 #include "enrolment.hpp"
 #include "exception.hpp"
+#include "http.hpp"
 #include "openssl_security_module.hpp"
 #include "printing.hpp"
 #include "prune_command.hpp"
@@ -95,6 +96,9 @@ int main(int argc, char** argv)
         return 3;
     } catch (const DecodingFailure& e) {
         std::cerr << "Decoding failed: " << e.what() << "\n";
+        return 1;
+    } catch (const HttpException& e) {
+        std::cerr << "HTTP error: " << e << "\n";
         return 1;
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";

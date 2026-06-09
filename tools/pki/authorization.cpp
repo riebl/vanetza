@@ -263,7 +263,8 @@ void request_one_ticket(Context& ctx, const Certificate& ec, const AuthoritiesFr
     auto response = http_post(query, "application/x-its-request", encoded);
 
     if (response.result() != boost::beast::http::status::ok) {
-        throw HttpException("AA returned an unexpected HTTP status for the authorization request");
+        throw HttpException("AA returned an unexpected HTTP status for the authorization request",
+            std::move(response));
     } else if (response[boost::beast::http::field::content_type] != "application/x-its-response") {
         throw HttpException("expected application/x-its-response");
     }
