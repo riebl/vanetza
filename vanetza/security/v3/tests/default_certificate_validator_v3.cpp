@@ -466,7 +466,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_validity_out
     cert->toBeSigned.validityPeriod.start = v2::convert_time32(runtime.now() - std::chrono::hours(2));
     cert_validator.disable_location_checks(true);
 
-    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+    EXPECT_EQ(CertificateValidator::Verdict::InconsistentChain,
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 }
 
@@ -475,7 +475,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_permission_not_issue
     Certificate cert = cert_provider.generate_authorization_ticket();
     cert_validator.disable_location_checks(true);
 
-    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+    EXPECT_EQ(CertificateValidator::Verdict::InconsistentChain,
               cert_validator.valid_for_signing(cert, vanetza::aid::IPV6_ROUTING));
 }
 
@@ -514,7 +514,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_assurance_wi
     OCTET_STRING_fromBuf(cert->toBeSigned.assuranceLevel, &assurance, sizeof(assurance));
     cert_validator.disable_location_checks(true);
 
-    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+    EXPECT_EQ(CertificateValidator::Verdict::InconsistentChain,
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 }
 
@@ -526,7 +526,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_can_be_disabled)
     OCTET_STRING_fromBuf(cert->toBeSigned.assuranceLevel, &assurance, sizeof(assurance));
     cert_validator.disable_location_checks(true);
 
-    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+    EXPECT_EQ(CertificateValidator::Verdict::InconsistentChain,
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 
     cert_validator.disable_chain_consistency_checks(true);
@@ -559,7 +559,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_region_outsi
     cert->toBeSigned.region->choice.circularRegion.center.longitude = 84044170;
     cert->toBeSigned.region->choice.circularRegion.radius = 1000;
 
-    EXPECT_EQ(CertificateValidator::Verdict::Unknown,
+    EXPECT_EQ(CertificateValidator::Verdict::InconsistentChain,
               cert_validator.valid_for_signing(cert, vanetza::aid::CA));
 
     cert_validator.disable_region_consistency_checks(true);

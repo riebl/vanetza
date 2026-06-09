@@ -79,7 +79,7 @@ auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signi
     } else if (!is_chain_anchored(signing_cert)) {
         return Verdict::Untrusted;
     } else if (!chain_is_consistent(signing_cert, its_aid)) {
-        return Verdict::Unknown;
+        return Verdict::InconsistentChain;
     } else if (chain_is_revoked(signing_cert)) {
         return Verdict::Revoked;
     } else {

@@ -31,6 +31,7 @@ public:
         Expired,
         Revoked,
         Untrusted,
+        InconsistentChain,
         OutsideRegion,
         InsufficientPermission,
         Misconfiguration,
