@@ -1,10 +1,12 @@
 #include <vanetza/common/position_provider.hpp>
+#include <vanetza/common/position_fix.hpp>
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/issuer_lookup.hpp>
 #include <vanetza/security/v3/revocation_lookup.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
+#include <cstdint>
 
 
 namespace vanetza
@@ -13,6 +15,56 @@ namespace security
 {
 namespace v3
 {
+
+namespace
+{
+
+bool check_time_consistency(const CertificateView& subject, const CertificateView& issuer)
+{
+    const auto subject_time = subject.get_start_and_end_validity();
+    const auto issuer_time = issuer.get_start_and_end_validity();
+    return issuer_time.start_validity <= subject_time.start_validity &&
+        issuer_time.end_validity >= subject_time.end_validity;
+}
+
+bool check_permission_consistency(const CertificateView& subject, const CertificateView& issuer, ItsAid its_aid)
+{
+    if (subject.is_ca_certificate() && !subject.is_allowed_to_issue(its_aid)) {
+        return false;
+    } else if (subject.is_at_certificate() && !subject.valid_for_application(its_aid)) {
+        return false;
+    }
+
+    return issuer.is_allowed_to_issue(its_aid);
+}
+
+bool check_assurance_consistency(const CertificateView& subject, const CertificateView& issuer)
+{
+    const auto subject_assurance = subject.assurance_level();
+    const auto issuer_assurance = issuer.assurance_level();
+    if (!subject_assurance) {
+        return true;
+    } else if (!issuer_assurance) {
+        return false;
+    }
+
+    const auto subject_value = *subject_assurance;
+    const auto issuer_value = *issuer_assurance;
+    const std::uint8_t subject_level = (subject_value >> 5) & 0x07;
+    const std::uint8_t issuer_level = (issuer_value >> 5) & 0x07;
+    const std::uint8_t subject_confidence = (subject_value >> 2) & 0x07;
+    const std::uint8_t issuer_confidence = (issuer_value >> 2) & 0x07;
+
+    return subject_level < issuer_level ||
+        (subject_level == issuer_level && subject_confidence <= issuer_confidence);
+}
+
+bool check_region_consistency(const CertificateView& subject, const CertificateView& issuer)
+{
+    return subject.region_is_within(issuer);
+}
+
+} // namespace
 
 auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signing_cert, ItsAid its_aid) -> Verdict
 {
@@ -26,6 +78,8 @@ auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signi
         return Verdict::Expired;
     } else if (!is_chain_anchored(signing_cert)) {
         return Verdict::Untrusted;
+    } else if (!chain_is_consistent(signing_cert, its_aid)) {
+        return Verdict::InconsistentChain;
     } else if (chain_is_revoked(signing_cert)) {
         return Verdict::Revoked;
     } else {
@@ -89,6 +143,16 @@ void DefaultCertificateValidator::disable_location_checks(bool flag)
     m_disable_location_checks = flag;
 }
 
+void DefaultCertificateValidator::disable_chain_consistency_checks(bool flag)
+{
+    m_disable_chain_consistency_checks = flag;
+}
+
+void DefaultCertificateValidator::disable_region_consistency_checks(bool flag)
+{
+    m_disable_region_consistency_checks = flag;
+}
+
 const Certificate* DefaultCertificateValidator::find_issuer_certificate(const CertificateView& at_cert) const
 {
     if (m_issuer_lookup) {
@@ -129,6 +193,32 @@ bool DefaultCertificateValidator::is_chain_anchored(const CertificateView& signi
     return false;
 }
 
+bool DefaultCertificateValidator::chain_is_consistent(const CertificateView& signing_cert, ItsAid its_aid) const
+{
+    if (m_disable_chain_consistency_checks) {
+        return true;
+    }
+
+    if (!m_issuer_lookup) {
+        return true;
+    }
+
+    constexpr int max_chain_depth = 8;
+    const CertificateView* subject = &signing_cert;
+    for (int depth = 0; depth < max_chain_depth && !subject->issuer_is_self(); ++depth) {
+        const Certificate* issuer = find_issuer_certificate(*subject);
+        if (!issuer) {
+            return true;
+        }
+        if (!check_consistency(*subject, *issuer, its_aid)) {
+            return false;
+        }
+        subject = issuer;
+    }
+
+    return true;
+}
+
 bool DefaultCertificateValidator::chain_is_revoked(const CertificateView& signing_cert) const
 {
     if (!m_revocation_lookup || !m_issuer_lookup) {
@@ -155,6 +245,15 @@ bool DefaultCertificateValidator::chain_is_revoked(const CertificateView& signin
         cert = issuer;
     }
     return false;
+}
+
+bool DefaultCertificateValidator::check_consistency(
+    const CertificateView& subject, const CertificateView& issuer, ItsAid its_aid) const
+{
+    return check_time_consistency(subject, issuer) &&
+        check_permission_consistency(subject, issuer, its_aid) &&
+        check_assurance_consistency(subject, issuer) &&
+        (m_disable_region_consistency_checks || check_region_consistency(subject, issuer));
 }
 
 } // namespace v3

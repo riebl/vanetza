@@ -13,6 +13,7 @@
 #include <vanetza/security/v3/location_checker.hpp>
 #include <vanetza/security/v3/validity_restriction.hpp>
 #include <boost/optional/optional_fwd.hpp>
+#include <cstdint>
 #include <list>
 
 namespace vanetza
@@ -107,6 +108,33 @@ public:
      * \return true if certificate is valid for application
      */
     bool valid_for_application(ItsAid aid) const;
+
+    /**
+     * Check if certificate issue permissions allow issuing a given application.
+     *
+     * \param aid application to be checked
+     * \return true if certificate may issue certificates for application
+     */
+    bool is_allowed_to_issue(ItsAid aid) const;
+
+    /**
+     * Get subject assurance level encoded in this certificate.
+     *
+     * \return raw assurance level byte if present
+     */
+    boost::optional<std::uint8_t> assurance_level() const;
+
+    /**
+     * Check if this certificate's region restriction is within issuer's region restriction.
+     *
+     * If issuer has no region restriction, any subject region is accepted.
+     * Currently supports circular regions and exact rectangular-region equality;
+     * unsupported region combinations are rejected conservatively.
+     *
+     * \param issuer issuing certificate
+     * \return true if this certificate's region is contained in issuer's region
+     */
+    bool region_is_within(const CertificateView& issuer) const;
 
     /**
      * Check if certificate has a canonical format
