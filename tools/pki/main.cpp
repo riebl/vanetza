@@ -7,6 +7,7 @@
 #include "enrolment.hpp"
 #include "exception.hpp"
 #include "http.hpp"
+#include "key_command.hpp"
 #include "openssl_security_module.hpp"
 #include "printing.hpp"
 #include "prune_command.hpp"
@@ -75,6 +76,7 @@ int main(int argc, char** argv)
     app.add_subcommand(build_cpoc_command(config));
     app.add_subcommand(build_dc_command(config));
     app.add_subcommand(build_enrolment_command(config));
+    app.add_subcommand(build_key_command());
     app.add_subcommand(build_print_command());
     app.add_subcommand(build_prune_command(config));
     app.add_subcommand(build_station_command(config));

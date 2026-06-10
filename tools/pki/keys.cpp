@@ -76,6 +76,21 @@ PublicKey derive_public_key(const PrivateKey& priv)
     return make_public_key(ec_key.raw());
 }
 
+PrivateKey generate_private_key(KeyType type)
+{
+    OpenSslPointer<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl_nid(type)) };
+    openssl_result(EC_KEY_generate_key(ec_key.raw()), "EC_KEY_generate_key");
+    openssl_result(EC_KEY_check_key(ec_key.raw()), "generated EC_KEY is invalid");
+
+    const EC_GROUP* group = EC_KEY_get0_group(ec_key.raw());
+    const std::size_t key_len = BN_num_bytes(EC_GROUP_get0_order(group));
+
+    PrivateKey priv;
+    priv.type = type;
+    priv.key = make_buffer(EC_KEY_get0_private_key(ec_key.raw()), key_len);
+    return priv;
+}
+
 void set_verification_key(Vanetza_Security_PublicVerificationKey& dst, const PublicKey& key)
 {
     switch (key.type) {

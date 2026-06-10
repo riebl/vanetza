@@ -35,6 +35,7 @@ add_library(pki_library STATIC
     hashed_id8.cpp
     hexstring.cpp
     http.cpp
+    key_command.cpp
     keys.cpp
     openssl.cpp
     openssl_security_module.cpp

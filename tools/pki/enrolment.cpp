@@ -6,6 +6,7 @@
 #include "ea_response.hpp"
 #include "encrypted_data.hpp"
 #include "exception.hpp"
+#include "filesystem.hpp"
 #include "hexstring.hpp"
 #include "http.hpp"
 #include "pem.hpp"
@@ -16,8 +17,6 @@
 #include <CLI/ExtraValidators.hpp>
 #include <boost/algorithm/hex.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
-#include <fstream>
-#include <sstream>
 #include <stdexcept>
 
 namespace vanetza
@@ -71,10 +70,7 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
         if (keyfiles.size() != 1) {
             return false;
         }
-        std::ifstream ifs(keyfiles[0]);
-        std::stringstream buffer;
-        buffer << ifs.rdbuf();
-        auto key = read_pem_private_key(buffer.str());
+        auto key = parse_pem_private_key(read(keyfiles[0]));
         if (key) {
             ctx->bootstrap.private_key = *key;
             ctx->bootstrap.public_key = derive_public_key(*key);

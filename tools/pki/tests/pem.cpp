@@ -19,7 +19,7 @@ static const vanetza::ByteBuffer privKeyRaw = {
 
 TEST(ReadPemPrivateKey, valid_prime256v1)
 {
-    boost::optional<PrivateKey> key = read_pem_private_key(privKeyPem);
+    boost::optional<PrivateKey> key = parse_pem_private_key(privKeyPem);
     ASSERT_TRUE(key);
     EXPECT_EQ(KeyType::NistP256, key->type);
     EXPECT_EQ(privKeyRaw, key->key);
@@ -27,6 +27,19 @@ TEST(ReadPemPrivateKey, valid_prime256v1)
 
 TEST(ReadPemPrivateKey, invalid_pem)
 {
-    EXPECT_FALSE(read_pem_private_key("not a PEM"));
-    EXPECT_FALSE(read_pem_private_key(""));
+    EXPECT_FALSE(parse_pem_private_key("not a PEM"));
+    EXPECT_FALSE(parse_pem_private_key(""));
+}
+
+TEST(WritePemPrivateKey, roundtrip_generated)
+{
+    for (KeyType type : { KeyType::NistP256, KeyType::BrainpoolP256r1, KeyType::BrainpoolP384r1 }) {
+        PrivateKey generated = generate_private_key(type);
+        std::string pem = make_pem(generated);
+
+        boost::optional<PrivateKey> parsed = parse_pem_private_key(pem);
+        ASSERT_TRUE(parsed);
+        EXPECT_EQ(generated.type, parsed->type);
+        EXPECT_EQ(generated.key, parsed->key);
+    }
 }

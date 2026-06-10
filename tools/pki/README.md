@@ -53,6 +53,18 @@ Writes ~/.local/share/vanetza/pki/ctls/1B5CB4BEBE6FE9E9.ctl
 
 5. Perform initial enrolment at EA
 
+Initial enrolment needs a canonical (bootstrap) key pair.
+In a real deployment this key is provisioned by the station manufacturer.
+For testing you can generate one:
+
+`pki key generate --out ~/station_key.pem`
+
+> Wrote /home/user/station_key.pem \
+> Key type: BrainpoolP256r1 \
+> Canonical public key: 021234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF
+
+Use `--key-type` to pick a curve (`BrainpoolP256r1` (default), `NistP256`, `BrainpoolP384r1`) and `--force` to overwrite an existing file.
+
 `pki enrol init --canonical-id station_name --canonical-keyfile ~/station_key.pem`
 
 > Root CA 1B5CB4BEBE6FE9E9 \
