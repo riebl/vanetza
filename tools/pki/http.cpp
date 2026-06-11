@@ -3,9 +3,12 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/ssl.hpp>
+#include <boost/asio/steady_timer.hpp>
 #include <boost/beast/core/flat_buffer.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/ssl.hpp>
+#include <chrono>
+#include <functional>
 #include <ostream>
 #include <regex>
 
@@ -62,6 +65,162 @@ const std::string& HttpQuery::which_service() const
     }
 }
 
+namespace
+{
+
+// resolve and connect lifecycle of one address family taking part in a Happy Eyeballs race
+class Family
+{
+public:
+    explicit Family(asio::io_context& ctx) : m_socket(ctx) {}
+
+    bool resolved() const { return static_cast<bool>(m_addresses); }
+    bool connected() const { return m_error && !*m_error; }
+    bool failed() const { return m_error && *m_error; }
+    boost::system::error_code error() const { return m_error.value_or(boost::system::error_code {}); }
+
+    void resolve(asio::ip::tcp::resolver& resolver, const asio::ip::tcp& protocol,
+        const std::string& host, const std::string& service, const std::function<void()>& notify)
+    {
+        resolver.async_resolve(protocol, host, service,
+            [this, notify](boost::system::error_code ec, asio::ip::tcp::resolver::results_type results) {
+                if (ec) {
+                    m_error = ec;
+                } else {
+                    m_addresses = results;
+                }
+                notify();
+            });
+    }
+
+    void connect(const std::function<void()>& notify)
+    {
+        if (resolved() && !m_connecting && !m_error) {
+            m_connecting = true;
+            asio::async_connect(m_socket, *m_addresses,
+                [this, notify](boost::system::error_code ec, const asio::ip::tcp::endpoint&) {
+                    m_connecting = false;
+                    m_error = ec;
+                    notify();
+                });
+        }
+    }
+
+    // hand the connected socket over to another io_context
+    asio::ip::tcp::socket release(asio::io_context& io)
+    {
+        return asio::ip::tcp::socket { io, m_socket.local_endpoint().protocol(), m_socket.release() };
+    }
+
+private:
+    asio::ip::tcp::socket m_socket;
+    boost::optional<asio::ip::tcp::resolver::results_type> m_addresses;
+    boost::optional<boost::system::error_code> m_error;
+    bool m_connecting = false; // a connect attempt is in flight
+};
+
+// Happy Eyeballs (RFC 8305): race AAAA/A lookups and per-family connect attempts, preferring IPv6
+class HappyEyeballsRace
+{
+public:
+    // winning socket is adopted by the caller's io_context
+    static asio::ip::tcp::socket connect(asio::io_context& io, const std::string& host,
+        const std::string& service, std::chrono::milliseconds deadline)
+    {
+        HappyEyeballsRace race;
+        return race.run(host, service, deadline).release(io);
+    }
+
+private:
+    // run the race and return the winning family, throw when nobody wins
+    Family& run(const std::string& host, const std::string& service, std::chrono::milliseconds deadline)
+    {
+        timeout.expires_after(deadline);
+        timeout.async_wait([this](boost::system::error_code ec) {
+            if (!ec) {
+                race.stop();
+            }
+        });
+        v6.resolve(resolver, asio::ip::tcp::v6(), host, service, [this]() { on_v6_resolve_done(); });
+        v4.resolve(resolver, asio::ip::tcp::v4(), host, service, [this]() { on_v4_resolve_done(); });
+        race.run();
+
+        if (v6.connected() || v4.connected()) {
+            return v6.connected() ? v6 : v4;
+        } else if (!v6.failed() || !v4.failed()) {
+            throw HttpException("connect timed out");
+        } else if (v6.resolved() || v4.resolved()) {
+            throw HttpException("connect failed: " + (v6.resolved() ? v6.error() : v4.error()).message());
+        } else {
+            throw HttpException("resolve failed: " + (v6.error() ? v6.error() : v4.error()).message());
+        }
+    }
+
+    void on_v6_resolve_done()
+    {
+        if (v6.resolved()) {
+            v6.connect([this]() { on_v6_connect_done(); });
+            open_v4_gate(stagger_delay); // IPv4 may compete once the attempt delay elapsed
+        } else {
+            open_v4_gate(std::chrono::milliseconds::zero()); // no AAAA answer, IPv4 goes at once
+        }
+        settle();
+    }
+
+    void on_v4_resolve_done()
+    {
+        if (is_v4_gate_open()) {
+            v4.connect([this]() { settle(); });
+        } else if (v4.resolved() && !v6.resolved()) {
+            open_v4_gate(resolution_delay); // pending AAAA answer gets a short head start
+        }
+        settle();
+    }
+
+    void on_v6_connect_done()
+    {
+        if (v6.failed()) {
+            open_v4_gate(std::chrono::milliseconds::zero()); // IPv6 lost, IPv4 takes over
+        }
+        settle();
+    }
+
+    void open_v4_gate(std::chrono::milliseconds delay)
+    {
+        v4_gate.expires_after(delay);
+        v4_gate.async_wait([this](boost::system::error_code ec) {
+            if (!ec) {
+                v4.connect([this]() { settle(); });
+            }
+        });
+    }
+
+    bool is_v4_gate_open() const
+    {
+        return v4_gate.expiry() <= asio::steady_timer::clock_type::now();
+    }
+
+    void settle()
+    {
+        // stop the race once a connection is established or both families have failed
+        if (v6.connected() || v4.connected() || (v6.failed() && v4.failed())) {
+            race.stop();
+        }
+    }
+
+    static constexpr std::chrono::milliseconds resolution_delay { 50 }; // RFC 8305 head start for the AAAA answer
+    static constexpr std::chrono::milliseconds stagger_delay { 200 }; // connection attempt delay
+
+    asio::io_context race;
+    asio::ip::tcp::resolver resolver { race };
+    Family v6 { race };
+    Family v4 { race };
+    asio::steady_timer v4_gate { race, asio::steady_timer::time_point::max() }; // gate starts closed
+    asio::steady_timer timeout { race };
+};
+
+} // namespace
+
 static bool should_follow(int status)
 {
     switch (status) {
@@ -80,17 +239,15 @@ template<typename T>
 HttpResponse query_http(const HttpQuery& query, const beast::http::request<T>& request, asio::io_context& io,
     ssl::context& ssl)
 {
-    asio::ip::tcp::resolver resolver(io);
-    auto resolved = resolver.resolve(query.host, query.which_service());
-
+    constexpr std::chrono::seconds connect_deadline { 10 };
     HttpResponse response;
     beast::flat_buffer buffer;
+    asio::ip::tcp::socket socket = HappyEyeballsRace::connect(io, query.host, query.which_service(), connect_deadline);
 
     if (query.secure) {
-        ssl::stream<asio::ip::tcp::socket> stream(io, ssl);
+        ssl::stream<asio::ip::tcp::socket> stream(std::move(socket), ssl);
         SSL_set_tlsext_host_name(stream.native_handle(), query.host.c_str());
 
-        asio::connect(stream.lowest_layer(), resolved);
         stream.lowest_layer().set_option(asio::ip::tcp::no_delay(true));
         stream.handshake(ssl::stream_base::client);
 
@@ -101,8 +258,6 @@ HttpResponse query_http(const HttpQuery& query, const beast::http::request<T>& r
             // could log error in verbose mode
         }
     } else {
-        asio::ip::tcp::socket socket(io);
-        asio::connect(socket, resolved);
         beast::http::write(socket, request);
         beast::http::read(socket, buffer, response);
     }
