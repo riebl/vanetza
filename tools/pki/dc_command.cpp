@@ -1,4 +1,5 @@
 #include "dc_command.hpp"
+#include "certificate_trust_list.hpp"
 #include "distribution_centre.hpp"
 #include "exception.hpp"
 #include "hashed_id8_validator.hpp"
@@ -79,6 +80,11 @@ void fetch_ctl(Context& ctx, CLI::Option* hid8_opt, CLI::Option* dry_flag)
                 } else {
                     ctx.cfg.trust_lists->store(*ctl);
                     std::cout << "CTL is valid. Added to local trust list storage.\n";
+                    // Materialize the AA/EA certs embedded in the validated CTL
+                    CertificateExportVisitor exporter(ctx.cfg.authorization_authorities, ctx.cfg.enrolment_authorities);
+                    ctl->visit_rca_ctl(exporter);
+                    std::cout << "Exported " << exporter.exported_aa_certificates() << " AA and "
+                        << exporter.exported_ea_certificates() << " EA certificate(s).\n";
                 }
             } else {
                 std::cout << "CTL cannot be trusted.\n";

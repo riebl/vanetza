@@ -18,6 +18,7 @@ namespace pki
 
 // forward declarations
 class Certificate;
+class CertificateStorage;
 class SecurityModule;
 class TrustListStorage;
 
@@ -78,6 +79,31 @@ public:
 
 private:
     SecurityModule& m_security;
+};
+
+/**
+ * \brief Exports the AA/EA certificates embedded in an RCA CTL to standalone storage.
+ *
+ * Run after a CTL has been validated and stored so downstream consumers (e.g. a
+ * security stack) can load issuer certificates as plain cert files without
+ * having to parse CTLs themselves.
+ */
+class CertificateExportVisitor : public CtlVisitor
+{
+public:
+    CertificateExportVisitor(std::shared_ptr<CertificateStorage> aa, std::shared_ptr<CertificateStorage> ea);
+
+    void add_authorization_authority(const Vanetza_Security_AaEntry_t&) override;
+    void add_enrolment_authority(const Vanetza_Security_EaEntry_t&) override;
+
+    std::size_t exported_aa_certificates() const { return m_exported_aa; }
+    std::size_t exported_ea_certificates() const { return m_exported_ea; }
+
+private:
+    std::shared_ptr<CertificateStorage> m_aa;
+    std::shared_ptr<CertificateStorage> m_ea;
+    std::size_t m_exported_aa = 0;
+    std::size_t m_exported_ea = 0;
 };
 
 class CertificateTrustList

@@ -1,6 +1,7 @@
 #include "certificate_trust_list.hpp"
 #include "asn1.hpp"
 #include "certificate.hpp"
+#include "certificate_storage.hpp"
 #include "exception.hpp"
 #include "filesystem.hpp"
 #include "hexstring.hpp"
@@ -457,6 +458,28 @@ void CtlListingVisitor::add_enrolment_authority(const Vanetza_Security_EaEntry_t
     std::cout << "- EA: " << to_string(ea.aaAccessPoint) << " [AA]\n";
     if (ea.itsAccessPoint) {
         std::cout << "- EA: " << to_string(*ea.itsAccessPoint) << " [ITS]\n";
+    }
+}
+
+CertificateExportVisitor::CertificateExportVisitor(
+    std::shared_ptr<CertificateStorage> aa, std::shared_ptr<CertificateStorage> ea)
+    : m_aa(std::move(aa)), m_ea(std::move(ea))
+{
+}
+
+void CertificateExportVisitor::add_authorization_authority(const Vanetza_Security_AaEntry_t& entry)
+{
+    if (m_aa) {
+        m_aa->store(Certificate(entry.aaCertificate));
+        ++m_exported_aa;
+    }
+}
+
+void CertificateExportVisitor::add_enrolment_authority(const Vanetza_Security_EaEntry_t& entry)
+{
+    if (m_ea) {
+        m_ea->store(Certificate(entry.eaCertificate));
+        ++m_exported_ea;
     }
 }
 

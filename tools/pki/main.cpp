@@ -38,6 +38,10 @@ int main(int argc, char** argv)
             std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".ec");
         config.tickets = std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".at");
         config.tlm = std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".tlm");
+        config.authorization_authorities =
+            std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".aa");
+        config.enrolment_authorities =
+            std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".ea");
         config.trust_lists = std::make_shared<TrustListFilesystemStorage>(config.security, config.data_path / "ctls");
         config.crl_store = std::make_shared<CrlFilesystemStore>(config.security, config.data_path / "crls");
         config.station = std::make_shared<StationConfigurationFilesystem>(config.data_path);

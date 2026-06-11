@@ -27,6 +27,8 @@ struct MainConfig
     std::shared_ptr<CertificateStorage> enrolment_credentials; // station's EC certificates
     std::shared_ptr<CertificateStorage> tickets; // station's authorization tickets
     std::shared_ptr<CertificateStorage> tlm; // trust list manager certificates
+    std::shared_ptr<CertificateStorage> authorization_authorities; // AA certs extracted from CTLs
+    std::shared_ptr<CertificateStorage> enrolment_authorities; // EA certs extracted from CTLs
     std::shared_ptr<CredentialStorage> credentials; // private keys
     std::shared_ptr<TrustListStorage> trust_lists;
     std::shared_ptr<CrlFilesystemStore> crl_store; // certificate revocation lists
