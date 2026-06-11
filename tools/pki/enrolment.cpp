@@ -33,7 +33,17 @@ struct Context
     {
     }
 
+    const std::string& url(const EnrolmentAuthority& ea) const
+    {
+        if (!url_override.empty()) {
+            return url_override;
+        }
+        // Some PKIs have EA entry which does not have ITS access point
+        return ea.its_access_point.empty() ? ea.aa_access_point : ea.its_access_point;
+    }
+
     const MainConfig& cfg;
+    std::string url_override;
     std::function<void()> action;
     bool forced = false;
     KeyType key_type = KeyType::BrainpoolP256r1;
@@ -65,6 +75,7 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
     auto ctx = std::make_shared<Context>(cfg);
     auto app = std::make_shared<CLI::App>("enrolment of ITS station at PKI", "enrolment");
     app->alias("enrol");
+    app->add_option("--url", ctx->url_override, "override the Enrolment Authority URL");
 
     CLI::callback_t canonical_keyfile_cb = [ctx](const CLI::results_t& keyfiles) -> bool {
         if (keyfiles.size() != 1) {
@@ -82,6 +93,7 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
 
     auto initial = app->add_subcommand("initial", "enrol with initial credentials (bootstrap)");
     initial->alias("init");
+    initial->fallthrough();
     initial->add_flag("--force", ctx->forced, "enforce initial enrolment");
     initial->add_option("--canonical-id", ctx->bootstrap.identifier, "canonical identifier")->required();
     initial->add_option("--canonical-keyfile", canonical_keyfile_cb, "canonical key (PEM encoded file)")
@@ -110,6 +122,7 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
 
     auto renewal = app->add_subcommand("renewal", "renew enrolment credential (re-keying)");
     renewal->alias("renew");
+    renewal->fallthrough();
     renewal->add_option("--key-type", ctx->key_type, "type of generated verification key")
         ->default_val(KeyType::BrainpoolP256r1)
         ->capture_default_str()
@@ -201,8 +214,7 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
 
     EncryptedData encrypted_data = build_enrolment_request(*ctx.cfg.security, params, ea.certificate);
 
-    // Some PKIs have EA entry which does not have ITS access point
-    auto ea_url = ea.its_access_point.empty() ? ea.aa_access_point : ea.its_access_point;
+    const std::string& ea_url = ctx.url(ea);
     std::cout << "Enroling at EA URL: " << ea_url << "\n";
     auto query = HttpQuery::from_url(ea_url);
     auto encoded_encrypted_data = encrypted_data.encode();
