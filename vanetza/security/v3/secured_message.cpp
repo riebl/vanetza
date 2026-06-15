@@ -459,43 +459,40 @@ void SecuredMessage::set_aes_ccm_ciphertext(const ByteBuffer &ccm_ciphertext, co
 }
 
 void SecuredMessage::set_cert_recip_info(const HashedId8& recipient_id,
-                                         const KeyType curve_type,
                                          const std::array<uint8_t, 16>& ecies_ciphertext,
                                          const std::array<uint8_t, 16>& ecies_tag,
-                                         const ecdsa256::PublicKey& ecies_pub_key)
+                                         const PublicKey& ecies_pub_key)
 {
     assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData);
 
-    asn1::RecipientInfo *cert_recip_info = asn1::allocate<asn1::RecipientInfo>();
-    CHOICE_variant_set_presence(&asn_DEF_Vanetza_Security_RecipientInfo, cert_recip_info, Vanetza_Security_RecipientInfo_PR_certRecipInfo);
+    // own the RecipientInfo until it is handed to the message (exception safety)
+    auto cert_recip_info = asn1::make_unique<asn1::RecipientInfo>();
+    CHOICE_variant_set_presence(&asn_DEF_Vanetza_Security_RecipientInfo, cert_recip_info.get(), Vanetza_Security_RecipientInfo_PR_certRecipInfo);
 
     asn1::PKRecipientInfo &pk_recip_info = cert_recip_info->choice.certRecipInfo;
     // Set recipient certificate digest
     OCTET_STRING_fromBuf(&pk_recip_info.recipientId, reinterpret_cast<const char *>(recipient_id.data()), recipient_id.size());
 
     asn1::EncryptedDataEncryptionKey &enc_data_enc_key = pk_recip_info.encKey;
-    asn1::EciesP256EncryptedKey *ecies_enc_key_ptr;
-    if (curve_type == KeyType::NistP256) {
+    asn1::EciesP256EncryptedKey *ecies_enc_key = nullptr;
+    if (ecies_pub_key.type == KeyType::NistP256) {
         enc_data_enc_key.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesNistP256;
-        ecies_enc_key_ptr = &enc_data_enc_key.choice.eciesNistP256;
-    } else if (curve_type == KeyType::BrainpoolP256r1) {
+        ecies_enc_key = &enc_data_enc_key.choice.eciesNistP256;
+    } else if (ecies_pub_key.type == KeyType::BrainpoolP256r1) {
         enc_data_enc_key.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesBrainpoolP256r1;
-        ecies_enc_key_ptr = &enc_data_enc_key.choice.eciesBrainpoolP256r1;
+        ecies_enc_key = &enc_data_enc_key.choice.eciesBrainpoolP256r1;
     } else {
         throw std::invalid_argument("Unsupported EC curve");
     }
 
-    asn1::EciesP256EncryptedKey &ecies_enc_key = *ecies_enc_key_ptr;
     // Set ECIES ciphertext and tag
-    OCTET_STRING_fromBuf(&ecies_enc_key.c, reinterpret_cast<const char *>(ecies_ciphertext.data()), ecies_ciphertext.size());
-    OCTET_STRING_fromBuf(&ecies_enc_key.t, reinterpret_cast<const char *>(ecies_tag.data()), ecies_tag.size());
+    OCTET_STRING_fromBuf(&ecies_enc_key->c, reinterpret_cast<const char *>(ecies_ciphertext.data()), ecies_ciphertext.size());
+    OCTET_STRING_fromBuf(&ecies_enc_key->t, reinterpret_cast<const char *>(ecies_tag.data()), ecies_tag.size());
 
     // Set ECIES ephemeral public key
-    CHOICE_variant_set_presence(&asn_DEF_Vanetza_Security_EccP256CurvePoint, &ecies_enc_key.v, Vanetza_Security_EccP256CurvePoint_PR_uncompressedP256);
-    OCTET_STRING_fromBuf(&ecies_enc_key.v.choice.uncompressedP256.x, reinterpret_cast<const char *>(ecies_pub_key.x.data()), ecies_pub_key.x.size());
-    OCTET_STRING_fromBuf(&ecies_enc_key.v.choice.uncompressedP256.y, reinterpret_cast<const char *>(ecies_pub_key.y.data()), ecies_pub_key.y.size());
+    ecies_enc_key->v = to_asn1(make_ecc_point(ecies_pub_key));
 
-    ASN_SEQUENCE_ADD(&m_struct->content->choice.encryptedData.recipients.list, cert_recip_info);
+    ASN_SEQUENCE_ADD(&m_struct->content->choice.encryptedData.recipients.list, cert_recip_info.release());
 }
 
 bool SecuredMessage::check_psk_match(const std::array<uint8_t, 16>& psk) const

@@ -8,6 +8,7 @@
 #include <vanetza/net/packet_variant.hpp>
 #include <vanetza/security/hash_algorithm.hpp>
 #include <vanetza/security/hashed_id.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <vanetza/security/v3/asn1_types.hpp>
 #include <vanetza/security/v3/certificate.hpp>
@@ -67,10 +68,9 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Data>
     void get_aes_ccm_ciphertext(ByteBuffer& ccm_ciphertext, std::array<uint8_t, 12>& nonce) const;
     void set_aes_ccm_ciphertext(const ByteBuffer& ccm_ciphertext, const std::array<uint8_t, 12>& nonce);
     void set_cert_recip_info(const HashedId8& recipient_id,
-                             const KeyType curve_type,
                              const std::array<uint8_t, 16>& ecies_ciphertext,
                              const std::array<uint8_t, 16>& ecies_tag,
-                             const ecdsa256::PublicKey& ecies_pub_key);
+                             const PublicKey& ecies_pub_key);
     bool check_psk_match(const std::array<uint8_t, 16>& psk) const;
 };
 
