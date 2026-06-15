@@ -63,6 +63,13 @@ std::size_t get_length(const EccPoint& ecc_point);
 ByteBuffer convert_for_signing(const EccPoint& ecc_point);
 
 /**
+ * \brief Convert a public key into an ECC point, preserving its compression
+ * \param public_key public key (uncompressed or compressed)
+ * \return ECC point matching the key's own point format
+ */
+EccPoint make_ecc_point(const PublicKey& public_key);
+
+/**
  * \brief Compressed ECC point from public key
  * \param public_key
  * \return compressed ECC point

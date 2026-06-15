@@ -3,6 +3,7 @@
 #include <vanetza/security/public_key.hpp>
 #include <boost/variant/apply_visitor.hpp>
 #include <boost/variant/static_visitor.hpp>
+#include <stdexcept>
 
 namespace vanetza
 {
@@ -72,6 +73,20 @@ EccPoint compress_public_key(const PublicKey& public_key)
         default:
             return Compressed_Lsb_Y_0 {};
     }
+}
+
+EccPoint make_ecc_point(const PublicKey& public_key)
+{
+    switch (public_key.compression)
+    {
+        case KeyCompression::NoCompression:
+            return Uncompressed { public_key.x, public_key.y };
+        case KeyCompression::Y0:
+            return Compressed_Lsb_Y_0 { public_key.x };
+        case KeyCompression::Y1:
+            return Compressed_Lsb_Y_1 { public_key.x };
+    }
+    throw std::invalid_argument("public key has an unknown point compression");
 }
 
 EccPoint compress_public_key(const ecdsa256::PublicKey& public_key)
