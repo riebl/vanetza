@@ -418,5 +418,27 @@ BackendCryptoPP::Ecdsa256::PrivateKey BackendCryptoPP::internal_private_key(cons
     return key;
 }
 
+namespace cryptopp
+{
+
+PublicKey derive_public_key(const PrivateKey& private_key)
+{
+    InternalPrivateKey priv = convert_private_key(private_key);
+    InternalPublicKey pub;
+    priv.MakePublicKey(pub);
+    const auto& element = pub.GetPublicElement();
+
+    PublicKey public_key;
+    public_key.type = private_key.type;
+    public_key.compression = KeyCompression::NoCompression;
+    public_key.x.resize(key_length(private_key.type));
+    public_key.y.resize(key_length(private_key.type));
+    element.x.Encode(public_key.x.data(), public_key.x.size());
+    element.y.Encode(public_key.y.data(), public_key.y.size());
+    return public_key;
+}
+
+} // namespace cryptopp
+
 } // namespace security
 } // namespace vanetza

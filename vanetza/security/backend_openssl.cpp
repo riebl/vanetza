@@ -336,5 +336,35 @@ openssl::Point BackendOpenSsl::internal_ec_point(const PublicKey& generic) const
     return point;
 }
 
+namespace openssl
+{
+
+PublicKey derive_public_key(const PrivateKey& private_key)
+{
+    Key ec_key(openssl_nid(private_key.type));
+    BigNumber prv(private_key.key);
+    EC_KEY_set_private_key(ec_key, prv);
+
+    const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+    Point pub(group);
+    BigNumberContext ctx;
+    check(EC_POINT_mul(group, pub, prv, nullptr, nullptr, ctx));
+
+    BigNumber x;
+    BigNumber y;
+    EC_POINT_get_affine_coordinates(group, pub, x, y, ctx);
+
+    PublicKey public_key;
+    public_key.type = private_key.type;
+    public_key.compression = KeyCompression::NoCompression;
+    public_key.x.resize(key_length(private_key.type));
+    public_key.y.resize(key_length(private_key.type));
+    BN_bn2binpad(x, public_key.x.data(), public_key.x.size());
+    BN_bn2binpad(y, public_key.y.data(), public_key.y.size());
+    return public_key;
+}
+
+} // namespace openssl
+
 } // namespace security
 } // namespace vanetza

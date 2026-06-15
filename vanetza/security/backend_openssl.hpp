@@ -68,6 +68,12 @@ private:
     openssl::Point internal_ec_point(const PublicKey&) const;
 };
 
+namespace openssl
+{
+/// Derive the public key from a private key (pub = priv * G), on the key's own curve.
+PublicKey derive_public_key(const PrivateKey& private_key);
+} // namespace openssl
+
 } // namespace security
 } // namespace vanetza
 

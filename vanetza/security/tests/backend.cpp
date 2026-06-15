@@ -1,4 +1,10 @@
 #include <vanetza/security/backend.hpp>
+#ifdef VANETZA_WITH_OPENSSL
+#include <vanetza/security/backend_openssl.hpp>
+#endif
+#ifdef VANETZA_WITH_CRYPTOPP
+#include <vanetza/security/backend_cryptopp.hpp>
+#endif
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <list>
@@ -148,6 +154,48 @@ TEST_P(BackendTest, verify_brainpoolp384r1)
     false_digest[0] ^= 0x01;
     EXPECT_FALSE(backend->verify_digest(public_key, false_digest, sig));
 }
+
+#if defined VANETZA_WITH_OPENSSL || defined VANETZA_WITH_CRYPTOPP
+namespace
+{
+
+// Check that every built backend derives the known public key from the private key.
+void check_derive_public_key(KeyType type, const char* priv_hex, const char* x_hex, const char* y_hex)
+{
+    PrivateKey priv;
+    priv.type = type;
+    priv.key = buffer_from_hexstring(priv_hex);
+    const ByteBuffer x = buffer_from_hexstring(x_hex);
+    const ByteBuffer y = buffer_from_hexstring(y_hex);
+
+#ifdef VANETZA_WITH_OPENSSL
+    EXPECT_EQ(openssl::derive_public_key(priv).x, x);
+    EXPECT_EQ(openssl::derive_public_key(priv).y, y);
+#endif
+#ifdef VANETZA_WITH_CRYPTOPP
+    EXPECT_EQ(cryptopp::derive_public_key(priv).x, x);
+    EXPECT_EQ(cryptopp::derive_public_key(priv).y, y);
+#endif
+}
+
+} // namespace
+
+TEST(Backend, derive_public_key_nistp256)
+{
+    check_derive_public_key(KeyType::NistP256,
+        "f4ce0e4b48829aae85abd2124a2574dba44388eea94ebd373f9203ad39719a30",
+        "8e65e0ab7d4cd66860be693e29bf747fe796ebfe3942416b1f9c7ecf7fdb5797",
+        "49ce27c4acfc53c34867420a35b999e7deb3aeabec388f0d08d7fe0edf54ba62");
+}
+
+TEST(Backend, derive_public_key_brainpoolp384r1)
+{
+    check_derive_public_key(KeyType::BrainpoolP384r1,
+        "29267526c4511103f094f4d9ef1e8a57e2e6429642188939b756fe6738db49744363ea4081601e5acebe091d258bcedd",
+        "271dd92e47814e1f6b39c29488a80a720ae18153597380f41b2079cca4d92373b058850af280e920b10993bf925bdc4a",
+        "388b971cb0ad878842de6825e5f1a6e359c1c4cddd65593781af6179fa743c21a056577de9cca2631e107edc28dc2ef7");
+}
+#endif /* VANETZA_WITH_OPENSSL || VANETZA_WITH_CRYPTOPP */
 
 std::list<std::string> available_backends()
 {

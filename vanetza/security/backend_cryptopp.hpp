@@ -64,6 +64,12 @@ private:
     CryptoPP::AutoSeededRandomPool m_prng;
 };
 
+namespace cryptopp
+{
+/// Derive the public key from a private key (pub = priv * G), on the key's own curve.
+PublicKey derive_public_key(const PrivateKey& private_key);
+} // namespace cryptopp
+
 } // namespace security
 } // namespace vanetza
 
