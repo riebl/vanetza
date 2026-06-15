@@ -4,7 +4,6 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/factory.hpp>
 #include <vanetza/security/ecdsa256.hpp>
-#include <vanetza/security/ecdsa_signature.hpp>
 #include <vanetza/security/hash_algorithm.hpp>
 #include <vanetza/security/private_key.hpp>
 #include <vanetza/security/public_key.hpp>
