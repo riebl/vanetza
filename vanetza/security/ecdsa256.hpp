@@ -13,6 +13,7 @@ namespace security
 // forward declaration
 struct Uncompressed;
 
+// do not use ecdsa256 for new v3 code, only for legacy v2 security!
 namespace ecdsa256
 {
 
