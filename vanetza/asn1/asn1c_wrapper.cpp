@@ -47,6 +47,13 @@ void free(asn_TYPE_descriptor_t& td, void* t)
     }
 }
 
+void deleter::operator()(void* ptr) const
+{
+    if (descriptor && ptr) {
+        free(*descriptor, ptr);
+    }
+}
+
 void* copy(asn_TYPE_descriptor_t& td, const void* original)
 {
     void* copy = nullptr;

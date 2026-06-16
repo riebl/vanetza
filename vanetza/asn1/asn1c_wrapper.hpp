@@ -3,8 +3,10 @@
 
 #include <vanetza/asn1/support/asn_system.h>
 #include <vanetza/asn1/support/constr_TYPE.h>
+#include <vanetza/asn1/type_traits.hpp>
 #include <vanetza/common/byte_buffer.hpp>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -37,6 +39,36 @@ template<class T>
 T* allocate()
 {
     return static_cast<T*>(allocate(sizeof(T)));
+}
+
+/// Deleter freeing an asn1c struct through its ASN.1 type descriptor.
+struct deleter
+{
+    asn_TYPE_descriptor_t* descriptor = nullptr;
+
+    void operator()(void* ptr) const;
+};
+
+/**
+ * Allocate an asn1c struct owned by a unique_ptr that deep-frees it via its descriptor.
+ * \param descriptor ASN.1 type descriptor matching T
+ * \return owning unique_ptr
+ */
+template<class T>
+std::unique_ptr<T, deleter> make_unique(asn_TYPE_descriptor_t& descriptor)
+{
+    return std::unique_ptr<T, deleter> { allocate<T>(), deleter { &descriptor } };
+}
+
+/**
+ * Allocate an asn1c struct owned by a unique_ptr, taking the type descriptor
+ * from the asn1_type_traits specialization of T.
+ * \return owning unique_ptr
+ */
+template<class T>
+std::unique_ptr<T, deleter> make_unique()
+{
+    return make_unique<T>(asn1_type_traits<T>::descriptor());
 }
 
 template<class T>
