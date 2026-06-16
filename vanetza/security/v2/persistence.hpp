@@ -4,6 +4,7 @@
 #include <vanetza/security/ecdsa256.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/public_key.hpp>
+#include <iosfwd>
 
 namespace vanetza
 {
@@ -18,6 +19,14 @@ namespace v2
  * \return loaded key
  */
 ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path);
+
+/**
+ * \brief Save a private key pair to a stream in PKCS#8 DER format (secp256r1)
+ * \param os destination stream
+ * \param key_pair key pair to be stored
+ * \return true if successfully written
+ */
+bool save_private_key_pkcs8_der(std::ostream& os, const ecdsa256::KeyPair& key_pair);
 
 /**
  * \brief Loads a public key from a file

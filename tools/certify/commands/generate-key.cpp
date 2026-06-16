@@ -2,9 +2,8 @@
 #include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
 #include <vanetza/security/backend.hpp>
-#include <vanetza/security/persistence.hpp>
+#include <vanetza/security/v2/persistence.hpp>
 
 namespace po = boost::program_options;
 using namespace vanetza::security;
@@ -50,7 +49,7 @@ int GenerateKeyCommand::execute()
 
     std::cout << "Writing key to '" << output << "'... ";
     std::ofstream ofs(output, std::ios::binary);
-    save_private_key_pkcs8_der(ofs, key_pair);
+    v2::save_private_key_pkcs8_der(ofs, key_pair);
     std::cout << "OK" << std::endl;
 
     return 0;

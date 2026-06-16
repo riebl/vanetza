@@ -1,6 +1,7 @@
 #include "security.hpp"
 #include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
+#include <vanetza/security/persistence.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include "vanetza/security/v2/certificate_provider.hpp"
@@ -175,14 +176,9 @@ std::unique_ptr<security::v3::CertificateProvider>
 load_v3_certificates(const std::string& cert_path, const std::string& cert_key_path, const std::vector<std::string> cert_chain_path)
 {
     auto authorization_ticket = security::v3::load_certificate_from_file(cert_path);
-    auto authorization_ticket_key = security::v3::load_private_key_from_file(cert_key_path);
+    auto authorization_ticket_key = security::load_private_key_from_pem_file(cert_key_path);
 
-    security::PrivateKey priv_key;
-    priv_key.type = authorization_ticket.get_verification_key_type();
-    std::copy(authorization_ticket_key.private_key.key.begin(), authorization_ticket_key.private_key.key.end(),
-        std::back_inserter(priv_key.key));
-
-    auto provider = std::make_unique<security::v3::StaticCertificateProvider>(authorization_ticket, priv_key);
+    auto provider = std::make_unique<security::v3::StaticCertificateProvider>(authorization_ticket, authorization_ticket_key);
     for (auto& chain_path : cert_chain_path) {
         auto chain_certificate = security::v3::load_certificate_from_file(chain_path);
         provider->cache().store(chain_certificate);

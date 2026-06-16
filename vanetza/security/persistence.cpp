@@ -1,4 +1,5 @@
 #include <vanetza/security/persistence.hpp>
+#include <vanetza/security/key_type.hpp>
 #include <fstream>
 #include <stdexcept>
 
@@ -6,6 +7,7 @@
 #include <vanetza/security/openssl_wrapper.hpp>
 #include <openssl/bn.h>
 #include <openssl/ec.h>
+#include <openssl/objects.h>
 #include <openssl/pem.h>
 #endif
 
@@ -13,7 +15,11 @@
 #include <cryptopp/base64.h>
 #include <cryptopp/eccrypto.h>
 #include <cryptopp/files.h>
+#include <cryptopp/integer.h>
+#include <cryptopp/oids.h>
 #include <cryptopp/osrng.h>
+#include <cryptopp/queue.h>
+#include <cryptopp/sha.h>
 #endif
 
 namespace vanetza
@@ -25,62 +31,73 @@ namespace security
 namespace
 {
 
-ecdsa256::KeyPair extract_key_pair(openssl::EvpKey& pkey)
+KeyType key_type_from_nid(int nid)
+{
+    switch (nid) {
+        case NID_X9_62_prime256v1:
+            return KeyType::NistP256;
+        case NID_brainpoolP256r1:
+            return KeyType::BrainpoolP256r1;
+        case NID_brainpoolP384r1:
+            return KeyType::BrainpoolP384r1;
+        default:
+            return KeyType::Unspecified;
+    }
+}
+
+PrivateKey extract_private_key(openssl::EvpKey& pkey)
 {
     openssl::Key ec_key(EVP_PKEY_get1_EC_KEY(pkey));
     if (!ec_key) {
         throw std::runtime_error("Key is not an EC key");
     }
 
-    const BIGNUM* priv_bn = EC_KEY_get0_private_key(ec_key);
-    const EC_POINT* pub_point = EC_KEY_get0_public_key(ec_key);
     const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+    const KeyType type = key_type_from_nid(group ? EC_GROUP_get_curve_name(group) : NID_undef);
+    if (type == KeyType::Unspecified) {
+        throw std::runtime_error("Unsupported EC curve in private key");
+    }
 
-    ecdsa256::KeyPair key_pair;
-    key_pair.private_key.key.fill(0);
-    int priv_bytes = BN_num_bytes(priv_bn);
-    BN_bn2bin(priv_bn, key_pair.private_key.key.data() + key_pair.private_key.key.size() - priv_bytes);
+    const BIGNUM* priv_bn = EC_KEY_get0_private_key(ec_key);
+    if (!priv_bn) {
+        throw std::runtime_error("EC key has no private component");
+    }
 
-    openssl::BigNumber x;
-    openssl::BigNumber y;
-    openssl::BigNumberContext ctx;
-    EC_POINT_get_affine_coordinates(group, pub_point, x, y, ctx);
-    BN_bn2binpad(x, key_pair.public_key.x.data(), key_pair.public_key.x.size());
-    BN_bn2binpad(y, key_pair.public_key.y.data(), key_pair.public_key.y.size());
-
-    return key_pair;
+    PrivateKey key;
+    key.type = type;
+    key.key.resize(key_length(type));
+    if (BN_bn2binpad(priv_bn, key.key.data(), key.key.size()) < 0) {
+        throw std::runtime_error("private key does not fit the curve length");
+    }
+    return key;
 }
 
-} // anonymous namespace
+} // namespace
 
-ecdsa256::KeyPair load_private_key_from_pem_file_openssl(const std::string& key_path)
+PrivateKey load_private_key_from_pem_file_openssl(const std::string& key_path)
 {
     openssl::Bio bio(BIO_new_file(key_path.c_str(), "rb"));
     if (!bio) {
         throw std::runtime_error("Cannot open key file: " + key_path);
     }
-
     openssl::EvpKey pkey(PEM_read_bio_PrivateKey(bio, nullptr, nullptr, nullptr));
     if (!pkey) {
         throw std::runtime_error("Failed to load PEM private key from: " + key_path);
     }
-
-    return extract_key_pair(pkey);
+    return extract_private_key(pkey);
 }
 
-ecdsa256::KeyPair load_private_key_from_der_file_openssl(const std::string& key_path)
+PrivateKey load_private_key_from_der_file_openssl(const std::string& key_path)
 {
     openssl::Bio bio(BIO_new_file(key_path.c_str(), "rb"));
     if (!bio) {
         throw std::runtime_error("Cannot open key file: " + key_path);
     }
-
     openssl::EvpKey pkey(d2i_PrivateKey_bio(bio, nullptr));
     if (!pkey) {
         throw std::runtime_error("Failed to load DER private key from: " + key_path);
     }
-
-    return extract_key_pair(pkey);
+    return extract_private_key(pkey);
 }
 #endif /* VANETZA_WITH_OPENSSL */
 
@@ -88,30 +105,43 @@ ecdsa256::KeyPair load_private_key_from_der_file_openssl(const std::string& key_
 namespace
 {
 
-ecdsa256::KeyPair load_and_validate_der(CryptoPP::BufferedTransformation& source)
+using EcPrivateKey = CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey;
+using EcGroupParameters = CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP>;
+
+KeyType detect_curve(const EcGroupParameters& gp)
+{
+    KeyType key_type = KeyType::Unspecified;
+
+    if (EcGroupParameters(CryptoPP::ASN1::secp256r1()) == gp) {
+        key_type = KeyType::NistP256;
+    } else if (EcGroupParameters(CryptoPP::ASN1::brainpoolP256r1()) == gp) {
+        key_type = KeyType::BrainpoolP256r1;
+    } else if (EcGroupParameters(CryptoPP::ASN1::brainpoolP384r1()) == gp) {
+        key_type = KeyType::BrainpoolP384r1;
+    }
+
+    return key_type;
+}
+
+PrivateKey extract_private_key(CryptoPP::BufferedTransformation& der)
 {
     CryptoPP::AutoSeededRandomPool rng;
-
-    CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PrivateKey private_key;
-    private_key.Load(source);
-
+    EcPrivateKey private_key;
+    private_key.Load(der);
     if (!private_key.Validate(rng, 3)) {
         throw std::runtime_error("Private key validation failed");
     }
 
-    ecdsa256::KeyPair key_pair;
+    const KeyType type = detect_curve(private_key.GetGroupParameters());
+    if (type == KeyType::Unspecified) {
+        throw std::runtime_error("Unsupported EC curve in private key");
+    }
 
-    auto& private_exponent = private_key.GetPrivateExponent();
-    private_exponent.Encode(key_pair.private_key.key.data(), key_pair.private_key.key.size());
-
-    CryptoPP::ECDSA<CryptoPP::ECP, CryptoPP::SHA256>::PublicKey public_key;
-    private_key.MakePublicKey(public_key);
-
-    auto& public_element = public_key.GetPublicElement();
-    public_element.x.Encode(key_pair.public_key.x.data(), key_pair.public_key.x.size());
-    public_element.y.Encode(key_pair.public_key.y.data(), key_pair.public_key.y.size());
-
-    return key_pair;
+    PrivateKey key;
+    key.type = type;
+    key.key.resize(key_length(type));
+    private_key.GetPrivateExponent().Encode(key.key.data(), key.key.size());
+    return key;
 }
 
 void pem_decode(std::istream& in, CryptoPP::BufferedTransformation& dest)
@@ -145,28 +175,31 @@ void pem_decode(std::istream& in, CryptoPP::BufferedTransformation& dest)
     decoder.MessageEnd();
 }
 
-} // anonymous namespace
+} // namespace
 
-ecdsa256::KeyPair load_private_key_from_pem_file_cryptopp(const std::string& key_path)
+PrivateKey load_private_key_from_pem_file_cryptopp(const std::string& key_path)
 {
     std::ifstream file(key_path);
+    if (!file) {
+        throw std::runtime_error("Cannot open key file: " + key_path);
+    }
     CryptoPP::ByteQueue der;
     pem_decode(file, der);
-    return load_and_validate_der(der);
+    return extract_private_key(der);
 }
 
-ecdsa256::KeyPair load_private_key_from_der_file_cryptopp(const std::string& key_path)
+PrivateKey load_private_key_from_der_file_cryptopp(const std::string& key_path)
 {
     try {
         CryptoPP::FileSource source(key_path.c_str(), true);
-        return load_and_validate_der(source);
+        return extract_private_key(source);
     } catch (const CryptoPP::FileStore::OpenErr&) {
         throw std::runtime_error("Cannot open key file: " + key_path);
     }
 }
 #endif /* VANETZA_WITH_CRYPTOPP */
 
-ecdsa256::KeyPair load_private_key_from_pem_file(const std::string& key_path)
+PrivateKey load_private_key_from_pem_file(const std::string& key_path)
 {
 #if defined(VANETZA_WITH_OPENSSL)
     return load_private_key_from_pem_file_openssl(key_path);
@@ -174,11 +207,11 @@ ecdsa256::KeyPair load_private_key_from_pem_file(const std::string& key_path)
     return load_private_key_from_pem_file_cryptopp(key_path);
 #else
 #   warning "no crypto backend available for persistence"
-    return ecdsa256::KeyPair {};
+    return PrivateKey {};
 #endif
 }
 
-ecdsa256::KeyPair load_private_key_from_der_file(const std::string& key_path)
+PrivateKey load_private_key_from_der_file(const std::string& key_path)
 {
 #if defined(VANETZA_WITH_OPENSSL)
     return load_private_key_from_der_file_openssl(key_path);
@@ -186,37 +219,8 @@ ecdsa256::KeyPair load_private_key_from_der_file(const std::string& key_path)
     return load_private_key_from_der_file_cryptopp(key_path);
 #else
 #   warning "no crypto backend available for persistence"
-    return ecdsa256::KeyPair {};
+    return PrivateKey {};
 #endif
-}
-
-bool save_private_key_pkcs8_der(std::ostream& os, const ecdsa256::KeyPair& key_pair)
-{
-    // PKCS#8 PrivateKeyInfo wrapping SEC 1 ECPrivateKey for secp256r1
-    static const uint8_t header[] = {
-        0x30, 0x81, 0x87, /*< SEQUENCE, length 135 */
-        0x02, 0x01, 0x00, /*< INTEGER 0 (version) */
-        0x30, 0x13, /*< SEQUENCE (AlgorithmIdentifier) */
-        0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02, 0x01, /*< OID 1.2.840.10045.2.1 (ecPublicKey) */
-        0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, /*< OID 1.2.840.10045.3.1.7 (secp256r1) */
-        0x04, 0x6d, /*< OCTET STRING, length 109 */
-        0x30, 0x6b, /*< SEQUENCE (ECPrivateKey), length 107 */
-        0x02, 0x01, 0x01, /*< INTEGER 1 (version) */
-        0x04, 0x20, /*< OCTET STRING, length 32 */
-    };
-    static const uint8_t pub_header[] = {
-        0xa1, 0x44, /*< [1] CONSTRUCTED, length 68 */
-        0x03, 0x42, /*< BIT STRING, length 66 */
-        0x00, /*< 0 unused bits */
-        0x04, /*< uncompressed point (x, y) */
-    };
-
-    os.write(reinterpret_cast<const char*>(header), sizeof(header));
-    os.write(reinterpret_cast<const char*>(key_pair.private_key.key.data()), key_pair.private_key.key.size());
-    os.write(reinterpret_cast<const char*>(pub_header), sizeof(pub_header));
-    os.write(reinterpret_cast<const char*>(key_pair.public_key.x.data()), key_pair.public_key.x.size());
-    os.write(reinterpret_cast<const char*>(key_pair.public_key.y.data()), key_pair.public_key.y.size());
-    return os.good();
 }
 
 } // namespace security

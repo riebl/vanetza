@@ -1,7 +1,7 @@
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/v2/persistence.hpp>
-#include <vanetza/security/v3/persistence.hpp>
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstdio>
@@ -37,6 +37,13 @@ const std::array<uint8_t, 32> expected_public_y = {
     0xa7, 0x08, 0x7a, 0xcc, 0xcd, 0xab, 0x91, 0xab
 };
 
+void check_private_key(const PrivateKey& key)
+{
+    EXPECT_EQ(key.type, KeyType::NistP256);
+    ASSERT_EQ(key.key.size(), expected_private_key.size());
+    EXPECT_TRUE(std::equal(key.key.begin(), key.key.end(), expected_private_key.begin()));
+}
+
 void check_key_pair(const ecdsa256::KeyPair& kp)
 {
     EXPECT_EQ(kp.private_key.key, expected_private_key);
@@ -65,38 +72,25 @@ std::string read_file_bytes(const std::string& path)
 
 TEST(Persistence, load_pem)
 {
-    auto kp = load_private_key_from_pem_file("test_key.pem");
-    check_key_pair(kp);
+    check_private_key(load_private_key_from_pem_file("test_key.pem"));
 }
 
 TEST(Persistence, load_der)
 {
-    auto kp = load_private_key_from_der_file("test_key.der");
-    check_key_pair(kp);
+    check_private_key(load_private_key_from_der_file("test_key.der"));
 }
 
-TEST(Persistence, pem_and_der_produce_same_keypair)
+TEST(Persistence, pem_and_der_load_same_key)
 {
-    auto kp_pem = load_private_key_from_pem_file("test_key.pem");
-    auto kp_der = load_private_key_from_der_file("test_key.der");
-    EXPECT_EQ(kp_pem.private_key, kp_der.private_key);
-    EXPECT_EQ(kp_pem.public_key, kp_der.public_key);
+    auto pem = load_private_key_from_pem_file("test_key.pem");
+    auto der = load_private_key_from_der_file("test_key.der");
+    EXPECT_EQ(pem.type, der.type);
+    EXPECT_EQ(pem.key, der.key);
 }
 
 TEST(Persistence, v2_load_private_key_from_file)
 {
-    auto kp = v2::load_private_key_from_file("test_key.der");
-    auto kp_ref = load_private_key_from_der_file("test_key.der");
-    EXPECT_EQ(kp.private_key, kp_ref.private_key);
-    EXPECT_EQ(kp.public_key, kp_ref.public_key);
-}
-
-TEST(Persistence, v3_load_private_key_from_file)
-{
-    auto kp = v3::load_private_key_from_file("test_key.pem");
-    auto kp_ref = load_private_key_from_pem_file("test_key.pem");
-    EXPECT_EQ(kp.private_key, kp_ref.private_key);
-    EXPECT_EQ(kp.public_key, kp_ref.public_key);
+    check_key_pair(v2::load_private_key_from_file("test_key.der"));
 }
 
 TEST(Persistence, load_pem_nonexistent_file)
@@ -114,48 +108,45 @@ TEST(Persistence, load_der_nonexistent_file)
 #ifdef VANETZA_WITH_OPENSSL
 TEST(Persistence, openssl_load_pem)
 {
-    auto kp = load_private_key_from_pem_file_openssl("test_key.pem");
-    check_key_pair(kp);
+    check_private_key(load_private_key_from_pem_file_openssl("test_key.pem"));
 }
 
 TEST(Persistence, openssl_load_der)
 {
-    auto kp = load_private_key_from_der_file_openssl("test_key.der");
-    check_key_pair(kp);
+    check_private_key(load_private_key_from_der_file_openssl("test_key.der"));
 }
 #endif /* VANETZA_WITH_OPENSSL */
 
 #ifdef VANETZA_WITH_CRYPTOPP
 TEST(Persistence, cryptopp_load_pem)
 {
-    auto kp = load_private_key_from_pem_file_cryptopp("test_key.pem");
-    check_key_pair(kp);
+    check_private_key(load_private_key_from_pem_file_cryptopp("test_key.pem"));
 }
 
 TEST(Persistence, cryptopp_load_der)
 {
-    auto kp = load_private_key_from_der_file_cryptopp("test_key.der");
-    check_key_pair(kp);
+    check_private_key(load_private_key_from_der_file_cryptopp("test_key.der"));
 }
 #endif /* VANETZA_WITH_CRYPTOPP */
 
+#if defined VANETZA_WITH_OPENSSL || defined VANETZA_WITH_CRYPTOPP
 TEST(Persistence, save_and_load_pkcs8_der)
 {
     auto kp = make_test_key_pair();
     const std::string path = WRITEABLE("test_save.der");
     std::ofstream ofs(path, std::ios::binary);
-    EXPECT_TRUE(save_private_key_pkcs8_der(ofs, kp));
+    EXPECT_TRUE(v2::save_private_key_pkcs8_der(ofs, kp));
     ofs.flush();
-    auto loaded = load_private_key_from_der_file(path);
+    check_key_pair(v2::load_private_key_from_file(path));
     std::remove(path.c_str());
-    check_key_pair(loaded);
 }
 
 TEST(Persistence, save_der_matches_reference_file)
 {
     auto kp = make_test_key_pair();
     std::ostringstream oss(std::ios::binary);
-    EXPECT_TRUE(save_private_key_pkcs8_der(oss, kp));
+    EXPECT_TRUE(v2::save_private_key_pkcs8_der(oss, kp));
     auto reference = read_file_bytes("test_key.der");
     EXPECT_EQ(oss.str(), reference);
 }
+#endif /* VANETZA_WITH_OPENSSL || VANETZA_WITH_CRYPTOPP */
