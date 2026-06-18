@@ -1,17 +1,12 @@
 #include <vanetza/security/persistence.hpp>
-#include <vanetza/security/v2/persistence.hpp>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <array>
 #include <cstdint>
-#include <cstdio>
-#include <fstream>
-#include <iterator>
-#include <sstream>
 
 using namespace vanetza::security;
 
-#define WRITEABLE(path) WORK_DIR "/" path
+#define ASSET(path) ASSET_DIR "/" path
 
 namespace
 {
@@ -23,47 +18,11 @@ const std::array<uint8_t, 32> expected_private_key = {
     0x81, 0xb3, 0x36, 0xaf, 0x8a, 0x98, 0x93, 0xf4
 };
 
-const std::array<uint8_t, 32> expected_public_x = {
-    0x1c, 0x85, 0x0d, 0xc7, 0x45, 0x63, 0x29, 0x3c,
-    0xb0, 0xf3, 0xe5, 0x5e, 0xda, 0x7b, 0x10, 0xec,
-    0xb4, 0xe9, 0x74, 0x6f, 0x83, 0x6f, 0x84, 0x76,
-    0x96, 0xc3, 0x1e, 0xe8, 0x68, 0x4e, 0x37, 0x76
-};
-
-const std::array<uint8_t, 32> expected_public_y = {
-    0x28, 0xf1, 0x67, 0xfb, 0x64, 0xce, 0x7b, 0x79,
-    0xa6, 0x02, 0x06, 0x2a, 0xac, 0x11, 0x7f, 0x59,
-    0x6b, 0xac, 0x77, 0xc7, 0x1c, 0xd6, 0xf4, 0xca,
-    0xa7, 0x08, 0x7a, 0xcc, 0xcd, 0xab, 0x91, 0xab
-};
-
 void check_private_key(const PrivateKey& key)
 {
     EXPECT_EQ(key.type, KeyType::NistP256);
     ASSERT_EQ(key.key.size(), expected_private_key.size());
     EXPECT_TRUE(std::equal(key.key.begin(), key.key.end(), expected_private_key.begin()));
-}
-
-void check_key_pair(const ecdsa256::KeyPair& kp)
-{
-    EXPECT_EQ(kp.private_key.key, expected_private_key);
-    EXPECT_EQ(kp.public_key.x, expected_public_x);
-    EXPECT_EQ(kp.public_key.y, expected_public_y);
-}
-
-ecdsa256::KeyPair make_test_key_pair()
-{
-    ecdsa256::KeyPair kp;
-    kp.private_key.key = expected_private_key;
-    kp.public_key.x = expected_public_x;
-    kp.public_key.y = expected_public_y;
-    return kp;
-}
-
-std::string read_file_bytes(const std::string& path)
-{
-    std::ifstream file(path, std::ios::binary);
-    return {std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
 }
 
 } // namespace
@@ -72,25 +31,20 @@ std::string read_file_bytes(const std::string& path)
 
 TEST(Persistence, load_pem)
 {
-    check_private_key(load_private_key_from_pem_file("test_key.pem"));
+    check_private_key(load_private_key_from_pem_file(ASSET("test_key.pem")));
 }
 
 TEST(Persistence, load_der)
 {
-    check_private_key(load_private_key_from_der_file("test_key.der"));
+    check_private_key(load_private_key_from_der_file(ASSET("test_key.der")));
 }
 
 TEST(Persistence, pem_and_der_load_same_key)
 {
-    auto pem = load_private_key_from_pem_file("test_key.pem");
-    auto der = load_private_key_from_der_file("test_key.der");
+    auto pem = load_private_key_from_pem_file(ASSET("test_key.pem"));
+    auto der = load_private_key_from_der_file(ASSET("test_key.der"));
     EXPECT_EQ(pem.type, der.type);
     EXPECT_EQ(pem.key, der.key);
-}
-
-TEST(Persistence, v2_load_private_key_from_file)
-{
-    check_key_pair(v2::load_private_key_from_file("test_key.der"));
 }
 
 TEST(Persistence, load_pem_nonexistent_file)
@@ -108,45 +62,23 @@ TEST(Persistence, load_der_nonexistent_file)
 #ifdef VANETZA_WITH_OPENSSL
 TEST(Persistence, openssl_load_pem)
 {
-    check_private_key(load_private_key_from_pem_file_openssl("test_key.pem"));
+    check_private_key(load_private_key_from_pem_file_openssl(ASSET("test_key.pem")));
 }
 
 TEST(Persistence, openssl_load_der)
 {
-    check_private_key(load_private_key_from_der_file_openssl("test_key.der"));
+    check_private_key(load_private_key_from_der_file_openssl(ASSET("test_key.der")));
 }
 #endif /* VANETZA_WITH_OPENSSL */
 
 #ifdef VANETZA_WITH_CRYPTOPP
 TEST(Persistence, cryptopp_load_pem)
 {
-    check_private_key(load_private_key_from_pem_file_cryptopp("test_key.pem"));
+    check_private_key(load_private_key_from_pem_file_cryptopp(ASSET("test_key.pem")));
 }
 
 TEST(Persistence, cryptopp_load_der)
 {
-    check_private_key(load_private_key_from_der_file_cryptopp("test_key.der"));
+    check_private_key(load_private_key_from_der_file_cryptopp(ASSET("test_key.der")));
 }
 #endif /* VANETZA_WITH_CRYPTOPP */
-
-#if defined VANETZA_WITH_OPENSSL || defined VANETZA_WITH_CRYPTOPP
-TEST(Persistence, save_and_load_pkcs8_der)
-{
-    auto kp = make_test_key_pair();
-    const std::string path = WRITEABLE("test_save.der");
-    std::ofstream ofs(path, std::ios::binary);
-    EXPECT_TRUE(v2::save_private_key_pkcs8_der(ofs, kp));
-    ofs.flush();
-    check_key_pair(v2::load_private_key_from_file(path));
-    std::remove(path.c_str());
-}
-
-TEST(Persistence, save_der_matches_reference_file)
-{
-    auto kp = make_test_key_pair();
-    std::ostringstream oss(std::ios::binary);
-    EXPECT_TRUE(v2::save_private_key_pkcs8_der(oss, kp));
-    auto reference = read_file_bytes("test_key.der");
-    EXPECT_EQ(oss.str(), reference);
-}
-#endif /* VANETZA_WITH_OPENSSL || VANETZA_WITH_CRYPTOPP */

@@ -91,5 +91,8 @@ if(NOT VANETZA_WITH_CRYPTOPP AND NOT VANETZA_WITH_OPENSSL)
     message(WARNING "Vanetza is built without proper security backend")
 endif()
 
+# shared test data for all security tests
+set(SECURITY_TEST_ASSET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/assets")
 add_test_subdirectory(tests)
+add_test_subdirectory(v2/tests)
 add_test_subdirectory(v3/tests)
