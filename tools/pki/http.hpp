@@ -45,6 +45,17 @@ struct HttpQuery
     const std::string& which_service() const;
 };
 
+/**
+ * \brief Resolve a (possibly relative) URL reference against a base URL per RFC 3986 §5.
+ *
+ * An empty reference yields the base unchanged. A reference carrying its own scheme
+ * (e.g. "https://...") is absolute and returned as-is. Otherwise it is resolved against
+ * the base: "//authority/..." replaces the authority, a leading-slash path replaces the
+ * base path, and any other path is merged onto the base's directory.
+ * \throws HttpException if the base URL cannot be parsed
+ */
+std::string resolve_url(const std::string& base, const std::string& reference);
+
 HttpResponse http_get(const HttpQuery& query);
 HttpResponse http_post(const HttpQuery& query, const std::string& content_type, const ByteBuffer& body);
 

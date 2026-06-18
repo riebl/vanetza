@@ -38,9 +38,9 @@ struct Context
     {
     }
 
-    const std::string& url(const AuthorizationAuthority& aa) const
+    std::string url(const AuthorizationAuthority& aa) const
     {
-        return url_override.empty() ? aa.access_point : url_override;
+        return resolve_url(aa.access_point, url_override);
     }
 
     const MainConfig& cfg;

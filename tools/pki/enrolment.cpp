@@ -33,13 +33,11 @@ struct Context
     {
     }
 
-    const std::string& url(const EnrolmentAuthority& ea) const
+    std::string url(const EnrolmentAuthority& ea) const
     {
-        if (!url_override.empty()) {
-            return url_override;
-        }
         // Some PKIs have EA entry which does not have ITS access point
-        return ea.its_access_point.empty() ? ea.aa_access_point : ea.its_access_point;
+        const std::string& base = ea.its_access_point.empty() ? ea.aa_access_point : ea.its_access_point;
+        return resolve_url(base, url_override);
     }
 
     const MainConfig& cfg;
@@ -273,7 +271,7 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
 
     EncryptedData encrypted_data = build_enrolment_request(*ctx.cfg.security, params, ea.certificate);
 
-    const std::string& ea_url = ctx.url(ea);
+    const std::string ea_url = ctx.url(ea);
     std::cout << "Enroling at EA URL: " << ea_url << "\n";
     auto query = HttpQuery::from_url(ea_url);
     auto encoded_encrypted_data = encrypted_data.encode();

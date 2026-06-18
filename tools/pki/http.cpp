@@ -54,6 +54,40 @@ HttpQuery HttpQuery::from_url(const std::string& url)
     }
 }
 
+std::string resolve_url(const std::string& base, const std::string& reference)
+{
+    if (reference.empty()) {
+        return base;
+    }
+    // A reference with its own scheme is already absolute (RFC 3986 §5.2.2).
+    static const std::regex scheme_re { "^[a-zA-Z][a-zA-Z0-9+.-]*://" };
+    if (std::regex_search(reference, scheme_re)) {
+        return reference;
+    }
+
+    // Split the base into scheme, authority and path (RFC 3986 §3); drop any query/fragment.
+    static const std::regex base_re { "^([a-zA-Z][a-zA-Z0-9+.-]*)://([^/?#]*)(/[^?#]*)?.*$" };
+    std::smatch m;
+    if (!std::regex_match(base, m, base_re)) {
+        throw HttpException("base URL is not acceptable");
+    }
+    const std::string scheme = m[1];
+    const std::string origin = scheme + "://" + std::string(m[2]); // scheme + authority
+    const std::string base_path = m[3].matched ? std::string(m[3]) : "/";
+
+    if (reference.compare(0, 2, "//") == 0) {
+        // network-path reference: keep the base scheme, replace authority and path
+        return scheme + ":" + reference;
+    } else if (reference.front() == '/') {
+        // absolute-path reference: replace the whole path
+        return origin + reference;
+    } else {
+        // relative-path reference: merge onto the base's directory
+        const std::string dir = base_path.substr(0, base_path.find_last_of('/') + 1);
+        return origin + dir + reference;
+    }
+}
+
 const std::string& HttpQuery::which_service() const
 {
     if (service.empty()) {

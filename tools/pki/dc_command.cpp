@@ -3,6 +3,7 @@
 #include "distribution_centre.hpp"
 #include "exception.hpp"
 #include "hashed_id8_validator.hpp"
+#include "http.hpp"
 #include "validation.hpp"
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <functional>
@@ -34,9 +35,9 @@ struct Context
         }
     }
 
-    const std::string& url() const
+    std::string url() const
     {
-        return url_override.empty() ? cfg.dc_url : url_override;
+        return resolve_url(cfg.dc_url, url_override);
     }
 
     const MainConfig& cfg;
