@@ -7,6 +7,7 @@
 #include "encrypted_data.hpp"
 #include "exception.hpp"
 #include "filesystem.hpp"
+#include "hex_string_validator.hpp"
 #include "hexstring.hpp"
 #include "http.hpp"
 #include "pem.hpp"
@@ -15,7 +16,6 @@
 #include "validation.hpp"
 #include <vanetza/common/its_aid.hpp>
 #include <CLI/ExtraValidators.hpp>
-#include <boost/algorithm/hex.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <stdexcept>
 
@@ -60,7 +60,14 @@ struct Context
     {
         PrivateKey private_key;
         PublicKey public_key;
-        std::string identifier;
+        std::string identifier; // canonical identifier as stored/displayed (text or hex string)
+        bool identifier_hex = false; // interpret identifier as hex, decoded to bytes for itsId
+
+        // itsId bytes for the enrolment request: raw text, or hex decoded to bytes
+        std::string its_id() const
+        {
+            return identifier_hex ? parse_hexstring(identifier) : identifier;
+        }
     };
     Bootstrap bootstrap;
 };
@@ -113,7 +120,15 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
     initial->alias("init");
     initial->fallthrough();
     initial->add_flag("--force", ctx->forced, "enforce initial enrolment");
-    initial->add_option("--canonical-id", ctx->bootstrap.identifier, "canonical identifier")->required();
+    // Exactly one of --canonical-id (text) or --canonical-id-hex (hex, decoded to bytes for itsId).
+    auto canonical_id_group = initial->add_option_group("canonical-id");
+    canonical_id_group->fallthrough(false); // required because of CLI11 2.6.2 bug
+    canonical_id_group->add_option("--canonical-id", ctx->bootstrap.identifier, "canonical identifier (text)");
+    canonical_id_group->add_option("--canonical-id-hex", ctx->bootstrap.identifier,
+            "canonical identifier (hex, decoded to bytes for itsId)")
+        ->check(HexStringValidator())
+        ->each([ctx](const std::string&) { ctx->bootstrap.identifier_hex = true; });
+    canonical_id_group->require_option(1);
     initial->add_option("--canonical-keyfile", canonical_keyfile_cb, "canonical key (PEM encoded file)")
         ->required()
         ->check(CLI::ExistingFile);
@@ -325,7 +340,7 @@ void perform_initial_enrolment(Context& ctx)
     std::cout << "\n";
 
     EnrolmentRequestParameters params;
-    params.its_id = ctx.bootstrap.identifier;
+    params.its_id = ctx.bootstrap.its_id();
     params.verification_key = scoped_verification_key.public_key();
     params.outer_signer_key = ctx.bootstrap.public_key;
     params.hash_algo = ctx.hash_algo;
