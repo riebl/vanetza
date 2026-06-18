@@ -38,7 +38,13 @@ struct Context
     {
     }
 
+    const std::string& url(const AuthorizationAuthority& aa) const
+    {
+        return url_override.empty() ? aa.access_point : url_override;
+    }
+
     const MainConfig& cfg;
+    std::string url_override;
     std::function<void()> action;
 
     KeyType key_type = KeyType::BrainpoolP256r1;
@@ -72,11 +78,13 @@ std::shared_ptr<CLI::App> build_authorization_command(const MainConfig& cfg)
     auto app = std::make_shared<CLI::App>("authorization tickets (AT)", "authorization");
     app->alias("auth");
     app->alias("at");
+    app->add_option("--url", ctx->url_override, "override the Authorization Authority URL");
 
     auto list = app->add_subcommand("list", "list stored authorization tickets");
     list->callback([ctx]() { ctx->action = [ctx]() { list_tickets(*ctx); }; });
 
     auto request = app->add_subcommand("request", "request a new authorization ticket");
+    request->fallthrough();
     request->add_option("--key-type", ctx->key_type, "type of generated verification key")
         ->default_val(KeyType::BrainpoolP256r1)
         ->capture_default_str()
@@ -257,7 +265,7 @@ void request_one_ticket(Context& ctx, const Certificate& ec, const AuthoritiesFr
 
     EncryptedData encrypted_data = build_authorization_request(*ctx.cfg.security, params);
 
-    auto query = HttpQuery::from_url(auth.aa.access_point);
+    auto query = HttpQuery::from_url(ctx.url(auth.aa));
     auto encoded = encrypted_data.encode();
     auto req_hash = ctx.cfg.security->calculate_sha256_hash(encoded.data(), encoded.size());
     auto response = http_post(query, "application/x-its-request", encoded);
@@ -319,7 +327,7 @@ void request_ticket(Context& ctx)
 
     AuthoritiesFromCtl auth = lookup_authorities(ctx);
     HashedId8 aa_hid8 = auth.aa.certificate.calculate_hashed_id8(*ctx.cfg.security);
-    std::cout << "Authorizing against AA " << hexstring(aa_hid8) << " at " << auth.aa.access_point << "\n";
+    std::cout << "Authorizing against AA " << hexstring(aa_hid8) << " at " << ctx.url(auth.aa) << "\n";
 
     for (unsigned i = 1; i <= ctx.count; ++i) {
         if (ctx.count > 1) {
