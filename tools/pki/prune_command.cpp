@@ -1,16 +1,22 @@
 #include "prune_command.hpp"
 #include "certificate.hpp"
 #include "certificate_storage.hpp"
+#include "certificate_trust_list.hpp"
 #include "credential_storage.hpp"
 #include "hashed_id8.hpp"
+#include "security_module.hpp"
 #include "station_config.hpp"
 #include "time.hpp"
+#include "trust_list_storage.hpp"
 #include <vanetza/security/public_key.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
+#include <boost/range/algorithm_ext/push_back.hpp>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 #include <unordered_set>
+#include <vector>
 
 namespace vanetza
 {
@@ -210,7 +216,80 @@ private:
     std::size_t m_removed = 0;
 };
 
+// Collects the HashedId8 of every AA/EA certificate encountered while visiting RCA CTLs.
+class IssuerCollector : public CtlVisitor
+{
+public:
+    explicit IssuerCollector(SecurityModule& security) : m_security(security)
+    {
+    }
+
+    void add_authorization_authority(const Vanetza_Security_AaEntry_t& entry) override
+    {
+        m_aa.insert(Certificate(entry.aaCertificate).calculate_hashed_id8(m_security));
+    }
+
+    void add_enrolment_authority(const Vanetza_Security_EaEntry_t& entry) override
+    {
+        m_ea.insert(Certificate(entry.eaCertificate).calculate_hashed_id8(m_security));
+    }
+
+    const std::set<HashedId8>& authorization_authorities() const { return m_aa; }
+    const std::set<HashedId8>& enrolment_authorities() const { return m_ea; }
+
+private:
+    SecurityModule& m_security;
+    std::set<HashedId8> m_aa;
+    std::set<HashedId8> m_ea;
+};
+
+// Remove every cert in `store` whose HashedId8 is not in `keep`. Returns the number pruned.
+std::size_t reconcile_issuer_store(CertificateStorage& store, const std::set<HashedId8>& keep, const char* label,
+    bool dry_run)
+{
+    std::vector<HashedId8> ids;
+    boost::push_back(ids, store.list());
+    std::size_t count = 0;
+    for (const auto& id : ids) {
+        if (keep.find(id) != keep.end()) {
+            continue;
+        }
+        if (dry_run) {
+            std::cout << "  would remove " << label << " " << hexstring(id) << "\n";
+            ++count;
+        } else if (store.erase(id)) {
+            std::cout << "Removed " << label << " " << hexstring(id) << "\n";
+            ++count;
+        } else {
+            std::cerr << "warning: failed to erase " << label << " " << hexstring(id) << "\n";
+        }
+    }
+    return count;
+}
+
 } // namespace
+
+void prune_ctl(const MainConfig& cfg, bool dry_run)
+{
+    // Build the current set of trusted issuer certs from the CTLs stored per Root CA.
+    IssuerCollector collector(*cfg.security);
+    for (const auto& rca : cfg.root_ca->list()) {
+        auto ctl = cfg.trust_lists->fetch(rca);
+        if (!ctl) {
+            continue;
+        }
+        try {
+            ctl->visit_rca_ctl(collector);
+        } catch (const std::exception& e) {
+            std::cerr << "warning: CTL for " << hexstring(rca) << " could not be parsed: " << e.what() << "\n";
+        }
+    }
+
+    std::size_t count = 0;
+    count += reconcile_issuer_store(*cfg.authorization_authorities, collector.authorization_authorities(), "AA", dry_run);
+    count += reconcile_issuer_store(*cfg.enrolment_authorities, collector.enrolment_authorities(), "EA", dry_run);
+    std::cout << (dry_run ? "Would prune " : "Pruned ") << count << " issuer certificate(s).\n";
+}
 
 void prune_expired(const MainConfig& cfg, Clock::time_point now, bool force, PruneExpiredVisitor& visitor)
 {
@@ -286,6 +365,15 @@ std::shared_ptr<CLI::App> build_prune_command(const MainConfig& cfg)
             ApplyExpiredVisitor v(credentials);
             prune_expired(cfg, current_time(), force, v);
         }
+    });
+
+    auto ctl = app->add_subcommand("ctl", "remove exported AA/EA issuer certs no longer present in stored CTLs");
+    auto ctl_dry = ctl->add_flag("--dry-run,-n", "list only; do not delete");
+    ctl->callback([&cfg, ctl_dry]() {
+        if (ctl_dry->as<bool>()) {
+            std::cout << "Stale issuer certificates:\n";
+        }
+        prune_ctl(cfg, ctl_dry->as<bool>());
     });
 
     app->require_subcommand(1);

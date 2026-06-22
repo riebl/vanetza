@@ -95,6 +95,14 @@ public:
  */
 void prune_orphans(const MainConfig& cfg, PruneOrphansVisitor& visitor);
 
+/**
+ * Reconcile the exported AA/EA issuer certificates against the currently stored
+ * CTLs: remove any `.aa`/`.ea` cert whose HashedId8 is not present in the latest
+ * stored CTL of any trusted Root CA. Prevents issuer certs orphaned by CTL
+ * rotation from accumulating. `dry_run` lists without deleting.
+ */
+void prune_ctl(const MainConfig& cfg, bool dry_run);
+
 // CLI subcommand tree.
 std::shared_ptr<CLI::App> build_prune_command(const MainConfig&);
 
