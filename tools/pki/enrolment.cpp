@@ -49,6 +49,13 @@ struct Context
     KeyType key_type = KeyType::BrainpoolP256r1;
     HashAlgorithm hash_algo = HashAlgorithm::SHA256;
 
+    // Manual enrolment: EA certificate and endpoint supplied directly instead of CTL lookup
+    std::string ea_cert_file;
+    std::string ea_url;
+
+    // Check if manual enolrment mode is engaged
+    bool manual_enrolment() const { return !ea_cert_file.empty() || !ea_url.empty(); }
+
     struct Bootstrap
     {
         PrivateKey private_key;
@@ -91,6 +98,17 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
         }
     };
 
+    // Manual enrolment options, shared by initial and renewal
+    auto add_manual_options = [ctx](CLI::App* sub) {
+        auto ea_cert = sub->add_option("--ea-certificate", ctx->ea_cert_file,
+               "manual enrolment: EA certificate (OER) to encrypt the request to")
+            ->check(CLI::ExistingFile);
+        auto ea_url = sub->add_option("--ea-url", ctx->ea_url, "manual enrolment: EA enrolment endpoint URL");
+        // Manual enrolment needs both; let CLI11 reject a lone --ea-certificate / --ea-url.
+        ea_cert->needs(ea_url);
+        ea_url->needs(ea_cert);
+    };
+
     auto initial = app->add_subcommand("initial", "enrol with initial credentials (bootstrap)");
     initial->alias("init");
     initial->fallthrough();
@@ -107,6 +125,7 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
         ->default_val(HashAlgorithm::SHA256)
         ->capture_default_str()
         ->transform(CLI::CheckedTransformer(hash_algo_map, CLI::ignore_case));
+    add_manual_options(initial);
 
     initial->callback([ctx]() {
         ctx->action = [ctx]() {
@@ -131,6 +150,7 @@ std::shared_ptr<CLI::App> build_enrolment_command(const MainConfig& cfg)
         ->default_val(HashAlgorithm::SHA256)
         ->capture_default_str()
         ->transform(CLI::CheckedTransformer(hash_algo_map, CLI::ignore_case));
+    add_manual_options(renewal);
     renewal->callback([ctx]() { ctx->action = [ctx]() { perform_enrolment_renewal(*ctx); }; });
 
     auto status = app->add_subcommand("status", "show enrolment status");
@@ -199,6 +219,30 @@ EnrolmentAuthority lookup_enrolment_authority(Context& ctx)
 }
 
 /**
+ * \brief Build the EnrolmentAuthority from the manually supplied --ea-certificate / --ea-url.
+ *
+ * Lets a station enrol against a PKI whose DC offers no getctl, where trust comes from an
+ * out-of-band bootstrap bundle rather than a stored CTL. The certificate must carry an encryption
+ * key because the request is ECIES-encrypted to it.
+ */
+EnrolmentAuthority build_enrolment_authority(Context& ctx)
+{
+    Certificate cert;
+    if (!cert.decode(read(ctx.ea_cert_file))) {
+        throw DecodingFailure("could not decode EA certificate");
+    }
+    if (!cert.get_encryption_key()) {
+        throw UsageError("missing encryption key in EA certificate");
+    }
+    EnrolmentAuthority ea;
+    ea.certificate = std::move(cert);
+    ea.its_access_point = ctx.ea_url;
+    std::cout << "Manual EA " << hexstring(ea.certificate.calculate_hashed_id8(*ctx.cfg.security)) << " at "
+              << ctx.ea_url << "\n";
+    return ea;
+}
+
+/**
  * \brief Shared request/response round-trip for initial enrolment and renewal.
  *
  * Builds the EA-encrypted request, POSTs it, decrypts/parses the response,
@@ -261,7 +305,7 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
 
 void perform_initial_enrolment(Context& ctx)
 {
-    EnrolmentAuthority ea = lookup_enrolment_authority(ctx);
+    EnrolmentAuthority ea = ctx.manual_enrolment() ? build_enrolment_authority(ctx) : lookup_enrolment_authority(ctx);
 
     // security module stores created private key in its credential storage
     ScopedKeyPair scoped_verification_key(*ctx.cfg.security, ctx.key_type);
@@ -304,7 +348,7 @@ void perform_enrolment_renewal(Context& ctx)
         throw UsageError("no EC private key available", "re-run 'enrolment initial'");
     }
 
-    EnrolmentAuthority ea = lookup_enrolment_authority(ctx);
+    EnrolmentAuthority ea = ctx.manual_enrolment() ? build_enrolment_authority(ctx) : lookup_enrolment_authority(ctx);
 
     // Fresh verification key for the new EC
     // TS 102 941 §6.2.3.2.1 mandates a new key pair on every enrolment request).
