@@ -487,7 +487,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_accepts_permission_issued_by
     ASSERT_TRUE(aa->toBeSigned.certIssuePermissions->list.array[0]);
 
     auto& subject_permissions = aa->toBeSigned.certIssuePermissions->list.array[0]->subjectPermissions;
-    asn_sequence_empty(&subject_permissions.choice.Explicit);
+    vanetza::asn1::reset(asn_DEF_Vanetza_Security_SubjectPermissions, &subject_permissions);
     subject_permissions.present = Vanetza_Security_SubjectPermissions_PR_all;
     subject_permissions.choice.all = 0;
 
