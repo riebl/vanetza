@@ -71,6 +71,7 @@ add_vanetza_component(security
 )
 target_link_libraries(security PUBLIC Boost::headers asn1 asn1_security common net)
 target_link_libraries(security PRIVATE geodesy)
+target_compile_features(security PUBLIC cxx_std_17)
 
 if(VANETZA_WITH_CRYPTOPP)
     set_property(TARGET security APPEND PROPERTY
