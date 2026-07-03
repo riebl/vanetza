@@ -1,0 +1,25 @@
+name: strict C++14 library build
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  cxx14:
+    name: C++14 (${{matrix.compiler.cc}})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        compiler:
+          - {cc: gcc, cxx: g++}
+          - {cc: clang, cxx: clang++}
+    steps:
+      - uses: actions/checkout@v6
+      - run: |
+          image=$(docker build -q --target strict-cxx14 ${{github.workspace}}/tools/docker)
+          docker run --rm \
+            -e CC=${{matrix.compiler.cc}} \
+            -e CXX=${{matrix.compiler.cxx}} \
+            -v${{github.workspace}}:/home/build-user/workspace:ro \
+            "$image"
