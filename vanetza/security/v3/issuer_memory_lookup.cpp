@@ -16,7 +16,12 @@ bool IssuerMemoryLookup::insert(const Certificate& cert)
     if (!digest) {
         return false;
     }
-    m_certificates.insert_or_assign(*digest, cert);
+    auto it = m_certificates.find(*digest);
+    if (it != m_certificates.end()) {
+        it->second = cert;
+    } else {
+        m_certificates.emplace(*digest, cert);
+    }
     return true;
 }
 
