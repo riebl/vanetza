@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         ca-certificates \
         capnproto \
+        clang \
         cmake \
         git \
         libboost-date-time-dev \
@@ -20,11 +21,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ninja-build \
         pkg-config \
     && rm -rf /var/lib/apt/lists/*
-COPY build_and_run_tests.sh /usr/local/bin/build_and_run_tests.sh
+COPY --chmod=755 build_and_run_tests.sh build_strict_cxx14.sh /usr/local/bin/
 RUN useradd -m build-user
 USER build-user
 WORKDIR /home/build-user
 ENTRYPOINT ["build_and_run_tests.sh"]
+CMD ["/home/build-user/workspace"]
+
+FROM debian AS strict-cxx14
+ENTRYPOINT ["build_strict_cxx14.sh"]
 CMD ["/home/build-user/workspace"]
 
 FROM ubuntu:${UBUNTU_VERSION} AS ubuntu
