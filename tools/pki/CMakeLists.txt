@@ -68,5 +68,7 @@ add_executable(pki
     station.cpp
 )
 target_link_libraries(pki PUBLIC pki_library)
+set_target_properties(pki PROPERTIES INSTALL_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR})
+install(TARGETS pki DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_test_subdirectory(tests)

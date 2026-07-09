@@ -67,7 +67,8 @@ if (SOCKTAP_WITH_AUTOTALKS)
     target_sources(socktap PRIVATE autotalks.cpp autotalks_link.cpp)
 endif()
 
-install(TARGETS socktap EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
+set_target_properties(socktap PROPERTIES INSTALL_RPATH $ORIGIN/../${CMAKE_INSTALL_LIBDIR})
+install(TARGETS socktap DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 find_file(COHDA_LLC_API_HEADER llc-api.h
     HINTS "/home/duser"
