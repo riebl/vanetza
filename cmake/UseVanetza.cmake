@@ -37,7 +37,8 @@ function(add_vanetza_component name)
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
     set_target_properties(${name} PROPERTIES
         OUTPUT_NAME vanetza_${name}
-        SOVERSION ${VANETZA_SOVERSION})
+        SOVERSION ${VANETZA_SOVERSION}
+        INSTALL_RPATH $ORIGIN)
     target_compile_features(${name} PUBLIC cxx_std_14)
     install(TARGETS ${name} EXPORT ${PROJECT_NAME} DESTINATION ${CMAKE_INSTALL_LIBDIR})
     set_property(GLOBAL APPEND PROPERTY VANETZA_COMPONENTS ${name})
