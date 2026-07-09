@@ -69,4 +69,4 @@ add_executable(pki
 )
 target_link_libraries(pki PUBLIC pki_library)
 
-add_subdirectory(tests)
+add_test_subdirectory(tests)
