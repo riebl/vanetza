@@ -1,5 +1,6 @@
-#include <vanetza/asn1/security/PolygonalRegion.h>
-#include <vanetza/asn1/security/TwoDLocation.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(PolygonalRegion.h)
+#include VANETZA_ASN1_SECURITY_HEADER(TwoDLocation.h)
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/security/v3/boost_geometry.hpp>
 

@@ -35,6 +35,8 @@ vanetza_optional_dependency(CapnProto 0.8 VANETZA_WITH_RPC "Enable RPC support")
 vanetza_optional_dependency(CryptoPP 5.6.1 VANETZA_WITH_CRYPTOPP "Enable Crypto++ support")
 vanetza_optional_dependency(OpenSSL 1.1.1 VANETZA_WITH_OPENSSL "Enable OpenSSL extensions")
 
+option(VANETZA_WITH_PQC "Enable the experimental hybrid-PQC ASN.1 profile" OFF)
+
 option(VANETZA_EMBED_COUNTRY_DATA "Embed country boundary data into geodesy library" OFF)
 
 add_subdirectory(vanetza/access)
@@ -72,6 +74,12 @@ if(BUILD_FUZZ)
 endif()
 
 option(BUILD_PKI "Build PKI tools" OFF)
+if(BUILD_PKI AND VANETZA_WITH_PQC)
+  message(FATAL_ERROR
+    "BUILD_PKI cannot be combined with VANETZA_WITH_PQC: the unchanged PKI "
+    "client uses Vanetza's standard Security ASN.1 profile. Build the PKI "
+    "client separately with VANETZA_WITH_PQC=OFF.")
+endif()
 if(BUILD_PKI)
   add_subdirectory(tools/pki)
 endif()

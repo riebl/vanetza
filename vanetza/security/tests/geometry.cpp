@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
-#include <vanetza/asn1/security/CircularRegion.h>
-#include <vanetza/asn1/security/PolygonalRegion.h>
-#include <vanetza/asn1/security/RectangularRegion.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(CircularRegion.h)
+#include VANETZA_ASN1_SECURITY_HEADER(PolygonalRegion.h)
+#include VANETZA_ASN1_SECURITY_HEADER(RectangularRegion.h)
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/security/v3/geometry.hpp>
 #include <vanetza/units/angle.hpp>

@@ -1,4 +1,5 @@
-#include <vanetza/asn1/security/EccP256CurvePoint.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(EccP256CurvePoint.h)
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <boost/variant/static_visitor.hpp>
 #include <algorithm>

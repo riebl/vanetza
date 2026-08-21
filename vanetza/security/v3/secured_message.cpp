@@ -1,6 +1,7 @@
 #include <vanetza/asn1/asn1c_wrapper.hpp>
-#include <vanetza/asn1/security/Certificate.h>
-#include <vanetza/asn1/security/EtsiTs103097Data.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(Certificate.h)
+#include VANETZA_ASN1_SECURITY_HEADER(EtsiTs103097Data.h)
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/net/packet.hpp>

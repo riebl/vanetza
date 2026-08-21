@@ -2,6 +2,7 @@ set(_its_asn1_source_file "asn1c_its_sources.txt")
 set(_its_r2_asn1_source_file "asn1c_its_r2_sources.txt")
 set(_sec_asn1_source_file "asn1c_security_sources.txt")
 set(_sec_r2_asn1_source_file "asn1c_security_r2_sources.txt")
+set(_systemx_pqc_asn1_source_file "asn1c_systemx_pqc_sources.txt")
 set(_support_asn1_source_file "asn1c_support_sources.txt")
 
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
@@ -9,12 +10,14 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
     ${_its_r2_asn1_source_file}
     ${_sec_asn1_source_file}
     ${_sec_r2_asn1_source_file}
+    ${_systemx_pqc_asn1_source_file}
     ${_support_asn1_source_file})
 
 set(_its_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its")
 set(_its_r2_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/its/r2")
 set(_sec_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/security")
 set(_sec_r2_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/security/r2")
+set(_systemx_pqc_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/systemx-pqc")
 set(_support_asn1_dir "${CMAKE_CURRENT_SOURCE_DIR}/support")
 
 option(VANETZA_ASN1_WITH_ASN1C "Enable asn1c targets" OFF)
@@ -114,6 +117,31 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/IEEE1609dot2.asn
         ${PROJECT_SOURCE_DIR}/asn1/IEEE1609dot2BaseTypes.asn
     )
+
+    if(VANETZA_WITH_PQC)
+        set(_systemx_pqc_patch "${PROJECT_SOURCE_DIR}/asn1/systemx-pqc/hybrid-pqc.patch")
+        set(_systemx_pqc_work_dir "${CMAKE_CURRENT_BINARY_DIR}/systemx-pqc-asn1")
+        set(_systemx_pqc_module_names
+            EtsiTs103097Module.asn
+            EtsiTs103097ExtensionModule.asn
+            Ieee1609Dot2.asn
+            Ieee1609Dot2BaseTypes.asn)
+
+        set(_systemx_pqc_asn1_files ${_systemx_pqc_module_names})
+        list(TRANSFORM _systemx_pqc_asn1_files PREPEND "${_systemx_pqc_work_dir}/")
+
+        add_custom_command(OUTPUT ${_systemx_pqc_asn1_files}
+            COMMAND ${CMAKE_COMMAND}
+                -DOUTPUT_DIRECTORY=${_systemx_pqc_work_dir}
+                -DPATCH_FILE=${_systemx_pqc_patch}
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/fetch_systemx_pqc_asn1_files.cmake
+            DEPENDS
+                ${_systemx_pqc_patch}
+                ${CMAKE_CURRENT_SOURCE_DIR}/fetch_systemx_pqc_asn1_files.cmake
+            COMMENT "Fetching and patching SystemX hybrid-PQC ASN.1 modules"
+            VERBATIM)
+        add_custom_target(prepare_systemx_pqc_asn1 DEPENDS ${_systemx_pqc_asn1_files})
+    endif()
 
     set(_sec_r2_asn1_files
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103097v211.asn
@@ -224,19 +252,31 @@ if(VANETZA_ASN1_WITH_ASN1C)
         PREFIX Vanetza_Security_
         SOURCES ${_sec_asn1_files} ${_pki_asn1_files})
 
+    if(VANETZA_WITH_PQC)
+        generate_asn1c(DESCRIPTION "Security Release 2 (experimental hybrid-PQC profile)"
+            OUTPUT_DIRECTORY ${_systemx_pqc_asn1_dir}
+            SOURCE_FILE ${_systemx_pqc_asn1_source_file}
+            PREFIX Vanetza_Security_
+            SOURCES ${_systemx_pqc_asn1_files})
+    endif()
+
     generate_asn1c(DESCRIPTION "Security (Release 2)"
         OUTPUT_DIRECTORY ${_sec_r2_asn1_dir}
         SOURCE_FILE ${_sec_r2_asn1_source_file}
         PREFIX Vanetza_Security2_
         SOURCES ${_sec_r2_asn1_files} ${_pki_r2_asn1_files} ${_ieee_asn1_files})
 
-    add_custom_target(generate_asn1c DEPENDS
+    set(_generate_asn1c_outputs
         "${_support_asn1_dir}" "${_support_asn1_source_file}"
         "${_its_asn1_dir}" "${_its_asn1_source_file}"
         "${_its_r2_asn1_dir}" "${_its_r2_asn1_source_file}"
         "${_sec_asn1_dir}" "${_sec_asn1_source_file}"
-        "${_sec_r2_asn1_dir}" "${_sec_r2_asn1_source_file}"
-        VERBATIM)
+        "${_sec_r2_asn1_dir}" "${_sec_r2_asn1_source_file}")
+    if(VANETZA_WITH_PQC)
+        list(APPEND _generate_asn1c_outputs
+            "${_systemx_pqc_asn1_dir}" "${_systemx_pqc_asn1_source_file}")
+    endif()
+    add_custom_target(generate_asn1c DEPENDS ${_generate_asn1c_outputs} VERBATIM)
     add_custom_command(TARGET generate_asn1c POST_BUILD
         COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_skeleton.cmake
@@ -257,6 +297,13 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
         COMMENT "Patching generated Security asn1c files"
         WORKING_DIRECTORY ${_sec_asn1_dir} VERBATIM)
+    if(VANETZA_WITH_PQC)
+        add_custom_command(TARGET generate_asn1c POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_Security_
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
+            COMMENT "Patching generated experimental hybrid-PQC Security asn1c files"
+            WORKING_DIRECTORY ${_systemx_pqc_asn1_dir} VERBATIM)
+    endif()
     add_custom_command(TARGET generate_asn1c POST_BUILD
         COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${PROJECT_SOURCE_DIR} -DASN1C_PREFIX=Vanetza_Security2_
             -P ${CMAKE_CURRENT_SOURCE_DIR}/patch_asn1c_generated.cmake
@@ -267,6 +314,17 @@ if(VANETZA_ASN1_WITH_ASN1C)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/apply_patches.cmake
         COMMENT "Applying hot-fixes to generated asn1c files"
         WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} VERBATIM)
+    if(VANETZA_WITH_PQC)
+        # These generated types are identical in both profiles. Reuse the
+        # already patched variants instead of maintaining a duplicate patch.
+        add_custom_command(TARGET generate_asn1c POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${_sec_asn1_dir}/Time64.c ${_systemx_pqc_asn1_dir}/Time64.c
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                ${_sec_asn1_dir}/Uint64.c ${_systemx_pqc_asn1_dir}/Uint64.c
+            COMMENT "Copying patched 64-bit Security ASN.1 types into the hybrid-PQC profile"
+            VERBATIM)
+    endif()
     if(VANETZA_ASN1_WITH_ISO)
         add_custom_command(TARGET generate_asn1c POST_BUILD
             COMMAND ${CMAKE_COMMAND} -DPATCH_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR}/patches/iso
@@ -298,12 +356,26 @@ if(VANETZA_ASN1_WITH_ASN1C)
           -DASN1C_SOURCE_FILE=${_sec_r2_asn1_source_file}
           -P clean_asn1c.cmake
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
+    if(VANETZA_WITH_PQC)
+        add_custom_target(clean_asn1c_systemx_pqc
+            COMMAND ${CMAKE_COMMAND}
+              -DASN1C_OUTPUT_DIR=${_systemx_pqc_asn1_dir}
+              -DASN1C_SOURCE_FILE=${_systemx_pqc_asn1_source_file}
+              -P clean_asn1c.cmake
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} VERBATIM)
+        add_dependencies(clean_asn1c clean_asn1c_systemx_pqc)
+    endif()
     add_dependencies(generate_asn1c clean_asn1c)
 endif()
 
 function(add_asn1_component NAME)
+    cmake_parse_arguments(ARG "" "SOURCE_FILE;SOURCE_DIRECTORY" "" ${ARGN})
     string(REPLACE "/" "_" NAME_ESCAPED "${NAME}")
-    set(_source_file "asn1c_${NAME_ESCAPED}_sources.txt")
+    if(ARG_SOURCE_FILE)
+        set(_source_file "${ARG_SOURCE_FILE}")
+    else()
+        set(_source_file "asn1c_${NAME_ESCAPED}_sources.txt")
+    endif()
     file(STRINGS "${_source_file}" _sources REGEX "^[^#]+")
     if (NOT _sources)
         message(AUTHOR_WARNING "source file ${_source_file} is empty, fix this now!")
@@ -331,7 +403,12 @@ function(add_asn1_component NAME)
     endif()
 
     get_filename_component(_dir ${NAME} DIRECTORY)
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${NAME}
+    if(ARG_SOURCE_DIRECTORY)
+        set(_install_source "${ARG_SOURCE_DIRECTORY}")
+    else()
+        set(_install_source "${CMAKE_CURRENT_SOURCE_DIR}/${NAME}")
+    endif()
+    install(DIRECTORY ${_install_source}
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1/${_dir}
         FILES_MATCHING PATTERN "*.h")
 endfunction()
@@ -342,7 +419,14 @@ install(FILES memory.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/vanetza/asn1)
 
 add_asn1_component(its)
 add_asn1_component(its/r2)
-add_asn1_component(security)
+if(VANETZA_WITH_PQC)
+    add_asn1_component(security
+        SOURCE_FILE ${_systemx_pqc_asn1_source_file}
+        SOURCE_DIRECTORY ${_systemx_pqc_asn1_dir})
+    target_compile_definitions(asn1_security PUBLIC VANETZA_WITH_PQC)
+else()
+    add_asn1_component(security)
+endif()
 add_asn1_component(security/r2)
 
 add_vanetza_component(asn1 asn1c_wrapper.cpp type_traits.cpp)

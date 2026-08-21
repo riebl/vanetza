@@ -2,7 +2,8 @@
 #define SECURED_MESSAGE_HPP_DCBC74AC
 
 #include <vanetza/asn1/asn1c_wrapper.hpp>
-#include <vanetza/asn1/security/EtsiTs103097Data.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(EtsiTs103097Data.h)
 #include <vanetza/common/archives.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/net/packet_variant.hpp>

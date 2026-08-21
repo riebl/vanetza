@@ -48,7 +48,14 @@ FWD_OCTET_STRING(Opaque)
 FWD_NATIVE_INTEGER(Latitude)
 FWD_NATIVE_INTEGER(Longitude)
 
+#ifdef VANETZA_WITH_PQC
+FWD_STRUCT(One28BitCcmCiphertext)
+namespace vanetza { namespace security { namespace v3 { namespace asn1 {
+using AesCcmCiphertext = One28BitCcmCiphertext;
+}}}}
+#else
 FWD_STRUCT(AesCcmCiphertext)
+#endif
 FWD_STRUCT(CertificateBase)
 FWD_STRUCT(CircularRegion)
 FWD_STRUCT(EccP256CurvePoint)

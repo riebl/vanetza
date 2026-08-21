@@ -1,5 +1,6 @@
 #pragma once
-#include <vanetza/asn1/security/Certificate.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(Certificate.h)
 #include <vanetza/security/v3/asn1_types.hpp>
 
 // forward declaration
