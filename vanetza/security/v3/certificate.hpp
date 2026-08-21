@@ -1,6 +1,7 @@
 #pragma once
 #include <vanetza/asn1/asn1c_wrapper.hpp>
-#include <vanetza/asn1/security/EtsiTs103097Certificate.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(EtsiTs103097Certificate.h)
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_fix.hpp>

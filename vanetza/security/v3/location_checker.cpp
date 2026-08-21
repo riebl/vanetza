@@ -1,8 +1,9 @@
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/geodesy/m49_code.hpp>
-#include <vanetza/asn1/security/IdentifiedRegion.h>
-#include <vanetza/asn1/security/SequenceOfIdentifiedRegion.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(IdentifiedRegion.h)
+#include VANETZA_ASN1_SECURITY_HEADER(SequenceOfIdentifiedRegion.h)
 #include <vanetza/security/v3/asn1_types.hpp>
 #include <vanetza/security/v3/distance.hpp>
 #include <vanetza/security/v3/geometry.hpp>

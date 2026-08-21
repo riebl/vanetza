@@ -1,7 +1,8 @@
 #include <vanetza/common/position_fix.hpp>
-#include <vanetza/asn1/security/Latitude.h>
-#include <vanetza/asn1/security/Longitude.h>
-#include <vanetza/asn1/security/TwoDLocation.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(Latitude.h)
+#include VANETZA_ASN1_SECURITY_HEADER(Longitude.h)
+#include VANETZA_ASN1_SECURITY_HEADER(TwoDLocation.h)
 #include <vanetza/security/v3/distance.hpp>
 #include <boost/units/cmath.hpp>
 

@@ -1,6 +1,7 @@
 #pragma once
-#include <vanetza/asn1/security/HashedId3.h>
-#include <vanetza/asn1/security/HashedId8.h>
+#include <vanetza/asn1/security_profile.hpp>
+#include VANETZA_ASN1_SECURITY_HEADER(HashedId3.h)
+#include VANETZA_ASN1_SECURITY_HEADER(HashedId8.h)
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/hashed_id.hpp>
 #include <vanetza/security/v3/asn1_types.hpp>
