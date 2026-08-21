@@ -1,0 +1,45 @@
+name: hybrid PQC build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  hybrid-pqc:
+    name: hybrid PQC
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build \
+            libboost-date-time-dev libboost-program-options-dev \
+            libboost-system-dev libcrypto++-dev libgeographiclib-dev \
+            libssl-dev
+
+      - name: Configure
+        run: >
+          cmake -S . -B build-hybrid-pqc -G Ninja
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_CXX_STANDARD=14
+          -DCMAKE_CXX_STANDARD_REQUIRED=ON
+          -DCMAKE_CXX_EXTENSIONS=OFF
+          -DVANETZA_WITH_PQC=ON
+          -DVANETZA_WITH_CRYPTOPP=ON
+          -DVANETZA_WITH_OPENSSL=ON
+          -DVANETZA_WITH_RPC=OFF
+          -DBUILD_PKI=OFF
+          -DBUILD_CERTIFY=ON
+          -DBUILD_SOCKTAP=ON
+          -DBUILD_TESTS=ON
+
+      - name: Build
+        run: cmake --build build-hybrid-pqc --parallel 2
+
+      - name: Test
+        run: ctest --test-dir build-hybrid-pqc --output-on-failure
