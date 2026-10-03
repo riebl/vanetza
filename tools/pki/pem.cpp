@@ -38,8 +38,9 @@ boost::optional<PrivateKey> parse_pem_private_key(const void* data, std::size_t 
 
     PrivateKey priv_key;
     priv_key.type = openssl_key_type_from_group_name(group);
-    priv_key.key.resize(BN_num_bytes(bn_priv_raw));
-    BN_bn2bin(bn_priv_raw, priv_key.key.data());
+    // keep leading zeros: the key has the length of its key type like generate_private_key()
+    const std::size_t length = security::key_length(priv_key.type);
+    priv_key.key = length ? make_buffer(bn_priv_raw, length) : make_buffer(bn_priv_raw);
 
     return priv_key;
 }

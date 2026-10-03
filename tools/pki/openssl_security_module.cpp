@@ -321,8 +321,7 @@ PublicKey OpenSslSecurityModule::create_key(KeyType type)
 
     PrivateKey priv_key;
     priv_key.type = type;
-    priv_key.key.resize(BN_num_bytes(bn_priv));
-    BN_bn2bin(bn_priv, priv_key.key.data());
+    priv_key.key = make_buffer(bn_priv, security::key_length(type));
 
     // store key pair in credential store
     m_credential_storage->store(pub_key, priv_key);
