@@ -1,6 +1,7 @@
 #include "header.hpp"
 #include <vanetza/common/serialization.hpp>
 #include <vanetza/common/serialization_buffer.hpp>
+#include <utility>
 
 namespace vanetza
 {
@@ -51,6 +52,8 @@ HeaderA parse_btp_a(ChunkPacket& packet)
     ByteBuffer tmp;
     packet[OsiLayer::Transport].convert(tmp);
     deserialize_from_buffer(hdr, tmp);
+    tmp.erase(tmp.begin(), tmp.begin() + HeaderA::length_bytes);
+    packet.layer(OsiLayer::Transport) = std::move(tmp);
     return hdr;
 }
 
@@ -85,6 +88,8 @@ HeaderB parse_btp_b(ChunkPacket& packet)
     ByteBuffer tmp;
     packet[OsiLayer::Transport].convert(tmp);
     deserialize_from_buffer(hdr, tmp);
+    tmp.erase(tmp.begin(), tmp.begin() + HeaderB::length_bytes);
+    packet.layer(OsiLayer::Transport) = std::move(tmp);
     return hdr;
 }
 
