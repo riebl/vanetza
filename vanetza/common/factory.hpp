@@ -19,7 +19,7 @@ public:
     using Result = std::unique_ptr<T>;
     using Function = std::function<Result(Args...)>;
 
-    Factory() : m_default(m_functions.end())
+    Factory() : m_has_default(false)
     {
     }
 
@@ -45,8 +45,11 @@ public:
     Result create(Args... args) const
     {
         std::unique_ptr<T> obj;
-        if (m_default != m_functions.end()) {
-            obj = m_default->second(std::forward<Args>(args)...);
+        if (m_has_default) {
+            auto found = m_functions.find(m_default_name);
+            if (found != m_functions.end()) {
+                obj = found->second(std::forward<Args>(args)...);
+            }
         }
         return obj;
     }
@@ -69,14 +72,17 @@ public:
      */
     bool configure_default(const std::string& name)
     {
-        m_default = m_functions.find(name);
-        return m_default != m_functions.end();
+        auto found = m_functions.find(name);
+        m_has_default = found != m_functions.end();
+        m_default_name = m_has_default ? name : std::string();
+        return m_has_default;
     }
 
 private:
     using map_type = std::map<std::string, Function>;
     map_type m_functions;
-    typename map_type::const_iterator m_default;
+    std::string m_default_name;
+    bool m_has_default;
 };
 
 } // namespace vanetza
