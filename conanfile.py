@@ -121,7 +121,6 @@ class VanetzaConan(ConanFile):
             "vanetza_common",
             "vanetza_asn1",
             "vanetza_asn1_its",
-            "vanetza_asn1_pki",
             "vanetza_asn1_security",
             "vanetza_asn1_support",
         ]
