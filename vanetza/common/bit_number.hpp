@@ -3,6 +3,7 @@
 
 #include <boost/operators.hpp>
 #include <cstddef>
+#include <cstdint>
 #include <type_traits>
 
 namespace vanetza {
@@ -22,7 +23,7 @@ class BitNumber : public boost::totally_ordered<BitNumber<T, WIDTH>>
             "width has to be less than size of underlying type");
 
 public:
-    static constexpr T mask = (1 << WIDTH) - 1; /**< excessive bits are masked */
+    static constexpr T mask = static_cast<T>((std::uintmax_t{1} << WIDTH) - 1); /**< excessive bits are masked */
     static constexpr std::size_t bits = WIDTH; /**< number of bits used */
     typedef T value_type; /**< underlying (integral) value type */
 
