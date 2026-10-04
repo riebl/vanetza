@@ -220,11 +220,9 @@ void print_indented(std::ostream& os, const ASN1_PREFIXED(CAM_t)* message, const
                 if (nullptr != rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneRadius)
                     prefix("Radius") << *(rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneRadius) << "\n";
                 #if ITS_RELEASE == 1
-                if (nullptr != rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneID)
-                    prefix("ID") << *(rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneID) << "\n";
+                print_optional_field(prefix, "ID", rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneID);
                 #else
-                if (nullptr != rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneId)
-                    prefix("ID") << *(rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneId) << "\n";
+                print_optional_field(prefix, "ID", rsu.protectedCommunicationZonesRSU->list.array[i]->protectedZoneId);
                 #endif
                 --level;
             }
