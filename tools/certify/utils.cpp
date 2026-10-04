@@ -5,7 +5,7 @@
 
 void permission_string_to_buffer(const std::string& in, vanetza::ByteBuffer& out)
 {
-    if (in.size() / 8 != out.size() - 1 /* version */) {
+    if (in.size() % 8 != 0 || in.size() / 8 != out.size() - 1 /* version */) {
         std::stringstream ss;
         ss << "Size mismatch, expected " << (out.size() - 1) << " bytes encoded with one bit per byte.";
         throw std::runtime_error(ss.str());
