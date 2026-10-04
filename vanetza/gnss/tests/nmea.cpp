@@ -14,7 +14,7 @@ TEST(NMEA, gprmc) {
     units::TrueNorth heading(273.4 * units::true_north_degrees);
 
     std::string rmc = nmea::gprmc(time, position, speed, heading);
-    EXPECT_EQ("$GPRMC,103215,A,4949.4096,N,1232.0580,W,9.4,273.4,051213,1.0,E,A*33", rmc);
+    EXPECT_EQ("$GPRMC,103215,A,4949.4096,N,01232.0580,W,9.4,273.4,051213,1.0,E,A*03", rmc);
 }
 
 TEST(NMEA, gpgga) {
