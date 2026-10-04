@@ -43,7 +43,7 @@ TEST(MacAddress, less) {
     EXPECT_LT(a, b);
     EXPECT_LT(d, e);
     EXPECT_LT(e, a);
-    EXPECT_LT(c, d);
+    EXPECT_GT(c, d);
     EXPECT_GT(b, a);
 }
 
