@@ -222,6 +222,7 @@ public:
 
     bool decode(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end)
     {
+        if (begin == end) return false;
         return vanetza::asn1::decode_per(base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end));
     }
 
@@ -273,6 +274,7 @@ public:
 
     bool decode(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end)
     {
+        if (begin == end) return false;
         return vanetza::asn1::decode_oer(base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end));
     }
 
@@ -319,6 +321,7 @@ public:
 
     bool decode(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end)
     {
+        if (begin == end) return false;
         return vanetza::asn1::decode_xer(base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end));
     }
 
