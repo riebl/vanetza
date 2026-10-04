@@ -32,7 +32,7 @@ public:
         std::unique_ptr<T> obj;
         auto found = m_functions.find(name);
         if (found != m_functions.end()) {
-            obj = found->second(std::forward<Args>(args)...);
+            obj = found->second(static_cast<Args&&>(args)...);
         }
         return obj;
     }
@@ -47,7 +47,7 @@ public:
         if (m_has_default) {
             auto found = m_functions.find(m_default_name);
             if (found != m_functions.end()) {
-                obj = found->second(std::forward<Args>(args)...);
+                obj = found->second(static_cast<Args&&>(args)...);
             }
         }
         return obj;
