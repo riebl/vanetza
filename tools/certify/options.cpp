@@ -49,6 +49,7 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     if (cmd == "--help") {
         std::cerr << global << std::endl;
         std::cerr << available_commands << std::endl;
+        return nullptr;
     } else if (cmd == "extract-public-key") {
         command.reset(new ExtractPublicKeyCommand());
     } else if (cmd == "generate-aa") {

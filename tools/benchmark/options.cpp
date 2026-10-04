@@ -44,6 +44,7 @@ std::unique_ptr<Case> parse_options(int argc, const char *argv[])
     if (name == "--help") {
         std::cerr << global << std::endl;
         std::cerr << available_commands << std::endl;
+        return nullptr;
     } else if (name == "security-signing") {
         instance.reset(new SecuritySigningCase());
     } else if (name == "security-validation") {

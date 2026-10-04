@@ -1,5 +1,6 @@
 #include "options.hpp"
 #include <iostream>
+#include <string>
 
 int main(int argc, const char** argv)
 {
@@ -7,7 +8,7 @@ int main(int argc, const char** argv)
         std::unique_ptr<Command> command = parse_options(argc, argv);
 
         if (!command) {
-            return 1;
+            return (argc == 2 && std::string(argv[1]) == "--help") ? 0 : 1;
         }
 
         return command->execute();
