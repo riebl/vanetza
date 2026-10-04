@@ -48,7 +48,7 @@ private:
     void repair();
 
     StateContainer m_states;
-    std::size_t m_current;
+    std::size_t m_current = 0;
 };
 
 /**

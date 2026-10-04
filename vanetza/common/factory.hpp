@@ -20,9 +20,7 @@ public:
     using Result = std::unique_ptr<T>;
     using Function = std::function<Result(Args...)>;
 
-    Factory() : m_has_default(false)
-    {
-    }
+    Factory() = default;
 
     /**
      * Create an instance of T using a named implementation
@@ -83,7 +81,7 @@ private:
     using map_type = std::map<std::string, Function>;
     map_type m_functions;
     std::string m_default_name;
-    bool m_has_default;
+    bool m_has_default = false;
 };
 
 } // namespace vanetza

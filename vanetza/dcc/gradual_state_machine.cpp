@@ -8,13 +8,13 @@ namespace dcc
 {
 
 GradualStateMachine::GradualStateMachine(const std::set<State>& states) :
-    m_states(states), m_current(0)
+    m_states(states)
 {
     repair();
 }
 
 GradualStateMachine::GradualStateMachine(std::set<State>&& states) :
-    m_states(std::move(states)), m_current(0)
+    m_states(std::move(states))
 {
     repair();
 }
