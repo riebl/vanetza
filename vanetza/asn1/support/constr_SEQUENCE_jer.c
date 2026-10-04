@@ -366,9 +366,7 @@ asn_enc_rval_t SEQUENCE_encode_jer(const asn_TYPE_descriptor_t *td,
         }
         if(tmper.encoded == -1) return tmper;
         er.encoded += tmper.encoded;
-        if (edx != td->elements_count - 1) {
-          bAddComma = 1;
-        }
+        bAddComma = 1;
     }
     if(!jmin) ASN__TEXT_INDENT(1, ilevel);
     ASN__CALLBACK("}", 1);
