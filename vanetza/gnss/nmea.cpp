@@ -24,7 +24,7 @@ void print_latitude(std::ostream& os, const Wgs84Point& point)
 {
     double degrees = point.lat.value();
     double minutes = std::modf(std::abs(degrees), &degrees) * 60.0;
-    os << boost::format("%03d%07.4f") % degrees % minutes;
+    os << boost::format("%02d%07.4f") % degrees % minutes;
     os << "," << (point.lat.value() >= 0.0 ? "N" : "S");
 }
 
@@ -37,7 +37,7 @@ void print_longitude(std::ostream& os, const Wgs84Point& point)
 {
     double degrees = point.lon.value();
     double minutes = std::modf(std::abs(degrees), &degrees) * 60.0;
-    os << boost::format("%02d%07.4f") % degrees % minutes;
+    os << boost::format("%03d%07.4f") % degrees % minutes;
     os << "," << (point.lon.value() >= 0.0 ? "E" : "W");
 }
 
