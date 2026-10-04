@@ -94,11 +94,15 @@ void CbfPacketBuffer::add(CbfPacket&& packet, Clock::duration timeout)
     if(timeout <= Clock::duration::zero()) return;
     m_stored_bytes += packet.length();
     const auto first_timer = m_timers.left.begin();
+    bool first_timer_removed = false;
 
     // do head drop if necessary
     while (m_stored_bytes > m_capacity_bytes && !m_packets.empty()) {
         m_stored_bytes -= m_packets.front().length();
         const auto id = identifier(m_packets.front());
+        const auto timer = m_timers.right.find(id);
+        first_timer_removed = first_timer_removed
+            || (timer != m_timers.right.end() && m_timers.project_left(timer) == first_timer);
         m_timers.right.erase(id);
         m_counter->remove(id);
         m_packets.pop_front();
@@ -117,7 +121,7 @@ void CbfPacketBuffer::add(CbfPacket&& packet, Clock::duration timeout)
     }
 
     // first expirying timer has changed (head drop or added packet)
-    if (m_timers.left.begin() != first_timer) {
+    if (!m_timers.empty() && (first_timer_removed || m_timers.left.begin() != first_timer)) {
         schedule_timer();
     }
     assert(m_packets.size() == m_timers.size());
@@ -128,11 +132,16 @@ void CbfPacketBuffer::update(const Identifier& id, Clock::duration timeout)
     auto& id_map = m_timers.right;
     auto found = id_map.find(id);
     if (found != id_map.end()) {
+        const bool was_first = m_timers.project_left(found) == m_timers.left.begin();
         const Timer& timer = found->second;
         CbfPacket& cbf_packet = *found->info;
         reduce_lifetime(timer, cbf_packet);
-        id_map.replace_data(found, Timer { m_runtime, timeout});
-        m_counter->increment(id);
+        if (id_map.replace_data(found, Timer { m_runtime, timeout})) {
+            if (was_first || m_timers.project_left(found) == m_timers.left.begin()) {
+                schedule_timer();
+            }
+            m_counter->increment(id);
+        }
     }
 }
 
