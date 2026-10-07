@@ -60,6 +60,7 @@ int ExtractPublicKeyCommand::execute()
 
         if (!certificate_key) {
             std::cerr << "Reading public key from certificate failed." << std::endl;
+            return 1;
         }
 
         public_key = *certificate_key;
