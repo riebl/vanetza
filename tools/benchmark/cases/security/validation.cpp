@@ -55,7 +55,8 @@ int SecurityValidationCase::execute()
 
     std::vector<std::unique_ptr<v2::CertificateProvider>> providers;
     std::vector<std::unique_ptr<SecurityEntity>> entities;
-    std::vector<SecuredMessage> secured_messages(identities);
+    std::vector<SecuredMessage> secured_messages;
+    secured_messages.reserve(identities);
 
     for (unsigned i = 0; i < identities; i++) {
         providers.emplace_back(new v2::NaiveCertificateProvider(runtime));
