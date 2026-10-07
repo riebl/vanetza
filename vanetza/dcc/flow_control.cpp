@@ -62,8 +62,9 @@ void FlowControl::enqueue(const DataRequest& request, std::unique_ptr<ChunkPacke
     const auto ac = map_profile_onto_ac(request.dcc_profile);
     auto expiry = m_runtime.now() + request.lifetime;
     while (m_queue_length > 0 && m_queues[ac].size() >= m_queue_length) {
+        auto dropped_packet = std::move(m_queues[ac].front().packet);
         m_queues[ac].pop_front();
-        m_packet_drop_hook(ac, packet.get());
+        m_packet_drop_hook(ac, dropped_packet.get());
     }
     m_queues[ac].emplace_back(expiry, request, std::move(packet));
 
