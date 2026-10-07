@@ -179,6 +179,12 @@ private:
     void schedule_timer();
 
     /**
+     * Get expiry of first expiring timer
+     * \return expiry time point if any timer is pending
+     */
+    boost::optional<Clock::time_point> earliest_expiry() const;
+
+    /**
      * Reduce packet lifetime by queueing time
      * \param timer contains queueing start time
      * \param packet associated packet
