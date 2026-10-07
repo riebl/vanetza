@@ -20,7 +20,7 @@ EthernetDevice::EthernetDevice(const char* devname) :
     inet_socket_(::socket(AF_INET, SOCK_DGRAM, 0)),
     interface_name_(devname)
 {
-    if (!inet_socket_) {
+    if (inet_socket_ < 0) {
         throw std::system_error(errno, std::system_category());
     }
 }
