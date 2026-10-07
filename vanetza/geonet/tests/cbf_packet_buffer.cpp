@@ -225,6 +225,36 @@ TEST_F(CbfPacketBufferTest, next_timer_expiry)
     EXPECT_EQ(milliseconds(1900), runtime.next() - runtime.now());
 }
 
+TEST_F(CbfPacketBufferTest, update_timer_becomes_first)
+{
+    const Address addr {{1, 2, 3, 4, 5, 6}};
+
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
+    buffer.add(create_packet(addr.mid(), 1), milliseconds(100));
+    buffer.add(create_packet(addr.mid(), 2), milliseconds(80));
+    EXPECT_EQ(milliseconds(80), runtime.next() - runtime.now());
+
+    runtime.trigger(milliseconds(10));
+    buffer.update(identifier(addr, SequenceNumber(1)), milliseconds(5));
+    EXPECT_EQ(milliseconds(5), runtime.next() - runtime.now());
+
+    runtime.trigger(milliseconds(5));
+    EXPECT_EQ(1, calls);
+}
+
+TEST_F(CbfPacketBufferTest, update_first_timer_postponed)
+{
+    const Address addr {{1, 2, 3, 4, 5, 6}};
+
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
+    buffer.add(create_packet(addr.mid(), 1), milliseconds(100));
+    buffer.add(create_packet(addr.mid(), 2), milliseconds(50));
+    EXPECT_EQ(milliseconds(50), runtime.next() - runtime.now());
+
+    buffer.update(identifier(addr, SequenceNumber(2)), milliseconds(200));
+    EXPECT_EQ(milliseconds(100), runtime.next() - runtime.now());
+}
+
 TEST_F(CbfPacketBufferTest, remove_sequence_number)
 {
     CbfPacketBuffer buffer(runtime, callback(), counter(), 8192);
@@ -283,6 +313,21 @@ TEST_F(CbfPacketBufferTest, capacity)
     runtime.trigger(seconds(2));
     EXPECT_EQ(3, calls);
     EXPECT_EQ(100, last_call_length);
+}
+
+TEST_F(CbfPacketBufferTest, capacity_head_drop_first_timer)
+{
+    CbfPacketBuffer buffer(runtime, callback(), counter(), 256);
+    buffer.add(create_packet(200), milliseconds(100));
+    EXPECT_EQ(milliseconds(100), runtime.next() - runtime.now());
+
+    // head drop removes packet with first expiring timer
+    buffer.add(create_packet(200), milliseconds(50));
+    EXPECT_EQ(milliseconds(50), runtime.next() - runtime.now());
+
+    runtime.trigger(milliseconds(50));
+    EXPECT_EQ(1, calls);
+    EXPECT_EQ(200, last_call_length);
 }
 
 TEST_F(CbfPacketBufferTest, packets_to_send)
