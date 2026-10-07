@@ -76,7 +76,6 @@ void TcpLink::accept(ip::tcp::endpoint ep)
     auto& sock = sockets_.back();
     sock.status(TcpSocket::ACCEPTING);
 
-    boost::system::error_code ec;
     std::cout << "Accept connetions at " << ep.address().to_string() << ":" << ep.port() << std::endl;
 
     acceptors_.find(ep)->second.async_accept(
@@ -84,14 +83,14 @@ void TcpLink::accept(ip::tcp::endpoint ep)
         boost::bind(
             &TcpLink::accept_handler,
             this,
-            ec,
+            boost::placeholders::_1,
             ep,
             &sock
         )
     );
 }
 
-void TcpLink::accept_handler(boost::system::error_code& ec, ip::tcp::endpoint ep, TcpSocket* sock)
+void TcpLink::accept_handler(const boost::system::error_code& ec, ip::tcp::endpoint ep, TcpSocket* sock)
 {
     if (!ec) {
        sock->status(TcpSocket::CONNECTED);

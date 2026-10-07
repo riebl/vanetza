@@ -59,7 +59,7 @@ public:
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;
     void connect(boost::asio::ip::tcp::endpoint);
     void accept(boost::asio::ip::tcp::endpoint);
-    void accept_handler(boost::system::error_code& ec, boost::asio::ip::tcp::endpoint ep, TcpSocket* sock);
+    void accept_handler(const boost::system::error_code& ec, boost::asio::ip::tcp::endpoint ep, TcpSocket* sock);
 
 private:
     std::list<TcpSocket> sockets_;
