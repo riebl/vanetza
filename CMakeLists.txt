@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.14)
-cmake_policy(VERSION 3.14...3.31)
-project(Vanetza VERSION 26.02)
+cmake_minimum_required(VERSION 3.18)
+cmake_policy(VERSION 3.18...3.31)
+project(Vanetza VERSION 26.09)
 set(VANETZA_SOVERSION 0)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
