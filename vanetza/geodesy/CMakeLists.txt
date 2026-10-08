@@ -4,6 +4,7 @@ add_vanetza_component(geodesy
     geodesy.cpp
     haversine.cpp
 )
+target_link_libraries(geodesy PUBLIC Boost::headers PRIVATE common)
 
 if(VANETZA_WITH_GEOGRAPHICLIB)
     target_sources(geodesy PRIVATE geographiclib.cpp)
@@ -41,7 +42,6 @@ if(VANETZA_EMBED_COUNTRY_DATA)
     )
 
     target_sources(geodesy PRIVATE "${_embedded_cpp}")
-    target_link_libraries(geodesy PRIVATE common)
     target_compile_definitions(geodesy PUBLIC VANETZA_WITH_EMBEDDED_COUNTRY_DATA)
 endif()
 
