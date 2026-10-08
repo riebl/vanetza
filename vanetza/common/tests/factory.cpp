@@ -8,6 +8,16 @@ TEST(Factory, copy_without_default)
     EXPECT_EQ(nullptr, copy.create());
 }
 
+TEST(Factory, default_presence_is_independent_of_name)
+{
+    vanetza::Factory<int> factory;
+    factory.add("", [] { return std::make_unique<int>(9); });
+    ASSERT_TRUE(factory.configure_default(""));
+    EXPECT_EQ(9, *factory.create());
+    EXPECT_FALSE(factory.configure_default("missing"));
+    EXPECT_EQ(nullptr, factory.create());
+}
+
 TEST(Factory, copied_default_survives_source_replacement)
 {
     vanetza::Factory<int> copy;

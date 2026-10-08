@@ -1,6 +1,7 @@
 #ifndef FACTORY_HPP_QLKNHPWZ
 #define FACTORY_HPP_QLKNHPWZ
 
+#include <boost/optional.hpp>
 #include <functional>
 #include <map>
 #include <memory>
@@ -44,8 +45,8 @@ public:
     Result create(Args... args) const
     {
         std::unique_ptr<T> obj;
-        if (m_has_default) {
-            auto found = m_functions.find(m_default_name);
+        if (m_default_name) {
+            auto found = m_functions.find(*m_default_name);
             if (found != m_functions.end()) {
                 obj = found->second(static_cast<Args&&>(args)...);
             }
@@ -72,16 +73,18 @@ public:
     bool configure_default(const std::string& name)
     {
         auto found = m_functions.find(name);
-        m_has_default = found != m_functions.end();
-        m_default_name = m_has_default ? name : std::string();
-        return m_has_default;
+        if (found != m_functions.end()) {
+            m_default_name = name;
+            return true;
+        }
+        m_default_name = boost::none;
+        return false;
     }
 
 private:
     using map_type = std::map<std::string, Function>;
     map_type m_functions;
-    std::string m_default_name;
-    bool m_has_default = false;
+    boost::optional<std::string> m_default_name;
 };
 
 } // namespace vanetza
