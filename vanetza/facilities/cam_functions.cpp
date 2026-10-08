@@ -11,6 +11,17 @@ namespace vanetza
 namespace facilities
 {
 
+namespace
+{
+template<typename T, typename Prefix>
+void print_optional_field(Prefix& prefix, const char* name, const T* value)
+{
+    if (value) {
+        prefix(name) << *value << "\n";
+    }
+}
+} // namespace
+
 using vanetza::units::Angle;
 
 static const auto microdegree = units::degree * units::si::micro;
