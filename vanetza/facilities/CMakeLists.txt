@@ -2,6 +2,7 @@ set(CXX_SOURCES
     cam_functions.cpp
     path_history.cpp
     path_point.cpp
+    spat_functions.cpp
 )
 
 add_vanetza_component(facilities ${CXX_SOURCES})
