@@ -1,6 +1,7 @@
 #ifndef GRADUAL_STATE_MACHINE_HPP_CGPVG4CS
 #define GRADUAL_STATE_MACHINE_HPP_CGPVG4CS
 
+#include <cstddef>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/channel_load.hpp>
 #include <vanetza/dcc/state_machine.hpp>
@@ -36,6 +37,8 @@ public:
 
     GradualStateMachine(const StateContainer&);
     GradualStateMachine(StateContainer&&);
+    GradualStateMachine(const GradualStateMachine&) = default;
+    GradualStateMachine& operator=(const GradualStateMachine&) = default;
 
     void update(ChannelLoad) override;
     Clock::duration transmission_interval() const override;
@@ -45,7 +48,7 @@ private:
     void repair();
 
     StateContainer m_states;
-    StateContainer::const_iterator m_current;
+    std::size_t m_current = 0;
 };
 
 /**

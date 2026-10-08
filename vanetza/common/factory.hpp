@@ -1,9 +1,11 @@
 #ifndef FACTORY_HPP_QLKNHPWZ
 #define FACTORY_HPP_QLKNHPWZ
 
+#include <boost/optional.hpp>
 #include <functional>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 namespace vanetza
@@ -19,9 +21,7 @@ public:
     using Result = std::unique_ptr<T>;
     using Function = std::function<Result(Args...)>;
 
-    Factory() : m_default(m_functions.end())
-    {
-    }
+    Factory() = default;
 
     /**
      * Create an instance of T using a named implementation
@@ -33,7 +33,7 @@ public:
         std::unique_ptr<T> obj;
         auto found = m_functions.find(name);
         if (found != m_functions.end()) {
-            obj = found->second(std::forward<Args>(args)...);
+            obj = found->second(static_cast<Args&&>(args)...);
         }
         return obj;
     }
@@ -45,8 +45,11 @@ public:
     Result create(Args... args) const
     {
         std::unique_ptr<T> obj;
-        if (m_default != m_functions.end()) {
-            obj = m_default->second(std::forward<Args>(args)...);
+        if (m_default_name) {
+            auto found = m_functions.find(*m_default_name);
+            if (found != m_functions.end()) {
+                obj = found->second(static_cast<Args&&>(args)...);
+            }
         }
         return obj;
     }
@@ -69,14 +72,19 @@ public:
      */
     bool configure_default(const std::string& name)
     {
-        m_default = m_functions.find(name);
-        return m_default != m_functions.end();
+        auto found = m_functions.find(name);
+        if (found != m_functions.end()) {
+            m_default_name = name;
+            return true;
+        }
+        m_default_name = boost::none;
+        return false;
     }
 
 private:
     using map_type = std::map<std::string, Function>;
     map_type m_functions;
-    typename map_type::const_iterator m_default;
+    boost::optional<std::string> m_default_name;
 };
 
 } // namespace vanetza
