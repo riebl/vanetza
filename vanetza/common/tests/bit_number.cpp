@@ -13,9 +13,9 @@ TEST(BitNumber, wide_mask) {
     EXPECT_EQ(value.raw(), UINT64_C(0xffffffffff));
 }
 
-TEST(BitNumber, zero_width_bool) {
-    BitNumber<bool, 0> value(true);
-    EXPECT_FALSE(value.raw());
+TEST(BitNumber, zero_width) {
+    BitNumber<uint8_t, 0> value(UINT8_MAX);
+    EXPECT_EQ(value.raw(), 0);
 }
 
 TEST(BitNumber, ctor) {

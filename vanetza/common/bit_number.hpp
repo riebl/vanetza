@@ -16,9 +16,7 @@ namespace vanetza {
 template<typename T, std::size_t WIDTH>
 class BitNumber : public boost::totally_ordered<BitNumber<T, WIDTH>>
 {
-    using unsigned_type = typename std::make_unsigned<
-        typename std::conditional<std::is_same<T, bool>::value, unsigned char, T>::type
-    >::type;
+    using unsigned_type = typename std::make_unsigned<T>::type;
     static_assert(std::is_integral<T>::value == true,
             "only integral types are supported");
     static_assert(sizeof(T) * 8 > WIDTH,
