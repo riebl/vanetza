@@ -83,7 +83,7 @@ endif()
 if(VANETZA_WITH_CRYPTOPP)
     set_property(TARGET security APPEND PROPERTY
         SOURCES backend_cryptopp.cpp)
-    target_link_libraries(security PRIVATE CryptoPP::CryptoPP)
+    target_link_libraries(security PRIVATE cryptopp::cryptopp)
     target_compile_definitions(security PUBLIC "VANETZA_WITH_CRYPTOPP")
 endif()
 

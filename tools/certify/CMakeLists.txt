@@ -3,8 +3,8 @@ if(NOT TARGET Boost::program_options)
     return()
 endif()
 
-if(NOT TARGET CryptoPP::CryptoPP)
-    message(STATUS "Skip build of certify because of missing CryptoPP dependency")
+if(NOT TARGET cryptopp::cryptopp)
+    message(STATUS "Skip build of certify because of missing Crypto++ dependency")
     return()
 endif()
 

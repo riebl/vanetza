@@ -3,8 +3,8 @@ if(NOT TARGET Boost::program_options)
     return()
 endif()
 
-if(NOT TARGET CryptoPP::CryptoPP)
-    message(STATUS "Skip build of certify-pqc because CryptoPP is unavailable")
+if(NOT TARGET cryptopp::cryptopp)
+    message(STATUS "Skip build of certify-pqc because Crypto++ is unavailable")
     return()
 endif()
 

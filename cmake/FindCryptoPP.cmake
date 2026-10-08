@@ -19,11 +19,13 @@ find_package_handle_standard_args(CryptoPP
     FOUND_VAR CryptoPP_FOUND
     VERSION_VAR CryptoPP_VERSION_STRING)
 
-if(CryptoPP_FOUND AND NOT TARGET CryptoPP::CryptoPP)
+if(CryptoPP_FOUND AND NOT TARGET CryptoPP::CryptoPP AND NOT TARGET cryptopp::cryptopp)
     add_library(CryptoPP::CryptoPP UNKNOWN IMPORTED)
     set_target_properties(CryptoPP::CryptoPP PROPERTIES
         IMPORTED_LOCATION "${CryptoPP_LIBRARY}"
         INTERFACE_INCLUDE_DIRECTORIES "${CryptoPP_INCLUDE_DIR}")
+    # cryptopp-modern uses cryptopp::cryptopp
+    add_library(cryptopp::cryptopp ALIAS CryptoPP::CryptoPP)
 endif()
 
 mark_as_advanced(CryptoPP_INCLUDE_DIR CryptoPP_LIBRARY)
