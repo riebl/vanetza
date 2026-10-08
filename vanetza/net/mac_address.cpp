@@ -33,8 +33,7 @@ bool operator==(const MacAddress& lhs, const MacAddress& rhs)
 
 bool operator<(const MacAddress& lhs, const MacAddress& rhs)
 {
-    return std::lexicographical_compare(
-        lhs.octets.cbegin(), lhs.octets.cend(), rhs.octets.cbegin(), rhs.octets.cend());
+    return (lhs.octets < rhs.octets);
 }
 
 bool parse_mac_address(const std::string& str, MacAddress& addr)
