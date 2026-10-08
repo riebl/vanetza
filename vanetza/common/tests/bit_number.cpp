@@ -22,6 +22,23 @@ TEST(BitNumber, mask) {
     EXPECT_EQ(b.raw(), 1);
 }
 
+TEST(BitNumber, wide_mask) {
+    BitNumber<uint32_t, 31> a(0xffffffffu);
+    EXPECT_EQ(a.raw(), 0x7fffffffu);
+
+    BitNumber<int32_t, 31> b(-1);
+    EXPECT_EQ(b.raw(), 0x7fffffff);
+
+    BitNumber<uint64_t, 32> c(0x123456789aull);
+    EXPECT_EQ(c.raw(), 0x3456789aull);
+
+    BitNumber<uint64_t, 40> d(0xff12345678abull);
+    EXPECT_EQ(d.raw(), 0x12345678abull);
+
+    BitNumber<int64_t, 63> e(-1);
+    EXPECT_EQ(e.raw(), 0x7fffffffffffffffll);
+}
+
 TEST(BitNumber, equality) {
     BitNumber<int8_t, 3> a;
     BitNumber<int8_t, 3> b(0);

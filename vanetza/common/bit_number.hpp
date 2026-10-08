@@ -18,11 +18,13 @@ class BitNumber : public boost::totally_ordered<BitNumber<T, WIDTH>>
 {
     static_assert(std::is_integral<T>::value == true,
             "only integral types are supported");
+    static_assert(std::is_same<T, bool>::value == false,
+            "bool is not supported as underlying type");
     static_assert(sizeof(T) * 8 > WIDTH,
             "width has to be less than size of underlying type");
 
 public:
-    static constexpr T mask = (1 << WIDTH) - 1; /**< excessive bits are masked */
+    static constexpr T mask = (typename std::make_unsigned<T>::type(1) << WIDTH) - 1; /**< excessive bits are masked */
     static constexpr std::size_t bits = WIDTH; /**< number of bits used */
     typedef T value_type; /**< underlying (integral) value type */
 
