@@ -5,7 +5,12 @@
 
 void permission_string_to_buffer(const std::string& in, vanetza::ByteBuffer& out)
 {
-    if (in.size() / 8 != out.size() - 1 /* version */) {
+    if (out.empty()) {
+        throw std::invalid_argument("SSP buffer lacks version byte.");
+    }
+
+    const std::size_t expected_bits = (out.size() - 1 /* version */) * 8;
+    if (in.size() != expected_bits) {
         std::stringstream ss;
         ss << "Size mismatch, expected " << (out.size() - 1) << " bytes encoded with one bit per byte.";
         throw std::runtime_error(ss.str());
