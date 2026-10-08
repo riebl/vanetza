@@ -3,14 +3,21 @@
 #include <vanetza/asn1/type_traits.hpp>
 #include <vanetza/asn1/its/Heading.h>
 #include <vanetza/asn1/its/PathHistory.h>
+#include <vanetza/asn1/its/ProtectedCommunicationZone.h>
+#include <vanetza/asn1/its/ProtectedCommunicationZonesRSU.h>
 #include <vanetza/asn1/its/ReferencePosition.h>
 #include <vanetza/asn1/its/r2/Heading.h>
 #include <vanetza/asn1/its/r2/PathHistory.h>
+#include <vanetza/asn1/its/r2/ProtectedCommunicationZone.h>
+#include <vanetza/asn1/its/r2/ProtectedCommunicationZonesRSU.h>
 #include <vanetza/asn1/its/r2/ReferencePosition.h>
+#include <vanetza/asn1/cam.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
 #include <boost/units/cmath.hpp>
 #include <boost/units/io.hpp>
 #include <cmath>
+#include <sstream>
+#include <string>
 
 namespace vanetza
 {
@@ -337,4 +344,79 @@ TYPED_TEST(CamFunctionsPathHistory, copy_truncates_after_long_stop)
     }
 
     asn1::reset(dest);
+}
+
+template<typename T>
+struct ProtectedZoneAccess;
+
+template<>
+struct ProtectedZoneAccess<asn1::r1::Cam>
+{
+    using Zone = ::ProtectedCommunicationZone;
+    using ZonesRSU = ::ProtectedCommunicationZonesRSU;
+    static constexpr auto hfc_PR_rsuContainer = ::HighFrequencyContainer_PR_rsuContainerHighFrequency;
+    static ::ProtectedZoneID_t*& zoneId(Zone& zone) { return zone.protectedZoneID; }
+};
+
+template<>
+struct ProtectedZoneAccess<asn1::r2::Cam>
+{
+    using Zone = ::Vanetza_ITS2_ProtectedCommunicationZone;
+    using ZonesRSU = ::Vanetza_ITS2_ProtectedCommunicationZonesRSU;
+    static constexpr auto hfc_PR_rsuContainer = ::Vanetza_ITS2_HighFrequencyContainer_PR_rsuContainerHighFrequency;
+    static ::Vanetza_ITS2_ProtectedZoneId_t*& zoneId(Zone& zone) { return zone.protectedZoneId; }
+};
+
+using CamTypes = ::testing::Types<asn1::r1::Cam, asn1::r2::Cam>;
+template<typename T>
+class CamFunctionsPrint : public ::testing::Test
+{
+};
+TYPED_TEST_SUITE(CamFunctionsPrint, CamTypes);
+
+TYPED_TEST(CamFunctionsPrint, protected_zone_optional_fields)
+{
+    using Access = ProtectedZoneAccess<TypeParam>;
+    using Zone = typename Access::Zone;
+
+    TypeParam cam;
+    auto& hfc = cam->cam.camParameters.highFrequencyContainer;
+    hfc.present = Access::hfc_PR_rsuContainer;
+    auto& zones = hfc.choice.rsuContainerHighFrequency.protectedCommunicationZonesRSU;
+    zones = asn1::allocate<typename Access::ZonesRSU>();
+
+    Zone* zone_with_radius = asn1::allocate<Zone>();
+    zone_with_radius->protectedZoneRadius = asn1::allocate<long>();
+    *zone_with_radius->protectedZoneRadius = 50;
+    ASN_SEQUENCE_ADD(zones, zone_with_radius);
+
+    Zone* zone_with_id = asn1::allocate<Zone>();
+    Access::zoneId(*zone_with_id) = asn1::allocate<long>();
+    *Access::zoneId(*zone_with_id) = 4711;
+    ASN_SEQUENCE_ADD(zones, zone_with_id);
+
+    std::ostringstream os;
+    print_indented(os, cam, "  ");
+    const std::string output = os.str();
+
+    // cut out the high frequency container, i.e. everything before the low frequency container
+    const auto hfc_begin = output.find("  High Frequency Container [RSU]: \n");
+    const auto hfc_end = output.find("  Low Frequency Container: ");
+    ASSERT_NE(std::string::npos, hfc_begin) << output;
+    ASSERT_NE(std::string::npos, hfc_end) << output;
+
+    // each zone lists only those optional fields which are present
+    const std::string expected_hfc =
+        "  High Frequency Container [RSU]: \n"
+        "    Protected Zone: \n"
+        "      Type: 0\n"
+        "      Latitude: 0\n"
+        "      Longitude: 0\n"
+        "      Radius: 50\n"
+        "    Protected Zone: \n"
+        "      Type: 0\n"
+        "      Latitude: 0\n"
+        "      Longitude: 0\n"
+        "      ID: 4711\n";
+    EXPECT_EQ(expected_hfc, output.substr(hfc_begin, hfc_end - hfc_begin));
 }
