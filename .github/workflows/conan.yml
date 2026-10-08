@@ -1,0 +1,32 @@
+name: conan package
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  conan-create:
+    name: conan create (${{matrix.name}})
+    # ConanCenter provides prebuilt Boost and OpenSSL binaries for this runner's GCC
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # Conan expects option values capitalized as in Python
+        include:
+          - {name: static,   shared: 'False', cryptopp: 'False', openssl: 'True'}
+          - {name: shared,   shared: 'True',  cryptopp: 'False', openssl: 'True'}
+          - {name: crypto++, shared: 'False', cryptopp: 'True',  openssl: 'False'}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Conan
+        run: |
+          pipx install conan
+          conan profile detect
+      - name: Create and test package
+        run: >
+          conan create . --build=missing
+          -o "vanetza/*:shared=${{matrix.shared}}"
+          -o "vanetza/*:with_cryptopp=${{matrix.cryptopp}}"
+          -o "vanetza/*:with_openssl=${{matrix.openssl}}"
+          -c tools.build:skip_test=True

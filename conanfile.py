@@ -1,10 +1,14 @@
 import os
 import re
+from typing import Optional
 
 from conan import ConanFile
 from conan.errors import ConanException
+from conan.tools.build import check_min_cppstd
 from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.scm import Git
+
+required_conan_version = ">=2.4"
 
 
 class VanetzaConan(ConanFile):
@@ -15,28 +19,23 @@ class VanetzaConan(ConanFile):
     package_type = "library"
     languages = "C", "C++"
     settings = "os", "compiler", "build_type", "arch"
+    implements = ["auto_shared_fpic"]
     options = {
         "fPIC": [True, False],
         "shared": [True, False],
-        "testing": [True, False],
         "with_cryptopp": [True, False],
         "with_openssl": [True, False],
-        "build_socktap": [True, False],
-        "build_certify": [True, False],
-        "build_benchmark": [True, False],
     }
     default_options = {
         "fPIC": True,
         "shared": False,
-        "testing": True,
         "with_cryptopp": False,
         "with_openssl": True,
-        "build_socktap": False,
-        "build_certify": False,
-        "build_benchmark": False,
     }
+    exports_sources = "CMakeLists.txt", "cmake/*", "gtest/CMakeLists.txt", "vanetza/*"
+    test_package_folder = "tools/conan_test"
 
-    def read_project_version(self) -> str | None:
+    def read_project_version(self) -> Optional[str]:
         version_re = re.compile(r"project\(Vanetza VERSION ([\d.]+)\)")
         with open(os.path.join(self.recipe_folder, "CMakeLists.txt")) as f:
             for line in f:
@@ -50,78 +49,59 @@ class VanetzaConan(ConanFile):
         if not project_version:
             raise ConanException("Could not read version from CMakeLists.txt")
 
-        git = Git(self)
+        self.version = project_version
+        git = Git(self, folder=self.recipe_folder)
         try:
             count = int(git.run(f"rev-list --count v{project_version}..HEAD"))
             if count > 0:
                 short_hash = git.run("rev-parse --short HEAD")
                 self.version = f"{project_version}-dev+{count}.{short_hash}"
         except Exception:
-            self.version = project_version
-
-    def config_options(self):
-        if self.settings.os == "Windows":
-            del self.options.fPIC
-
-    def configure(self):
-        if self.options.shared:
-            self.options.rm_safe("fPIC")
+            pass
 
     def layout(self):
         cmake_layout(self)
 
     def requirements(self):
-        self.requires("boost/[>=1.70]")
+        # Boost is part of Vanetza's public headers and exported link interface
+        self.requires("boost/[>=1.70]", transitive_headers=True, transitive_libs=True)
         self.requires("geographiclib/[>=1.37]")
         if self.options.with_cryptopp:
             self.requires("cryptopp/[>=5.6.1]")
         if self.options.with_openssl:
-            self.requires("openssl/[>=1.1 <4]")
+            self.requires("openssl/[>=1.1.1 <4]")
 
     def validate(self):
-        from conan.tools.build import check_min_cppstd
-
         check_min_cppstd(self, "14")
 
     def generate(self):
         tc = CMakeToolchain(self)
-        tc.variables["BUILD_SHARED_LIBS"] = self.options.shared
-        tc.variables["BUILD_TESTS"] = self.options.testing
-        tc.variables["VANETZA_WITH_CRYPTOPP"] = self.options.with_cryptopp
-        tc.variables["VANETZA_WITH_OPENSSL"] = self.options.with_openssl
-        tc.variables["BUILD_SOCKTAP"] = self.options.build_socktap
-        tc.variables["BUILD_CERTIFY"] = self.options.build_certify
-        tc.variables["BUILD_BENCHMARK"] = self.options.build_benchmark
+        tc.cache_variables["BUILD_TESTS"] = not self.conf.get("tools.build:skip_test", default=False, check_type=bool)
+        tc.cache_variables["VANETZA_WITH_CRYPTOPP"] = bool(self.options.with_cryptopp)
+        tc.cache_variables["VANETZA_WITH_OPENSSL"] = bool(self.options.with_openssl)
+        # pin auto-detected dependencies so libraries outside of Conan are never picked up
+        tc.cache_variables["VANETZA_WITH_GEOGRAPHICLIB"] = True
+        tc.cache_variables["VANETZA_WITH_RPC"] = False
+        # hybrid PQC requires liboqs, which is not available on ConanCenter
+        tc.cache_variables["VANETZA_WITH_PQC"] = False
         tc.generate()
         deps = CMakeDeps(self)
+        # Vanetza states minimum versions, but Conan's version files only accept the same major version by default
+        for dep in ("geographiclib", "cryptopp"):
+            deps.set_property(dep, "cmake_config_version_compat", "AnyNewerVersion")
         deps.generate()
 
     def build(self):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-        if self.options.testing:
-            cmake.test()
+        cmake.test()
 
     def package(self):
         cmake = CMake(self)
         cmake.install()
 
     def package_info(self):
-        # ordered from dependents to dependencies for correct static linking
-        self.cpp_info.libs = [
-            "vanetza_facilities",
-            "vanetza_btp",
-            "vanetza_geonet",
-            "vanetza_security",
-            "vanetza_dcc",
-            "vanetza_access",
-            "vanetza_net",
-            "vanetza_gnss",
-            "vanetza_common",
-            "vanetza_asn1",
-            "vanetza_asn1_its",
-            "vanetza_asn1_pki",
-            "vanetza_asn1_security",
-            "vanetza_asn1_support",
-        ]
+        # use Vanetza's CMake package configuration instead of one generated by Conan
+        self.cpp_info.set_property("cmake_find_mode", "none")
+        self.cpp_info.builddirs = [os.path.join("lib", "cmake", "Vanetza")]
