@@ -13,62 +13,66 @@
 #include <boost/units/io.hpp>
 #include <cmath>
 #include <sstream>
+#include <tuple>
 
-TEST(CamFunctionsPrinter, protected_zone_id_independent_of_radius_release1)
+class CamFunctionsPrinter : public ::testing::TestWithParam<std::tuple<bool, bool>>
 {
-    for (bool has_radius : { false, true }) {
-        for (bool has_id : { true, false }) {
-            vanetza::asn1::r1::Cam message;
-            auto& container = message->cam.camParameters.highFrequencyContainer;
-            container.present = HighFrequencyContainer_PR_rsuContainerHighFrequency;
-            auto* zones = vanetza::asn1::allocate<ProtectedCommunicationZonesRSU_t>();
-            container.choice.rsuContainerHighFrequency.protectedCommunicationZonesRSU = zones;
-            auto* zone = vanetza::asn1::allocate<ProtectedCommunicationZone_t>();
-            ASSERT_EQ(ASN_SEQUENCE_ADD(&zones->list, zone), 0);
-            if (has_radius) {
-                zone->protectedZoneRadius = vanetza::asn1::allocate<long>();
-                *zone->protectedZoneRadius = 42;
-            }
-            if (has_id) {
-                zone->protectedZoneID = vanetza::asn1::allocate<long>();
-                *zone->protectedZoneID = 123;
-            }
-            std::ostringstream output;
-            vanetza::facilities::print_indented(output, message, "  ", 0);
-            const auto text = output.str();
-            EXPECT_EQ(has_id, text.find("ID: 123\n") != std::string::npos);
-            EXPECT_EQ(has_radius, text.find("Radius: 42\n") != std::string::npos);
-        }
+};
+
+TEST_P(CamFunctionsPrinter, protected_zone_id_independent_of_radius_release1)
+{
+    const bool has_radius = std::get<0>(GetParam());
+    const bool has_id = std::get<1>(GetParam());
+    vanetza::asn1::r1::Cam message;
+    auto& container = message->cam.camParameters.highFrequencyContainer;
+    container.present = HighFrequencyContainer_PR_rsuContainerHighFrequency;
+    auto* zones = vanetza::asn1::allocate<ProtectedCommunicationZonesRSU_t>();
+    container.choice.rsuContainerHighFrequency.protectedCommunicationZonesRSU = zones;
+    auto* zone = vanetza::asn1::allocate<ProtectedCommunicationZone_t>();
+    ASSERT_EQ(ASN_SEQUENCE_ADD(&zones->list, zone), 0);
+    if (has_radius) {
+        zone->protectedZoneRadius = vanetza::asn1::allocate<long>();
+        *zone->protectedZoneRadius = 42;
     }
+    if (has_id) {
+        zone->protectedZoneID = vanetza::asn1::allocate<long>();
+        *zone->protectedZoneID = 123;
+    }
+    std::ostringstream output;
+    vanetza::facilities::print_indented(output, message, "  ", 0);
+    const auto text = output.str();
+    EXPECT_EQ(has_id, text.find("ID: 123\n") != std::string::npos);
+    EXPECT_EQ(has_radius, text.find("Radius: 42\n") != std::string::npos);
 }
 
-TEST(CamFunctionsPrinter, protected_zone_id_independent_of_radius_release2)
+TEST_P(CamFunctionsPrinter, protected_zone_id_independent_of_radius_release2)
 {
-    for (bool has_radius : { false, true }) {
-        for (bool has_id : { true, false }) {
-            vanetza::asn1::r2::Cam message;
-            auto& container = message->cam.camParameters.highFrequencyContainer;
-            container.present = Vanetza_ITS2_HighFrequencyContainer_PR_rsuContainerHighFrequency;
-            auto* zones = vanetza::asn1::allocate<Vanetza_ITS2_ProtectedCommunicationZonesRSU_t>();
-            container.choice.rsuContainerHighFrequency.protectedCommunicationZonesRSU = zones;
-            auto* zone = vanetza::asn1::allocate<Vanetza_ITS2_ProtectedCommunicationZone_t>();
-            ASSERT_EQ(ASN_SEQUENCE_ADD(&zones->list, zone), 0);
-            if (has_radius) {
-                zone->protectedZoneRadius = vanetza::asn1::allocate<long>();
-                *zone->protectedZoneRadius = 42;
-            }
-            if (has_id) {
-                zone->protectedZoneId = vanetza::asn1::allocate<long>();
-                *zone->protectedZoneId = 123;
-            }
-            std::ostringstream output;
-            vanetza::facilities::print_indented(output, message, "  ", 0);
-            const auto text = output.str();
-            EXPECT_EQ(has_id, text.find("ID: 123\n") != std::string::npos);
-            EXPECT_EQ(has_radius, text.find("Radius: 42\n") != std::string::npos);
-        }
+    const bool has_radius = std::get<0>(GetParam());
+    const bool has_id = std::get<1>(GetParam());
+    vanetza::asn1::r2::Cam message;
+    auto& container = message->cam.camParameters.highFrequencyContainer;
+    container.present = Vanetza_ITS2_HighFrequencyContainer_PR_rsuContainerHighFrequency;
+    auto* zones = vanetza::asn1::allocate<Vanetza_ITS2_ProtectedCommunicationZonesRSU_t>();
+    container.choice.rsuContainerHighFrequency.protectedCommunicationZonesRSU = zones;
+    auto* zone = vanetza::asn1::allocate<Vanetza_ITS2_ProtectedCommunicationZone_t>();
+    ASSERT_EQ(ASN_SEQUENCE_ADD(&zones->list, zone), 0);
+    if (has_radius) {
+        zone->protectedZoneRadius = vanetza::asn1::allocate<long>();
+        *zone->protectedZoneRadius = 42;
     }
+    if (has_id) {
+        zone->protectedZoneId = vanetza::asn1::allocate<long>();
+        *zone->protectedZoneId = 123;
+    }
+    std::ostringstream output;
+    vanetza::facilities::print_indented(output, message, "  ", 0);
+    const auto text = output.str();
+    EXPECT_EQ(has_id, text.find("ID: 123\n") != std::string::npos);
+    EXPECT_EQ(has_radius, text.find("Radius: 42\n") != std::string::npos);
 }
+
+INSTANTIATE_TEST_SUITE_P(Presence, CamFunctionsPrinter,
+    ::testing::Combine(::testing::Bool(), ::testing::Bool()));
 
 namespace vanetza
 {
