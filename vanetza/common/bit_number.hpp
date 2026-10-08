@@ -16,13 +16,14 @@ namespace vanetza {
 template<typename T, std::size_t WIDTH>
 class BitNumber : public boost::totally_ordered<BitNumber<T, WIDTH>>
 {
+    using unsigned_type = typename std::make_unsigned<T>::type;
     static_assert(std::is_integral<T>::value == true,
             "only integral types are supported");
     static_assert(sizeof(T) * 8 > WIDTH,
             "width has to be less than size of underlying type");
 
 public:
-    static constexpr T mask = (1 << WIDTH) - 1; /**< excessive bits are masked */
+    static constexpr T mask = static_cast<T>((unsigned_type{1} << WIDTH) - 1); /**< excessive bits are masked */
     static constexpr std::size_t bits = WIDTH; /**< number of bits used */
     typedef T value_type; /**< underlying (integral) value type */
 
