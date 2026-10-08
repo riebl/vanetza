@@ -4,6 +4,20 @@
 
 using namespace vanetza;
 
+TEST(BitNumber, wide_mask) {
+    constexpr auto unsigned_mask = BitNumber<uint64_t, 63>::mask;
+    constexpr auto signed_mask = BitNumber<int64_t, 63>::mask;
+    EXPECT_EQ(unsigned_mask, UINT64_C(0x7fffffffffffffff));
+    EXPECT_EQ(signed_mask, INT64_C(0x7fffffffffffffff));
+    BitNumber<uint64_t, 40> value(UINT64_MAX);
+    EXPECT_EQ(value.raw(), UINT64_C(0xffffffffff));
+}
+
+TEST(BitNumber, zero_width_bool) {
+    BitNumber<bool, 0> value(true);
+    EXPECT_FALSE(value.raw());
+}
+
 TEST(BitNumber, ctor) {
     BitNumber<uint32_t, 20> a;
     EXPECT_EQ(a.raw(), 0);
