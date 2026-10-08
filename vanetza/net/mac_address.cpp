@@ -33,12 +33,7 @@ bool operator==(const MacAddress& lhs, const MacAddress& rhs)
 
 bool operator<(const MacAddress& lhs, const MacAddress& rhs)
 {
-    for (std::size_t i = 0; i < MacAddress::length_bytes; ++i) {
-        if (lhs.octets[i] < rhs.octets[i]) {
-            return true;
-        }
-    }
-    return false;
+    return (lhs.octets < rhs.octets);
 }
 
 bool parse_mac_address(const std::string& str, MacAddress& addr)
