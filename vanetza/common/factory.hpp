@@ -1,9 +1,11 @@
 #ifndef FACTORY_HPP_QLKNHPWZ
 #define FACTORY_HPP_QLKNHPWZ
 
+#include <boost/optional/optional.hpp>
 #include <functional>
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 
 namespace vanetza
@@ -18,10 +20,6 @@ class Factory
 public:
     using Result = std::unique_ptr<T>;
     using Function = std::function<Result(Args...)>;
-
-    Factory() : m_default(m_functions.end())
-    {
-    }
 
     /**
      * Create an instance of T using a named implementation
@@ -45,8 +43,8 @@ public:
     Result create(Args... args) const
     {
         std::unique_ptr<T> obj;
-        if (m_default != m_functions.end()) {
-            obj = m_default->second(std::forward<Args>(args)...);
+        if (m_default) {
+            obj = create(*m_default, std::forward<Args>(args)...);
         }
         return obj;
     }
@@ -69,14 +67,18 @@ public:
      */
     bool configure_default(const std::string& name)
     {
-        m_default = m_functions.find(name);
-        return m_default != m_functions.end();
+        if (m_functions.find(name) != m_functions.end()) {
+            m_default = name;
+            return true;
+        } else {
+            m_default = boost::none;
+            return false;
+        }
     }
 
 private:
-    using map_type = std::map<std::string, Function>;
-    map_type m_functions;
-    typename map_type::const_iterator m_default;
+    std::map<std::string, Function> m_functions;
+    boost::optional<std::string> m_default;
 };
 
 } // namespace vanetza
