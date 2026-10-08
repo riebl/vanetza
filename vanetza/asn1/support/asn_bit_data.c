@@ -23,7 +23,9 @@ asn_bit_data_new_contiguous(const void *data, size_t size_bits) {
         return NULL;
     }
     bytes = (void *)(((char *)pd) + sizeof(*pd));
-    memcpy(bytes, data, size_bytes);
+    if(size_bytes) {
+        memcpy(bytes, data, size_bytes);
+    }
     bytes[size_bytes] = 0;
     pd->buffer = bytes;
     pd->nboff = 0;
