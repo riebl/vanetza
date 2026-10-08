@@ -1,4 +1,5 @@
 #include "credential_filesystem_storage.hpp"
+#include "keys.hpp"
 #include <gtest/gtest.h>
 #include <fstream>
 #include <set>
@@ -129,4 +130,25 @@ TEST_F(CredentialFilesystemStorageTest, discard_by_name_returns_false_for_unknow
     std::filesystem::create_directories(root);
     CredentialFilesystemStorage storage(root);
     EXPECT_FALSE(storage.discard("020000000000000000000000000000000000000000000000000000000000000000"));
+}
+
+TEST_F(CredentialFilesystemStorageTest, fetch_keeps_leading_zeros)
+{
+    CredentialFilesystemStorage storage(root);
+    for (KeyType type : { KeyType::NistP256, KeyType::BrainpoolP256r1, KeyType::BrainpoolP384r1 }) {
+        const std::size_t width = vanetza::security::key_length(type);
+        PrivateKey priv { type, vanetza::ByteBuffer(width, 0x00) };
+        priv.key.back() = 0x01; // scalar 1
+        PrivateKey leading_zero { type, vanetza::ByteBuffer(width, 0x5a) };
+        leading_zero.key.front() = 0x00;
+
+        for (const PrivateKey& key : { priv, leading_zero }) {
+            const PublicKey pub = derive_public_key(key);
+            storage.store(pub, key);
+            boost::optional<PrivateKey> fetched = storage.fetch(pub);
+            ASSERT_TRUE(fetched);
+            EXPECT_EQ(key.type, fetched->type);
+            EXPECT_EQ(key.key, fetched->key);
+        }
+    }
 }

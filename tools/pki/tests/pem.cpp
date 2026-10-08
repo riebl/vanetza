@@ -43,3 +43,22 @@ TEST(WritePemPrivateKey, roundtrip_generated)
         EXPECT_EQ(generated.key, parsed->key);
     }
 }
+
+TEST(WritePemPrivateKey, roundtrip_keeps_leading_zeros)
+{
+    for (KeyType type : { KeyType::NistP256, KeyType::BrainpoolP256r1, KeyType::BrainpoolP384r1 }) {
+        const std::size_t width = vanetza::security::key_length(type);
+        // scalar 1 and a scalar with exactly one leading zero byte
+        PrivateKey one { type, vanetza::ByteBuffer(width, 0x00) };
+        one.key.back() = 0x01;
+        PrivateKey leading_zero { type, vanetza::ByteBuffer(width, 0x5a) };
+        leading_zero.key.front() = 0x00;
+
+        for (const PrivateKey& key : { one, leading_zero }) {
+            boost::optional<PrivateKey> parsed = parse_pem_private_key(make_pem(key));
+            ASSERT_TRUE(parsed);
+            EXPECT_EQ(key.type, parsed->type);
+            EXPECT_EQ(key.key, parsed->key);
+        }
+    }
+}
