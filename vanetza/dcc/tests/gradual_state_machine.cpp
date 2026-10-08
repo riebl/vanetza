@@ -58,3 +58,52 @@ TEST(GradualStateMachine, one_state)
     EXPECT_EQ("Relaxed", fsm.state());
 }
 
+
+TEST(GradualStateMachine, copy)
+{
+    GradualStateMachine original(etsiStates1ms);
+    original.update(ChannelLoad { 0.5 });
+    ASSERT_EQ("Active 1", original.state());
+
+    GradualStateMachine copy_constructed(original);
+    GradualStateMachine copy_assigned(etsiStates500us);
+    copy_assigned = original;
+
+    // overwrite original's states: copies must not be affected
+    const GradualStateMachine other(GradualStateMachine::StateContainer {
+        { ChannelLoad(0.0), milliseconds(1) },
+        { ChannelLoad(0.1), milliseconds(2) },
+        { ChannelLoad(0.2), milliseconds(3) },
+        { ChannelLoad(0.3), milliseconds(4) },
+        { ChannelLoad(0.4), milliseconds(5) }
+    });
+    original = other;
+
+    for (GradualStateMachine* copy : { &copy_constructed, &copy_assigned }) {
+        ASSERT_EQ(milliseconds(200), copy->transmission_interval());
+        EXPECT_EQ("Active 1", copy->state());
+        copy->update(ChannelLoad { 0.5 });
+        EXPECT_EQ("Active 2", copy->state());
+        EXPECT_EQ(milliseconds(400), copy->transmission_interval());
+    }
+}
+
+TEST(GradualStateMachine, unsorted_states)
+{
+    GradualStateMachine fsm(GradualStateMachine::StateContainer {
+        { ChannelLoad(0.6), milliseconds(1000) },
+        { ChannelLoad(0.3), milliseconds(200) },
+        { ChannelLoad(0.0), milliseconds(100) },
+        { ChannelLoad(0.3), milliseconds(300) } // duplicate limit: ignored
+    });
+    EXPECT_EQ("Relaxed", fsm.state());
+    EXPECT_EQ(milliseconds(100), fsm.transmission_interval());
+
+    fsm.update(ChannelLoad { 0.7 });
+    EXPECT_EQ("Active 1", fsm.state());
+    EXPECT_EQ(milliseconds(200), fsm.transmission_interval());
+
+    fsm.update(ChannelLoad { 0.7 });
+    EXPECT_EQ("Restrictive", fsm.state());
+    EXPECT_EQ(milliseconds(1000), fsm.transmission_interval());
+}

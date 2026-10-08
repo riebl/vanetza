@@ -4,8 +4,9 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/dcc/channel_load.hpp>
 #include <vanetza/dcc/state_machine.hpp>
-#include <set>
+#include <cstddef>
 #include <string>
+#include <vector>
 
 namespace vanetza
 {
@@ -32,8 +33,14 @@ public:
 
         bool operator<(const State& other) const { return lower_limit < other.lower_limit; }
     };
-    using StateContainer = std::set<State>;
+    using StateContainer = std::vector<State>;
 
+    /**
+     * Create state machine from given states
+     *
+     * States can be given in any order, they get sorted by their lower limit.
+     * Only the first one of several states with equal lower limit is used.
+     */
     GradualStateMachine(const StateContainer&);
     GradualStateMachine(StateContainer&&);
 
@@ -45,7 +52,7 @@ private:
     void repair();
 
     StateContainer m_states;
-    StateContainer::const_iterator m_current;
+    std::size_t m_current;
 };
 
 /**
