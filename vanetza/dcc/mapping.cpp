@@ -26,7 +26,6 @@ access::AccessCategory map_profile_onto_ac(Profile dp_id)
             break;
         default:
             throw std::invalid_argument("Invalid DCC Profile ID");
-            break;
     }
 
     return ac;
