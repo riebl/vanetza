@@ -4,7 +4,7 @@ export DEBIAN_FRONTEND=noninteractive
 
 install_kitware_repo() {
     GPG_KEYFILE=/usr/share/keyrings/kitware-archive-keyring.gpg
-    wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor > $GPG_KEYFILE
+    wget --https-only -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | gpg --dearmor > $GPG_KEYFILE
     echo "deb [signed-by=$GPG_KEYFILE] https://apt.kitware.com/ubuntu/ ${UBUNTU_CODENAME} main" > /etc/apt/sources.list.d/kitware.list
     echo "Added Kitware repository for Ubuntu $UBUNTU_CODENAME"
 }
