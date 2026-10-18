@@ -2,6 +2,7 @@
 #define BYTE_BUFFER_CONVERTIBLE_HPP_CFOQNR35
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <boost/type_traits/is_complete.hpp>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -22,6 +23,9 @@ struct byte_buffer
 
 template<class T>
 struct byte_buffer_impl;
+
+template<class T>
+struct has_impl : boost::is_complete<byte_buffer_impl<std::decay_t<T>>> {};
 
 template<>
 struct byte_buffer_impl<ByteBuffer> : public byte_buffer
@@ -83,9 +87,9 @@ public:
     ByteBufferConvertible(std::unique_ptr<convertible::byte_buffer> ptr) :
         m_wrapper(std::move(ptr)) {}
 
-    template<class T>
+    template<class T, typename = std::enable_if_t<convertible::has_impl<T>::value>>
     ByteBufferConvertible(T&& t) :
-        m_wrapper(new convertible::byte_buffer_impl<typename std::decay<T>::type>(std::forward<T>(t))) {}
+        m_wrapper(new convertible::byte_buffer_impl<std::decay_t<T>>(std::forward<T>(t))) {}
 
     ByteBufferConvertible(const ByteBufferConvertible&);
     ByteBufferConvertible& operator=(const ByteBufferConvertible&);
