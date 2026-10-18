@@ -56,3 +56,61 @@ TEST(CertificateV3, implicit_certificate_digest)
     ASSERT_TRUE(digest);
     EXPECT_EQ(expected, *digest);
 }
+
+// build a certificate whose validity period starts at `start` and lasts for the given duration
+inline v3::Certificate make_validity_duration(v3::Time32 start, Vanetza_Security_Duration_PR unit, long value)
+{
+    v3::Certificate cert = fake_implicit_certificate();
+    auto& period = cert->toBeSigned.validityPeriod;
+    period.start = start;
+    period.duration.present = unit;
+    switch (unit)
+    {
+    case Vanetza_Security_Duration_PR_microseconds:
+        period.duration.choice.microseconds = value;
+        break;
+    case Vanetza_Security_Duration_PR_milliseconds:
+        period.duration.choice.milliseconds = value;
+        break;
+    case Vanetza_Security_Duration_PR_seconds:
+        period.duration.choice.seconds = value;
+        break;
+    case Vanetza_Security_Duration_PR_minutes:
+        period.duration.choice.minutes = value;
+        break;
+    case Vanetza_Security_Duration_PR_hours:
+        period.duration.choice.hours = value;
+        break;
+    case Vanetza_Security_Duration_PR_sixtyHours:
+        period.duration.choice.sixtyHours = value;
+        break;
+    case Vanetza_Security_Duration_PR_years:
+        period.duration.choice.years = value;
+        break;
+    default:
+        break;
+    }
+    return cert;
+}
+
+TEST(CertificateV3, validity_duration_units)
+{
+    const v3::Time32 start = 1000;
+    auto end = [start](Vanetza_Security_Duration_PR unit, long value) {
+        return make_validity_duration(start, unit, value).get_start_and_end_validity().end_validity;
+    };
+
+    EXPECT_EQ(start, end(Vanetza_Security_Duration_PR_NOTHING, 0));
+    EXPECT_EQ(start + 500, end(Vanetza_Security_Duration_PR_seconds, 500));
+    EXPECT_EQ(start + 10 * 60, end(Vanetza_Security_Duration_PR_minutes, 10));
+    EXPECT_EQ(start + 2 * 60 * 60, end(Vanetza_Security_Duration_PR_hours, 2));
+    EXPECT_EQ(start + 60 * 60 * 60, end(Vanetza_Security_Duration_PR_sixtyHours, 1));
+    EXPECT_EQ(start + 60 * 60 * 24 * 365, end(Vanetza_Security_Duration_PR_years, 1));
+
+    // sub-second units truncate towards zero
+    EXPECT_EQ(start + 5, end(Vanetza_Security_Duration_PR_milliseconds, 5000));
+    EXPECT_EQ(start + 2, end(Vanetza_Security_Duration_PR_microseconds, 2000000));
+
+    // huge durations overflow Time32 but are not undefined behaviour
+    EXPECT_EQ(start + 1377453056, end(Vanetza_Security_Duration_PR_years, 8760));
+}

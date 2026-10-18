@@ -278,25 +278,25 @@ StartAndEndValidity CertificateView::get_start_and_end_validity() const
     case Vanetza_Security_Duration_PR_NOTHING:
         break;
     case Vanetza_Security_Duration_PR_microseconds:
-        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.microseconds/1000000;
+        duration += Time32(m_cert->toBeSigned.validityPeriod.duration.choice.microseconds) / 1000000;
         break;
     case Vanetza_Security_Duration_PR_milliseconds:
-        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.milliseconds/1000;
+        duration += Time32(m_cert->toBeSigned.validityPeriod.duration.choice.milliseconds) / 1000;
         break;
     case Vanetza_Security_Duration_PR_seconds:
-        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.seconds;
+        duration += Time32(m_cert->toBeSigned.validityPeriod.duration.choice.seconds);
         break;
     case Vanetza_Security_Duration_PR_minutes:
-        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.minutes*60;
+        duration += Time32(m_cert->toBeSigned.validityPeriod.duration.choice.minutes) * 60;
         break;
     case Vanetza_Security_Duration_PR_hours:
-        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.hours*60*60;
+        duration += Time32(m_cert->toBeSigned.validityPeriod.duration.choice.hours) * 60 * 60;
         break;
     case Vanetza_Security_Duration_PR_sixtyHours:
-        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.sixtyHours*60*60*60;
+        duration += Time32(m_cert->toBeSigned.validityPeriod.duration.choice.sixtyHours) * 60 * 60 * 60;
         break;
     case Vanetza_Security_Duration_PR_years:
-        duration += (int)m_cert->toBeSigned.validityPeriod.duration.choice.years*60*60*24*365;
+        duration += Time32(m_cert->toBeSigned.validityPeriod.duration.choice.years) * 60 * 60 * 24 * 365;
         break;
     default:
         break;
