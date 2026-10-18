@@ -56,9 +56,9 @@ void use_verify_service_component_expansion(StraightVerifyService*)
 }
 
 template<typename Arg, typename... Args>
-void use_verify_service_component_expansion(StraightVerifyService* service, Arg arg, Args... args)
+void use_verify_service_component_expansion(StraightVerifyService* service, Arg&& arg, Args&&... args)
 {
-    use_verify_service_component(service, arg);
+    use_verify_service_component(service, std::forward<Arg>(arg));
     use_verify_service_component_expansion(service, std::forward<Args>(args)...);
 }
 
@@ -138,7 +138,7 @@ protected:
     }
 
     template<typename... Args>
-    std::unique_ptr<VerifyService> create_verify_service(Args... args)
+    std::unique_ptr<VerifyService> create_verify_service(Args&&... args)
     {
         auto service = create_straight_verify_service();
         use_verify_service_component_expansion(service.get(), std::forward<Args>(args)...);
