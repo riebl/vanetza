@@ -59,7 +59,8 @@ TEST(ChunkPacket, self_assignment)
     ChunkPacket data;
     data[OsiLayer::Physical] = ByteBuffer(20);
     ASSERT_EQ(20, data.size());
-    data = data;
+    ChunkPacket& alias = data; // alias hides the intended self-assignment from compiler diagnostics
+    data = alias;
     EXPECT_EQ(20, data.size());
 }
 
