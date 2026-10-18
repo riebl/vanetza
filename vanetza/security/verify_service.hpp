@@ -47,8 +47,8 @@ struct VerifyRequest
 // parameters of SN-VERIFY.confirm (TS 102 723-8 V1.1.1)
 struct VerifyConfirm
 {
-    VerificationReport report; // mandatory
-    ItsAid its_aid; // mandatory
+    VerificationReport report = VerificationReport::Configuration_Problem; // mandatory
+    ItsAid its_aid = 0; // mandatory
     ByteBuffer permissions; // mandatory
     CertificateValidity certificate_validity; // non-standard extension
     boost::optional<HashedId8> certificate_id; // optional
