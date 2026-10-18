@@ -52,7 +52,8 @@ TEST(asn1c_wrapper, self_assignment) {
     test_wrapper wrapper(asn_DEF_VanetzaTest);
     OCTET_STRING_fromString(&wrapper->string, "1234");
     ASSERT_EQ(wrapper.size(), 5);
-    wrapper = wrapper;
+    test_wrapper& alias = wrapper; // alias hides the intended self-assignment from compiler diagnostics
+    wrapper = alias;
     EXPECT_EQ(wrapper.size(), 5);
 }
 
