@@ -1,5 +1,6 @@
 #include "credential_filesystem_storage.hpp"
 #include "keys.hpp"
+#include "unique_test_directory.hpp"
 #include <gtest/gtest.h>
 #include <fstream>
 #include <set>
@@ -40,7 +41,7 @@ class CredentialFilesystemStorageTest : public ::testing::Test
 protected:
     void SetUp() override
     {
-        root = std::filesystem::temp_directory_path() / "pki_unit_test" / "credentials";
+        root = create_unique_test_directory("pki_unit_test_credentials");
     }
 
     void TearDown() override

@@ -3,6 +3,7 @@
 #include "crl_test_fixture.hpp"
 #include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
+#include "unique_test_directory.hpp"
 #include <gtest/gtest.h>
 #include <fstream>
 
@@ -22,8 +23,7 @@ protected:
 
     void SetUp() override
     {
-        m_root = std::filesystem::temp_directory_path() / "pki_unit_test" / "crl_store";
-        std::filesystem::remove_all(m_root);
+        m_root = create_unique_test_directory("pki_unit_test_crl_store");
     }
 
     void TearDown() override

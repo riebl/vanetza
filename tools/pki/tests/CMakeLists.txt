@@ -2,7 +2,7 @@ include(UseGTest)
 
 configure_gtest_directory(
     INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/..
-    COMPILE_DEFINITIONS OPENSSL_API_COMPAT=0x10101000L
+    COMPILE_DEFINITIONS OPENSSL_API_COMPAT=0x10101000L WORK_DIR="${CMAKE_CURRENT_BINARY_DIR}"
     LINK_LIBRARIES pki_library)
 add_gtest(CertificateRevocationList certificate_revocation_list.cpp)
 add_gtest(CertificateRole certificate_role.cpp)

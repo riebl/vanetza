@@ -6,6 +6,7 @@
 #include "openssl_security_module.hpp"
 #include "stub_certificate.hpp"
 #include "stub_station_configuration.hpp"
+#include "unique_test_directory.hpp"
 #include <vanetza/security/public_key.hpp>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -39,8 +40,7 @@ class PruneTestFixture : public ::testing::Test
 protected:
     void SetUp() override
     {
-        root = std::filesystem::temp_directory_path() / "pki_unit_test_prune";
-        std::filesystem::remove_all(root);
+        root = create_unique_test_directory("pki_unit_test_prune");
 
         cfg.credentials = std::make_shared<MockCredentialStorage>();
         cfg.security = std::make_shared<OpenSslSecurityModule>(cfg.credentials);
