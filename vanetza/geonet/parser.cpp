@@ -57,13 +57,22 @@ std::size_t Parser::parse_secured(security::SecuredMessage& secured)
             if (sec_first_byte < 3) {
                 security::v2::SecuredMessage msg;
                 bytes = security::v2::deserialize(m_archive, msg);
-                secured = std::move(msg);
+                if (m_archive.is_good()) {
+                    secured = std::move(msg);
+                } else {
+                    bytes = 0;
+                }
             } else if (sec_first_byte == 3) {
                 security::v3::SecuredMessage msg;
                 bytes = security::v3::deserialize(m_archive, msg);
-                secured = std::move(msg);
+                if (m_archive.is_good()) {
+                    secured = std::move(msg);
+                } else {
+                    bytes = 0;
+                }
             }
         } catch (...) {
+            bytes = 0;
         }
         m_read_bytes += bytes;
     }
