@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/object_container.hpp>
+#include <memory>
 
 using namespace vanetza;
 
@@ -115,3 +116,28 @@ TEST(ObjectContainer, get)
     EXPECT_EQ(1, a.a);
 }
 
+TEST(ObjectContainer, custom_deleter)
+{
+    struct CountingDeleter
+    {
+        void operator()(ObjectA* obj) const { ++*counter; delete obj; }
+        int* counter;
+    };
+
+    int deleted = 0;
+    auto c = std::make_unique<ObjectContainer>();
+
+    std::unique_ptr<ObjectA, CountingDeleter> a { new ObjectA(), CountingDeleter { &deleted } };
+    EXPECT_TRUE(c->insert(std::move(a)));
+    EXPECT_NE(nullptr, c->find<ObjectA>());
+    EXPECT_EQ(0, deleted);
+
+    // rejected duplicate is released through its own deleter
+    std::unique_ptr<ObjectA, CountingDeleter> b { new ObjectA(), CountingDeleter { &deleted } };
+    EXPECT_FALSE(c->insert(std::move(b)));
+    EXPECT_EQ(1, deleted);
+
+    // container destruction releases its objects through their deleters
+    c.reset();
+    EXPECT_EQ(2, deleted);
+}
