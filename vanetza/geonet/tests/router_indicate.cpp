@@ -516,3 +516,28 @@ TEST_F(RouterIndicate, shb_secured_v3_message_certificate)
 
     ASSERT_TRUE(ind_ifc.m_last_packet);
 }
+
+TEST_F(RouterIndicate, bogus_secured_message_length_is_safe_when_non_strict)
+{
+    // continue packet handling even if secured message is not valid
+    mib.itsGnSnDecapResultHandling = geonet::SecurityDecapHandling::Non_Strict;
+
+    // contains secured messages (v2) declaring a huge (bogus) length
+    const ByteBuffer gn_payload = {
+        0x12, 0x00, 0x3c, 0x01, 0x02, 0x82,
+        0x01, 0x01, 0x80, 0x6d, 0xff, 0xb0,
+        0xf9, 0x67, 0x1c, 0x35, 0xb7, 0x80,
+        0x03, 0xd2, 0x34, 0xe5, 0x18, 0xe5,
+        0xdf, 0x88, 0xda, 0xdd, 0x93, 0xa4,
+        0x80, 0x6f
+    };
+
+    const MacAddress source { 0x02, 0x00, 0x00, 0x00, 0x00, 0x01 };
+    const MacAddress destination { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+    router.indicate(get_up_packet(gn_payload), source, destination);
+
+    // the message is rejected during parsing
+    EXPECT_TRUE(test_and_reset_packet_drop());
+    EXPECT_EQ(geonet::Router::PacketDropReason::Parse_Secured_Header, drop_reason);
+    EXPECT_EQ(nullptr, ind_ifc.m_last_packet.get());
+}
