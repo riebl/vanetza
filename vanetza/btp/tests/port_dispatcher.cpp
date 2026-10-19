@@ -96,6 +96,35 @@ TEST_F(BtpPortDispatcherTest, interactive) {
     EXPECT_EQ(1, handler.counter);
 }
 
+TEST_F(BtpPortDispatcherTest, get_interactive_handler) {
+    CounterIndicationInterface handler;
+    const port_type port { host_cast<uint16_t>(0x1234) };
+    const PortDispatcher& const_dispatcher = dispatcher;
+    EXPECT_EQ(nullptr, const_dispatcher.get_interactive_handler(port));
+
+    dispatcher.set_interactive_handler(port, &handler);
+    EXPECT_EQ(&handler, const_dispatcher.get_interactive_handler(port));
+    // registration is specific to BTP-A
+    EXPECT_EQ(nullptr, const_dispatcher.get_non_interactive_handler(port));
+
+    dispatcher.set_interactive_handler(port, nullptr);
+    EXPECT_EQ(nullptr, const_dispatcher.get_interactive_handler(port));
+}
+
+TEST_F(BtpPortDispatcherTest, get_non_interactive_handler) {
+    CounterIndicationInterface handler;
+    const PortDispatcher& const_dispatcher = dispatcher;
+    EXPECT_EQ(nullptr, const_dispatcher.get_non_interactive_handler(ports::CAM));
+
+    dispatcher.set_non_interactive_handler(ports::CAM, &handler);
+    EXPECT_EQ(&handler, const_dispatcher.get_non_interactive_handler(ports::CAM));
+    // registration is specific to BTP-B
+    EXPECT_EQ(nullptr, const_dispatcher.get_interactive_handler(ports::CAM));
+
+    dispatcher.set_non_interactive_handler(ports::CAM, nullptr);
+    EXPECT_EQ(nullptr, const_dispatcher.get_non_interactive_handler(ports::CAM));
+}
+
 TEST_F(BtpPortDispatcherTest, non_interactive) {
     ASSERT_EQ(undispatched_counter, 0);
     CounterIndicationInterface cam;

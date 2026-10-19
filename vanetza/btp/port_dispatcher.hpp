@@ -49,6 +49,20 @@ public:
     void set_non_interactive_handler(port_type, IndicationInterface*);
 
     /**
+     * Get handler registered for a BTP-A (interactive) port
+     * \param port BTP-A destination port
+     * \return registered handler or nullptr if none
+     */
+    IndicationInterface* get_interactive_handler(port_type) const;
+
+    /**
+     * Get handler registered for a BTP-B (non-interactive) port
+     * \param port BTP-B destination port
+     * \return registered handler or nullptr if none
+     */
+    IndicationInterface* get_non_interactive_handler(port_type) const;
+
+    /**
      * Add a hook listening for all incoming BTP packets
      * \param hook A hook implementing the promiscuous hook interface
      * \note Each registered hook is invoked only once per indication
@@ -73,6 +87,9 @@ public:
 private:
     typedef std::unordered_map<port_type, IndicationInterface*> port_map;
     typedef std::list<PromiscuousHook*> hook_list;
+
+    static IndicationInterface* find_handler(const port_map&, port_type);
+    static void set_handler(port_map&, port_type, IndicationInterface*);
 
     port_map m_interactive_handlers;
     port_map m_non_interactive_handlers;

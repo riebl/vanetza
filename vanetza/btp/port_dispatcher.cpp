@@ -51,14 +51,40 @@ void PortDispatcher::set_interactive_handler(
         port_type port,
         IndicationInterface* handler)
 {
-    m_interactive_handlers[port] = handler;
+    set_handler(m_interactive_handlers, port, handler);
 }
 
 void PortDispatcher::set_non_interactive_handler(
         port_type port,
         IndicationInterface* handler)
 {
-    m_non_interactive_handlers[port] = handler;
+    set_handler(m_non_interactive_handlers, port, handler);
+}
+
+IndicationInterface* PortDispatcher::get_interactive_handler(port_type port) const
+{
+    return find_handler(m_interactive_handlers, port);
+}
+
+IndicationInterface* PortDispatcher::get_non_interactive_handler(port_type port) const
+{
+    return find_handler(m_non_interactive_handlers, port);
+}
+
+IndicationInterface* PortDispatcher::find_handler(const port_map& handlers, port_type port)
+{
+    auto found = handlers.find(port);
+    return found != handlers.end() ? found->second : nullptr;
+}
+
+void PortDispatcher::set_handler(port_map& handlers, port_type port, IndicationInterface* handler)
+{
+    if (handler != nullptr) {
+        handlers[port] = handler;
+    } else {
+        // keep only live handlers in the map
+        handlers.erase(port);
+    }
 }
 
 void PortDispatcher::indicate(
@@ -71,9 +97,9 @@ void PortDispatcher::indicate(
 
     if (btp_ind) {
         if (btp_ind->source_port) {
-            handler = m_interactive_handlers[btp_ind->destination_port];
+            handler = get_interactive_handler(btp_ind->destination_port);
         } else {
-            handler = m_non_interactive_handlers[btp_ind->destination_port];
+            handler = get_non_interactive_handler(btp_ind->destination_port);
         }
 
         for (PromiscuousHook* hook : m_promiscuous_hooks) {
