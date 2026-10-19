@@ -19,7 +19,8 @@ CrlFilesystemStore::CrlFilesystemStore(std::shared_ptr<SecurityModule> security,
         }
         ByteBuffer buf = read(entry.path());
         CertificateRevocationList crl;
-        if (crl.decode(buf)) {
+        // an empty file is no CRL, see CertificateRevocationList::from_file
+        if (!buf.empty() && crl.decode(buf)) {
             index(crl);
         }
     }

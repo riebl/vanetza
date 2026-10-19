@@ -99,7 +99,9 @@ TEST_F(CrlFilesystemStoreTest, constructor_ignores_non_crl_files_and_garbage)
 {
     std::filesystem::create_directories(m_root);
     std::ofstream(m_root / "not_a_crl.txt") << "ignored";
-    std::ofstream(m_root / "garbage.crl") << "\x00\x01\x02";
+    std::ofstream { m_root / "empty.crl" };
+    const char garbage[] = { 0x00, 0x01, 0x02 };
+    std::ofstream(m_root / "garbage.crl", std::ios::binary).write(garbage, sizeof(garbage));
 
     HashedId8 issuer = make_id(0xAB);
     HashedId8 revoked = make_id(0x42);
