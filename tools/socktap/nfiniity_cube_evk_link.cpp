@@ -9,6 +9,7 @@
 #include <vanetza/common/byte_view.hpp>
 #include <vanetza/access/ethertype.hpp>
 
+#include <boost/asio/error.hpp>
 #include <boost/asio/placeholders.hpp>
 #include <boost/bind/bind.hpp>
 
@@ -22,51 +23,60 @@ CubeEvkLink::CubeEvkLink(boost::asio::io_context& io, boost::asio::ip::address r
     rx_socket_.open(radio_endpoint_rx.protocol());
     rx_socket_.bind(radio_endpoint_rx);
 
-    rx_socket_.async_receive_from(
-        boost::asio::buffer(received_data_), host_endpoint_,
-        boost::bind(&CubeEvkLink::handle_packet_received, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-
+    start_receive();
 }
 
-void CubeEvkLink::handle_packet_received(const boost::system::error_code& ec, size_t bytes) 
-{   
-    if (!ec) 
+void CubeEvkLink::start_receive()
+{
+    rx_socket_.async_receive_from(
+        boost::asio::buffer(received_data_), host_endpoint_,
+        boost::bind(&CubeEvkLink::handle_packet_received, this,
+            boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+}
+
+void CubeEvkLink::handle_packet_received(const boost::system::error_code& ec, size_t bytes)
+{
+    if (!ec)
     {
-        vanetza::ByteBuffer buf(received_data_.begin(), received_data_.begin() + bytes);
-
         GossipMessage gossipMessage;
-        gossipMessage.ParseFromArray(buf.data(), buf.size());
-
-        switch (gossipMessage.kind_case()) 
+        if (gossipMessage.ParseFromArray(received_data_.data(), bytes))
         {
-            case GossipMessage::KindCase::kCbr:
-            {
-                // got CBR; use this for your DCC
-                // const ChannelBusyRatio& cbr = gossipMessage.cbr();
-                // vanetza::dcc::ChannelLoad(cbr.busy(), cbr.total())
-                break;
-            }
-            case GossipMessage::KindCase::kLinklayerRx:
-            {
-                pass_message_to_router(std::unique_ptr<LinkLayerReception>{gossipMessage.release_linklayer_rx()});
-                break;
-            }
-            default:
-            {
-                std::cerr << "Received GossipMessage of unknown kind " << gossipMessage.kind_case() << std::endl;
-            }
+            handle_gossip_message(std::move(gossipMessage));
         }
-
-        rx_socket_.async_receive_from(
-            boost::asio::buffer(received_data_), host_endpoint_,
-            boost::bind(&CubeEvkLink::handle_packet_received, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-
+        else
+        {
+            std::cerr << "Dropped undecodable GossipMessage of " << bytes << " bytes" << std::endl;
+        }
+    }
+    else if (ec != boost::asio::error::operation_aborted)
+    {
+        std::cerr << "CubeEvkLink receive failed: " << ec.message() << std::endl;
     }
     else
     {
-        std::cerr << "CubeEvkLink::handle_packet_received went wrong: " << ec << std::endl;
+        // socket has been closed, receive loop ends here
+        return;
     }
 
+    start_receive();
+}
+
+void CubeEvkLink::handle_gossip_message(GossipMessage&& message)
+{
+    switch (message.kind_case())
+    {
+        case GossipMessage::KindCase::kCbr:
+            // got CBR; use this for your DCC
+            // const ChannelBusyRatio& cbr = message.cbr();
+            // vanetza::dcc::ChannelLoad(cbr.busy(), cbr.total())
+            break;
+        case GossipMessage::KindCase::kLinklayerRx:
+            pass_message_to_router(std::unique_ptr<LinkLayerReception>{message.release_linklayer_rx()});
+            break;
+        default:
+            std::cerr << "Received GossipMessage of unknown kind " << message.kind_case() << std::endl;
+            break;
+    }
 }
 
 void CubeEvkLink::request(const vanetza::access::DataRequest& request, std::unique_ptr<vanetza::ChunkPacket> packet)
@@ -75,8 +85,19 @@ void CubeEvkLink::request(const vanetza::access::DataRequest& request, std::uniq
     command.set_allocated_linklayer_tx(create_link_layer_tx(request, std::move(packet)).release());
     
     std::string serializedTransmission;
-    command.SerializeToString(&serializedTransmission);
-    tx_socket_.send(boost::asio::buffer(serializedTransmission));
+    if (command.SerializeToString(&serializedTransmission))
+    {
+        boost::system::error_code ec;
+        tx_socket_.send(boost::asio::buffer(serializedTransmission), 0, ec);
+        if (ec)
+        {
+            std::cerr << "CubeEvkLink transmission failed: " << ec.message() << std::endl;
+        }
+    }
+    else
+    {
+        std::cerr << "Failed to serialize CommandRequest" << std::endl;
+    }
 }
 
 void CubeEvkLink::indicate(IndicationCallback callback)

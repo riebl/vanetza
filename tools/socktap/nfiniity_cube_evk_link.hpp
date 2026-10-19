@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <memory>
 
+class GossipMessage;
 class LinkLayerReception;
 class LinkLayerTransmission;
 
@@ -18,7 +19,6 @@ class CubeEvkLink : public LinkLayer
 public:
     CubeEvkLink(boost::asio::io_context&, boost::asio::ip::address, unsigned int tx_port, unsigned int rx_port);
 
-    void handle_packet_received(const boost::system::error_code&, size_t);
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;
 
     void indicate(IndicationCallback callback) override;
@@ -33,6 +33,9 @@ private:
 
     std::array<uint8_t, 4096> received_data_;
 
+    void start_receive();
+    void handle_packet_received(const boost::system::error_code&, size_t);
+    void handle_gossip_message(GossipMessage&&);
     void pass_message_to_router(std::unique_ptr<LinkLayerReception>);
     std::unique_ptr<LinkLayerTransmission> create_link_layer_tx(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>);
 };
