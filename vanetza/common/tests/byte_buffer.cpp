@@ -21,7 +21,7 @@ TEST(ByteBuffer, buffer_cast) {
 
 TEST(ByteBuffer, buffer_copy) {
     A a;
-    strcpy(a.b, "123456789");
+    strncpy(a.b, "123456789", sizeof(a.b));
     auto copy = buffer_copy(a);
     ASSERT_EQ(copy.size(), 10);
     EXPECT_EQ(copy[0], '1');
