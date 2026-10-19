@@ -23,7 +23,7 @@ namespace
 
 struct Context
 {
-    Context(const MainConfig& c) : cfg(c)
+    explicit Context(const MainConfig& c) : cfg(c)
     {
     }
 
@@ -196,7 +196,7 @@ void fetch_ectl(Context& context, const HashedId8* tlm_id, bool dry_run)
 
     struct UpdateVisitor : CtlVisitor
     {
-        UpdateVisitor(std::shared_ptr<CertificateStorage> certs) : certificates(certs)
+        explicit UpdateVisitor(std::shared_ptr<CertificateStorage> certs) : certificates(certs)
         {
         }
 

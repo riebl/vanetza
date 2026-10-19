@@ -31,7 +31,7 @@ public:
 
     Duration();
     Duration(BitNumber<uint16_t, 13> value, Units unit);
-    Duration(uint16_t raw);
+    explicit Duration(uint16_t raw);
 
     uint16_t raw() const
     {

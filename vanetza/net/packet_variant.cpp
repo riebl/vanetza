@@ -60,7 +60,7 @@ std::size_t size(const PacketVariant& packet, OsiLayer layer)
 {
     struct size_visitor : public boost::static_visitor<std::size_t>
     {
-        size_visitor(OsiLayer layer) : m_layer(layer) {}
+        explicit size_visitor(OsiLayer layer) : m_layer(layer) {}
 
         std::size_t operator()(const CohesivePacket& packet)
         {
@@ -126,7 +126,7 @@ byte_view_range create_byte_view(const PacketVariant& packet, OsiLayer layer)
 {
     struct payload_visitor : public boost::static_visitor<byte_view_range>
     {
-        payload_visitor(OsiLayer layer) : m_layer(layer) {}
+        explicit payload_visitor(OsiLayer layer) : m_layer(layer) {}
 
         byte_view_range operator()(const CohesivePacket& packet)
         {
@@ -173,7 +173,7 @@ void serialize(OutputArchive& ar, const PacketVariant& packet)
 {
     struct serialize_visitor : public boost::static_visitor<>
     {
-        serialize_visitor(OutputArchive& _oa) : oa(_oa) {}
+        explicit serialize_visitor(OutputArchive& _oa) : oa(_oa) {}
 
         void operator()(const ChunkPacket& packet)
         {

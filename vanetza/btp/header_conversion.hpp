@@ -13,7 +13,7 @@ namespace convertible
 template<>
 struct byte_buffer_impl<btp::HeaderA> : public byte_buffer
 {
-    byte_buffer_impl(const btp::HeaderA& header) : m_header(header) {}
+    explicit byte_buffer_impl(const btp::HeaderA& header) : m_header(header) {}
     void convert(ByteBuffer& buffer) const override
     {
         buffer.clear();
@@ -27,7 +27,7 @@ struct byte_buffer_impl<btp::HeaderA> : public byte_buffer
 template<>
 struct byte_buffer_impl<btp::HeaderB> : public byte_buffer
 {
-    byte_buffer_impl(const btp::HeaderB& header) : m_header(header) {}
+    explicit byte_buffer_impl(const btp::HeaderB& header) : m_header(header) {}
     void convert(ByteBuffer& buffer) const override
     {
         buffer.clear();

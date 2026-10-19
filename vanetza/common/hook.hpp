@@ -73,7 +73,7 @@ public:
     using hook_type = Hook<Args...>;
     using callback_type = typename hook_type::callback_type;
 
-    HookRegistry(hook_type& hook) : m_hook(hook) {}
+    explicit HookRegistry(hook_type& hook) : m_hook(hook) {}
 
     void operator=(callback_type&& cb)
     {

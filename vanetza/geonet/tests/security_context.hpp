@@ -23,7 +23,7 @@ namespace vanetza
 class SecurityContext
 {
 public:
-    SecurityContext(Runtime& rt) :
+    explicit SecurityContext(Runtime& rt) :
         backend(security::create_backend("default")),
         certificate_provider(rt),
         cert_cache(rt),

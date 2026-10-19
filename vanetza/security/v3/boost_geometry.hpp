@@ -66,7 +66,7 @@ public:
     using iterator = TwoDLocationIterator;
     using const_iterator = TwoDLocationIterator;
 
-    PolygonalRegionRingAdapter(const asn1::PolygonalRegion& region);
+    explicit PolygonalRegionRingAdapter(const asn1::PolygonalRegion& region);
     iterator begin() const;
     iterator end() const;
     std::size_t size() const;

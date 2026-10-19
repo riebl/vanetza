@@ -11,7 +11,7 @@ class EthernetDevice
 public:
     using protocol = boost::asio::generic::raw_protocol;
 
-    EthernetDevice(const char* devname);
+    explicit EthernetDevice(const char* devname);
     EthernetDevice(const EthernetDevice&) = delete;
     EthernetDevice& operator=(const EthernetDevice&) = delete;
     ~EthernetDevice();

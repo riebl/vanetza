@@ -29,7 +29,7 @@ void serialize(OutputArchive& ar, const EncryptionParameter& param)
 {
     struct Encryption_visitor : public boost::static_visitor<>
     {
-        Encryption_visitor(OutputArchive& ar) :
+        explicit Encryption_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }

@@ -10,7 +10,7 @@ namespace rpc
 class AsioEventLoop : public kj::EventLoop
 {
 public:
-    AsioEventLoop(AsioEventPort& port) : kj::EventLoop(port)
+    explicit AsioEventLoop(AsioEventPort& port) : kj::EventLoop(port)
     {
         port.setLoop(this);
     }

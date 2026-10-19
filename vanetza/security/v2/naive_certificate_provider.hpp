@@ -26,7 +26,7 @@ namespace v2
 class NaiveCertificateProvider : public CertificateProvider
 {
 public:
-    NaiveCertificateProvider(const Runtime&);
+    explicit NaiveCertificateProvider(const Runtime&);
 
     /**
      * \brief get own certificate for signing

@@ -12,7 +12,7 @@ using namespace vanetza::geonet;
 
 struct FakePacket
 {
-    FakePacket(unsigned id) : id(id) {}
+    explicit FakePacket(unsigned id) : id(id) {}
 
     const unsigned id = 0;
     std::size_t length = 0;

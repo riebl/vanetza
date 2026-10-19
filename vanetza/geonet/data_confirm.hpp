@@ -26,7 +26,7 @@ struct DataConfirm
     };
 
     DataConfirm() : result_code(ResultCode::Accepted) {}
-    DataConfirm(ResultCode code) : result_code(code) {}
+    explicit DataConfirm(ResultCode code) : result_code(code) {}
     bool accepted() const { return result_code == ResultCode::Accepted; }
     bool rejected() const { return !accepted(); }
     ResultCode result_code;

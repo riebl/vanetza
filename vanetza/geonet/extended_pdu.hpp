@@ -31,7 +31,7 @@ public:
         m_basic(pdu.m_basic), m_common(pdu.m_common), m_extended(pdu.m_extended),
         m_secured(pdu.m_secured) {}
     ExtendedPdu& operator=(const ExtendedPdu&) = default;
-    ExtendedPdu(const MIB& mib) : m_basic(mib), m_common(mib) {}
+    explicit ExtendedPdu(const MIB& mib) : m_basic(mib), m_common(mib) {}
     ExtendedPdu(const DataRequest& request, const MIB& mib) :
         m_basic(request, mib), m_common(request, mib) {}
     ExtendedPdu(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended) :
@@ -39,7 +39,7 @@ public:
     ExtendedPdu(const BasicHeader& basic, const CommonHeader& common, const HEADER& extended,
             const SecuredMessage& secured) :
         m_basic(basic), m_common(common), m_extended(extended), m_secured(secured) {}
-    ExtendedPdu(const ExtendedPduConstRefs<HEADER>& pdu) :
+    explicit ExtendedPdu(const ExtendedPduConstRefs<HEADER>& pdu) :
         m_basic(pdu.basic()), m_common(pdu.common()), m_extended(pdu.extended()),
         m_secured(pdu.secured() ? boost::make_optional(*pdu.secured()) : boost::none) {}
 

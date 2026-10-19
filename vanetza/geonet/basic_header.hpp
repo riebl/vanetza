@@ -26,7 +26,7 @@ enum class NextHeaderBasic : uint8_t
 struct BasicHeader
 {
     BasicHeader();
-    BasicHeader(const MIB&);
+    explicit BasicHeader(const MIB&);
     BasicHeader(const DataRequest&, const MIB&);
     BasicHeader(const ShbDataRequest&, const MIB&);
 

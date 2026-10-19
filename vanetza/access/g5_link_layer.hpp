@@ -118,7 +118,7 @@ struct LlcSnapHeader
     std::array<std::uint8_t, 3> oui = {{ 0x00, 0x00, 0x00 }};
     uint16be_t protocol_id;
 
-    LlcSnapHeader(uint16be_t protocol_id) : protocol_id(protocol_id) {}
+    explicit LlcSnapHeader(uint16be_t protocol_id) : protocol_id(protocol_id) {}
 
     static constexpr std::size_t length_bytes = 8;
 };

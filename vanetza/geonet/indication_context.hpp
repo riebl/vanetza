@@ -55,7 +55,7 @@ public:
 class IndicationContextBasic : public IndicationContext
 {
 public:
-    IndicationContextBasic(const LinkLayer& ll) : m_link_layer(ll) {}
+    explicit IndicationContextBasic(const LinkLayer& ll) : m_link_layer(ll) {}
     const LinkLayer& link_layer() const override { return m_link_layer; }
     DataIndication& service_primitive() override { return m_service_primitive; }
     VariantPdu& pdu() override { return m_pdu; }
@@ -105,7 +105,7 @@ private:
 class IndicationContextSecured : public IndicationContext
 {
 public:
-    IndicationContextSecured(IndicationContextBasic& parent) : m_parent(parent) {}
+    explicit IndicationContextSecured(IndicationContextBasic& parent) : m_parent(parent) {}
     const LinkLayer& link_layer() const override { return m_parent.link_layer(); }
     DataIndication& service_primitive() override { return m_parent.service_primitive(); }
     VariantPdu& pdu() override { return m_parent.pdu(); }

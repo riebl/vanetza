@@ -46,7 +46,7 @@ namespace detail
 
 struct latitude
 {
-    latitude(const Wgs84Point& p) : point(p) {}
+    explicit latitude(const Wgs84Point& p) : point(p) {}
     friend std::ostream& operator<<(std::ostream& os, const latitude& lat)
     {
         print_latitude(os, lat.point);
@@ -58,7 +58,7 @@ struct latitude
 
 struct longitude
 {
-    longitude(const Wgs84Point& p) : point(p) {}
+    explicit longitude(const Wgs84Point& p) : point(p) {}
     friend std::ostream& operator<<(std::ostream& os, const longitude& lon)
     {
         print_longitude(os, lon.point);

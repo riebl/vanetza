@@ -14,7 +14,7 @@ namespace
 
 struct assign_compressed_ecc_point : public boost::static_visitor<>
 {
-    assign_compressed_ecc_point(Vanetza_Security_EccP256CurvePoint* point) : point(point)
+    explicit assign_compressed_ecc_point(Vanetza_Security_EccP256CurvePoint* point) : point(point)
     {
     }
 

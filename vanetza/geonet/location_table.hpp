@@ -18,7 +18,7 @@ namespace geonet
 class LocationTableEntry
 {
 public:
-    LocationTableEntry(const Runtime& rt);
+    explicit LocationTableEntry(const Runtime& rt);
 
     const Address& geonet_address() const;
     const MacAddress& link_layer_address() const;
@@ -97,7 +97,7 @@ private:
 class LocationTableEntryCreator
 {
 public:
-    LocationTableEntryCreator(const Runtime& rt) : m_runtime(rt) {}
+    explicit LocationTableEntryCreator(const Runtime& rt) : m_runtime(rt) {}
     LocationTableEntry operator()() { return LocationTableEntry(m_runtime); }
 
 private:

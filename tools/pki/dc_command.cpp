@@ -20,7 +20,7 @@ const HashedId8Validator hid8_validator;
 
 struct Context
 {
-    Context(const MainConfig& c) : cfg(c)
+    explicit Context(const MainConfig& c) : cfg(c)
     {
     }
 

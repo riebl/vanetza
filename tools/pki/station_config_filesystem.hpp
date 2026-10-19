@@ -11,7 +11,7 @@ namespace pki
 class StationConfigurationFilesystem : public StationConfiguration
 {
 public:
-    StationConfigurationFilesystem(const std::filesystem::path&);
+    explicit StationConfigurationFilesystem(const std::filesystem::path&);
 
     std::string get_canonical_identifier() const override;
     void set_canonical_identifier(const std::string&) override;

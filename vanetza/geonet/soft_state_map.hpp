@@ -55,7 +55,7 @@ private:
 
     struct ValueWithHandle
     {
-        ValueWithHandle(mapped_type&& v) : value(std::move(v)) {}
+        explicit ValueWithHandle(mapped_type&& v) : value(std::move(v)) {}
 
         typename heap_type::handle_type handle;
         mapped_type value;
@@ -76,7 +76,7 @@ public:
      * \note This constructor is only available if CTOR is default constructible
      */
     template<typename T = CTOR>
-    SoftStateMap(const Runtime& rt, typename std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr) :
+    explicit SoftStateMap(const Runtime& rt, typename std::enable_if<std::is_default_constructible<T>::value>::type* = nullptr) :
         m_runtime(rt)
     {
     }

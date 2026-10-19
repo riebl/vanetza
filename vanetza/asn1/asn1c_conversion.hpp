@@ -20,12 +20,12 @@ public:
         std::is_base_of<asn1::asn1c_wrapper_common<typename T::asn1c_type>, T>::value,
         "Only asn1c_wrapper derivates are supported");
 
-    byte_buffer_impl(wrapper_type&& t) :
+    explicit byte_buffer_impl(wrapper_type&& t) :
         m_wrapper(new wrapper_type(std::move(t)))
     {
     }
 
-    byte_buffer_impl(std::shared_ptr<const wrapper_type> other) :
+    explicit byte_buffer_impl(std::shared_ptr<const wrapper_type> other) :
         m_wrapper(other)
     {
     }

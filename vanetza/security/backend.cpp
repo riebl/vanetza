@@ -12,7 +12,7 @@ template<typename T>
 class BackendRegistrar
 {
 public:
-    BackendRegistrar(const std::string& name)
+    explicit BackendRegistrar(const std::string& name)
     {
         auto f = []() { return std::unique_ptr<vanetza::security::Backend> { new T() }; };
         bool success = backend_factory.add(name, f) && backend_factory.configure_default(name);

@@ -132,7 +132,7 @@ IndicationContextSecuredCast::IndicationContextSecuredCast(IndicationContextBasi
 
     struct parent_packet_visitor : public boost::static_visitor<>
     {
-        parent_packet_visitor(ChunkPacket& _secured_payload) : secured_payload(_secured_payload) {}
+        explicit parent_packet_visitor(ChunkPacket& _secured_payload) : secured_payload(_secured_payload) {}
 
         void operator()(ChunkPacket& packet)
         {

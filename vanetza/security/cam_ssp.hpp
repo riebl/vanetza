@@ -50,7 +50,7 @@ class CamPermissions
 {
 public:
     CamPermissions();
-    CamPermissions(CamPermission);
+    explicit CamPermissions(CamPermission);
     CamPermissions(const std::initializer_list<CamPermission>&);
 
     // check for permission

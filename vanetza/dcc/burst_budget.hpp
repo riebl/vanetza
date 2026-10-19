@@ -21,7 +21,7 @@ namespace dcc
 class BurstBudget
 {
 public:
-    BurstBudget(const Runtime&);
+    explicit BurstBudget(const Runtime&);
     ~BurstBudget();
 
     /**

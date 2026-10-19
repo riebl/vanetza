@@ -45,7 +45,7 @@ double geometric_function(const Ellipse& e, const CartesianPosition& p)
 
 struct geometric_function_visitor : public boost::static_visitor<double>
 {
-    geometric_function_visitor(const CartesianPosition& p) : point(p) {}
+    explicit geometric_function_visitor(const CartesianPosition& p) : point(p) {}
 
     template<class SHAPE>
     double operator()(const SHAPE& s) const

@@ -14,7 +14,7 @@ namespace convertible
 template<>
 struct byte_buffer_impl<std::unique_ptr<vanetza::geonet::Pdu>> : public byte_buffer
 {
-    byte_buffer_impl(std::unique_ptr<vanetza::geonet::Pdu> pdu) :
+    explicit byte_buffer_impl(std::unique_ptr<vanetza::geonet::Pdu> pdu) :
         m_pdu(std::move(pdu)) {}
 
     void convert(ByteBuffer& dest) const override;

@@ -39,7 +39,7 @@ LinkLayerClient::ErrorCode map_error_code(vanetza::rpc::LinkLayer::ErrorCode in)
 class DataListener : public vanetza::rpc::LinkLayer::DataListener::Server
 {
 public:
-    DataListener(std::function<void(LinkLayerClient::Indication)> callback) :
+    explicit DataListener(std::function<void(LinkLayerClient::Indication)> callback) :
         callback_(callback)
     {
     }
@@ -88,7 +88,7 @@ private:
 class CbrListener : public vanetza::rpc::LinkLayer::CbrListener::Server
 {
 public:
-    CbrListener(std::function<void(dcc::ChannelLoad)> callback) :
+    explicit CbrListener(std::function<void(dcc::ChannelLoad)> callback) :
         callback_(callback)
     {
     }

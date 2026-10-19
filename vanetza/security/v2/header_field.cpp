@@ -117,7 +117,7 @@ void serialize(OutputArchive& ar, const HeaderField& field)
 {
     struct HeaderFieldVisitor : public boost::static_visitor<>
     {
-        HeaderFieldVisitor(OutputArchive& ar) :
+        explicit HeaderFieldVisitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }

@@ -13,7 +13,7 @@ void PrintTo(const DecapReport& report, std::ostream* out)
 {
     struct Printer : boost::static_visitor<>
     {
-        Printer(std::ostream* out) : out(out) {}
+        explicit Printer(std::ostream* out) : out(out) {}
 
         void operator()(const VerificationReport& report) const
         {

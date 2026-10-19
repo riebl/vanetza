@@ -23,7 +23,7 @@ class Parser
 {
 public:
     Parser(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end);
-    Parser(boost::iterator_range<ByteBuffer::const_iterator> range);
+    explicit Parser(boost::iterator_range<ByteBuffer::const_iterator> range);
 
     std::size_t parse_basic(BasicHeader&);
     std::size_t parse_common(CommonHeader&);

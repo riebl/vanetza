@@ -8,7 +8,7 @@ using namespace vanetza::geonet;
 class HeaderVariantVisitor : public boost::static_visitor<>
 {
 public:
-    HeaderVariantVisitor(OutputArchive& ar) :
+    explicit HeaderVariantVisitor(OutputArchive& ar) :
         m_archive(ar)
     {
     }

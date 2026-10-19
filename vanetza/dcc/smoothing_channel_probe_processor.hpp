@@ -23,7 +23,7 @@ public:
      * Initialize ChannelProbeProcessor with smoothing behaviour.
      * \param alpha smoothing factor (influence of new raw measurement)
      */
-    SmoothingChannelProbeProcessor(UnitInterval alpha = UnitInterval(0.5));
+    explicit SmoothingChannelProbeProcessor(UnitInterval alpha = UnitInterval(0.5));
 
     /**
      * Feed new local channel load measurement into smoothing algorithm.

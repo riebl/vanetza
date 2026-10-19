@@ -41,7 +41,7 @@ public:
     /**
      * \param rt runtime for appropriate generation time
      */ 
-    DummySignService(const Runtime& rt);
+    explicit DummySignService(const Runtime& rt);
     SignConfirm sign(SignRequest&&) override;
 
 private:

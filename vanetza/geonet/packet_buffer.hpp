@@ -70,7 +70,7 @@ public:
      * Create PacketBuffer with given capacity
      * \param capacity Buffer can store this many bytes
      */
-    PacketBuffer(std::size_t capacity);
+    explicit PacketBuffer(std::size_t capacity);
 
     /**
      * Push one packet into buffer

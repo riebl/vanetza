@@ -30,7 +30,7 @@ struct has_impl : boost::is_complete<byte_buffer_impl<std::decay_t<T>>> {};
 template<>
 struct byte_buffer_impl<ByteBuffer> : public byte_buffer
 {
-    byte_buffer_impl(ByteBuffer&& buffer) : m_buffer(std::move(buffer)) {}
+    explicit byte_buffer_impl(ByteBuffer&& buffer) : m_buffer(std::move(buffer)) {}
     void convert(ByteBuffer& buf) const override { buf = m_buffer; }
     std::size_t size() const override { return m_buffer.size(); }
 
@@ -40,7 +40,7 @@ struct byte_buffer_impl<ByteBuffer> : public byte_buffer
 template<>
 struct byte_buffer_impl<std::unique_ptr<ByteBuffer>> : public byte_buffer
 {
-    byte_buffer_impl(std::unique_ptr<ByteBuffer> buf) :
+    explicit byte_buffer_impl(std::unique_ptr<ByteBuffer> buf) :
         m_buffer(std::move(buf)) {}
     void convert(ByteBuffer& buf) const override { buf = *m_buffer; }
     std::size_t size() const override { return m_buffer->size(); }
@@ -51,8 +51,8 @@ struct byte_buffer_impl<std::unique_ptr<ByteBuffer>> : public byte_buffer
 template<>
 struct byte_buffer_impl<std::string> : public byte_buffer
 {
-    byte_buffer_impl(const std::string& str);
-    byte_buffer_impl(std::string&& str);
+    explicit byte_buffer_impl(const std::string& str);
+    explicit byte_buffer_impl(std::string&& str);
     void convert(ByteBuffer& buffer) const override;
     std::size_t size() const override;
 
@@ -84,7 +84,7 @@ public:
     ByteBufferConvertible() :
         m_wrapper(new convertible::byte_buffer_impl<std::nullptr_t>()) {}
 
-    ByteBufferConvertible(std::unique_ptr<convertible::byte_buffer> ptr) :
+    explicit ByteBufferConvertible(std::unique_ptr<convertible::byte_buffer> ptr) :
         m_wrapper(std::move(ptr)) {}
 
     template<class T, typename = std::enable_if_t<convertible::has_impl<T>::value>>

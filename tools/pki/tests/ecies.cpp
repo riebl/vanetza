@@ -189,7 +189,7 @@ namespace
 class FixedEciesContext : public SecurityModule::EciesContext
 {
 public:
-    FixedEciesContext(ByteBuffer shared) : m_shared_secret(std::move(shared))
+    explicit FixedEciesContext(ByteBuffer shared) : m_shared_secret(std::move(shared))
     {
     }
 

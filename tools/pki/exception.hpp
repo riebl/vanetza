@@ -21,7 +21,7 @@ class VerificationFailure : public std::runtime_error
 class UsageError : public std::runtime_error
 {
 public:
-    UsageError(const std::string& problem) : std::runtime_error(problem) {}
+    explicit UsageError(const std::string& problem) : std::runtime_error(problem) {}
     UsageError(const std::string& problem, const std::string& remedy) :
         std::runtime_error(problem), m_remedy(remedy)
     {

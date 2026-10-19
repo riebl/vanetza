@@ -93,7 +93,7 @@ void serialize(OutputArchive& ar, const SignerInfo& info)
 {
     struct SignerInfo_visitor : public boost::static_visitor<>
     {
-        SignerInfo_visitor(OutputArchive& ar) :
+        explicit SignerInfo_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }

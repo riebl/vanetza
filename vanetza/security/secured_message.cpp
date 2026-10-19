@@ -56,7 +56,7 @@ std::size_t get_size(const SecuredMessage& msg)
 struct SerializeVisitor : boost::static_visitor<void>
 {
     OutputArchive& m_archive;
-    SerializeVisitor(OutputArchive& ar) : m_archive(ar) {}
+    explicit SerializeVisitor(OutputArchive& ar) : m_archive(ar) {}
 
     void operator()(const v2::SecuredMessage& msg)
     {
@@ -86,7 +86,7 @@ std::size_t deserialize(InputArchive& ar, SecuredMessage& msg)
     struct Visitor : boost::static_visitor<std::size_t>
     {
         InputArchive& m_archive;
-        Visitor(InputArchive& ar) : m_archive(ar) {}
+        explicit Visitor(InputArchive& ar) : m_archive(ar) {}
 
         std::size_t operator()(v2::SecuredMessage& msg)
         {

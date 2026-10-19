@@ -41,7 +41,7 @@ public:
     }
 
     template<typename... OtherArgs, typename... T>
-    PendingPacket(PendingPacket<PDU, OtherArgs...>&& other, T&&... ts) :
+    explicit PendingPacket(PendingPacket<PDU, OtherArgs...>&& other, T&&... ts) :
         m_packet(std::move(other).packet())
     {
         typename PendingPacket<PDU, OtherArgs...>::Function other_action = other.action();

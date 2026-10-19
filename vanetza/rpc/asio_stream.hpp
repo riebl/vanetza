@@ -11,7 +11,7 @@ namespace rpc
 class AsioStream : public kj::AsyncIoStream
 {
 public:
-    AsioStream(boost::asio::ip::tcp::socket socket);
+    explicit AsioStream(boost::asio::ip::tcp::socket socket);
 
     void shutdownWrite() override;
     kj::Promise<void> write(const void* buffer, size_t size) override;

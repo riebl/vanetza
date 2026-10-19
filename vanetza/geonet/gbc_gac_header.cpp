@@ -12,7 +12,7 @@ namespace detail
 class set_distance_visitor : public boost::static_visitor<>
 {
 public:
-    set_distance_visitor(GbcGacHeader& hdr) : m_header(hdr) {}
+    explicit set_distance_visitor(GbcGacHeader& hdr) : m_header(hdr) {}
 
     void operator()(const Circle& circle)
     {
@@ -39,7 +39,7 @@ private:
 class get_distance_visitor : public boost::static_visitor<>
 {
 public:
-    get_distance_visitor(const GbcGacHeader& hdr) : m_header(hdr) {}
+    explicit get_distance_visitor(const GbcGacHeader& hdr) : m_header(hdr) {}
 
     void operator()(Circle& circle)
     {

@@ -41,8 +41,8 @@ public:
      * States can be given in any order, they get sorted by their lower limit.
      * Only the first one of several states with equal lower limit is used.
      */
-    GradualStateMachine(const StateContainer&);
-    GradualStateMachine(StateContainer&&);
+    explicit GradualStateMachine(const StateContainer&);
+    explicit GradualStateMachine(StateContainer&&);
 
     void update(ChannelLoad) override;
     Clock::duration transmission_interval() const override;

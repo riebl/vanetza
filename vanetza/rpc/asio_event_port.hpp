@@ -13,7 +13,7 @@ namespace rpc
 class AsioEventPort : public kj::EventPort
 {
 public:
-    AsioEventPort(boost::asio::io_context& io);
+    explicit AsioEventPort(boost::asio::io_context& io);
 
     bool wait() override;
     bool poll() override;

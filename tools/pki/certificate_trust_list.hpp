@@ -180,7 +180,7 @@ struct AuthorizationAuthority
 class CertificateTrustListProcessor
 {
 public:
-    CertificateTrustListProcessor(std::shared_ptr<SecurityModule>);
+    explicit CertificateTrustListProcessor(std::shared_ptr<SecurityModule>);
     void process(const CertificateTrustList&);
 
     boost::optional<EnrolmentAuthority> get_enrolment_authority(const HashedId8&) const;

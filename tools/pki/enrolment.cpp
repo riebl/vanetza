@@ -29,7 +29,7 @@ namespace
 
 struct Context
 {
-    Context(const MainConfig& c) : cfg(c)
+    explicit Context(const MainConfig& c) : cfg(c)
     {
     }
 

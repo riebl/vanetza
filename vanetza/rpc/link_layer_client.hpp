@@ -40,7 +40,7 @@ public:
 
     struct Indication
     {
-        Indication(vanetza::ByteBuffer);
+        explicit Indication(vanetza::ByteBuffer);
 
         vanetza::MacAddress source;
         vanetza::MacAddress destination;

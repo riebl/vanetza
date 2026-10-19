@@ -11,7 +11,7 @@ namespace pki
 class CredentialFilesystemStorage : public CredentialStorage
 {
 public:
-    CredentialFilesystemStorage(const std::filesystem::path& root);
+    explicit CredentialFilesystemStorage(const std::filesystem::path& root);
 
     void store(const PublicKey&, const PrivateKey&) override;
     boost::optional<PrivateKey> fetch(const PublicKey&) override;

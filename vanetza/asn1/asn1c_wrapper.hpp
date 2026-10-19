@@ -78,7 +78,7 @@ class asn1c_wrapper_common
 public:
     typedef T asn1c_type;
 
-    asn1c_wrapper_common(asn_TYPE_descriptor_t& desc) :
+    explicit asn1c_wrapper_common(asn_TYPE_descriptor_t& desc) :
         m_struct(vanetza::asn1::allocate<asn1c_type>()), m_type(desc) {}
     asn1c_wrapper_common(asn_TYPE_descriptor_t& desc, const T* ptr) :
         m_struct(static_cast<T*>(copy(desc, ptr))), m_type(desc) {}

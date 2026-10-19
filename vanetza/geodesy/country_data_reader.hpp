@@ -35,7 +35,7 @@ public:
     }
 
 private:
-    CountryReaderResult(std::size_t pos) : m_position(pos) {}
+    explicit CountryReaderResult(std::size_t pos) : m_position(pos) {}
     CountryReaderResult(std::string msg, std::size_t pos) :
         m_success(false), m_position(pos), m_detail(std::move(msg)) {}
 

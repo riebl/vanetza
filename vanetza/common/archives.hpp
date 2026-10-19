@@ -29,8 +29,8 @@ public:
         ConstraintViolation,
     };
 
-    InputArchive(InputStream& is);
-    InputArchive(StreamBuffer& buf);
+    explicit InputArchive(InputStream& is);
+    explicit InputArchive(StreamBuffer& buf);
 
     template<typename T>
     InputArchive& operator>>(T& t)
@@ -67,8 +67,8 @@ public:
         using std::runtime_error::runtime_error;
     };
 
-    OutputArchive(OutputStream& os);
-    OutputArchive(StreamBuffer& buf);
+    explicit OutputArchive(OutputStream& os);
+    explicit OutputArchive(StreamBuffer& buf);
 
     template<typename T>
     OutputArchive& operator<<(const T& t)

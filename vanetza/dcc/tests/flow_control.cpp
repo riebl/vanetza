@@ -33,7 +33,7 @@ public:
 class FakeTransmitRateControl : public TransmitRateControl
 {
 public:
-    FakeTransmitRateControl(const Runtime& rt) :
+    explicit FakeTransmitRateControl(const Runtime& rt) :
         runtime(rt), trc_off(milliseconds(200)), last_notify(Clock::time_point::min()) {}
 
     Clock::duration delay(const Transmission&) override

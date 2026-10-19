@@ -41,7 +41,7 @@ namespace
 
 struct ControlInfo
 {
-    ControlInfo(const DataRequest& request) :
+    explicit ControlInfo(const DataRequest& request) :
         communication_profile(request.communication_profile),
         its_aid(request.its_aid),
         permissions(request.permissions)
@@ -56,7 +56,7 @@ template<typename PDU>
 class PendingPacketBufferData : public packet_buffer::Data
 {
 public:
-    PendingPacketBufferData(PendingPacket<PDU>&& packet) : m_packet(std::move(packet)) {}
+    explicit PendingPacketBufferData(PendingPacket<PDU>&& packet) : m_packet(std::move(packet)) {}
 
     std::size_t length() const override
     {

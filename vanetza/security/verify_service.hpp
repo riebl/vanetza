@@ -40,7 +40,7 @@ enum class VerificationReport
 // mandatory parameters of SN-VERIFY.request (TS 102 723-8 V1.1.1)
 struct VerifyRequest
 {
-    VerifyRequest(SecuredMessageView msg) : secured_message(msg) {}
+    explicit VerifyRequest(SecuredMessageView msg) : secured_message(msg) {}
     SecuredMessageView secured_message; /*< contains security header and payload */
 };
 

@@ -53,7 +53,7 @@ private:
 class TcpLink : public LinkLayer
 {
 public:
-    TcpLink(boost::asio::io_context&);
+    explicit TcpLink(boost::asio::io_context&);
 
     void indicate(IndicationCallback) override;
     void request(const vanetza::access::DataRequest&, std::unique_ptr<vanetza::ChunkPacket>) override;

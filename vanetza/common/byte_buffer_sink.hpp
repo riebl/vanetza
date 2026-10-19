@@ -16,7 +16,7 @@ public:
     static_assert(sizeof(char_type) == sizeof(ByteBuffer::value_type),
             "size mismatch of char_type and ByteBuffer::value_type");
 
-    byte_buffer_sink(ByteBuffer& buffer);
+    explicit byte_buffer_sink(ByteBuffer& buffer);
     std::streamsize write(const char_type* s, std::streamsize n);
 
 private:

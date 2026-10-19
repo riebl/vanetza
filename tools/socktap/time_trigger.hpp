@@ -9,7 +9,7 @@
 class TimeTrigger
 {
 public:
-    TimeTrigger(boost::asio::io_context&);
+    explicit TimeTrigger(boost::asio::io_context&);
     vanetza::Runtime& runtime() { return runtime_; }
     void schedule();
 

@@ -289,7 +289,7 @@ void serialize(OutputArchive& ar, const GeographicRegion& reg)
 {
     struct geograpical_region_visitor : public boost::static_visitor<>
     {
-        geograpical_region_visitor(OutputArchive& ar) :
+        explicit geograpical_region_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }
@@ -440,7 +440,7 @@ bool is_within(const TwoDLocation& position, const GeographicRegion& reg)
 {
     struct geograpical_region_visitor : public boost::static_visitor<bool>
     {
-        geograpical_region_visitor(const TwoDLocation& position) :
+        explicit geograpical_region_visitor(const TwoDLocation& position) :
             m_position(position)
         {
         }
@@ -536,7 +536,7 @@ bool is_within(const GeographicRegion& inner, const GeographicRegion& outer)
 {
     struct outer_geograpical_region_visitor : public boost::static_visitor<bool>
     {
-        outer_geograpical_region_visitor(const GeographicRegion& inner) :
+        explicit outer_geograpical_region_visitor(const GeographicRegion& inner) :
             inner(inner)
         {
         }
@@ -577,7 +577,7 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
 {
     struct inner_geograpical_region_visitor : public boost::static_visitor<bool>
     {
-        inner_geograpical_region_visitor(const CircularRegion& outer) :
+        explicit inner_geograpical_region_visitor(const CircularRegion& outer) :
             outer(outer)
         {
         }
@@ -647,7 +647,7 @@ bool is_within(const GeographicRegion& inner, const std::list<RectangularRegion>
 
     struct inner_geograpical_region_visitor : public boost::static_visitor<bool>
     {
-        inner_geograpical_region_visitor(const std::list<RectangularRegion>& outer) :
+        explicit inner_geograpical_region_visitor(const std::list<RectangularRegion>& outer) :
             outer(outer)
         {
         }

@@ -39,7 +39,7 @@ public:
 
     ConfidentQuantity() :
         m_value(default_value()), m_confidence(worst_confidence()) {}
-    ConfidentQuantity(const T& value) :
+    explicit ConfidentQuantity(const T& value) :
         m_value(value), m_confidence(worst_confidence()) {}
     ConfidentQuantity(const T& value, const T& confidence) :
         m_value(value), m_confidence(!is_nan(confidence) ? confidence : worst_confidence()) {}

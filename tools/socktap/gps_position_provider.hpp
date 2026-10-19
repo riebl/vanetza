@@ -15,11 +15,11 @@ public:
     class GpsPositioningException : public PositioningException
     {
     protected:
-        GpsPositioningException(int);
+        explicit GpsPositioningException(int);
         friend class GpsPositionProvider;
     };
 
-    GpsPositionProvider(boost::asio::io_context& io);
+    explicit GpsPositionProvider(boost::asio::io_context& io);
     GpsPositionProvider(boost::asio::io_context& io, const std::string& hostname, const std::string& port);
     ~GpsPositionProvider();
 

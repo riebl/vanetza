@@ -187,7 +187,7 @@ void serialize(OutputArchive& ar, const ValidityRestriction& restriction)
 {
     struct validity_restriction_visitor : public boost::static_visitor<>
     {
-        validity_restriction_visitor(OutputArchive& ar) :
+        explicit validity_restriction_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }

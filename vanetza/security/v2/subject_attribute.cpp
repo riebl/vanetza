@@ -127,7 +127,7 @@ void serialize(OutputArchive& ar, const SubjectAttribute& subjectAttribute)
 {
     struct subject_attribute_visitor : public boost::static_visitor<>
     {
-        subject_attribute_visitor(OutputArchive& ar) :
+        explicit subject_attribute_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }

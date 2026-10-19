@@ -24,7 +24,7 @@ namespace geonet
 
 struct DataRequest
 {
-    DataRequest(const MIB& mib, ItsAid its_aid = 0) :
+    explicit DataRequest(const MIB& mib, ItsAid its_aid = 0) :
         upper_protocol(UpperProtocol::BTP_A),
         communication_profile(CommunicationProfile::Unspecified),
         its_aid(its_aid),

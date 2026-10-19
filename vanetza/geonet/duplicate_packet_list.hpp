@@ -18,7 +18,7 @@ namespace geonet
 class DuplicatePacketList
 {
 public:
-    DuplicatePacketList(unsigned elements);
+    explicit DuplicatePacketList(unsigned elements);
 
     /**
      * Duplicate packet detection based on sequence number.
@@ -39,7 +39,7 @@ public:
 private:
     struct ListElement
     {
-        ListElement(SequenceNumber);
+        explicit ListElement(SequenceNumber);
 
         SequenceNumber sequence_number;
         unsigned counter;

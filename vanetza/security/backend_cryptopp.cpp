@@ -113,7 +113,7 @@ public:
      * Construct verifier object for a public key
      * \param pub public key
      */
-    Verifier(const InternalPublicKey& pub)
+    explicit Verifier(const InternalPublicKey& pub)
         : BaseVerifier(pub)
     {
     }

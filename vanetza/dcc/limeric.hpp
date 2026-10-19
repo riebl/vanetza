@@ -53,7 +53,7 @@ public:
         UnitInterval threshold { 0.00001 }; /* heuristically determined threshold for switching between alphas */
     };
 
-    Limeric(Runtime&);
+    explicit Limeric(Runtime&);
     Limeric(Runtime&, const Parameters&);
     ~Limeric();
 

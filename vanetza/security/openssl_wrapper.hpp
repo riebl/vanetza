@@ -54,13 +54,13 @@ public:
     BigNumber();
     ~BigNumber();
 
-    BigNumber(const ByteBuffer& buf) :
+    explicit BigNumber(const ByteBuffer& buf) :
         BigNumber(buf.data(), buf.size())
     {
     }
 
     template<std::size_t N>
-    BigNumber(const std::array<uint8_t, N>& bin) :
+    explicit BigNumber(const std::array<uint8_t, N>& bin) :
         BigNumber(bin.data(), bin.size())
     {
     }

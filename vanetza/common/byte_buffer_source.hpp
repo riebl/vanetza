@@ -23,8 +23,8 @@ public:
     static_assert(sizeof(char_type) == sizeof(ByteBuffer::value_type),
             "size mismatch of char_type and ByteBuffer::value_type");
 
-    byte_buffer_source(const ByteBuffer& buffer);
-    byte_buffer_source(range r);
+    explicit byte_buffer_source(const ByteBuffer& buffer);
+    explicit byte_buffer_source(range r);
     byte_buffer_source(iterator begin, iterator end);
     std::streamsize read(char_type* buf, std::streamsize n);
 

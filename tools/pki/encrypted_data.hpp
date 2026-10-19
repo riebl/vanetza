@@ -18,7 +18,7 @@ class EncryptedData : public asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs1030
 public:
     using wrapper = asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t>;
 
-    EncryptedData(std::shared_ptr<SecurityModule::EciesContext> ecies);
+    explicit EncryptedData(std::shared_ptr<SecurityModule::EciesContext> ecies);
     void generate_ciphertext(const ByteBuffer& payload);
     void add_recipient_info(const HashedId8&);
     const OCTET_STRING_t* get_nonce() const;

@@ -18,7 +18,7 @@ namespace v2
 /// SubjectAssurance specified in TS 103 097 v1.2.1 in section 6.6 and 7.4.1
 struct SubjectAssurance
 {
-    SubjectAssurance(uint8_t _raw = 0) : raw(_raw) {}
+    explicit SubjectAssurance(uint8_t _raw = 0) : raw(_raw) {}
 
     static constexpr uint8_t assurance_mask = 0xE0;
     static constexpr uint8_t confidence_mask = 0x03;

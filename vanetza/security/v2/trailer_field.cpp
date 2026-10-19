@@ -42,7 +42,7 @@ void serialize(OutputArchive& ar, const TrailerField& field)
 {
     struct trailer_visitor : public boost::static_visitor<>
     {
-        trailer_visitor(OutputArchive& ar) :
+        explicit trailer_visitor(OutputArchive& ar) :
             m_archive(ar)
         {
         }

@@ -22,7 +22,7 @@ namespace v2
 class CertificateCache
 {
 public:
-    CertificateCache(const Runtime& rt);
+    explicit CertificateCache(const Runtime& rt);
 
     /**
      * Puts a (validated) certificate into the cache.

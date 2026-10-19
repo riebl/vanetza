@@ -9,7 +9,7 @@
 class BenchmarkApplication : public Application, private Application::PromiscuousHook
 {
 public:
-    BenchmarkApplication(boost::asio::io_context&);
+    explicit BenchmarkApplication(boost::asio::io_context&);
     PortType port() override;
     void indicate(const DataIndication&, UpPacketPtr) override;
     Application::PromiscuousHook* promiscuous_hook() override;

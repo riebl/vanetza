@@ -110,7 +110,7 @@ VerifyConfirm StraightVerifyService::verify(const VerifyRequest& request)
 {
     struct visitor : public boost::static_visitor<VerifyConfirm>
     {
-        visitor(StraightVerifyService* service) : m_service(service)
+        explicit visitor(StraightVerifyService* service) : m_service(service)
         {
         }
 
@@ -424,7 +424,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
     }
 
     struct certificate_lookup_visitor : public boost::static_visitor<const v3::asn1::Certificate*> {
-        certificate_lookup_visitor(v3::CertificateCache* cache) :
+        explicit certificate_lookup_visitor(v3::CertificateCache* cache) :
             m_cache(cache)
         {
         }

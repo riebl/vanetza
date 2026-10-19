@@ -64,7 +64,7 @@ void serialize(OutputArchive& ar, const Signature& sig)
 {
     struct signature_visitor : public boost::static_visitor<>
     {
-        signature_visitor(OutputArchive& ar) : m_archive(ar) {}
+        explicit signature_visitor(OutputArchive& ar) : m_archive(ar) {}
 
         void operator()(const EcdsaSignature& sig)
         {

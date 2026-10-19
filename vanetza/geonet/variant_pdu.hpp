@@ -21,7 +21,7 @@ public:
     VariantPdu() = default;
     VariantPdu(const VariantPdu&);
     VariantPdu& operator=(const VariantPdu&);
-    VariantPdu(const Pdu&);
+    explicit VariantPdu(const Pdu&);
     VariantPdu& operator=(const Pdu&);
 
     BasicHeader& basic() override;

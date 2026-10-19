@@ -65,7 +65,7 @@ public:
     class RouterContext
     {
     public:
-        RouterContext(NetworkTopology&);
+        explicit RouterContext(NetworkTopology&);
         void set_position_accuracy_indicator(bool flag);
 
         MacAddress mac_address;

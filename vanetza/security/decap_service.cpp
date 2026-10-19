@@ -15,7 +15,7 @@ bool operator==(const DecapReport& decap, VerificationReport verification)
 {
     struct Visitor : public boost::static_visitor<bool>
     {
-        Visitor(VerificationReport report) : expected(report) {}
+        explicit Visitor(VerificationReport report) : expected(report) {}
 
         bool operator()(VerificationReport report) const
         {

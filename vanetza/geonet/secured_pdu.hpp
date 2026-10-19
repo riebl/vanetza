@@ -19,12 +19,12 @@ class SecuredPdu
 {
 public:
     template<typename EXT>
-    SecuredPdu(const ExtendedPdu<EXT>& pdu) :
+    explicit SecuredPdu(const ExtendedPdu<EXT>& pdu) :
         common(pdu.common()), extended(pdu.extended())
     {
     }
 
-    SecuredPdu(const Pdu&);
+    explicit SecuredPdu(const Pdu&);
 
     CommonHeader common;
     HeaderVariant extended;
@@ -47,7 +47,7 @@ namespace convertible
 template<>
 struct byte_buffer_impl<geonet::SecuredPdu> : public byte_buffer
 {
-    byte_buffer_impl(const geonet::SecuredPdu&);
+    explicit byte_buffer_impl(const geonet::SecuredPdu&);
     void convert(ByteBuffer&) const override;
     std::size_t size() const override;
     std::unique_ptr<byte_buffer> duplicate() const override;
