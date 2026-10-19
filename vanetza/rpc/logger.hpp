@@ -8,19 +8,19 @@ namespace rpc
 class Logger
 {
 public:
-    virtual void error(const char* module, const char* message) = 0;
-    virtual void debug(const char* module, const char* message) = 0;
+    virtual void error(const char* context, const char* message) = 0;
+    virtual void debug(const char* context, const char* message) = 0;
 
     virtual ~Logger() = default;
 };
 
-#define VANETZA_RPC_LOG_ERROR(logger, module, message) \
+#define VANETZA_RPC_LOG_ERROR(logger, context, message) \
     if (logger != nullptr) { \
-        logger->error(module, message); \
+        logger->error(context, message); \
     }
-#define VANETZA_RPC_LOG_DEBUG(logger, module, message) \
+#define VANETZA_RPC_LOG_DEBUG(logger, context, message) \
     if (logger != nullptr) { \
-        logger->debug(module, message); \
+        logger->debug(context, message); \
     }
 
 } // namespace rpc

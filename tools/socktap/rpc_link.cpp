@@ -9,15 +9,15 @@ namespace {
 class RpcLinkLayerLogger : public vanetza::rpc::Logger
 {
 public:
-    void error(const char* module, const char* message) override
+    void error(const char* context, const char* message) override
     {
-        std::cerr << "RPC error at " << module << ": " << message << "\n";
+        std::cerr << "RPC error at " << context << ": " << message << "\n";
     }
 
-    void debug(const char* module, const char* message) override
+    void debug(const char* context, const char* message) override
     {
         if (print_debug_) {
-           std::cout << "RPC debug(" << module << "): " << message << "\n";
+           std::cout << "RPC debug(" << context << "): " << message << "\n";
         }
     }
 
