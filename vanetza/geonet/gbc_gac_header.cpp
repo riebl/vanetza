@@ -41,18 +41,18 @@ class get_distance_visitor : public boost::static_visitor<>
 public:
     explicit get_distance_visitor(const GbcGacHeader& hdr) : m_header(hdr) {}
 
-    void operator()(Circle& circle)
+    void operator()(Circle& circle) const
     {
         circle.r = m_header.distance_a;
     }
 
-    void operator()(Rectangle& rect)
+    void operator()(Rectangle& rect) const
     {
         rect.a = m_header.distance_a;
         rect.b = m_header.distance_b;
     }
 
-    void operator()(Ellipse& elip)
+    void operator()(Ellipse& elip) const
     {
         elip.a = m_header.distance_a;
         elip.b = m_header.distance_b;

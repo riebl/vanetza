@@ -14,7 +14,7 @@ class EccPointVisitor : public boost::static_visitor<ByteBuffer>
 {
 public:
     template<typename T>
-    ByteBuffer operator()(const T& point)
+    ByteBuffer operator()(const T& point) const
     {
         return point.x;
     }

@@ -12,27 +12,27 @@ SubjectAttributeType get_type(const SubjectAttribute& sub)
 {
     struct subject_attribute_visitor : public boost::static_visitor<SubjectAttributeType>
     {
-        SubjectAttributeType operator()(const VerificationKey&)
+        SubjectAttributeType operator()(const VerificationKey&) const
         {
             return SubjectAttributeType::Verification_Key;
         }
-        SubjectAttributeType operator()(const EncryptionKey&)
+        SubjectAttributeType operator()(const EncryptionKey&) const
         {
             return SubjectAttributeType::Encryption_Key;
         }
-        SubjectAttributeType operator()(const SubjectAssurance&)
+        SubjectAttributeType operator()(const SubjectAssurance&) const
         {
             return SubjectAttributeType::Assurance_Level;
         }
-        SubjectAttributeType operator()(const std::list<IntX>&)
+        SubjectAttributeType operator()(const std::list<IntX>&) const
         {
             return SubjectAttributeType::ITS_AID_List;
         }
-        SubjectAttributeType operator()(const EccPoint&)
+        SubjectAttributeType operator()(const EccPoint&) const
         {
             return SubjectAttributeType::Reconstruction_Value;
         }
-        SubjectAttributeType operator()(const std::list<ItsAidSsp>&)
+        SubjectAttributeType operator()(const std::list<ItsAidSsp>&) const
         {
             return SubjectAttributeType::ITS_AID_SSP_List;
         }
@@ -88,29 +88,29 @@ size_t get_size(const SubjectAttribute& sub)
     size_t size = sizeof(SubjectAttributeType);
     struct subject_attribute_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(const VerificationKey& key)
+        size_t operator()(const VerificationKey& key) const
         {
             return get_size(key.key);
         }
-        size_t operator()(const EncryptionKey& key)
+        size_t operator()(const EncryptionKey& key) const
         {
             return get_size(key.key);
         }
-        size_t operator()(const SubjectAssurance& assurance)
+        size_t operator()(const SubjectAssurance& assurance) const
         {
             return get_size(assurance);
         }
-        size_t operator()(const std::list<IntX>& list)
+        size_t operator()(const std::list<IntX>& list) const
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
             return size;
         }
-        size_t operator()(const EccPoint& ecc)
+        size_t operator()(const EccPoint& ecc) const
         {
             return get_size(ecc);
         }
-        size_t operator()(const std::list<ItsAidSsp>& list)
+        size_t operator()(const std::list<ItsAidSsp>& list) const
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
@@ -147,7 +147,7 @@ void serialize(OutputArchive& ar, const SubjectAttribute& subjectAttribute)
         {
             serialize(m_archive, list);
         }
-        void operator()(const EccPoint&)
+        void operator()(const EccPoint&) const
         {
             // TODO: specification of corresponding public key algorithm is missing
             throw serialization_error("unsupported serialization of SubjectAttribute with EccPoint");

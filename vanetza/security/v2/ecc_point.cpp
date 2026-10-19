@@ -17,22 +17,22 @@ size_t get_size(const EccPoint& point)
     size_t size = sizeof(EccPointType);
     struct ecc_point_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(X_Coordinate_Only coord)
+        size_t operator()(X_Coordinate_Only coord) const
         {
             return coord.x.size();
         }
 
-        size_t operator()(Compressed_Lsb_Y_0 coord)
+        size_t operator()(Compressed_Lsb_Y_0 coord) const
         {
             return coord.x.size();
         }
 
-        size_t operator()(Compressed_Lsb_Y_1 coord)
+        size_t operator()(Compressed_Lsb_Y_1 coord) const
         {
             return coord.x.size();
         }
 
-        size_t operator()(Uncompressed coord)
+        size_t operator()(Uncompressed coord) const
         {
             return coord.x.size() + coord.y.size();
         }
@@ -49,22 +49,22 @@ EccPointType get_type(const EccPoint& point)
 {
     struct ecc_point_visitor : public boost::static_visitor<EccPointType>
     {
-        EccPointType operator()(const X_Coordinate_Only&)
+        EccPointType operator()(const X_Coordinate_Only&) const
         {
             return EccPointType::X_Coordinate_Only;
         }
 
-        EccPointType operator()(const Compressed_Lsb_Y_0&)
+        EccPointType operator()(const Compressed_Lsb_Y_0&) const
         {
             return EccPointType::Compressed_Lsb_Y_0;
         }
 
-        EccPointType operator()(const Compressed_Lsb_Y_1&)
+        EccPointType operator()(const Compressed_Lsb_Y_1&) const
         {
             return EccPointType::Compressed_Lsb_Y_1;
         }
 
-        EccPointType operator()(const Uncompressed&)
+        EccPointType operator()(const Uncompressed&) const
         {
             return EccPointType::Uncompressed;
         }

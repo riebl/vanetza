@@ -14,23 +14,23 @@ SignerInfoType get_type(const SignerInfo& info)
 {
     struct SignerInfo_visitor : public boost::static_visitor<SignerInfoType>
     {
-        SignerInfoType operator()(const std::nullptr_t)
+        SignerInfoType operator()(const std::nullptr_t) const
         {
             return SignerInfoType::Self;
         }
-        SignerInfoType operator()(const HashedId8&)
+        SignerInfoType operator()(const HashedId8&) const
         {
             return SignerInfoType::Certificate_Digest_With_SHA256;
         }
-        SignerInfoType operator()(const Certificate&)
+        SignerInfoType operator()(const Certificate&) const
         {
             return SignerInfoType::Certificate;
         }
-        SignerInfoType operator()(const std::list<Certificate>&)
+        SignerInfoType operator()(const std::list<Certificate>&) const
         {
             return SignerInfoType::Certificate_Chain;
         }
-        SignerInfoType operator()(const CertificateDigestWithOtherAlgorithm&)
+        SignerInfoType operator()(const CertificateDigestWithOtherAlgorithm&) const
         {
             return SignerInfoType::Certificate_Digest_With_Other_Algorithm;
         }
@@ -52,25 +52,25 @@ size_t get_size(const SignerInfo& info)
     size_t size = sizeof(SignerInfoType);
     struct SignerInfo_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(const std::nullptr_t&)
+        size_t operator()(const std::nullptr_t&) const
         {
             return 0;
         }
-        size_t operator()(const HashedId8& id)
+        size_t operator()(const HashedId8& id) const
         {
             return id.size();
         }
-        size_t operator()(const Certificate& cert)
+        size_t operator()(const Certificate& cert) const
         {
             return get_size(cert);
         }
-        size_t operator()(const std::list<Certificate>& list)
+        size_t operator()(const std::list<Certificate>& list) const
         {
             size_t size = get_size(list);
             size += length_coding_size(size);
             return size;
         }
-        size_t operator()(const CertificateDigestWithOtherAlgorithm& cert)
+        size_t operator()(const CertificateDigestWithOtherAlgorithm& cert) const
         {
             return get_size(cert);
         }
@@ -98,7 +98,7 @@ void serialize(OutputArchive& ar, const SignerInfo& info)
         {
         }
 
-        void operator()(const std::nullptr_t)
+        void operator()(const std::nullptr_t) const
         {
             // intentionally do nothing
         }

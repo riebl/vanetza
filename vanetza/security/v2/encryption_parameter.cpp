@@ -15,7 +15,7 @@ SymmetricAlgorithm get_type(const EncryptionParameter& param)
 {
     struct Encryption_visitor : public boost::static_visitor<SymmetricAlgorithm>
     {
-        SymmetricAlgorithm operator()(const Nonce&)
+        SymmetricAlgorithm operator()(const Nonce&) const
         {
             return SymmetricAlgorithm::AES128_CCM;
         }
@@ -55,7 +55,7 @@ size_t get_size(const EncryptionParameter& param)
     size_t size = sizeof(SymmetricAlgorithm);
     struct Encryption_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(const Nonce& nonce)
+        size_t operator()(const Nonce& nonce) const
         {
             return nonce.size();
         }

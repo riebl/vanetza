@@ -15,39 +15,39 @@ HeaderFieldType get_type(const HeaderField& field)
 {
     struct HeaderFieldVisitor : public boost::static_visitor<HeaderFieldType>
     {
-        HeaderFieldType operator()(const Time64&)
+        HeaderFieldType operator()(const Time64&) const
         {
             return HeaderFieldType::Generation_Time;
         }
-        HeaderFieldType operator()(const Time64WithStandardDeviation&)
+        HeaderFieldType operator()(const Time64WithStandardDeviation&) const
         {
             return HeaderFieldType::Generation_Time_Confidence;
         }
-        HeaderFieldType operator()(const Time32&)
+        HeaderFieldType operator()(const Time32&) const
         {
             return HeaderFieldType::Expiration;
         }
-        HeaderFieldType operator()(const ThreeDLocation&)
+        HeaderFieldType operator()(const ThreeDLocation&) const
         {
             return HeaderFieldType::Generation_Location;
         }
-        HeaderFieldType operator()(const std::list<HashedId3>&)
+        HeaderFieldType operator()(const std::list<HashedId3>&) const
         {
             return HeaderFieldType::Request_Unrecognized_Certificate;
         }
-        HeaderFieldType operator()(const IntX&)
+        HeaderFieldType operator()(const IntX&) const
         {
             return HeaderFieldType::Its_Aid;
         }
-        HeaderFieldType operator()(const SignerInfo&)
+        HeaderFieldType operator()(const SignerInfo&) const
         {
             return HeaderFieldType::Signer_Info;
         }
-        HeaderFieldType operator()(const std::list<RecipientInfo>&)
+        HeaderFieldType operator()(const std::list<RecipientInfo>&) const
         {
             return HeaderFieldType::Recipient_Info;
         }
-        HeaderFieldType operator()(const EncryptionParameter&)
+        HeaderFieldType operator()(const EncryptionParameter&) const
         {
             return HeaderFieldType::Encryption_Parameters;
         }

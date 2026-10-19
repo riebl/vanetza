@@ -114,12 +114,12 @@ VerifyConfirm StraightVerifyService::verify(const VerifyRequest& request)
         {
         }
 
-        VerifyConfirm operator()(const v2::SecuredMessage& msg)
+        VerifyConfirm operator()(const v2::SecuredMessage& msg) const
         {
             return m_service->verify(msg);
         }
 
-        VerifyConfirm operator()(const v3::SecuredMessage& msg)
+        VerifyConfirm operator()(const v3::SecuredMessage& msg) const
         {
             return m_service->verify(msg);
         }
@@ -429,7 +429,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
         {
         }
 
-        const v3::asn1::Certificate* operator()(const v3::asn1::HashedId8* digest)
+        const v3::asn1::Certificate* operator()(const v3::asn1::HashedId8* digest) const
         {
             // look up certificate matching digest in local storage
             if (m_cache && digest) {
@@ -440,7 +440,7 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
             }
         }
 
-        const v3::asn1::Certificate* operator()(const v3::asn1::Certificate* cert)
+        const v3::asn1::Certificate* operator()(const v3::asn1::Certificate* cert) const
         {
             return cert;
         }

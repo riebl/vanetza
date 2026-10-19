@@ -26,27 +26,27 @@ RegionType get_type(const GeographicRegion& reg)
 {
     struct geograpical_region_visitor : public boost::static_visitor<RegionType>
     {
-        RegionType operator()(const NoneRegion&)
+        RegionType operator()(const NoneRegion&) const
         {
             return RegionType::None;
         }
 
-        RegionType operator()(const CircularRegion&)
+        RegionType operator()(const CircularRegion&) const
         {
             return RegionType::Circle;
         }
 
-        RegionType operator()(const std::list<RectangularRegion>&)
+        RegionType operator()(const std::list<RectangularRegion>&) const
         {
             return RegionType::Rectangle;
         }
 
-        RegionType operator()(const PolygonalRegion&)
+        RegionType operator()(const PolygonalRegion&) const
         {
             return RegionType::Polygon;
         }
 
-        RegionType operator()(const IdentifiedRegion&)
+        RegionType operator()(const IdentifiedRegion&) const
         {
             return RegionType::ID;
         }
@@ -294,7 +294,7 @@ void serialize(OutputArchive& ar, const GeographicRegion& reg)
         {
         }
 
-        void operator()(const NoneRegion&)
+        void operator()(const NoneRegion&) const
         {
             // nothing to do
         }
@@ -444,27 +444,27 @@ bool is_within(const TwoDLocation& position, const GeographicRegion& reg)
             m_position(position)
         {
         }
-        bool operator()(const NoneRegion&)
+        bool operator()(const NoneRegion&) const
         {
             return true;
         }
 
-        bool operator()(const CircularRegion& reg)
+        bool operator()(const CircularRegion& reg) const
         {
             return is_within(m_position, reg);
         }
 
-        bool operator()(const std::list<RectangularRegion>& reg)
+        bool operator()(const std::list<RectangularRegion>& reg) const
         {
             return is_within(m_position, reg);
         }
 
-        bool operator()(const PolygonalRegion& reg)
+        bool operator()(const PolygonalRegion& reg) const
         {
             return is_within(m_position, reg);
         }
 
-        bool operator()(const IdentifiedRegion& reg)
+        bool operator()(const IdentifiedRegion& reg) const
         {
             return is_within(m_position, reg);
         }
@@ -541,27 +541,27 @@ bool is_within(const GeographicRegion& inner, const GeographicRegion& outer)
         {
         }
 
-        bool operator()(const NoneRegion&)
+        bool operator()(const NoneRegion&) const
         {
             return true;
         }
 
-        bool operator()(const CircularRegion& outer)
+        bool operator()(const CircularRegion& outer) const
         {
             return is_within(inner, outer);
         }
 
-        bool operator()(const std::list<RectangularRegion>& outer)
+        bool operator()(const std::list<RectangularRegion>& outer) const
         {
             return is_within(inner, outer);
         }
 
-        bool operator()(const PolygonalRegion& outer)
+        bool operator()(const PolygonalRegion& outer) const
         {
             return is_within(inner, outer);
         }
 
-        bool operator()(const IdentifiedRegion& outer)
+        bool operator()(const IdentifiedRegion& outer) const
         {
             return is_within(inner, outer);
         }
@@ -582,12 +582,12 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
         {
         }
 
-        bool operator()(const NoneRegion&)
+        bool operator()(const NoneRegion&) const
         {
             return false;
         }
 
-        bool operator()(const CircularRegion& inner)
+        bool operator()(const CircularRegion& inner) const
         {
             if (inner == outer) {
                 return true;
@@ -599,7 +599,7 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
             return center_dist + inner.radius <= outer.radius;
         }
 
-        bool operator()(const std::list<RectangularRegion>&)
+        bool operator()(const std::list<RectangularRegion>&) const
         {
             // TODO: Implement check whether reactangles are within the circle
             /* Note: The rectangles can be converted to a polygon and its implementation be reused then.
@@ -615,7 +615,7 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
             return false;
         }
 
-        bool operator()(const PolygonalRegion&)
+        bool operator()(const PolygonalRegion&) const
         {
             // TODO: Implement check whether a polygon is within the circle.
             // Note: Same thoughts as for rectangles applies.
@@ -623,7 +623,7 @@ bool is_within(const GeographicRegion& inner, const CircularRegion& outer)
 
         }
 
-        bool operator()(const IdentifiedRegion&)
+        bool operator()(const IdentifiedRegion&) const
         {
             // TODO: Implement check whether an identified region is within the circle.
             // Note: The identified region can be converted to a polygon and its implementation be reused then.
@@ -652,18 +652,18 @@ bool is_within(const GeographicRegion& inner, const std::list<RectangularRegion>
         {
         }
 
-        bool operator()(const NoneRegion&)
+        bool operator()(const NoneRegion&) const
         {
             return false;
         }
 
-        bool operator()(const CircularRegion&)
+        bool operator()(const CircularRegion&) const
         {
             // TODO: Implement.
             return false;
         }
 
-        bool operator()(const std::list<RectangularRegion>& inner)
+        bool operator()(const std::list<RectangularRegion>& inner) const
         {
             if (inner == outer) {
                 return true;
@@ -673,13 +673,13 @@ bool is_within(const GeographicRegion& inner, const std::list<RectangularRegion>
             return false;
         }
 
-        bool operator()(const PolygonalRegion&)
+        bool operator()(const PolygonalRegion&) const
         {
             // TODO: Implement.
             return false;
         }
 
-        bool operator()(const IdentifiedRegion&)
+        bool operator()(const IdentifiedRegion&) const
         {
             // TODO: Implement.
             return false;

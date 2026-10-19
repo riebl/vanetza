@@ -60,19 +60,19 @@ ValidityRestrictionType get_type(const ValidityRestriction& restriction)
 {
     struct validity_restriction_visitor : public boost::static_visitor<ValidityRestrictionType>
     {
-        ValidityRestrictionType operator()(const EndValidity&)
+        ValidityRestrictionType operator()(const EndValidity&) const
         {
             return ValidityRestrictionType::Time_End;
         }
-        ValidityRestrictionType operator()(const StartAndEndValidity&)
+        ValidityRestrictionType operator()(const StartAndEndValidity&) const
         {
             return ValidityRestrictionType::Time_Start_And_End;
         }
-        ValidityRestrictionType operator()(const StartAndDurationValidity&)
+        ValidityRestrictionType operator()(const StartAndDurationValidity&) const
         {
             return ValidityRestrictionType::Time_Start_And_Duration;
         }
-        ValidityRestrictionType operator()(const GeographicRegion&)
+        ValidityRestrictionType operator()(const GeographicRegion&) const
         {
             return ValidityRestrictionType::Region;
         }
@@ -116,19 +116,19 @@ size_t get_size(const ValidityRestriction& restriction)
     size_t size = sizeof(ValidityRestrictionType);
     struct validity_restriction_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(const EndValidity& validity)
+        size_t operator()(const EndValidity& validity) const
         {
             return sizeof(validity);
         }
-        size_t operator()(const StartAndEndValidity& validity)
+        size_t operator()(const StartAndEndValidity& validity) const
         {
             return get_size(validity);
         }
-        size_t operator()(const StartAndDurationValidity& validity)
+        size_t operator()(const StartAndDurationValidity& validity) const
         {
             return get_size(validity);
         }
-        size_t operator()(const GeographicRegion& region)
+        size_t operator()(const GeographicRegion& region) const
         {
             return get_size(region);
         }

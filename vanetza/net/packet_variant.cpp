@@ -62,12 +62,12 @@ std::size_t size(const PacketVariant& packet, OsiLayer layer)
     {
         explicit size_visitor(OsiLayer layer) : m_layer(layer) {}
 
-        std::size_t operator()(const CohesivePacket& packet)
+        std::size_t operator()(const CohesivePacket& packet) const
         {
             return size(packet, m_layer);
         }
 
-        std::size_t operator()(const ChunkPacket& packet)
+        std::size_t operator()(const ChunkPacket& packet) const
         {
             return size(packet, m_layer);
         }
@@ -85,12 +85,12 @@ std::size_t size(const PacketVariant& packet, OsiLayer from, OsiLayer to)
     {
         size_visitor(OsiLayer from, OsiLayer to) : m_from(from), m_to(to) {}
 
-        std::size_t operator()(const CohesivePacket& packet)
+        std::size_t operator()(const CohesivePacket& packet) const
         {
             return size(packet, m_from, m_to);
         }
 
-        std::size_t operator()(const ChunkPacket& packet)
+        std::size_t operator()(const ChunkPacket& packet) const
         {
             return size(packet, m_from, m_to);
         }
@@ -107,12 +107,12 @@ std::size_t size(const PacketVariant& packet)
 {
     struct size_visitor : public boost::static_visitor<std::size_t>
     {
-        std::size_t operator()(const CohesivePacket& packet)
+        std::size_t operator()(const CohesivePacket& packet) const
         {
             return packet.size();
         }
 
-        std::size_t operator()(const ChunkPacket& packet)
+        std::size_t operator()(const ChunkPacket& packet) const
         {
             return packet.size();
         }
@@ -128,12 +128,12 @@ byte_view_range create_byte_view(const PacketVariant& packet, OsiLayer layer)
     {
         explicit payload_visitor(OsiLayer layer) : m_layer(layer) {}
 
-        byte_view_range operator()(const CohesivePacket& packet)
+        byte_view_range operator()(const CohesivePacket& packet) const
         {
             return create_byte_view(packet, m_layer);
         }
 
-        byte_view_range operator()(const ChunkPacket& packet)
+        byte_view_range operator()(const ChunkPacket& packet) const
         {
             return create_byte_view(packet, m_layer);
         }
@@ -151,12 +151,12 @@ byte_view_range create_byte_view(const PacketVariant& packet, OsiLayer from, Osi
     {
         payload_visitor(OsiLayer from, OsiLayer to) : m_from(from), m_to(to) {}
 
-        byte_view_range operator()(const CohesivePacket& packet)
+        byte_view_range operator()(const CohesivePacket& packet) const
         {
             return create_byte_view(packet, m_from, m_to);
         }
 
-        byte_view_range operator()(const ChunkPacket& packet)
+        byte_view_range operator()(const ChunkPacket& packet) const
         {
             return create_byte_view(packet, m_from, m_to);
         }

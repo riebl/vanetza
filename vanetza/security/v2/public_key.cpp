@@ -14,12 +14,12 @@ PublicKeyAlgorithm get_type(const PublicKey& key)
 {
     struct public_key_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
-        PublicKeyAlgorithm operator()(const ecdsa_nistp256_with_sha256&)
+        PublicKeyAlgorithm operator()(const ecdsa_nistp256_with_sha256&) const
         {
             return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
 
-        PublicKeyAlgorithm operator()(const ecies_nistp256&)
+        PublicKeyAlgorithm operator()(const ecies_nistp256&) const
         {
             return PublicKeyAlgorithm::ECIES_NISTP256;
         }
@@ -117,12 +117,12 @@ size_t get_size(const PublicKey& key)
     size_t size = sizeof(PublicKeyAlgorithm);
     struct publicKey_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(ecdsa_nistp256_with_sha256 key)
+        size_t operator()(ecdsa_nistp256_with_sha256 key) const
         {
             return get_size(key.public_key);
         }
 
-        size_t operator()(ecies_nistp256 key)
+        size_t operator()(ecies_nistp256 key) const
         {
             return get_size(key.public_key) + sizeof(key.supported_symm_alg);
         }

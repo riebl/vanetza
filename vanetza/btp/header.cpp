@@ -58,11 +58,11 @@ HeaderA parse_btp_a(PacketVariant& packet)
 {
     struct parse_btp_visitor : public boost::static_visitor<HeaderA>
     {
-        HeaderA operator()(CohesivePacket& packet) {
+        HeaderA operator()(CohesivePacket& packet) const {
             return parse_btp_a(packet);
         }
 
-        HeaderA operator()(ChunkPacket& packet) {
+        HeaderA operator()(ChunkPacket& packet) const {
             return parse_btp_a(packet);
         }
     };
@@ -92,11 +92,11 @@ HeaderB parse_btp_b(PacketVariant& packet)
 {
     struct parse_btp_visitor : public boost::static_visitor<HeaderB>
     {
-        HeaderB operator()(CohesivePacket& packet) {
+        HeaderB operator()(CohesivePacket& packet) const {
             return parse_btp_b(packet);
         }
 
-        HeaderB operator()(ChunkPacket& packet) {
+        HeaderB operator()(ChunkPacket& packet) const {
             return parse_btp_b(packet);
         }
     };

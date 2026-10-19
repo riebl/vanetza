@@ -22,7 +22,7 @@ struct dcc_mco_extractor : boost::static_visitor< boost::optional<DccMcoField> >
     }
 
     template<typename T>
-    return_type operator()(const T&)
+    return_type operator()(const T&) const
     {
         return boost::none;
     }

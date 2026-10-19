@@ -14,12 +14,12 @@ PublicKeyAlgorithm get_type(const Signature& sig)
 {
     struct Signature_visitor : public boost::static_visitor<PublicKeyAlgorithm>
     {
-        PublicKeyAlgorithm operator()(const EcdsaSignature&)
+        PublicKeyAlgorithm operator()(const EcdsaSignature&) const
         {
             return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
 
-        PublicKeyAlgorithm operator()(const EcdsaSignatureFuture&)
+        PublicKeyAlgorithm operator()(const EcdsaSignatureFuture&) const
         {
             return PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256;
         }
@@ -45,12 +45,12 @@ size_t get_size(const Signature& sig)
     size_t size = sizeof(PublicKeyAlgorithm);
     struct Signature_visitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(const EcdsaSignature& sig)
+        size_t operator()(const EcdsaSignature& sig) const
         {
             return get_size(sig);
         }
 
-        size_t operator()(const EcdsaSignatureFuture& sig)
+        size_t operator()(const EcdsaSignatureFuture& sig) const
         {
             return get_size(sig);
         }
@@ -140,12 +140,12 @@ boost::optional<EcdsaSignature> extract_ecdsa_signature(const Signature& sig)
 {
     struct signature_visitor : public boost::static_visitor<const EcdsaSignature*>
     {
-        const EcdsaSignature* operator()(const EcdsaSignature& sig)
+        const EcdsaSignature* operator()(const EcdsaSignature& sig) const
         {
             return &sig;
         }
 
-        const EcdsaSignature* operator()(const EcdsaSignatureFuture& sig)
+        const EcdsaSignature* operator()(const EcdsaSignatureFuture& sig) const
         {
             return &sig.get();
         }

@@ -14,7 +14,7 @@ TrailerFieldType get_type(const TrailerField& field)
 {
     struct trailerFieldVisitor : public boost::static_visitor<TrailerFieldType>
     {
-        TrailerFieldType operator()(const Signature&)
+        TrailerFieldType operator()(const Signature&) const
         {
             return TrailerFieldType::Signature;
         }
@@ -28,7 +28,7 @@ size_t get_size(const TrailerField& field)
     size_t size = sizeof(TrailerFieldType);
     struct trailerFieldVisitor : public boost::static_visitor<size_t>
     {
-        size_t operator()(const Signature& sig)
+        size_t operator()(const Signature& sig) const
         {
             return get_size(sig);
         }

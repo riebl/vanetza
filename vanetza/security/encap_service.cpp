@@ -30,7 +30,7 @@ EncapConfirm dispatch(EncapRequest&& encap_request, SignService* sign_service)
     {
         explicit Dispatcher(SignService* sign_service) : m_sign_service(sign_service) {}
 
-        EncapConfirm operator()(SignRequest& request)
+        EncapConfirm operator()(SignRequest& request) const
         {
             if (m_sign_service) {
                 return EncapConfirm::from(m_sign_service->sign(std::move(request)));
