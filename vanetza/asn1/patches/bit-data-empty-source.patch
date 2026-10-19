@@ -1,0 +1,15 @@
+diff --git a/vanetza/asn1/support/asn_bit_data.c b/vanetza/asn1/support/asn_bit_data.c
+index 8641ed9d..96b8e84b 100644
+--- a/vanetza/asn1/support/asn_bit_data.c
++++ b/vanetza/asn1/support/asn_bit_data.c
+@@ -23,7 +23,9 @@ asn_bit_data_new_contiguous(const void *data, size_t size_bits) {
+         return NULL;
+     }
+     bytes = (void *)(((char *)pd) + sizeof(*pd));
+-    memcpy(bytes, data, size_bytes);
++    if(size_bytes) {
++        memcpy(bytes, data, size_bytes);
++    }
+     bytes[size_bytes] = 0;
+     pd->buffer = bytes;
+     pd->nboff = 0;
