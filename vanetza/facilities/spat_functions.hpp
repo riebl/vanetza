@@ -3,6 +3,9 @@
 
 #include <vanetza/common/clock.hpp>
 #include <boost/optional/optional.hpp>
+#include <chrono>
+#include <cstdint>
+#include <ratio>
 
 namespace vanetza
 {
@@ -19,17 +22,20 @@ namespace facilities
  * Leap seconds are not represented by Clock, hence leap second codes are never produced.
  */
 
+/** Tenths of a second elapsed since begin of the UTC hour (TimeMark data element) */
+using TimeMark = std::chrono::duration<int32_t, std::ratio<1, 10>>;
+
 /** MinuteOfTheYear value indicating an invalid or unknown minute */
-extern const long cMinuteOfTheYearUnknown;
+extern const std::chrono::minutes cMinuteOfTheYearUnknown;
 
 /**
  * TimeMark value 36000: a leap second in ISO TS 19091, used for times more than
  * one hour ahead by C2C-CC RS 2077 (pTimeMarkOutOfRange)
  */
-extern const long cTimeMarkOutOfRange;
+extern const TimeMark cTimeMarkOutOfRange;
 
-/** TimeMark value indicating an unknown time */
-extern const long cTimeMarkUnknown;
+/** TimeMark value indicating an unknown time (pTimeMarkUnknown in C2C-CC RS 2077) */
+extern const TimeMark cTimeMarkUnknown;
 
 /**
  * Convert a TAI based time point to a UTC based time point
@@ -41,23 +47,23 @@ Clock::time_point utc_from_tai(const Clock::time_point& tai);
 /**
  * Get minutes elapsed since begin of the UTC year
  * \param at time point
- * \return MinuteOfTheYear value (0..527039)
+ * \return MinuteOfTheYear value (0..527039 minutes)
  */
-long minute_of_the_year(const Clock::time_point& at);
+std::chrono::minutes minute_of_the_year(const Clock::time_point& at);
 
 /**
  * Get milliseconds elapsed since begin of the UTC minute
  * \param at time point
- * \return DSecond value (0..59999)
+ * \return DSecond value (0..59999 milliseconds)
  */
-long dsecond(const Clock::time_point& at);
+std::chrono::milliseconds dsecond(const Clock::time_point& at);
 
 /**
  * Get tenths of a second elapsed since begin of the UTC hour (truncated)
  * \param at time point
- * \return TimeMark value (0..35999)
+ * \return TimeMark value (0..35999 tenths of a second)
  */
-long time_mark(const Clock::time_point& at);
+TimeMark time_mark(const Clock::time_point& at);
 
 /**
  * Resolve a TimeMark to an absolute time point
@@ -71,7 +77,7 @@ long time_mark(const Clock::time_point& at);
  * \param reference time of the message, e.g. derived from moy and timeStamp
  * \return time point or none if mark is unknown, a leap second or out of range
  */
-boost::optional<Clock::time_point> time_mark_to_time_point(long mark, const Clock::time_point& reference);
+boost::optional<Clock::time_point> time_mark_to_time_point(TimeMark mark, const Clock::time_point& reference);
 
 } // namespace facilities
 } // namespace vanetza
