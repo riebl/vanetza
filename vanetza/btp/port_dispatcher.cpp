@@ -1,5 +1,6 @@
 #include "port_dispatcher.hpp"
 #include "data_indication.hpp"
+#include <vanetza/common/archives.hpp>
 #include <vanetza/geonet/data_indication.hpp>
 #include <algorithm>
 #include <cassert>
@@ -13,20 +14,25 @@ boost::optional<DataIndication> parse_btp_header(const geonet::DataIndication& g
 {
     boost::optional<DataIndication> indication;
 
-    switch (gn_ind.upper_protocol) {
-        case geonet::UpperProtocol::BTP_A: {
-            HeaderA hdr = parse_btp_a(packet);
-            indication = DataIndication(gn_ind, hdr);
-            }
-            break;
-        case geonet::UpperProtocol::BTP_B: {
-            HeaderB hdr = parse_btp_b(packet);
-            indication = DataIndication(gn_ind, hdr);
-            }
-            break;
-        default:
-            // drop non-BTP packet
-            break;
+    try {
+        switch (gn_ind.upper_protocol) {
+            case geonet::UpperProtocol::BTP_A: {
+                HeaderA hdr = parse_btp_a(packet);
+                indication = DataIndication(gn_ind, hdr);
+                }
+                break;
+            case geonet::UpperProtocol::BTP_B: {
+                HeaderB hdr = parse_btp_b(packet);
+                indication = DataIndication(gn_ind, hdr);
+                }
+                break;
+            default:
+                // drop non-BTP packet
+                break;
+        }
+    } catch (const InputArchive::Exception&) {
+        // drop packet with invalid BTP header
+        indication = boost::none;
     }
 
     return indication;

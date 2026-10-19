@@ -96,6 +96,32 @@ TEST_F(BtpPortDispatcherTest, interactive) {
     EXPECT_EQ(1, handler.counter);
 }
 
+TEST_F(BtpPortDispatcherTest, truncated_btp_b_header_chunk) {
+    // only destination port present, destination port info is missing
+    ChunkPacket chunk;
+    chunk[OsiLayer::Transport] = ByteBuffer { 0x07, 0xd1 };
+    std::unique_ptr<UpPacket> packet { new UpPacket(chunk) };
+
+    EXPECT_NO_THROW(dispatcher.indicate(create_gn_indication(UpperProtocol::BTP_B), std::move(packet)));
+    EXPECT_EQ(1, undispatched_counter);
+}
+
+TEST_F(BtpPortDispatcherTest, truncated_btp_b_header_cohesive) {
+    std::unique_ptr<UpPacket> packet { new UpPacket(CohesivePacket { ByteBuffer { 0x07, 0xd1 }, OsiLayer::Transport }) };
+
+    EXPECT_NO_THROW(dispatcher.indicate(create_gn_indication(UpperProtocol::BTP_B), std::move(packet)));
+    EXPECT_EQ(1, undispatched_counter);
+}
+
+TEST_F(BtpPortDispatcherTest, truncated_btp_a_header) {
+    ChunkPacket chunk;
+    chunk[OsiLayer::Transport] = ByteBuffer { 0x12, 0x34, 0x13 };
+    std::unique_ptr<UpPacket> packet { new UpPacket(chunk) };
+
+    EXPECT_NO_THROW(dispatcher.indicate(create_gn_indication(UpperProtocol::BTP_A), std::move(packet)));
+    EXPECT_EQ(1, undispatched_counter);
+}
+
 TEST_F(BtpPortDispatcherTest, get_interactive_handler) {
     CounterIndicationInterface handler;
     const port_type port { host_cast<uint16_t>(0x1234) };
