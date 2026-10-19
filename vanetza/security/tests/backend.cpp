@@ -23,7 +23,7 @@ public:
         ASSERT_NE(backend.get(), nullptr);
     }
 
-    ByteBuffer buffer_from_string(const std::string& s)
+    ByteBuffer buffer_from_string(const std::string& s) const
     {
         ByteBuffer b;
         std::copy(s.begin(), s.end(), std::back_inserter(b));

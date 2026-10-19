@@ -47,7 +47,7 @@ public:
         mib.itsGnMinimumUpdateFrequencyEPV = 1.0 * units::si::hertz;
     }
 
-    unsigned lpv_updates()
+    unsigned lpv_updates() const
     {
         units::GeoAngle latitude { router.get_local_position_vector().latitude };
         return latitude.value() / 3;

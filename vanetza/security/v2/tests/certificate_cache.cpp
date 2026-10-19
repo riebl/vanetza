@@ -17,7 +17,7 @@ public:
     {
     }
 
-    Certificate build_certificate(SubjectType subject_type, uint8_t id = 0)
+    Certificate build_certificate(SubjectType subject_type, uint8_t id = 0) const
     {
         Certificate cert;
         cert.subject_info.subject_type = subject_type;

@@ -125,10 +125,10 @@ public:
     Signature& operator=(Signature&&) noexcept;
     ~Signature();
 
-    operator const ECDSA_SIG*() { return signature; }
+    operator const ECDSA_SIG*() const { return signature; }
     const ECDSA_SIG* operator->() const { return signature; }
     ECDSA_SIG* operator->() { return signature; }
-    explicit operator bool() { return signature != nullptr; }
+    explicit operator bool() const { return signature != nullptr; }
 
 private:
     Signature(const ByteBuffer& r, const ByteBuffer& s);

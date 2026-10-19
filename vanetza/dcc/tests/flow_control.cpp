@@ -65,7 +65,7 @@ protected:
         return packet;
     }
 
-    MacAddress mac(char x)
+    MacAddress mac(char x) const
     {
         return MacAddress { 0, 0, 0, 0, 0, static_cast<uint8_t>(x) };
     }

@@ -28,14 +28,14 @@ protected:
         mib.reset();
     }
 
-    Timestamp timestamp_earlier(std::chrono::milliseconds ms)
+    Timestamp timestamp_earlier(std::chrono::milliseconds ms) const
     {
         Timestamp ts { runtime->now() };
         ts -= Timestamp::duration_type { ms.count() * Timestamp::millisecond() };
         return ts;
     }
 
-    Address address(unsigned i)
+    Address address(unsigned i) const
     {
         Address addr;
         addr.mid(create_mac_address(i));

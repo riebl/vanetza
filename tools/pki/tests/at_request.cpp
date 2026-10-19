@@ -58,7 +58,7 @@ protected:
     // EtsiTs103097Data-Signed envelope when present (the default for AT
     // requests; TS 102 941 §6.2.3.3.1).
     bool decode_inner_management_data(const ByteBuffer& bytes,
-        asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t>& mgmt)
+        asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t>& mgmt) const
     {
         SignedData pop;
         if (pop.decode(bytes) && pop->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_signedData) {

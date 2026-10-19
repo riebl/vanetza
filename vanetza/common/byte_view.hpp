@@ -73,7 +73,7 @@ public:
         return m_iterator - o.m_iterator;
     }
 
-    constexpr reference operator[](difference_type n)
+    constexpr reference operator[](difference_type n) const
     {
         return m_iterator[n];
     }

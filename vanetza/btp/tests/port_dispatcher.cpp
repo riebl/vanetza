@@ -47,7 +47,7 @@ protected:
 
     std::unique_ptr<UpPacket> create_btp_packet(port_type destination);
     std::unique_ptr<UpPacket> create_btp_packet(port_type destination, port_type source);
-    geonet::DataIndication create_gn_indication(UpperProtocol protocol);
+    geonet::DataIndication create_gn_indication(UpperProtocol protocol) const;
 
     using port_native = port_type::value_type;
     const port_native port_min = std::numeric_limits<port_native>::min();
@@ -260,7 +260,7 @@ std::unique_ptr<UpPacket> BtpPortDispatcherTest::create_btp_packet(port_type des
     return std::unique_ptr<UpPacket> { new UpPacket(packet) };
 }
 
-geonet::DataIndication BtpPortDispatcherTest::create_gn_indication(UpperProtocol protocol)
+geonet::DataIndication BtpPortDispatcherTest::create_gn_indication(UpperProtocol protocol) const
 {
     geonet::DataIndication indication;
     indication.upper_protocol = protocol;

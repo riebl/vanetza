@@ -145,7 +145,7 @@ protected:
         return service;
     }
 
-    EncapRequest create_encap_request()
+    EncapRequest create_encap_request() const
     {
         SignRequest sign_request;
         sign_request.plain_message = expected_payload;
