@@ -34,15 +34,13 @@ def download_shapefile(resolution: str, cache_dir: Path) -> Path:
     shp_dir = cache_dir / name
     shp_path = shp_dir / f"{name}.shp"
 
-    if shp_path.exists():
-        return shp_path
-
-    url = f"https://naciscdn.org/naturalearth/{resolution}/cultural/{name}.zip"
-    print(f"Downloading {url} ...", file=sys.stderr)
-    data, _ = urllib.request.urlretrieve(url)
-    with zipfile.ZipFile(data) as zf:
-        shp_dir.mkdir(parents=True, exist_ok=True)
-        zf.extractall(shp_dir)
+    if not shp_path.exists():
+        url = f"https://naciscdn.org/naturalearth/{resolution}/cultural/{name}.zip"
+        print(f"Downloading {url} ...", file=sys.stderr)
+        data, _ = urllib.request.urlretrieve(url)
+        with zipfile.ZipFile(data) as zf:
+            shp_dir.mkdir(parents=True, exist_ok=True)
+            zf.extractall(shp_dir)
 
     return shp_path
 
