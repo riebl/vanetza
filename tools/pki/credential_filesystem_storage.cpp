@@ -18,7 +18,7 @@ CredentialFilesystemStorage::CredentialFilesystemStorage(const std::filesystem::
     std::filesystem::create_directories(m_root);
 }
 
-std::filesystem::path CredentialFilesystemStorage::build_key_path(const PublicKey& key)
+std::filesystem::path CredentialFilesystemStorage::build_key_path(const PublicKey& key) const
 {
     auto key_path = m_root / canonical_hexstring(key);
     key_path += ".pem";

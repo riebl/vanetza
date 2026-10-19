@@ -21,7 +21,7 @@ public:
     bool contains(const std::string& canonical_hex) const override;
 
 private:
-    std::filesystem::path build_key_path(const PublicKey&);
+    std::filesystem::path build_key_path(const PublicKey&) const;
     std::filesystem::path build_key_path(const std::string& canonical_hex) const;
 
     std::filesystem::path m_root;
