@@ -164,6 +164,14 @@ boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate&, Backend&
  */
 HashedId8 calculate_hash(const Certificate&);
 
+/**
+ * Get application permissions (SSP = service specific permissions)
+ * \param cert certificate containing application permissions
+ * \param aid look up permissions for this application identifier
+ * \return SSP bitmap or empty buffer
+ */
+ByteBuffer get_app_permissions(const Certificate& cert, ItsAid aid);
+
 } // namespace v2
 } // namespace security
 } // namespace vanetza

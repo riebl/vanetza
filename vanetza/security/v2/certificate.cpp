@@ -133,6 +133,21 @@ boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate& cert, Bac
     return result;
 }
 
+ByteBuffer get_app_permissions(const Certificate& cert, ItsAid aid)
+{
+    ByteBuffer perms;
+    const auto* permissions = cert.get_attribute<SubjectAttributeType::ITS_AID_SSP_List>();
+    if (permissions) {
+        for (const ItsAidSsp& permission : *permissions) {
+            if (permission.its_aid == aid) {
+                perms = permission.service_specific_permissions;
+                break;
+            }
+        }
+    }
+    return perms;
+}
+
 HashedId8 calculate_hash(const Certificate& cert)
 {
     Certificate canonical_cert = cert;

@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/tests/check_certificate.hpp>
 #include <vanetza/security/tests/serialization.hpp>
@@ -64,3 +65,36 @@ TEST(Certificate, WebValidator_AuthorizationTicket1_v2)
     check(c, serialize_roundtrip(c));
 }
 
+
+TEST(Certificate, app_permissions)
+{
+    using vanetza::ByteBuffer;
+    namespace aid = vanetza::aid;
+
+    Certificate cert;
+    cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
+    cert.add_permission(aid::DEN, ByteBuffer({ 2, 0xff }));
+
+    EXPECT_EQ(ByteBuffer({ 1, 0, 0 }), get_app_permissions(cert, aid::CA));
+    EXPECT_EQ(ByteBuffer({ 2, 0xff }), get_app_permissions(cert, aid::DEN));
+    EXPECT_TRUE(get_app_permissions(cert, aid::GN_MGMT).empty());
+}
+
+TEST(Certificate, app_permissions_without_ssp)
+{
+    namespace aid = vanetza::aid;
+
+    Certificate cert;
+    // ITS-AID list without SSPs
+    cert.add_permission(aid::CA);
+
+    EXPECT_TRUE(get_app_permissions(cert, aid::CA).empty());
+}
+
+TEST(Certificate, app_permissions_without_attributes)
+{
+    namespace aid = vanetza::aid;
+
+    Certificate cert;
+    EXPECT_TRUE(get_app_permissions(cert, aid::CA).empty());
+}
