@@ -13,7 +13,7 @@ class CredentialStorage;
 class OpenSslSecurityModule : public SecurityModule
 {
 public:
-    OpenSslSecurityModule(std::shared_ptr<CredentialStorage>);
+    explicit OpenSslSecurityModule(std::shared_ptr<CredentialStorage>);
 
     Sha256Hash calculate_sha256_hash(const std::uint8_t* buffer, std::size_t length) override;
     Sha384Hash calculate_sha384_hash(const std::uint8_t* buffer, std::size_t length) override;
