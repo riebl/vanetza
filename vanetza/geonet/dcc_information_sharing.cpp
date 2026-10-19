@@ -45,7 +45,7 @@ void DccInformationSharing::set_tx_power(unsigned tx_power)
 void DccInformationSharing::trigger()
 {
     m_aggregator.aggregate(m_cbr_local, m_location_table, m_last_aggregation, m_cbr_target);
-    m_last_aggregation = m_runtime.now();
+    m_last_aggregation = Timestamp { m_runtime.now() };
     m_update_hook(static_cast<const CbrAggregator&>(m_aggregator));
     m_runtime.schedule(m_trigger_interval, [this](const Clock::time_point&) { trigger(); });
 }

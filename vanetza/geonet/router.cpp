@@ -174,7 +174,7 @@ void Router::update_position(const PositionFix& position_fix)
     // EN 302 636-4-1 v1.3.1 is a little bit fuzzy regarding the time stamp:
     // "Expresses the time (...) at which the latitude and longitude (...) were acquired by the GeoAdhoc router."
     // My reading: use the current time stamp (now) when update_position is called (not the position fix time stamp)
-    m_local_position_vector.timestamp = m_runtime.now();
+    m_local_position_vector.timestamp = Timestamp { m_runtime.now() };
     m_local_position_vector.latitude = static_cast<geo_angle_i32t>(position_fix.latitude);
     m_local_position_vector.longitude = static_cast<geo_angle_i32t>(position_fix.longitude);
     if (m_mib.itsGnIsMobile) {
@@ -999,7 +999,7 @@ bool Router::process_extended(const ExtendedPduConstRefs<ShbHeader>& pdu, const 
         boost::optional<DccMcoField> dcc_mco = get_dcc_mco(shb.dcc);
         if (dcc_mco) {
             auto& loctex = source_entry.extensions.get<LocTEX_G5>();
-            loctex.local_update = m_runtime.now();
+            loctex.local_update = Timestamp { m_runtime.now() };
             loctex.source_update = shb.source_position.timestamp;
             loctex.dcc_mco = *dcc_mco;
         }

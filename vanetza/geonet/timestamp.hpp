@@ -32,9 +32,9 @@ public:
     static boost::posix_time::ptime start_time();
 
     Timestamp() : m_timestamp(0) {}
-    Timestamp(time_type t) : m_timestamp(t) {}
-    Timestamp(const Clock::time_point&);
-    Timestamp(const boost::posix_time::ptime&);
+    explicit Timestamp(time_type t) : m_timestamp(t) {}
+    explicit Timestamp(const Clock::time_point&);
+    explicit Timestamp(const boost::posix_time::ptime&);
     value_type raw() const { return m_timestamp.value(); }
     time_type quantity() const { return m_timestamp; }
     Timestamp& operator+=(duration_type);
