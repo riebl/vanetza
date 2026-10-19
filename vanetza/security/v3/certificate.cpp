@@ -79,13 +79,13 @@ Certificate& Certificate::operator=(const Certificate& other)
     return *this;
 }
 
-Certificate::Certificate(Certificate&& other) :
+Certificate::Certificate(Certificate&& other) noexcept :
     Wrapper(std::move(other)), CertificateView(content())
 {
     assert(CertificateView::m_cert == Wrapper::m_struct);
 }
 
-Certificate& Certificate::operator=(Certificate&& other)
+Certificate& Certificate::operator=(Certificate&& other) noexcept
 {
     Wrapper::operator=(std::move(other));
     CertificateView::m_cert = content();

@@ -169,8 +169,8 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
     Certificate(const Certificate&);
     Certificate& operator=(const Certificate&);
 
-    Certificate(Certificate&&);
-    Certificate& operator=(Certificate&&);
+    Certificate(Certificate&&) noexcept;
+    Certificate& operator=(Certificate&&) noexcept;
 
     // resolve ambiguity
     ByteBuffer encode() const;

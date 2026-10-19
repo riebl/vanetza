@@ -104,8 +104,8 @@ class Point : private boost::noncopyable
 {
 public:
     explicit Point(const EC_GROUP* group);
-    Point(Point&&);
-    Point& operator=(Point&&);
+    Point(Point&&) noexcept;
+    Point& operator=(Point&&) noexcept;
     ~Point();
 
     operator EC_POINT*() { return point; }
@@ -121,8 +121,8 @@ public:
     explicit Signature(ECDSA_SIG* sig);
     explicit Signature(const EcdsaSignature& sig);
     explicit Signature(const security::Signature& sig);
-    Signature(Signature&&);
-    Signature& operator=(Signature&&);
+    Signature(Signature&&) noexcept;
+    Signature& operator=(Signature&&) noexcept;
     ~Signature();
 
     operator const ECDSA_SIG*() { return signature; }
@@ -147,8 +147,8 @@ public:
     Key(const Key&) = delete;
     Key& operator=(const Key&) = delete;
     // but movable
-    Key(Key&&);
-    Key& operator=(Key&&);
+    Key(Key&&) noexcept;
+    Key& operator=(Key&&) noexcept;
     ~Key();
 
     operator EC_KEY*() { return eckey; }
@@ -163,8 +163,8 @@ class Bio : private boost::noncopyable
 {
 public:
     explicit Bio(BIO* bio);
-    Bio(Bio&&);
-    Bio& operator=(Bio&&);
+    Bio(Bio&&) noexcept;
+    Bio& operator=(Bio&&) noexcept;
     ~Bio();
 
     operator BIO*() { return bio; }
@@ -179,8 +179,8 @@ class EvpKey : private boost::noncopyable
 {
 public:
     explicit EvpKey(EVP_PKEY* pkey);
-    EvpKey(EvpKey&&);
-    EvpKey& operator=(EvpKey&&);
+    EvpKey(EvpKey&&) noexcept;
+    EvpKey& operator=(EvpKey&&) noexcept;
     ~EvpKey();
 
     operator EVP_PKEY*() { return pkey; }

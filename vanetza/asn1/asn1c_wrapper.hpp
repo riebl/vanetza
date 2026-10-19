@@ -188,7 +188,7 @@ protected:
 };
 
 template<typename T>
-void swap(asn1c_wrapper_common<T>& lhs, asn1c_wrapper_common<T>& rhs)
+void swap(asn1c_wrapper_common<T>& lhs, asn1c_wrapper_common<T>& rhs) noexcept
 {
     lhs.swap(rhs);
 }

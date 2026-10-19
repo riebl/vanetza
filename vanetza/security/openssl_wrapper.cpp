@@ -96,12 +96,12 @@ Point::Point(const EC_GROUP* group) : point(EC_POINT_new(group))
     check(point != nullptr);
 }
 
-Point::Point(Point&& other) : point(nullptr)
+Point::Point(Point&& other) noexcept : point(nullptr)
 {
     std::swap(point, other.point);
 }
 
-Point& Point::operator=(Point&& other)
+Point& Point::operator=(Point&& other) noexcept
 {
     std::swap(point, other.point);
     return *this;
@@ -151,12 +151,12 @@ Signature::Signature(const ByteBuffer& r, const ByteBuffer& s) :
     }
 }
 
-Signature::Signature(Signature&& other) : signature(nullptr)
+Signature::Signature(Signature&& other) noexcept : signature(nullptr)
 {
     std::swap(signature, other.signature);
 }
 
-Signature& Signature::operator=(Signature&& other)
+Signature& Signature::operator=(Signature&& other) noexcept
 {
     std::swap(signature, other.signature);
     return *this;
@@ -181,12 +181,12 @@ Key::Key(EC_KEY* key) : eckey(key)
 {
 }
 
-Key::Key(Key&& other) : eckey(nullptr)
+Key::Key(Key&& other) noexcept : eckey(nullptr)
 {
     std::swap(eckey, other.eckey);
 }
 
-Key& Key::operator=(Key&& other)
+Key& Key::operator=(Key&& other) noexcept
 {
     std::swap(eckey, other.eckey);
     return *this;
@@ -201,12 +201,12 @@ Bio::Bio(BIO* bio) : bio(bio)
 {
 }
 
-Bio::Bio(Bio&& other) : bio(nullptr)
+Bio::Bio(Bio&& other) noexcept : bio(nullptr)
 {
     std::swap(bio, other.bio);
 }
 
-Bio& Bio::operator=(Bio&& other)
+Bio& Bio::operator=(Bio&& other) noexcept
 {
     std::swap(bio, other.bio);
     return *this;
@@ -221,12 +221,12 @@ EvpKey::EvpKey(EVP_PKEY* pkey) : pkey(pkey)
 {
 }
 
-EvpKey::EvpKey(EvpKey&& other) : pkey(nullptr)
+EvpKey::EvpKey(EvpKey&& other) noexcept : pkey(nullptr)
 {
     std::swap(pkey, other.pkey);
 }
 
-EvpKey& EvpKey::operator=(EvpKey&& other)
+EvpKey& EvpKey::operator=(EvpKey&& other) noexcept
 {
     std::swap(pkey, other.pkey);
     return *this;
