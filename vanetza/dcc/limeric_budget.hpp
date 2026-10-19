@@ -28,13 +28,13 @@ public:
      * Get delay until next transmission is allowed
      * \return remaining transmission delay
      */
-    Clock::duration delay();
+    Clock::duration delay() const;
 
     /**
      * Get current interval between transmissions
      * \return transmission interval
      */
-    Clock::duration interval();
+    Clock::duration interval() const;
 
     /**
      * Notify budget about transmission activity

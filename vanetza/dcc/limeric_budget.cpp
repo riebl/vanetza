@@ -23,7 +23,7 @@ LimericBudget::LimericBudget(const DutyCyclePermit& dcp, const Runtime& rt) :
     update();
 }
 
-Clock::duration LimericBudget::delay()
+Clock::duration LimericBudget::delay() const
 {
     Clock::duration delay = Clock::duration::max();
     if (m_runtime.now() >= m_tx_start + m_interval) {
@@ -34,7 +34,7 @@ Clock::duration LimericBudget::delay()
     return delay;
 }
 
-Clock::duration LimericBudget::interval()
+Clock::duration LimericBudget::interval() const
 {
     return m_interval;
 }
