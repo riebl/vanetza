@@ -184,13 +184,12 @@ boost::optional<vanetza::EthernetHeader> strip_autotalks_rx_header(vanetza::Cohe
     assert(link_layer_buffer.size() == vanetza::access::G5LinkLayer::length_bytes);
 
     const vanetza::ByteBuffer& data_buffer = packet.buffer();
-    vanetza::ByteBuffer final;
-    for (auto i : link_layer_buffer)
-        final.push_back(i);
-    for (auto i : data_buffer)
-        final.push_back(i);
+    vanetza::ByteBuffer combined;
+    combined.reserve(link_layer_buffer.size() + data_buffer.size());
+    combined.insert(combined.end(), link_layer_buffer.begin(), link_layer_buffer.end());
+    combined.insert(combined.end(), data_buffer.begin(), data_buffer.end());
 
-    vanetza::CohesivePacket finalPkt(final, vanetza::OsiLayer::Physical);
+    vanetza::CohesivePacket finalPkt(combined, vanetza::OsiLayer::Physical);
     finalPkt.set_boundary(vanetza::OsiLayer::Physical, 0);
     finalPkt.set_boundary(vanetza::OsiLayer::Link, vanetza::access::G5LinkLayer::length_bytes);
     finalPkt.set_boundary(vanetza::OsiLayer::Network, packet.size());
