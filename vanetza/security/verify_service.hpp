@@ -65,6 +65,7 @@ public:
 };
 
 // forward declaration
+namespace v2 { class CertificateCache; }
 namespace v3 { class CertificateCache; }
 
 /**
@@ -82,14 +83,28 @@ public:
 
     /**
      * \brief register certificate cache for optional permission lookup
-     * \param cache certificate cache
+     *
+     * Certificates contained in verified messages are put into the cache.
+     * Permissions of messages signed with a certificate digest are looked up
+     * from the cache. Since DummyVerifyService does not validate anything,
+     * the cache must not be shared with a real verify service.
+     *
+     * \param cache v2 certificate cache
+     */
+    void use_certificate_cache(v2::CertificateCache* cache);
+
+    /**
+     * \brief register certificate cache for optional permission lookup
+     * \param cache v3 certificate cache
+     * \see use_certificate_cache(v2::CertificateCache*)
      */
     void use_certificate_cache(v3::CertificateCache* cache);
 
 private:
     VerificationReport m_report;
     CertificateValidity m_validity;
-    v3::CertificateCache* m_cert_cache = nullptr;
+    v2::CertificateCache* m_v2_cert_cache = nullptr;
+    v3::CertificateCache* m_v3_cert_cache = nullptr;
 };
 
 } // namespace security
