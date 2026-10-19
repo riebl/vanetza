@@ -46,7 +46,7 @@ public:
      * Check if status corresponds to a valid certificate
      * \return true if certificate is valid
      */
-    operator bool() const { return !m_reason; }
+    explicit operator bool() const { return !m_reason; }
 
     /**
      * \brief Get reason for certificate invalidity

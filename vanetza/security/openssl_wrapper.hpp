@@ -128,7 +128,7 @@ public:
     operator const ECDSA_SIG*() { return signature; }
     const ECDSA_SIG* operator->() const { return signature; }
     ECDSA_SIG* operator->() { return signature; }
-    operator bool() { return signature != nullptr; }
+    explicit operator bool() { return signature != nullptr; }
 
 private:
     Signature(const ByteBuffer& r, const ByteBuffer& s);
@@ -152,7 +152,7 @@ public:
     ~Key();
 
     operator EC_KEY*() { return eckey; }
-    operator bool() const { return eckey != nullptr; }
+    explicit operator bool() const { return eckey != nullptr; }
 
 private:
     EC_KEY* eckey;
@@ -168,7 +168,7 @@ public:
     ~Bio();
 
     operator BIO*() { return bio; }
-    operator bool() const { return bio != nullptr; }
+    explicit operator bool() const { return bio != nullptr; }
 
 private:
     BIO* bio;
@@ -184,7 +184,7 @@ public:
     ~EvpKey();
 
     operator EVP_PKEY*() { return pkey; }
-    operator bool() const { return pkey != nullptr; }
+    explicit operator bool() const { return pkey != nullptr; }
 
 private:
     EVP_PKEY* pkey;

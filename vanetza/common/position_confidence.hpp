@@ -16,7 +16,7 @@ struct PositionConfidence
         semi_minor(units::Length::from_value(std::numeric_limits<units::Length::value_type>::infinity()))
     {}
 
-    operator bool() const
+    explicit operator bool() const
     {
         return !std::isinf(semi_major.value()) && semi_minor.value() <= semi_major.value() && semi_minor.value() >= 0.0;
     }
