@@ -40,6 +40,81 @@ SignerInfoType get_type(const SignerInfo& info)
     return boost::apply_visitor(visit, info);
 }
 
+const Certificate* get_certificate(const SignerInfo& info)
+{
+    struct certificate_visitor : public boost::static_visitor<const Certificate*>
+    {
+        const Certificate* operator()(std::nullptr_t) const
+        {
+            return nullptr;
+        }
+
+        const Certificate* operator()(const HashedId8&) const
+        {
+            return nullptr;
+        }
+
+        const Certificate* operator()(const Certificate& cert) const
+        {
+            return &cert;
+        }
+
+        const Certificate* operator()(const std::list<Certificate>& chain) const
+        {
+            // last certificate in chain is the signer
+            return chain.empty() ? nullptr : &chain.back();
+        }
+
+        const Certificate* operator()(const CertificateDigestWithOtherAlgorithm&) const
+        {
+            return nullptr;
+        }
+    };
+
+    certificate_visitor visitor;
+    return boost::apply_visitor(visitor, info);
+}
+
+boost::optional<HashedId8> get_certificate_id(const SignerInfo& info)
+{
+    using result_type = boost::optional<HashedId8>;
+    struct certificate_id_visitor : public boost::static_visitor<result_type>
+    {
+        result_type operator()(std::nullptr_t) const
+        {
+            return boost::none;
+        }
+
+        result_type operator()(const HashedId8& digest) const
+        {
+            return digest;
+        }
+
+        result_type operator()(const Certificate& cert) const
+        {
+            return calculate_hash(cert);
+        }
+
+        result_type operator()(const std::list<Certificate>& chain) const
+        {
+            // last certificate in chain is the signer
+            if (!chain.empty()) {
+                return calculate_hash(chain.back());
+            } else {
+                return boost::none;
+            }
+        }
+
+        result_type operator()(const CertificateDigestWithOtherAlgorithm& other) const
+        {
+            return other.digest;
+        }
+    };
+
+    certificate_id_visitor visitor;
+    return boost::apply_visitor(visitor, info);
+}
+
 size_t get_size(const CertificateDigestWithOtherAlgorithm& cert)
 {
     size_t size = cert.digest.size();

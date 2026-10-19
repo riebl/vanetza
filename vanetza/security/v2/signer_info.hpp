@@ -3,6 +3,7 @@
 
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/public_key.hpp>
+#include <boost/optional/optional.hpp>
 #include <boost/variant/recursive_wrapper.hpp>
 #include <boost/variant/variant.hpp>
 #include <cstddef>
@@ -50,6 +51,28 @@ using SignerInfo = boost::variant<
  * \return SignerInfoType
  */
 SignerInfoType get_type(const SignerInfo&);
+
+/**
+ * \brief Get identifier of signing certificate
+ *
+ * The identifier is the HashedId8 of the signer's certificate, either given
+ * directly as digest (regardless of its hash algorithm) or calculated from
+ * the (last) certificate of a chain.
+ *
+ * \param SignerInfo
+ * \return certificate identifier if available
+ */
+boost::optional<HashedId8> get_certificate_id(const SignerInfo&);
+
+/**
+ * \brief Get signing certificate if contained in SignerInfo
+ *
+ * For a certificate chain, the last certificate is the signer.
+ *
+ * \param SignerInfo
+ * \return certificate or nullptr if not contained in SignerInfo
+ */
+const Certificate* get_certificate(const SignerInfo&);
 
 /**
  * \brief Calculates size of an CertificateDigestWithOtherAlgorithm
