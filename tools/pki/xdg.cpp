@@ -1,5 +1,7 @@
 #include "xdg.hpp"
+#include <array>
 #include <cstdlib>
+#include <optional>
 #include <pwd.h>
 #include <stdexcept>
 #include <unistd.h>
@@ -22,6 +24,20 @@ std::filesystem::path lookup_xdg_env(const char* env)
     }
 }
 
+std::optional<std::filesystem::path> lookup_passwd_home()
+{
+    // getpwuid_r stores the strings of the passwd entry in a caller-provided buffer
+    std::array<char, 4096> buffer;
+    passwd pw;
+    passwd* found = nullptr; // set to &pw if an entry exists, otherwise nullptr
+    if (::getpwuid_r(::getuid(), &pw, buffer.data(), buffer.size(), &found) == 0 && found != nullptr) {
+        if (pw.pw_dir != nullptr && pw.pw_dir[0] != '\0') {
+            return std::filesystem::path { pw.pw_dir };
+        }
+    }
+    return std::nullopt;
+}
+
 std::filesystem::path lookup_home()
 {
     const char* home_value = std::getenv("HOME");
@@ -29,9 +45,8 @@ std::filesystem::path lookup_home()
         return std::filesystem::path { home_value };
     }
 
-    const passwd* pw = ::getpwuid(getuid());
-    if (pw && pw->pw_dir) {
-        return std::filesystem::path { pw->pw_dir };
+    if (auto home = lookup_passwd_home()) {
+        return *home;
     }
 
     throw std::runtime_error("cannot determine home directory");
