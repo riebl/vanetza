@@ -137,3 +137,50 @@ TEST(asn1c_wrapper, decode_range) {
     EXPECT_EQ(4, wrapper->string.size);
     EXPECT_STREQ("1234", (const char*)(wrapper->string.buf));
 }
+
+TEST(asn1c_wrapper, encode_error_reports_failing_type) {
+    test_wrapper wrapper(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&wrapper->string, "12");
+    wrapper->field = 322;
+    asn1c_error ec;
+    EXPECT_EQ(0u, wrapper.size(ec));
+    EXPECT_TRUE(static_cast<bool>(ec));
+    EXPECT_EQ(ErrorCode::EncodeFailed, ec.code());
+    EXPECT_STREQ("VanetzaTest", ec.root_type_name());
+    EXPECT_STREQ("INTEGER", ec.failed_type_name());
+    const vanetza::ByteBuffer out = wrapper.encode(ec);
+    EXPECT_TRUE(out.empty());
+    EXPECT_EQ(ErrorCode::EncodeFailed, ec.code());
+}
+
+TEST(asn1c_wrapper, encode_throws_on_constraint_violation) {
+    test_wrapper wrapper(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&wrapper->string, "12");
+    wrapper->field = 322;
+    EXPECT_THROW(wrapper.encode(), asn1c_exception);
+}
+
+TEST(asn1c_wrapper, decode_error_maps_result_codes) {
+    test_wrapper tx(asn_DEF_VanetzaTest);
+    OCTET_STRING_fromString(&tx->string, "12");
+    tx->field = 7;
+    const vanetza::ByteBuffer buffer = tx.encode();
+    ASSERT_GT(buffer.size(), 1u);
+
+    test_wrapper rx(asn_DEF_VanetzaTest);
+    asn1c_error ec;
+    rx.decode(buffer, ec);
+    EXPECT_FALSE(static_cast<bool>(ec));
+
+    asn1c_error ec_trunc;
+    rx.decode(vanetza::ByteBuffer(buffer.begin(), buffer.begin() + 1), ec_trunc);
+    EXPECT_EQ(ErrorCode::DecodeIncomplete, ec_trunc.code());
+
+    asn1c_error ec_empty;
+    rx.decode(vanetza::ByteBuffer {}, ec_empty);
+    EXPECT_EQ(ErrorCode::DecodeIncomplete, ec_empty.code());
+
+    asn1c_error ec_bad;
+    rx.decode(vanetza::ByteBuffer(4, 0xFF), ec_bad);
+    EXPECT_EQ(ErrorCode::DecodeFailed, ec_bad.code());
+}

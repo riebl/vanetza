@@ -1,6 +1,7 @@
 #ifndef ASN1C_WRAPPER_HPP_ZCNDO8E5
 #define ASN1C_WRAPPER_HPP_ZCNDO8E5
 
+#include <vanetza/asn1/asn1c_error.hpp>
 #include <vanetza/asn1/support/asn_system.h>
 #include <vanetza/asn1/support/constr_TYPE.h>
 #include <vanetza/asn1/type_traits.hpp>
@@ -32,6 +33,15 @@ ByteBuffer encode_oer(asn_TYPE_descriptor_t&, const void*);
 bool decode_oer(asn_TYPE_descriptor_t&, void**, const ByteBuffer&);
 bool decode_oer(asn_TYPE_descriptor_t&, void**, const void* buffer, std::size_t size);
 ByteBuffer encode_xer(asn_TYPE_descriptor_t&, const void*);
+std::size_t size_per(asn_TYPE_descriptor_t&, const void*, asn1c_error&) noexcept;
+ByteBuffer encode_per(asn_TYPE_descriptor_t&, const void*, asn1c_error&);
+void decode_per(asn_TYPE_descriptor_t&, void**, const void* buffer, std::size_t size, asn1c_error&) noexcept;
+std::size_t size_oer(asn_TYPE_descriptor_t&, const void*, asn1c_error&) noexcept;
+ByteBuffer encode_oer(asn_TYPE_descriptor_t&, const void*, asn1c_error&);
+void decode_oer(asn_TYPE_descriptor_t&, void**, const void* buffer, std::size_t size, asn1c_error&) noexcept;
+std::size_t size_xer(asn_TYPE_descriptor_t&, const void*, asn1c_error&) noexcept;
+ByteBuffer encode_xer(asn_TYPE_descriptor_t&, const void*, asn1c_error&);
+void decode_xer(asn_TYPE_descriptor_t&, void**, const void* buffer, std::size_t size, asn1c_error&) noexcept;
 bool decode_xer(asn_TYPE_descriptor_t&, void**, const ByteBuffer&);
 bool decode_xer(asn_TYPE_descriptor_t&, void**, const void* buffer, std::size_t size);
 
@@ -211,6 +221,13 @@ public:
     }
 
     /**
+     * Encode ASN.1 struct into byte buffer
+     * \param ec detailed error information
+     * \return byte buffer containing serialized ASN.1 struct
+     */
+    ByteBuffer encode(asn1c_error& ec) const { return vanetza::asn1::encode_per(base::m_type, base::m_struct, ec); }
+
+    /**
      * Try to decode ASN.1 struct from byte buffer
      * \param buffer input data
      * \return true if decoding has been successful
@@ -232,12 +249,44 @@ public:
     }
 
     /**
+     * Try to decode ASN.1 struct from byte buffer
+     * \param buffer input data
+     * \param ec detailed error information
+     */
+    void decode(const ByteBuffer& buffer, asn1c_error& ec) { decode(buffer.begin(), buffer.end(), ec); }
+
+    void decode(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end, asn1c_error& ec)
+    {
+        if (begin != end) {
+            vanetza::asn1::decode_per(
+                base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end), ec);
+        } else {
+            ec = asn1c_error(ErrorCode::DecodeIncomplete, &(base::m_type));
+        }
+    }
+
+    void decode(const void* buffer, std::size_t len, asn1c_error& ec)
+    {
+        vanetza::asn1::decode_per(base::m_type, (void**)&(base::m_struct), buffer, len, ec);
+    }
+
+    /**
      * Get size of encoded ASN.1 struct
      * \return size in bytes
      */
     std::size_t size() const
     {
         return vanetza::asn1::size_per(base::m_type, base::m_struct);
+    }
+
+    /**
+     * Get size of encoded ASN.1 struct
+     * \param ec detailed error information
+     * \return size in bytes, 0 on failure
+     */
+    std::size_t size(asn1c_error& ec) const noexcept
+    {
+        return vanetza::asn1::size_per(base::m_type, base::m_struct, ec);
     }
 };
 
@@ -262,6 +311,13 @@ public:
     }
 
     /**
+     * Encode ASN.1 struct into byte buffer
+     * \param ec detailed error information
+     * \return byte buffer containing serialized ASN.1 struct
+     */
+    ByteBuffer encode(asn1c_error& ec) const { return vanetza::asn1::encode_oer(base::m_type, base::m_struct, ec); }
+
+    /**
      * Try to decode ASN.1 struct from byte buffer
      * \param buffer input data
      * \deprecated use decode_per instead
@@ -284,12 +340,44 @@ public:
     }
 
     /**
+     * Try to decode ASN.1 struct from byte buffer
+     * \param buffer input data
+     * \param ec detailed error information
+     */
+    void decode(const ByteBuffer& buffer, asn1c_error& ec) { decode(buffer.begin(), buffer.end(), ec); }
+
+    void decode(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end, asn1c_error& ec)
+    {
+        if (begin != end) {
+            vanetza::asn1::decode_oer(
+                base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end), ec);
+        } else {
+            ec = asn1c_error(ErrorCode::DecodeIncomplete, &(base::m_type));
+        }
+    }
+
+    void decode(const void* buffer, std::size_t len, asn1c_error& ec)
+    {
+        vanetza::asn1::decode_oer(base::m_type, (void**)&(base::m_struct), buffer, len, ec);
+    }
+
+    /**
      * Get size of encoded ASN.1 struct
      * \return size in bytes
      */
     std::size_t size() const
     {
         return vanetza::asn1::size_oer(base::m_type, base::m_struct);
+    }
+
+    /**
+     * Get size of encoded ASN.1 struct
+     * \param ec detailed error information
+     * \return size in bytes, 0 on failure
+     */
+    std::size_t size(asn1c_error& ec) const noexcept
+    {
+        return vanetza::asn1::size_oer(base::m_type, base::m_struct, ec);
     }
 };
 
@@ -308,6 +396,13 @@ public:
     {
         return vanetza::asn1::encode_xer(base::m_type, base::m_struct);
     }
+
+    /**
+     * Encode ASN.1 struct into byte buffer
+     * \param ec detailed error information
+     * \return byte buffer containing serialized ASN.1 struct
+     */
+    ByteBuffer encode(asn1c_error& ec) const { return vanetza::asn1::encode_xer(base::m_type, base::m_struct, ec); }
 
     /**
      * Try to decode ASN.1 struct from byte buffer
@@ -331,12 +426,44 @@ public:
     }
 
     /**
+     * Try to decode ASN.1 struct from byte buffer
+     * \param buffer input data
+     * \param ec detailed error information
+     */
+    void decode(const ByteBuffer& buffer, asn1c_error& ec) { decode(buffer.begin(), buffer.end(), ec); }
+
+    void decode(ByteBuffer::const_iterator begin, ByteBuffer::const_iterator end, asn1c_error& ec)
+    {
+        if (begin != end) {
+            vanetza::asn1::decode_xer(
+                base::m_type, (void**)&(base::m_struct), &(*begin), std::distance(begin, end), ec);
+        } else {
+            ec = asn1c_error(ErrorCode::DecodeIncomplete, &(base::m_type));
+        }
+    }
+
+    void decode(const void* buffer, std::size_t len, asn1c_error& ec)
+    {
+        vanetza::asn1::decode_xer(base::m_type, (void**)&(base::m_struct), buffer, len, ec);
+    }
+
+    /**
      * Get size of encoded ASN.1 struct
      * \return size in bytes
      */
     std::size_t size() const
     {
         return vanetza::asn1::size_xer(base::m_type, base::m_struct);
+    }
+
+    /**
+     * Get size of encoded ASN.1 struct
+     * \param ec detailed error information
+     * \return size in bytes, 0 on failure
+     */
+    std::size_t size(asn1c_error& ec) const noexcept
+    {
+        return vanetza::asn1::size_xer(base::m_type, base::m_struct, ec);
     }
 };
 

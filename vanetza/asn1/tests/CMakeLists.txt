@@ -1,6 +1,7 @@
 include(UseGTest)
 configure_gtest_directory(LINK_LIBRARIES asn1)
 
+add_gtest(Asn1cError asn1c_error.cpp)
 add_gtest(asn1c_wrapper asn1c_wrapper.cpp)
 add_gtest(BitData bit_data.cpp)
 add_gtest(Cpm SOURCES cpm.cpp)
