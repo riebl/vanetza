@@ -1,7 +1,14 @@
+#include <vanetza/asn1/its/SPAT.h>
+#include <vanetza/asn1/its/IntersectionState.h>
+#include <vanetza/asn1/its/MovementEvent.h>
+#include <vanetza/asn1/its/MovementState.h>
+#include <vanetza/asn1/its/TimeChangeDetails.h>
 #include <vanetza/facilities/spat_functions.hpp>
+#include <vanetza/facilities/detail/asn1_list.tpp>
 #include <vanetza/asn1/its/asn_constant.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <array>
+#include <stdexcept>
 
 namespace vanetza
 {
@@ -13,6 +20,7 @@ const std::chrono::minutes cMinuteOfTheYearUnknown { max_val_MinuteOfTheYear };
 // pTimeMarkOutOfRange 36000 and pTimeMarkUnknown 36001
 const TimeMark cTimeMarkOutOfRange { max_val_TimeMark - 1 };
 const TimeMark cTimeMarkUnknown { max_val_TimeMark };
+const long cMsgCountMax = max_val_MsgCount;
 
 namespace
 {
@@ -89,6 +97,96 @@ boost::optional<Clock::time_point> time_mark_to_time_point(TimeMark mark, const 
         resolved += std::chrono::hours(1);
     }
     return resolved;
+}
+
+namespace
+{
+
+using detail::allocate_optional;
+using detail::append;
+
+// round up to tenths of a second, Clock's epoch starts at a full second
+Clock::time_point ceil_to_tenth(const Clock::time_point& at)
+{
+    const Clock::duration excess = at.time_since_epoch() % TimeMark(1);
+    return excess == Clock::duration::zero() ? at : at - excess + TimeMark(1);
+}
+
+Clock::time_point minute_begin(const Clock::time_point& at)
+{
+    return at - dsecond(at) - at.time_since_epoch() % std::chrono::milliseconds(1);
+}
+
+} // namespace
+
+long next_msg_count(long count)
+{
+    return count >= cMsgCountMax || count < 0 ? 0 : count + 1;
+}
+
+IntersectionState& add_intersection_state(SPAT& spat, long id, long revision)
+{
+    auto intersection = asn1::make_unique<IntersectionState_t>(asn_DEF_IntersectionState);
+    intersection->id.id = id;
+    intersection->revision = revision;
+    // IntersectionStatusObject ::= BIT STRING (SIZE(16)), no flag set
+    intersection->status.size = 2;
+    intersection->status.buf = static_cast<uint8_t*>(asn1::allocate(intersection->status.size));
+    intersection->status.bits_unused = 0;
+    return append(spat.intersections, std::move(intersection));
+}
+
+void set_timestamp(IntersectionState& intersection, const Clock::time_point& at)
+{
+    *allocate_optional(intersection.moy) = static_cast<long>(minute_of_the_year(at).count());
+    *allocate_optional(intersection.timeStamp) = static_cast<long>(dsecond(at).count());
+}
+
+MovementState& add_movement(IntersectionState& intersection, long signal_group)
+{
+    auto movement = asn1::make_unique<MovementState_t>(asn_DEF_MovementState);
+    movement->signalGroup = signal_group;
+    return append(intersection.states, std::move(movement));
+}
+
+MovementEvent& add_event(MovementState& movement, long phase_state)
+{
+    auto event = asn1::make_unique<MovementEvent_t>(asn_DEF_MovementEvent);
+    event->eventState = phase_state;
+    return append(movement.state_time_speed, std::move(event));
+}
+
+void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock::time_point& timestamp)
+{
+    const Clock::time_point window_begin = minute_begin(timestamp);
+    const Clock::time_point window_end = window_begin + std::chrono::hours(1);
+    const auto representable = [&](const Clock::time_point& t) { return t >= window_begin && t < window_end; };
+    if (timing.min_end < window_begin) {
+        throw std::invalid_argument("minimum end time before the minute of the timestamp");
+    }
+    if (timing.likely && !timing.confidence) {
+        throw std::invalid_argument("likely time without confidence");
+    }
+
+    ASN_STRUCT_FREE(asn_DEF_TimeChangeDetails, event.timing);
+    event.timing = nullptr;
+    TimeChangeDetails_t* details = allocate_optional(event.timing);
+    details->minEndTime = timing.min_end < window_end ? time_mark(timing.min_end).count() : cTimeMarkOutOfRange.count();
+    if (timing.start && representable(*timing.start)) {
+        *allocate_optional(details->startTime) = time_mark(*timing.start).count();
+    }
+    if (timing.max_end && representable(ceil_to_tenth(*timing.max_end))) {
+        *allocate_optional(details->maxEndTime) = time_mark(ceil_to_tenth(*timing.max_end)).count();
+    }
+    if (timing.likely && representable(*timing.likely)) {
+        *allocate_optional(details->likelyTime) = time_mark(*timing.likely).count();
+        if (timing.confidence) {
+            *allocate_optional(details->confidence) = *timing.confidence;
+        }
+    }
+    if (timing.next && representable(*timing.next)) {
+        *allocate_optional(details->nextTime) = time_mark(*timing.next).count();
+    }
 }
 
 } // namespace facilities
