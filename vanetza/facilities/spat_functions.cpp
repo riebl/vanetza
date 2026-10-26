@@ -125,11 +125,6 @@ long msg_count(long counter) noexcept
     return count;
 }
 
-long next_msg_count(long count) noexcept
-{
-    return (msg_count(count) + 1) % (cMsgCountMax + 1);
-}
-
 IntersectionState& add_intersection_state(SPAT& spat, long id, long revision)
 {
     auto intersection = asn1::make_unique<IntersectionState_t>(asn_DEF_IntersectionState);

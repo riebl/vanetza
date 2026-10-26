@@ -120,26 +120,6 @@ TEST(SpatFunctions, special_values)
     EXPECT_EQ(527040, cMinuteOfTheYearUnknown.count());
 }
 
-TEST(SpatFunctions, next_msg_count)
-{
-    EXPECT_EQ(1, next_msg_count(0));
-    EXPECT_EQ(127, next_msg_count(126));
-    EXPECT_EQ(0, next_msg_count(cMsgCountMax));
-    // any input is taken modulo cMsgCountMax + 1
-    EXPECT_EQ(1, next_msg_count(128));
-    EXPECT_EQ(0, next_msg_count(255));
-    EXPECT_EQ(0, next_msg_count(-1));
-    EXPECT_EQ(127, next_msg_count(-2));
-
-    // extreme values neither overflow nor produce an unencodable MsgCount
-    const long extremes[] = { std::numeric_limits<long>::min(), std::numeric_limits<long>::max() };
-    for (long extreme : extremes) {
-        EXPECT_GE(next_msg_count(extreme), 0);
-        EXPECT_LE(next_msg_count(extreme), cMsgCountMax);
-        EXPECT_EQ((msg_count(extreme) + 1) % (cMsgCountMax + 1), next_msg_count(extreme));
-    }
-}
-
 TEST(SpatFunctions, msg_count)
 {
     EXPECT_EQ(0, msg_count(0));
@@ -171,7 +151,7 @@ TEST(SpatFunctions, build_spatem)
     spatem->header.messageID = ItsPduHeader__messageID_spatem;
     spatem->header.stationID = 1337;
 
-    IntersectionState& intersection = add_intersection_state(spatem->spat, 42, next_msg_count(cMsgCountMax));
+    IntersectionState& intersection = add_intersection_state(spatem->spat, 42, msg_count(cMsgCountMax + 1));
     set_timestamp(intersection, now);
     MovementState& movement = add_movement(intersection, 3);
     MovementEvent& event = add_event(movement, MovementPhaseState_protected_Movement_Allowed);

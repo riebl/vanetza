@@ -89,15 +89,8 @@ boost::optional<Clock::time_point> time_mark_to_time_point(TimeMark mark, const 
 extern const long cMsgCountMax;
 
 /**
- * Get MsgCount following the given one; any input is taken modulo cMsgCountMax + 1
- * \param count current MsgCount value (0..127)
- * \return next MsgCount value (0..127)
- */
-long next_msg_count(long count) noexcept;
-
-/**
  * Map a counter onto MsgCount (0..cMsgCountMax); consecutive counters give
- * consecutive MsgCounts, wrapping around
+ * consecutive MsgCounts, wrapping around, so msg_count(count + 1) follows count
  * \param counter arbitrary counter value
  * \return MsgCount value (0..127)
  */
