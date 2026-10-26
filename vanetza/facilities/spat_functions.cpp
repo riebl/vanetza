@@ -1,10 +1,10 @@
+#include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/its/SPAT.h>
 #include <vanetza/asn1/its/IntersectionState.h>
 #include <vanetza/asn1/its/MovementEvent.h>
 #include <vanetza/asn1/its/MovementState.h>
 #include <vanetza/asn1/its/TimeChangeDetails.h>
 #include <vanetza/facilities/spat_functions.hpp>
-#include <vanetza/facilities/detail/asn1_list.tpp>
 #include <vanetza/asn1/its/asn_constant.h>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <array>
@@ -102,9 +102,6 @@ boost::optional<Clock::time_point> time_mark_to_time_point(TimeMark mark, const 
 namespace
 {
 
-using detail::allocate_optional;
-using detail::append;
-
 // round up to tenths of a second, Clock's epoch starts at a full second
 Clock::time_point ceil_to_tenth(const Clock::time_point& at)
 {
@@ -119,9 +116,18 @@ Clock::time_point minute_begin(const Clock::time_point& at)
 
 } // namespace
 
-long next_msg_count(long count)
+long msg_count(long counter) noexcept
 {
-    return count >= cMsgCountMax || count < 0 ? 0 : count + 1;
+    long count = counter % (cMsgCountMax + 1);
+    if (count < 0) {
+        count += cMsgCountMax + 1;
+    }
+    return count;
+}
+
+long next_msg_count(long count) noexcept
+{
+    return (msg_count(count) + 1) % (cMsgCountMax + 1);
 }
 
 IntersectionState& add_intersection_state(SPAT& spat, long id, long revision)
@@ -133,60 +139,89 @@ IntersectionState& add_intersection_state(SPAT& spat, long id, long revision)
     intersection->status.size = 2;
     intersection->status.buf = static_cast<uint8_t*>(asn1::allocate(intersection->status.size));
     intersection->status.bits_unused = 0;
-    return append(spat.intersections, std::move(intersection));
+    return asn1::append(spat.intersections, std::move(intersection));
 }
 
 void set_timestamp(IntersectionState& intersection, const Clock::time_point& at)
 {
-    *allocate_optional(intersection.moy) = static_cast<long>(minute_of_the_year(at).count());
-    *allocate_optional(intersection.timeStamp) = static_cast<long>(dsecond(at).count());
+    *asn1::allocate_optional(intersection.moy) = static_cast<long>(minute_of_the_year(at).count());
+    *asn1::allocate_optional(intersection.timeStamp) = static_cast<long>(dsecond(at).count());
 }
 
 MovementState& add_movement(IntersectionState& intersection, long signal_group)
 {
     auto movement = asn1::make_unique<MovementState_t>(asn_DEF_MovementState);
     movement->signalGroup = signal_group;
-    return append(intersection.states, std::move(movement));
+    return asn1::append(intersection.states, std::move(movement));
 }
 
 MovementEvent& add_event(MovementState& movement, long phase_state)
 {
     auto event = asn1::make_unique<MovementEvent_t>(asn_DEF_MovementEvent);
     event->eventState = phase_state;
-    return append(movement.state_time_speed, std::move(event));
+    return asn1::append(movement.state_time_speed, std::move(event));
 }
 
 void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock::time_point& timestamp)
+{
+    TimingError error = TimingError::Ok;
+    set_timing(event, timing, timestamp, error);
+
+    switch (error) {
+    case TimingError::Ok:
+        return;
+    case TimingError::MinEndBeforeMinute:
+        throw std::invalid_argument("minimum end time before the minute of the timestamp");
+    case TimingError::LikelyWithoutConfidence:
+        throw std::invalid_argument("likely time without confidence");
+    case TimingError::OutOfMemory:
+        throw asn1::asn1c_exception(asn1::asn1c_error(asn1::ErrorCode::OutOfMemory));
+    }
+}
+
+void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock::time_point& timestamp,
+    TimingError& error) noexcept
 {
     const Clock::time_point window_begin = minute_begin(timestamp);
     const Clock::time_point window_end = window_begin + std::chrono::hours(1);
     const auto representable = [&](const Clock::time_point& t) { return t >= window_begin && t < window_end; };
     if (timing.min_end < window_begin) {
-        throw std::invalid_argument("minimum end time before the minute of the timestamp");
+        error = TimingError::MinEndBeforeMinute;
+        return;
     }
     if (timing.likely && !timing.confidence) {
-        throw std::invalid_argument("likely time without confidence");
+        error = TimingError::LikelyWithoutConfidence;
+        return;
     }
 
-    ASN_STRUCT_FREE(asn_DEF_TimeChangeDetails, event.timing);
-    event.timing = nullptr;
-    TimeChangeDetails_t* details = allocate_optional(event.timing);
-    details->minEndTime = timing.min_end < window_end ? time_mark(timing.min_end).count() : cTimeMarkOutOfRange.count();
-    if (timing.start && representable(*timing.start)) {
-        *allocate_optional(details->startTime) = time_mark(*timing.start).count();
-    }
-    if (timing.max_end && representable(ceil_to_tenth(*timing.max_end))) {
-        *allocate_optional(details->maxEndTime) = time_mark(ceil_to_tenth(*timing.max_end)).count();
-    }
-    if (timing.likely && representable(*timing.likely)) {
-        *allocate_optional(details->likelyTime) = time_mark(*timing.likely).count();
-        if (timing.confidence) {
-            *allocate_optional(details->confidence) = *timing.confidence;
+    try {
+        auto details = asn1::make_unique<TimeChangeDetails_t>(asn_DEF_TimeChangeDetails);
+        details->minEndTime = timing.min_end < window_end ? time_mark(timing.min_end).count() : cTimeMarkOutOfRange.count();
+        if (timing.start && representable(*timing.start)) {
+            *asn1::allocate_optional(details->startTime) = time_mark(*timing.start).count();
         }
+        if (timing.max_end && representable(ceil_to_tenth(*timing.max_end))) {
+            *asn1::allocate_optional(details->maxEndTime) = time_mark(ceil_to_tenth(*timing.max_end)).count();
+        }
+        if (timing.likely && representable(*timing.likely)) {
+            *asn1::allocate_optional(details->likelyTime) = time_mark(*timing.likely).count();
+            if (timing.confidence) {
+                *asn1::allocate_optional(details->confidence) = *timing.confidence;
+            }
+        }
+        if (timing.next && representable(*timing.next)) {
+            *asn1::allocate_optional(details->nextTime) = time_mark(*timing.next).count();
+        }
+
+        // the event is only modified once the new timing is complete
+        ASN_STRUCT_FREE(asn_DEF_TimeChangeDetails, event.timing);
+        event.timing = details.release();
+    } catch (...) {
+        // only memory allocation can fail here
+        error = TimingError::OutOfMemory;
+        return;
     }
-    if (timing.next && representable(*timing.next)) {
-        *allocate_optional(details->nextTime) = time_mark(*timing.next).count();
-    }
+    error = TimingError::Ok;
 }
 
 } // namespace facilities

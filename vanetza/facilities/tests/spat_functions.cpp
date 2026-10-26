@@ -1,7 +1,11 @@
 #include <gtest/gtest.h>
+#include <vanetza/asn1/asn1c_wrapper.hpp>
+#include <vanetza/asn1/its/TimeChangeDetails.h>
 #include <vanetza/asn1/spatem.hpp>
 #include <vanetza/facilities/spat_functions.hpp>
+#include <limits>
 #include <stdexcept>
+#include <utility>
 
 using namespace vanetza;
 using namespace vanetza::facilities;
@@ -121,9 +125,41 @@ TEST(SpatFunctions, next_msg_count)
     EXPECT_EQ(1, next_msg_count(0));
     EXPECT_EQ(127, next_msg_count(126));
     EXPECT_EQ(0, next_msg_count(cMsgCountMax));
-    // recover from invalid values instead of producing an unencodable MsgCount
-    EXPECT_EQ(0, next_msg_count(128));
-    EXPECT_EQ(0, next_msg_count(-5));
+    // any input is taken modulo cMsgCountMax + 1
+    EXPECT_EQ(1, next_msg_count(128));
+    EXPECT_EQ(0, next_msg_count(255));
+    EXPECT_EQ(0, next_msg_count(-1));
+    EXPECT_EQ(127, next_msg_count(-2));
+
+    // extreme values neither overflow nor produce an unencodable MsgCount
+    const long extremes[] = { std::numeric_limits<long>::min(), std::numeric_limits<long>::max() };
+    for (long extreme : extremes) {
+        EXPECT_GE(next_msg_count(extreme), 0);
+        EXPECT_LE(next_msg_count(extreme), cMsgCountMax);
+        EXPECT_EQ((msg_count(extreme) + 1) % (cMsgCountMax + 1), next_msg_count(extreme));
+    }
+}
+
+TEST(SpatFunctions, msg_count)
+{
+    EXPECT_EQ(0, msg_count(0));
+    EXPECT_EQ(127, msg_count(127));
+    EXPECT_EQ(0, msg_count(128));
+    EXPECT_EQ(1, msg_count(129));
+    EXPECT_EQ(126, msg_count(-2));
+    EXPECT_EQ(127, msg_count(-1));
+    EXPECT_EQ(0, msg_count(-128));
+
+    // consecutive counters give consecutive MsgCounts, wrapping around
+    for (long counter = 0; counter <= 128; ++counter) {
+        EXPECT_EQ(counter % (cMsgCountMax + 1), msg_count(counter));
+    }
+
+    const long extremes[] = { std::numeric_limits<long>::min(), std::numeric_limits<long>::max() };
+    for (long extreme : extremes) {
+        EXPECT_GE(msg_count(extreme), 0);
+        EXPECT_LE(msg_count(extreme), cMsgCountMax);
+    }
 }
 
 TEST(SpatFunctions, build_spatem)
@@ -355,4 +391,131 @@ TEST(SpatFunctions, confidence_without_likely_time_is_omitted)
     ASSERT_NE(nullptr, event.timing);
     EXPECT_EQ(nullptr, event.timing->likelyTime);
     EXPECT_EQ(nullptr, event.timing->confidence);
+}
+
+TEST(SpatFunctions, set_timing_without_exceptions)
+{
+    static_assert(noexcept(set_timing(std::declval<MovementEvent&>(), std::declval<const MovementTiming&>(),
+        std::declval<const Clock::time_point&>(), std::declval<TimingError&>())),
+        "non-throwing set_timing overload is expected");
+
+    asn1::Spatem spatem;
+    MovementEvent& event = add_event(add_movement(add_intersection_state(spatem->spat, 1, 0), 1),
+        MovementPhaseState_stop_And_Remain);
+
+    const auto now = Clock::at("2026-10-03 10:15:30.250");
+    MovementTiming timing;
+    timing.start = now - std::chrono::seconds(10);
+    timing.min_end = now + std::chrono::milliseconds(5050);
+    timing.max_end = now + std::chrono::milliseconds(20040);
+    timing.likely = now + std::chrono::seconds(12);
+    timing.confidence = 12;
+
+    TimingError error = TimingError::OutOfMemory;
+    set_timing(event, timing, now, error);
+
+    EXPECT_EQ(TimingError::Ok, error);
+    ASSERT_NE(nullptr, event.timing);
+    // 10:15:20.250 -> 9202, 10:15:35.300 -> 9353 (truncated)
+    ASSERT_NE(nullptr, event.timing->startTime);
+    EXPECT_EQ(9202, *event.timing->startTime);
+    EXPECT_EQ(9353, event.timing->minEndTime);
+    // 10:15:50.290 -> 9503 (rounded up, truncation would give 9502)
+    ASSERT_NE(nullptr, event.timing->maxEndTime);
+    EXPECT_EQ(9503, *event.timing->maxEndTime);
+    ASSERT_NE(nullptr, event.timing->likelyTime);
+    EXPECT_EQ(9422, *event.timing->likelyTime);
+    ASSERT_NE(nullptr, event.timing->confidence);
+    EXPECT_EQ(12, *event.timing->confidence);
+    EXPECT_EQ(nullptr, event.timing->nextTime);
+
+    // both overloads produce the same timing
+    MovementEvent& throwing_event = add_event(add_movement(add_intersection_state(spatem->spat, 1, 1), 1),
+        MovementPhaseState_stop_And_Remain);
+    set_timing(throwing_event, timing, now);
+    ASSERT_NE(nullptr, throwing_event.timing);
+    EXPECT_EQ(0, asn1::compare(asn_DEF_TimeChangeDetails, event.timing, throwing_event.timing));
+}
+
+TEST(SpatFunctions, set_timing_error_codes)
+{
+    asn1::Spatem spatem;
+    MovementEvent& event = add_event(add_movement(add_intersection_state(spatem->spat, 1, 0), 1),
+        MovementPhaseState_stop_And_Remain);
+
+    const auto now = Clock::at("2026-10-03 10:15:00.000");
+    MovementTiming valid;
+    valid.start = now;
+    valid.min_end = now + std::chrono::seconds(5);
+    valid.max_end = now + std::chrono::seconds(10);
+    valid.likely = now + std::chrono::seconds(7);
+    valid.confidence = 12;
+    TimingError error = TimingError::OutOfMemory;
+    set_timing(event, valid, now, error);
+    ASSERT_EQ(TimingError::Ok, error);
+    ASSERT_NE(nullptr, event.timing);
+    const TimeChangeDetails_t* previous = event.timing;
+
+    MovementTiming min_end_before_minute;
+    min_end_before_minute.min_end = Clock::at("2026-10-03 10:14:59.900");
+    set_timing(event, min_end_before_minute, now, error);
+    EXPECT_EQ(TimingError::MinEndBeforeMinute, error);
+    EXPECT_EQ(previous, event.timing);
+    EXPECT_EQ(9050, event.timing->minEndTime);
+    ASSERT_NE(nullptr, event.timing->startTime);
+    EXPECT_EQ(9000, *event.timing->startTime);
+    ASSERT_NE(nullptr, event.timing->likelyTime);
+    EXPECT_EQ(9070, *event.timing->likelyTime);
+    ASSERT_NE(nullptr, event.timing->confidence);
+    EXPECT_EQ(12, *event.timing->confidence);
+
+    MovementTiming likely_without_confidence;
+    likely_without_confidence.min_end = now + std::chrono::seconds(5);
+    likely_without_confidence.likely = now + std::chrono::seconds(7);
+    set_timing(event, likely_without_confidence, now, error);
+    EXPECT_EQ(TimingError::LikelyWithoutConfidence, error);
+    EXPECT_EQ(previous, event.timing);
+    EXPECT_EQ(9050, event.timing->minEndTime);
+    ASSERT_NE(nullptr, event.timing->maxEndTime);
+    EXPECT_EQ(9100, *event.timing->maxEndTime);
+    ASSERT_NE(nullptr, event.timing->likelyTime);
+    EXPECT_EQ(9070, *event.timing->likelyTime);
+}
+
+TEST(SpatFunctions, set_timing_exception_keeps_event)
+{
+    asn1::Spatem spatem;
+    MovementEvent& event = add_event(add_movement(add_intersection_state(spatem->spat, 1, 0), 1),
+        MovementPhaseState_stop_And_Remain);
+
+    const auto now = Clock::at("2026-10-03 10:15:00.000");
+    MovementTiming valid;
+    valid.min_end = now + std::chrono::seconds(5);
+    valid.max_end = now + std::chrono::seconds(10);
+    valid.likely = now + std::chrono::seconds(7);
+    valid.confidence = 12;
+    set_timing(event, valid, now);
+    ASSERT_NE(nullptr, event.timing);
+    const TimeChangeDetails_t* previous = event.timing;
+
+    MovementTiming min_end_before_minute;
+    min_end_before_minute.min_end = Clock::at("2026-10-03 10:14:59.900");
+    EXPECT_THROW(set_timing(event, min_end_before_minute, now), std::invalid_argument);
+    EXPECT_EQ(previous, event.timing);
+    EXPECT_EQ(9050, event.timing->minEndTime);
+    ASSERT_NE(nullptr, event.timing->maxEndTime);
+    EXPECT_EQ(9100, *event.timing->maxEndTime);
+    ASSERT_NE(nullptr, event.timing->likelyTime);
+    EXPECT_EQ(9070, *event.timing->likelyTime);
+    ASSERT_NE(nullptr, event.timing->confidence);
+    EXPECT_EQ(12, *event.timing->confidence);
+
+    MovementTiming likely_without_confidence;
+    likely_without_confidence.min_end = now + std::chrono::seconds(5);
+    likely_without_confidence.likely = now + std::chrono::seconds(7);
+    EXPECT_THROW(set_timing(event, likely_without_confidence, now), std::invalid_argument);
+    EXPECT_EQ(previous, event.timing);
+    EXPECT_EQ(9050, event.timing->minEndTime);
+    ASSERT_NE(nullptr, event.timing->likelyTime);
+    EXPECT_EQ(9070, *event.timing->likelyTime);
 }

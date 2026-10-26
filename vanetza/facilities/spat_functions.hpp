@@ -89,11 +89,19 @@ boost::optional<Clock::time_point> time_mark_to_time_point(TimeMark mark, const 
 extern const long cMsgCountMax;
 
 /**
- * Get MsgCount following the given one, wrapping around after cMsgCountMax
+ * Get MsgCount following the given one; any input is taken modulo cMsgCountMax + 1
  * \param count current MsgCount value (0..127)
  * \return next MsgCount value (0..127)
  */
-long next_msg_count(long count);
+long next_msg_count(long count) noexcept;
+
+/**
+ * Map a counter onto MsgCount (0..cMsgCountMax); consecutive counters give
+ * consecutive MsgCounts, wrapping around
+ * \param counter arbitrary counter value
+ * \return MsgCount value (0..127)
+ */
+long msg_count(long counter) noexcept;
 
 /**
  * Timing of a movement event as absolute time points (ISO TS 19091 TimeChangeDetails)
@@ -141,6 +149,17 @@ MovementState& add_movement(IntersectionState& intersection, long signal_group);
 MovementEvent& add_event(MovementState& movement, long phase_state);
 
 /**
+ * Outcome of set_timing() without exceptions
+ */
+enum class TimingError
+{
+    Ok = 0, /**< timing has been set */
+    MinEndBeforeMinute, /**< minimum end time lies before the minute of the timestamp */
+    LikelyWithoutConfidence, /**< likely time given without confidence (C2C-CC RS 2077 RS_ARSM_115) */
+    OutOfMemory /**< memory allocation failed; the event is unchanged */
+};
+
+/**
  * Set timing of a movement event, replacing any previous timing
  *
  * Lower bounds (start, min_end) are truncated and upper bounds (max_end) rounded up
@@ -156,8 +175,20 @@ MovementEvent& add_event(MovementState& movement, long phase_state);
  * \param timestamp time of the intersection state, see set_timestamp()
  * \throw std::invalid_argument if the minimum end time lies before the timestamp's minute
  * or a likely time comes without confidence
+ * \throw asn1::asn1c_exception if memory allocation fails
+ * The event is left unchanged if an exception is thrown.
  */
 void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock::time_point& timestamp);
+
+/**
+ * Set timing of a movement event without throwing, see set_timing() above
+ * \param event movement event (destination)
+ * \param timing absolute timing
+ * \param timestamp time of the intersection state, see set_timestamp()
+ * \param error is Ok on success; on any error the event is left unchanged
+ */
+void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock::time_point& timestamp,
+    TimingError& error) noexcept;
 
 } // namespace facilities
 } // namespace vanetza
