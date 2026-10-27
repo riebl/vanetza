@@ -16,7 +16,8 @@ enum class ErrorCode
     EncodeFailed,
     DecodeIncomplete,
     DecodeFailed,
-    OutOfMemory
+    OutOfMemory,
+    InvalidArgument
 };
 
 /**

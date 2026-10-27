@@ -26,6 +26,8 @@ const char* code_description(ErrorCode code)
             return "ASN.1 decoding failed";
         case ErrorCode::OutOfMemory:
             return "out of memory";
+        case ErrorCode::InvalidArgument:
+            return "invalid argument";
     }
     return "unknown ASN.1 error";
 }

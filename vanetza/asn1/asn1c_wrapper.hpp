@@ -112,7 +112,8 @@ template<typename LIST, typename T,
 T& append(LIST& list, std::unique_ptr<T, deleter> element)
 {
     if (ASN_SEQUENCE_ADD(&list, element.get()) != 0) {
-        throw asn1c_exception(asn1c_error(ErrorCode::OutOfMemory));
+        ErrorCode ec = errno == EINVAL ? ErrorCode::InvalidArgument : ErrorCode::OutOfMemory;
+        throw asn1c_exception(asn1c_error(ec));
     }
     return *element.release();
 }
