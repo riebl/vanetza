@@ -103,18 +103,22 @@ T* allocate_optional(T*& member)
 }
 
 /**
+ * Element type of an asn1c SEQUENCE OF container
+ */
+template<typename LIST>
+using sequence_element_t = std::remove_reference_t<decltype(**std::declval<LIST&>().list.array)>;
+
+/**
  * Append an element to an asn1c SEQUENCE OF, transferring ownership on success
  *
- * This overload only participates if LIST is an asn1c SEQUENCE OF container
- * whose list.array member has type T**, i.e. its element type matches T.
+ * This overload only participates if LIST is an asn1c SEQUENCE OF container.
  *
  * \param list asn1c list (destination)
  * \param element owned element, freed by its deleter if appending fails
  * \return appended element, now owned by list
  */
-template<typename LIST, typename T,
-    typename = std::enable_if_t<std::is_same<decltype(std::declval<LIST&>().list.array), T**>::value>>
-T& append(LIST& list, std::unique_ptr<T, deleter> element)
+template<typename LIST>
+sequence_element_t<LIST>& append(LIST& list, std::unique_ptr<sequence_element_t<LIST>, deleter> element)
 {
     const ErrorCode ec = append_sequence(&list, element.get());
     if (ec != ErrorCode::Ok) {
