@@ -2,6 +2,7 @@
 #define ASN1C_WRAPPER_HPP_ZCNDO8E5
 
 #include <vanetza/asn1/asn1c_error.hpp>
+#include <vanetza/asn1/support/asn_SEQUENCE_OF.h>
 #include <vanetza/asn1/support/asn_system.h>
 #include <vanetza/asn1/support/constr_TYPE.h>
 #include <vanetza/asn1/type_traits.hpp>
@@ -9,6 +10,7 @@
 #include <cstddef>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 namespace vanetza
@@ -79,6 +81,40 @@ template<class T>
 std::unique_ptr<T, deleter> make_unique()
 {
     return make_unique<T>(asn1_type_traits<T>::descriptor());
+}
+
+/**
+ * Allocate an OPTIONAL member if not present yet
+ * \param member pointer member of an asn1c struct, owned by that struct
+ * \return present member
+ */
+template<typename T>
+T* allocate_optional(T*& member)
+{
+    if (!member) {
+        member = allocate<T>();
+    }
+    return member;
+}
+
+/**
+ * Append an element to an asn1c SEQUENCE OF, transferring ownership on success
+ *
+ * This overload only participates if LIST is an asn1c SEQUENCE OF container
+ * whose list.array member has type T**, i.e. its element type matches T.
+ *
+ * \param list asn1c list (destination)
+ * \param element owned element, freed by its deleter if appending fails
+ * \return appended element, now owned by list
+ */
+template<typename LIST, typename T,
+    typename = std::enable_if_t<std::is_same<decltype(std::declval<LIST&>().list.array), T**>::value>>
+T& append(LIST& list, std::unique_ptr<T, deleter> element)
+{
+    if (ASN_SEQUENCE_ADD(&list, element.get()) != 0) {
+        throw asn1c_exception(asn1c_error(ErrorCode::OutOfMemory));
+    }
+    return *element.release();
 }
 
 template<class T>

@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
+#include <vanetza/asn1/its/IntersectionState.h>
+#include <vanetza/asn1/its/IntersectionStateList.h>
 #include <vanetza/asn1/its/VanetzaTest.h>
 
 using namespace vanetza::asn1;
@@ -158,6 +160,32 @@ TEST(asn1c_wrapper, encode_throws_on_constraint_violation) {
     OCTET_STRING_fromString(&wrapper->string, "12");
     wrapper->field = 322;
     EXPECT_THROW(wrapper.encode(), asn1c_exception);
+}
+
+TEST(asn1c_wrapper, allocate_optional) {
+    auto state = make_unique<IntersectionState_t>(asn_DEF_IntersectionState);
+    ASSERT_EQ(nullptr, state->moy);
+
+    MinuteOfTheYear_t* moy = allocate_optional(state->moy);
+    ASSERT_NE(nullptr, moy);
+    EXPECT_EQ(moy, state->moy);
+    *moy = 4711L;
+
+    // an already present member is returned as is
+    EXPECT_EQ(moy, allocate_optional(state->moy));
+    EXPECT_EQ(4711L, *state->moy);
+}
+
+TEST(asn1c_wrapper, append) {
+    auto list = make_unique<IntersectionStateList_t>(asn_DEF_IntersectionStateList);
+    auto element = make_unique<IntersectionState_t>(asn_DEF_IntersectionState);
+    element->id.id = 42;
+    IntersectionState_t* raw = element.get();
+
+    IntersectionState_t& appended = append(*list, std::move(element));
+    EXPECT_EQ(1, list->list.count);
+    EXPECT_EQ(raw, list->list.array[0]);
+    EXPECT_EQ(raw, &appended);
 }
 
 TEST(asn1c_wrapper, decode_error_maps_result_codes) {

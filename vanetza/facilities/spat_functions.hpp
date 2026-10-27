@@ -7,6 +7,12 @@
 #include <cstdint>
 #include <ratio>
 
+// forward declaration of asn1c generated struct
+struct IntersectionState;
+struct MovementEvent;
+struct MovementState;
+struct SPAT;
+
 namespace vanetza
 {
 namespace facilities
@@ -78,6 +84,104 @@ TimeMark time_mark(const Clock::time_point& at);
  * \return time point or none if mark is unknown, a leap second or out of range
  */
 boost::optional<Clock::time_point> time_mark_to_time_point(TimeMark mark, const Clock::time_point& reference);
+
+/** Largest MsgCount value before wrap-around */
+extern const long cMsgCountMax;
+
+/**
+ * Map a counter onto MsgCount (0..cMsgCountMax); consecutive counters give
+ * consecutive MsgCounts, wrapping around, so msg_count(count + 1) follows count
+ * \param counter arbitrary counter value
+ * \return MsgCount value (0..127)
+ */
+long msg_count(long counter) noexcept;
+
+/**
+ * Timing of a movement event as absolute time points (ISO TS 19091 TimeChangeDetails)
+ */
+struct MovementTiming
+{
+    boost::optional<Clock::time_point> start; /**< begin of this state */
+    Clock::time_point min_end; /**< earliest end of this state */
+    boost::optional<Clock::time_point> max_end; /**< latest end of this state */
+    boost::optional<Clock::time_point> likely; /**< most likely end of this state */
+    boost::optional<long> confidence; /**< TimeIntervalConfidence of likely end (0..15) */
+    boost::optional<Clock::time_point> next; /**< next start of the allowed movement */
+};
+
+/**
+ * Append an intersection state to SPAT
+ * \param spat SPAT container (destination)
+ * \param id intersection identifier unique within its road regulator (0..65535)
+ * \param revision MsgCount of the intersection configuration (0..127)
+ * \return appended intersection state, owned by spat
+ */
+IntersectionState& add_intersection_state(SPAT& spat, long id, long revision);
+
+/**
+ * Set moy and timeStamp of an intersection state
+ * \param intersection intersection state (destination)
+ * \param at time point of the state
+ */
+void set_timestamp(IntersectionState& intersection, const Clock::time_point& at);
+
+/**
+ * Append a movement (signal group) state to an intersection state
+ * \param intersection intersection state (destination)
+ * \param signal_group signal group identifier (0..255)
+ * \return appended movement state, owned by intersection
+ */
+MovementState& add_movement(IntersectionState& intersection, long signal_group);
+
+/**
+ * Append a movement event to a movement state
+ * \param movement movement state (destination)
+ * \param phase_state MovementPhaseState value
+ * \return appended movement event, owned by movement
+ */
+MovementEvent& add_event(MovementState& movement, long phase_state);
+
+/**
+ * Outcome of set_timing() without exceptions
+ */
+enum class TimingError
+{
+    Ok = 0, /**< timing has been set */
+    MinEndBeforeMinute, /**< minimum end time lies before the minute of the timestamp */
+    LikelyWithoutConfidence, /**< likely time given without confidence (C2C-CC RS 2077 RS_ARSM_115) */
+    OutOfMemory /**< memory allocation failed; the event is unchanged */
+};
+
+/**
+ * Set timing of a movement event, replacing any previous timing
+ *
+ * Lower bounds (start, min_end) are truncated and upper bounds (max_end) rounded up
+ * to tenths of a second, so the encoded interval always contains the given one.
+ *
+ * A TimeMark is unambiguous only from the begin of the timestamp's minute for one hour
+ * (C2C-CC RS 2077 RS_ARSM_54). A minimum end time beyond is encoded as cTimeMarkOutOfRange,
+ * the optional times outside are omitted (confidence together with the likely time).
+ * A likely time requires its confidence (RS_ARSM_115).
+ *
+ * \param event movement event (destination)
+ * \param timing absolute timing
+ * \param timestamp time of the intersection state, see set_timestamp()
+ * \throw std::invalid_argument if the minimum end time lies before the timestamp's minute
+ * or a likely time comes without confidence
+ * \throw asn1::asn1c_exception if memory allocation fails
+ * The event is left unchanged if an exception is thrown.
+ */
+void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock::time_point& timestamp);
+
+/**
+ * Set timing of a movement event without throwing, see set_timing() above
+ * \param event movement event (destination)
+ * \param timing absolute timing
+ * \param timestamp time of the intersection state, see set_timestamp()
+ * \param error is Ok on success; on any error the event is left unchanged
+ */
+void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock::time_point& timestamp,
+    TimingError& error) noexcept;
 
 } // namespace facilities
 } // namespace vanetza
