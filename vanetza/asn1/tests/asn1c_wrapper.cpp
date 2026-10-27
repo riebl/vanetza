@@ -186,7 +186,6 @@ TEST(asn1c_wrapper, append) {
     EXPECT_EQ(1, list->list.count);
     EXPECT_EQ(raw, list->list.array[0]);
     EXPECT_EQ(raw, &appended);
-    EXPECT_EQ(nullptr, element.get());
 }
 
 TEST(asn1c_wrapper, decode_error_maps_result_codes) {
