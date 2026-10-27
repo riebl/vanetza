@@ -2,7 +2,6 @@
 #define ASN1C_WRAPPER_HPP_ZCNDO8E5
 
 #include <vanetza/asn1/asn1c_error.hpp>
-#include <vanetza/asn1/support/asn_SEQUENCE_OF.h>
 #include <vanetza/asn1/support/asn_system.h>
 #include <vanetza/asn1/support/constr_TYPE.h>
 #include <vanetza/asn1/type_traits.hpp>
@@ -46,6 +45,12 @@ ByteBuffer encode_xer(asn_TYPE_descriptor_t&, const void*, asn1c_error&);
 void decode_xer(asn_TYPE_descriptor_t&, void**, const void* buffer, std::size_t size, asn1c_error&) noexcept;
 bool decode_xer(asn_TYPE_descriptor_t&, void**, const ByteBuffer&);
 bool decode_xer(asn_TYPE_descriptor_t&, void**, const void* buffer, std::size_t size);
+
+/**
+ * Append element to an asn1c SEQUENCE OF list, building block of append()
+ * \return Ok on success, InvalidArgument for null pointers or OutOfMemory
+ */
+ErrorCode append_sequence(void* list, void* element);
 
 template<class T>
 T* allocate()
@@ -111,8 +116,8 @@ template<typename LIST, typename T,
     typename = std::enable_if_t<std::is_same<decltype(std::declval<LIST&>().list.array), T**>::value>>
 T& append(LIST& list, std::unique_ptr<T, deleter> element)
 {
-    if (ASN_SEQUENCE_ADD(&list, element.get()) != 0) {
-        ErrorCode ec = errno == EINVAL ? ErrorCode::InvalidArgument : ErrorCode::OutOfMemory;
+    const ErrorCode ec = append_sequence(&list, element.get());
+    if (ec != ErrorCode::Ok) {
         throw asn1c_exception(asn1c_error(ec));
     }
     return *element.release();

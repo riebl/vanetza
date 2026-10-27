@@ -188,6 +188,19 @@ TEST(asn1c_wrapper, append) {
     EXPECT_EQ(raw, &appended);
 }
 
+TEST(asn1c_wrapper, append_null_element) {
+    IntersectionStateList_t state_list {};
+    std::unique_ptr<IntersectionState_t, deleter> element;
+
+    try {
+        append(state_list, std::move(element));
+        FAIL() << "append did not throw";
+    } catch (const asn1c_exception& e) {
+        EXPECT_EQ(ErrorCode::InvalidArgument, e.code());
+    }
+    EXPECT_EQ(0, state_list.list.count);
+}
+
 TEST(asn1c_wrapper, decode_error_maps_result_codes) {
     test_wrapper tx(asn_DEF_VanetzaTest);
     OCTET_STRING_fromString(&tx->string, "12");

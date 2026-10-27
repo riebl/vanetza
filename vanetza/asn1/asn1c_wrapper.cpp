@@ -1,5 +1,6 @@
 #include <vanetza/asn1/support/asn_application.h>
 #include <vanetza/asn1/support/asn_internal.h>
+#include <vanetza/asn1/support/asn_SEQUENCE_OF.h>
 #include <vanetza/asn1/support/constraints.h>
 #include <vanetza/asn1/support/uper_decoder.h>
 #include <vanetza/asn1/support/uper_encoder.h>
@@ -7,6 +8,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <algorithm>
 #include <cassert>
+#include <cerrno>
 #include <cstdlib>
 #include <iterator>
 #include <string>
@@ -97,6 +99,15 @@ int compare(asn_TYPE_descriptor_t& td, const void* a, const void* b)
 int print(FILE* stream, asn_TYPE_descriptor_t& td, const void* t)
 {
     return asn_fprint(stream, &td, t);
+}
+
+ErrorCode append_sequence(void* list, void* element)
+{
+    errno = 0;
+    if (ASN_SEQUENCE_ADD(list, element) == 0) {
+        return ErrorCode::Ok;
+    }
+    return errno == EINVAL ? ErrorCode::InvalidArgument : ErrorCode::OutOfMemory;
 }
 
 std::size_t size_per(asn_TYPE_descriptor_t& td, const void* t, asn1c_error& ec) noexcept
