@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hashed_id8.hpp"
+#include "security_module.hpp"
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/CertificateRevocationListMessage.h>
 #include <boost/optional/optional.hpp>
@@ -12,8 +13,6 @@ namespace vanetza
 {
 namespace pki
 {
-
-class SecurityModule;
 
 class CertificateRevocationList
 {

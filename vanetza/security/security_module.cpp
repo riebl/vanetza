@@ -1,8 +1,8 @@
-#include "security_module.hpp"
+#include <vanetza/security/security_module.hpp>
 
 namespace vanetza
 {
-namespace pki
+namespace security
 {
 
 bool SecurityModule::can_sign(const PublicKey& key)
@@ -11,5 +11,5 @@ bool SecurityModule::can_sign(const PublicKey& key)
     return sign(probe, key).has_value();
 }
 
-} // namespace pki
+} // namespace security
 } // namespace vanetza

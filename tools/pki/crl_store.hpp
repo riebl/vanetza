@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hashed_id8.hpp"
+#include "security_module.hpp"
 #include <vanetza/security/hashed_id.hpp>
 #include <vanetza/security/v3/revocation_lookup.hpp>
 #include <boost/optional/optional.hpp>
@@ -15,7 +16,6 @@ namespace pki
 {
 
 class CertificateRevocationList;
-class SecurityModule;
 
 /**
  * Constructor scans \p root and indexes every "*.crl" file.

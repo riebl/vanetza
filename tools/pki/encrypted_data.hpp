@@ -1,6 +1,7 @@
 #pragma once
 
 #include "security_module.hpp"
+#include "security_module.hpp"
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/EtsiTs103097Data-Encrypted.h>
 
@@ -11,7 +12,6 @@ namespace pki
 
 // forward declarations
 struct HashedId8;
-class SecurityModule;
 
 class EncryptedData : public asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t>
 {

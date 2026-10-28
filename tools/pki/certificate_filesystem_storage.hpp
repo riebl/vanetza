@@ -1,6 +1,7 @@
 #pragma once
 
 #include "certificate_storage.hpp"
+#include "security_module.hpp"
 #include <filesystem>
 #include <memory>
 #include <string>
@@ -9,8 +10,6 @@ namespace vanetza
 {
 namespace pki
 {
-
-class SecurityModule;
 
 class CertificateFilesystemStorage : public CertificateStorage
 {

@@ -45,5 +45,25 @@ Sha384Digest calculate_sha384_digest(const uint8_t* data, std::size_t len)
     return digest;
 }
 
+bool operator==(const Sha256Hash& lhs, const Sha256Hash& rhs)
+{
+    return lhs.octets == rhs.octets;
+}
+
+bool operator!=(const Sha256Hash& lhs, const Sha256Hash& rhs)
+{
+    return !(lhs == rhs);
+}
+
+bool operator==(const Sha384Hash& lhs, const Sha384Hash& rhs)
+{
+    return lhs.octets == rhs.octets;
+}
+
+bool operator!=(const Sha384Hash& lhs, const Sha384Hash& rhs)
+{
+    return !(lhs == rhs);
+}
+
 } // namespace security
 } // namespace vanetza

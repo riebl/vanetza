@@ -1,6 +1,8 @@
 #pragma once
 
+#include "keys.hpp"
 #include "security_module.hpp"
+#include "sha.hpp"
 #include <vanetza/common/byte_buffer.hpp>
 #include <cstddef>
 

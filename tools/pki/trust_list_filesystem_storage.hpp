@@ -1,5 +1,6 @@
 #pragma once
 
+#include "security_module.hpp"
 #include "trust_list_storage.hpp"
 #include <filesystem>
 
@@ -7,8 +8,6 @@ namespace vanetza
 {
 namespace pki
 {
-
-class SecurityModule;
 
 class TrustListFilesystemStorage : public TrustListStorage
 {

@@ -43,7 +43,6 @@ add_library(pki_library STATIC
     prune_command.cpp
     psid_ssp.cpp
     response_codes.cpp
-    security_module.cpp
     signed_builder.cpp
     signed_data.cpp
     station_config_filesystem.cpp

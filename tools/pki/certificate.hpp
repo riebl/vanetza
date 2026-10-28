@@ -2,6 +2,7 @@
 
 #include "hashed_id8.hpp"
 #include "keys.hpp"
+#include "security_module.hpp"
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/Certificate.h>
 #include <vanetza/asn1/security/EtsiTs103097Certificate.h>
@@ -20,8 +21,6 @@ namespace vanetza
 {
 namespace pki
 {
-
-class SecurityModule;
 
 class Certificate
 {

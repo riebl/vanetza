@@ -2,6 +2,7 @@
 
 #include "certificate.hpp"
 #include "response_codes.hpp"
+#include "security_module.hpp"
 #include <vanetza/common/byte_buffer.hpp>
 #include <boost/optional/optional.hpp>
 
@@ -9,8 +10,6 @@ namespace vanetza
 {
 namespace pki
 {
-
-class SecurityModule;
 
 // Result of parsing a decrypted AuthorizationResponse payload as specified
 // in ETSI TS 102 941 §6.2.3.3.2.

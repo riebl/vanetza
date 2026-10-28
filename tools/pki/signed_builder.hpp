@@ -1,6 +1,7 @@
 #pragma once
 
 #include "keys.hpp"
+#include "security_module.hpp"
 #include "signed_data.hpp"
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/hash_algorithm.hpp>
@@ -12,7 +13,6 @@ namespace pki
 {
 
 class Certificate;
-class SecurityModule;
 
 using security::HashAlgorithm;
 

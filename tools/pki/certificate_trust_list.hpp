@@ -2,6 +2,7 @@
 
 #include "certificate.hpp"
 #include "hashed_id8.hpp"
+#include "security_module.hpp"
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/CtlCommand.h>
 #include <vanetza/asn1/security/TlmCertificateTrustListMessage.h>
@@ -19,7 +20,6 @@ namespace pki
 // forward declarations
 class Certificate;
 class CertificateStorage;
-class SecurityModule;
 class TrustListStorage;
 
 /// \brief Visitor for the entries of a TLM certificate trust list.

@@ -1,6 +1,8 @@
 #pragma once
 
+#include "keys.hpp"
 #include "security_module.hpp"
+#include "sha.hpp"
 #include <boost/optional/optional.hpp>
 
 namespace vanetza

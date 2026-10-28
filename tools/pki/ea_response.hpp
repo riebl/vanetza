@@ -2,6 +2,7 @@
 
 #include "certificate.hpp"
 #include "response_codes.hpp"
+#include "security_module.hpp"
 #include <vanetza/common/byte_buffer.hpp>
 #include <boost/optional/optional.hpp>
 
@@ -9,8 +10,6 @@ namespace vanetza
 {
 namespace pki
 {
-
-class SecurityModule;
 
 /**
  * \brief Decoded view of an InnerEcResponse payload.

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "security_module.hpp"
 #include "sha.hpp"
 #include <vanetza/asn1/security/EtsiTs103097Data.h>
 #include <vanetza/common/byte_buffer.hpp>
@@ -12,7 +13,6 @@ namespace pki
 class Certificate;
 class CertificateStorage;
 class HashedId8;
-class SecurityModule;
 
 bool validate(SecurityModule&, const Vanetza_Security_EtsiTs103097Data_t&, const Certificate&);
 bool validate(SecurityModule&, const Vanetza_Security_SignedData_t&, const Vanetza_Security_Certificate_t&);

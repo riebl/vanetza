@@ -2,6 +2,7 @@
 
 #include "keys.hpp"
 #include "psid_ssp.hpp"
+#include "security_module.hpp"
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/security/hash_algorithm.hpp>
@@ -16,7 +17,6 @@ namespace pki
 
 class Certificate;
 class EncryptedData;
-class SecurityModule;
 
 using security::HashAlgorithm;
 
