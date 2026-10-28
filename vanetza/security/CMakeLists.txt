@@ -15,6 +15,7 @@ add_vanetza_component(security
     peer_request_tracker.cpp
     secured_message.cpp
     security_module.cpp
+    security_module_error.cpp
     sha.cpp
     signature.cpp
     straight_verify_service.cpp
