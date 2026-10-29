@@ -252,13 +252,13 @@ void list_tickets(Context& ctx)
 void request_one_ticket(Context& ctx, const Certificate& ec, const AuthoritiesFromCtl& auth,
     const boost::optional<ValidityPeriodHint>& validity)
 {
-    ScopedKeyPair scoped_at_key(*ctx.cfg.security, ctx.key_type);
+    ScopedKeyPair scoped_at_key(*ctx.cfg.security, ctx.cfg.security->create_signing_key(ctx.key_type).value());
 
     AuthorizationRequestParameters params;
     params.ec = &ec;
     params.ea_certificate = &auth.ea.certificate;
     params.aa_certificate = &auth.aa.certificate;
-    params.verification_key = scoped_at_key.public_key();
+    params.verification_key = ctx.cfg.security->public_key(scoped_at_key.reference()).value();
     params.permissions = ctx.permissions;
     params.hash_algo = ctx.hash_algo;
     params.validity_period = validity;

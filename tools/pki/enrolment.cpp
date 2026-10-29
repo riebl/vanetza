@@ -321,7 +321,8 @@ void perform_initial_enrolment(Context& ctx)
     EnrolmentAuthority ea = ctx.manual_enrolment() ? build_enrolment_authority(ctx) : lookup_enrolment_authority(ctx);
 
     // security module stores created private key in its credential storage
-    ScopedKeyPair scoped_verification_key(*ctx.cfg.security, ctx.key_type);
+    ScopedKeyPair scoped_verification_key(*ctx.cfg.security,
+        ctx.cfg.security->create_signing_key(ctx.key_type).value());
 
     // set permanent canonical identifier
     ctx.cfg.station->set_canonical_identifier(ctx.bootstrap.identifier);
@@ -339,7 +340,7 @@ void perform_initial_enrolment(Context& ctx)
 
     EnrolmentRequestParameters params;
     params.its_id = ctx.bootstrap.its_id();
-    params.verification_key = scoped_verification_key.public_key();
+    params.verification_key = ctx.cfg.security->public_key(scoped_verification_key.reference()).value();
     params.outer_signer_key = ctx.bootstrap.public_key;
     params.hash_algo = ctx.hash_algo;
 
@@ -365,14 +366,15 @@ void perform_enrolment_renewal(Context& ctx)
 
     // Fresh verification key for the new EC
     // TS 102 941 §6.2.3.2.1 mandates a new key pair on every enrolment request).
-    ScopedKeyPair scoped_verification_key(*ctx.cfg.security, ctx.key_type);
+    ScopedKeyPair scoped_verification_key(*ctx.cfg.security,
+        ctx.cfg.security->create_signing_key(ctx.key_type).value());
 
     std::cout << "Renewing EC " << hexstring(*ec_id) << "\n";
 
     EnrolmentRequestParameters params;
     // TS 102 941 §6.2.3.2.1 itsId carries the raw 8 bytes of HashedId8(current EC).
     params.its_id.assign(ec_id->octets.begin(), ec_id->octets.end());
-    params.verification_key = scoped_verification_key.public_key();
+    params.verification_key = ctx.cfg.security->public_key(scoped_verification_key.reference()).value();
     params.outer_signer_key = ec_key;
     params.outer_signer_certificate = &ec_cert.value();
     params.hash_algo = ctx.hash_algo;

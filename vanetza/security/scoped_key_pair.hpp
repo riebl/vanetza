@@ -1,18 +1,21 @@
 #pragma once
 
-#include <vanetza/security/key_type.hpp>
-#include <vanetza/security/public_key.hpp>
+#include <vanetza/security/key_reference.hpp>
 #include <vanetza/security/security_module.hpp>
+#include <utility>
 
 namespace vanetza
 {
 namespace security
 {
 
+/**
+ * Discards a key pair of a SecurityModule at end of scope unless committed
+ */
 class ScopedKeyPair
 {
 public:
-    ScopedKeyPair(SecurityModule& sm, KeyType type) : m_security(&sm), m_public_key(sm.create_key(type))
+    ScopedKeyPair(SecurityModule& sm, KeyReference key) : m_security(&sm), m_key(std::move(key))
     {
     }
 
@@ -26,13 +29,13 @@ public:
     ~ScopedKeyPair()
     {
         if (m_security) {
-            m_security->discard_key(m_public_key);
+            m_security->discard_key(m_key);
         }
     }
 
-    const PublicKey& public_key() const
+    const KeyReference& reference() const
     {
-        return m_public_key;
+        return m_key;
     }
 
     void commit()
@@ -43,7 +46,7 @@ public:
 
 private:
     SecurityModule* m_security = nullptr;
-    PublicKey m_public_key;
+    KeyReference m_key;
 };
 
 } // namespace security
