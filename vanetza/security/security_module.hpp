@@ -1,8 +1,11 @@
 #pragma once
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/expected.hpp>
+#include <vanetza/security/key_reference.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <vanetza/security/security_module_error.hpp>
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/signature.hpp>
 #include <boost/optional/optional.hpp>
@@ -45,6 +48,35 @@ public:
 
     virtual PublicKey create_key(KeyType) = 0;
     virtual bool discard_key(const PublicKey&) = 0;
+
+    /**
+     * Create a key pair for signing
+     * \param type curve of key pair
+     * \return reference to created private key or error, see SecurityModuleError for conditions
+     */
+    virtual expected<KeyReference> create_signing_key(KeyType type) = 0;
+
+    /**
+     * Get public key matching a referenced private key
+     * \param key reference to private key
+     * \return public key or error, see SecurityModuleError for conditions
+     */
+    virtual expected<PublicKey> public_key(const KeyReference& key) = 0;
+
+    /**
+     * Sign a digest
+     * \param digest hash value of data
+     * \param key reference to private key
+     * \return signature or error, see SecurityModuleError for conditions
+     */
+    virtual expected<Signature> sign(const ByteBuffer& digest, const KeyReference& key) = 0;
+
+    /**
+     * Release module resources of a referenced private key
+     * \param key reference to private key
+     * \return false if releasing resources failed
+     */
+    virtual bool discard_key(const KeyReference& key) = 0;
 
     virtual ByteBuffer generate_nonce(std::size_t length) = 0;
     virtual std::unique_ptr<EciesContext> create_ecies_context(const PublicKey& receiver, const Sha256Hash& info) = 0;

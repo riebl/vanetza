@@ -35,6 +35,11 @@ public:
 
     bool discard_key(const PublicKey&) override;
 
+    expected<KeyReference> create_signing_key(KeyType) override;
+    expected<PublicKey> public_key(const KeyReference&) override;
+    expected<Signature> sign(const ByteBuffer& digest, const KeyReference&) override;
+    bool discard_key(const KeyReference&) override;
+
 private:
     bool verify(const uint8_t* digest, std::size_t dlen, const Signature&, const PublicKey&);
     boost::optional<Signature> sign(const ByteBuffer&, const PrivateKey&);

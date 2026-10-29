@@ -6,6 +6,7 @@
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <stdexcept>
 
 namespace vanetza
 {
@@ -14,6 +15,8 @@ namespace pki
 
 namespace
 {
+
+using security::SecurityModuleError;
 
 constexpr std::size_t aes128_ccm_key_length = 16;
 constexpr std::size_t nonce_length = 12;
@@ -40,6 +43,78 @@ Sha256Hash calculate_sha256_hash(const ByteBuffer& data)
     Sha256Hash hash;
     SHA256(data.data(), data.size(), hash.octets.data());
     return hash;
+}
+
+// releases OpenSSL objects, unlike OpenSslPointer a failed allocation yields nullptr instead of an exception
+struct OpenSslFree
+{
+    void operator()(EC_KEY* key) const { EC_KEY_free(key); }
+    void operator()(EC_POINT* point) const { EC_POINT_free(point); }
+    void operator()(ECDSA_SIG* sig) const { ECDSA_SIG_free(sig); }
+};
+
+template<typename T>
+using OpenSslPtr = std::unique_ptr<T, OpenSslFree>;
+
+KeyType key_type(const EC_KEY* ec_key)
+{
+    return openssl_nid2key(EC_GROUP_get_curve_name(EC_KEY_get0_group(ec_key)));
+}
+
+// our key references are the key type followed by the big-endian private key of key_length() octets
+expected<OpenSslPtr<EC_KEY>> build_ec_key(const KeyReference& reference)
+{
+    const ByteBuffer& data = reference.data;
+    const KeyType type = data.empty() ? KeyType::Unspecified : static_cast<KeyType>(data.front());
+    const std::size_t length = security::key_length(type); // zero for unsupported key types
+    if (length == 0 || data.size() != 1 + length) {
+        return make_error_code(SecurityModuleError::InvalidKeyReference);
+    }
+
+    OpenSslPtr<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl_nid(type)) };
+    if (!ec_key || !EC_KEY_oct2priv(ec_key.get(), data.data() + 1, length)) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    // OpenSSL accepts any scalar but only 0 < scalar < order is a private key
+    const BIGNUM* scalar = EC_KEY_get0_private_key(ec_key.get());
+    const BIGNUM* order = EC_GROUP_get0_order(EC_KEY_get0_group(ec_key.get()));
+    if (BN_is_zero(scalar) || BN_cmp(scalar, order) >= 0) {
+        return make_error_code(SecurityModuleError::InvalidKeyReference);
+    }
+    return std::move(ec_key);
+}
+
+KeyReference make_key_reference(const PrivateKey& priv)
+{
+    KeyReference reference;
+    reference.data.reserve(1 + priv.key.size());
+    reference.data.push_back(static_cast<std::uint8_t>(priv.type));
+    reference.data.insert(reference.data.end(), priv.key.begin(), priv.key.end());
+    return reference;
+}
+
+expected<PublicKey> derive_public_key(const EC_KEY* ec_key)
+{
+    const EC_GROUP* group = EC_KEY_get0_group(ec_key);
+    const BIGNUM* scalar = EC_KEY_get0_private_key(ec_key);
+    OpenSslPtr<EC_POINT> point { EC_POINT_new(group) };
+    if (!point || !EC_POINT_mul(group, point.get(), scalar, nullptr, nullptr, nullptr)) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    // compressed point: 0x02 (even y) or 0x03 (odd y) followed by x coordinate
+    ByteBuffer compressed(1 + (EC_GROUP_get_degree(group) + 7) / 8);
+    if (EC_POINT_point2oct(group, point.get(), POINT_CONVERSION_COMPRESSED, compressed.data(), compressed.size(),
+            nullptr) != compressed.size()) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    PublicKey pub_key;
+    pub_key.type = key_type(ec_key);
+    pub_key.compression = compressed.front() == 0x03 ? KeyCompression::Y1 : KeyCompression::Y0;
+    pub_key.x.assign(compressed.begin() + 1, compressed.end());
+    return pub_key;
 }
 
 class OpenSslEciesContext : public SecurityModule::EciesContext
@@ -331,6 +406,83 @@ PublicKey OpenSslSecurityModule::create_key(KeyType type)
 bool OpenSslSecurityModule::discard_key(const PublicKey& key)
 {
     return m_credential_storage->discard(key);
+}
+
+expected<KeyReference> OpenSslSecurityModule::create_signing_key(KeyType type)
+{
+    const std::size_t length = security::key_length(type); // zero for unsupported key types
+    if (length == 0) {
+        return make_error_code(SecurityModuleError::UnsupportedKeyType);
+    }
+
+    OpenSslPtr<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl_nid(type)) };
+    if (!ec_key || !EC_KEY_generate_key(ec_key.get())) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    PrivateKey priv_key;
+    priv_key.type = type;
+    priv_key.key.resize(length);
+    if (EC_KEY_priv2oct(ec_key.get(), priv_key.key.data(), length) != length) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    expected<PublicKey> pub_key = derive_public_key(ec_key.get());
+    if (!pub_key) {
+        return pub_key.error();
+    }
+
+    try {
+        m_credential_storage->store(*pub_key, priv_key);
+    } catch (const std::runtime_error&) {
+        // credential storage reports failures by exceptions
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+    return make_key_reference(priv_key);
+}
+
+expected<PublicKey> OpenSslSecurityModule::public_key(const KeyReference& reference)
+{
+    expected<OpenSslPtr<EC_KEY>> ec_key = build_ec_key(reference);
+    if (ec_key) {
+        return derive_public_key(ec_key->get());
+    } else {
+        return ec_key.error();
+    }
+}
+
+expected<Signature> OpenSslSecurityModule::sign(const ByteBuffer& digest, const KeyReference& reference)
+{
+    expected<OpenSslPtr<EC_KEY>> ec_key = build_ec_key(reference);
+    if (!ec_key) {
+        return ec_key.error();
+    }
+
+    OpenSslPtr<ECDSA_SIG> osl_sig { ECDSA_do_sign(digest.data(), digest.size(), ec_key->get()) };
+    if (!osl_sig) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    const BIGNUM* osl_r = nullptr;
+    const BIGNUM* osl_s = nullptr;
+    ECDSA_SIG_get0(osl_sig.get(), &osl_r, &osl_s);
+    Signature sig;
+    sig.type = key_type(ec_key->get());
+    sig.r.resize(BN_num_bytes(osl_r));
+    BN_bn2bin(osl_r, sig.r.data());
+    sig.s.resize(BN_num_bytes(osl_s));
+    BN_bn2bin(osl_s, sig.s.data());
+    return sig;
+}
+
+bool OpenSslSecurityModule::discard_key(const KeyReference& reference)
+{
+    expected<OpenSslPtr<EC_KEY>> ec_key = build_ec_key(reference);
+    if (!ec_key) {
+        return false;
+    }
+    expected<PublicKey> pub_key = derive_public_key(ec_key->get());
+    return pub_key && m_credential_storage->discard(*pub_key);
 }
 
 } // namespace pki

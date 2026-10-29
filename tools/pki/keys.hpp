@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/key_reference.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <vanetza/security/private_key.hpp>
 #include <vanetza/security/public_key.hpp>
@@ -17,6 +18,7 @@ namespace pki
 {
 
 using security::KeyCompression;
+using security::KeyReference;
 using security::KeyType;
 using security::PrivateKey;
 using security::PublicKey;

@@ -3,6 +3,8 @@
 #include <gtest/gtest.h>
 
 using vanetza::ByteBuffer;
+using vanetza::expected;
+using vanetza::security::SecurityModuleError;
 using namespace vanetza::pki;
 
 /**
@@ -134,4 +136,33 @@ TEST_F(SecurityModuleTest, mac_vector7)
         0x27, 0x63, 0x5F, 0xBC, 0xD5, 0xB0, 0xE9, 0x44
     };
     EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+}
+
+TEST_F(SecurityModuleTest, signing_key_has_requested_type)
+{
+    expected<KeyReference> key = security->create_signing_key(KeyType::BrainpoolP256r1);
+    ASSERT_TRUE(key.has_value());
+    expected<PublicKey> public_key = security->public_key(*key);
+    ASSERT_TRUE(public_key.has_value());
+    EXPECT_EQ(KeyType::BrainpoolP256r1, public_key->type);
+}
+
+TEST_F(SecurityModuleTest, signature_verifies_with_public_key_of_reference)
+{
+    expected<KeyReference> key = security->create_signing_key(KeyType::NistP256);
+    ASSERT_TRUE(key.has_value());
+    Sha256Hash digest;
+    digest.octets.fill(0x5A);
+    expected<Signature> signature = security->sign(ByteBuffer(digest.octets.begin(), digest.octets.end()), *key);
+    ASSERT_TRUE(signature.has_value());
+    expected<PublicKey> public_key = security->public_key(*key);
+    ASSERT_TRUE(public_key.has_value());
+    EXPECT_TRUE(security->verify(digest, *signature, *public_key));
+}
+
+TEST_F(SecurityModuleTest, unsupported_key_type_cannot_be_created)
+{
+    expected<KeyReference> key = security->create_signing_key(KeyType::Unspecified);
+    ASSERT_TRUE(key.has_error());
+    EXPECT_EQ(SecurityModuleError::UnsupportedKeyType, key.error());
 }
