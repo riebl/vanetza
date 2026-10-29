@@ -1,6 +1,7 @@
 #pragma once
 #include <vanetza/facilities/path_history.hpp>
 #include <vanetza/facilities/path_point.hpp>
+#include <vanetza/facilities/utils.hpp>
 #include <chrono>
 #include <type_traits>
 
@@ -29,8 +30,8 @@ void copy(const facilities::PathHistory& src, SomePathSequence& dest,
 
     for (const PathPoint& point : src.getConcisePointsMinLength(min_distance, max_points)) {
         auto delta_time = prev.time - point.time; // positive: point is in past
-        auto delta_latitude = round(point.latitude - prev.latitude, tenth_microdegree);
-        auto delta_longitude = round(point.longitude - prev.longitude, tenth_microdegree);
+        auto delta_latitude = lround(point.latitude - prev.latitude, tenth_microdegree);
+        auto delta_longitude = lround(point.longitude - prev.longitude, tenth_microdegree);
 
         if (delta_latitude < -131071 || delta_latitude > 131071) {
             continue; // delta latitude not encodable

@@ -91,15 +91,15 @@ std::unique_ptr<T, deleter> make_unique()
 /**
  * Allocate an OPTIONAL member if not present yet
  * \param member pointer member of an asn1c struct, owned by that struct
- * \return present member
+ * \return reference to the present member
  */
 template<typename T>
-T* allocate_optional(T*& member)
+T& allocate_optional(T*& member)
 {
     if (!member) {
         member = allocate<T>();
     }
-    return member;
+    return *member;
 }
 
 /**

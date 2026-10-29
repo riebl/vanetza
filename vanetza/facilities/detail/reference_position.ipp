@@ -1,6 +1,7 @@
 #include <vanetza/asn1/its/ReferencePosition.h>
 #include <vanetza/asn1/its/r2/ReferencePosition.h>
 #include <vanetza/facilities/detail/macros.ipp>
+#include <vanetza/facilities/utils.hpp>
 #include <vanetza/geodesy/geodesy.hpp>
 #include <vanetza/units/length.hpp>
 #include <limits>
@@ -57,8 +58,8 @@ bool is_available(const ASN1_PREFIXED(ReferencePosition)& pos)
 
 void copy(const PositionFix& position, ASN1_PREFIXED(ReferencePosition)& reference_position)
 {
-    reference_position.longitude = round(position.longitude, tenth_microdegree);
-    reference_position.latitude = round(position.latitude, tenth_microdegree);
+    reference_position.longitude = lround(position.longitude, tenth_microdegree);
+    reference_position.latitude = lround(position.latitude, tenth_microdegree);
     if (std::isfinite(position.confidence.semi_major.value())
         && std::isfinite(position.confidence.semi_minor.value()))
     {

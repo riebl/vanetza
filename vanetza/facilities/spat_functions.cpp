@@ -1,4 +1,5 @@
 #include <vanetza/asn1/asn1c_wrapper.hpp>
+#include <vanetza/asn1/bit_string.hpp>
 #include <vanetza/asn1/its/SPAT.h>
 #include <vanetza/asn1/its/IntersectionState.h>
 #include <vanetza/asn1/its/MovementEvent.h>
@@ -131,16 +132,14 @@ IntersectionState& add_intersection_state(SPAT& spat, long id, long revision)
     intersection->id.id = id;
     intersection->revision = revision;
     // IntersectionStatusObject ::= BIT STRING (SIZE(16)), no flag set
-    intersection->status.size = 2;
-    intersection->status.buf = static_cast<uint8_t*>(asn1::allocate(intersection->status.size));
-    intersection->status.bits_unused = 0;
+    asn1::allocate_bits(intersection->status, 16);
     return asn1::append(spat.intersections, std::move(intersection));
 }
 
 void set_timestamp(IntersectionState& intersection, const Clock::time_point& at)
 {
-    *asn1::allocate_optional(intersection.moy) = static_cast<long>(minute_of_the_year(at).count());
-    *asn1::allocate_optional(intersection.timeStamp) = static_cast<long>(dsecond(at).count());
+    asn1::allocate_optional(intersection.moy) = static_cast<long>(minute_of_the_year(at).count());
+    asn1::allocate_optional(intersection.timeStamp) = static_cast<long>(dsecond(at).count());
 }
 
 MovementState& add_movement(IntersectionState& intersection, long signal_group)
@@ -193,19 +192,19 @@ void set_timing(MovementEvent& event, const MovementTiming& timing, const Clock:
         auto details = asn1::make_unique<TimeChangeDetails_t>(asn_DEF_TimeChangeDetails);
         details->minEndTime = timing.min_end < window_end ? time_mark(timing.min_end).count() : cTimeMarkOutOfRange.count();
         if (timing.start && representable(*timing.start)) {
-            *asn1::allocate_optional(details->startTime) = time_mark(*timing.start).count();
+            asn1::allocate_optional(details->startTime) = time_mark(*timing.start).count();
         }
         if (timing.max_end && representable(ceil_to_tenth(*timing.max_end))) {
-            *asn1::allocate_optional(details->maxEndTime) = time_mark(ceil_to_tenth(*timing.max_end)).count();
+            asn1::allocate_optional(details->maxEndTime) = time_mark(ceil_to_tenth(*timing.max_end)).count();
         }
         if (timing.likely && representable(*timing.likely)) {
-            *asn1::allocate_optional(details->likelyTime) = time_mark(*timing.likely).count();
+            asn1::allocate_optional(details->likelyTime) = time_mark(*timing.likely).count();
             if (timing.confidence) {
-                *asn1::allocate_optional(details->confidence) = *timing.confidence;
+                asn1::allocate_optional(details->confidence) = *timing.confidence;
             }
         }
         if (timing.next && representable(*timing.next)) {
-            *asn1::allocate_optional(details->nextTime) = time_mark(*timing.next).count();
+            asn1::allocate_optional(details->nextTime) = time_mark(*timing.next).count();
         }
 
         // the event is only modified once the new timing is complete
