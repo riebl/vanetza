@@ -8,7 +8,6 @@
 #include <vanetza/security/security_module_error.hpp>
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/signature.hpp>
-#include <boost/optional/optional.hpp>
 #include <memory>
 
 namespace vanetza
@@ -40,14 +39,6 @@ public:
     virtual Sha384Hash calculate_sha384_hash(const std::uint8_t* buffer, std::size_t length) = 0;
     virtual bool verify(const Sha256Hash&, const Signature&, const PublicKey&) = 0;
     virtual bool verify(const Sha384Hash&, const Signature&, const PublicKey&) = 0;
-
-    virtual boost::optional<Signature> sign(const ByteBuffer& digest, const PublicKey&) = 0;
-
-    // True if the private key matching `key` is available for signing.
-    virtual bool can_sign(const PublicKey& key);
-
-    virtual PublicKey create_key(KeyType) = 0;
-    virtual bool discard_key(const PublicKey&) = 0;
 
     /**
      * Create a key pair for signing

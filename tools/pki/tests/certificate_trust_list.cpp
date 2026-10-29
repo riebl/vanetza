@@ -64,7 +64,7 @@ TEST_F(CertificateTrustListTest, get_hashed_id8_matches_signer)
 TEST_F(CertificateTrustListTest, processor_records_aa_from_full_ctl)
 {
     HashedId8 issuer = make_id(0xAB);
-    PublicKey aa_key = m_security->create_key(KeyType::NistP256);
+    PublicKey aa_key = derive_public_key(generate_private_key(KeyType::NistP256));
     auto ctl = TestRcaCtlBuilder(issuer, true, 1).add_aa(aa_key, "https://aa.example/v1").build();
 
     CertificateTrustListProcessor processor(m_security);
@@ -78,7 +78,7 @@ TEST_F(CertificateTrustListTest, processor_records_aa_from_full_ctl)
 TEST_F(CertificateTrustListTest, processor_records_ea_from_full_ctl)
 {
     HashedId8 issuer = make_id(0xAB);
-    PublicKey ea_key = m_security->create_key(KeyType::NistP256);
+    PublicKey ea_key = derive_public_key(generate_private_key(KeyType::NistP256));
     auto ctl = TestRcaCtlBuilder(issuer, true, 1).add_ea(ea_key, "https://ea.example/aa").build();
 
     CertificateTrustListProcessor processor(m_security);
@@ -92,8 +92,8 @@ TEST_F(CertificateTrustListTest, processor_records_ea_from_full_ctl)
 TEST_F(CertificateTrustListTest, full_ctl_clears_prior_state)
 {
     HashedId8 issuer = make_id(0xAB);
-    PublicKey key_a = m_security->create_key(KeyType::NistP256);
-    PublicKey key_b = m_security->create_key(KeyType::NistP256);
+    PublicKey key_a = derive_public_key(generate_private_key(KeyType::NistP256));
+    PublicKey key_b = derive_public_key(generate_private_key(KeyType::NistP256));
 
     auto ctl_first = TestRcaCtlBuilder(issuer, true, 1)
                          .add_aa(key_a, "https://aa.example/v1")
@@ -118,8 +118,8 @@ TEST_F(CertificateTrustListTest, full_ctl_clears_prior_state)
 TEST_F(CertificateTrustListTest, delta_ctl_applies_on_top_of_prior_state)
 {
     HashedId8 issuer = make_id(0xAB);
-    PublicKey ea_key = m_security->create_key(KeyType::NistP256);
-    PublicKey aa_key = m_security->create_key(KeyType::NistP256);
+    PublicKey ea_key = derive_public_key(generate_private_key(KeyType::NistP256));
+    PublicKey aa_key = derive_public_key(generate_private_key(KeyType::NistP256));
 
     auto full = TestRcaCtlBuilder(issuer, true, 1).add_ea(ea_key, "https://ea.example/aa").build();
     auto delta = TestRcaCtlBuilder(issuer, false, 2).add_aa(aa_key, "https://aa.example/v1").build();
@@ -137,7 +137,7 @@ TEST_F(CertificateTrustListTest, delta_ctl_applies_on_top_of_prior_state)
 TEST_F(CertificateTrustListTest, delta_ctl_can_delete_certificate)
 {
     HashedId8 issuer = make_id(0xAB);
-    PublicKey aa_key = m_security->create_key(KeyType::NistP256);
+    PublicKey aa_key = derive_public_key(generate_private_key(KeyType::NistP256));
 
     auto full = TestRcaCtlBuilder(issuer, true, 1).add_aa(aa_key, "https://aa.example/v1").build();
     auto delta = TestRcaCtlBuilder(issuer, false, 2)
@@ -155,8 +155,8 @@ TEST_F(CertificateTrustListTest, delta_ctl_can_delete_certificate)
 TEST_F(CertificateTrustListTest, re_announced_aa_overwrites_previous)
 {
     HashedId8 issuer = make_id(0xAB);
-    PublicKey key_a = m_security->create_key(KeyType::NistP256);
-    PublicKey key_b = m_security->create_key(KeyType::NistP256);
+    PublicKey key_a = derive_public_key(generate_private_key(KeyType::NistP256));
+    PublicKey key_b = derive_public_key(generate_private_key(KeyType::NistP256));
 
     auto ctl = TestRcaCtlBuilder(issuer, true, 1)
                    .add_aa(key_a, "https://aa.example/v1")
@@ -187,7 +187,7 @@ TEST_F(CertificateTrustListTest, is_full_ctl_works_for_tlm_ctl)
 TEST_F(CertificateTrustListTest, processor_records_root_ca_from_tlm_ctl)
 {
     HashedId8 tlm_issuer = make_id(0xCD);
-    PublicKey rca_key = m_security->create_key(KeyType::NistP256);
+    PublicKey rca_key = derive_public_key(generate_private_key(KeyType::NistP256));
     auto ectl = TestTlmCtlBuilder(tlm_issuer, true, 1).add_root_ca(rca_key).build();
 
     CertificateTrustListProcessor processor(m_security);
@@ -204,7 +204,7 @@ TEST_F(CertificateTrustListTest, processor_records_root_ca_from_tlm_ctl)
 TEST_F(CertificateTrustListTest, processor_records_tlm_from_tlm_ctl)
 {
     HashedId8 tlm_issuer = make_id(0xCD);
-    PublicKey tlm_key = m_security->create_key(KeyType::NistP256);
+    PublicKey tlm_key = derive_public_key(generate_private_key(KeyType::NistP256));
     auto ectl = TestTlmCtlBuilder(tlm_issuer, true, 1).add_tlm(tlm_key, "https://cpoc.example/").build();
 
     CertificateTrustListProcessor processor(m_security);
@@ -219,8 +219,8 @@ TEST_F(CertificateTrustListTest, processor_records_tlm_from_tlm_ctl)
 TEST_F(CertificateTrustListTest, full_tlm_ctl_clears_prior_root_cas)
 {
     HashedId8 tlm_issuer = make_id(0xCD);
-    PublicKey rca_a_key = m_security->create_key(KeyType::NistP256);
-    PublicKey rca_b_key = m_security->create_key(KeyType::NistP256);
+    PublicKey rca_a_key = derive_public_key(generate_private_key(KeyType::NistP256));
+    PublicKey rca_b_key = derive_public_key(generate_private_key(KeyType::NistP256));
 
     Certificate rca_a_stub = build_stub_certificate(rca_a_key);
     HashedId8 rca_a_hid = rca_a_stub.calculate_hashed_id8(*m_security);
@@ -240,7 +240,7 @@ TEST_F(CertificateTrustListTest, full_tlm_ctl_clears_prior_root_cas)
 TEST_F(CertificateTrustListTest, delta_tlm_ctl_can_delete_root_ca)
 {
     HashedId8 tlm_issuer = make_id(0xCD);
-    PublicKey rca_key = m_security->create_key(KeyType::NistP256);
+    PublicKey rca_key = derive_public_key(generate_private_key(KeyType::NistP256));
     Certificate rca_stub = build_stub_certificate(rca_key);
     HashedId8 rca_hid = rca_stub.calculate_hashed_id8(*m_security);
 

@@ -1,7 +1,6 @@
 #include "asn1.hpp"
 #include "certificate.hpp"
-#include "mock_credential_storage.hpp"
-#include "openssl_security_module.hpp"
+#include "keys.hpp"
 #include <vanetza/asn1/security/EtsiTs103097Certificate.h>
 #include <vanetza/asn1/security/PsidGroupPermissions.h>
 #include <vanetza/asn1/security/PsidSsp.h>
@@ -24,9 +23,7 @@ namespace
 
 PublicKey make_key()
 {
-    static auto credentials = std::make_shared<MockCredentialStorage>();
-    static OpenSslSecurityModule sm(credentials);
-    return sm.create_key(KeyType::BrainpoolP256r1);
+    return derive_public_key(generate_private_key(KeyType::BrainpoolP256r1));
 }
 
 enum class Issuer

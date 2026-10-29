@@ -347,67 +347,6 @@ ByteBuffer OpenSslSecurityModule::calculate_hmac_sha256(const ByteBuffer& key, c
     return pki::calculate_hmac_sha256(key, data);
 }
 
-boost::optional<Signature> OpenSslSecurityModule::sign(const ByteBuffer& digest, const PublicKey& pubkey)
-{
-    boost::optional<PrivateKey> privkey = m_credential_storage->fetch(pubkey);
-    if (privkey) {
-        return sign(digest, *privkey);
-    } else {
-        return boost::none;
-    }
-}
-
-boost::optional<Signature> OpenSslSecurityModule::sign(const ByteBuffer& digest, const PrivateKey& privkey)
-{
-    OpenSslPointer<EC_KEY> osl_key = make_ec_key(privkey);
-    OpenSslPointer<ECDSA_SIG> osl_sig { ECDSA_do_sign(digest.data(), digest.size(), osl_key.raw()) };
-    if (osl_sig.raw()) {
-        const BIGNUM* osl_r = nullptr;
-        const BIGNUM* osl_s = nullptr;
-        ECDSA_SIG_get0(osl_sig.raw(), &osl_r, &osl_s);
-        Signature sig;
-        sig.type = privkey.type;
-        sig.r.resize(BN_num_bytes(osl_r));
-        BN_bn2bin(osl_r, sig.r.data());
-        sig.s.resize(BN_num_bytes(osl_s));
-        BN_bn2bin(osl_s, sig.s.data());
-        return sig;
-    } else {
-        throw OpenSslException(ERR_get_error(), "ECDSA_do_sign");
-    }
-
-    return boost::none;
-}
-
-PublicKey OpenSslSecurityModule::create_key(KeyType type)
-{
-    // create key according to type
-    OpenSslPointer<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl_nid(type)) };
-    openssl_result(EC_KEY_generate_key(ec_key.raw()), "EC_KEY_generate_key");
-    openssl_result(EC_KEY_check_key(ec_key.raw()), "EC_KEY_check_key");
-
-    PublicKey pub_key = make_public_key(ec_key.raw());
-
-    // bn_priv must not be freed, returns pointer to internal structure of key
-    const BIGNUM* bn_priv = EC_KEY_get0_private_key(ec_key.raw());
-    if (!bn_priv) {
-        throw security::openssl::Exception();
-    }
-
-    PrivateKey priv_key;
-    priv_key.type = type;
-    priv_key.key = make_buffer(bn_priv, security::key_length(type));
-
-    // store key pair in credential store
-    m_credential_storage->store(pub_key, priv_key);
-    return pub_key;
-}
-
-bool OpenSslSecurityModule::discard_key(const PublicKey& key)
-{
-    return m_credential_storage->discard(key);
-}
-
 expected<KeyReference> OpenSslSecurityModule::create_signing_key(KeyType type)
 {
     const std::size_t length = security::key_length(type); // zero for unsupported key types

@@ -148,7 +148,7 @@ TEST(Ecies, encryption_roundtrip_compressed_receiver)
     // to the ECIES context. Decryption must still succeed -- otherwise we have a
     // bug in how compressed keys are mapped back to curve points.
     OpenSslSecurityModule security(std::make_shared<MockCredentialStorage>());
-    PublicKey receiver = security.create_key(KeyType::NistP256);
+    PublicKey receiver = derive_public_key(generate_private_key(KeyType::NistP256));
     ASSERT_NE(KeyCompression::NoCompression, receiver.compression);
 
     Sha256Hash info { 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef };
@@ -167,7 +167,7 @@ TEST(Ecies, encryption_roundtrip_compressed_receiver)
 TEST(Ecies, encryption_roundtrip)
 {
     OpenSslSecurityModule security(std::make_shared<MockCredentialStorage>());
-    PublicKey receiver = security.create_key(KeyType::NistP256);
+    PublicKey receiver = derive_public_key(generate_private_key(KeyType::NistP256));
     Sha256Hash info { 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef };
     auto ecies = security.create_ecies_context(receiver, info);
 

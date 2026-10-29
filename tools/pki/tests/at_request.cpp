@@ -31,12 +31,12 @@ protected:
     AuthorizationRequestTest() : m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials)
     {
         // EA / AA need both verification and encryption keys; EC needs only verification.
-        PublicKey ea_verify = m_security.create_key(KeyType::NistP256);
-        PublicKey ea_encrypt = m_security.create_key(KeyType::NistP256);
+        PublicKey ea_verify = derive_public_key(generate_private_key(KeyType::NistP256));
+        PublicKey ea_encrypt = derive_public_key(generate_private_key(KeyType::NistP256));
         m_ea = build_stub_certificate(ea_verify, &ea_encrypt);
 
-        PublicKey aa_verify = m_security.create_key(KeyType::NistP256);
-        PublicKey aa_encrypt = m_security.create_key(KeyType::NistP256);
+        PublicKey aa_verify = derive_public_key(generate_private_key(KeyType::NistP256));
+        PublicKey aa_encrypt = derive_public_key(generate_private_key(KeyType::NistP256));
         m_aa = build_stub_certificate(aa_verify, &aa_encrypt);
 
         m_ec_key = m_security.create_signing_key(KeyType::NistP256).value();
@@ -183,7 +183,7 @@ TEST_F(AuthorizationRequestTest, shared_at_request_fields_match_spec)
 TEST_F(AuthorizationRequestTest, optional_at_encryption_key_extends_keytag)
 {
     auto params = make_params();
-    params.at_encryption_key = m_security.create_key(KeyType::NistP256);
+    params.at_encryption_key = derive_public_key(generate_private_key(KeyType::NistP256));
     ByteBuffer encoded = build_signed_authorization_request(m_security, params);
 
     asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t> mgmt(asn_DEF_Vanetza_Security_EtsiTs102941Data);

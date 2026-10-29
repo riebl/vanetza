@@ -38,7 +38,7 @@ struct ResponseBuilder
 {
     OpenSslSecurityModule* security;
     const Certificate* ea_cert;
-    const PublicKey* ea_signing_key;
+    const KeyReference* ea_signing_key;
 
     // Knobs
     Vanetza_Security_EnrolmentResponseCode_t code = Vanetza_Security_EnrolmentResponseCode_ok;
@@ -70,7 +70,7 @@ struct ResponseBuilder
             // Synthesize a dummy EC cert. Not cryptographically valid, just
             // OER-encodable, so the parser can decode it and the test can
             // check it came through intact.
-            PublicKey dummy_key = security->create_key(KeyType::NistP256);
+            PublicKey dummy_key = derive_public_key(generate_private_key(KeyType::NistP256));
             Certificate dummy_ec = build_stub_certificate(dummy_key);
             ByteBuffer encoded_ec = dummy_ec.encode();
             void* decoded = nullptr;
@@ -156,7 +156,8 @@ class EnrolmentResponseTest : public ::testing::Test
 protected:
     EnrolmentResponseTest() :
         m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials),
-        m_ea_key(m_security.create_key(KeyType::NistP256)), m_ea_certificate(build_stub_certificate(m_ea_key))
+        m_ea_key(m_security.create_signing_key(KeyType::NistP256).value()),
+        m_ea_certificate(build_stub_certificate(m_security.public_key(m_ea_key).value()))
     {
     }
 
@@ -167,7 +168,7 @@ protected:
 
     std::shared_ptr<MockCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
-    PublicKey m_ea_key;
+    KeyReference m_ea_key;
     Certificate m_ea_certificate;
 };
 

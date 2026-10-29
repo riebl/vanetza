@@ -38,7 +38,7 @@ struct AtResponseBuilder
 {
     OpenSslSecurityModule* security;
     const Certificate* aa_cert;
-    const PublicKey* aa_signing_key;
+    const KeyReference* aa_signing_key;
 
     Vanetza_Security_AuthorizationResponseCode_t code = Vanetza_Security_AuthorizationResponseCode_ok;
     bool include_certificate = true;
@@ -58,7 +58,7 @@ struct AtResponseBuilder
         OCTET_STRING_fromBuf(&at_resp.requestHash, reinterpret_cast<char*>(req_hash), 16);
         at_resp.responseCode = code;
         if (include_certificate) {
-            PublicKey dummy_key = security->create_key(KeyType::NistP256);
+            PublicKey dummy_key = derive_public_key(generate_private_key(KeyType::NistP256));
             Certificate dummy_at = build_stub_certificate(dummy_key);
             ByteBuffer encoded_at = dummy_at.encode();
             void* decoded = nullptr;
@@ -114,7 +114,8 @@ class AuthorizationResponseTest : public ::testing::Test
 protected:
     AuthorizationResponseTest() :
         m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials),
-        m_aa_key(m_security.create_key(KeyType::NistP256)), m_aa_certificate(build_stub_certificate(m_aa_key))
+        m_aa_key(m_security.create_signing_key(KeyType::NistP256).value()),
+        m_aa_certificate(build_stub_certificate(m_security.public_key(m_aa_key).value()))
     {
     }
 
@@ -125,7 +126,7 @@ protected:
 
     std::shared_ptr<MockCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
-    PublicKey m_aa_key;
+    KeyReference m_aa_key;
     Certificate m_aa_certificate;
 };
 

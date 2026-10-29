@@ -26,13 +26,9 @@ namespace
 
 PublicKey make_random_pubkey()
 {
-    // SecurityModule::create_key generates a fresh key pair, stores the
-    // private half in credential storage, and returns the public half.
     // Tests derive the canonical hex from the returned public key so test data
     // stays self-consistent.
-    static auto credentials = std::make_shared<MockCredentialStorage>();
-    static OpenSslSecurityModule sm(credentials);
-    return sm.create_key(KeyType::BrainpoolP256r1);
+    return derive_public_key(generate_private_key(KeyType::BrainpoolP256r1));
 }
 
 class PruneTestFixture : public ::testing::Test
