@@ -1,5 +1,6 @@
 #include <vanetza/asn1/cam.hpp>
 #include <vanetza/facilities/cam_functions.hpp>
+#include <vanetza/facilities/utils.hpp>
 #include <boost/algorithm/clamp.hpp>
 #include <boost/math/constants/constants.hpp>
 #include <boost/units/cmath.hpp>
@@ -24,13 +25,6 @@ bool similar_heading(Angle a, Angle b, Angle limit)
     static const Angle full_circle = 2.0 * pi * si::radian;
     const Angle abs_diff = fmod(abs(a - b), full_circle);
     return abs_diff <= limit || abs_diff >= full_circle - limit;
-}
-
-template<typename T, typename U>
-long round(const boost::units::quantity<T>& q, const U&)
-{
-    boost::units::quantity<U> v { q };
-    return std::round(v.value());
 }
 
 AltitudeConfidence_t to_altitude_confidence(units::Length confidence)
@@ -79,7 +73,7 @@ AltitudeValue_t to_altitude_value(units::Length alt)
 
     if (!isnan(alt)) {
         alt = boost::algorithm::clamp(alt, -1000.0 * units::si::meter, 8000.0 * units::si::meter);
-        return round(alt, units::si::centi * units::si::meter);
+        return lround(alt, units::si::centi * units::si::meter);
     } else {
         return AltitudeValue_unavailable;
     }

@@ -35,7 +35,7 @@ namespace facilities
  * \return appended intersection geometry, owned by map
  * \throw asn1::asn1c_exception if memory allocation fails
  */
-IntersectionGeometry& add_intersection_geometry(MapData& map, long id, long revision,
+IntersectionGeometry& add_intersection_geometry(MapData& map, unsigned id, unsigned revision,
         units::GeoAngle latitude, units::GeoAngle longitude, units::Length lane_width);
 
 /**
@@ -68,7 +68,7 @@ enum class Maneuver
  * \return appended lane, owned by intersection
  * \throw asn1::asn1c_exception if memory allocation fails
  */
-GenericLane& add_vehicle_lane(IntersectionGeometry& intersection, long lane_id, TravelDirection direction, long approach);
+GenericLane& add_vehicle_lane(IntersectionGeometry& intersection, unsigned lane_id, TravelDirection direction, unsigned approach);
 
 /**
  * Append a tram track (light rail) to an intersection geometry
@@ -79,7 +79,7 @@ GenericLane& add_vehicle_lane(IntersectionGeometry& intersection, long lane_id, 
  * \return appended lane, owned by intersection
  * \throw asn1::asn1c_exception if memory allocation fails
  */
-GenericLane& add_tram_lane(IntersectionGeometry& intersection, long lane_id, TravelDirection direction, long approach);
+GenericLane& add_tram_lane(IntersectionGeometry& intersection, unsigned lane_id, TravelDirection direction, unsigned approach);
 
 /**
  * Append a pedestrian crosswalk to an intersection geometry
@@ -94,8 +94,8 @@ GenericLane& add_tram_lane(IntersectionGeometry& intersection, long lane_id, Tra
  * \return appended lane, owned by intersection
  * \throw asn1::asn1c_exception if memory allocation fails
  */
-GenericLane& add_crosswalk_lane(IntersectionGeometry& intersection, long lane_id,
-        long ingress_approach, long egress_approach);
+GenericLane& add_crosswalk_lane(IntersectionGeometry& intersection, unsigned lane_id,
+        unsigned ingress_approach, unsigned egress_approach);
 
 /**
  * Append a node to the lane centre line
@@ -122,7 +122,7 @@ void add_node(GenericLane& lane, units::Length east, units::Length north);
  * \param connection_id identifier unique within the intersection (0..255)
  * \throw asn1::asn1c_exception if memory allocation fails
  */
-void connect(GenericLane& from, long lane_id, Maneuver maneuver, long signal_group, long connection_id);
+void connect(GenericLane& from, unsigned lane_id, Maneuver maneuver, unsigned signal_group, unsigned connection_id);
 
 } // namespace facilities
 } // namespace vanetza

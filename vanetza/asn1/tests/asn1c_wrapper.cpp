@@ -166,13 +166,13 @@ TEST(asn1c_wrapper, allocate_optional) {
     auto state = make_unique<IntersectionState_t>(asn_DEF_IntersectionState);
     ASSERT_EQ(nullptr, state->moy);
 
-    MinuteOfTheYear_t* moy = allocate_optional(state->moy);
-    ASSERT_NE(nullptr, moy);
-    EXPECT_EQ(moy, state->moy);
-    *moy = 4711L;
+    MinuteOfTheYear_t& moy = allocate_optional(state->moy);
+    ASSERT_NE(nullptr, state->moy);
+    EXPECT_EQ(&moy, state->moy);
+    moy = 4711L;
 
     // an already present member is returned as is
-    EXPECT_EQ(moy, allocate_optional(state->moy));
+    EXPECT_EQ(&moy, &allocate_optional(state->moy));
     EXPECT_EQ(4711L, *state->moy);
 }
 
