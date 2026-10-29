@@ -5,6 +5,8 @@
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/security/EtsiTs102941Data.h>
 #include <vanetza/common/byte_buffer.hpp>
+#include <array>
+#include <cstdint>
 #include <cstring>
 
 // forward declaration
@@ -106,7 +108,12 @@ void fill_curve_point(const PublicKey&, Vanetza_Security_EccP256CurvePoint_t&);
 void fill_curve_point(const PublicKey&, Vanetza_Security_EccP384CurvePoint_t&);
 
 void copy(const OCTET_STRING_t& src, ByteBuffer& dst);
+void copy(const std::uint8_t* src, std::size_t size, OCTET_STRING_t& dst);
 void copy(const ByteBuffer& src, OCTET_STRING_t& dst);
+template<std::size_t N> void copy(const std::array<std::uint8_t, N>& src, OCTET_STRING_t& dst)
+{
+    copy(src.data(), src.size(), dst);
+}
 void copy_left_padded(const ByteBuffer& src, OCTET_STRING_t& dst, std::size_t len);
 
 Vanetza_Security_HashAlgorithm_t convert(HashAlgorithm);

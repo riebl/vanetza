@@ -113,14 +113,16 @@ void copy(const OCTET_STRING_t& src, ByteBuffer& dst)
     std::copy_n(src.buf, src.size, dst.data());
 }
 
-void copy(const ByteBuffer& src, OCTET_STRING_t& dst)
+void copy(const std::uint8_t* src, std::size_t size, OCTET_STRING_t& dst)
 {
-    static_assert(sizeof(ByteBuffer::value_type) == sizeof(char), "sizes do not match");
-
-    auto src_buf = reinterpret_cast<const char*>(src.data());
-    if (OCTET_STRING_fromBuf(&dst, src_buf, src.size()) != 0) {
+    if (OCTET_STRING_fromBuf(&dst, reinterpret_cast<const char*>(src), size) != 0) {
         throw std::runtime_error("copying buffer into OCTET_STRING failed");
     }
+}
+
+void copy(const ByteBuffer& src, OCTET_STRING_t& dst)
+{
+    copy(src.data(), src.size(), dst);
 }
 
 void copy_left_padded(const ByteBuffer& src, OCTET_STRING_t& dst, std::size_t len)
