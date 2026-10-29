@@ -57,6 +57,13 @@ public:
     virtual expected<KeyReference> create_signing_key(KeyType type) = 0;
 
     /**
+     * Find reference of a stored private key usable for signing
+     * \param key public key of the private key
+     * \return reference or error, see SecurityModuleError for conditions
+     */
+    virtual expected<KeyReference> find_signing_key(const PublicKey& key) = 0;
+
+    /**
      * Get public key matching a referenced private key
      * \param key reference to private key
      * \return public key or error, see SecurityModuleError for conditions

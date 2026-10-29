@@ -441,6 +441,28 @@ expected<KeyReference> OpenSslSecurityModule::create_signing_key(KeyType type)
     return make_key_reference(priv_key);
 }
 
+expected<KeyReference> OpenSslSecurityModule::find_signing_key(const PublicKey& key)
+{
+    boost::optional<PrivateKey> priv_key;
+    try {
+        priv_key = m_credential_storage->fetch(key);
+    } catch (const std::runtime_error&) {
+        // credential storage reports failures by exceptions
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    if (!priv_key) {
+        return make_error_code(SecurityModuleError::KeyNotFound);
+    }
+
+    // credential storage holds signing keys only, thus any valid key is usable for signing
+    KeyReference reference = make_key_reference(*priv_key);
+    if (!build_ec_key(reference)) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+    return reference;
+}
+
 expected<PublicKey> OpenSslSecurityModule::public_key(const KeyReference& reference)
 {
     expected<OpenSslPtr<EC_KEY>> ec_key = build_ec_key(reference);

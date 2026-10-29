@@ -36,6 +36,7 @@ public:
     bool discard_key(const PublicKey&) override;
 
     expected<KeyReference> create_signing_key(KeyType) override;
+    expected<KeyReference> find_signing_key(const PublicKey&) override;
     expected<PublicKey> public_key(const KeyReference&) override;
     expected<Signature> sign(const ByteBuffer& digest, const KeyReference&) override;
     bool discard_key(const KeyReference&) override;

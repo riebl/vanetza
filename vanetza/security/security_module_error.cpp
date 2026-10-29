@@ -25,6 +25,8 @@ public:
                 return "unsupported key type";
             case SecurityModuleError::ModuleFailure:
                 return "security module failure";
+            case SecurityModuleError::KeyNotFound:
+                return "key not found";
             default:
                 return "unknown security module error";
         }

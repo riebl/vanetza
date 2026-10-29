@@ -116,3 +116,41 @@ TEST_F(OpenSslSecurityModuleTest, malformed_key_reference_cannot_be_discarded)
         EXPECT_FALSE(security.discard_key(malformed.key));
     }
 }
+
+TEST_F(OpenSslSecurityModuleTest, stored_key_is_found_by_its_public_key)
+{
+    const KeyReference reference = make_reference(KeyType::NistP256, p256_scalar);
+    expected<PublicKey> public_key = security.public_key(reference);
+    ASSERT_TRUE(public_key.has_value());
+    PrivateKey stored;
+    stored.type = KeyType::NistP256;
+    stored.key = p256_scalar;
+    credentials->store(*public_key, stored);
+
+    expected<KeyReference> found = security.find_signing_key(*public_key);
+    ASSERT_TRUE(found.has_value());
+    EXPECT_EQ(reference.data, found->data);
+}
+
+TEST_F(OpenSslSecurityModuleTest, unknown_key_is_not_found)
+{
+    expected<PublicKey> public_key = security.public_key(make_reference(KeyType::NistP256, p256_scalar));
+    ASSERT_TRUE(public_key.has_value());
+    expected<KeyReference> found = security.find_signing_key(*public_key);
+    ASSERT_TRUE(found.has_error());
+    EXPECT_EQ(SecurityModuleError::KeyNotFound, found.error());
+}
+
+TEST_F(OpenSslSecurityModuleTest, corrupt_stored_key_is_not_usable_for_signing)
+{
+    expected<PublicKey> public_key = security.public_key(make_reference(KeyType::NistP256, p256_scalar));
+    ASSERT_TRUE(public_key.has_value());
+    PrivateKey corrupt;
+    corrupt.type = KeyType::NistP256;
+    corrupt.key = ByteBuffer(32, 0x00);
+    credentials->store(*public_key, corrupt);
+
+    expected<KeyReference> found = security.find_signing_key(*public_key);
+    ASSERT_TRUE(found.has_error());
+    EXPECT_EQ(SecurityModuleError::ModuleFailure, found.error());
+}

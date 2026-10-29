@@ -18,7 +18,8 @@ enum class SecurityModuleError
 {
     InvalidKeyReference = 1, // module cannot interpret the key reference
     UnsupportedKeyType, // module does not support the requested curve
-    ModuleFailure // module malfunctioned, e.g. a failed OpenSSL or hardware call
+    ModuleFailure, // module malfunctioned, e.g. a failed OpenSSL or hardware call
+    KeyNotFound // module has no key stored for the given public key
 };
 
 const std::error_category& security_module_category() noexcept;
