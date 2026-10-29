@@ -32,9 +32,16 @@ protected:
     {
         EnrolmentRequestParameters params;
         params.its_id = "test-station-42";
-        params.verification_key = m_security.create_key(type);
-        params.outer_signer_key = m_security.create_key(type);
+        create_verification_key(params, type);
+        params.outer_signer_key = m_security.create_signing_key(type).value();
         return params;
+    }
+
+    // key to be certified: public key for the request, its private key signs the POP
+    void create_verification_key(EnrolmentRequestParameters& params, KeyType type)
+    {
+        params.pop_signer_key = m_security.create_signing_key(type).value();
+        params.verification_key = m_security.public_key(params.pop_signer_key).value();
     }
 
     // Decode the unsecuredData payload of a signed Ieee1609Dot2Data into the given wrapper type.
@@ -94,7 +101,7 @@ TEST_F(EnrolmentRequestTest, outer_signature_verifies_with_canonical_key)
 
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, nullptr);
     Signature signature = make_signature(sd.signature);
-    EXPECT_TRUE(m_security.verify(digest, signature, params.outer_signer_key));
+    EXPECT_TRUE(m_security.verify(digest, signature, m_security.public_key(params.outer_signer_key).value()));
 }
 
 // The POP signature carried in the EtsiTs102941Data enrolmentRequest content
@@ -197,8 +204,8 @@ TEST_F(EnrolmentRequestTest, conformant_EC_permission_is_SCR_only_TS103097_7_2_2
 {
     EnrolmentRequestParameters params;
     params.its_id = "station-conformant";
-    params.verification_key = m_security.create_key(KeyType::NistP256);
-    params.outer_signer_key = m_security.create_key(KeyType::NistP256);
+    create_verification_key(params, KeyType::NistP256);
+    params.outer_signer_key = m_security.create_signing_key(KeyType::NistP256).value();
     // TS 103 525-3 reference value PX_INNER_EC_CERTFICATE_BITMAP_SSP_SCR
 
     ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
@@ -225,15 +232,15 @@ TEST_F(EnrolmentRequestTest, mixed_curves_still_verify)
 {
     EnrolmentRequestParameters params;
     params.its_id = "mixed-curve-station";
-    params.verification_key = m_security.create_key(KeyType::BrainpoolP256r1);
-    params.outer_signer_key = m_security.create_key(KeyType::NistP256);
+    create_verification_key(params, KeyType::BrainpoolP256r1);
+    params.outer_signer_key = m_security.create_signing_key(KeyType::NistP256).value();
 
     ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
     const auto& outer_sd = *outer->content->choice.signedData;
     EXPECT_TRUE(m_security.verify(calculate_digest<Sha256Hash>(m_security, *outer_sd.tbsData, nullptr),
-        make_signature(outer_sd.signature), params.outer_signer_key));
+        make_signature(outer_sd.signature), m_security.public_key(params.outer_signer_key).value()));
 
     MgmtData mgmt = decode_unsecured<MgmtData>(outer_sd);
     const auto& pop_sd = *mgmt->content.choice.enrolmentRequest.content->choice.signedData;
@@ -249,12 +256,12 @@ TEST_F(EnrolmentRequestTest, outer_digest_signed_when_certificate_provided)
 {
     // Stand-in EC: a verification-key-only stub certificate whose private key
     // the security module can sign with.
-    PublicKey ec_key = m_security.create_key(KeyType::NistP256);
-    Certificate ec_cert = build_stub_certificate(ec_key);
+    KeyReference ec_key = m_security.create_signing_key(KeyType::NistP256).value();
+    Certificate ec_cert = build_stub_certificate(m_security.public_key(ec_key).value());
 
     EnrolmentRequestParameters params;
     params.its_id = "renewal-station"; // would be HashedId8 bytes in real use
-    params.verification_key = m_security.create_key(KeyType::NistP256);
+    create_verification_key(params, KeyType::NistP256);
     params.outer_signer_key = ec_key;
     params.outer_signer_certificate = &ec_cert;
 
@@ -271,7 +278,7 @@ TEST_F(EnrolmentRequestTest, outer_digest_signed_when_certificate_provided)
 
     // signature verifies over calculate_digest(tbs, &ec_cert) using the EC key
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, &ec_cert.raw());
-    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), ec_key));
+    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), m_security.public_key(ec_key).value()));
 
     // PoP (inner) remains signer = self regardless of outer signer choice.
     MgmtData mgmt = decode_unsecured<MgmtData>(sd);

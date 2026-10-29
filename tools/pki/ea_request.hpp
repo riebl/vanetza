@@ -23,8 +23,9 @@ using security::HashAlgorithm;
 struct EnrolmentRequestParameters
 {
     std::string its_id; // canonical id (initial) or current EC HashedId8 (re-enrolment)
-    PublicKey verification_key; // to be certified; private key in SecurityModule for POP signature
-    PublicKey outer_signer_key; // signs outer Data-Signed; canonical key (initial) or current EC verification key (re-enrolment)
+    PublicKey verification_key; // to be certified
+    KeyReference pop_signer_key; // private key of verification_key, signs POP
+    KeyReference outer_signer_key; // signs outer Data-Signed; canonical key (initial) or current EC key (re-enrolment)
     HashAlgorithm hash_algo = HashAlgorithm::SHA256; // POP and outer signatures
     const Certificate* outer_signer_certificate = nullptr; // null → signer=self; non-null → signer=digest of this cert
 };

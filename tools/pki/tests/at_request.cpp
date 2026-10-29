@@ -39,17 +39,19 @@ protected:
         PublicKey aa_encrypt = m_security.create_key(KeyType::NistP256);
         m_aa = build_stub_certificate(aa_verify, &aa_encrypt);
 
-        m_ec_key = m_security.create_key(KeyType::NistP256);
-        m_ec = build_stub_certificate(m_ec_key);
+        m_ec_key = m_security.create_signing_key(KeyType::NistP256).value();
+        m_ec = build_stub_certificate(m_security.public_key(m_ec_key).value());
     }
 
     AuthorizationRequestParameters make_params()
     {
         AuthorizationRequestParameters p;
         p.ec = &m_ec;
+        p.ec_key = m_ec_key;
         p.ea_certificate = &m_ea;
         p.aa_certificate = &m_aa;
-        p.verification_key = m_security.create_key(KeyType::NistP256);
+        p.pop_signer_key = m_security.create_signing_key(KeyType::NistP256).value();
+        p.verification_key = m_security.public_key(p.pop_signer_key).value();
         p.permissions = { PsidSsp { aid::CA, { 0x01, 0x00, 0x00 } } };
         return p;
     }
@@ -74,7 +76,7 @@ protected:
     Certificate m_ea;
     Certificate m_aa;
     Certificate m_ec;
-    PublicKey m_ec_key;
+    KeyReference m_ec_key;
 };
 
 // Empty permission list violates CertificateSubjectAttributes invariants and

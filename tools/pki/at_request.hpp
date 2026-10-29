@@ -37,9 +37,11 @@ struct ValidityPeriodHint
 struct AuthorizationRequestParameters
 {
     const Certificate* ec = nullptr; // current EC, signs the inner EC proof; mandatory
+    KeyReference ec_key; // private key of current EC; mandatory
     const Certificate* ea_certificate = nullptr; // recipient of encryptedEcSignature; mandatory
     const Certificate* aa_certificate = nullptr; // recipient of outer encryption; mandatory
-    PublicKey verification_key; // fresh key to be certified; private key in SecurityModule; mandatory
+    PublicKey verification_key; // fresh key to be certified; mandatory
+    KeyReference pop_signer_key; // private key of verification_key, signs POP if include_pop
     boost::optional<PublicKey> at_encryption_key; // optional encryption key embedded in the AT
     std::list<PsidSsp> permissions; // requested PSID/SSP set; must be non-empty
     HashAlgorithm hash_algo = HashAlgorithm::SHA256; // EC proof and extDataHash; SHA-256 only

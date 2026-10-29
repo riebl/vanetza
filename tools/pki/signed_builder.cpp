@@ -82,7 +82,7 @@ SignedData init_signed_envelope(SecurityModule& security, HashAlgorithm hash_alg
 // Sign the tbsData (already populated by the caller) and copy the resulting
 // signature into signed_data->signature.
 void sign_and_finalize(Vanetza_Security_SignedData_t* signed_data, SecurityModule& security,
-    const PublicKey& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
+    const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
 {
     const Vanetza_Security_Certificate_t* raw_cert = signer_cert ? &signer_cert->raw() : nullptr;
     ByteBuffer sign_input;
@@ -101,9 +101,9 @@ void sign_and_finalize(Vanetza_Security_SignedData_t* signed_data, SecurityModul
             throw std::runtime_error("unknown hash algorithm");
     }
 
-    boost::optional<Signature> signature = security.sign(sign_input, signing_key);
+    expected<Signature> signature = security.sign(sign_input, signing_key);
     if (!signature) {
-        throw std::runtime_error("signing failed: private key unknown to security module");
+        throw std::runtime_error("signing failed: " + signature.error().message());
     }
     copy_signature(*signature, signed_data->signature);
 }
@@ -111,7 +111,7 @@ void sign_and_finalize(Vanetza_Security_SignedData_t* signed_data, SecurityModul
 } // namespace
 
 SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
-    const PublicKey& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
+    const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
 {
     SignedData envelope = init_signed_envelope(security, hash_algo, signer_cert);
     Vanetza_Security_SignedData_t* signed_data = envelope->content->choice.signedData;
@@ -128,7 +128,7 @@ SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
 }
 
 SignedData create_external_signed(const ByteBuffer& external_payload, SecurityModule& security,
-    const PublicKey& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
+    const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
 {
     // The asn1c HashedData CHOICE only carries sha256HashedData; SHA-384
     // would need a newer 1609.2 schema. SharedAtRequest in TS 102 941

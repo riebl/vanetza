@@ -134,7 +134,7 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
     // 5. EC proof: external-payload signed data over SharedAtRequest, signed by EC.
     ByteBuffer sar_encoded = asn1::encode_oer(asn_DEF_Vanetza_Security_SharedAtRequest, &sar);
     SignedData ec_signed =
-        create_external_signed(sar_encoded, security, params.ec->get_public_key(), params.hash_algo, params.ec);
+        create_external_signed(sar_encoded, security, params.ec_key, params.hash_algo, params.ec);
     ByteBuffer ec_signed_encoded = ec_signed.encode();
 
     // 6. Encrypt the EC proof to the EA → encryptedEcSignature
@@ -151,7 +151,7 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
     }
 
     // 7. POP wrap: EtsiTs103097Data-Signed (signer = self) signed with the new AT verification key
-    SignedData pop_signed = create_signed(mgmt_encoded, security, params.verification_key, params.hash_algo, nullptr);
+    SignedData pop_signed = create_signed(mgmt_encoded, security, params.pop_signer_key, params.hash_algo, nullptr);
     return pop_signed.encode();
 }
 

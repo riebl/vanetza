@@ -85,7 +85,7 @@ ByteBuffer build_signed_enrolment_request(SecurityModule& security, const Enrolm
     pop_data->version = Vanetza_Security_Version_v1;
     pop_data->content.present = Vanetza_Security_EtsiTs102941DataContent_PR_enrolmentRequest;
     // Inner PoP is always signer = self (TS 102 941 §6.2.3.2.1)
-    create_signed(inner.encode(), security, params.verification_key, params.hash_algo, nullptr)
+    create_signed(inner.encode(), security, params.pop_signer_key, params.hash_algo, nullptr)
         .move_into(pop_data->content.choice.enrolmentRequest);
 
     // 3. Outer EtsiTs103097Data-Signed: signer = self for initial enrolment or

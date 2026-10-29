@@ -36,8 +36,8 @@ protected:
 //   - signature verifies against the cert's verification key
 TEST_F(SignedBuilderTest, external_signed_carries_payload_hash_and_verifies)
 {
-    PublicKey ec_key = m_security.create_key(KeyType::NistP256);
-    Certificate ec_cert = build_stub_certificate(ec_key);
+    KeyReference ec_key = m_security.create_signing_key(KeyType::NistP256).value();
+    Certificate ec_cert = build_stub_certificate(m_security.public_key(ec_key).value());
     ByteBuffer payload { 0xDE, 0xAD, 0xBE, 0xEF, 0xCA, 0xFE };
 
     SignedData envelope = create_external_signed(payload, m_security, ec_key, HashAlgorithm::SHA256, &ec_cert);
@@ -65,7 +65,7 @@ TEST_F(SignedBuilderTest, external_signed_carries_payload_hash_and_verifies)
 
     // signature verifies against ec_cert's verification key
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd->tbsData, &ec_cert.raw());
-    EXPECT_TRUE(m_security.verify(digest, make_signature(sd->signature), ec_key));
+    EXPECT_TRUE(m_security.verify(digest, make_signature(sd->signature), m_security.public_key(ec_key).value()));
 }
 
 } // namespace pki

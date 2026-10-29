@@ -29,7 +29,7 @@ inline constexpr std::uint8_t ieee1609dot2_protocol_version = 3;
  *              of the OER-encoded signer certificate.
  */
 SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
-    const PublicKey& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert);
+    const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert);
 
 /**
  * Build an EtsiTs103097Data-SignedExternalPayload (TS 102 941 §6.2.3.3.1) used
@@ -41,7 +41,7 @@ SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
  * create_signed(); PSID is fixed to SCR.
  */
 SignedData create_external_signed(const ByteBuffer& external_payload, SecurityModule& security,
-    const PublicKey& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert);
+    const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert);
 
 } // namespace pki
 } // namespace vanetza

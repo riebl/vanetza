@@ -197,7 +197,7 @@ void check_enrolment_status(Context& ctx)
     // can station sign with EC certificate (i.e., is the private key available)?
     bool can_sign = false;
     if (ec_cert) {
-        can_sign = ctx.cfg.security->can_sign(ec_cert->get_public_key());
+        can_sign = ctx.cfg.security->find_signing_key(ec_cert->get_public_key()).has_value();
     }
 
     auto canonical_identifier = ctx.cfg.station->get_canonical_identifier();
@@ -309,7 +309,7 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
     std::cout << "Stored new EC with HashedId8 = " << hexstring(ec_hid8) << "\n";
 
     // safety check
-    if (ctx.cfg.security->can_sign(ec.get_public_key())) {
+    if (ctx.cfg.security->find_signing_key(ec.get_public_key()).has_value()) {
         std::cout << "Station can sign with received EC\n";
     } else {
         std::cerr << "Station cannot sign with received EC\n";
@@ -341,7 +341,8 @@ void perform_initial_enrolment(Context& ctx)
     EnrolmentRequestParameters params;
     params.its_id = ctx.bootstrap.its_id();
     params.verification_key = ctx.cfg.security->public_key(scoped_verification_key.reference()).value();
-    params.outer_signer_key = ctx.bootstrap.public_key;
+    params.pop_signer_key = scoped_verification_key.reference();
+    params.outer_signer_key = ctx.cfg.security->find_signing_key(ctx.bootstrap.public_key).value();
     params.hash_algo = ctx.hash_algo;
 
     perform_enrolment(ctx, params, ea, scoped_verification_key);
@@ -357,8 +358,8 @@ void perform_enrolment_renewal(Context& ctx)
     if (!ec_cert) {
         throw UsageError("EC certificate missing from storage", "re-run 'enrolment initial'");
     }
-    PublicKey ec_key = ec_cert->get_public_key();
-    if (!ctx.cfg.security->can_sign(ec_key)) {
+    expected<KeyReference> ec_key = ctx.cfg.security->find_signing_key(ec_cert->get_public_key());
+    if (!ec_key) {
         throw UsageError("no EC private key available", "re-run 'enrolment initial'");
     }
 
@@ -375,7 +376,8 @@ void perform_enrolment_renewal(Context& ctx)
     // TS 102 941 §6.2.3.2.1 itsId carries the raw 8 bytes of HashedId8(current EC).
     params.its_id.assign(ec_id->octets.begin(), ec_id->octets.end());
     params.verification_key = ctx.cfg.security->public_key(scoped_verification_key.reference()).value();
-    params.outer_signer_key = ec_key;
+    params.pop_signer_key = scoped_verification_key.reference();
+    params.outer_signer_key = *ec_key;
     params.outer_signer_certificate = &ec_cert.value();
     params.hash_algo = ctx.hash_algo;
 

@@ -249,16 +249,18 @@ void list_tickets(Context& ctx)
  * EA/AA are looked up by the caller so they can be reused across a batch.
  * \throws on any failure
  */
-void request_one_ticket(Context& ctx, const Certificate& ec, const AuthoritiesFromCtl& auth,
-    const boost::optional<ValidityPeriodHint>& validity)
+void request_one_ticket(Context& ctx, const Certificate& ec, const KeyReference& ec_key,
+    const AuthoritiesFromCtl& auth, const boost::optional<ValidityPeriodHint>& validity)
 {
     ScopedKeyPair scoped_at_key(*ctx.cfg.security, ctx.cfg.security->create_signing_key(ctx.key_type).value());
 
     AuthorizationRequestParameters params;
     params.ec = &ec;
+    params.ec_key = ec_key;
     params.ea_certificate = &auth.ea.certificate;
     params.aa_certificate = &auth.aa.certificate;
     params.verification_key = ctx.cfg.security->public_key(scoped_at_key.reference()).value();
+    params.pop_signer_key = scoped_at_key.reference();
     params.permissions = ctx.permissions;
     params.hash_algo = ctx.hash_algo;
     params.validity_period = validity;
@@ -314,7 +316,8 @@ void request_ticket(Context& ctx)
     if (!ec) {
         throw UsageError("EC certificate missing from storage", "re-run 'enrolment initial'");
     }
-    if (!ctx.cfg.security->can_sign(ec->get_public_key())) {
+    expected<KeyReference> ec_key = ctx.cfg.security->find_signing_key(ec->get_public_key());
+    if (!ec_key) {
         throw UsageError("no EC private key available", "re-run 'enrolment initial'");
     }
 
@@ -333,7 +336,7 @@ void request_ticket(Context& ctx)
         if (ctx.count > 1) {
             std::cout << "--- AT " << i << " of " << ctx.count << " ---\n";
         }
-        request_one_ticket(ctx, *ec, auth, validity);
+        request_one_ticket(ctx, *ec, *ec_key, auth, validity);
     }
 }
 
