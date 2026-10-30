@@ -126,7 +126,7 @@ long msg_count(long counter) noexcept
     return count;
 }
 
-IntersectionState& add_intersection_state(SPAT& spat, long id, long revision)
+IntersectionState& add_intersection_state(SPAT& spat, unsigned id, unsigned revision)
 {
     auto intersection = asn1::make_unique<IntersectionState_t>(asn_DEF_IntersectionState);
     intersection->id.id = id;
@@ -142,7 +142,7 @@ void set_timestamp(IntersectionState& intersection, const Clock::time_point& at)
     asn1::allocate_optional(intersection.timeStamp) = static_cast<long>(dsecond(at).count());
 }
 
-MovementState& add_movement(IntersectionState& intersection, long signal_group)
+MovementState& add_movement(IntersectionState& intersection, unsigned signal_group)
 {
     auto movement = asn1::make_unique<MovementState_t>(asn_DEF_MovementState);
     movement->signalGroup = signal_group;

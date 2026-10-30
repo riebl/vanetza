@@ -116,7 +116,7 @@ struct MovementTiming
  * \param revision MsgCount of the intersection configuration (0..127)
  * \return appended intersection state, owned by spat
  */
-IntersectionState& add_intersection_state(SPAT& spat, long id, long revision);
+IntersectionState& add_intersection_state(SPAT& spat, unsigned id, unsigned revision);
 
 /**
  * Set moy and timeStamp of an intersection state
@@ -131,7 +131,7 @@ void set_timestamp(IntersectionState& intersection, const Clock::time_point& at)
  * \param signal_group signal group identifier (0..255)
  * \return appended movement state, owned by intersection
  */
-MovementState& add_movement(IntersectionState& intersection, long signal_group);
+MovementState& add_movement(IntersectionState& intersection, unsigned signal_group);
 
 /**
  * Append a movement event to a movement state
