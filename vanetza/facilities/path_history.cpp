@@ -1,7 +1,9 @@
 #include <vanetza/facilities/path_history.hpp>
 #include <vanetza/units/angle.hpp>
 #include <vanetza/units/length.hpp>
+#include <boost/math/constants/constants.hpp>
 #include <boost/units/cmath.hpp>
+#include <algorithm>
 #include <cassert>
 
 namespace vanetza {
@@ -10,6 +12,20 @@ namespace facilities {
 const units::Length cTraceAllowableError = 0.47 * units::si::meter;
 const units::Length cTraceMaxDeltaDistance = 22.5 * units::si::meter;
 const units::Angle cTraceDeltaPhi = units::Angle(1.0 * units::degree);
+
+namespace {
+
+// magnitude of shortest rotation, i.e. left and right turns alike and across north
+units::Angle heading_change(units::Angle a, units::Angle b)
+{
+    using boost::math::double_constants::pi;
+
+    static const units::Angle full_circle = 2.0 * pi * units::si::radian;
+    const units::Angle abs_diff = fmod(abs(a - b), full_circle);
+    return std::min(abs_diff, full_circle - abs_diff);
+}
+
+} // namespace
 
 PathHistory::PathHistory() : PathHistory(Parameters{})
 {
@@ -74,8 +90,8 @@ void PathHistory::updateConcisePoints()
         if (actual_chord_length > m_params.chord_length_threshold) {
             actual_error = m_params.allowable_error + 1.0 * units::si::meter;
         } else {
-            const units::Angle delta_phi = next().heading - starting().heading;
-            if (abs(delta_phi) < m_params.small_delta_phi) {
+            const units::Angle delta_phi = heading_change(starting().heading, next().heading);
+            if (delta_phi < m_params.small_delta_phi) {
                 actual_error = 0.0 * units::si::meter;
             } else {
                 const units::Length estimated_radius = actual_chord_length / (2 * sin(delta_phi * 0.5));

@@ -221,3 +221,54 @@ TEST(PathHistory, concise_points_retrieval_limits) {
     EXPECT_EQ(2, std::distance(capped.begin(), capped.end()));
     EXPECT_DOUBLE_EQ(full.front().latitude.value(), capped.front().latitude.value());
 }
+
+// Three samples over a 5 m chord: estimated error is 2.5 m * tan(delta_phi / 4),
+// exceeding the allowable 0.47 m once heading changes by more than about 42.6 degrees.
+// Only first and last heading matter, thus samples can simply keep going straight.
+static bool turn_adds_concise_point(double start_heading, double end_heading)
+{
+    PathHistory ph;
+    PathPoint pp;
+    pp.heading = units::Angle(start_heading * units::degrees);
+    ph.addSample(pp);
+    pp.latitude += 2.5 * cOneMeterLatitude;
+    ph.addSample(pp);
+    pp.latitude += 2.5 * cOneMeterLatitude;
+    pp.heading = units::Angle(end_heading * units::degrees);
+    ph.addSample(pp);
+    return ph.getConcisePoints().size() > 1;
+}
+
+TEST(PathHistory, concise_points_right_turn) {
+    EXPECT_FALSE(turn_adds_concise_point(0.0, 40.0));
+    EXPECT_TRUE(turn_adds_concise_point(0.0, 45.0));
+}
+
+TEST(PathHistory, concise_points_left_turn) {
+    EXPECT_FALSE(turn_adds_concise_point(0.0, -40.0));
+    EXPECT_TRUE(turn_adds_concise_point(0.0, -45.0));
+    EXPECT_TRUE(turn_adds_concise_point(90.0, 45.0));
+}
+
+TEST(PathHistory, concise_points_north_crossing) {
+    // 45 degrees across north, not 315 degrees
+    EXPECT_TRUE(turn_adds_concise_point(340.0, 25.0));
+    EXPECT_TRUE(turn_adds_concise_point(25.0, 340.0));
+    // 0.4 degrees across north, not 359.6 degrees
+    EXPECT_FALSE(turn_adds_concise_point(0.2, 359.8));
+    EXPECT_FALSE(turn_adds_concise_point(359.8, 0.2));
+}
+
+TEST(PathHistory, concise_points_gradual_turn) {
+    // heading change counts from last concise point, not from previous sample
+    PathHistory ph;
+    PathPoint pp;
+    ph.addSample(pp);
+    pp.latitude += 2.5 * cOneMeterLatitude;
+    pp.heading = units::Angle(22.5 * units::degrees);
+    ph.addSample(pp);
+    pp.latitude += 2.5 * cOneMeterLatitude;
+    pp.heading = units::Angle(45.0 * units::degrees);
+    ph.addSample(pp);
+    EXPECT_EQ(2u, ph.getConcisePoints().size());
+}
