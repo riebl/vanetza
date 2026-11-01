@@ -41,3 +41,14 @@ TEST(bit_string, set_bit) {
     EXPECT_EQ(0x80, bits->buf[0]);
     EXPECT_EQ(0x40, bits->buf[1]);
 }
+
+TEST(bit_string, reset) {
+    auto bits = make_unique<BIT_STRING_t>(asn_DEF_BIT_STRING);
+    allocate_bits(*bits, 12);
+
+    reset(*bits);
+
+    EXPECT_EQ(nullptr, bits->buf);
+    EXPECT_EQ(0u, bits->size);
+    EXPECT_EQ(0, bits->bits_unused);
+}

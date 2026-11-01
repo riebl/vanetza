@@ -1,6 +1,7 @@
 #pragma once
 
 // forward declaration of ASN.1 types
+using BIT_STRING_t = struct BIT_STRING_s;
 using OCTET_STRING_t = struct OCTET_STRING;
 using asn_TYPE_descriptor_t = struct asn_TYPE_descriptor_s;
 
@@ -11,6 +12,11 @@ namespace asn1
 
 template<typename T>
 struct asn1_type_traits;
+
+template<> struct asn1_type_traits<BIT_STRING_s>
+{
+    static asn_TYPE_descriptor_t& descriptor();
+};
 
 template<> struct asn1_type_traits<OCTET_STRING>
 {
