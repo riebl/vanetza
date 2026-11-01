@@ -11,11 +11,6 @@ namespace vanetza
 namespace pki
 {
 
-using Sha256Function = std::function<Sha256Hash(const ByteBuffer&)>;
-
-ByteBuffer calculate_kdf2(SecurityModule&, const ByteBuffer& shared_secret, const ByteBuffer& kdp, std::size_t dl);
-ByteBuffer calculate_kdf2(Sha256Function, const ByteBuffer& shared_secret, const ByteBuffer& kdp, std::size_t dl);
-
 struct EncryptedSymmetricKey
 {
     PublicKey public_key;

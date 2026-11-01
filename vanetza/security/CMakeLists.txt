@@ -9,6 +9,7 @@ add_vanetza_component(security
     encap_service.cpp
     hashed_id.cpp
     hmac.cpp
+    kdf2.cpp
     key_type.cpp
     public_key.cpp
     persistence.cpp

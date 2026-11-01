@@ -1,7 +1,7 @@
 #include "openssl_security_module.hpp"
 #include "credential_storage.hpp"
-#include "ecies.hpp"
 #include "openssl.hpp"
+#include <vanetza/security/kdf2.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
@@ -36,13 +36,6 @@ ByteBuffer calculate_hmac_sha256(const ByteBuffer& key, const ByteBuffer& data)
     static_assert(Sha256Hash::length >= auth_tag_length, "length of authentication tag exceeds SHA-256 hash");
     hmac.resize(auth_tag_length);
     return hmac;
-}
-
-Sha256Hash calculate_sha256_hash(const ByteBuffer& data)
-{
-    Sha256Hash hash;
-    SHA256(data.data(), data.size(), hash.octets.data());
-    return hash;
 }
 
 // releases OpenSSL objects, unlike OpenSslPointer a failed allocation yields nullptr instead of an exception
@@ -242,12 +235,14 @@ public:
 
     void encrypt_key(const Sha256Hash& info)
     {
-        const std::size_t ke_length = m_aes_key.size();
+        static constexpr std::size_t ke_length = aes128_ccm_key_length;
         static constexpr std::size_t km_length = 32;
+        assert(m_aes_key.size() == ke_length);
 
         // derive ke and km from shared secret
         ByteBuffer kdp { info.octets.begin(), info.octets.end() };
-        auto hashed_shared_secret = calculate_kdf2(&calculate_sha256_hash, shared_secret(), kdp, ke_length + km_length);
+        auto hashed_shared_secret =
+            security::kdf2<ke_length + km_length>(create_byte_view(shared_secret()), create_byte_view(kdp));
         assert(hashed_shared_secret.size() == ke_length + km_length);
 
         // encrypt symmetric key
