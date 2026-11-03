@@ -11,6 +11,7 @@
 #include <vanetza/asn1/ssem.hpp>
 #include <vanetza/facilities/priority_functions.hpp>
 #include <vanetza/facilities/spat_functions.hpp>
+#include <array>
 #include <chrono>
 #include <limits>
 #include <stdexcept>
@@ -80,8 +81,9 @@ TEST(PriorityFunctions, set_requestor_replaces_previous_requestor)
     // requestor as decoded from another station: temporary ID and vehicle type
     VehicleID_t& id = srem->srm.requestor.id;
     id.present = VehicleID_PR_entityID;
-    const uint8_t temporary_id[4] = { 1, 2, 3, 4 };
-    ASSERT_EQ(0, OCTET_STRING_fromBuf(&id.choice.entityID, reinterpret_cast<const char*>(temporary_id), 4));
+    const std::array<uint8_t, 4> temporary_id {{ 1, 2, 3, 4 }};
+    ASSERT_EQ(0, OCTET_STRING_fromBuf(&id.choice.entityID,
+        reinterpret_cast<const char*>(temporary_id.data()), static_cast<int>(temporary_id.size())));
     set_requestor(srem->srm, 4711, BasicVehicleRole_publicTransport, VehicleType_bus);
     ASSERT_NE(nullptr, srem->srm.requestor.type);
     ASSERT_NE(nullptr, srem->srm.requestor.type->hpmsType);

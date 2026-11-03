@@ -51,7 +51,7 @@ void set_requestor(SignalRequestMessage& message, std::uint32_t station_id, long
     // Prepare the replacement before touching an existing, possibly decoded requestor.
     auto type = asn1::make_unique<RequestorType_t>(asn_DEF_RequestorType);
     type->role = role;
-    if (vehicle_type) {
+    if (vehicle_type.is_initialized()) {
         asn1::allocate_optional(type->hpmsType) = *vehicle_type;
     }
     ASN_STRUCT_RESET(asn_DEF_VehicleID, &message.requestor.id);
@@ -74,7 +74,7 @@ void add_request(SignalRequestMessage& message, const PriorityRequest& request)
     details.requestID = request.request_id;
     details.requestType = request.request_type;
     set_lane(details.inBoundLane, request.inbound_lane);
-    if (request.outbound_lane) {
+    if (request.outbound_lane.is_initialized()) {
         set_lane(asn1::allocate_optional(details.outBoundLane), *request.outbound_lane);
     }
     if (request.arrival) {
@@ -116,7 +116,7 @@ void add_response(SignalStatus& status, const PriorityResponse& response)
     requester->sequenceNumber = response.request_sequence;
     asn1::allocate_optional(requester->role) = response.role;
     set_lane(package->inboundOn, response.inbound_lane);
-    if (response.outbound_lane) {
+    if (response.outbound_lane.is_initialized()) {
         set_lane(asn1::allocate_optional(package->outboundOn), *response.outbound_lane);
     }
     package->status = response.status;
