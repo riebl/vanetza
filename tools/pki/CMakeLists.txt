@@ -29,7 +29,6 @@ add_library(pki_library STATIC
     distribution_centre.cpp
     ea_request.cpp
     ea_response.cpp
-    ecies.cpp
     encrypted_data.cpp
     filesystem.cpp
     hashed_id8.cpp

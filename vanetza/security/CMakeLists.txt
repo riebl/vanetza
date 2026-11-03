@@ -1,4 +1,5 @@
 add_vanetza_component(security
+    aes128_key.cpp
     backend.cpp
     backend_null.cpp
     cam_ssp.cpp
@@ -6,6 +7,7 @@ add_vanetza_component(security
     delegating_security_entity.cpp
     ecc_point.cpp
     ecdsa256.cpp
+    ecies.cpp
     encap_service.cpp
     hashed_id.cpp
     hmac.cpp

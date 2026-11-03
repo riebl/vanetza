@@ -1,7 +1,7 @@
 #include "openssl_security_module.hpp"
 #include "credential_storage.hpp"
 #include "openssl.hpp"
-#include <vanetza/security/kdf2.hpp>
+#include <vanetza/security/ecies.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
@@ -18,7 +18,6 @@ namespace
 
 using security::SecurityModuleError;
 
-constexpr std::size_t aes128_ccm_key_length = 16;
 constexpr std::size_t nonce_length = 12;
 constexpr std::size_t auth_tag_length = 16;
 
@@ -120,11 +119,11 @@ public:
         openssl_result(EC_KEY_check_key(m_ephemeral.raw()), "EC_KEY_check_key");
         calculate_shared_secret(receiver);
 
-        m_aes_key.resize(aes128_ccm_key_length);
-        openssl_result(RAND_bytes(m_aes_key.data(), m_aes_key.size()), "RAND_bytes");
+        openssl_result(RAND_bytes(m_aes_key.octets.data(), m_aes_key.octets.size()), "RAND_bytes");
         m_nonce.resize(nonce_length);
         openssl_result(RAND_bytes(m_nonce.data(), m_nonce.size()), "RAND_bytes");
-        encrypt_key(info);
+        m_encrypted_key =
+            security::encrypt_key(ephemeral_public_key(), create_byte_view(m_shared_secret), m_aes_key, info);
     }
 
     PublicKey ephemeral_public_key() const override
@@ -144,12 +143,12 @@ public:
 
     ByteBuffer encrypted_key() const override
     {
-        return m_encrypted_key;
+        return ByteBuffer(m_encrypted_key.wrapped_key.begin(), m_encrypted_key.wrapped_key.end());
     }
 
     ByteBuffer authentication_tag() const override
     {
-        return m_authentication_tag;
+        return ByteBuffer(m_encrypted_key.authentication_tag.begin(), m_encrypted_key.authentication_tag.end());
     }
 
     ByteBuffer nonce() const override
@@ -174,7 +173,8 @@ public:
             "EVP_CIPHER_CTX_ctrl(CCM_SET_TAG)");
         openssl_result(EVP_CIPHER_CTX_ctrl(ctx.raw(), EVP_CTRL_CCM_SET_IVLEN, nonce_length, nullptr),
             "EVP_CIPHER_CTX_ctrl(CCM_SET_IVLEN)");
-        openssl_result(EVP_EncryptInit(ctx.raw(), nullptr, m_aes_key.data(), m_nonce.data()), "EVP_EncryptInit(key)");
+        openssl_result(
+            EVP_EncryptInit(ctx.raw(), nullptr, m_aes_key.octets.data(), m_nonce.data()), "EVP_EncryptInit(key)");
 
         ByteBuffer ciphertext;
         ciphertext.resize(plaintext.size() + auth_tag_length);
@@ -210,7 +210,8 @@ public:
             "EVP_CIPHER_CTX_ctrl(CCM_SET_TAG)");
         openssl_result(EVP_CIPHER_CTX_ctrl(ctx.raw(), EVP_CTRL_CCM_SET_IVLEN, nonce_length, nullptr),
             "EVP_CIPHER_CTX_ctrl(CCM_SET_IVLEN)");
-        openssl_result(EVP_DecryptInit(ctx.raw(), nullptr, m_aes_key.data(), m_nonce.data()), "EVP_DecryptInit(key)");
+        openssl_result(
+            EVP_DecryptInit(ctx.raw(), nullptr, m_aes_key.octets.data(), m_nonce.data()), "EVP_DecryptInit(key)");
 
         ByteBuffer plaintext;
         plaintext.resize(plaintext_length);
@@ -233,39 +234,13 @@ public:
         }
     }
 
-    void encrypt_key(const Sha256Hash& info)
-    {
-        static constexpr std::size_t ke_length = aes128_ccm_key_length;
-        static constexpr std::size_t km_length = 32;
-        assert(m_aes_key.size() == ke_length);
-
-        // derive ke and km from shared secret
-        ByteBuffer kdp { info.octets.begin(), info.octets.end() };
-        auto hashed_shared_secret =
-            security::kdf2<ke_length + km_length>(create_byte_view(shared_secret()), create_byte_view(kdp));
-        assert(hashed_shared_secret.size() == ke_length + km_length);
-
-        // encrypt symmetric key
-        m_encrypted_key.resize(ke_length);
-        std::uint8_t* ke = hashed_shared_secret.data();
-        for (std::size_t i = 0; i < ke_length; ++i) {
-            m_encrypted_key[i] = ke[i] ^ m_aes_key[i];
-        }
-
-        // generate authentication tag
-        ByteBuffer km { std::next(hashed_shared_secret.begin(), ke_length), hashed_shared_secret.end() };
-        assert(km.size() == km_length);
-        m_authentication_tag = calculate_hmac_sha256(km, m_encrypted_key);
-    }
-
 private:
     OpenSslPointer<EC_KEY> m_ephemeral;
     PublicKey m_recipient;
     ByteBuffer m_shared_secret;
-    ByteBuffer m_aes_key;
+    security::Aes128Key m_aes_key;
     ByteBuffer m_nonce;
-    ByteBuffer m_encrypted_key;
-    ByteBuffer m_authentication_tag;
+    security::EncryptedSymmetricKey m_encrypted_key;
 };
 
 } // namespace
