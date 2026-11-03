@@ -3,9 +3,11 @@
 #include "openssl.hpp"
 #include <vanetza/security/ecies.hpp>
 #include <vanetza/security/key_type.hpp>
+#include <openssl/crypto.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <cassert>
 #include <stdexcept>
 
 namespace vanetza
@@ -43,10 +45,25 @@ struct OpenSslFree
     void operator()(EC_KEY* key) const { EC_KEY_free(key); }
     void operator()(EC_POINT* point) const { EC_POINT_free(point); }
     void operator()(ECDSA_SIG* sig) const { ECDSA_SIG_free(sig); }
+    void operator()(EVP_CIPHER_CTX* ctx) const { EVP_CIPHER_CTX_free(ctx); }
 };
 
 template<typename T>
 using OpenSslPtr = std::unique_ptr<T, OpenSslFree>;
+
+// overwrites secret octets when leaving scope, unlike memset() an OPENSSL_cleanse() is not optimised away
+class ScopedCleanse
+{
+public:
+    ScopedCleanse(void* data, std::size_t size) : m_data(data), m_size(size) {}
+    ScopedCleanse(const ScopedCleanse&) = delete;
+    ScopedCleanse& operator=(const ScopedCleanse&) = delete;
+    ~ScopedCleanse() { OPENSSL_cleanse(m_data, m_size); }
+
+private:
+    void* m_data;
+    std::size_t m_size;
+};
 
 KeyType key_type(const EC_KEY* ec_key)
 {
@@ -107,6 +124,29 @@ expected<PublicKey> derive_public_key(const EC_KEY* ec_key)
     pub_key.compression = compressed.front() == 0x03 ? KeyCompression::Y1 : KeyCompression::Y0;
     pub_key.x.assign(compressed.begin() + 1, compressed.end());
     return pub_key;
+}
+
+expected<OpenSslPtr<EC_POINT>> build_ec_point(const EC_GROUP* group, const PublicKey& key)
+{
+    // uncompressed point: 0x04 followed by x and y coordinates,
+    // compressed point: 0x02 (even y) or 0x03 (odd y) followed by x coordinate
+    ByteBuffer octets;
+    if (key.compression == KeyCompression::NoCompression) {
+        octets.push_back(0x04);
+        octets.insert(octets.end(), key.x.begin(), key.x.end());
+        octets.insert(octets.end(), key.y.begin(), key.y.end());
+    } else {
+        octets.push_back(key.compression == KeyCompression::Y1 ? 0x03 : 0x02);
+        octets.insert(octets.end(), key.x.begin(), key.x.end());
+    }
+
+    OpenSslPtr<EC_POINT> point { EC_POINT_new(group) };
+    if (!point) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    } else if (!EC_POINT_oct2point(group, point.get(), octets.data(), octets.size(), nullptr)) {
+        return make_error_code(SecurityModuleError::InvalidPublicKey);
+    }
+    return std::move(point);
 }
 
 class OpenSslEciesContext : public SecurityModule::EciesContext
@@ -243,6 +283,39 @@ private:
     security::EncryptedSymmetricKey m_encrypted_key;
 };
 
+// values of EVP_CipherInit_ex's enc argument
+enum class CipherOperation : int
+{
+    Decrypt = 0,
+    Encrypt = 1,
+};
+
+/**
+ * Prepare AES-128-CCM context with key and nonce
+ * \param tag expected authentication tag for decryption, nullptr for encryption
+ * \return context or nullptr on failure
+ */
+OpenSslPtr<EVP_CIPHER_CTX> create_aes_ccm_context(CipherOperation operation, const security::Aes128Key& key,
+    const std::array<std::uint8_t, AesCcmCiphertext::nonce_length>& nonce, std::uint8_t* tag)
+{
+    const int enc = static_cast<int>(operation);
+    OpenSslPtr<EVP_CIPHER_CTX> ctx { EVP_CIPHER_CTX_new() };
+    if (!ctx || !EVP_CipherInit_ex(ctx.get(), EVP_aes_128_ccm(), nullptr, nullptr, nullptr, enc)) {
+        return nullptr;
+    }
+
+    // CCM requires the lengths of nonce and tag before key and nonce
+    if (!EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_SET_IVLEN, nonce.size(), nullptr) ||
+        !EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_SET_TAG, auth_tag_length, tag)) {
+        return nullptr;
+    }
+
+    if (!EVP_CipherInit_ex(ctx.get(), nullptr, nullptr, key.octets.data(), nonce.data(), enc)) {
+        return nullptr;
+    }
+    return ctx;
+}
+
 } // namespace
 
 OpenSslSecurityModule::OpenSslSecurityModule(std::shared_ptr<CredentialStorage> cred) : m_credential_storage(cred)
@@ -302,6 +375,102 @@ std::unique_ptr<SecurityModule::EciesContext> OpenSslSecurityModule::create_ecie
     const Sha256Hash& info)
 {
     return std::unique_ptr<SecurityModule::EciesContext> { new OpenSslEciesContext { receiver, info } };
+}
+
+expected<security::Aes128Key> OpenSslSecurityModule::generate_aes_key()
+{
+    security::Aes128Key key;
+    if (RAND_priv_bytes(key.octets.data(), key.octets.size()) != 1) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+    return key;
+}
+
+expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
+    const PublicKey& recipient, const security::Aes128Key& key, const Sha256Hash& info)
+{
+    if (security::key_length(recipient.type) == 0) {
+        return make_error_code(SecurityModuleError::UnsupportedKeyType);
+    }
+
+    OpenSslPtr<EC_KEY> ephemeral { EC_KEY_new_by_curve_name(openssl_nid(recipient.type)) };
+    if (!ephemeral || !EC_KEY_generate_key(ephemeral.get())) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    const EC_GROUP* group = EC_KEY_get0_group(ephemeral.get());
+    expected<OpenSslPtr<EC_POINT>> recipient_point = build_ec_point(group, recipient);
+    if (!recipient_point) {
+        return recipient_point.error();
+    }
+
+    ByteBuffer shared_secret((EC_GROUP_get_degree(group) + 7) / 8);
+    ScopedCleanse cleanse_shared_secret(shared_secret.data(), shared_secret.size());
+    if (ECDH_compute_key(shared_secret.data(), shared_secret.size(), recipient_point->get(), ephemeral.get(),
+            nullptr) != static_cast<int>(shared_secret.size())) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    expected<PublicKey> ephemeral_public_key = derive_public_key(ephemeral.get());
+    if (!ephemeral_public_key) {
+        return ephemeral_public_key.error();
+    }
+
+    return security::encrypt_key(*ephemeral_public_key, create_byte_view(shared_secret), key, info);
+}
+
+expected<AesCcmCiphertext> OpenSslSecurityModule::encrypt_aes_ccm(
+    const security::Aes128Key& key, const ByteBuffer& plaintext)
+{
+    AesCcmCiphertext encrypted;
+    if (RAND_bytes(encrypted.nonce.data(), encrypted.nonce.size()) != 1) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    OpenSslPtr<EVP_CIPHER_CTX> ctx = create_aes_ccm_context(CipherOperation::Encrypt, key, encrypted.nonce, nullptr);
+    if (!ctx) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    // authentication tag follows the encrypted payload
+    encrypted.ciphertext.resize(plaintext.size() + auth_tag_length);
+    std::uint8_t* tag = encrypted.ciphertext.data() + plaintext.size();
+    int length = 0;
+    if (!EVP_EncryptUpdate(ctx.get(), encrypted.ciphertext.data(), &length, plaintext.data(), plaintext.size())) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+    assert(static_cast<std::size_t>(length) == plaintext.size());
+
+    // finalisation yields no output for CCM but the tag
+    if (!EVP_EncryptFinal_ex(ctx.get(), tag, &length) ||
+        !EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_GET_TAG, auth_tag_length, tag)) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+    return encrypted;
+}
+
+expected<ByteBuffer> OpenSslSecurityModule::decrypt_aes_ccm(
+    const security::Aes128Key& key, const AesCcmCiphertext& encrypted)
+{
+    // authentication tag follows the encrypted payload
+    if (encrypted.ciphertext.size() < auth_tag_length) {
+        return make_error_code(SecurityModuleError::DecryptionFailure);
+    }
+    ByteBuffer plaintext(encrypted.ciphertext.size() - auth_tag_length);
+    std::array<std::uint8_t, auth_tag_length> tag;
+    std::copy_n(std::next(encrypted.ciphertext.begin(), plaintext.size()), tag.size(), tag.begin());
+
+    OpenSslPtr<EVP_CIPHER_CTX> ctx = create_aes_ccm_context(CipherOperation::Decrypt, key, encrypted.nonce, tag.data());
+    if (!ctx) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    // CCM checks the authentication tag while decrypting
+    int length = 0;
+    if (EVP_DecryptUpdate(ctx.get(), plaintext.data(), &length, encrypted.ciphertext.data(), plaintext.size()) <= 0) {
+        return make_error_code(SecurityModuleError::DecryptionFailure);
+    }
+    return plaintext;
 }
 
 ByteBuffer OpenSslSecurityModule::generate_nonce(std::size_t length)

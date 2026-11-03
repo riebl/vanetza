@@ -1,5 +1,5 @@
 add_vanetza_component(security
-    aes128_key.cpp
+    aes.cpp
     backend.cpp
     backend_null.cpp
     cam_ssp.cpp

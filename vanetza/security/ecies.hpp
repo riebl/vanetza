@@ -1,7 +1,7 @@
 #pragma once
 
 #include <vanetza/common/byte_view.hpp>
-#include <vanetza/security/aes128_key.hpp>
+#include <vanetza/security/aes.hpp>
 #include <vanetza/security/encrypted_symmetric_key.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/sha.hpp>

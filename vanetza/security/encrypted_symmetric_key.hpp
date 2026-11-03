@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vanetza/security/aes128_key.hpp>
+#include <vanetza/security/aes.hpp>
 #include <vanetza/security/hmac.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <array>

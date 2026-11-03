@@ -8,6 +8,8 @@ namespace vanetza
 namespace pki
 {
 
+using security::AesCcmCiphertext;
+using security::EncryptedSymmetricKey;
 using security::ScopedKeyPair;
 using security::SecurityModule;
 

@@ -2,12 +2,29 @@
 #include <boost/optional/optional_io.hpp>
 #include <vanetza/security/decap_service.hpp>
 #include <vanetza/security/hashed_id.hpp>
+#include <vanetza/security/key_type.hpp>
 #include <ostream>
 
 namespace vanetza
 {
 namespace security
 {
+
+std::ostream& operator<<(std::ostream& os, KeyType type)
+{
+    switch (type)
+    {
+        case KeyType::Unspecified:
+            return os << "Unspecified";
+        case KeyType::NistP256:
+            return os << "NistP256";
+        case KeyType::BrainpoolP256r1:
+            return os << "BrainpoolP256r1";
+        case KeyType::BrainpoolP384r1:
+            return os << "BrainpoolP384r1";
+    }
+    return os << "KeyType(" << static_cast<int>(type) << ")";
+}
 
 void PrintTo(const DecapReport& report, std::ostream* out)
 {

@@ -27,6 +27,10 @@ public:
                 return "security module failure";
             case SecurityModuleError::KeyNotFound:
                 return "key not found";
+            case SecurityModuleError::InvalidPublicKey:
+                return "invalid public key";
+            case SecurityModuleError::DecryptionFailure:
+                return "decryption failed";
             default:
                 return "unknown security module error";
         }

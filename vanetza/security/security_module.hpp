@@ -2,6 +2,8 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/expected.hpp>
+#include <vanetza/security/aes.hpp>
+#include <vanetza/security/encrypted_symmetric_key.hpp>
 #include <vanetza/security/key_reference.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <vanetza/security/public_key.hpp>
@@ -78,6 +80,39 @@ public:
 
     virtual ByteBuffer generate_nonce(std::size_t length) = 0;
     virtual std::unique_ptr<EciesContext> create_ecies_context(const PublicKey& receiver, const Sha256Hash& info) = 0;
+
+    /**
+     * Generate a random AES key, e.g. a session key for a request to a PKI authority
+     * \return key or error, see SecurityModuleError for conditions
+     */
+    virtual expected<Aes128Key> generate_aes_key() = 0;
+
+    /**
+     * Encrypt a symmetric key for a recipient by ECIES with a fresh ephemeral key
+     * \param recipient public encryption key of recipient
+     * \param key symmetric key
+     * \param info key derivation parameter, i.e. hash of recipient's certificate
+     * \return encrypted key or error, see SecurityModuleError for conditions
+     */
+    virtual expected<EncryptedSymmetricKey> encrypt_key(
+        const PublicKey& recipient, const Aes128Key& key, const Sha256Hash& info) = 0;
+
+    /**
+     * Encrypt by AES-CCM with a fresh nonce
+     * \param key symmetric key
+     * \param plaintext payload
+     * \return ciphertext or error, see SecurityModuleError for conditions
+     */
+    virtual expected<AesCcmCiphertext> encrypt_aes_ccm(const Aes128Key& key, const ByteBuffer& plaintext) = 0;
+
+    /**
+     * Decrypt AES-CCM ciphertext
+     * \param key symmetric key
+     * \param ciphertext encrypted payload
+     * \return payload or error, see SecurityModuleError for conditions
+     */
+    virtual expected<ByteBuffer> decrypt_aes_ccm(const Aes128Key& key, const AesCcmCiphertext& ciphertext) = 0;
+
     virtual ByteBuffer calculate_hmac_sha256(const ByteBuffer& key, const ByteBuffer& data) = 0;
 };
 

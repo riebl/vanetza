@@ -4,6 +4,7 @@
 
 using vanetza::ByteBuffer;
 using vanetza::expected;
+using vanetza::security::Aes128Key;
 using vanetza::security::SecurityModuleError;
 using namespace vanetza::pki;
 
@@ -23,6 +24,8 @@ public:
 protected:
     std::shared_ptr<CredentialStorage> credentials;
     std::shared_ptr<SecurityModule> security;
+    const ByteBuffer plaintext { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99 };
+    const Sha256Hash info { 0x12, 0x34, 0x56, 0x78, 0x90, 0xAB, 0xCD, 0xEF };
 };
 
 TEST_F(SecurityModuleTest, mac_vector1)
@@ -165,4 +168,121 @@ TEST_F(SecurityModuleTest, unsupported_key_type_cannot_be_created)
     expected<KeyReference> key = security->create_signing_key(KeyType::Unspecified);
     ASSERT_TRUE(key.has_error());
     EXPECT_EQ(SecurityModuleError::UnsupportedKeyType, key.error());
+}
+
+TEST_F(SecurityModuleTest, generated_aes_keys_differ)
+{
+    expected<Aes128Key> first = security->generate_aes_key();
+    expected<Aes128Key> second = security->generate_aes_key();
+    ASSERT_TRUE(first.has_value());
+    ASSERT_TRUE(second.has_value());
+    EXPECT_NE(*first, *second);
+}
+
+TEST_F(SecurityModuleTest, aes_ccm_decrypts_own_ciphertext)
+{
+    expected<Aes128Key> key = security->generate_aes_key();
+    ASSERT_TRUE(key.has_value());
+
+    expected<AesCcmCiphertext> ciphertext = security->encrypt_aes_ccm(*key, plaintext);
+    ASSERT_TRUE(ciphertext.has_value());
+    EXPECT_NE(plaintext, ciphertext->ciphertext);
+    expected<ByteBuffer> decrypted = security->decrypt_aes_ccm(*key, *ciphertext);
+    ASSERT_TRUE(decrypted.has_value());
+    EXPECT_EQ(plaintext, *decrypted);
+}
+
+TEST_F(SecurityModuleTest, aes_ccm_encrypts_with_fresh_nonces)
+{
+    expected<Aes128Key> key = security->generate_aes_key();
+    ASSERT_TRUE(key.has_value());
+
+    expected<AesCcmCiphertext> first = security->encrypt_aes_ccm(*key, plaintext);
+    expected<AesCcmCiphertext> second = security->encrypt_aes_ccm(*key, plaintext);
+    ASSERT_TRUE(first.has_value());
+    ASSERT_TRUE(second.has_value());
+    EXPECT_NE(first->nonce, second->nonce);
+}
+
+TEST_F(SecurityModuleTest, aes_ccm_rejects_tampered_ciphertext)
+{
+    expected<Aes128Key> key = security->generate_aes_key();
+    ASSERT_TRUE(key.has_value());
+    expected<AesCcmCiphertext> ciphertext = security->encrypt_aes_ccm(*key, plaintext);
+    ASSERT_TRUE(ciphertext.has_value());
+
+    const struct
+    {
+        const char* defect;
+        void (*tamper)(AesCcmCiphertext&);
+    } tamperings[] = {
+        { "ciphertext", [](AesCcmCiphertext& c) { c.ciphertext.front() ^= 0x01; } },
+        { "authentication tag", [](AesCcmCiphertext& c) { c.ciphertext.back() ^= 0x01; } },
+        { "nonce", [](AesCcmCiphertext& c) { c.nonce.front() ^= 0x01; } },
+        { "shorter than authentication tag", [](AesCcmCiphertext& c) { c.ciphertext.resize(15); } },
+    };
+
+    for (const auto& tampering : tamperings) {
+        SCOPED_TRACE(tampering.defect);
+        AesCcmCiphertext tampered = *ciphertext;
+        tampering.tamper(tampered);
+        expected<ByteBuffer> decrypted = security->decrypt_aes_ccm(*key, tampered);
+        ASSERT_TRUE(decrypted.has_error());
+        EXPECT_EQ(SecurityModuleError::DecryptionFailure, decrypted.error());
+    }
+}
+
+TEST_F(SecurityModuleTest, key_encryption_requires_valid_recipient_key)
+{
+    expected<Aes128Key> key = security->generate_aes_key();
+    ASSERT_TRUE(key.has_value());
+
+    PublicKey recipient = derive_public_key(generate_private_key(KeyType::NistP256));
+    recipient.type = KeyType::Unspecified;
+    expected<EncryptedSymmetricKey> encrypted = security->encrypt_key(recipient, *key, info);
+    ASSERT_TRUE(encrypted.has_error());
+    EXPECT_EQ(SecurityModuleError::UnsupportedKeyType, encrypted.error());
+
+    recipient.type = KeyType::NistP256;
+    recipient.x.assign(32, 0xFF); // not on curve
+    encrypted = security->encrypt_key(recipient, *key, info);
+    ASSERT_TRUE(encrypted.has_error());
+    EXPECT_EQ(SecurityModuleError::InvalidPublicKey, encrypted.error());
+}
+
+// IEEE 1609.2 Annex D.6 AES-CCM test vector
+TEST_F(SecurityModuleTest, aes_ccm_decrypts_IEEE_1609_2_Annex_D_6_vector)
+{
+    const Aes128Key key {{
+        0xE5, 0x8D, 0x5C, 0x8F, 0x8C, 0x9E, 0xD9, 0x78, 0x56, 0x79, 0xE0, 0x8A, 0xBC, 0x7C, 0x81, 0x16
+    }};
+    AesCcmCiphertext encrypted;
+    encrypted.nonce = {
+        0xA9, 0xF5, 0x93, 0xC0, 0x9E, 0xAE, 0xEA, 0x8B, 0xF0, 0xC1, 0xCF, 0x6A
+    };
+    encrypted.ciphertext = ByteBuffer {
+        0x5F, 0x82, 0xB9, 0xFC, 0xE3, 0x4B, 0x94, 0x83, 0x53, 0x95, 0xDD, 0x89, 0xD7, 0x1F, 0xB7, 0x58,
+        0xD2, 0xA3, 0x90, 0x7F, 0xBF, 0x2F, 0xD5, 0x89, 0x94, 0xA2, 0xB9, 0xCF, 0x87, 0x25, 0xAF, 0x26,
+        0xF0, 0xB2, 0x38, 0x53, 0xC2, 0x7A, 0x06, 0xE3, 0x5E, 0xE7, 0x2C, 0xAD, 0x82, 0x77, 0x13, 0xC1,
+        0x8F, 0xA5, 0xDD, 0xA9, 0x71, 0xD9, 0xBA, 0xA7, 0xB4, 0x2A, 0x30, 0x1F, 0xF6, 0x0C, 0x6E, 0x4A,
+        0xD6, 0x51, 0xC1, 0xBB, 0x6E, 0xD4, 0xF2, 0x5F, 0x7D, 0x0F, 0xF3, 0x87, 0xA1, 0x16, 0x27, 0x93,
+        0x4C, 0xD1, 0x1F, 0x86, 0x98, 0x4E, 0xA3, 0xAC, 0x96, 0x9D, 0xDA, 0x9A, 0x02, 0x0A, 0xD6, 0x42,
+        0x4B, 0x0D, 0x39, 0x3E, 0x3F, 0xB4, 0xB1, 0x11, 0x9A, 0xDF, 0x5C, 0xDB, 0x01, 0x2A, 0x59, 0x75,
+        0x3E, 0x41, 0xD4, 0x7E, 0x5E, 0x5A, 0x8C, 0x3A, 0x11, 0x8E, 0xD4, 0x07, 0x04, 0x9B, 0x56, 0xD5,
+        0x3B, 0xF5, 0x6C, 0xB3, 0x8C, 0x0B, 0x20, 0xA2, 0x50, 0x2D, 0x1D, 0xA7, 0x0B, 0x97, 0x61
+    };
+    const ByteBuffer payload {
+        0x06, 0x53, 0xB5, 0x71, 0x4D, 0x13, 0x57, 0xF4, 0x99, 0x5B, 0xDD, 0xAC, 0xBE, 0x10, 0x87, 0x39,
+        0x51, 0xA1, 0xEB, 0xA6, 0x63, 0x71, 0x8D, 0x1A, 0xF3, 0x5D, 0x2F, 0x0D, 0x52, 0xC7, 0x9D, 0xE4,
+        0x9B, 0xE6, 0x22, 0xC4, 0xA6, 0xD9, 0x06, 0x47, 0xBA, 0x2B, 0x00, 0x4C, 0x3E, 0x8A, 0xE4, 0x22,
+        0xFD, 0x27, 0x06, 0x3A, 0xFA, 0x19, 0xAD, 0x88, 0x3D, 0xCC, 0xBD, 0x97, 0xD9, 0x8B, 0x8B, 0x04,
+        0x61, 0xB5, 0x67, 0x1E, 0x75, 0xF1, 0x97, 0x01, 0xC2, 0x40, 0x42, 0xB8, 0xD3, 0xAF, 0x79, 0xB9,
+        0xFF, 0x62, 0xBC, 0x44, 0x8E, 0xF9, 0x44, 0x0B, 0x1E, 0xA3, 0xF7, 0xE5, 0xC0, 0xF4, 0xBF, 0xEF,
+        0xE3, 0xE3, 0x26, 0xE6, 0x2D, 0x5E, 0xE4, 0xCB, 0x4B, 0x4C, 0xFF, 0xF3, 0x0A, 0xD5, 0xF4, 0x9A,
+        0x79, 0x81, 0xAB, 0xF7, 0x16, 0x17, 0x24, 0x5B, 0x96, 0xE5, 0x22, 0xE1, 0xAD, 0xD7, 0x8A
+    };
+
+    expected<ByteBuffer> decrypted = security->decrypt_aes_ccm(key, encrypted);
+    ASSERT_TRUE(decrypted.has_value());
+    EXPECT_EQ(payload, *decrypted);
 }
