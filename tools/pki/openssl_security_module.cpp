@@ -20,7 +20,6 @@ namespace
 
 using security::SecurityModuleError;
 
-constexpr std::size_t nonce_length = 12;
 constexpr std::size_t auth_tag_length = 16;
 
 ByteBuffer calculate_hmac_sha256(const ByteBuffer& key, const ByteBuffer& data)
@@ -149,140 +148,6 @@ expected<OpenSslPtr<EC_POINT>> build_ec_point(const EC_GROUP* group, const Publi
     return std::move(point);
 }
 
-class OpenSslEciesContext : public SecurityModule::EciesContext
-{
-public:
-    OpenSslEciesContext(const PublicKey& receiver, const Sha256Hash& info) :
-        m_ephemeral(EC_KEY_new_by_curve_name(openssl_nid(receiver.type))), m_recipient(receiver)
-    {
-        openssl_result(EC_KEY_generate_key(m_ephemeral.raw()), "EC_KEY_generate_key");
-        openssl_result(EC_KEY_check_key(m_ephemeral.raw()), "EC_KEY_check_key");
-        calculate_shared_secret(receiver);
-
-        openssl_result(RAND_bytes(m_aes_key.octets.data(), m_aes_key.octets.size()), "RAND_bytes");
-        m_nonce.resize(nonce_length);
-        openssl_result(RAND_bytes(m_nonce.data(), m_nonce.size()), "RAND_bytes");
-        m_encrypted_key =
-            security::encrypt_key(ephemeral_public_key(), create_byte_view(m_shared_secret), m_aes_key, info);
-    }
-
-    PublicKey ephemeral_public_key() const override
-    {
-        return make_public_key(m_ephemeral.raw());
-    }
-
-    PublicKey recipient_public_key() const override
-    {
-        return m_recipient;
-    }
-
-    ByteBuffer shared_secret() const override
-    {
-        return m_shared_secret;
-    }
-
-    ByteBuffer encrypted_key() const override
-    {
-        return ByteBuffer(m_encrypted_key.wrapped_key.begin(), m_encrypted_key.wrapped_key.end());
-    }
-
-    ByteBuffer authentication_tag() const override
-    {
-        return ByteBuffer(m_encrypted_key.authentication_tag.begin(), m_encrypted_key.authentication_tag.end());
-    }
-
-    ByteBuffer nonce() const override
-    {
-        return m_nonce;
-    }
-
-    void nonce(const ByteBuffer& nonce) override
-    {
-        if (nonce.size() != nonce_length) {
-            throw std::runtime_error("size of given nonce is invalid");
-        }
-        m_nonce = nonce;
-    }
-
-    ByteBuffer encrypt(const ByteBuffer& plaintext) override
-    {
-        OpenSslPointer<EVP_CIPHER_CTX> ctx { EVP_CIPHER_CTX_new() };
-        openssl_result(EVP_CIPHER_CTX_init(ctx.raw()), "EVP_CIPHER_CTX_init");
-        openssl_result(EVP_EncryptInit(ctx.raw(), EVP_aes_128_ccm(), nullptr, nullptr), "EVP_EncryptInit(CCM)");
-        openssl_result(EVP_CIPHER_CTX_ctrl(ctx.raw(), EVP_CTRL_CCM_SET_TAG, auth_tag_length, nullptr),
-            "EVP_CIPHER_CTX_ctrl(CCM_SET_TAG)");
-        openssl_result(EVP_CIPHER_CTX_ctrl(ctx.raw(), EVP_CTRL_CCM_SET_IVLEN, nonce_length, nullptr),
-            "EVP_CIPHER_CTX_ctrl(CCM_SET_IVLEN)");
-        openssl_result(
-            EVP_EncryptInit(ctx.raw(), nullptr, m_aes_key.octets.data(), m_nonce.data()), "EVP_EncryptInit(key)");
-
-        ByteBuffer ciphertext;
-        ciphertext.resize(plaintext.size() + auth_tag_length);
-        int ciphertext_length = 0;
-        openssl_result(EVP_EncryptUpdate(ctx.raw(), ciphertext.data(), &ciphertext_length, plaintext.data(),
-                           plaintext.size()),
-            "EVP_EncryptUpdate");
-        assert(ciphertext_length == ciphertext.size() - auth_tag_length);
-        int final_length = 0;
-        openssl_result(EVP_EncryptFinal(ctx.raw(), ciphertext.data() + ciphertext_length, &final_length),
-            "EVP_EncryptFinal");
-        assert(final_length == 0);
-        openssl_result(EVP_CIPHER_CTX_ctrl(ctx.raw(), EVP_CTRL_CCM_GET_TAG, auth_tag_length,
-                           ciphertext.data() + ciphertext_length),
-            "EVP_CIPHER_CTX_ctrl(CCM_GET_TAG)");
-
-        return ciphertext;
-    }
-
-    ByteBuffer decrypt(const std::uint8_t* ciphertext, std::size_t ciphertext_length) override
-    {
-        if (ciphertext_length < auth_tag_length) {
-            throw std::runtime_error("cipher text is too short");
-        }
-        int plaintext_length = ciphertext_length - auth_tag_length;
-        const std::uint8_t* auth_tag = ciphertext + plaintext_length;
-
-        OpenSslPointer<EVP_CIPHER_CTX> ctx { EVP_CIPHER_CTX_new() };
-        openssl_result(EVP_CIPHER_CTX_init(ctx.raw()), "EVP_CIPHER_CTX_init");
-        openssl_result(EVP_DecryptInit(ctx.raw(), EVP_aes_128_ccm(), nullptr, nullptr), "EVP_DecryptInit(CCM)");
-        openssl_result(EVP_CIPHER_CTX_ctrl(ctx.raw(), EVP_CTRL_CCM_SET_TAG, auth_tag_length,
-                           const_cast<std::uint8_t*>(auth_tag)),
-            "EVP_CIPHER_CTX_ctrl(CCM_SET_TAG)");
-        openssl_result(EVP_CIPHER_CTX_ctrl(ctx.raw(), EVP_CTRL_CCM_SET_IVLEN, nonce_length, nullptr),
-            "EVP_CIPHER_CTX_ctrl(CCM_SET_IVLEN)");
-        openssl_result(
-            EVP_DecryptInit(ctx.raw(), nullptr, m_aes_key.octets.data(), m_nonce.data()), "EVP_DecryptInit(key)");
-
-        ByteBuffer plaintext;
-        plaintext.resize(plaintext_length);
-        openssl_result(EVP_DecryptUpdate(ctx.raw(), plaintext.data(), &plaintext_length, ciphertext, plaintext_length),
-            "EVP_DecryptUpdate");
-        assert(plaintext_length == plaintext.size());
-
-        return plaintext;
-    }
-
-    void calculate_shared_secret(const PublicKey& receiver)
-    {
-        const EC_GROUP* group = EC_KEY_get0_group(m_ephemeral.raw());
-        int degree = EC_GROUP_get_degree(group);
-        m_shared_secret.resize((degree + 7) / 8);
-        int computed = ECDH_compute_key(m_shared_secret.data(), m_shared_secret.size(), make_ec_point(receiver).raw(),
-            m_ephemeral.raw(), nullptr);
-        if (computed != m_shared_secret.size()) {
-            throw OpenSslException(ERR_get_error(), "ECDH_compute_key");
-        }
-    }
-
-private:
-    OpenSslPointer<EC_KEY> m_ephemeral;
-    PublicKey m_recipient;
-    ByteBuffer m_shared_secret;
-    security::Aes128Key m_aes_key;
-    ByteBuffer m_nonce;
-    security::EncryptedSymmetricKey m_encrypted_key;
-};
-
 // values of EVP_CipherInit_ex's enc argument
 enum class CipherOperation : int
 {
@@ -371,12 +236,6 @@ bool OpenSslSecurityModule::verify(const std::uint8_t* dbuf, std::size_t dlen, c
     return (ECDSA_do_verify(dbuf, dlen, osl_sig.raw(), osl_pubkey.raw()) == 1);
 }
 
-std::unique_ptr<SecurityModule::EciesContext> OpenSslSecurityModule::create_ecies_context(const PublicKey& receiver,
-    const Sha256Hash& info)
-{
-    return std::unique_ptr<SecurityModule::EciesContext> { new OpenSslEciesContext { receiver, info } };
-}
-
 expected<security::Aes128Key> OpenSslSecurityModule::generate_aes_key()
 {
     security::Aes128Key key;
@@ -446,6 +305,7 @@ expected<AesCcmCiphertext> OpenSslSecurityModule::encrypt_aes_ccm(
         !EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_GET_TAG, auth_tag_length, tag)) {
         return make_error_code(SecurityModuleError::ModuleFailure);
     }
+    assert(length == 0);
     return encrypted;
 }
 
@@ -470,6 +330,7 @@ expected<ByteBuffer> OpenSslSecurityModule::decrypt_aes_ccm(
     if (EVP_DecryptUpdate(ctx.get(), plaintext.data(), &length, encrypted.ciphertext.data(), plaintext.size()) <= 0) {
         return make_error_code(SecurityModuleError::DecryptionFailure);
     }
+    assert(static_cast<std::size_t>(length) == plaintext.size());
     return plaintext;
 }
 

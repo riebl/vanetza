@@ -4,6 +4,7 @@
 #include "security_module.hpp"
 #include "sha.hpp"
 #include <vanetza/security/aes.hpp>
+#include <memory>
 
 namespace vanetza
 {
@@ -22,7 +23,6 @@ public:
     bool verify(const Sha256Hash&, const Signature&, const PublicKey&) override;
     bool verify(const Sha384Hash&, const Signature&, const PublicKey&) override;
     ByteBuffer generate_nonce(std::size_t length) override;
-    std::unique_ptr<EciesContext> create_ecies_context(const PublicKey& receiver, const Sha256Hash& info) override;
     expected<security::Aes128Key> generate_aes_key() override;
     expected<EncryptedSymmetricKey> encrypt_key(const PublicKey& recipient, const security::Aes128Key& key, const Sha256Hash& info) override;
     expected<AesCcmCiphertext> encrypt_aes_ccm(const security::Aes128Key&, const ByteBuffer& plaintext) override;
