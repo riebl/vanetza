@@ -2,9 +2,11 @@
 #include "asn1.hpp"
 #include "certificate.hpp"
 #include "encrypted_data.hpp"
+#include "exception.hpp"
 #include "hashed_id8.hpp"
 #include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
+#include "recover_key.hpp"
 #include "signed_data.hpp"
 #include "stub_certificate.hpp"
 #include "validation.hpp"
@@ -32,11 +34,13 @@ protected:
     {
         // EA / AA need both verification and encryption keys; EC needs only verification.
         PublicKey ea_verify = derive_public_key(generate_private_key(KeyType::NistP256));
-        PublicKey ea_encrypt = derive_public_key(generate_private_key(KeyType::NistP256));
+        m_ea_encryption_key = generate_private_key(KeyType::NistP256);
+        PublicKey ea_encrypt = derive_public_key(m_ea_encryption_key);
         m_ea = build_stub_certificate(ea_verify, &ea_encrypt);
 
         PublicKey aa_verify = derive_public_key(generate_private_key(KeyType::NistP256));
-        PublicKey aa_encrypt = derive_public_key(generate_private_key(KeyType::NistP256));
+        m_aa_encryption_key = generate_private_key(KeyType::NistP256);
+        PublicKey aa_encrypt = derive_public_key(m_aa_encryption_key);
         m_aa = build_stub_certificate(aa_verify, &aa_encrypt);
 
         m_ec_key = m_security.create_signing_key(KeyType::NistP256).value();
@@ -71,9 +75,24 @@ protected:
         return mgmt.decode(bytes.data(), bytes.size());
     }
 
+    // AA response as specified by TS 102 941 §6.2.3.3.2: encrypted with the request's key referenced via pskRecipInfo
+    EncryptedData make_response(const security::Aes128Key& key, const ByteBuffer& payload)
+    {
+        EncryptedData response;
+        response.generate_ciphertext(m_security, key, payload);
+        auto psk = asn1::allocate<Vanetza_Security_RecipientInfo_t>();
+        psk->present = Vanetza_Security_RecipientInfo_PR_pskRecipInfo;
+        // EncryptedData::decrypt requires a pskRecipInfo recipient but does not check its HashedId8 of the key
+        copy(ByteBuffer(8, 0x00), psk->choice.pskRecipInfo);
+        asn_sequence_add(&response->content->choice.encryptedData.recipients.list, psk);
+        return response;
+    }
+
     std::shared_ptr<MockCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
+    PrivateKey m_ea_encryption_key;
     Certificate m_ea;
+    PrivateKey m_aa_encryption_key;
     Certificate m_aa;
     Certificate m_ec;
     KeyReference m_ec_key;
@@ -204,7 +223,7 @@ TEST_F(AuthorizationRequestTest, optional_at_encryption_key_extends_keytag)
 }
 
 // ecSignature is the privacy-preserving `encryptedEcSignature` variant; the
-// inner ciphertext is addressed to the EA (recipientId = HashedId8(EA)).
+// inner ciphertext is addressed to the EA (recipientId = HashedId8(EA)) and decryptable by it.
 TEST_F(AuthorizationRequestTest, ec_signature_is_encrypted_to_ea)
 {
     auto params = make_params();
@@ -224,6 +243,7 @@ TEST_F(AuthorizationRequestTest, ec_signature_is_encrypted_to_ea)
     const auto* recip = recipients.list.array[0];
     ASSERT_EQ(Vanetza_Security_RecipientInfo_PR_certRecipInfo, recip->present);
     EXPECT_TRUE(recip->choice.certRecipInfo.recipientId == ea_hid8.octets);
+    EXPECT_NO_THROW(recover_key(m_security, enc_sig, m_ea_encryption_key, m_ea));
 }
 
 // By default no validityPeriod hint is sent (TS 102 941 §6.2.3.3.1: optional).
@@ -267,16 +287,39 @@ TEST_F(AuthorizationRequestTest, validity_period_hint_propagates_to_shared_at_re
 TEST_F(AuthorizationRequestTest, outer_encrypted_to_aa)
 {
     auto params = make_params();
-    EncryptedData encrypted = build_authorization_request(m_security, params);
+    EncryptedRequest request = build_authorization_request(m_security, params);
 
-    ASSERT_EQ(Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData, encrypted->content->present);
-    const auto& recipients = encrypted->content->choice.encryptedData.recipients;
+    ASSERT_EQ(Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData, request.message->content->present);
+    const auto& recipients = request.message->content->choice.encryptedData.recipients;
     ASSERT_GE(recipients.list.count, 1);
 
     HashedId8 aa_hid8 = m_aa.calculate_hashed_id8(m_security);
     const auto* recip = recipients.list.array[0];
     ASSERT_EQ(Vanetza_Security_RecipientInfo_PR_certRecipInfo, recip->present);
     EXPECT_TRUE(recip->choice.certRecipInfo.recipientId == aa_hid8.octets);
+}
+
+// The AA recovers the request's key to encrypt its response with (TS 102 941 §6.2.3.3.2).
+TEST_F(AuthorizationRequestTest, request_key_is_encrypted_for_aa)
+{
+    EncryptedRequest request = build_authorization_request(m_security, make_params());
+    EXPECT_EQ(request.key, recover_key(m_security, *request.message, m_aa_encryption_key, m_aa));
+}
+
+TEST_F(AuthorizationRequestTest, aa_response_is_decrypted_with_request_key)
+{
+    EncryptedRequest request = build_authorization_request(m_security, make_params());
+    const ByteBuffer payload { 0x01, 0x23, 0x45, 0x67, 0x89 };
+    EncryptedData response = make_response(request.key, payload);
+    EXPECT_EQ(payload, response.decrypt(m_security, request.key));
+}
+
+TEST_F(AuthorizationRequestTest, tampered_aa_response_is_decoding_failure)
+{
+    EncryptedRequest request = build_authorization_request(m_security, make_params());
+    EncryptedData response = make_response(request.key, ByteBuffer { 0x01, 0x23, 0x45, 0x67, 0x89 });
+    response->content->choice.encryptedData.ciphertext.choice.aes128ccm.ccmCiphertext.buf[0] ^= 0x01;
+    EXPECT_THROW(response.decrypt(m_security, request.key), DecodingFailure);
 }
 
 } // namespace pki

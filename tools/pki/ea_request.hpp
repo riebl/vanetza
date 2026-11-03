@@ -12,7 +12,7 @@ namespace pki
 {
 
 class Certificate;
-class EncryptedData;
+struct EncryptedRequest;
 
 using security::HashAlgorithm;
 
@@ -44,11 +44,11 @@ ByteBuffer build_signed_enrolment_request(SecurityModule& security, const Enrolm
 /**
  * \brief Build the EA-encrypted enrolment request.
  *
- * Call .encode() on the result for the OER bytes to POST. The ECIES context
- * held in the returned EncryptedData is also needed to decrypt the EA's
- * response (same symmetric key via pskRecipInfo).
+ * Call .encode() on the resulting message for the OER bytes to POST. The
+ * returned key is needed to decrypt the EA's response (same symmetric key via
+ * pskRecipInfo).
  */
-EncryptedData build_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& parameters,
+EncryptedRequest build_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& parameters,
     const Certificate& ea_certificate);
 
 } // namespace pki

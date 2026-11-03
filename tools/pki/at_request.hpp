@@ -16,7 +16,7 @@ namespace pki
 {
 
 class Certificate;
-class EncryptedData;
+struct EncryptedRequest;
 
 using security::HashAlgorithm;
 
@@ -60,9 +60,10 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security,
 /**
  * \brief Build the AA-encrypted authorization request.
  *
- * Call .encode() on the result for the OER bytes to POST as `application/x-its-request`.
+ * Call .encode() on the resulting message for the OER bytes to POST as `application/x-its-request`.
+ * The returned key is needed to decrypt the AA's response (same symmetric key via pskRecipInfo).
  */
-EncryptedData build_authorization_request(SecurityModule& security, const AuthorizationRequestParameters& parameters);
+EncryptedRequest build_authorization_request(SecurityModule& security, const AuthorizationRequestParameters& parameters);
 
 } // namespace pki
 } // namespace vanetza

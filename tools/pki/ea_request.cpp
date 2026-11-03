@@ -95,7 +95,7 @@ ByteBuffer build_signed_enrolment_request(SecurityModule& security, const Enrolm
     return outer.encode();
 }
 
-EncryptedData build_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& params,
+EncryptedRequest build_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& params,
     const Certificate& ea_certificate)
 {
     boost::optional<PublicKey> ea_enckey = ea_certificate.get_encryption_key();
@@ -106,13 +106,19 @@ EncryptedData build_enrolment_request(SecurityModule& security, const EnrolmentR
     ByteBuffer signed_request = build_signed_enrolment_request(security, params);
 
     Sha256Hash ea_cert_sha256 = calculate_sha256_hash(security, ea_certificate);
-    auto ecies_unique = security.create_ecies_context(*ea_enckey, ea_cert_sha256);
-    std::shared_ptr<SecurityModule::EciesContext> ecies { std::move(ecies_unique) };
-    EncryptedData encrypted { ecies };
-    encrypted.generate_ciphertext(signed_request);
-    encrypted.add_recipient_info(ea_certificate.calculate_hashed_id8(security));
+    expected<security::Aes128Key> key = security.generate_aes_key();
+    if (!key) {
+        throw std::runtime_error("AES key generation failed: " + key.error().message());
+    }
+    expected<EncryptedSymmetricKey> encrypted_key = security.encrypt_key(*ea_enckey, *key, ea_cert_sha256);
+    if (!encrypted_key) {
+        throw std::runtime_error("key encryption failed: " + encrypted_key.error().message());
+    }
+    EncryptedRequest request { EncryptedData {}, *key };
+    request.message.generate_ciphertext(security, request.key, signed_request);
+    request.message.add_recipient_info(ea_certificate.calculate_hashed_id8(security), *encrypted_key);
 
-    return encrypted;
+    return request;
 }
 
 } // namespace pki

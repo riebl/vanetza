@@ -269,12 +269,12 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
     HashedId8 ea_cert_hid8 = ea.certificate.calculate_hashed_id8(*ctx.cfg.security);
     std::cout << "Enroling against EA certificate: " << hexstring(ea_cert_hid8) << "\n";
 
-    EncryptedData encrypted_data = build_enrolment_request(*ctx.cfg.security, params, ea.certificate);
+    EncryptedRequest request = build_enrolment_request(*ctx.cfg.security, params, ea.certificate);
 
     const std::string ea_url = ctx.url(ea);
     std::cout << "Enroling at EA URL: " << ea_url << "\n";
     auto query = HttpQuery::from_url(ea_url);
-    auto encoded_encrypted_data = encrypted_data.encode();
+    auto encoded_encrypted_data = request.message.encode();
     auto sha256_encrypted_data =
         ctx.cfg.security->calculate_sha256_hash(encoded_encrypted_data.data(), encoded_encrypted_data.size());
 
@@ -286,10 +286,11 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
         throw HttpException("expected application/x-its-response");
     }
 
-    if (!encrypted_data.decode(response.body().data(), response.body().size())) {
+    EncryptedData encrypted_response;
+    if (!encrypted_response.decode(response.body().data(), response.body().size())) {
         throw DecodingFailure("decoding encrypted response failed");
     }
-    ByteBuffer dec_resp = encrypted_data.decrypt();
+    ByteBuffer dec_resp = encrypted_response.decrypt(*ctx.cfg.security, request.key);
 
     EnrolmentResponse ec_resp = parse_enrolment_response(*ctx.cfg.security, dec_resp, ea.certificate);
 

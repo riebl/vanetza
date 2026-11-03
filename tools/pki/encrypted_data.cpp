@@ -5,6 +5,8 @@
 #include "hashed_id8.hpp"
 #include "security_module.hpp"
 #include "signed_builder.hpp"
+#include <algorithm>
+#include <stdexcept>
 
 namespace vanetza
 {
@@ -35,18 +37,20 @@ void EncryptedData::init(asn1c_type& dest)
     dest.content->present = Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData;
 }
 
-void EncryptedData::set_aes_ccm_ciphertext(asn1c_type& dest, SecurityModule::EciesContext& ecies,
-    const ByteBuffer& plaintext)
+void EncryptedData::set_aes_ccm_ciphertext(asn1c_type& dest, SecurityModule& security,
+    const security::Aes128Key& key, const ByteBuffer& plaintext)
 {
-    ByteBuffer ciphertext = ecies.encrypt(plaintext);
+    expected<AesCcmCiphertext> encrypted = security.encrypt_aes_ccm(key, plaintext);
+    if (!encrypted) {
+        throw std::runtime_error("encryption failed: " + encrypted.error().message());
+    }
     auto& aes = dest.content->choice.encryptedData.ciphertext;
     aes.present = Vanetza_Security_SymmetricCiphertext_PR_aes128ccm;
-    copy(ecies.nonce(), aes.choice.aes128ccm.nonce);
-    copy(ciphertext, aes.choice.aes128ccm.ccmCiphertext);
+    copy(encrypted->nonce, aes.choice.aes128ccm.nonce);
+    copy(encrypted->ciphertext, aes.choice.aes128ccm.ccmCiphertext);
 }
 
-void EncryptedData::append_recipient_info(asn1c_type& dest, const SecurityModule::EciesContext& ecies,
-    const HashedId8& cert)
+void EncryptedData::append_recipient_info(asn1c_type& dest, const EncryptedSymmetricKey& key, const HashedId8& cert)
 {
     auto recipient = asn1::allocate<Vanetza_Security_RecipientInfo_t>();
     asn_sequence_add(&dest.content->choice.encryptedData.recipients.list, recipient);
@@ -55,18 +59,18 @@ void EncryptedData::append_recipient_info(asn1c_type& dest, const SecurityModule
         reinterpret_cast<const char*>(cert.octets.data()), cert.octets.size());
 
     Vanetza_Security_EncryptedDataEncryptionKey_t& enckey = recipient->choice.certRecipInfo.encKey;
-    switch (ecies.ephemeral_public_key().type) {
+    switch (key.public_key.type) {
         case KeyType::NistP256:
             enckey.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesNistP256;
-            fill_curve_point(ecies.ephemeral_public_key(), enckey.choice.eciesNistP256.v);
-            copy(ecies.authentication_tag(), enckey.choice.eciesNistP256.t);
-            copy(ecies.encrypted_key(), enckey.choice.eciesNistP256.c);
+            fill_curve_point(key.public_key, enckey.choice.eciesNistP256.v);
+            copy(key.authentication_tag, enckey.choice.eciesNistP256.t);
+            copy(key.wrapped_key, enckey.choice.eciesNistP256.c);
             break;
         case KeyType::BrainpoolP256r1:
             enckey.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesBrainpoolP256r1;
-            fill_curve_point(ecies.ephemeral_public_key(), enckey.choice.eciesBrainpoolP256r1.v);
-            copy(ecies.authentication_tag(), enckey.choice.eciesBrainpoolP256r1.t);
-            copy(ecies.encrypted_key(), enckey.choice.eciesBrainpoolP256r1.c);
+            fill_curve_point(key.public_key, enckey.choice.eciesBrainpoolP256r1.v);
+            copy(key.authentication_tag, enckey.choice.eciesBrainpoolP256r1.t);
+            copy(key.wrapped_key, enckey.choice.eciesBrainpoolP256r1.c);
             break;
         default:
             throw std::runtime_error("unsupported encryption key type");
@@ -74,20 +78,20 @@ void EncryptedData::append_recipient_info(asn1c_type& dest, const SecurityModule
     }
 }
 
-EncryptedData::EncryptedData(std::shared_ptr<SecurityModule::EciesContext> ecies) :
-    wrapper(asn_DEF_Vanetza_Security_EtsiTs103097Data_Encrypted_85P0), m_ecies(ecies)
+EncryptedData::EncryptedData() : wrapper(asn_DEF_Vanetza_Security_EtsiTs103097Data_Encrypted_85P0)
 {
     init(*m_struct);
 }
 
-void EncryptedData::generate_ciphertext(const ByteBuffer& plaintext)
+void EncryptedData::generate_ciphertext(SecurityModule& security, const security::Aes128Key& key,
+    const ByteBuffer& plaintext)
 {
-    set_aes_ccm_ciphertext(*m_struct, *m_ecies, plaintext);
+    set_aes_ccm_ciphertext(*m_struct, security, key, plaintext);
 }
 
-void EncryptedData::add_recipient_info(const HashedId8& cert)
+void EncryptedData::add_recipient_info(const HashedId8& cert, const EncryptedSymmetricKey& key)
 {
-    append_recipient_info(*m_struct, *m_ecies, cert);
+    append_recipient_info(*m_struct, key, cert);
 }
 
 const OCTET_STRING_t* EncryptedData::get_nonce() const
@@ -114,7 +118,7 @@ bool EncryptedData::has_psk_recipient() const
     return false;
 }
 
-ByteBuffer EncryptedData::decrypt()
+ByteBuffer EncryptedData::decrypt(SecurityModule& security, const security::Aes128Key& key) const
 {
     auto aes_ccm = get_aes_ccm_ciphertext(*m_struct);
     if (!aes_ccm) {
@@ -125,8 +129,18 @@ ByteBuffer EncryptedData::decrypt()
         throw DecodingFailure("encrypted PKI response lacks expected pskRecipInfo recipient");
     }
 
-    m_ecies->nonce(to_buffer(aes_ccm->nonce));
-    return m_ecies->decrypt(aes_ccm->ccmCiphertext.buf, aes_ccm->ccmCiphertext.size);
+    AesCcmCiphertext ciphertext;
+    if (aes_ccm->nonce.size != ciphertext.nonce.size()) {
+        throw DecodingFailure("AES CCM nonce of unexpected length");
+    }
+    std::copy_n(aes_ccm->nonce.buf, ciphertext.nonce.size(), ciphertext.nonce.begin());
+    ciphertext.ciphertext = copy(aes_ccm->ccmCiphertext);
+
+    expected<ByteBuffer> plaintext = security.decrypt_aes_ccm(key, ciphertext);
+    if (!plaintext) {
+        throw DecodingFailure("encrypted PKI response: " + plaintext.error().message());
+    }
+    return std::move(*plaintext);
 }
 
 } // namespace pki

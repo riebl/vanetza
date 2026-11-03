@@ -1,9 +1,11 @@
 #include "ea_request.hpp"
 #include "asn1.hpp"
 #include "certificate.hpp"
+#include "encrypted_data.hpp"
 #include "hashed_id8.hpp"
 #include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
+#include "recover_key.hpp"
 #include "signed_data.hpp"
 #include "stub_certificate.hpp"
 #include "validation.hpp"
@@ -284,6 +286,19 @@ TEST_F(EnrolmentRequestTest, outer_digest_signed_when_certificate_provided)
     MgmtData mgmt = decode_unsecured<MgmtData>(sd);
     const auto& pop_sd = *mgmt->content.choice.enrolmentRequest.content->choice.signedData;
     EXPECT_EQ(Vanetza_Security_SignerIdentifier_PR_self, pop_sd.signer.present);
+}
+
+// The EA recovers the request's key to encrypt its response with (TS 102 941 §6.2.3.2.2).
+TEST_F(EnrolmentRequestTest, request_key_is_encrypted_for_ea)
+{
+    // brainpoolP256r1 complements the NIST P-256 encryption keys of the AT request tests
+    const PrivateKey ea_encryption_key = generate_private_key(KeyType::BrainpoolP256r1);
+    const PublicKey ea_encryption_public_key = derive_public_key(ea_encryption_key);
+    const Certificate ea =
+        build_stub_certificate(derive_public_key(generate_private_key(KeyType::NistP256)), &ea_encryption_public_key);
+    EncryptedRequest request = build_enrolment_request(m_security, make_params(), ea);
+
+    EXPECT_EQ(request.key, recover_key(m_security, *request.message, ea_encryption_key, ea));
 }
 
 } // namespace pki

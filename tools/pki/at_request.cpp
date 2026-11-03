@@ -42,7 +42,7 @@ void add_app_permissions(Vanetza_Security_CertificateSubjectAttributes_t& csa, c
     }
 }
 
-// Encrypt `plaintext` to `recipient_certificate` using a fresh ECIES context
+// Encrypt `plaintext` to `recipient_certificate` using a fresh AES key
 // and populate `dest` (an EtsiTs103097Data-Encrypted value member of a parent
 // struct) in place. Precondition: `dest` is zero-initialised.
 void encrypt_into(Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t& dest, SecurityModule& security,
@@ -53,11 +53,18 @@ void encrypt_into(Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t& dest, Secu
         throw DecodingFailure("recipient certificate has no encryption key");
     }
     Sha256Hash recipient_hash = calculate_sha256_hash(security, recipient_certificate);
-    auto ecies = security.create_ecies_context(*enc_key, recipient_hash);
+    expected<security::Aes128Key> key = security.generate_aes_key();
+    if (!key) {
+        throw std::runtime_error("AES key generation failed: " + key.error().message());
+    }
+    expected<EncryptedSymmetricKey> encrypted_key = security.encrypt_key(*enc_key, *key, recipient_hash);
+    if (!encrypted_key) {
+        throw std::runtime_error("key encryption failed: " + encrypted_key.error().message());
+    }
 
     EncryptedData::init(dest);
-    EncryptedData::set_aes_ccm_ciphertext(dest, *ecies, plaintext);
-    EncryptedData::append_recipient_info(dest, *ecies, recipient_certificate.calculate_hashed_id8(security));
+    EncryptedData::set_aes_ccm_ciphertext(dest, security, *key, plaintext);
+    EncryptedData::append_recipient_info(dest, *encrypted_key, recipient_certificate.calculate_hashed_id8(security));
 }
 
 void validate(const AuthorizationRequestParameters& p)
@@ -155,7 +162,7 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
     return pop_signed.encode();
 }
 
-EncryptedData build_authorization_request(SecurityModule& security, const AuthorizationRequestParameters& params)
+EncryptedRequest build_authorization_request(SecurityModule& security, const AuthorizationRequestParameters& params)
 {
     validate(params);
 
@@ -166,13 +173,19 @@ EncryptedData build_authorization_request(SecurityModule& security, const Author
         throw DecodingFailure("AuthorizationRequest: AA certificate has no encryption key");
     }
     Sha256Hash aa_hash = calculate_sha256_hash(security, *params.aa_certificate);
-    auto ecies_unique = security.create_ecies_context(*aa_enc_key, aa_hash);
-    std::shared_ptr<SecurityModule::EciesContext> ecies { std::move(ecies_unique) };
+    expected<security::Aes128Key> key = security.generate_aes_key();
+    if (!key) {
+        throw std::runtime_error("AES key generation failed: " + key.error().message());
+    }
+    expected<EncryptedSymmetricKey> encrypted_key = security.encrypt_key(*aa_enc_key, *key, aa_hash);
+    if (!encrypted_key) {
+        throw std::runtime_error("key encryption failed: " + encrypted_key.error().message());
+    }
 
-    EncryptedData encrypted { ecies };
-    encrypted.generate_ciphertext(plaintext);
-    encrypted.add_recipient_info(params.aa_certificate->calculate_hashed_id8(security));
-    return encrypted;
+    EncryptedRequest request { EncryptedData {}, *key };
+    request.message.generate_ciphertext(security, request.key, plaintext);
+    request.message.add_recipient_info(params.aa_certificate->calculate_hashed_id8(security), *encrypted_key);
+    return request;
 }
 
 } // namespace pki

@@ -265,10 +265,10 @@ void request_one_ticket(Context& ctx, const Certificate& ec, const KeyReference&
     params.hash_algo = ctx.hash_algo;
     params.validity_period = validity;
 
-    EncryptedData encrypted_data = build_authorization_request(*ctx.cfg.security, params);
+    EncryptedRequest request = build_authorization_request(*ctx.cfg.security, params);
 
     auto query = HttpQuery::from_url(ctx.url(auth.aa));
-    auto encoded = encrypted_data.encode();
+    auto encoded = request.message.encode();
     auto req_hash = ctx.cfg.security->calculate_sha256_hash(encoded.data(), encoded.size());
     auto response = http_post(query, "application/x-its-request", encoded);
 
@@ -279,10 +279,11 @@ void request_one_ticket(Context& ctx, const Certificate& ec, const KeyReference&
         throw HttpException("expected application/x-its-response");
     }
 
-    if (!encrypted_data.decode(response.body().data(), response.body().size())) {
+    EncryptedData encrypted_response;
+    if (!encrypted_response.decode(response.body().data(), response.body().size())) {
         throw DecodingFailure("decoding encrypted AT response failed");
     }
-    ByteBuffer dec_resp = encrypted_data.decrypt();
+    ByteBuffer dec_resp = encrypted_response.decrypt(*ctx.cfg.security, request.key);
 
     AuthorizationResponse at_resp = parse_authorization_response(*ctx.cfg.security, dec_resp, auth.aa.certificate);
     if (!check_request_hash(req_hash, at_resp.request_hash)) {
