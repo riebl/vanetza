@@ -1,9 +1,11 @@
 #pragma once
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/byte_view.hpp>
 #include <vanetza/common/expected.hpp>
 #include <vanetza/security/aes.hpp>
 #include <vanetza/security/encrypted_symmetric_key.hpp>
+#include <vanetza/security/hmac.hpp>
 #include <vanetza/security/key_reference.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <vanetza/security/public_key.hpp>
@@ -70,13 +72,17 @@ public:
      */
     virtual bool discard_key(const KeyReference& key) = 0;
 
-    virtual ByteBuffer generate_nonce(std::size_t length) = 0;
-
     /**
      * Generate a random AES key, e.g. a session key for a request to a PKI authority
      * \return key or error, see SecurityModuleError for conditions
      */
     virtual expected<Aes128Key> generate_aes_key() = 0;
+
+    /**
+     * Generate a random HMAC key, e.g. hmacKey of an authorization request (ETSI TS 102 941 §6.2.3.3.1)
+     * \return key or error, see SecurityModuleError for conditions
+     */
+    virtual expected<HmacKey> generate_hmac_key() = 0;
 
     /**
      * Encrypt a symmetric key for a recipient by ECIES with a fresh ephemeral key
@@ -104,7 +110,13 @@ public:
      */
     virtual expected<ByteBuffer> decrypt_aes_ccm(const Aes128Key& key, const AesCcmCiphertext& ciphertext) = 0;
 
-    virtual ByteBuffer calculate_hmac_sha256(const ByteBuffer& key, const ByteBuffer& data) = 0;
+    /**
+     * Calculate HMAC-SHA256 (RFC 2104), e.g. for keyTag of an authorization request (ETSI TS 102 941 §6.2.3.3.1)
+     * \param key HMAC key of any length
+     * \param data authenticated data
+     * \return untruncated HMAC or error, see SecurityModuleError for conditions
+     */
+    virtual expected<Sha256Hmac> calculate_hmac_sha256(const byte_view_range& key, const byte_view_range& data) = 0;
 };
 
 } // namespace security

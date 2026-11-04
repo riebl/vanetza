@@ -63,13 +63,13 @@ void EncryptedData::append_recipient_info(asn1c_type& dest, const EncryptedSymme
         case KeyType::NistP256:
             enckey.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesNistP256;
             fill_curve_point(key.public_key, enckey.choice.eciesNistP256.v);
-            copy(key.authentication_tag, enckey.choice.eciesNistP256.t);
+            copy(key.authentication_tag.octets, enckey.choice.eciesNistP256.t);
             copy(key.wrapped_key, enckey.choice.eciesNistP256.c);
             break;
         case KeyType::BrainpoolP256r1:
             enckey.present = Vanetza_Security_EncryptedDataEncryptionKey_PR_eciesBrainpoolP256r1;
             fill_curve_point(key.public_key, enckey.choice.eciesBrainpoolP256r1.v);
-            copy(key.authentication_tag, enckey.choice.eciesBrainpoolP256r1.t);
+            copy(key.authentication_tag.octets, enckey.choice.eciesBrainpoolP256r1.t);
             copy(key.wrapped_key, enckey.choice.eciesBrainpoolP256r1.c);
             break;
         default:

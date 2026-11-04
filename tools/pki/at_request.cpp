@@ -8,11 +8,13 @@
 #include "security_module.hpp"
 #include "sha.hpp"
 #include "signed_builder.hpp"
+#include <vanetza/asn1/byte_view.hpp>
 #include <vanetza/asn1/security/EtsiTs102941Data.h>
 #include <vanetza/asn1/security/InnerAtRequest.h>
 #include <vanetza/asn1/security/SharedAtRequest.h>
 #include <vanetza/asn1/security/ValidityPeriod.h>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/hmac.hpp>
 #include <vanetza/security/v3/basic_elements.hpp>
 #include <memory>
 #include <stdexcept>
@@ -109,8 +111,12 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
     }
 
     // 2. Random 32-byte hmacKey
-    ByteBuffer hmac_key = security.generate_nonce(32);
-    OCTET_STRING_fromBuf(&iar.hmacKey, reinterpret_cast<const char*>(hmac_key.data()), hmac_key.size());
+    expected<security::HmacKey> hmac_key = security.generate_hmac_key();
+    if (!hmac_key) {
+        throw std::runtime_error("HMAC key generation failed: " + hmac_key.error().message());
+    }
+    auto hmac_key_view = create_byte_view(hmac_key->octets);
+    asn1::assign(iar.hmacKey, hmac_key_view);
 
     // 3. SharedAtRequest
     Vanetza_Security_SharedAtRequest_t& sar = iar.sharedAtRequest;
@@ -127,16 +133,19 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
     }
 
     // 4. keyTag = first 16 bytes of HMAC-SHA256(hmacKey, verifyKey [|| encKey])
-    ByteBuffer verify_oer =
+    ByteBuffer hmac_input =
         asn1::encode_oer(asn_DEF_Vanetza_Security_PublicVerificationKey, &iar.publicKeys.verificationKey);
-    ByteBuffer hmac_input = verify_oer;
     if (iar.publicKeys.encryptionKey) {
         ByteBuffer enc_oer =
             asn1::encode_oer(asn_DEF_Vanetza_Security_PublicEncryptionKey, iar.publicKeys.encryptionKey);
         hmac_input.insert(hmac_input.end(), enc_oer.begin(), enc_oer.end());
     }
-    ByteBuffer full_tag = security.calculate_hmac_sha256(hmac_key, hmac_input);
-    OCTET_STRING_fromBuf(&sar.keyTag, reinterpret_cast<const char*>(full_tag.data()), 16);
+    expected<security::Sha256Hmac> hmac = security.calculate_hmac_sha256(hmac_key_view, create_byte_view(hmac_input));
+    if (!hmac) {
+        throw std::runtime_error("HMAC calculation failed: " + hmac.error().message());
+    }
+    const security::KeyTag key_tag(*hmac);
+    asn1::assign(sar.keyTag, create_byte_view(key_tag.octets));
 
     // 5. EC proof: external-payload signed data over SharedAtRequest, signed by EC.
     ByteBuffer sar_encoded = asn1::encode_oer(asn_DEF_Vanetza_Security_SharedAtRequest, &sar);

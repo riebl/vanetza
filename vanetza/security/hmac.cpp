@@ -25,6 +25,12 @@ HmacKey::~HmacKey()
     }
 }
 
+KeyTag::KeyTag(const Sha256Hmac& hmac)
+{
+    static_assert(length <= Sha256Hmac::length, "tag exceeds HMAC-SHA256");
+    std::copy_n(hmac.octets.begin(), octets.size(), octets.begin());
+}
+
 bool operator==(const HmacKey& lhs, const HmacKey& rhs)
 {
     return lhs.octets == rhs.octets;
@@ -35,29 +41,45 @@ bool operator!=(const HmacKey& lhs, const HmacKey& rhs)
     return !(lhs == rhs);
 }
 
+bool operator==(const Sha256Hmac& lhs, const Sha256Hmac& rhs)
+{
+    return lhs.octets == rhs.octets;
+}
+
+bool operator!=(const Sha256Hmac& lhs, const Sha256Hmac& rhs)
+{
+    return !(lhs == rhs);
+}
+
+bool operator==(const KeyTag& lhs, const KeyTag& rhs)
+{
+    return lhs.octets == rhs.octets;
+}
+
+bool operator!=(const KeyTag& lhs, const KeyTag& rhs)
+{
+    return !(lhs == rhs);
+}
+
 #if defined VANETZA_WITH_OPENSSL
 KeyTag create_hmac_tag_openssl(const ByteBuffer& data, const HmacKey& hmacKey)
 {
-    KeyTag keyTag;
-    std::array<std::uint8_t, EVP_MAX_MD_SIZE> tag;
+    Sha256Hmac hmac;
     unsigned int len = 0;
     HMAC(EVP_sha256(), hmacKey.octets.data(), static_cast<int>(hmacKey.octets.size()),
-         data.data(), data.size(), tag.data(), &len);
-    std::copy_n(tag.data(), keyTag.size(), keyTag.data());
-    return keyTag;
+         data.data(), data.size(), hmac.octets.data(), &len);
+    return KeyTag(hmac);
 }
 #endif
 
 #if defined VANETZA_WITH_CRYPTOPP
 KeyTag create_hmac_tag_cryptopp(const ByteBuffer& data, const HmacKey& hmacKey)
 {
-    KeyTag keyTag;
-    std::array<std::uint8_t, 32> tag;
+    Sha256Hmac hmac;
     CryptoPP::HMAC<CryptoPP::SHA256> mac(hmacKey.octets.data(), hmacKey.octets.size());
     mac.Update(data.data(), data.size());
-    mac.Final(tag.data());
-    std::copy_n(tag.data(), keyTag.size(), keyTag.data());
-    return keyTag;
+    mac.Final(hmac.octets.data());
+    return KeyTag(hmac);
 }
 #endif
 

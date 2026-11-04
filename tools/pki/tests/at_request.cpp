@@ -11,15 +11,16 @@
 #include "stub_certificate.hpp"
 #include "validation.hpp"
 #include <vanetza/asn1/asn1c_wrapper.hpp>
+#include <vanetza/asn1/byte_view.hpp>
 #include <vanetza/asn1/security/EtsiTs102941Data.h>
 #include <vanetza/asn1/security/InnerAtRequest.h>
 #include <vanetza/asn1/security/SharedAtRequest.h>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/hmac.hpp>
 #include <vanetza/security/v3/basic_elements.hpp>
 #include <gtest/gtest.h>
-#include <cstring>
 #include <memory>
 
 namespace vanetza
@@ -189,8 +190,9 @@ TEST_F(AuthorizationRequestTest, shared_at_request_fields_match_spec)
         asn1::encode_oer(asn_DEF_Vanetza_Security_PublicVerificationKey, &iar.publicKeys.verificationKey);
     ByteBuffer hmac_key(iar.hmacKey.buf, iar.hmacKey.buf + iar.hmacKey.size);
     EXPECT_EQ(32, hmac_key.size());
-    ByteBuffer expected_tag = m_security.calculate_hmac_sha256(hmac_key, verify_oer);
-    EXPECT_EQ(0, std::memcmp(sar.keyTag.buf, expected_tag.data(), 16));
+    const security::KeyTag expected_tag(
+        m_security.calculate_hmac_sha256(create_byte_view(hmac_key), create_byte_view(verify_oer)).value());
+    EXPECT_EQ(create_byte_view(expected_tag.octets), asn1::create_byte_view(sar.keyTag));
 
     ASSERT_NE(nullptr, sar.requestedSubjectAttributes.appPermissions);
     ASSERT_EQ(1, sar.requestedSubjectAttributes.appPermissions->list.count);
@@ -218,8 +220,9 @@ TEST_F(AuthorizationRequestTest, optional_at_encryption_key_extends_keytag)
     combined.insert(combined.end(), verify_oer.begin(), verify_oer.end());
     combined.insert(combined.end(), enc_oer.begin(), enc_oer.end());
     ByteBuffer hmac_key(iar.hmacKey.buf, iar.hmacKey.buf + iar.hmacKey.size);
-    ByteBuffer expected_tag = m_security.calculate_hmac_sha256(hmac_key, combined);
-    EXPECT_EQ(0, std::memcmp(iar.sharedAtRequest.keyTag.buf, expected_tag.data(), 16));
+    const security::KeyTag expected_tag(
+        m_security.calculate_hmac_sha256(create_byte_view(hmac_key), create_byte_view(combined)).value());
+    EXPECT_EQ(create_byte_view(expected_tag.octets), asn1::create_byte_view(iar.sharedAtRequest.keyTag));
 }
 
 // ecSignature is the privacy-preserving `encryptedEcSignature` variant; the

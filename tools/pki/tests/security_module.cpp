@@ -3,8 +3,11 @@
 #include <gtest/gtest.h>
 
 using vanetza::ByteBuffer;
+using vanetza::create_byte_view;
 using vanetza::expected;
 using vanetza::security::Aes128Key;
+using vanetza::security::HmacKey;
+using vanetza::security::KeyTag;
 using vanetza::security::SecurityModuleError;
 using namespace vanetza::pki;
 
@@ -36,7 +39,8 @@ TEST_F(SecurityModuleTest, mac_vector1)
         0xB0, 0x34, 0x4C, 0x61, 0xD8, 0xDB, 0x38, 0x53,
         0x5C, 0xA8, 0xAF, 0xCE, 0xAF, 0x0B, 0xF1, 0x2B
     };
-    EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+    const KeyTag result(security->calculate_hmac_sha256(create_byte_view(key), create_byte_view(msg)).value());
+    EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
 TEST_F(SecurityModuleTest, mac_vector2)
@@ -51,7 +55,8 @@ TEST_F(SecurityModuleTest, mac_vector2)
         0x5B, 0xDC, 0xC1, 0x46, 0xBF, 0x60, 0x75, 0x4E,
         0x6A, 0x04, 0x24, 0x26, 0x08, 0x95, 0x75, 0xC7
     };
-    EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+    const KeyTag result(security->calculate_hmac_sha256(create_byte_view(key), create_byte_view(msg)).value());
+    EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
 TEST_F(SecurityModuleTest, mac_vector3)
@@ -62,7 +67,8 @@ TEST_F(SecurityModuleTest, mac_vector3)
         0x77, 0x3E, 0xA9, 0x1E, 0x36, 0x80, 0x0E, 0x46,
         0x85, 0x4D, 0xB8, 0xEB, 0xD0, 0x91, 0x81, 0xA7
     };
-    EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+    const KeyTag result(security->calculate_hmac_sha256(create_byte_view(key), create_byte_view(msg)).value());
+    EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
 TEST_F(SecurityModuleTest, mac_vector4)
@@ -76,7 +82,8 @@ TEST_F(SecurityModuleTest, mac_vector4)
         0x82, 0x55, 0x8A, 0x38, 0x9A, 0x44, 0x3C, 0x0E,
         0xA4, 0xCC, 0x81, 0x98, 0x99, 0xF2, 0x08, 0x3A
     };
-    EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+    const KeyTag result(security->calculate_hmac_sha256(create_byte_view(key), create_byte_view(msg)).value());
+    EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
 TEST_F(SecurityModuleTest, mac_vector5)
@@ -90,7 +97,8 @@ TEST_F(SecurityModuleTest, mac_vector5)
         0xA3, 0xB6, 0x16, 0x74, 0x73, 0x10, 0x0E, 0xE0,
         0x6E, 0x0C, 0x79, 0x6C, 0x29, 0x55, 0x55, 0x2B
     };
-    EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+    const KeyTag result(security->calculate_hmac_sha256(create_byte_view(key), create_byte_view(msg)).value());
+    EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
 TEST_F(SecurityModuleTest, mac_vector6)
@@ -108,7 +116,8 @@ TEST_F(SecurityModuleTest, mac_vector6)
         0x60, 0xE4, 0x31, 0x59, 0x1E, 0xE0, 0xB6, 0x7F,
         0x0D, 0x8A, 0x26, 0xAA, 0xCB, 0xF5, 0xB7, 0x7F
     };
-    EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+    const KeyTag result(security->calculate_hmac_sha256(create_byte_view(key), create_byte_view(msg)).value());
+    EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
 TEST_F(SecurityModuleTest, mac_vector7)
@@ -138,7 +147,8 @@ TEST_F(SecurityModuleTest, mac_vector7)
         0x9B, 0x09, 0xFF, 0xA7, 0x1B, 0x94, 0x2F, 0xCB,
         0x27, 0x63, 0x5F, 0xBC, 0xD5, 0xB0, 0xE9, 0x44
     };
-    EXPECT_EQ(tag, security->calculate_hmac_sha256(key, msg));
+    const KeyTag result(security->calculate_hmac_sha256(create_byte_view(key), create_byte_view(msg)).value());
+    EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
 TEST_F(SecurityModuleTest, signing_key_has_requested_type)
@@ -174,6 +184,15 @@ TEST_F(SecurityModuleTest, generated_aes_keys_differ)
 {
     expected<Aes128Key> first = security->generate_aes_key();
     expected<Aes128Key> second = security->generate_aes_key();
+    ASSERT_TRUE(first.has_value());
+    ASSERT_TRUE(second.has_value());
+    EXPECT_NE(*first, *second);
+}
+
+TEST_F(SecurityModuleTest, generated_hmac_keys_differ)
+{
+    expected<HmacKey> first = security->generate_hmac_key();
+    expected<HmacKey> second = security->generate_hmac_key();
     ASSERT_TRUE(first.has_value());
     ASSERT_TRUE(second.has_value());
     EXPECT_NE(*first, *second);

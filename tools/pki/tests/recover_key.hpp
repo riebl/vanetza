@@ -87,7 +87,7 @@ inline security::Aes128Key recover_key(SecurityModule& security,
 
     // authentication tag matches only if the key has been encrypted for the recipient
     const EncryptedSymmetricKey expected = security::encrypt_key(ephemeral, create_byte_view(shared_secret), key, info);
-    if (!(encrypted_key->t == expected.authentication_tag)) {
+    if (!(encrypted_key->t == expected.authentication_tag.octets)) {
         throw std::runtime_error("data's key is not encrypted for the recipient");
     }
 

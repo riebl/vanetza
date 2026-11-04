@@ -24,22 +24,6 @@ using security::SecurityModuleError;
 
 constexpr std::size_t auth_tag_length = 16;
 
-ByteBuffer calculate_hmac_sha256(const ByteBuffer& key, const ByteBuffer& data)
-{
-    ByteBuffer hmac;
-    hmac.resize(Sha256Hash::length);
-    unsigned hmac_len = 0;
-    if (!HMAC(EVP_sha256(), key.data(), key.size(), data.data(), data.size(), hmac.data(), &hmac_len)) {
-        throw OpenSslException(ERR_get_error(), "HMAC");
-    } else if (hmac_len != hmac.size()) {
-        throw std::runtime_error("invalid length of HMAC");
-    }
-
-    static_assert(Sha256Hash::length >= auth_tag_length, "length of authentication tag exceeds SHA-256 hash");
-    hmac.resize(auth_tag_length);
-    return hmac;
-}
-
 // releases OpenSSL objects, unlike OpenSslPointer a failed allocation yields nullptr instead of an exception
 struct OpenSslFree
 {
@@ -280,6 +264,15 @@ expected<security::Aes128Key> OpenSslSecurityModule::generate_aes_key()
     return key;
 }
 
+expected<security::HmacKey> OpenSslSecurityModule::generate_hmac_key()
+{
+    security::HmacKey key;
+    if (RAND_priv_bytes(key.octets.data(), key.octets.size()) != 1) {
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
+    }
+    return key;
+}
+
 expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
     const PublicKey& recipient, const security::Aes128Key& key, const Sha256Hash& info)
 {
@@ -369,17 +362,17 @@ expected<ByteBuffer> OpenSslSecurityModule::decrypt_aes_ccm(
     return plaintext;
 }
 
-ByteBuffer OpenSslSecurityModule::generate_nonce(std::size_t length)
+expected<security::Sha256Hmac> OpenSslSecurityModule::calculate_hmac_sha256(
+    const byte_view_range& key, const byte_view_range& data)
 {
-    ByteBuffer nonce;
-    nonce.resize(length);
-    openssl_result(RAND_bytes(nonce.data(), nonce.size()), "RAND_bytes");
-    return nonce;
-}
-
-ByteBuffer OpenSslSecurityModule::calculate_hmac_sha256(const ByteBuffer& key, const ByteBuffer& data)
-{
-    return pki::calculate_hmac_sha256(key, data);
+    security::Sha256Hmac hmac;
+    unsigned length = 0;
+    if (!HMAC(EVP_sha256(), key.data(), key.size(), data.data(), data.size(), hmac.octets.data(), &length)) {
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
+    } else if (length != hmac.octets.size()) {
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+    return hmac;
 }
 
 expected<KeyReference> OpenSslSecurityModule::create_signing_key(KeyType type)
