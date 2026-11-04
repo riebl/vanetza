@@ -75,8 +75,8 @@ inline security::Aes128Key recover_key(SecurityModule& security,
 
     // encrypting an all-zero key reveals the key encryption mask
     const Sha256Hash info = calculate_sha256_hash(security, recipient_certificate);
-    const EncryptedSymmetricKey mask =
-        security::encrypt_key(ephemeral, create_byte_view(shared_secret), security::Aes128Key {}, info);
+    const EncryptedSymmetricKey mask = security::encrypt_key(
+        security, ephemeral, create_byte_view(shared_secret), security::Aes128Key {}, info).value();
     if (encrypted_key->c.size != mask.wrapped_key.size()) {
         throw std::runtime_error("data has encrypted key of unexpected length");
     }
@@ -86,7 +86,8 @@ inline security::Aes128Key recover_key(SecurityModule& security,
     }
 
     // authentication tag matches only if the key has been encrypted for the recipient
-    const EncryptedSymmetricKey expected = security::encrypt_key(ephemeral, create_byte_view(shared_secret), key, info);
+    const EncryptedSymmetricKey expected =
+        security::encrypt_key(security, ephemeral, create_byte_view(shared_secret), key, info).value();
     if (!(encrypted_key->t == expected.authentication_tag.octets)) {
         throw std::runtime_error("data's key is not encrypted for the recipient");
     }

@@ -1,7 +1,10 @@
 #include <vanetza/security/ecies.hpp>
+#include <vanetza/security/openssl_security_module.hpp>
+#include <vanetza/security/tests/mock_credential_storage.hpp>
 #include <gtest/gtest.h>
 #include <array>
 #include <cstdint>
+#include <memory>
 
 using vanetza::ByteBuffer;
 using vanetza::create_byte_view;
@@ -48,8 +51,9 @@ TEST(Ecies, encrypt_key_IEEE_1609_2_Annex_D_6_2_ECIES1)
     ephemeral_key.compression = KeyCompression::Y0;
     ephemeral_key.x = ByteBuffer(32, 0x42);
 
+    OpenSslSecurityModule module(std::make_shared<MockCredentialStorage>());
     const EncryptedSymmetricKey encrypted =
-        encrypt_key(ephemeral_key, create_byte_view(shared_secret), d62_aes_key, d62_recipient_info);
+        encrypt_key(module, ephemeral_key, create_byte_view(shared_secret), d62_aes_key, d62_recipient_info).value();
 
     EXPECT_EQ(ephemeral_key.x, encrypted.public_key.x);
     EXPECT_EQ(expected_wrapped, encrypted.wrapped_key);
@@ -80,8 +84,9 @@ TEST(Ecies, encrypt_key_IEEE_1609_2_Annex_D_6_2_ECIES2)
     ephemeral_key.compression = KeyCompression::Y0;
     ephemeral_key.x = ByteBuffer(32, 0x42);
 
+    OpenSslSecurityModule module(std::make_shared<MockCredentialStorage>());
     const EncryptedSymmetricKey encrypted =
-        encrypt_key(ephemeral_key, create_byte_view(shared_secret), d62_aes_key, d62_recipient_info);
+        encrypt_key(module, ephemeral_key, create_byte_view(shared_secret), d62_aes_key, d62_recipient_info).value();
 
     EXPECT_EQ(ephemeral_key.x, encrypted.public_key.x);
     EXPECT_EQ(expected_wrapped, encrypted.wrapped_key);

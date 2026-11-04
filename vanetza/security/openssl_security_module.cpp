@@ -346,7 +346,7 @@ expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
         return ephemeral_public_key.error();
     }
 
-    return security::encrypt_key(*ephemeral_public_key, create_byte_view(shared_secret), key, info);
+    return security::encrypt_key(*this, *ephemeral_public_key, create_byte_view(shared_secret), key, info);
 }
 
 expected<AesCcmCiphertext> OpenSslSecurityModule::encrypt_aes_ccm(
