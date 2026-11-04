@@ -1,5 +1,6 @@
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/ecc_point.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <boost/optional/optional.hpp>
 #include <cryptopp/oids.h>
 #include <algorithm>
@@ -32,37 +33,6 @@ CryptoPP::OID get_oid(KeyType key_type)
     }
 }
 
-/**
- * Encode public key with prefix byte
- * - 0x02 compressed with Y0
- * - 0x03 compressed with Y1
- * - 0x04 uncompressed
- *
- * \param pub_key generic public key
- * \return encoded public key
- */
-ByteBuffer encode_public_key(const PublicKey& pub_key)
-{
-    ByteBuffer encoded;
-
-    if (pub_key.compression == KeyCompression::NoCompression) {
-        encoded.reserve(1 + pub_key.x.size() + pub_key.y.size());
-        encoded.push_back(0x04);
-        encoded.insert(encoded.end(), pub_key.x.begin(), pub_key.x.end());
-        encoded.insert(encoded.end(), pub_key.y.begin(), pub_key.y.end());
-    } else if (pub_key.compression == KeyCompression::Y0) {
-        encoded.reserve(1 + pub_key.x.size());
-        encoded.push_back(0x02);
-        encoded.insert(encoded.end(), pub_key.x.begin(), pub_key.x.end());
-    } else if (pub_key.compression == KeyCompression::Y1) {
-        encoded.reserve(1 + pub_key.x.size());
-        encoded.push_back(0x03);
-        encoded.insert(encoded.end(), pub_key.x.begin(), pub_key.x.end());
-    }
-
-    return encoded;
-}
-
 using InternalPublicKey = CryptoPP::DL_PublicKey_EC<CryptoPP::ECP>;
 using InternalPrivateKey = CryptoPP::DL_PrivateKey_EC<CryptoPP::ECP>;
 
@@ -78,7 +48,7 @@ boost::optional<InternalPublicKey> convert_public_key(const PublicKey& pub_key)
     auto& curve = out.GetGroupParameters().GetCurve();
     
     CryptoPP::ECP::Point point;
-    ByteBuffer encoded_pub_key = encode_public_key(pub_key);
+    ByteBuffer encoded_pub_key = encode_ec_point(pub_key);
     CryptoPP::StringStore store { encoded_pub_key.data(), encoded_pub_key.size() };
     if (!curve.DecodePoint(point, store, store.MaxRetrievable())) {
         return boost::none;

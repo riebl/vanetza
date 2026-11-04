@@ -30,6 +30,15 @@ struct PublicKey
 std::string canonical_hexstring(const PublicKey&);
 
 /**
+ * Encode public key as elliptic curve point according to SEC 1 v2, section 2.3.3
+ *
+ * The key's coordinates are big-endian integers, which are encoded with exactly the curve's field length,
+ * i.e. leading zero octets are added or stripped as needed. The key's compression form is kept.
+ * \return 0x04 || x || y (uncompressed) or 0x02/0x03 || x (compressed), or empty buffer if the key is malformed
+ */
+ByteBuffer encode_ec_point(const PublicKey&);
+
+/**
  * Encode public key as SubjectPublicKeyInfo according to RFC 5480.
  * \return DER-encoded SubjectPublicKeyInfo, or empty buffer if the key is malformed
  */

@@ -1,5 +1,6 @@
 #include <vanetza/security/public_key.hpp>
 #include <boost/algorithm/hex.hpp>
+#include <algorithm>
 #include <cstdint>
 #include <iterator>
 
@@ -36,13 +37,62 @@ std::string canonical_hexstring(const PublicKey& key)
     return boost::algorithm::hex(input);
 }
 
-ByteBuffer encode_subject_public_key_info(const PublicKey& key)
+namespace
 {
-    const std::size_t expected_length = key_length(key.type);
-    if (expected_length == 0 || key.x.size() != expected_length) {
+
+/**
+ * Append big-endian integer with exactly the given length
+ * \return false if the integer is missing or its value needs more octets
+ */
+bool append_integer(ByteBuffer& buffer, const ByteBuffer& integer, std::size_t length)
+{
+    auto significant = std::find_if(integer.begin(), integer.end(), [](std::uint8_t octet) { return octet != 0; });
+    const std::size_t significant_length = std::distance(significant, integer.end());
+    if (integer.empty() || significant_length > length) {
+        return false;
+    }
+    buffer.insert(buffer.end(), length - significant_length, 0x00);
+    buffer.insert(buffer.end(), significant, integer.end());
+    return true;
+}
+
+} // namespace
+
+ByteBuffer encode_ec_point(const PublicKey& key)
+{
+    const std::size_t length = key_length(key.type);
+    if (length == 0) {
         return {};
     }
 
+    ByteBuffer encoded;
+    switch (key.compression) {
+        case KeyCompression::NoCompression:
+            encoded.reserve(1 + 2 * length);
+            encoded.push_back(0x04);
+            break;
+        case KeyCompression::Y0:
+            encoded.reserve(1 + length);
+            encoded.push_back(0x02);
+            break;
+        case KeyCompression::Y1:
+            encoded.reserve(1 + length);
+            encoded.push_back(0x03);
+            break;
+        default:
+            return {};
+    }
+
+    if (!append_integer(encoded, key.x, length)) {
+        return {};
+    } else if (key.compression == KeyCompression::NoCompression && !append_integer(encoded, key.y, length)) {
+        return {};
+    }
+    return encoded;
+}
+
+ByteBuffer encode_subject_public_key_info(const PublicKey& key)
+{
     // RFC 5480: id-ecPublicKey OBJECT IDENTIFIER ::= { 1.2.840.10045.2.1 }
     static const uint8_t oid_ec_public_key[] = {
         0x06, 0x07, 0x2A, 0x86, 0x48, 0xCE, 0x3D, 0x02, 0x01
@@ -79,30 +129,13 @@ ByteBuffer encode_subject_public_key_info(const PublicKey& key)
             return {};
     }
 
-    uint8_t ec_point_prefix = 0;
-    std::size_t ec_point_size = 0;
-    switch (key.compression) {
-        case KeyCompression::NoCompression:
-            if (key.y.size() != expected_length) {
-                return {};
-            }
-            ec_point_prefix = 0x04;
-            ec_point_size = 1 + 2 * expected_length;
-            break;
-        case KeyCompression::Y0:
-            ec_point_prefix = 0x02;
-            ec_point_size = 1 + expected_length;
-            break;
-        case KeyCompression::Y1:
-            ec_point_prefix = 0x03;
-            ec_point_size = 1 + expected_length;
-            break;
-        default:
-            return {};
+    const ByteBuffer ec_point = encode_ec_point(key);
+    if (ec_point.empty()) {
+        return {};
     }
 
     const std::size_t algo_content_size = sizeof(oid_ec_public_key) + named_curve_oid_size;
-    const std::size_t bit_string_content_size = 1 + ec_point_size; // leading "unused bits" byte
+    const std::size_t bit_string_content_size = 1 + ec_point.size(); // leading "unused bits" byte
     const std::size_t spki_content_size = 2 + algo_content_size + 2 + bit_string_content_size;
 
     ByteBuffer result;
@@ -119,11 +152,7 @@ ByteBuffer encode_subject_public_key_info(const PublicKey& key)
     result.push_back(0x03); // BIT STRING (subjectPublicKey)
     result.push_back(static_cast<uint8_t>(bit_string_content_size));
     result.push_back(0x00); // unused bits
-    result.push_back(ec_point_prefix);
-    result.insert(result.end(), key.x.begin(), key.x.end());
-    if (key.compression == KeyCompression::NoCompression) {
-        result.insert(result.end(), key.y.begin(), key.y.end());
-    }
+    result.insert(result.end(), ec_point.begin(), ec_point.end());
 
     return result;
 }

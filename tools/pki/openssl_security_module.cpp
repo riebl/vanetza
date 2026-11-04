@@ -3,6 +3,7 @@
 #include "openssl.hpp"
 #include <vanetza/security/ecies.hpp>
 #include <vanetza/security/key_type.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <openssl/crypto.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
@@ -127,16 +128,9 @@ expected<PublicKey> derive_public_key(const EC_KEY* ec_key)
 
 expected<OpenSslPtr<EC_POINT>> build_ec_point(const EC_GROUP* group, const PublicKey& key)
 {
-    // uncompressed point: 0x04 followed by x and y coordinates,
-    // compressed point: 0x02 (even y) or 0x03 (odd y) followed by x coordinate
-    ByteBuffer octets;
-    if (key.compression == KeyCompression::NoCompression) {
-        octets.push_back(0x04);
-        octets.insert(octets.end(), key.x.begin(), key.x.end());
-        octets.insert(octets.end(), key.y.begin(), key.y.end());
-    } else {
-        octets.push_back(key.compression == KeyCompression::Y1 ? 0x03 : 0x02);
-        octets.insert(octets.end(), key.x.begin(), key.x.end());
+    const ByteBuffer octets = security::encode_ec_point(key);
+    if (octets.empty()) {
+        return make_error_code(SecurityModuleError::InvalidPublicKey);
     }
 
     OpenSslPtr<EC_POINT> point { EC_POINT_new(group) };

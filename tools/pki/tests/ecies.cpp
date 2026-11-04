@@ -87,3 +87,19 @@ TEST(Ecies, key_encryption_for_uncompressed_recipient_key)
         expect_key_encrypted_for(recipient, decompress(derive_public_key(recipient)));
     }
 }
+
+// x-coordinate as big-endian integer without its leading zero octet, e.g. from OpenSSL's BN_bn2bin
+TEST(Ecies, key_encryption_for_recipient_key_with_short_x)
+{
+    // smallest NIST P-256 private key whose public key's x-coordinate starts with a zero octet
+    PrivateKey recipient;
+    recipient.type = KeyType::NistP256;
+    recipient.key = ByteBuffer(30, 0x00);
+    recipient.key.push_back(0x01);
+    recipient.key.push_back(0x7B);
+
+    PublicKey recipient_key = derive_public_key(recipient);
+    ASSERT_EQ(0x00, recipient_key.x.front());
+    recipient_key.x.erase(recipient_key.x.begin());
+    expect_key_encrypted_for(recipient, recipient_key);
+}
