@@ -3,6 +3,9 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <iterator>
 #include <memory>
 
@@ -196,6 +199,12 @@ bool operator!=(const byte_view_range& lhs, const byte_view_range& rhs);
 byte_view_range create_byte_view(ByteBuffer&&);
 byte_view_range create_byte_view(const ByteBuffer&);
 byte_view_range create_byte_view(const ByteBufferConvertible&);
+
+template<std::size_t N>
+byte_view_range create_byte_view(const std::array<std::uint8_t, N>& octets)
+{
+    return byte_view_range { byte_view_iterator(octets.data()), byte_view_iterator(octets.data() + N) };
+}
 
 } // namespace vanetza
 
