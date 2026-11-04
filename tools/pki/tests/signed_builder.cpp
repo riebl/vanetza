@@ -65,7 +65,24 @@ TEST_F(SignedBuilderTest, external_signed_carries_payload_hash_and_verifies)
 
     // signature verifies against ec_cert's verification key
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd->tbsData, &ec_cert.raw());
-    EXPECT_TRUE(m_security.verify(digest, make_signature(sd->signature), m_security.public_key(ec_key).value()));
+    EXPECT_TRUE(
+        m_security.verify(digest, make_signature(sd->signature), m_security.public_key(ec_key).value()).value());
+}
+
+// unusable key of a received certificate invalidates the signed data instead of failing validation
+TEST_F(SignedBuilderTest, signed_data_is_invalid_for_certificate_with_unusable_key)
+{
+    PublicKey unusable;
+    unusable.type = KeyType::NistP256;
+    unusable.compression = KeyCompression::Y0; // canonical certificates have compressed keys
+    unusable.x.assign(32, 0xFF); // exceeds field prime
+    Certificate cert = build_stub_certificate(unusable);
+
+    KeyReference ec_key = m_security.create_signing_key(KeyType::NistP256).value();
+    SignedData envelope =
+        create_external_signed(ByteBuffer { 0xCA, 0xFE }, m_security, ec_key, HashAlgorithm::SHA256, &cert);
+    ASSERT_EQ(Vanetza_Security_Ieee1609Dot2Content_PR_signedData, envelope->content->present);
+    EXPECT_FALSE(validate(m_security, *envelope->content->choice.signedData, cert.raw()));
 }
 
 } // namespace pki

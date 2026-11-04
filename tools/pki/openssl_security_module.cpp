@@ -43,6 +43,7 @@ ByteBuffer calculate_hmac_sha256(const ByteBuffer& key, const ByteBuffer& data)
 // releases OpenSSL objects, unlike OpenSslPointer a failed allocation yields nullptr instead of an exception
 struct OpenSslFree
 {
+    void operator()(BIGNUM* bn) const { BN_free(bn); }
     void operator()(EC_KEY* key) const { EC_KEY_free(key); }
     void operator()(EC_POINT* point) const { EC_POINT_free(point); }
     void operator()(ECDSA_SIG* sig) const { ECDSA_SIG_free(sig); }
@@ -64,6 +65,16 @@ public:
 private:
     void* m_data;
     std::size_t m_size;
+};
+
+// discards OpenSSL errors queued while in scope, unlike ERR_clear_error() errors queued before are kept
+class ScopedErrorMark
+{
+public:
+    ScopedErrorMark() { ERR_set_mark(); }
+    ScopedErrorMark(const ScopedErrorMark&) = delete;
+    ScopedErrorMark& operator=(const ScopedErrorMark&) = delete;
+    ~ScopedErrorMark() { ERR_pop_to_mark(); }
 };
 
 KeyType key_type(const EC_KEY* ec_key)
@@ -127,20 +138,23 @@ expected<PublicKey> derive_public_key(const EC_KEY* ec_key)
     return pub_key;
 }
 
-expected<OpenSslPtr<EC_POINT>> build_ec_point(const EC_GROUP* group, const PublicKey& key)
+/**
+ * Build elliptic curve point of a public key
+ * \return point or nullptr on failure, see OpenSSL's error queue for its reason
+ */
+OpenSslPtr<EC_POINT> build_ec_point(const EC_GROUP* group, const PublicKey& key)
 {
     const ByteBuffer octets = security::encode_ec_point(key);
     if (octets.empty()) {
-        return make_error_code(SecurityModuleError::InvalidPublicKey);
+        return nullptr;
     }
 
+    // unlike EC_POINT_set_*_coordinates, EC_POINT_oct2point rejects coordinates exceeding the field
     OpenSslPtr<EC_POINT> point { EC_POINT_new(group) };
-    if (!point) {
-        return take_openssl_error(SecurityModuleError::ModuleFailure);
-    } else if (!EC_POINT_oct2point(group, point.get(), octets.data(), octets.size(), nullptr)) {
-        return take_openssl_error(SecurityModuleError::InvalidPublicKey);
+    if (!point || !EC_POINT_oct2point(group, point.get(), octets.data(), octets.size(), nullptr)) {
+        return nullptr;
     }
-    return std::move(point);
+    return point;
 }
 
 // values of EVP_CipherInit_ex's enc argument
@@ -196,43 +210,65 @@ Sha384Hash OpenSslSecurityModule::calculate_sha384_hash(const std::uint8_t* buff
     return hash;
 }
 
-bool OpenSslSecurityModule::verify(const Sha256Hash& digest, const Signature& signature, const PublicKey& pubkey)
+expected<bool> OpenSslSecurityModule::verify(
+    const Sha256Hash& digest, const Signature& signature, const PublicKey& pubkey)
 {
     return verify(digest.octets.data(), digest.octets.size(), signature, pubkey);
 }
 
-bool OpenSslSecurityModule::verify(const Sha384Hash& digest, const Signature& signature, const PublicKey& pubkey)
+expected<bool> OpenSslSecurityModule::verify(
+    const Sha384Hash& digest, const Signature& signature, const PublicKey& pubkey)
 {
     return verify(digest.octets.data(), digest.octets.size(), signature, pubkey);
 }
 
-bool OpenSslSecurityModule::verify(const std::uint8_t* dbuf, std::size_t dlen, const Signature& signature,
-    const PublicKey& pubkey)
+expected<bool> OpenSslSecurityModule::verify(
+    const std::uint8_t* dbuf, std::size_t dlen, const Signature& signature, const PublicKey& pubkey)
 {
-    if (signature.type == KeyType::Unspecified || pubkey.type == KeyType::Unspecified) {
-        return false;
+    if (security::key_length(pubkey.type) == 0) {
+        return make_error_code(SecurityModuleError::UnsupportedKeyType);
     } else if (signature.type != pubkey.type) {
         return false;
     } else if (signature.s.empty() || signature.r.empty()) {
         return false;
     }
 
-    OpenSslPointer<EC_KEY> osl_pubkey = make_ec_key(pubkey);
-    OpenSslPointer<ECDSA_SIG> osl_sig { ECDSA_SIG_new() };
-    BIGNUM* osl_r = BN_bin2bn(signature.r.data(), signature.r.size(), nullptr);
-    BIGNUM* osl_s = BN_bin2bn(signature.s.data(), signature.s.size(), nullptr);
-    if (!osl_r || !osl_s) {
-        BN_free(osl_r); // BN_free(nullptr) is a no-op
-        BN_free(osl_s);
-        return false;
+    // a non-matching signature is no error, verify() discards OpenSSL's entries for it, e.g. r or s out of range
+    ScopedErrorMark discard_errors;
+
+    OpenSslPtr<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl_nid(pubkey.type)) };
+    if (!ec_key) {
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
-    // ownership of big numbers is transfered by calling ECDSA_SIG_set0!
-    openssl_result(ECDSA_SIG_set0(osl_sig.raw(), osl_r, osl_s), "set signature");
-    // OpenSSL queues r or s out of range as bad signature, verify() discards those entries only
-    ERR_set_mark();
-    const int verified = ECDSA_do_verify(dbuf, dlen, osl_sig.raw(), osl_pubkey.raw());
-    ERR_pop_to_mark();
-    return verified == 1;
+
+    OpenSslPtr<EC_POINT> point = build_ec_point(EC_KEY_get0_group(ec_key.get()), pubkey);
+    if (!point) {
+        return take_openssl_error(SecurityModuleError::InvalidPublicKey);
+    } else if (!EC_KEY_set_public_key(ec_key.get(), point.get())) {
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
+    }
+
+    OpenSslPtr<ECDSA_SIG> osl_sig { ECDSA_SIG_new() };
+    OpenSslPtr<BIGNUM> osl_r { BN_bin2bn(signature.r.data(), signature.r.size(), nullptr) };
+    OpenSslPtr<BIGNUM> osl_s { BN_bin2bn(signature.s.data(), signature.s.size(), nullptr) };
+    if (!osl_sig || !osl_r || !osl_s) {
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
+    } else if (!ECDSA_SIG_set0(osl_sig.get(), osl_r.get(), osl_s.get())) {
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
+    }
+    // signature owns the big numbers after ECDSA_SIG_set0
+    osl_r.release();
+    osl_s.release();
+
+    // ECDSA_do_verify returns -1 if it fails to tell valid and invalid signatures apart
+    switch (ECDSA_do_verify(dbuf, dlen, osl_sig.get(), ec_key.get())) {
+        case 1:
+            return true;
+        case 0:
+            return false;
+        default:
+            return take_openssl_error(SecurityModuleError::ModuleFailure);
+    }
 }
 
 expected<security::Aes128Key> OpenSslSecurityModule::generate_aes_key()
@@ -257,15 +293,15 @@ expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
     }
 
     const EC_GROUP* group = EC_KEY_get0_group(ephemeral.get());
-    expected<OpenSslPtr<EC_POINT>> recipient_point = build_ec_point(group, recipient);
+    OpenSslPtr<EC_POINT> recipient_point = build_ec_point(group, recipient);
     if (!recipient_point) {
-        return recipient_point.error();
+        return take_openssl_error(SecurityModuleError::InvalidPublicKey);
     }
 
     ByteBuffer shared_secret((EC_GROUP_get_degree(group) + 7) / 8);
     ScopedCleanse cleanse_shared_secret(shared_secret.data(), shared_secret.size());
-    if (ECDH_compute_key(shared_secret.data(), shared_secret.size(), recipient_point->get(), ephemeral.get(),
-            nullptr) != static_cast<int>(shared_secret.size())) {
+    if (ECDH_compute_key(shared_secret.data(), shared_secret.size(), recipient_point.get(), ephemeral.get(), nullptr) !=
+        static_cast<int>(shared_secret.size())) {
         return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 

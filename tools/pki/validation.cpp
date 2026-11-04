@@ -11,6 +11,12 @@ namespace vanetza
 namespace pki
 {
 
+// anything but a valid signature leaves received data unverified, e.g. an unusable public key or a module failure
+static bool is_verified(const expected<bool>& verified)
+{
+    return verified.has_value() && *verified;
+}
+
 static bool operator==(const Vanetza_Security_HashedId8_t& asn, const HashedId8& own)
 {
     if (asn.size == own.octets.size()) {
@@ -46,10 +52,10 @@ bool validate(SecurityModule& security, const Vanetza_Security_SignedData_t& dat
 
     if (hash_algo == HashAlgorithm::SHA256) {
         Sha256Hash digest = calculate_digest<Sha256Hash>(security, *data.tbsData, &cert);
-        return security.verify(digest, signature, public_key);
+        return is_verified(security.verify(digest, signature, public_key));
     } else if (hash_algo == HashAlgorithm::SHA384) {
         Sha384Hash digest = calculate_digest<Sha384Hash>(security, *data.tbsData, &cert);
-        return security.verify(digest, signature, public_key);
+        return is_verified(security.verify(digest, signature, public_key));
     } else {
         return false;
     }

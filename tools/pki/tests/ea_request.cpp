@@ -103,7 +103,7 @@ TEST_F(EnrolmentRequestTest, outer_signature_verifies_with_canonical_key)
 
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, nullptr);
     Signature signature = make_signature(sd.signature);
-    EXPECT_TRUE(m_security.verify(digest, signature, m_security.public_key(params.outer_signer_key).value()));
+    EXPECT_TRUE(m_security.verify(digest, signature, m_security.public_key(params.outer_signer_key).value()).value());
 }
 
 // The POP signature carried in the EtsiTs102941Data enrolmentRequest content
@@ -127,7 +127,7 @@ TEST_F(EnrolmentRequestTest, pop_signature_verifies_with_verification_key)
 
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *pop_sd.tbsData, nullptr);
     Signature signature = make_signature(pop_sd.signature);
-    EXPECT_TRUE(m_security.verify(digest, signature, params.verification_key));
+    EXPECT_TRUE(m_security.verify(digest, signature, params.verification_key).value());
 }
 
 // The innermost InnerEcRequest must carry the inputs unchanged: itsId, the
@@ -241,13 +241,14 @@ TEST_F(EnrolmentRequestTest, mixed_curves_still_verify)
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
     const auto& outer_sd = *outer->content->choice.signedData;
-    EXPECT_TRUE(m_security.verify(calculate_digest<Sha256Hash>(m_security, *outer_sd.tbsData, nullptr),
-        make_signature(outer_sd.signature), m_security.public_key(params.outer_signer_key).value()));
+    const Sha256Hash outer_digest = calculate_digest<Sha256Hash>(m_security, *outer_sd.tbsData, nullptr);
+    const PublicKey outer_signer = m_security.public_key(params.outer_signer_key).value();
+    EXPECT_TRUE(m_security.verify(outer_digest, make_signature(outer_sd.signature), outer_signer).value());
 
     MgmtData mgmt = decode_unsecured<MgmtData>(outer_sd);
     const auto& pop_sd = *mgmt->content.choice.enrolmentRequest.content->choice.signedData;
-    EXPECT_TRUE(m_security.verify(calculate_digest<Sha256Hash>(m_security, *pop_sd.tbsData, nullptr),
-        make_signature(pop_sd.signature), params.verification_key));
+    const Sha256Hash pop_digest = calculate_digest<Sha256Hash>(m_security, *pop_sd.tbsData, nullptr);
+    EXPECT_TRUE(m_security.verify(pop_digest, make_signature(pop_sd.signature), params.verification_key).value());
 }
 
 // TS 102 941 §6.2.3.2.1: for a re-keying (renewal) enrolment request, the
@@ -280,7 +281,7 @@ TEST_F(EnrolmentRequestTest, outer_digest_signed_when_certificate_provided)
 
     // signature verifies over calculate_digest(tbs, &ec_cert) using the EC key
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, &ec_cert.raw());
-    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), m_security.public_key(ec_key).value()));
+    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), m_security.public_key(ec_key).value()).value());
 
     // PoP (inner) remains signer = self regardless of outer signer choice.
     MgmtData mgmt = decode_unsecured<MgmtData>(sd);

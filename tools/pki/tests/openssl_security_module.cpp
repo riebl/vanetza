@@ -45,6 +45,16 @@ KeyReference make_reference(KeyType type, ByteBuffer scalar)
     return KeyReference { std::move(scalar) };
 }
 
+PublicKey off_curve_public_key()
+{
+    PublicKey key;
+    key.type = KeyType::NistP256;
+    key.compression = KeyCompression::NoCompression;
+    key.x.assign(32, 0x11);
+    key.y.assign(32, 0x11);
+    return key;
+}
+
 const struct
 {
     const char* defect;
@@ -166,12 +176,8 @@ TEST_F(OpenSslSecurityModuleTest, corrupt_stored_key_is_not_usable_for_signing)
 
 TEST_F(OpenSslSecurityModuleTest, invalid_recipient_key_is_reported_with_openssl_error)
 {
-    PublicKey recipient;
-    recipient.type = KeyType::NistP256;
-    recipient.compression = KeyCompression::NoCompression;
-    recipient.x.assign(32, 0x11); // not on curve
-    recipient.y.assign(32, 0x11);
-    expected<EncryptedSymmetricKey> encrypted = security.encrypt_key(recipient, Aes128Key {}, Sha256Hash {});
+    expected<EncryptedSymmetricKey> encrypted =
+        security.encrypt_key(off_curve_public_key(), Aes128Key {}, Sha256Hash {});
     ASSERT_TRUE(encrypted.has_error());
     EXPECT_EQ(SecurityModuleError::InvalidPublicKey, encrypted.error());
     EXPECT_STREQ("openssl.invalid_public_key", encrypted.error().category().name());
@@ -191,20 +197,79 @@ TEST_F(OpenSslSecurityModuleTest, tampered_ciphertext_is_reported_with_openssl_e
     EXPECT_EQ(0u, ERR_peek_error());
 }
 
-TEST_F(OpenSslSecurityModuleTest, out_of_range_signature_leaves_openssl_error_queue_unchanged)
+TEST_F(OpenSslSecurityModuleTest, unverifiable_signature_is_false_leaving_openssl_error_queue_unchanged)
 {
-    expected<PublicKey> public_key = security.public_key(make_reference(KeyType::NistP256, p256_scalar));
+    const KeyReference reference = make_reference(KeyType::NistP256, p256_scalar);
+    expected<PublicKey> public_key = security.public_key(reference);
     ASSERT_TRUE(public_key.has_value());
+    expected<Signature> signature = security.sign(ByteBuffer(32, 0x01), reference);
+    ASSERT_TRUE(signature.has_value());
+
+    Signature out_of_range = *signature;
+    out_of_range.r = ByteBuffer { 0x00 }; // valid r and s are greater than zero
+    out_of_range.s = ByteBuffer { 0x00 };
+    Signature empty = *signature;
+    empty.r.clear();
+    Signature other_curve = *signature;
+    other_curve.type = KeyType::BrainpoolP256r1;
+
+    const struct
+    {
+        const char* defect;
+        Signature signature;
+    } unverifiable[] = {
+        { "signature of other digest", *signature },
+        { "r and s out of range", out_of_range },
+        { "empty r", empty },
+        { "signature for other curve", other_curve },
+    };
+
+    for (const auto& candidate : unverifiable) {
+        SCOPED_TRACE(candidate.defect);
+        // error queued by someone else before verification
+        ERR_raise(ERR_LIB_EC, EC_R_POINT_IS_NOT_ON_CURVE);
+        const unsigned long queued = ERR_peek_last_error();
+
+        Sha256Hash digest;
+        digest.octets.fill(0x02);
+        expected<bool> verified = security.verify(digest, candidate.signature, *public_key);
+        ASSERT_TRUE(verified.has_value());
+        EXPECT_FALSE(*verified);
+        EXPECT_EQ(queued, ERR_get_error());
+        EXPECT_EQ(0u, ERR_peek_error());
+    }
+}
+
+TEST_F(OpenSslSecurityModuleTest, unusable_public_key_is_reported_by_verification)
+{
     Signature signature;
     signature.type = KeyType::NistP256;
-    signature.r = ByteBuffer { 0x00 }; // valid r and s are greater than zero
-    signature.s = ByteBuffer { 0x00 };
+    signature.r.assign(32, 0x01);
+    signature.s.assign(32, 0x01);
 
-    // error queued by someone else before verification
-    ERR_raise(ERR_LIB_EC, EC_R_POINT_IS_NOT_ON_CURVE);
-    const unsigned long queued = ERR_peek_last_error();
+    PublicKey malformed;
+    malformed.type = KeyType::NistP256;
+    malformed.compression = KeyCompression::Y0;
+    malformed.x.assign(33, 0x11); // exceeds field length
+    PublicKey unspecified = off_curve_public_key();
+    unspecified.type = KeyType::Unspecified;
 
-    EXPECT_FALSE(security.verify(Sha256Hash {}, signature, *public_key));
-    EXPECT_EQ(queued, ERR_get_error());
-    EXPECT_EQ(0u, ERR_peek_error());
+    const struct
+    {
+        const char* defect;
+        PublicKey key;
+        SecurityModuleError error;
+    } unusable_keys[] = {
+        { "not on curve", off_curve_public_key(), SecurityModuleError::InvalidPublicKey },
+        { "malformed", malformed, SecurityModuleError::InvalidPublicKey },
+        { "unspecified key type", unspecified, SecurityModuleError::UnsupportedKeyType },
+    };
+
+    for (const auto& unusable : unusable_keys) {
+        SCOPED_TRACE(unusable.defect);
+        expected<bool> verified = security.verify(Sha256Hash {}, signature, unusable.key);
+        ASSERT_TRUE(verified.has_error());
+        EXPECT_EQ(unusable.error, verified.error());
+        EXPECT_EQ(0u, ERR_peek_error());
+    }
 }

@@ -160,7 +160,7 @@ TEST_F(SecurityModuleTest, signature_verifies_with_public_key_of_reference)
     ASSERT_TRUE(signature.has_value());
     expected<PublicKey> public_key = security->public_key(*key);
     ASSERT_TRUE(public_key.has_value());
-    EXPECT_TRUE(security->verify(digest, *signature, *public_key));
+    EXPECT_TRUE(security->verify(digest, *signature, *public_key).value());
 }
 
 TEST_F(SecurityModuleTest, unsupported_key_type_cannot_be_created)

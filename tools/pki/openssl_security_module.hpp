@@ -20,8 +20,8 @@ public:
 
     Sha256Hash calculate_sha256_hash(const std::uint8_t* buffer, std::size_t length) override;
     Sha384Hash calculate_sha384_hash(const std::uint8_t* buffer, std::size_t length) override;
-    bool verify(const Sha256Hash&, const Signature&, const PublicKey&) override;
-    bool verify(const Sha384Hash&, const Signature&, const PublicKey&) override;
+    expected<bool> verify(const Sha256Hash&, const Signature&, const PublicKey&) override;
+    expected<bool> verify(const Sha384Hash&, const Signature&, const PublicKey&) override;
     ByteBuffer generate_nonce(std::size_t length) override;
     expected<security::Aes128Key> generate_aes_key() override;
     expected<EncryptedSymmetricKey> encrypt_key(const PublicKey& recipient, const security::Aes128Key& key, const Sha256Hash& info) override;
@@ -36,7 +36,7 @@ public:
     bool discard_key(const KeyReference&) override;
 
 private:
-    bool verify(const uint8_t* digest, std::size_t dlen, const Signature&, const PublicKey&);
+    expected<bool> verify(const uint8_t* digest, std::size_t dlen, const Signature&, const PublicKey&);
 
     std::shared_ptr<CredentialStorage> m_credential_storage;
 };

@@ -22,8 +22,17 @@ public:
     virtual ~SecurityModule() = default;
     virtual Sha256Hash calculate_sha256_hash(const std::uint8_t* buffer, std::size_t length) = 0;
     virtual Sha384Hash calculate_sha384_hash(const std::uint8_t* buffer, std::size_t length) = 0;
-    virtual bool verify(const Sha256Hash&, const Signature&, const PublicKey&) = 0;
-    virtual bool verify(const Sha384Hash&, const Signature&, const PublicKey&) = 0;
+
+    /**
+     * Verify signature of a SHA-256 or SHA-384 digest
+     * \param digest hash value of signed data
+     * \param signature signature of digest
+     * \param key public key of signer
+     * \return true for a valid signature, false for a signature not matching digest and key,
+     *         or error, e.g. InvalidPublicKey, see SecurityModuleError for conditions
+     */
+    virtual expected<bool> verify(const Sha256Hash& digest, const Signature& signature, const PublicKey& key) = 0;
+    virtual expected<bool> verify(const Sha384Hash& digest, const Signature& signature, const PublicKey& key) = 0;
 
     /**
      * Create a key pair for signing

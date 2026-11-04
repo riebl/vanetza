@@ -146,7 +146,7 @@ TEST_F(AuthorizationRequestTest, default_includes_pop_signed_envelope)
 
     // Signature verifies under the verification key (signer = self → empty signer cert)
     Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, nullptr);
-    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), params.verification_key));
+    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), params.verification_key).value());
 }
 
 // With include_pop = false, the bytes returned are the bare EtsiTs102941Data
