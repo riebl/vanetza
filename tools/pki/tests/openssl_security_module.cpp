@@ -1,15 +1,24 @@
 #include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
 #include <gtest/gtest.h>
+#include <openssl/ec.h>
+#include <openssl/err.h>
 
 using vanetza::ByteBuffer;
 using vanetza::expected;
+using vanetza::security::Aes128Key;
 using vanetza::security::SecurityModuleError;
 using namespace vanetza::pki;
 
 class OpenSslSecurityModuleTest : public ::testing::Test
 {
 protected:
+    void SetUp() override
+    {
+        // some tests check that the module leaves no errors in OpenSSL's error queue
+        ERR_clear_error();
+    }
+
     std::shared_ptr<MockCredentialStorage> credentials = std::make_shared<MockCredentialStorage>();
     OpenSslSecurityModule security { credentials };
 };
@@ -153,4 +162,49 @@ TEST_F(OpenSslSecurityModuleTest, corrupt_stored_key_is_not_usable_for_signing)
     expected<KeyReference> found = security.find_signing_key(*public_key);
     ASSERT_TRUE(found.has_error());
     EXPECT_EQ(SecurityModuleError::ModuleFailure, found.error());
+}
+
+TEST_F(OpenSslSecurityModuleTest, invalid_recipient_key_is_reported_with_openssl_error)
+{
+    PublicKey recipient;
+    recipient.type = KeyType::NistP256;
+    recipient.compression = KeyCompression::NoCompression;
+    recipient.x.assign(32, 0x11); // not on curve
+    recipient.y.assign(32, 0x11);
+    expected<EncryptedSymmetricKey> encrypted = security.encrypt_key(recipient, Aes128Key {}, Sha256Hash {});
+    ASSERT_TRUE(encrypted.has_error());
+    EXPECT_EQ(SecurityModuleError::InvalidPublicKey, encrypted.error());
+    EXPECT_STREQ("openssl.invalid_public_key", encrypted.error().category().name());
+    EXPECT_EQ(0u, ERR_peek_error());
+}
+
+TEST_F(OpenSslSecurityModuleTest, tampered_ciphertext_is_reported_with_openssl_error)
+{
+    const Aes128Key key {};
+    expected<AesCcmCiphertext> ciphertext = security.encrypt_aes_ccm(key, ByteBuffer(10, 0x5A));
+    ASSERT_TRUE(ciphertext.has_value());
+    ciphertext->ciphertext.back() ^= 0x01; // authentication tag
+    expected<ByteBuffer> decrypted = security.decrypt_aes_ccm(key, *ciphertext);
+    ASSERT_TRUE(decrypted.has_error());
+    EXPECT_EQ(SecurityModuleError::DecryptionFailure, decrypted.error());
+    EXPECT_STREQ("openssl.decryption_failure", decrypted.error().category().name());
+    EXPECT_EQ(0u, ERR_peek_error());
+}
+
+TEST_F(OpenSslSecurityModuleTest, out_of_range_signature_leaves_openssl_error_queue_unchanged)
+{
+    expected<PublicKey> public_key = security.public_key(make_reference(KeyType::NistP256, p256_scalar));
+    ASSERT_TRUE(public_key.has_value());
+    Signature signature;
+    signature.type = KeyType::NistP256;
+    signature.r = ByteBuffer { 0x00 }; // valid r and s are greater than zero
+    signature.s = ByteBuffer { 0x00 };
+
+    // error queued by someone else before verification
+    ERR_raise(ERR_LIB_EC, EC_R_POINT_IS_NOT_ON_CURVE);
+    const unsigned long queued = ERR_peek_last_error();
+
+    EXPECT_FALSE(security.verify(Sha256Hash {}, signature, *public_key));
+    EXPECT_EQ(queued, ERR_get_error());
+    EXPECT_EQ(0u, ERR_peek_error());
 }

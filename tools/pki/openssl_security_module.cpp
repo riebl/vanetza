@@ -1,6 +1,7 @@
 #include "openssl_security_module.hpp"
 #include "credential_storage.hpp"
 #include "openssl.hpp"
+#include "openssl_error.hpp"
 #include <vanetza/security/ecies.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <vanetza/security/public_key.hpp>
@@ -82,7 +83,7 @@ expected<OpenSslPtr<EC_KEY>> build_ec_key(const KeyReference& reference)
 
     OpenSslPtr<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl_nid(type)) };
     if (!ec_key || !EC_KEY_oct2priv(ec_key.get(), data.data() + 1, length)) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     // OpenSSL accepts any scalar but only 0 < scalar < order is a private key
@@ -109,14 +110,14 @@ expected<PublicKey> derive_public_key(const EC_KEY* ec_key)
     const BIGNUM* scalar = EC_KEY_get0_private_key(ec_key);
     OpenSslPtr<EC_POINT> point { EC_POINT_new(group) };
     if (!point || !EC_POINT_mul(group, point.get(), scalar, nullptr, nullptr, nullptr)) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     // compressed point: 0x02 (even y) or 0x03 (odd y) followed by x coordinate
     ByteBuffer compressed(1 + (EC_GROUP_get_degree(group) + 7) / 8);
     if (EC_POINT_point2oct(group, point.get(), POINT_CONVERSION_COMPRESSED, compressed.data(), compressed.size(),
             nullptr) != compressed.size()) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     PublicKey pub_key;
@@ -135,9 +136,9 @@ expected<OpenSslPtr<EC_POINT>> build_ec_point(const EC_GROUP* group, const Publi
 
     OpenSslPtr<EC_POINT> point { EC_POINT_new(group) };
     if (!point) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     } else if (!EC_POINT_oct2point(group, point.get(), octets.data(), octets.size(), nullptr)) {
-        return make_error_code(SecurityModuleError::InvalidPublicKey);
+        return take_openssl_error(SecurityModuleError::InvalidPublicKey);
     }
     return std::move(point);
 }
@@ -152,7 +153,7 @@ enum class CipherOperation : int
 /**
  * Prepare AES-128-CCM context with key and nonce
  * \param tag expected authentication tag for decryption, nullptr for encryption
- * \return context or nullptr on failure
+ * \return context or nullptr on failure, see OpenSSL's error queue for its reason
  */
 OpenSslPtr<EVP_CIPHER_CTX> create_aes_ccm_context(CipherOperation operation, const security::Aes128Key& key,
     const std::array<std::uint8_t, AesCcmCiphertext::nonce_length>& nonce, std::uint8_t* tag)
@@ -227,14 +228,18 @@ bool OpenSslSecurityModule::verify(const std::uint8_t* dbuf, std::size_t dlen, c
     }
     // ownership of big numbers is transfered by calling ECDSA_SIG_set0!
     openssl_result(ECDSA_SIG_set0(osl_sig.raw(), osl_r, osl_s), "set signature");
-    return (ECDSA_do_verify(dbuf, dlen, osl_sig.raw(), osl_pubkey.raw()) == 1);
+    // OpenSSL queues r or s out of range as bad signature, verify() discards those entries only
+    ERR_set_mark();
+    const int verified = ECDSA_do_verify(dbuf, dlen, osl_sig.raw(), osl_pubkey.raw());
+    ERR_pop_to_mark();
+    return verified == 1;
 }
 
 expected<security::Aes128Key> OpenSslSecurityModule::generate_aes_key()
 {
     security::Aes128Key key;
     if (RAND_priv_bytes(key.octets.data(), key.octets.size()) != 1) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
     return key;
 }
@@ -248,7 +253,7 @@ expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
 
     OpenSslPtr<EC_KEY> ephemeral { EC_KEY_new_by_curve_name(openssl_nid(recipient.type)) };
     if (!ephemeral || !EC_KEY_generate_key(ephemeral.get())) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     const EC_GROUP* group = EC_KEY_get0_group(ephemeral.get());
@@ -261,7 +266,7 @@ expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
     ScopedCleanse cleanse_shared_secret(shared_secret.data(), shared_secret.size());
     if (ECDH_compute_key(shared_secret.data(), shared_secret.size(), recipient_point->get(), ephemeral.get(),
             nullptr) != static_cast<int>(shared_secret.size())) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     expected<PublicKey> ephemeral_public_key = derive_public_key(ephemeral.get());
@@ -277,12 +282,12 @@ expected<AesCcmCiphertext> OpenSslSecurityModule::encrypt_aes_ccm(
 {
     AesCcmCiphertext encrypted;
     if (RAND_bytes(encrypted.nonce.data(), encrypted.nonce.size()) != 1) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     OpenSslPtr<EVP_CIPHER_CTX> ctx = create_aes_ccm_context(CipherOperation::Encrypt, key, encrypted.nonce, nullptr);
     if (!ctx) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     // authentication tag follows the encrypted payload
@@ -290,14 +295,14 @@ expected<AesCcmCiphertext> OpenSslSecurityModule::encrypt_aes_ccm(
     std::uint8_t* tag = encrypted.ciphertext.data() + plaintext.size();
     int length = 0;
     if (!EVP_EncryptUpdate(ctx.get(), encrypted.ciphertext.data(), &length, plaintext.data(), plaintext.size())) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
     assert(static_cast<std::size_t>(length) == plaintext.size());
 
     // finalisation yields no output for CCM but the tag
     if (!EVP_EncryptFinal_ex(ctx.get(), tag, &length) ||
         !EVP_CIPHER_CTX_ctrl(ctx.get(), EVP_CTRL_CCM_GET_TAG, auth_tag_length, tag)) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
     assert(length == 0);
     return encrypted;
@@ -316,13 +321,13 @@ expected<ByteBuffer> OpenSslSecurityModule::decrypt_aes_ccm(
 
     OpenSslPtr<EVP_CIPHER_CTX> ctx = create_aes_ccm_context(CipherOperation::Decrypt, key, encrypted.nonce, tag.data());
     if (!ctx) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     // CCM checks the authentication tag while decrypting
     int length = 0;
     if (EVP_DecryptUpdate(ctx.get(), plaintext.data(), &length, encrypted.ciphertext.data(), plaintext.size()) <= 0) {
-        return make_error_code(SecurityModuleError::DecryptionFailure);
+        return take_openssl_error(SecurityModuleError::DecryptionFailure);
     }
     assert(static_cast<std::size_t>(length) == plaintext.size());
     return plaintext;
@@ -350,14 +355,14 @@ expected<KeyReference> OpenSslSecurityModule::create_signing_key(KeyType type)
 
     OpenSslPtr<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl_nid(type)) };
     if (!ec_key || !EC_KEY_generate_key(ec_key.get())) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     PrivateKey priv_key;
     priv_key.type = type;
     priv_key.key.resize(length);
     if (EC_KEY_priv2oct(ec_key.get(), priv_key.key.data(), length) != length) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     expected<PublicKey> pub_key = derive_public_key(ec_key.get());
@@ -415,7 +420,7 @@ expected<Signature> OpenSslSecurityModule::sign(const ByteBuffer& digest, const 
 
     OpenSslPtr<ECDSA_SIG> osl_sig { ECDSA_do_sign(digest.data(), digest.size(), ec_key->get()) };
     if (!osl_sig) {
-        return make_error_code(SecurityModuleError::ModuleFailure);
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
 
     const BIGNUM* osl_r = nullptr;

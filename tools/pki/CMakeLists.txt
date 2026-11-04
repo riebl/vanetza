@@ -37,6 +37,7 @@ add_library(pki_library STATIC
     key_command.cpp
     keys.cpp
     openssl.cpp
+    openssl_error.cpp
     openssl_security_module.cpp
     pem.cpp
     prune_command.cpp
