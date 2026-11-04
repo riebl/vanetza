@@ -8,10 +8,17 @@
 
 namespace vanetza
 {
-namespace pki
+namespace security
 {
 
 class CredentialStorage;
+
+} // namespace security
+
+namespace pki
+{
+
+using security::CredentialStorage;
 
 class OpenSslSecurityModule : public SecurityModule
 {

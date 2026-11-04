@@ -1,8 +1,5 @@
 #include "credential_filesystem_storage.hpp"
 #include "openssl.hpp"
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/adaptor/transformed.hpp>
-#include <boost/range/iterator_range.hpp>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
 #include <openssl/pem.h>
@@ -122,27 +119,24 @@ std::filesystem::path CredentialFilesystemStorage::build_key_path(const std::str
     return p;
 }
 
-CredentialNameRange CredentialFilesystemStorage::list() const
+std::error_code CredentialFilesystemStorage::visit(CredentialVisitor& visitor) const
 {
-    auto rng =
-        boost::make_iterator_range(std::filesystem::directory_iterator(m_root), std::filesystem::directory_iterator()) |
-        boost::adaptors::filtered([](const std::filesystem::directory_entry& e) {
-            return e.path().extension() == ".pem" && std::filesystem::is_regular_file(e.path()) &&
-                   is_valid_canonical_hex_stem(e.path().stem().string());
-        }) |
-        boost::adaptors::transformed([](const std::filesystem::directory_entry& e) {
-            return e.path().stem().string();
-        });
-    return CredentialNameRange(rng);
+    for (const std::filesystem::directory_entry& e : std::filesystem::directory_iterator(m_root)) {
+        if (e.path().extension() == ".pem" && std::filesystem::is_regular_file(e.path()) &&
+            is_valid_canonical_hex_stem(e.path().stem().string())) {
+            visitor.visit(e.path().stem().string());
+        }
+    }
+    return std::error_code();
 }
 
-bool CredentialFilesystemStorage::discard(const std::string& canonical_hex)
+expected<bool> CredentialFilesystemStorage::discard(const std::string& canonical_hex)
 {
     std::error_code ec;
     return std::filesystem::remove(build_key_path(canonical_hex), ec);
 }
 
-bool CredentialFilesystemStorage::contains(const std::string& canonical_hex) const
+expected<bool> CredentialFilesystemStorage::contains(const std::string& canonical_hex) const
 {
     return std::filesystem::is_regular_file(build_key_path(canonical_hex));
 }

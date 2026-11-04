@@ -2,8 +2,8 @@
 
 #include "credential_storage.hpp"
 #include <vanetza/security/public_key.hpp>
-#include <boost/range/adaptor/map.hpp>
 #include <map>
+#include <stdexcept>
 
 namespace vanetza
 {
@@ -12,11 +12,13 @@ namespace pki
 
 // In-memory credential storage suitable for unit tests. Store/fetch/discard
 // behave like a small std::map keyed by the public key's canonical hex string.
+// Modifications while visiting throw std::logic_error, see CredentialStorage::visit.
 class MockCredentialStorage : public CredentialStorage
 {
 public:
     void store(const PublicKey& pub, const PrivateKey& priv) override
     {
+        ++m_modifications;
         m_credentials[security::canonical_hexstring(pub)] = priv;
     }
 
@@ -31,26 +33,36 @@ public:
 
     bool discard(const PublicKey& pub) override
     {
+        ++m_modifications;
         return m_credentials.erase(security::canonical_hexstring(pub)) > 0;
     }
 
-    CredentialNameRange list() const override
+    std::error_code visit(CredentialVisitor& visitor) const override
     {
-        return m_credentials | boost::adaptors::map_keys;
+        const unsigned modifications = m_modifications;
+        for (const auto& credential : m_credentials) {
+            visitor.visit(credential.first);
+            if (m_modifications != modifications) {
+                throw std::logic_error("credential storage modified while visiting");
+            }
+        }
+        return std::error_code();
     }
 
-    bool discard(const std::string& canonical_hex) override
+    expected<bool> discard(const std::string& canonical_hex) override
     {
+        ++m_modifications;
         return m_credentials.erase(canonical_hex) > 0;
     }
 
-    bool contains(const std::string& canonical_hex) const override
+    expected<bool> contains(const std::string& canonical_hex) const override
     {
         return m_credentials.count(canonical_hex) > 0;
     }
 
 private:
     std::map<std::string, PrivateKey> m_credentials;
+    unsigned m_modifications = 0;
 };
 
 } // namespace pki

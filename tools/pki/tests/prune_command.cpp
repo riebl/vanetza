@@ -12,6 +12,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <system_error>
 #include <unordered_set>
 #include <vector>
 
@@ -117,6 +118,30 @@ public:
 
     std::vector<std::string> orphans;
     std::size_t summary_count = 0;
+};
+
+// supports none of the optional credential storage operations
+class MandatoryOnlyCredentialStorage : public CredentialStorage
+{
+public:
+    void store(const PublicKey&, const PrivateKey&) override {}
+    boost::optional<PrivateKey> fetch(const PublicKey&) override { return boost::none; }
+    bool discard(const PublicKey&) override { return false; }
+};
+
+// discards orphans like the orphans subcommand without --dry-run
+class DiscardingOrphansVisitor : public PruneOrphansVisitor
+{
+public:
+    explicit DiscardingOrphansVisitor(CredentialStorage& credentials) : m_credentials(credentials) {}
+
+    void on_orphan(const std::string& hex) override
+    {
+        EXPECT_TRUE(m_credentials.discard(hex).value());
+    }
+
+private:
+    CredentialStorage& m_credentials;
 };
 
 } // anonymous namespace
@@ -234,6 +259,30 @@ TEST_F(PruneTestFixture, prune_orphans_emits_only_unreferenced_credentials)
     ASSERT_EQ(1u, v.orphans.size());
     EXPECT_EQ(vanetza::security::canonical_hexstring(orphan_key), v.orphans[0]);
     EXPECT_EQ(1u, v.summary_count);
+}
+
+TEST_F(PruneTestFixture, prune_orphans_visitor_may_discard_orphans)
+{
+    PublicKey ec_key = make_random_pubkey();
+    PublicKey orphan_key = make_random_pubkey();
+    cfg.enrolment_credentials->store(build_stub_certificate(ec_key));
+    cfg.credentials->store(ec_key, PrivateKey {});
+    cfg.credentials->store(orphan_key, PrivateKey {});
+
+    DiscardingOrphansVisitor v(*cfg.credentials);
+    prune_orphans(cfg, v);
+
+    EXPECT_TRUE(cfg.credentials->fetch(ec_key));
+    EXPECT_FALSE(cfg.credentials->fetch(orphan_key));
+}
+
+TEST_F(PruneTestFixture, prune_orphans_fails_without_visitable_credentials)
+{
+    cfg.credentials = std::make_shared<MandatoryOnlyCredentialStorage>();
+
+    RecordingOrphansVisitor v;
+    EXPECT_THROW(prune_orphans(cfg, v), std::system_error);
+    EXPECT_EQ(0u, v.summary_count);
 }
 
 TEST_F(PruneTestFixture, prune_orphans_empty_when_all_referenced)

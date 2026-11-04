@@ -77,14 +77,34 @@ TEST_F(CredentialFilesystemStorageTest, store_and_fetch)
     EXPECT_TRUE(std::filesystem::is_regular_file(root / filename));
 }
 
-TEST_F(CredentialFilesystemStorageTest, list_yields_canonical_hex_stems_only)
+namespace
+{
+
+template<typename Container>
+class NameCollector : public CredentialVisitor
+{
+public:
+    explicit NameCollector(Container& names) : m_names(names) {}
+
+    void visit(const std::string& name) override
+    {
+        m_names.insert(m_names.end(), name);
+    }
+
+private:
+    Container& m_names;
+};
+
+} // namespace
+
+TEST_F(CredentialFilesystemStorageTest, visit_yields_canonical_hex_stems_only)
 {
     std::filesystem::create_directories(root);
     // Three valid-looking .pem files (P-256 stems = "02"/"03" + 64 hex chars).
     std::ofstream(root / "025480D4569E504D8E1A14CC0ED7EAD0CF1349B884A9B79BE52F4A4CE162A375E4.pem").put('x');
     std::ofstream(root / "030000000000000000000000000000000000000000000000000000000000000000.pem").put('x');
     std::ofstream(root / "021111111111111111111111111111111111111111111111111111111111111111.pem").put('x');
-    // Decoys that must not appear in list():
+    // Decoys that must not be visited:
     std::ofstream(root / "ignore.txt").put('x'); // wrong extension
     std::ofstream(root / "garbage.pem").put('x'); // wrong stem format
     std::ofstream(root / "025480D4569E504D8E1A14CC0ED7EAD0CF1349B884A9B79BE52F4A4CE162A375.pem")
@@ -93,9 +113,8 @@ TEST_F(CredentialFilesystemStorageTest, list_yields_canonical_hex_stems_only)
 
     CredentialFilesystemStorage storage(root);
     std::set<std::string> seen;
-    for (const auto& name : storage.list()) {
-        seen.insert(name);
-    }
+    NameCollector<std::set<std::string>> collector(seen);
+    ASSERT_EQ(std::error_code(), storage.visit(collector));
 
     EXPECT_EQ(3u, seen.size());
     EXPECT_TRUE(seen.count("025480D4569E504D8E1A14CC0ED7EAD0CF1349B884A9B79BE52F4A4CE162A375E4"));
@@ -103,14 +122,13 @@ TEST_F(CredentialFilesystemStorageTest, list_yields_canonical_hex_stems_only)
     EXPECT_TRUE(seen.count("021111111111111111111111111111111111111111111111111111111111111111"));
 }
 
-TEST_F(CredentialFilesystemStorageTest, list_on_empty_directory)
+TEST_F(CredentialFilesystemStorageTest, visit_on_empty_directory)
 {
     std::filesystem::create_directories(root);
     CredentialFilesystemStorage storage(root);
     std::vector<std::string> names;
-    for (const auto& n : storage.list()) {
-        names.push_back(n);
-    }
+    NameCollector<std::vector<std::string>> collector(names);
+    ASSERT_EQ(std::error_code(), storage.visit(collector));
     EXPECT_TRUE(names.empty());
 }
 
@@ -122,7 +140,7 @@ TEST_F(CredentialFilesystemStorageTest, discard_by_name_removes_file)
     ASSERT_TRUE(std::filesystem::is_regular_file(root / (stem + ".pem")));
 
     CredentialFilesystemStorage storage(root);
-    EXPECT_TRUE(storage.discard(stem));
+    EXPECT_TRUE(storage.discard(stem).value());
     EXPECT_FALSE(std::filesystem::is_regular_file(root / (stem + ".pem")));
 }
 
@@ -130,7 +148,7 @@ TEST_F(CredentialFilesystemStorageTest, discard_by_name_returns_false_for_unknow
 {
     std::filesystem::create_directories(root);
     CredentialFilesystemStorage storage(root);
-    EXPECT_FALSE(storage.discard("020000000000000000000000000000000000000000000000000000000000000000"));
+    EXPECT_FALSE(storage.discard("020000000000000000000000000000000000000000000000000000000000000000").value());
 }
 
 TEST_F(CredentialFilesystemStorageTest, fetch_keeps_leading_zeros)

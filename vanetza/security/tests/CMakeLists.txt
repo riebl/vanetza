@@ -10,6 +10,7 @@ configure_gtest_directory(LINK_LIBRARIES Boost::boost security security_test
 add_gtest(Backend backend.cpp)
 add_gtest(CamServiceSpecificPermissions cam_ssp.cpp)
 add_gtest(CertificateV3 certificate_v3.cpp)
+add_gtest(CredentialStorage credential_storage.cpp)
 add_gtest(DecapService decap_service.cpp)
 add_gtest(DummyVerifyService dummy_verify_service.cpp)
 add_gtest(EccPointDecompression ecc_point_decompression.cpp)

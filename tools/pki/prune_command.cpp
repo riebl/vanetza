@@ -15,6 +15,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <system_error>
 #include <unordered_set>
 #include <vector>
 
@@ -95,7 +96,7 @@ public:
         const std::string& pubkey_hex) override
     {
         std::cout << "  " << format_expired_entry(label, id, cert) << "\n";
-        if (m_credentials && m_credentials->contains(pubkey_hex)) {
+        if (m_credentials && m_credentials->contains(pubkey_hex).value()) {
             std::cout << "    + would discard credential " << pubkey_hex << "\n";
         }
         ++m_deletable;
@@ -135,7 +136,7 @@ public:
         if (store.erase(id)) {
             std::cout << "Removed " << label << " " << hexstring(id) << "\n";
             ++m_removed;
-            if (m_credentials && m_credentials->discard(pubkey_hex)) {
+            if (m_credentials && m_credentials->discard(pubkey_hex).value()) {
                 std::cout << "Removed credential " << pubkey_hex << "\n";
                 ++m_removed_creds;
             }
@@ -198,7 +199,7 @@ public:
 
     void on_orphan(const std::string& canonical_hex) override
     {
-        if (m_cfg.credentials->discard(canonical_hex)) {
+        if (m_cfg.credentials->discard(canonical_hex).value()) {
             std::cout << "Removed orphan credential " << canonical_hex << "\n";
             ++m_removed;
         } else {
@@ -241,6 +242,18 @@ private:
     SecurityModule& m_security;
     std::set<HashedId8> m_aa;
     std::set<HashedId8> m_ea;
+};
+
+// Collects the canonical-hex name of every stored credential.
+class CredentialNameCollector : public CredentialVisitor
+{
+public:
+    void visit(const std::string& canonical_hex) override
+    {
+        names.push_back(canonical_hex);
+    }
+
+    std::vector<std::string> names;
 };
 
 // Remove every cert in `store` whose HashedId8 is not in `keep`. Returns the number pruned.
@@ -321,7 +334,12 @@ void prune_orphans(const MainConfig& cfg, PruneOrphansVisitor& visitor)
     collect_pubkey_hexes_from_store(*cfg.enrolment_credentials, "EC", referenced);
     collect_pubkey_hexes_from_store(*cfg.tickets, "AT", referenced);
 
-    for (const auto& name : cfg.credentials->list()) {
+    // collect names first because visitor may discard credentials, which is forbidden while visiting the storage
+    CredentialNameCollector credentials;
+    if (std::error_code ec = cfg.credentials->visit(credentials)) {
+        throw std::system_error(ec, "visiting credentials");
+    }
+    for (const auto& name : credentials.names) {
         if (referenced.find(name) == referenced.end()) {
             visitor.on_orphan(name);
         } else {
