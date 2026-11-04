@@ -1,6 +1,7 @@
 #pragma once
 #include <vanetza/common/byte_buffer.hpp>
 #include <array>
+#include <cstddef>
 #include <cstdint>
 
 namespace vanetza
@@ -8,7 +9,17 @@ namespace vanetza
 namespace security
 {
 
-using HmacKey = std::array<uint8_t, 32>;
+struct HmacKey
+{
+    static constexpr std::size_t length = 32;
+    std::array<std::uint8_t, length> octets;
+
+    ~HmacKey();
+};
+
+bool operator==(const HmacKey& lhs, const HmacKey& rhs);
+bool operator!=(const HmacKey& lhs, const HmacKey& rhs);
+
 using KeyTag = std::array<uint8_t, 16>;
 
 /**

@@ -16,13 +16,32 @@ namespace vanetza
 namespace security
 {
 
+HmacKey::~HmacKey()
+{
+    // volatile writes are not optimised away although the key is not read afterwards
+    volatile std::uint8_t* octet = octets.data();
+    for (std::size_t i = 0; i < octets.size(); ++i) {
+        octet[i] = 0;
+    }
+}
+
+bool operator==(const HmacKey& lhs, const HmacKey& rhs)
+{
+    return lhs.octets == rhs.octets;
+}
+
+bool operator!=(const HmacKey& lhs, const HmacKey& rhs)
+{
+    return !(lhs == rhs);
+}
+
 #if defined VANETZA_WITH_OPENSSL
 KeyTag create_hmac_tag_openssl(const ByteBuffer& data, const HmacKey& hmacKey)
 {
     KeyTag keyTag;
     std::array<std::uint8_t, EVP_MAX_MD_SIZE> tag;
     unsigned int len = 0;
-    HMAC(EVP_sha256(), hmacKey.data(), static_cast<int>(hmacKey.size()),
+    HMAC(EVP_sha256(), hmacKey.octets.data(), static_cast<int>(hmacKey.octets.size()),
          data.data(), data.size(), tag.data(), &len);
     std::copy_n(tag.data(), keyTag.size(), keyTag.data());
     return keyTag;
@@ -34,7 +53,7 @@ KeyTag create_hmac_tag_cryptopp(const ByteBuffer& data, const HmacKey& hmacKey)
 {
     KeyTag keyTag;
     std::array<std::uint8_t, 32> tag;
-    CryptoPP::HMAC<CryptoPP::SHA256> mac(hmacKey.data(), hmacKey.size());
+    CryptoPP::HMAC<CryptoPP::SHA256> mac(hmacKey.octets.data(), hmacKey.octets.size());
     mac.Update(data.data(), data.size());
     mac.Final(tag.data());
     std::copy_n(tag.data(), keyTag.size(), keyTag.data());

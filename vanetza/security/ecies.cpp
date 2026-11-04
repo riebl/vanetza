@@ -2,7 +2,6 @@
 #include <vanetza/security/hmac.hpp>
 #include <vanetza/security/kdf2.hpp>
 #include <algorithm>
-#include <tuple>
 
 namespace vanetza
 {
@@ -13,7 +12,7 @@ EncryptedSymmetricKey encrypt_key(
     const PublicKey& ephemeral_key, const byte_view_range& shared_secret, const Aes128Key& key, const Sha256Hash& info)
 {
     static constexpr std::size_t ke_length = Aes128Key::length;
-    static constexpr std::size_t km_length = std::tuple_size<HmacKey>::value;
+    static constexpr std::size_t km_length = HmacKey::length;
 
     // derive ke and km from shared secret
     const byte_view_range kdp { byte_view_iterator(info.octets.data()),
@@ -30,7 +29,7 @@ EncryptedSymmetricKey encrypt_key(
 
     // generate authentication tag
     HmacKey km;
-    std::copy_n(derived.begin() + ke_length, km_length, km.begin());
+    std::copy_n(derived.begin() + ke_length, km_length, km.octets.begin());
     result.authentication_tag = create_hmac_tag(ByteBuffer(result.wrapped_key.begin(), result.wrapped_key.end()), km);
 
     return result;
