@@ -144,6 +144,8 @@ OpenSslPointer<EC_POINT> make_ec_point(const PublicKey& pub)
         throw std::invalid_argument("invalid key compression type");
     }
 
+    // OpenSSL rejects points not on the curve but keeps the given coordinates in point
+    openssl_result(rc, "invalid public key");
     return point;
 }
 

@@ -62,3 +62,22 @@ TEST(KeyCompression, brainpool_p384_decompress)
     EXPECT_EQ(brainpool_p384_x, make_buffer(rx.raw()));
     EXPECT_EQ(brainpool_p384_y, make_buffer(ry.raw()));
 }
+
+TEST(EcPoint, off_curve_key_is_rejected)
+{
+    PublicKey off_curve;
+    off_curve.type = KeyType::NistP256;
+    off_curve.compression = KeyCompression::NoCompression;
+    off_curve.x.assign(32, 0x11);
+    off_curve.y.assign(32, 0x11);
+    EXPECT_THROW(make_ec_point(off_curve), OpenSslException);
+}
+
+TEST(EcPoint, invalid_compressed_key_is_rejected)
+{
+    PublicKey invalid;
+    invalid.type = KeyType::NistP256;
+    invalid.compression = KeyCompression::Y0;
+    invalid.x.assign(32, 0xFF); // exceeds field prime
+    EXPECT_THROW(make_ec_point(invalid), OpenSslException);
+}
