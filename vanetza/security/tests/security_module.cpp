@@ -1,15 +1,11 @@
-#include "mock_credential_storage.hpp"
-#include "openssl_security_module.hpp"
+#include <vanetza/security/openssl_security_module.hpp>
+#include <vanetza/security/tests/mock_credential_storage.hpp>
 #include <gtest/gtest.h>
 
 using vanetza::ByteBuffer;
 using vanetza::create_byte_view;
 using vanetza::expected;
-using vanetza::security::Aes128Key;
-using vanetza::security::HmacKey;
-using vanetza::security::KeyTag;
-using vanetza::security::SecurityModuleError;
-using namespace vanetza::pki;
+using namespace vanetza::security;
 
 /**
  * Test vectors from IEEE 1609.2-2017 (Annex D)
@@ -256,7 +252,7 @@ TEST_F(SecurityModuleTest, key_encryption_requires_valid_recipient_key)
     expected<Aes128Key> key = security->generate_aes_key();
     ASSERT_TRUE(key.has_value());
 
-    PublicKey recipient = derive_public_key(generate_private_key(KeyType::NistP256));
+    PublicKey recipient = security->public_key(security->create_signing_key(KeyType::NistP256).value()).value();
     recipient.type = KeyType::Unspecified;
     expected<EncryptedSymmetricKey> encrypted = security->encrypt_key(recipient, *key, info);
     ASSERT_TRUE(encrypted.has_error());

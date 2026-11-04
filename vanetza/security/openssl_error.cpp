@@ -1,16 +1,14 @@
-#include "openssl_error.hpp"
+#include <vanetza/security/openssl_error.hpp>
 #include <openssl/err.h>
 #include <array>
 #include <string>
 
 namespace vanetza
 {
-namespace pki
+namespace security
 {
 namespace
 {
-
-using security::SecurityModuleError;
 
 // OpenSSL's error codes with the meaning of the failed operation, i.e. one category per condition
 class OpenSslCategory : public std::error_category
@@ -102,5 +100,5 @@ std::error_code take_openssl_error(SecurityModuleError condition) noexcept
     }
 }
 
-} // namespace pki
+} // namespace security
 } // namespace vanetza

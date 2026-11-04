@@ -5,7 +5,7 @@
 
 namespace vanetza
 {
-namespace pki
+namespace security
 {
 
 /**
@@ -17,7 +17,7 @@ namespace pki
  * \return OpenSSL error code equivalent to condition, errno of a system error in std::system_category(),
  *         or make_error_code(condition) if OpenSSL queued no error
  */
-std::error_code take_openssl_error(security::SecurityModuleError condition) noexcept;
+std::error_code take_openssl_error(SecurityModuleError condition) noexcept;
 
-} // namespace pki
+} // namespace security
 } // namespace vanetza

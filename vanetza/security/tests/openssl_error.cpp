@@ -1,4 +1,4 @@
-#include "openssl_error.hpp"
+#include <vanetza/security/openssl_error.hpp>
 #include <vanetza/security/security_module_error.hpp>
 #include <gtest/gtest.h>
 #include <openssl/ec.h>
@@ -8,8 +8,7 @@
 #include <string>
 #include <type_traits>
 
-using vanetza::security::SecurityModuleError;
-using namespace vanetza::pki;
+using namespace vanetza::security;
 
 TEST(OpenSslError, oldest_queued_error_is_taken)
 {

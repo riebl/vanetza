@@ -1,14 +1,12 @@
-#include "mock_credential_storage.hpp"
-#include "openssl_security_module.hpp"
+#include <vanetza/security/openssl_security_module.hpp>
+#include <vanetza/security/tests/mock_credential_storage.hpp>
 #include <gtest/gtest.h>
 #include <openssl/ec.h>
 #include <openssl/err.h>
 
 using vanetza::ByteBuffer;
 using vanetza::expected;
-using vanetza::security::Aes128Key;
-using vanetza::security::SecurityModuleError;
-using namespace vanetza::pki;
+using namespace vanetza::security;
 
 class OpenSslSecurityModuleTest : public ::testing::Test
 {

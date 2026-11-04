@@ -94,7 +94,7 @@ endif()
 
 if(VANETZA_WITH_OPENSSL)
     set_property(TARGET security APPEND PROPERTY
-        SOURCES backend_openssl.cpp openssl_wrapper.cpp)
+        SOURCES backend_openssl.cpp openssl_error.cpp openssl_security_module.cpp openssl_wrapper.cpp)
     target_link_libraries(security PRIVATE OpenSSL::Crypto)
     target_compile_definitions(security PUBLIC "VANETZA_WITH_OPENSSL")
     target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10101000L")

@@ -1,30 +1,35 @@
-#include "openssl_security_module.hpp"
-#include "credential_storage.hpp"
-#include "openssl.hpp"
-#include "openssl_error.hpp"
+#include <vanetza/security/credential_storage.hpp>
 #include <vanetza/security/ecies.hpp>
 #include <vanetza/security/key_type.hpp>
+#include <vanetza/security/openssl_error.hpp>
+#include <vanetza/security/openssl_security_module.hpp>
 #include <vanetza/security/public_key.hpp>
+#include <openssl/bn.h>
 #include <openssl/crypto.h>
+#include <openssl/ec.h>
+#include <openssl/ecdh.h>
+#include <openssl/ecdsa.h>
+#include <openssl/err.h>
+#include <openssl/evp.h>
 #include <openssl/hmac.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
+#include <array>
+#include <memory>
 #include <cassert>
 #include <stdexcept>
 
 namespace vanetza
 {
-namespace pki
+namespace security
 {
 
 namespace
 {
 
-using security::SecurityModuleError;
-
 constexpr std::size_t auth_tag_length = 16;
 
-// releases OpenSSL objects, unlike OpenSslPointer a failed allocation yields nullptr instead of an exception
+// releases OpenSSL objects, unlike openssl::Key a failed allocation yields nullptr instead of an exception
 struct OpenSslFree
 {
     void operator()(BIGNUM* bn) const { BN_free(bn); }
@@ -61,6 +66,44 @@ public:
     ~ScopedErrorMark() { ERR_pop_to_mark(); }
 };
 
+int openssl_nid(KeyType key)
+{
+    int nid = 0;
+    switch (key) {
+        case KeyType::NistP256:
+            nid = NID_X9_62_prime256v1;
+            break;
+        case KeyType::BrainpoolP256r1:
+            nid = NID_brainpoolP256r1;
+            break;
+        case KeyType::BrainpoolP384r1:
+            nid = NID_brainpoolP384r1;
+            break;
+        default:
+            throw std::runtime_error("unknown key type");
+            break;
+    }
+    return nid;
+}
+
+KeyType openssl_nid2key(int nid)
+{
+    switch (nid) {
+        case NID_X9_62_prime256v1:
+            return KeyType::NistP256;
+            break;
+        case NID_brainpoolP256r1:
+            return KeyType::BrainpoolP256r1;
+            break;
+        case NID_brainpoolP384r1:
+            return KeyType::BrainpoolP384r1;
+            break;
+        default:
+            throw std::runtime_error("unsupported curve type");
+            break;
+    }
+}
+
 KeyType key_type(const EC_KEY* ec_key)
 {
     return openssl_nid2key(EC_GROUP_get_curve_name(EC_KEY_get0_group(ec_key)));
@@ -71,7 +114,7 @@ expected<OpenSslPtr<EC_KEY>> build_ec_key(const KeyReference& reference)
 {
     const ByteBuffer& data = reference.data;
     const KeyType type = data.empty() ? KeyType::Unspecified : static_cast<KeyType>(data.front());
-    const std::size_t length = security::key_length(type); // zero for unsupported key types
+    const std::size_t length = key_length(type); // zero for unsupported key types
     if (length == 0 || data.size() != 1 + length) {
         return make_error_code(SecurityModuleError::InvalidKeyReference);
     }
@@ -128,7 +171,7 @@ expected<PublicKey> derive_public_key(const EC_KEY* ec_key)
  */
 OpenSslPtr<EC_POINT> build_ec_point(const EC_GROUP* group, const PublicKey& key)
 {
-    const ByteBuffer octets = security::encode_ec_point(key);
+    const ByteBuffer octets = encode_ec_point(key);
     if (octets.empty()) {
         return nullptr;
     }
@@ -153,7 +196,7 @@ enum class CipherOperation : int
  * \param tag expected authentication tag for decryption, nullptr for encryption
  * \return context or nullptr on failure, see OpenSSL's error queue for its reason
  */
-OpenSslPtr<EVP_CIPHER_CTX> create_aes_ccm_context(CipherOperation operation, const security::Aes128Key& key,
+OpenSslPtr<EVP_CIPHER_CTX> create_aes_ccm_context(CipherOperation operation, const Aes128Key& key,
     const std::array<std::uint8_t, AesCcmCiphertext::nonce_length>& nonce, std::uint8_t* tag)
 {
     const int enc = static_cast<int>(operation);
@@ -209,7 +252,7 @@ expected<bool> OpenSslSecurityModule::verify(
 expected<bool> OpenSslSecurityModule::verify(
     const std::uint8_t* dbuf, std::size_t dlen, const Signature& signature, const PublicKey& pubkey)
 {
-    if (security::key_length(pubkey.type) == 0) {
+    if (key_length(pubkey.type) == 0) {
         return make_error_code(SecurityModuleError::UnsupportedKeyType);
     } else if (signature.type != pubkey.type) {
         return false;
@@ -255,18 +298,18 @@ expected<bool> OpenSslSecurityModule::verify(
     }
 }
 
-expected<security::Aes128Key> OpenSslSecurityModule::generate_aes_key()
+expected<Aes128Key> OpenSslSecurityModule::generate_aes_key()
 {
-    security::Aes128Key key;
+    Aes128Key key;
     if (RAND_priv_bytes(key.octets.data(), key.octets.size()) != 1) {
         return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
     return key;
 }
 
-expected<security::HmacKey> OpenSslSecurityModule::generate_hmac_key()
+expected<HmacKey> OpenSslSecurityModule::generate_hmac_key()
 {
-    security::HmacKey key;
+    HmacKey key;
     if (RAND_priv_bytes(key.octets.data(), key.octets.size()) != 1) {
         return take_openssl_error(SecurityModuleError::ModuleFailure);
     }
@@ -274,9 +317,9 @@ expected<security::HmacKey> OpenSslSecurityModule::generate_hmac_key()
 }
 
 expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
-    const PublicKey& recipient, const security::Aes128Key& key, const Sha256Hash& info)
+    const PublicKey& recipient, const Aes128Key& key, const Sha256Hash& info)
 {
-    if (security::key_length(recipient.type) == 0) {
+    if (key_length(recipient.type) == 0) {
         return make_error_code(SecurityModuleError::UnsupportedKeyType);
     }
 
@@ -307,7 +350,7 @@ expected<EncryptedSymmetricKey> OpenSslSecurityModule::encrypt_key(
 }
 
 expected<AesCcmCiphertext> OpenSslSecurityModule::encrypt_aes_ccm(
-    const security::Aes128Key& key, const ByteBuffer& plaintext)
+    const Aes128Key& key, const ByteBuffer& plaintext)
 {
     AesCcmCiphertext encrypted;
     if (RAND_bytes(encrypted.nonce.data(), encrypted.nonce.size()) != 1) {
@@ -338,7 +381,7 @@ expected<AesCcmCiphertext> OpenSslSecurityModule::encrypt_aes_ccm(
 }
 
 expected<ByteBuffer> OpenSslSecurityModule::decrypt_aes_ccm(
-    const security::Aes128Key& key, const AesCcmCiphertext& encrypted)
+    const Aes128Key& key, const AesCcmCiphertext& encrypted)
 {
     // authentication tag follows the encrypted payload
     if (encrypted.ciphertext.size() < auth_tag_length) {
@@ -362,10 +405,10 @@ expected<ByteBuffer> OpenSslSecurityModule::decrypt_aes_ccm(
     return plaintext;
 }
 
-expected<security::Sha256Hmac> OpenSslSecurityModule::calculate_hmac_sha256(
+expected<Sha256Hmac> OpenSslSecurityModule::calculate_hmac_sha256(
     const byte_view_range& key, const byte_view_range& data)
 {
-    security::Sha256Hmac hmac;
+    Sha256Hmac hmac;
     unsigned length = 0;
     if (!HMAC(EVP_sha256(), key.data(), key.size(), data.data(), data.size(), hmac.octets.data(), &length)) {
         return take_openssl_error(SecurityModuleError::ModuleFailure);
@@ -377,7 +420,7 @@ expected<security::Sha256Hmac> OpenSslSecurityModule::calculate_hmac_sha256(
 
 expected<KeyReference> OpenSslSecurityModule::create_signing_key(KeyType type)
 {
-    const std::size_t length = security::key_length(type); // zero for unsupported key types
+    const std::size_t length = key_length(type); // zero for unsupported key types
     if (length == 0) {
         return make_error_code(SecurityModuleError::UnsupportedKeyType);
     }
@@ -474,5 +517,5 @@ bool OpenSslSecurityModule::discard_key(const KeyReference& reference)
     return pub_key && m_credential_storage->discard(*pub_key);
 }
 
-} // namespace pki
+} // namespace security
 } // namespace vanetza
