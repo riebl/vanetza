@@ -12,6 +12,16 @@ TEST(ByteView, range_buffer) {
     EXPECT_EQ(3, view[2]);
 }
 
+TEST(ByteView, compares_contents) {
+    const ByteBuffer buffer = {1, 2, 3};
+    const ByteBuffer copy = buffer;
+    const ByteBuffer other = {1, 2, 4};
+    const ByteBuffer prefix = {1, 2};
+    EXPECT_EQ(create_byte_view(copy), create_byte_view(buffer));
+    EXPECT_NE(create_byte_view(other), create_byte_view(buffer));
+    EXPECT_NE(create_byte_view(prefix), create_byte_view(buffer));
+}
+
 TEST(ByteView, range_convertible) {
     byte_view_range view = create_byte_view(ByteBuffer());
     {

@@ -138,6 +138,8 @@ class byte_view_range : private boost::iterator_range<byte_view_iterator>
 public:
     using value_type = byte_view_iterator::value_type;
     using pointer = byte_view_iterator::pointer;
+    using iterator = byte_view_iterator;
+    using const_iterator = byte_view_iterator;
 
     /**
      * Construct new view from iterator pair.
@@ -177,6 +179,13 @@ public:
 private:
     ByteBuffer buffer;
 };
+
+/**
+ * Compare the bytes of two views
+ * \return true if both views have the same size and bytes
+ */
+bool operator==(const byte_view_range& lhs, const byte_view_range& rhs);
+bool operator!=(const byte_view_range& lhs, const byte_view_range& rhs);
 
 /**
  * Create a byte view based on various byte buffer representations.

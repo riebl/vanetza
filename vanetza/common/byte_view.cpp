@@ -1,5 +1,6 @@
 #include <vanetza/common/byte_view.hpp>
 #include <vanetza/common/byte_buffer_convertible.hpp>
+#include <algorithm>
 #include <cassert>
 #include <limits>
 
@@ -50,6 +51,16 @@ ByteBuffer::value_type byte_view_range::operator[](size_type pos) const
     static_assert(std::numeric_limits<size_type>::is_signed == false, "size_type shall be unsigned");
     assert(pos < size());
     return begin()[pos];
+}
+
+bool operator==(const byte_view_range& lhs, const byte_view_range& rhs)
+{
+    return std::equal(lhs.begin(), lhs.end(), rhs.begin(), rhs.end());
+}
+
+bool operator!=(const byte_view_range& lhs, const byte_view_range& rhs)
+{
+    return !(lhs == rhs);
 }
 
 byte_view_range create_byte_view(ByteBuffer&& buffer)
