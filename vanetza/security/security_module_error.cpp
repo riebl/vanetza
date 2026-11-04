@@ -35,6 +35,15 @@ public:
                 return "unknown security module error";
         }
     }
+
+    bool equivalent(const std::error_code& code, int condition) const noexcept override
+    {
+        // operating system failures within a module are module failures
+        if (code && code.category() == std::system_category()) {
+            return condition == static_cast<int>(SecurityModuleError::ModuleFailure);
+        }
+        return std::error_category::equivalent(code, condition);
+    }
 };
 
 } // namespace

@@ -13,6 +13,7 @@ namespace security
  *
  * Modules without native error codes report these directly via make_error_code().
  * Modules with native error codes map them to these conditions by their own error category.
+ * Operating system errors, i.e. codes of std::system_category(), are equivalent to ModuleFailure.
  */
 enum class SecurityModuleError
 {
