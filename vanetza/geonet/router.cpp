@@ -214,6 +214,9 @@ void Router::set_dcc_field_generator(DccFieldGenerator* dcc)
 void Router::set_address(const Address& addr)
 {
     m_local_position_vector.gn_addr = addr;
+    // continued sequence would link packets of old and new address
+    std::uniform_int_distribution<SequenceNumber::value_type> sequence_dist;
+    m_local_sequence_number = SequenceNumber { sequence_dist(m_random_gen) };
 }
 
 void Router::set_random_seed(std::uint_fast32_t seed)

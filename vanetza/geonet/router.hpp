@@ -201,6 +201,7 @@ public:
     /**
      * \brief Set Router's own GeoNetworking address
      *
+     * As a side effect, the local sequence number restarts randomly.
      * \param addr
      */
     void set_address(const Address&);
