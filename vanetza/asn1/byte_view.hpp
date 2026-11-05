@@ -1,5 +1,8 @@
 #pragma once
 #include <vanetza/common/byte_view.hpp>
+#include <array>
+#include <cstddef>
+#include <cstdint>
 
 // forward declaration of ASN.1 types
 using OCTET_STRING_t = struct OCTET_STRING;
@@ -23,6 +26,26 @@ byte_view_range create_byte_view(const OCTET_STRING_t& octets);
  * \throw asn1c_exception if memory allocation fails
  */
 void assign(OCTET_STRING_t& octets, const byte_view_range& bytes);
+
+/**
+ * Replace an OCTET STRING's content by a copy of buffered bytes
+ * \param octets OCTET STRING
+ * \param bytes copied bytes
+ * \throw asn1c_exception if memory allocation fails
+ */
+void assign(OCTET_STRING_t& octets, const ByteBuffer& bytes);
+
+/**
+ * Replace an OCTET STRING's content by a copy of a fixed number of bytes
+ * \param octets OCTET STRING
+ * \param bytes copied bytes
+ * \throw asn1c_exception if memory allocation fails
+ */
+template<std::size_t N>
+void assign(OCTET_STRING_t& octets, const std::array<std::uint8_t, N>& bytes)
+{
+    assign(octets, vanetza::create_byte_view(bytes));
+}
 
 } // namespace asn1
 } // namespace vanetza

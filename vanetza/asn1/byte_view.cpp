@@ -19,5 +19,10 @@ void assign(OCTET_STRING_t& octets, const byte_view_range& bytes)
     }
 }
 
+void assign(OCTET_STRING_t& octets, const ByteBuffer& bytes)
+{
+    assign(octets, vanetza::create_byte_view(bytes));
+}
+
 } // namespace asn1
 } // namespace vanetza
