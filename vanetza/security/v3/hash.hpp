@@ -10,6 +10,7 @@ namespace security
 
 // forward declarations
 class Backend;
+class CryptoProvider;
 
 namespace v3
 {
@@ -30,6 +31,21 @@ class CertificateView;
  * \return message digest
  */
 ByteBuffer calculate_message_hash(Backend&, HashAlgorithm, const ByteBuffer& data, const CertificateView& signing);
+
+/**
+ * Calculate message hash (combination of hashes).
+ *
+ * This function creates the message hash according to IEEE 1609.2 cause 5.3.1.2.2
+ * for verification type "certificate", i.e. not "self-signed" messages.
+ *
+ * \param crypto crypto provider calculating the hashes
+ * \param algo hash algorithm
+ * \param data message payload (data to be signed)
+ * \param signing certificate used for signing
+ * \return message digest, empty for unsupported hash algorithm
+ */
+ByteBuffer calculate_message_hash(
+    CryptoProvider&, HashAlgorithm, const ByteBuffer& data, const CertificateView& signing);
 
 /**
  * Determine the hash algorithm for a given key type.

@@ -2,7 +2,7 @@
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/v3/certificate.hpp>
-#include <vanetza/security/v3/certificate_provider.hpp>
+#include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <cmath>
 
@@ -44,14 +44,15 @@ asn1::ThreeDLocation build_location(const PositionFix& fix)
     return location;
 }
 
-DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning, CertificateProvider& certs) :
-    m_runtime(rt), m_positioning(positioning), m_cert_provider(certs),
+DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning, CertificateCache& cache) :
+    m_runtime(rt), m_positioning(positioning), m_cert_cache(cache),
     m_cam_next_certificate(m_runtime.now()),
     m_cert_requested(false)
 {
 }
 
-void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, SecuredMessage& secured_message)
+void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, const Certificate& signer,
+    SecuredMessage& secured_message)
 {
     const auto now = m_runtime.now();
     secured_message.set_its_aid(request.its_aid);
@@ -59,7 +60,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
 
     if (request.its_aid == aid::CA) {
         bool signer_full_cert = false;
-        const auto& at_cert = m_cert_provider.own_certificate();
+        const auto& at_cert = signer;
         const auto maybe_at_digest = at_cert.calculate_digest();
 
         // include full certificate if its digest has been requested by a peer
@@ -85,7 +86,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
         if (!signer_full_cert) {
             while (auto p2p_hid = m_incoming_requests.next_one()) {
                 // provide requested CA certificates (no AT certificates here)
-                auto p2p_cert = m_cert_provider.cache().lookup(*p2p_hid);
+                auto p2p_cert = m_cert_cache.lookup(*p2p_hid);
                 if (p2p_cert && p2p_cert->is_ca_certificate()) {
                     secured_message.set_requested_certificate(*p2p_cert);
                     break;
@@ -94,7 +95,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
         }
     } else if (request.its_aid == aid::DEN) {
         // section 7.1.2 in TS 103 097 v2.1.1
-        secured_message.set_signer_identifier(m_cert_provider.own_certificate());
+        secured_message.set_signer_identifier(signer);
         secured_message.set_generation_location(build_location(m_positioning.position_fix()));
     } else if (request.its_aid == aid::SCR) {
         // section 6.2.3.2 and 6.2.3.3 in TS 102 941 v2.1.1
@@ -102,12 +103,12 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, Secured
         if (request.self_signed)
             secured_message.set_signer_identifier_self();
         else {
-            const auto digest = m_cert_provider.own_certificate().calculate_digest();
+            const auto digest = signer.calculate_digest();
             if (digest)
                 secured_message.set_signer_identifier(*digest);
         }
     } else {
-        secured_message.set_signer_identifier(m_cert_provider.own_certificate());
+        secured_message.set_signer_identifier(signer);
     }
 }
 

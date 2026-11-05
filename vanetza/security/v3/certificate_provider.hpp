@@ -10,6 +10,9 @@ namespace security
 namespace v3
 {
 
+/**
+ * \deprecated exposes PrivateKey, use CredentialProvider and CertificateCache
+ */
 class CertificateProvider
 {
 public:
@@ -40,7 +43,7 @@ class BaseCertificateProvider : public CertificateProvider
 public:
     const CertificateCache& cache() const override { return m_cache; }
     CertificateCache& cache() override { return m_cache; }
-    
+
 private:
     CertificateCache m_cache;
 };

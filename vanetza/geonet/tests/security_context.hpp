@@ -30,7 +30,7 @@ public:
         certificate_validator(*backend, cert_cache, trust_store),
         sign_header_policy(rt, position_provider),
         certificate_provider_v3(rt),
-        sign_header_policy_v3(rt, position_provider, certificate_provider_v3),
+        sign_header_policy_v3(rt, position_provider, certificate_provider_v3.cache()),
         security(build_sign_service(), build_verify_service(rt))
     {
         trust_store.insert(certificate_provider.root_certificate());

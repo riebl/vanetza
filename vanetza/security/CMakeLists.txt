@@ -71,6 +71,7 @@ add_vanetza_component(security
     v3/naive_certificate_provider.cpp
     v3/sign_header_policy.cpp
     v3/static_certificate_provider.cpp
+    v3/static_credential_provider.cpp
     v3/persistence.cpp
     v3/revocation_lookup.cpp
     v3/trust_store.cpp

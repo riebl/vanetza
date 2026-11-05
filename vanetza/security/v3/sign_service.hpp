@@ -11,12 +11,18 @@ namespace security
 
 // forward declarations
 class Backend;
+class CryptoProvider;
+class SecurityModule;
 
 namespace v3
 {
 
+// forward declarations
+class CredentialProvider;
+
 /**
  * SignService immediately signing the message using given
+ * \deprecated use SecurityModuleSignService, it signs with a private key held by a SecurityModule
  */
 class StraightSignService : public SignService
 {
@@ -30,7 +36,25 @@ private:
     SignHeaderPolicy& m_policy;
     CertificateValidator& m_validator;
 };
-    
+
+/**
+ * SignService immediately signing the message with the private key of a credential held by a SecurityModule
+ */
+class SecurityModuleSignService : public SignService
+{
+public:
+    SecurityModuleSignService(
+        SecurityModule&, CryptoProvider&, CredentialProvider&, SignHeaderPolicy&, CertificateValidator&);
+    SignConfirm sign(SignRequest&&) override;
+
+private:
+    CredentialProvider& m_credentials;
+    SecurityModule& m_module;
+    CryptoProvider& m_crypto;
+    SignHeaderPolicy& m_policy;
+    CertificateValidator& m_validator;
+};
+
 
 /**
  * SignService without real cryptography but dummy signature

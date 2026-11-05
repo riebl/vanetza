@@ -15,11 +15,14 @@ namespace security
 {
 
 // forward declarations
-class CertificateProvider;
 struct SignRequest;
 
 namespace v3
 {
+
+// forward declarations
+class Certificate;
+class CertificateCache;
 
 
 /**
@@ -35,10 +38,11 @@ public:
      * Prepare header fields for next secured message.
      *
      * \param req signing request (including ITS-AID for example)
+     * \param signer certificate of the signing credential
      * \param secured_message output message
      * \return header fields
      */
-    virtual void prepare_header(const SignRequest& req, SecuredMessage& secured_message) = 0;
+    virtual void prepare_header(const SignRequest& req, const Certificate& signer, SecuredMessage& secured_message) = 0;
 
     /**
      * Mark certificate as unrecognized in next secured message
@@ -72,9 +76,14 @@ public:
 class DefaultSignHeaderPolicy : public SignHeaderPolicy
 {
 public:
-    DefaultSignHeaderPolicy(const Runtime&, PositionProvider& positioning, CertificateProvider&);
+    /**
+     * \param positioning provider of own position
+     * \param cache certificate cache, e.g. providing certificates requested by peers
+     */
+    DefaultSignHeaderPolicy(const Runtime&, PositionProvider& positioning, CertificateCache& cache);
 
-    void prepare_header(const SignRequest& request, SecuredMessage& secured_message) override;
+    void prepare_header(
+        const SignRequest& request, const Certificate& signer, SecuredMessage& secured_message) override;
     void request_unrecognized_certificate(HashedId8 id) override;
     void request_certificate() override;
     void enqueue_p2p_request(HashedId3) override;
@@ -83,7 +92,7 @@ public:
 private:
     const Runtime& m_runtime;
     PositionProvider& m_positioning;
-    CertificateProvider& m_cert_provider;
+    CertificateCache& m_cert_cache;
     Clock::time_point m_cam_next_certificate;
     bool m_cert_requested;
     PeerRequestTracker m_incoming_requests;
