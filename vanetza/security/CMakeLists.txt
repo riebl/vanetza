@@ -64,6 +64,7 @@ add_vanetza_component(security
     v3/distance.cpp
     v3/geometry.cpp
     v3/hash.cpp
+    v3/identity_manager.cpp
     v3/issuer_memory_lookup.cpp
     v3/location_checker.cpp
     v3/memory_authorization_ticket_pool.cpp
