@@ -45,7 +45,7 @@ CertificateRevocationList CertificateRevocationList::from_file(const std::filesy
     return crl;
 }
 
-boost::optional<HashedId8> CertificateRevocationList::get_hashed_id8(SecurityModule& security) const
+boost::optional<HashedId8> CertificateRevocationList::get_hashed_id8(CryptoProvider& crypto) const
 {
     const Vanetza_Security_SignedData_t* signed_data = get_signed_data(raw());
     if (signed_data) {
@@ -55,7 +55,7 @@ boost::optional<HashedId8> CertificateRevocationList::get_hashed_id8(SecurityMod
             case Vanetza_Security_SignerIdentifier_PR_certificate: {
                 const Vanetza_Security_SequenceOfCertificate_t& certs = signed_data->signer.choice.certificate;
                 if (certs.list.count == 1 && certs.list.array[0]) {
-                    return calculate_hashed_id8(security, *certs.list.array[0]);
+                    return calculate_hashed_id8(crypto, *certs.list.array[0]);
                 }
             } break;
             default:

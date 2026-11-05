@@ -37,6 +37,7 @@ constexpr std::uint8_t protocol_version = 3;
 struct ResponseBuilder
 {
     OpenSslSecurityModule* security;
+    OpenSslCryptoProvider* crypto;
     const Certificate* ea_cert;
     const KeyReference* ea_signing_key;
 
@@ -103,7 +104,7 @@ struct ResponseBuilder
                                  signer_variant;
         sd.signer.present = variant;
         if (variant == Vanetza_Security_SignerIdentifier_PR_digest) {
-            HashedId8 ea_hid8 = ea_cert->calculate_hashed_id8(*security);
+            HashedId8 ea_hid8 = ea_cert->calculate_hashed_id8(*crypto);
             if (signer_digest_override) {
                 ea_hid8 = *signer_digest_override;
             }
@@ -127,7 +128,7 @@ struct ResponseBuilder
         // signature
         const Vanetza_Security_Certificate_t* signer_cert_for_hash =
             (variant == Vanetza_Security_SignerIdentifier_PR_self) ? nullptr : &ea_cert->raw();
-        Sha256Hash digest = calculate_digest<Sha256Hash>(*security, *sd.tbsData, signer_cert_for_hash);
+        Sha256Hash digest = calculate_digest<Sha256Hash>(*crypto, *sd.tbsData, signer_cert_for_hash);
         auto signature = security->sign(ByteBuffer { digest.octets.begin(), digest.octets.end() }, *ea_signing_key);
         EXPECT_TRUE(static_cast<bool>(signature));
 
@@ -163,11 +164,12 @@ protected:
 
     ResponseBuilder builder()
     {
-        return ResponseBuilder { &m_security, &m_ea_certificate, &m_ea_key };
+        return ResponseBuilder { &m_security, &m_crypto, &m_ea_certificate, &m_ea_key };
     }
 
     std::shared_ptr<MockCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
+    OpenSslCryptoProvider m_crypto;
     KeyReference m_ea_key;
     Certificate m_ea_certificate;
 };
@@ -178,7 +180,7 @@ TEST_F(EnrolmentResponseTest, happy_path_returns_code_ok_and_certificate)
 {
     ByteBuffer payload = builder().build();
 
-    EnrolmentResponse resp = parse_enrolment_response(m_security, payload, m_ea_certificate);
+    EnrolmentResponse resp = parse_enrolment_response(m_crypto, payload, m_ea_certificate);
 
     EXPECT_EQ(Vanetza_Security_EnrolmentResponseCode_ok, resp.code);
     ASSERT_TRUE(resp.certificate.has_value());
@@ -189,7 +191,7 @@ TEST_F(EnrolmentResponseTest, happy_path_returns_code_ok_and_certificate)
 TEST_F(EnrolmentResponseTest, rejects_undecodable_input)
 {
     ByteBuffer garbage(16, 0xFF);
-    EXPECT_THROW(parse_enrolment_response(m_security, garbage, m_ea_certificate), DecodingFailure);
+    EXPECT_THROW(parse_enrolment_response(m_crypto, garbage, m_ea_certificate), DecodingFailure);
 }
 
 // The outer content must be signedData: unsecuredData is not acceptable for
@@ -200,7 +202,7 @@ TEST_F(EnrolmentResponseTest, rejects_outer_unsecured_data)
     b.outer_as_unsecured = true;
     ByteBuffer payload = b.build();
 
-    EXPECT_THROW(parse_enrolment_response(m_security, payload, m_ea_certificate), DecodingFailure);
+    EXPECT_THROW(parse_enrolment_response(m_crypto, payload, m_ea_certificate), DecodingFailure);
 }
 
 // TS 102 941 §6.2.3.2.2: the outer signer shall be `digest` naming the EA.
@@ -211,7 +213,7 @@ TEST_F(EnrolmentResponseTest, rejects_self_signer)
     b.signer_variant = Vanetza_Security_SignerIdentifier_PR_self;
     ByteBuffer payload = b.build();
 
-    EXPECT_THROW(parse_enrolment_response(m_security, payload, m_ea_certificate), DecodingFailure);
+    EXPECT_THROW(parse_enrolment_response(m_crypto, payload, m_ea_certificate), DecodingFailure);
 }
 
 // The signer's digest must match HashedId8(ea_certificate). A mismatch means
@@ -224,7 +226,7 @@ TEST_F(EnrolmentResponseTest, rejects_signer_digest_mismatch)
     b.signer_digest_override = other;
     ByteBuffer payload = b.build();
 
-    EXPECT_THROW(parse_enrolment_response(m_security, payload, m_ea_certificate), VerificationFailure);
+    EXPECT_THROW(parse_enrolment_response(m_crypto, payload, m_ea_certificate), VerificationFailure);
 }
 
 // TS 102 941 §6.2.3.2.2: the outer tbsData.headerInfo.psid shall be SCR.
@@ -234,7 +236,7 @@ TEST_F(EnrolmentResponseTest, rejects_wrong_psid)
     b.psid_override = 0x20; // arbitrary non-SCR
     ByteBuffer payload = b.build();
 
-    EXPECT_THROW(parse_enrolment_response(m_security, payload, m_ea_certificate), DecodingFailure);
+    EXPECT_THROW(parse_enrolment_response(m_crypto, payload, m_ea_certificate), DecodingFailure);
 }
 
 // A signature that does not verify against the EA certificate must be
@@ -245,7 +247,7 @@ TEST_F(EnrolmentResponseTest, rejects_bad_signature)
     b.corrupt_signature = true;
     ByteBuffer payload = b.build();
 
-    EXPECT_THROW(parse_enrolment_response(m_security, payload, m_ea_certificate), VerificationFailure);
+    EXPECT_THROW(parse_enrolment_response(m_crypto, payload, m_ea_certificate), VerificationFailure);
 }
 
 // A non-ok response code is not a structural failure; the parser returns it
@@ -259,7 +261,7 @@ TEST_F(EnrolmentResponseTest, non_ok_code_returns_without_throwing)
     b.include_certificate = false;
     ByteBuffer payload = b.build();
 
-    EnrolmentResponse resp = parse_enrolment_response(m_security, payload, m_ea_certificate);
+    EnrolmentResponse resp = parse_enrolment_response(m_crypto, payload, m_ea_certificate);
 
     EXPECT_EQ(Vanetza_Security_EnrolmentResponseCode_deniedpermissions, resp.code);
     EXPECT_FALSE(resp.certificate.has_value());
@@ -273,7 +275,7 @@ TEST_F(EnrolmentResponseTest, rejects_ok_without_certificate)
     b.include_certificate = false;
     ByteBuffer payload = b.build();
 
-    EXPECT_THROW(parse_enrolment_response(m_security, payload, m_ea_certificate), DecodingFailure);
+    EXPECT_THROW(parse_enrolment_response(m_crypto, payload, m_ea_certificate), DecodingFailure);
 }
 
 } // namespace pki

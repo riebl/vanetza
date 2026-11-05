@@ -12,7 +12,7 @@ namespace pki
 class TrustListFilesystemStorage : public TrustListStorage
 {
 public:
-    TrustListFilesystemStorage(std::shared_ptr<SecurityModule>, const std::filesystem::path&);
+    TrustListFilesystemStorage(std::shared_ptr<CryptoProvider>, const std::filesystem::path&);
     void store(const CertificateTrustList&) override;
     boost::optional<CertificateTrustList> fetch(const HashedId8&) const override;
 
@@ -20,7 +20,7 @@ protected:
     std::filesystem::path filename(const HashedId8&) const;
 
 private:
-    std::shared_ptr<SecurityModule> m_security;
+    std::shared_ptr<CryptoProvider> m_crypto;
     std::filesystem::path m_root;
 };
 

@@ -169,7 +169,7 @@ void CertificateTrustList::print() const
     xer_fprint(stdout, &asn_DEF_Vanetza_Security_TlmCertificateTrustListMessage, &*m_asn1);
 }
 
-boost::optional<HashedId8> CertificateTrustList::get_hashed_id8(SecurityModule& security) const
+boost::optional<HashedId8> CertificateTrustList::get_hashed_id8(CryptoProvider& crypto) const
 {
     const Vanetza_Security_SignedData_t* signed_data = get_signed_data(raw());
     if (signed_data) {
@@ -179,7 +179,7 @@ boost::optional<HashedId8> CertificateTrustList::get_hashed_id8(SecurityModule& 
             case Vanetza_Security_SignerIdentifier_PR_certificate: {
                 const Vanetza_Security_SequenceOfCertificate_t& certs = signed_data->signer.choice.certificate;
                 if (certs.list.count == 1 && certs.list.array[0]) {
-                    return calculate_hashed_id8(security, *certs.list.array[0]);
+                    return calculate_hashed_id8(crypto, *certs.list.array[0]);
                 }
             } break;
             default:
@@ -190,15 +190,15 @@ boost::optional<HashedId8> CertificateTrustList::get_hashed_id8(SecurityModule& 
     return boost::none;
 }
 
-CertificateTrustListProcessor::CertificateTrustListProcessor(std::shared_ptr<SecurityModule> security) :
-    m_security(security)
+CertificateTrustListProcessor::CertificateTrustListProcessor(std::shared_ptr<CryptoProvider> crypto) :
+    m_crypto(crypto)
 {
 }
 
 void CertificateTrustListProcessor::process(const CertificateTrustList& ctl)
 {
     const Vanetza_Security_Opaque_t* payload = get_signed_payload(ctl.raw().content);
-    boost::optional<HashedId8> ctl_signer = ctl.get_hashed_id8(*m_security);
+    boost::optional<HashedId8> ctl_signer = ctl.get_hashed_id8(*m_crypto);
     if (!payload || !ctl_signer) {
         return;
     }
@@ -289,7 +289,7 @@ void CertificateTrustListProcessor::add_root_ca(const Vanetza_Security_RootCaEnt
     // The optional successorTo backlink (TS 102 941 v1.4.1 §6.3.4) is informational and
     // ignored here — see [[gap-link-certificates]] for the rollover mechanism.
     Certificate cert(rca.selfsignedRootCa);
-    HashedId8 hid = cert.calculate_hashed_id8(*m_security);
+    HashedId8 hid = cert.calculate_hashed_id8(*m_crypto);
     m_root_cas.insert_or_assign(hid, std::move(cert));
 }
 
@@ -333,7 +333,7 @@ void CertificateTrustListProcessor::add_trust_list_manager(const Vanetza_Securit
 {
     // CPOC access point (tlm.accessPoint) not tracked here; add a parallel map if callers need it.
     Certificate cert(tlm.selfSignedTLMCertificate);
-    HashedId8 hid = cert.calculate_hashed_id8(*m_security);
+    HashedId8 hid = cert.calculate_hashed_id8(*m_crypto);
     m_trust_list_managers.insert_or_assign(hid, std::move(cert));
 }
 
@@ -412,10 +412,10 @@ boost::optional<std::string> CertificateTrustListProcessor::get_distribution_cen
 namespace
 {
 
-std::string build_ctl_name(SecurityModule& security, const Vanetza_Security_EtsiTs103097Certificate_t& cert)
+std::string build_ctl_name(CryptoProvider& crypto, const Vanetza_Security_EtsiTs103097Certificate_t& cert)
 {
     auto name = get_name(cert);
-    auto hid8 = hexstring(calculate_hashed_id8(security, cert));
+    auto hid8 = hexstring(calculate_hashed_id8(crypto, cert));
     if (name.empty()) {
         return "<HashedId8:" + hid8 + ">";
     } else {
@@ -427,7 +427,7 @@ std::string build_ctl_name(SecurityModule& security, const Vanetza_Security_Etsi
 
 void CtlListingVisitor::add_root_ca(const Vanetza_Security_RootCaEntry_t& rca)
 {
-    std::cout << "- Root CA: " << build_ctl_name(m_security, rca.selfsignedRootCa) << "\n";
+    std::cout << "- Root CA: " << build_ctl_name(m_crypto, rca.selfsignedRootCa) << "\n";
     Certificate root_ca_cert { rca.selfsignedRootCa };
     std::cout << "|-> valid: from " << Clock::at(root_ca_cert.valid_since()) << " until "
               << Clock::at(root_ca_cert.valid_until()) << "\n";
@@ -435,7 +435,7 @@ void CtlListingVisitor::add_root_ca(const Vanetza_Security_RootCaEntry_t& rca)
 
 void CtlListingVisitor::add_trust_list_manager(const Vanetza_Security_TlmEntry_t& tlm)
 {
-    std::cout << "- TLM: " << build_ctl_name(m_security, tlm.selfSignedTLMCertificate) << "\n";
+    std::cout << "- TLM: " << build_ctl_name(m_crypto, tlm.selfSignedTLMCertificate) << "\n";
     std::cout << "|-> access point: " << to_string(tlm.accessPoint) << "\n";
 }
 
@@ -484,13 +484,13 @@ void CertificateExportVisitor::add_enrolment_authority(const Vanetza_Security_Ea
 }
 
 CertificateTrustListProcessor process_stored_ctl(const TrustListStorage& trust_lists,
-    std::shared_ptr<SecurityModule> security, const HashedId8& root_ca)
+    std::shared_ptr<CryptoProvider> crypto, const HashedId8& root_ca)
 {
     auto maybe_ctl = trust_lists.fetch(root_ca);
     if (!maybe_ctl) {
         throw UsageError("no CTL is in store for the current Root CA", "fetch a CTL via 'dc fetch ctl'");
     }
-    CertificateTrustListProcessor processor(std::move(security));
+    CertificateTrustListProcessor processor(std::move(crypto));
     processor.process(*maybe_ctl);
     return processor;
 }

@@ -11,9 +11,9 @@ namespace vanetza
 namespace pki
 {
 
-CertificateFilesystemStorage::CertificateFilesystemStorage(std::shared_ptr<SecurityModule> sec,
+CertificateFilesystemStorage::CertificateFilesystemStorage(std::shared_ptr<CryptoProvider> sec,
     const std::filesystem::path& root, std::string extension) :
-    m_security(sec), m_root(root), m_extension(std::move(extension))
+    m_crypto(sec), m_root(root), m_extension(std::move(extension))
 {
     std::filesystem::create_directories(m_root);
 }
@@ -34,7 +34,7 @@ boost::optional<Certificate> CertificateFilesystemStorage::fetch(const HashedId8
 
 void CertificateFilesystemStorage::store(const Certificate& cert)
 {
-    HashedId8 id = cert.calculate_hashed_id8(*m_security);
+    HashedId8 id = cert.calculate_hashed_id8(*m_crypto);
     write(filename(id), cert.encode());
 }
 

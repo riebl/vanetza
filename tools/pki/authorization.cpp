@@ -165,7 +165,7 @@ struct AuthoritiesFromCtl
  */
 AuthoritiesFromCtl lookup_authorities(Context& ctx)
 {
-    auto processor = process_stored_ctl(*ctx.cfg.trust_lists, ctx.cfg.security, ctx.cfg.root_ca_hid8);
+    auto processor = process_stored_ctl(*ctx.cfg.trust_lists, ctx.cfg.crypto, ctx.cfg.root_ca_hid8);
     return AuthoritiesFromCtl { require_enrolment_authority(processor, ctx.cfg.root_ca_hid8),
         require_authorization_authority(processor, ctx.cfg.root_ca_hid8) };
 }
@@ -265,11 +265,11 @@ void request_one_ticket(Context& ctx, const Certificate& ec, const KeyReference&
     params.hash_algo = ctx.hash_algo;
     params.validity_period = validity;
 
-    EncryptedRequest request = build_authorization_request(*ctx.cfg.security, params);
+    EncryptedRequest request = build_authorization_request(*ctx.cfg.security, *ctx.cfg.crypto, params);
 
     auto query = HttpQuery::from_url(ctx.url(auth.aa));
     auto encoded = request.message.encode();
-    auto req_hash = ctx.cfg.security->calculate_sha256_hash(encoded.data(), encoded.size());
+    auto req_hash = ctx.cfg.crypto->calculate_sha256_hash(encoded.data(), encoded.size());
     auto response = http_post(query, "application/x-its-request", encoded);
 
     if (response.result() != boost::beast::http::status::ok) {
@@ -283,9 +283,9 @@ void request_one_ticket(Context& ctx, const Certificate& ec, const KeyReference&
     if (!encrypted_response.decode(response.body().data(), response.body().size())) {
         throw DecodingFailure("decoding encrypted AT response failed");
     }
-    ByteBuffer dec_resp = encrypted_response.decrypt(*ctx.cfg.security, request.key);
+    ByteBuffer dec_resp = encrypted_response.decrypt(*ctx.cfg.crypto, request.key);
 
-    AuthorizationResponse at_resp = parse_authorization_response(*ctx.cfg.security, dec_resp, auth.aa.certificate);
+    AuthorizationResponse at_resp = parse_authorization_response(*ctx.cfg.crypto, dec_resp, auth.aa.certificate);
     if (!check_request_hash(req_hash, at_resp.request_hash)) {
         throw VerificationFailure("mismatch between request and response hash");
     }
@@ -294,7 +294,7 @@ void request_one_ticket(Context& ctx, const Certificate& ec, const KeyReference&
     }
 
     Certificate& at = *at_resp.certificate;
-    HashedId8 at_id = at.calculate_hashed_id8(*ctx.cfg.security);
+    HashedId8 at_id = at.calculate_hashed_id8(*ctx.cfg.crypto);
     scoped_at_key.commit();
     ctx.cfg.tickets->store(at);
     std::cout << "Stored new AT " << hexstring(at_id) << "\n";
@@ -330,7 +330,7 @@ void request_ticket(Context& ctx)
     }
 
     AuthoritiesFromCtl auth = lookup_authorities(ctx);
-    HashedId8 aa_hid8 = auth.aa.certificate.calculate_hashed_id8(*ctx.cfg.security);
+    HashedId8 aa_hid8 = auth.aa.certificate.calculate_hashed_id8(*ctx.cfg.crypto);
     std::cout << "Authorizing against AA " << hexstring(aa_hid8) << " at " << ctx.url(auth.aa) << "\n";
 
     for (unsigned i = 1; i <= ctx.count; ++i) {

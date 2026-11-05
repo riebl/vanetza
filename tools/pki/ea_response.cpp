@@ -14,7 +14,7 @@ namespace vanetza
 namespace pki
 {
 
-EnrolmentResponse parse_enrolment_response(SecurityModule& security, const ByteBuffer& decrypted,
+EnrolmentResponse parse_enrolment_response(CryptoProvider& crypto, const ByteBuffer& decrypted,
     const Certificate& ea_certificate)
 {
     SignedData outer;
@@ -27,7 +27,7 @@ EnrolmentResponse parse_enrolment_response(SecurityModule& security, const ByteB
     const Vanetza_Security_SignedData_t& sd = *outer->content->choice.signedData;
 
     // Per TS 102 941 §6.2.3.2.2 the EA signs enrolment responses with signer = digest(EA cert).
-    const HashedId8 ea_hid8 = ea_certificate.calculate_hashed_id8(security);
+    const HashedId8 ea_hid8 = ea_certificate.calculate_hashed_id8(crypto);
     if (sd.signer.present != Vanetza_Security_SignerIdentifier_PR_digest) {
         throw DecodingFailure("enrolment response must have signer = digest");
     }
@@ -39,7 +39,7 @@ EnrolmentResponse parse_enrolment_response(SecurityModule& security, const ByteB
         throw DecodingFailure("enrolment response PSID is not SCR");
     }
 
-    if (!validate(security, sd, ea_certificate.raw())) {
+    if (!validate(crypto, sd, ea_certificate.raw())) {
         throw VerificationFailure("enrolment response signature does not verify against EA certificate");
     }
 

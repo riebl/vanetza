@@ -3,6 +3,7 @@
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/byte_view.hpp>
 #include <vanetza/common/expected.hpp>
+#include <vanetza/common/factory.hpp>
 #include <vanetza/security/aes.hpp>
 #include <vanetza/security/encrypted_symmetric_key.hpp>
 #include <vanetza/security/hmac.hpp>
@@ -12,6 +13,8 @@
 #include <vanetza/security/security_module_error.hpp>
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/signature.hpp>
+#include <memory>
+#include <string>
 
 namespace vanetza
 {
@@ -22,19 +25,6 @@ class SecurityModule
 {
 public:
     virtual ~SecurityModule() = default;
-    virtual Sha256Hash calculate_sha256_hash(const std::uint8_t* buffer, std::size_t length) = 0;
-    virtual Sha384Hash calculate_sha384_hash(const std::uint8_t* buffer, std::size_t length) = 0;
-
-    /**
-     * Verify signature of a SHA-256 or SHA-384 digest
-     * \param digest hash value of signed data
-     * \param signature signature of digest
-     * \param key public key of signer
-     * \return true for a valid signature, false for a signature not matching digest and key,
-     *         or error, e.g. InvalidPublicKey, see SecurityModuleError for conditions
-     */
-    virtual expected<bool> verify(const Sha256Hash& digest, const Signature& signature, const PublicKey& key) = 0;
-    virtual expected<bool> verify(const Sha384Hash& digest, const Signature& signature, const PublicKey& key) = 0;
 
     /**
      * Create a key pair for signing
@@ -46,7 +36,8 @@ public:
     /**
      * Find reference of a stored private key usable for signing
      * \param key public key of the private key
-     * \return reference or error, see SecurityModuleError for conditions
+     * \return reference or error, e.g. KeyNotFound by a module without key storage,
+     *         see SecurityModuleError for conditions
      */
     virtual expected<KeyReference> find_signing_key(const PublicKey& key) = 0;
 
@@ -93,31 +84,27 @@ public:
      */
     virtual expected<EncryptedSymmetricKey> encrypt_key(
         const PublicKey& recipient, const Aes128Key& key, const Sha256Hash& info) = 0;
-
-    /**
-     * Encrypt by AES-CCM with a fresh nonce
-     * \param key symmetric key
-     * \param plaintext payload
-     * \return ciphertext or error, see SecurityModuleError for conditions
-     */
-    virtual expected<AesCcmCiphertext> encrypt_aes_ccm(const Aes128Key& key, const ByteBuffer& plaintext) = 0;
-
-    /**
-     * Decrypt AES-CCM ciphertext
-     * \param key symmetric key
-     * \param ciphertext encrypted payload
-     * \return payload or error, see SecurityModuleError for conditions
-     */
-    virtual expected<ByteBuffer> decrypt_aes_ccm(const Aes128Key& key, const AesCcmCiphertext& ciphertext) = 0;
-
-    /**
-     * Calculate HMAC-SHA256 (RFC 2104), e.g. for keyTag of an authorization request (ETSI TS 102 941 §6.2.3.3.1)
-     * \param key HMAC key of any length
-     * \param data authenticated data
-     * \return untruncated HMAC or error, see SecurityModuleError for conditions
-     */
-    virtual expected<Sha256Hmac> calculate_hmac_sha256(const byte_view_range& key, const byte_view_range& data) = 0;
 };
+
+/**
+ * \brief get factory containing builtin security module implementations
+ *
+ * Included set of modules depends on CMake build configuration, it may be empty.
+ * Modules are created with their default configuration, e.g. without credential storage.
+ * \return factory
+ */
+const Factory<SecurityModule>& builtin_security_modules();
+
+/**
+ * \brief create a security module instance
+ *
+ * Name "default" selects the module preferred by this build.
+ * \param name identifying name of module implementation
+ * \param factory build module registered by name from this factory
+ * \return module instance or nullptr if unavailable
+ */
+std::unique_ptr<SecurityModule> create_security_module(
+    const std::string& name = "default", const Factory<SecurityModule>& factory = builtin_security_modules());
 
 } // namespace security
 } // namespace vanetza

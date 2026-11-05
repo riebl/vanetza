@@ -237,6 +237,41 @@ EvpKey::~EvpKey()
     EVP_PKEY_free(pkey);
 }
 
+int nid(KeyType key)
+{
+    int nid = 0;
+    switch (key) {
+        case KeyType::NistP256:
+            nid = NID_X9_62_prime256v1;
+            break;
+        case KeyType::BrainpoolP256r1:
+            nid = NID_brainpoolP256r1;
+            break;
+        case KeyType::BrainpoolP384r1:
+            nid = NID_brainpoolP384r1;
+            break;
+        default:
+            throw std::runtime_error("unknown key type");
+            break;
+    }
+    return nid;
+}
+
+Ptr<EC_POINT> build_point(const EC_GROUP* group, const PublicKey& key)
+{
+    const ByteBuffer octets = encode_ec_point(key);
+    if (octets.empty()) {
+        return nullptr;
+    }
+
+    // unlike EC_POINT_set_*_coordinates, EC_POINT_oct2point rejects coordinates exceeding the field
+    Ptr<EC_POINT> point { EC_POINT_new(group) };
+    if (!point || !EC_POINT_oct2point(group, point.get(), octets.data(), octets.size(), nullptr)) {
+        return nullptr;
+    }
+    return point;
+}
+
 } // namespace openssl
 } // namespace security
 } // namespace vanetza

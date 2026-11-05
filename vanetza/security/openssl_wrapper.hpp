@@ -2,11 +2,16 @@
 #define OPENSSL_WRAPPER_HPP_GUFJGICT
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/key_type.hpp>
 #include <boost/core/noncopyable.hpp>
+#include <openssl/bn.h>
 #include <openssl/ec.h>
+#include <openssl/ecdsa.h>
 #include <openssl/err.h>
+#include <openssl/evp.h>
 #include <array>
 #include <cstdint>
+#include <memory>
 #include <stdexcept>
 
 namespace vanetza
@@ -16,6 +21,7 @@ namespace security
 
 // forward declaration
 struct EcdsaSignature;
+struct PublicKey;
 struct Signature;
 
 namespace openssl
@@ -189,6 +195,35 @@ public:
 private:
     EVP_PKEY* pkey;
 };
+
+// releases OpenSSL objects, unlike Key a failed allocation yields nullptr instead of an exception
+struct Deleter
+{
+    void operator()(BIGNUM* bn) const { BN_free(bn); }
+    void operator()(EC_KEY* key) const { EC_KEY_free(key); }
+    void operator()(EC_POINT* point) const { EC_POINT_free(point); }
+    void operator()(ECDSA_SIG* sig) const { ECDSA_SIG_free(sig); }
+    void operator()(EVP_CIPHER_CTX* ctx) const { EVP_CIPHER_CTX_free(ctx); }
+};
+
+template<typename T>
+using Ptr = std::unique_ptr<T, Deleter>;
+
+/**
+ * Get OpenSSL's identifier of a key type's curve
+ * \param key key type
+ * \return curve NID
+ * \throw std::runtime_error for unknown key type
+ */
+int nid(KeyType key);
+
+/**
+ * Build curve point of a public key
+ * \param group curve of point
+ * \param key public key
+ * \return point or nullptr if key is malformed or not on the curve
+ */
+Ptr<EC_POINT> build_point(const EC_GROUP* group, const PublicKey& key);
 
 } // namespace openssl
 } // namespace security

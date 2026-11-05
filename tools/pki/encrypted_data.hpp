@@ -18,7 +18,7 @@ public:
     using wrapper = asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t>;
 
     EncryptedData();
-    void generate_ciphertext(SecurityModule&, const security::Aes128Key&, const ByteBuffer& payload);
+    void generate_ciphertext(CryptoProvider&, const security::Aes128Key&, const ByteBuffer& payload);
     void add_recipient_info(const HashedId8&, const EncryptedSymmetricKey&);
     const OCTET_STRING_t* get_nonce() const;
     const OCTET_STRING_t* get_ciphertext() const;
@@ -31,11 +31,11 @@ public:
      * \param key AES key of the request
      * \throws DecodingFailure if the ciphertext or pskRecipInfo is missing or decryption fails
      */
-    ByteBuffer decrypt(SecurityModule&, const security::Aes128Key& key) const;
+    ByteBuffer decrypt(CryptoProvider&, const security::Aes128Key& key) const;
 
     // Lower-level builders that mutate an EtsiTs103097Data-Encrypted value in-place
     static void init(asn1c_type& dest);
-    static void set_aes_ccm_ciphertext(asn1c_type& dest, SecurityModule&, const security::Aes128Key&,
+    static void set_aes_ccm_ciphertext(asn1c_type& dest, CryptoProvider&, const security::Aes128Key&,
         const ByteBuffer& plaintext);
     static void append_recipient_info(asn1c_type& dest, const EncryptedSymmetricKey&, const HashedId8& recipient);
 

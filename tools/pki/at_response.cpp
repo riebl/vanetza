@@ -14,7 +14,7 @@ namespace vanetza
 namespace pki
 {
 
-AuthorizationResponse parse_authorization_response(SecurityModule& security, const ByteBuffer& decrypted,
+AuthorizationResponse parse_authorization_response(CryptoProvider& crypto, const ByteBuffer& decrypted,
     const Certificate& aa_certificate)
 {
     SignedData outer;
@@ -27,7 +27,7 @@ AuthorizationResponse parse_authorization_response(SecurityModule& security, con
     const Vanetza_Security_SignedData_t& sd = *outer->content->choice.signedData;
 
     // Per TS 102 941 §6.2.3.3.2 the AA signs with signer = digest(AA cert).
-    const HashedId8 aa_hid8 = aa_certificate.calculate_hashed_id8(security);
+    const HashedId8 aa_hid8 = aa_certificate.calculate_hashed_id8(crypto);
     if (sd.signer.present != Vanetza_Security_SignerIdentifier_PR_digest) {
         throw DecodingFailure("authorization response must have signer = digest");
     }
@@ -39,7 +39,7 @@ AuthorizationResponse parse_authorization_response(SecurityModule& security, con
         throw DecodingFailure("authorization response PSID is not SCR");
     }
 
-    if (!validate(security, sd, aa_certificate.raw())) {
+    if (!validate(crypto, sd, aa_certificate.raw())) {
         throw VerificationFailure("authorization response signature does not verify against AA certificate");
     }
 

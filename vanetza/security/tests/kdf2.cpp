@@ -1,7 +1,9 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/kdf2.hpp>
 #include <gtest/gtest.h>
 #include <array>
 #include <cstdint>
+#include <memory>
 
 using vanetza::ByteBuffer;
 using vanetza::create_byte_view;
@@ -11,7 +13,20 @@ using namespace vanetza::security;
  * Test vectors from IEEE 1609.2-2017 (Annex D)
  */
 
-TEST(Kdf2, vector1)
+class Kdf2 : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        if (!crypto) {
+            GTEST_SKIP() << "no crypto provider built in";
+        }
+    }
+
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+};
+
+TEST_F(Kdf2, vector1)
 {
     const ByteBuffer shared {{
         0x96, 0xC0, 0x56, 0x19, 0xD5, 0x6C, 0x32, 0x8A,
@@ -24,12 +39,12 @@ TEST(Kdf2, vector1)
         0xe6, 0xf5, 0x67, 0x06, 0x01, 0x55, 0x8f, 0x71
     }};
 
-    EXPECT_EQ(expected, kdf2<16>(create_byte_view(shared), create_byte_view(kdp)));
+    EXPECT_EQ(expected, kdf2<16>(*crypto, create_byte_view(shared), create_byte_view(kdp)));
     EXPECT_EQ(ByteBuffer(expected.begin(), expected.end()),
-        kdf2(create_byte_view(shared), create_byte_view(kdp), expected.size()));
+        kdf2(*crypto, create_byte_view(shared), create_byte_view(kdp), expected.size()));
 }
 
-TEST(Kdf2, vector2)
+TEST_F(Kdf2, vector2)
 {
     const ByteBuffer shared {{
         0x96, 0xF6, 0x00, 0xB7, 0x3A, 0xD6, 0xAC, 0x56,
@@ -42,12 +57,12 @@ TEST(Kdf2, vector2)
         0x67, 0xba, 0x90, 0x70, 0xf8, 0x2f, 0xa5, 0x22
     }};
 
-    EXPECT_EQ(expected, kdf2<16>(create_byte_view(shared), create_byte_view(kdp)));
+    EXPECT_EQ(expected, kdf2<16>(*crypto, create_byte_view(shared), create_byte_view(kdp)));
     EXPECT_EQ(ByteBuffer(expected.begin(), expected.end()),
-        kdf2(create_byte_view(shared), create_byte_view(kdp), expected.size()));
+        kdf2(*crypto, create_byte_view(shared), create_byte_view(kdp), expected.size()));
 }
 
-TEST(Kdf2, vector3)
+TEST_F(Kdf2, vector3)
 {
     const ByteBuffer shared {{
         0x22, 0x51, 0x8B, 0x10, 0xE7, 0x0F, 0x2A, 0x3F,
@@ -77,12 +92,12 @@ TEST(Kdf2, vector3)
         0xe3, 0x86, 0x12, 0x8e, 0xc2, 0x6a, 0xfc, 0x21
     }};
 
-    EXPECT_EQ(expected, kdf2<128>(create_byte_view(shared), create_byte_view(kdp)));
+    EXPECT_EQ(expected, kdf2<128>(*crypto, create_byte_view(shared), create_byte_view(kdp)));
     EXPECT_EQ(ByteBuffer(expected.begin(), expected.end()),
-        kdf2(create_byte_view(shared), create_byte_view(kdp), expected.size()));
+        kdf2(*crypto, create_byte_view(shared), create_byte_view(kdp), expected.size()));
 }
 
-TEST(Kdf2, vector4)
+TEST_F(Kdf2, vector4)
 {
     const ByteBuffer shared {{
         0x7E, 0x33, 0x5A, 0xFA, 0x4B, 0x31, 0xD7, 0x72,
@@ -112,7 +127,7 @@ TEST(Kdf2, vector4)
         0x0d, 0x9f, 0x02, 0xb1, 0x3f, 0x2f, 0x6b, 0x0b
     }};
 
-    EXPECT_EQ(expected, kdf2<128>(create_byte_view(shared), create_byte_view(kdp)));
+    EXPECT_EQ(expected, kdf2<128>(*crypto, create_byte_view(shared), create_byte_view(kdp)));
     EXPECT_EQ(ByteBuffer(expected.begin(), expected.end()),
-        kdf2(create_byte_view(shared), create_byte_view(kdp), expected.size()));
+        kdf2(*crypto, create_byte_view(shared), create_byte_view(kdp), expected.size()));
 }

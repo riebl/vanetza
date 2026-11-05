@@ -23,6 +23,7 @@ struct MainConfig
     HashedId8 root_ca_hid8;
     std::shared_ptr<StationConfiguration> station;
     std::shared_ptr<SecurityModule> security;
+    std::shared_ptr<CryptoProvider> crypto;
     std::shared_ptr<CertificateStorage> root_ca; // root CA certificates
     std::shared_ptr<CertificateStorage> enrolment_credentials; // station's EC certificates
     std::shared_ptr<CertificateStorage> tickets; // station's authorization tickets

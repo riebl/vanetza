@@ -39,7 +39,7 @@ struct EnrolmentResponse
  * \throws DecodingFailure on structural failure
  * \throws VerificationFailure on signer-digest or signature mismatch
  */
-EnrolmentResponse parse_enrolment_response(SecurityModule& security, const ByteBuffer& decrypted,
+EnrolmentResponse parse_enrolment_response(CryptoProvider& crypto, const ByteBuffer& decrypted,
     const Certificate& ea_certificate);
 
 } // namespace pki

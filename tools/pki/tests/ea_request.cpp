@@ -57,6 +57,7 @@ protected:
 
     std::shared_ptr<MockCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
+    OpenSslCryptoProvider m_crypto;
 };
 
 // The builder must reject parameters that do not satisfy ETSI TS 102 941 / IEEE 1609.2 basic invariants.
@@ -64,7 +65,7 @@ TEST_F(EnrolmentRequestTest, rejects_empty_its_id)
 {
     auto params = make_params();
     params.its_id.clear();
-    EXPECT_THROW(build_signed_enrolment_request(m_security, params), std::invalid_argument);
+    EXPECT_THROW(build_signed_enrolment_request(m_security, m_crypto, params), std::invalid_argument);
 }
 
 // The signed output must parse as an EtsiTs103097Data-Signed with the exact
@@ -73,7 +74,7 @@ TEST_F(EnrolmentRequestTest, rejects_empty_its_id)
 TEST_F(EnrolmentRequestTest, outer_structure_matches_TS102941)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+    ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
 
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
@@ -95,15 +96,15 @@ TEST_F(EnrolmentRequestTest, outer_structure_matches_TS102941)
 TEST_F(EnrolmentRequestTest, outer_signature_verifies_with_canonical_key)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+    ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
 
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
     const auto& sd = *outer->content->choice.signedData;
 
-    Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, nullptr);
+    Sha256Hash digest = calculate_digest<Sha256Hash>(m_crypto, *sd.tbsData, nullptr);
     Signature signature = make_signature(sd.signature);
-    EXPECT_TRUE(m_security.verify(digest, signature, m_security.public_key(params.outer_signer_key).value()).value());
+    EXPECT_TRUE(m_crypto.verify(digest, signature, m_security.public_key(params.outer_signer_key).value()).value());
 }
 
 // The POP signature carried in the EtsiTs102941Data enrolmentRequest content
@@ -112,7 +113,7 @@ TEST_F(EnrolmentRequestTest, outer_signature_verifies_with_canonical_key)
 TEST_F(EnrolmentRequestTest, pop_signature_verifies_with_verification_key)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+    ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
 
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
@@ -125,9 +126,9 @@ TEST_F(EnrolmentRequestTest, pop_signature_verifies_with_verification_key)
     const auto& pop_sd = *pop.content->choice.signedData;
     EXPECT_EQ(Vanetza_Security_SignerIdentifier_PR_self, pop_sd.signer.present);
 
-    Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *pop_sd.tbsData, nullptr);
+    Sha256Hash digest = calculate_digest<Sha256Hash>(m_crypto, *pop_sd.tbsData, nullptr);
     Signature signature = make_signature(pop_sd.signature);
-    EXPECT_TRUE(m_security.verify(digest, signature, params.verification_key).value());
+    EXPECT_TRUE(m_crypto.verify(digest, signature, params.verification_key).value());
 }
 
 // The innermost InnerEcRequest must carry the inputs unchanged: itsId, the
@@ -135,7 +136,7 @@ TEST_F(EnrolmentRequestTest, pop_signature_verifies_with_verification_key)
 TEST_F(EnrolmentRequestTest, inner_ec_request_carries_inputs)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+    ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
 
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
@@ -164,7 +165,7 @@ TEST_F(EnrolmentRequestTest, inner_verification_key_matches_curve)
 {
     for (auto key_type : { KeyType::NistP256, KeyType::BrainpoolP256r1, KeyType::BrainpoolP384r1 }) {
         auto params = make_params(key_type);
-        ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+        ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
 
         SignedData outer;
         ASSERT_TRUE(outer.decode(encoded));
@@ -210,7 +211,7 @@ TEST_F(EnrolmentRequestTest, conformant_EC_permission_is_SCR_only_TS103097_7_2_2
     params.outer_signer_key = m_security.create_signing_key(KeyType::NistP256).value();
     // TS 103 525-3 reference value PX_INNER_EC_CERTFICATE_BITMAP_SSP_SCR
 
-    ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+    ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
     MgmtData mgmt = decode_unsecured<MgmtData>(*outer->content->choice.signedData);
@@ -237,18 +238,18 @@ TEST_F(EnrolmentRequestTest, mixed_curves_still_verify)
     create_verification_key(params, KeyType::BrainpoolP256r1);
     params.outer_signer_key = m_security.create_signing_key(KeyType::NistP256).value();
 
-    ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+    ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
     const auto& outer_sd = *outer->content->choice.signedData;
-    const Sha256Hash outer_digest = calculate_digest<Sha256Hash>(m_security, *outer_sd.tbsData, nullptr);
+    const Sha256Hash outer_digest = calculate_digest<Sha256Hash>(m_crypto, *outer_sd.tbsData, nullptr);
     const PublicKey outer_signer = m_security.public_key(params.outer_signer_key).value();
-    EXPECT_TRUE(m_security.verify(outer_digest, make_signature(outer_sd.signature), outer_signer).value());
+    EXPECT_TRUE(m_crypto.verify(outer_digest, make_signature(outer_sd.signature), outer_signer).value());
 
     MgmtData mgmt = decode_unsecured<MgmtData>(outer_sd);
     const auto& pop_sd = *mgmt->content.choice.enrolmentRequest.content->choice.signedData;
-    const Sha256Hash pop_digest = calculate_digest<Sha256Hash>(m_security, *pop_sd.tbsData, nullptr);
-    EXPECT_TRUE(m_security.verify(pop_digest, make_signature(pop_sd.signature), params.verification_key).value());
+    const Sha256Hash pop_digest = calculate_digest<Sha256Hash>(m_crypto, *pop_sd.tbsData, nullptr);
+    EXPECT_TRUE(m_crypto.verify(pop_digest, make_signature(pop_sd.signature), params.verification_key).value());
 }
 
 // TS 102 941 §6.2.3.2.1: for a re-keying (renewal) enrolment request, the
@@ -268,7 +269,7 @@ TEST_F(EnrolmentRequestTest, outer_digest_signed_when_certificate_provided)
     params.outer_signer_key = ec_key;
     params.outer_signer_certificate = &ec_cert;
 
-    ByteBuffer encoded = build_signed_enrolment_request(m_security, params);
+    ByteBuffer encoded = build_signed_enrolment_request(m_security, m_crypto, params);
 
     SignedData outer;
     ASSERT_TRUE(outer.decode(encoded));
@@ -276,12 +277,12 @@ TEST_F(EnrolmentRequestTest, outer_digest_signed_when_certificate_provided)
 
     // signer.present == digest, and digest matches HashedId8(ec_cert)
     ASSERT_EQ(Vanetza_Security_SignerIdentifier_PR_digest, sd.signer.present);
-    HashedId8 expected_hid8 = ec_cert.calculate_hashed_id8(m_security);
+    HashedId8 expected_hid8 = ec_cert.calculate_hashed_id8(m_crypto);
     EXPECT_TRUE(sd.signer.choice.digest == expected_hid8.octets);
 
     // signature verifies over calculate_digest(tbs, &ec_cert) using the EC key
-    Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, &ec_cert.raw());
-    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), m_security.public_key(ec_key).value()).value());
+    Sha256Hash digest = calculate_digest<Sha256Hash>(m_crypto, *sd.tbsData, &ec_cert.raw());
+    EXPECT_TRUE(m_crypto.verify(digest, make_signature(sd.signature), m_security.public_key(ec_key).value()).value());
 
     // PoP (inner) remains signer = self regardless of outer signer choice.
     MgmtData mgmt = decode_unsecured<MgmtData>(sd);
@@ -297,9 +298,9 @@ TEST_F(EnrolmentRequestTest, request_key_is_encrypted_for_ea)
     const PublicKey ea_encryption_public_key = derive_public_key(ea_encryption_key);
     const Certificate ea =
         build_stub_certificate(derive_public_key(generate_private_key(KeyType::NistP256)), &ea_encryption_public_key);
-    EncryptedRequest request = build_enrolment_request(m_security, make_params(), ea);
+    EncryptedRequest request = build_enrolment_request(m_security, m_crypto, make_params(), ea);
 
-    EXPECT_EQ(request.key, recover_key(m_security, *request.message, ea_encryption_key, ea));
+    EXPECT_EQ(request.key, recover_key(m_crypto, *request.message, ea_encryption_key, ea));
 }
 
 } // namespace pki

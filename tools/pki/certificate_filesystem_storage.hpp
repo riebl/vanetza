@@ -14,7 +14,7 @@ namespace pki
 class CertificateFilesystemStorage : public CertificateStorage
 {
 public:
-    CertificateFilesystemStorage(std::shared_ptr<SecurityModule>, const std::filesystem::path&,
+    CertificateFilesystemStorage(std::shared_ptr<CryptoProvider>, const std::filesystem::path&,
         std::string extension = ".oer");
     boost::optional<Certificate> fetch(const HashedId8&) const override;
     void store(const Certificate&) override;
@@ -25,7 +25,7 @@ protected:
     std::filesystem::path filename(const HashedId8&) const;
 
 private:
-    std::shared_ptr<SecurityModule> m_security;
+    std::shared_ptr<CryptoProvider> m_crypto;
     std::filesystem::path m_root;
     std::string m_extension;
 };

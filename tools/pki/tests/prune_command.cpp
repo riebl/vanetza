@@ -41,11 +41,12 @@ protected:
 
         cfg.credentials = std::make_shared<MockCredentialStorage>();
         cfg.security = std::make_shared<OpenSslSecurityModule>(cfg.credentials);
+        cfg.crypto = std::make_shared<OpenSslCryptoProvider>();
         const auto certs_dir = root / "certs";
-        cfg.root_ca = std::make_shared<CertificateFilesystemStorage>(cfg.security, certs_dir, ".rca");
-        cfg.enrolment_credentials = std::make_shared<CertificateFilesystemStorage>(cfg.security, certs_dir, ".ec");
-        cfg.tlm = std::make_shared<CertificateFilesystemStorage>(cfg.security, certs_dir, ".tlm");
-        cfg.tickets = std::make_shared<CertificateFilesystemStorage>(cfg.security, certs_dir, ".at");
+        cfg.root_ca = std::make_shared<CertificateFilesystemStorage>(cfg.crypto, certs_dir, ".rca");
+        cfg.enrolment_credentials = std::make_shared<CertificateFilesystemStorage>(cfg.crypto, certs_dir, ".ec");
+        cfg.tlm = std::make_shared<CertificateFilesystemStorage>(cfg.crypto, certs_dir, ".tlm");
+        cfg.tickets = std::make_shared<CertificateFilesystemStorage>(cfg.crypto, certs_dir, ".at");
         cfg.station = std::make_shared<StubStationConfiguration>();
     }
 
@@ -196,7 +197,7 @@ TEST_F(PruneTestFixture, prune_expired_skips_station_referenced_without_force)
 {
     PublicKey ec_key = make_random_pubkey();
     auto ec = build_stub_certificate(ec_key, nullptr, at_offset(std::chrono::seconds(-86400)), std::chrono::hours(1));
-    HashedId8 ec_id = ec.calculate_hashed_id8(*cfg.security);
+    HashedId8 ec_id = ec.calculate_hashed_id8(*cfg.crypto);
     cfg.enrolment_credentials->store(ec);
     station().set_ec_identifier(ec_id);
 
@@ -212,7 +213,7 @@ TEST_F(PruneTestFixture, prune_expired_force_removes_station_referenced)
 {
     PublicKey ec_key = make_random_pubkey();
     auto ec = build_stub_certificate(ec_key, nullptr, at_offset(std::chrono::seconds(-86400)), std::chrono::hours(1));
-    HashedId8 ec_id = ec.calculate_hashed_id8(*cfg.security);
+    HashedId8 ec_id = ec.calculate_hashed_id8(*cfg.crypto);
     cfg.enrolment_credentials->store(ec);
     station().set_ec_identifier(ec_id);
 

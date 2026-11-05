@@ -105,7 +105,7 @@ void list_tlm(Context& context)
 void fetch_tlm(Context& context, const HashedId8* id, bool dry_run)
 {
     Certificate tlm = fetch_tlm_certificate(context.cpoc_url, id);
-    const HashedId8 tlm_hid8 = tlm.calculate_hashed_id8(*context.cfg.security);
+    const HashedId8 tlm_hid8 = tlm.calculate_hashed_id8(*context.cfg.crypto);
     if (id && *id != tlm_hid8) {
         throw VerificationFailure("fetched TLM certificate's HashedId8 does not match requested HashedId8");
     }
@@ -174,7 +174,7 @@ void list_ectl(Context& context)
 {
     CertificateTrustList ctl = CertificateTrustList::from_file(context.ectl_file());
     std::cout << "ECTL contains:\n";
-    CtlListingVisitor visitor(*context.cfg.security);
+    CtlListingVisitor visitor(*context.cfg.crypto);
     ctl.visit_tlm_ctl(visitor);
 }
 
@@ -231,7 +231,7 @@ void fetch_ectl(Context& context, const HashedId8* tlm_id, bool dry_run)
             const Vanetza_Security_SequenceOfCertificate& certlist = sdata->signer.choice.certificate;
             if (certlist.list.count >= 1) {
                 ectl_certificate = certlist.list.array[0];
-                HashedId8 cert_hid8 = calculate_hashed_id8(*context.cfg.security, *ectl_certificate);
+                HashedId8 cert_hid8 = calculate_hashed_id8(*context.cfg.crypto, *ectl_certificate);
                 if (cert_hid8 != tlm_hid8) {
                     throw VerificationFailure("signing certificate's digest does not match requested HashedId8");
                 }
@@ -253,7 +253,7 @@ void fetch_ectl(Context& context, const HashedId8* tlm_id, bool dry_run)
             }
         }
 
-        if (!validate(*context.cfg.security, *sdata, stored_tlm->raw())) {
+        if (!validate(*context.cfg.crypto, *sdata, stored_tlm->raw())) {
             throw VerificationFailure("signature verification of ECTL failed");
         }
 

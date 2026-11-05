@@ -1,6 +1,5 @@
 #include "certificate_revocation_list.hpp"
 #include "crl_test_fixture.hpp"
-#include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
 #include <gtest/gtest.h>
 
@@ -12,13 +11,7 @@ namespace pki
 class CertificateRevocationListTest : public ::testing::Test
 {
 protected:
-    CertificateRevocationListTest() :
-        m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials)
-    {
-    }
-
-    std::shared_ptr<MockCredentialStorage> m_credentials;
-    OpenSslSecurityModule m_security;
+    OpenSslCryptoProvider m_crypto;
 };
 
 TEST_F(CertificateRevocationListTest, decode_rejects_garbage)
@@ -32,7 +25,7 @@ TEST_F(CertificateRevocationListTest, get_hashed_id8_returns_signer_digest)
     HashedId8 issuer = make_id(0xAB);
     CertificateRevocationList crl = build_test_crl(issuer, { make_id(0x11) });
 
-    auto got = crl.get_hashed_id8(m_security);
+    auto got = crl.get_hashed_id8(m_crypto);
     ASSERT_TRUE(got);
     EXPECT_EQ(issuer, *got);
 }
@@ -71,7 +64,7 @@ TEST_F(CertificateRevocationListTest, encode_decode_roundtrip)
     CertificateRevocationList decoded;
     ASSERT_TRUE(decoded.decode(bytes));
 
-    auto issuer_out = decoded.get_hashed_id8(m_security);
+    auto issuer_out = decoded.get_hashed_id8(m_crypto);
     ASSERT_TRUE(issuer_out);
     EXPECT_EQ(issuer, *issuer_out);
 

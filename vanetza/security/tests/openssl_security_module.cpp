@@ -103,6 +103,35 @@ TEST_F(OpenSslSecurityModuleTest, malformed_key_reference_has_no_public_key)
     }
 }
 
+TEST_F(OpenSslSecurityModuleTest, is_builtin_default)
+{
+    std::unique_ptr<SecurityModule> module = create_security_module("OpenSSL");
+    EXPECT_NE(nullptr, dynamic_cast<OpenSslSecurityModule*>(module.get()));
+    EXPECT_NE(nullptr, create_security_module());
+}
+
+TEST_F(OpenSslSecurityModuleTest, module_without_storage_finds_no_key)
+{
+    OpenSslSecurityModule stateless;
+    expected<KeyReference> key = stateless.create_signing_key(KeyType::NistP256);
+    ASSERT_TRUE(key.has_value());
+    expected<PublicKey> public_key = stateless.public_key(*key);
+    ASSERT_TRUE(public_key.has_value());
+    expected<KeyReference> found = stateless.find_signing_key(*public_key);
+    ASSERT_TRUE(found.has_error());
+    EXPECT_EQ(SecurityModuleError::KeyNotFound, found.error());
+}
+
+TEST_F(OpenSslSecurityModuleTest, module_without_storage_discards_only_valid_references)
+{
+    OpenSslSecurityModule stateless;
+    EXPECT_TRUE(stateless.discard_key(make_reference(KeyType::NistP256, p256_scalar)));
+    for (const auto& malformed : malformed_references) {
+        SCOPED_TRACE(malformed.defect);
+        EXPECT_FALSE(stateless.discard_key(malformed.key));
+    }
+}
+
 TEST_F(OpenSslSecurityModuleTest, created_signing_key_is_stored)
 {
     expected<KeyReference> key = security.create_signing_key(KeyType::NistP256);
@@ -180,94 +209,4 @@ TEST_F(OpenSslSecurityModuleTest, invalid_recipient_key_is_reported_with_openssl
     EXPECT_EQ(SecurityModuleError::InvalidPublicKey, encrypted.error());
     EXPECT_STREQ("openssl.invalid_public_key", encrypted.error().category().name());
     EXPECT_EQ(0u, ERR_peek_error());
-}
-
-TEST_F(OpenSslSecurityModuleTest, tampered_ciphertext_is_reported_with_openssl_error)
-{
-    const Aes128Key key {};
-    expected<AesCcmCiphertext> ciphertext = security.encrypt_aes_ccm(key, ByteBuffer(10, 0x5A));
-    ASSERT_TRUE(ciphertext.has_value());
-    ciphertext->ciphertext.back() ^= 0x01; // authentication tag
-    expected<ByteBuffer> decrypted = security.decrypt_aes_ccm(key, *ciphertext);
-    ASSERT_TRUE(decrypted.has_error());
-    EXPECT_EQ(SecurityModuleError::DecryptionFailure, decrypted.error());
-    EXPECT_STREQ("openssl.decryption_failure", decrypted.error().category().name());
-    EXPECT_EQ(0u, ERR_peek_error());
-}
-
-TEST_F(OpenSslSecurityModuleTest, unverifiable_signature_is_false_leaving_openssl_error_queue_unchanged)
-{
-    const KeyReference reference = make_reference(KeyType::NistP256, p256_scalar);
-    expected<PublicKey> public_key = security.public_key(reference);
-    ASSERT_TRUE(public_key.has_value());
-    expected<Signature> signature = security.sign(ByteBuffer(32, 0x01), reference);
-    ASSERT_TRUE(signature.has_value());
-
-    Signature out_of_range = *signature;
-    out_of_range.r = ByteBuffer { 0x00 }; // valid r and s are greater than zero
-    out_of_range.s = ByteBuffer { 0x00 };
-    Signature empty = *signature;
-    empty.r.clear();
-    Signature other_curve = *signature;
-    other_curve.type = KeyType::BrainpoolP256r1;
-
-    const struct
-    {
-        const char* defect;
-        Signature signature;
-    } unverifiable[] = {
-        { "signature of other digest", *signature },
-        { "r and s out of range", out_of_range },
-        { "empty r", empty },
-        { "signature for other curve", other_curve },
-    };
-
-    for (const auto& candidate : unverifiable) {
-        SCOPED_TRACE(candidate.defect);
-        // error queued by someone else before verification
-        ERR_raise(ERR_LIB_EC, EC_R_POINT_IS_NOT_ON_CURVE);
-        const unsigned long queued = ERR_peek_last_error();
-
-        Sha256Hash digest;
-        digest.octets.fill(0x02);
-        expected<bool> verified = security.verify(digest, candidate.signature, *public_key);
-        ASSERT_TRUE(verified.has_value());
-        EXPECT_FALSE(*verified);
-        EXPECT_EQ(queued, ERR_get_error());
-        EXPECT_EQ(0u, ERR_peek_error());
-    }
-}
-
-TEST_F(OpenSslSecurityModuleTest, unusable_public_key_is_reported_by_verification)
-{
-    Signature signature;
-    signature.type = KeyType::NistP256;
-    signature.r.assign(32, 0x01);
-    signature.s.assign(32, 0x01);
-
-    PublicKey malformed;
-    malformed.type = KeyType::NistP256;
-    malformed.compression = KeyCompression::Y0;
-    malformed.x.assign(33, 0x11); // exceeds field length
-    PublicKey unspecified = off_curve_public_key();
-    unspecified.type = KeyType::Unspecified;
-
-    const struct
-    {
-        const char* defect;
-        PublicKey key;
-        SecurityModuleError error;
-    } unusable_keys[] = {
-        { "not on curve", off_curve_public_key(), SecurityModuleError::InvalidPublicKey },
-        { "malformed", malformed, SecurityModuleError::InvalidPublicKey },
-        { "unspecified key type", unspecified, SecurityModuleError::UnsupportedKeyType },
-    };
-
-    for (const auto& unusable : unusable_keys) {
-        SCOPED_TRACE(unusable.defect);
-        expected<bool> verified = security.verify(Sha256Hash {}, signature, unusable.key);
-        ASSERT_TRUE(verified.has_error());
-        EXPECT_EQ(unusable.error, verified.error());
-        EXPECT_EQ(0u, ERR_peek_error());
-    }
 }

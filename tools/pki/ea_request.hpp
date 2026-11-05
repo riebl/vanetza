@@ -39,7 +39,8 @@ struct EnrolmentRequestParameters
  * the OER-encoded InnerEcRequest signed with verification_key (signer=self) as POP.
  * Exposed for testing; production code should call build_enrolment_request().
  */
-ByteBuffer build_signed_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& parameters);
+ByteBuffer build_signed_enrolment_request(
+    SecurityModule& security, CryptoProvider& crypto, const EnrolmentRequestParameters& parameters);
 
 /**
  * \brief Build the EA-encrypted enrolment request.
@@ -48,8 +49,8 @@ ByteBuffer build_signed_enrolment_request(SecurityModule& security, const Enrolm
  * returned key is needed to decrypt the EA's response (same symmetric key via
  * pskRecipInfo).
  */
-EncryptedRequest build_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& parameters,
-    const Certificate& ea_certificate);
+EncryptedRequest build_enrolment_request(SecurityModule& security, CryptoProvider& crypto,
+    const EnrolmentRequestParameters& parameters, const Certificate& ea_certificate);
 
 } // namespace pki
 } // namespace vanetza

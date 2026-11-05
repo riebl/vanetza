@@ -12,18 +12,18 @@ namespace vanetza
 namespace security
 {
 
-class SecurityModule;
+class CryptoProvider;
 
 /**
  * Encrypt an AES-128 key by ECIES as specified by IEEE 1609.2
- * \param module security module calculating the authentication tag
+ * \param crypto crypto provider for key derivation and authentication tag
  * \param ephemeral_key sender's ephemeral public key
  * \param shared_secret ECDH shared secret of sender's ephemeral private key and recipient's public key
  * \param key AES-128 key
  * \param info key derivation parameter, i.e. hash of recipient's certificate
  * \return encrypted key or error, see SecurityModuleError for conditions
  */
-expected<EncryptedSymmetricKey> encrypt_key(SecurityModule& module, const PublicKey& ephemeral_key,
+expected<EncryptedSymmetricKey> encrypt_key(CryptoProvider& crypto, const PublicKey& ephemeral_key,
     const byte_view_range& shared_secret, const Aes128Key& key, const Sha256Hash& info);
 
 } // namespace security

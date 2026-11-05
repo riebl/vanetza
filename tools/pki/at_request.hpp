@@ -54,7 +54,7 @@ struct AuthorizationRequestParameters
  *
  * Exposed for testing; production code should call build_authorization_request().
  */
-ByteBuffer build_signed_authorization_request(SecurityModule& security,
+ByteBuffer build_signed_authorization_request(SecurityModule& security, CryptoProvider& crypto,
     const AuthorizationRequestParameters& parameters);
 
 /**
@@ -63,7 +63,8 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security,
  * Call .encode() on the resulting message for the OER bytes to POST as `application/x-its-request`.
  * The returned key is needed to decrypt the AA's response (same symmetric key via pskRecipInfo).
  */
-EncryptedRequest build_authorization_request(SecurityModule& security, const AuthorizationRequestParameters& parameters);
+EncryptedRequest build_authorization_request(
+    SecurityModule& security, CryptoProvider& crypto, const AuthorizationRequestParameters& parameters);
 
 } // namespace pki
 } // namespace vanetza

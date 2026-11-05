@@ -27,7 +27,7 @@ namespace pki
  * \return AES key of data
  * \throws std::runtime_error unless the AES key is encrypted for the recipient and decrypts the data's ciphertext
  */
-inline security::Aes128Key recover_key(SecurityModule& security,
+inline security::Aes128Key recover_key(CryptoProvider& crypto,
     const Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t& data, const PrivateKey& recipient_key,
     const Certificate& recipient_certificate)
 {
@@ -41,7 +41,7 @@ inline security::Aes128Key recover_key(SecurityModule& security,
         throw std::runtime_error("data is not addressed to a single certificate");
     }
     const auto& recipient = recipients.list.array[0]->choice.certRecipInfo;
-    if (!(recipient.recipientId == recipient_certificate.calculate_hashed_id8(security).octets)) {
+    if (!(recipient.recipientId == recipient_certificate.calculate_hashed_id8(crypto).octets)) {
         throw std::runtime_error("data is addressed to another certificate");
     }
 
@@ -74,9 +74,9 @@ inline security::Aes128Key recover_key(SecurityModule& security,
     }
 
     // encrypting an all-zero key reveals the key encryption mask
-    const Sha256Hash info = calculate_sha256_hash(security, recipient_certificate);
-    const EncryptedSymmetricKey mask = security::encrypt_key(
-        security, ephemeral, create_byte_view(shared_secret), security::Aes128Key {}, info).value();
+    const Sha256Hash info = calculate_sha256_hash(crypto, recipient_certificate);
+    const EncryptedSymmetricKey mask =
+        security::encrypt_key(crypto, ephemeral, create_byte_view(shared_secret), security::Aes128Key {}, info).value();
     if (encrypted_key->c.size != mask.wrapped_key.size()) {
         throw std::runtime_error("data has encrypted key of unexpected length");
     }
@@ -87,7 +87,7 @@ inline security::Aes128Key recover_key(SecurityModule& security,
 
     // authentication tag matches only if the key has been encrypted for the recipient
     const EncryptedSymmetricKey expected =
-        security::encrypt_key(security, ephemeral, create_byte_view(shared_secret), key, info).value();
+        security::encrypt_key(crypto, ephemeral, create_byte_view(shared_secret), key, info).value();
     if (!(encrypted_key->t == expected.authentication_tag.octets)) {
         throw std::runtime_error("data's key is not encrypted for the recipient");
     }
@@ -102,7 +102,7 @@ inline security::Aes128Key recover_key(SecurityModule& security,
     }
     std::copy_n(aes_ccm.nonce.buf, ciphertext.nonce.size(), ciphertext.nonce.begin());
     ciphertext.ciphertext = copy(aes_ccm.ccmCiphertext);
-    if (!security.decrypt_aes_ccm(key, ciphertext)) {
+    if (!crypto.decrypt_aes_ccm(key, ciphertext)) {
         throw std::runtime_error("data is not decryptable with its encrypted key");
     }
     return key;

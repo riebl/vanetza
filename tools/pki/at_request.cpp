@@ -48,13 +48,13 @@ void add_app_permissions(Vanetza_Security_CertificateSubjectAttributes_t& csa, c
 // and populate `dest` (an EtsiTs103097Data-Encrypted value member of a parent
 // struct) in place. Precondition: `dest` is zero-initialised.
 void encrypt_into(Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t& dest, SecurityModule& security,
-    const ByteBuffer& plaintext, const Certificate& recipient_certificate)
+    CryptoProvider& crypto, const ByteBuffer& plaintext, const Certificate& recipient_certificate)
 {
     boost::optional<PublicKey> enc_key = recipient_certificate.get_encryption_key();
     if (!enc_key) {
         throw DecodingFailure("recipient certificate has no encryption key");
     }
-    Sha256Hash recipient_hash = calculate_sha256_hash(security, recipient_certificate);
+    Sha256Hash recipient_hash = calculate_sha256_hash(crypto, recipient_certificate);
     expected<security::Aes128Key> key = security.generate_aes_key();
     if (!key) {
         throw std::runtime_error("AES key generation failed: " + key.error().message());
@@ -65,8 +65,8 @@ void encrypt_into(Vanetza_Security_EtsiTs103097Data_Encrypted_85P0_t& dest, Secu
     }
 
     EncryptedData::init(dest);
-    EncryptedData::set_aes_ccm_ciphertext(dest, security, *key, plaintext);
-    EncryptedData::append_recipient_info(dest, *encrypted_key, recipient_certificate.calculate_hashed_id8(security));
+    EncryptedData::set_aes_ccm_ciphertext(dest, crypto, *key, plaintext);
+    EncryptedData::append_recipient_info(dest, *encrypted_key, recipient_certificate.calculate_hashed_id8(crypto));
 }
 
 void validate(const AuthorizationRequestParameters& p)
@@ -90,7 +90,8 @@ void validate(const AuthorizationRequestParameters& p)
 
 } // namespace
 
-ByteBuffer build_signed_authorization_request(SecurityModule& security, const AuthorizationRequestParameters& params)
+ByteBuffer build_signed_authorization_request(
+    SecurityModule& security, CryptoProvider& crypto, const AuthorizationRequestParameters& params)
 {
     validate(params);
 
@@ -120,7 +121,7 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
 
     // 3. SharedAtRequest
     Vanetza_Security_SharedAtRequest_t& sar = iar.sharedAtRequest;
-    HashedId8 ea_hid8 = params.ea_certificate->calculate_hashed_id8(security);
+    HashedId8 ea_hid8 = params.ea_certificate->calculate_hashed_id8(crypto);
     OCTET_STRING_fromBuf(&sar.eaId, reinterpret_cast<const char*>(ea_hid8.octets.data()), ea_hid8.octets.size());
     sar.certificateFormat = Vanetza_Security_CertificateFormat_ts103097v131;
     add_app_permissions(sar.requestedSubjectAttributes, params.permissions);
@@ -140,7 +141,7 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
             asn1::encode_oer(asn_DEF_Vanetza_Security_PublicEncryptionKey, iar.publicKeys.encryptionKey);
         hmac_input.insert(hmac_input.end(), enc_oer.begin(), enc_oer.end());
     }
-    expected<security::Sha256Hmac> hmac = security.calculate_hmac_sha256(hmac_key_view, create_byte_view(hmac_input));
+    expected<security::Sha256Hmac> hmac = crypto.calculate_hmac_sha256(hmac_key_view, create_byte_view(hmac_input));
     if (!hmac) {
         throw std::runtime_error("HMAC calculation failed: " + hmac.error().message());
     }
@@ -150,12 +151,13 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
     // 5. EC proof: external-payload signed data over SharedAtRequest, signed by EC.
     ByteBuffer sar_encoded = asn1::encode_oer(asn_DEF_Vanetza_Security_SharedAtRequest, &sar);
     SignedData ec_signed =
-        create_external_signed(sar_encoded, security, params.ec_key, params.hash_algo, params.ec);
+        create_external_signed(sar_encoded, security, crypto, params.ec_key, params.hash_algo, params.ec);
     ByteBuffer ec_signed_encoded = ec_signed.encode();
 
     // 6. Encrypt the EC proof to the EA → encryptedEcSignature
     iar.ecSignature.present = Vanetza_Security_EcSignature_PR_encryptedEcSignature;
-    encrypt_into(iar.ecSignature.choice.encryptedEcSignature, security, ec_signed_encoded, *params.ea_certificate);
+    encrypt_into(
+        iar.ecSignature.choice.encryptedEcSignature, security, crypto, ec_signed_encoded, *params.ea_certificate);
 
     if (!mgmt.validate()) {
         throw std::runtime_error("AuthorizationRequest: constructed InnerAtRequest is invalid");
@@ -167,21 +169,23 @@ ByteBuffer build_signed_authorization_request(SecurityModule& security, const Au
     }
 
     // 7. POP wrap: EtsiTs103097Data-Signed (signer = self) signed with the new AT verification key
-    SignedData pop_signed = create_signed(mgmt_encoded, security, params.pop_signer_key, params.hash_algo, nullptr);
+    SignedData pop_signed =
+        create_signed(mgmt_encoded, security, crypto, params.pop_signer_key, params.hash_algo, nullptr);
     return pop_signed.encode();
 }
 
-EncryptedRequest build_authorization_request(SecurityModule& security, const AuthorizationRequestParameters& params)
+EncryptedRequest build_authorization_request(
+    SecurityModule& security, CryptoProvider& crypto, const AuthorizationRequestParameters& params)
 {
     validate(params);
 
-    ByteBuffer plaintext = build_signed_authorization_request(security, params);
+    ByteBuffer plaintext = build_signed_authorization_request(security, crypto, params);
 
     boost::optional<PublicKey> aa_enc_key = params.aa_certificate->get_encryption_key();
     if (!aa_enc_key) {
         throw DecodingFailure("AuthorizationRequest: AA certificate has no encryption key");
     }
-    Sha256Hash aa_hash = calculate_sha256_hash(security, *params.aa_certificate);
+    Sha256Hash aa_hash = calculate_sha256_hash(crypto, *params.aa_certificate);
     expected<security::Aes128Key> key = security.generate_aes_key();
     if (!key) {
         throw std::runtime_error("AES key generation failed: " + key.error().message());
@@ -192,8 +196,8 @@ EncryptedRequest build_authorization_request(SecurityModule& security, const Aut
     }
 
     EncryptedRequest request { EncryptedData {}, *key };
-    request.message.generate_ciphertext(security, request.key, plaintext);
-    request.message.add_recipient_info(params.aa_certificate->calculate_hashed_id8(security), *encrypted_key);
+    request.message.generate_ciphertext(crypto, request.key, plaintext);
+    request.message.add_recipient_info(params.aa_certificate->calculate_hashed_id8(crypto), *encrypted_key);
     return request;
 }
 

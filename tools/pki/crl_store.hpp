@@ -24,7 +24,7 @@ class CertificateRevocationList;
 class CrlFilesystemStore : public security::v3::RevocationLookup
 {
 public:
-    CrlFilesystemStore(std::shared_ptr<SecurityModule>, const std::filesystem::path& root);
+    CrlFilesystemStore(std::shared_ptr<CryptoProvider>, const std::filesystem::path& root);
 
     // Returns false if the CRL has no extractable issuer or a malformed payload.
     bool store(const CertificateRevocationList&);
@@ -36,7 +36,7 @@ protected:
     boost::optional<HashedId8> index(const CertificateRevocationList&);
 
 private:
-    std::shared_ptr<SecurityModule> m_security;
+    std::shared_ptr<CryptoProvider> m_crypto;
     std::filesystem::path m_root;
     std::unordered_map<security::HashedId8, std::unordered_set<security::HashedId8>> m_revoked;
 };

@@ -45,7 +45,7 @@ void copy_signature(const Signature& from, Vanetza_Security_Signature_t& to)
 }
 
 // Build the EtsiTs103097Data-Signed envelope with its inner SignedData skeleton
-SignedData init_signed_envelope(SecurityModule& security, HashAlgorithm hash_algo, const Certificate* signer_cert)
+SignedData init_signed_envelope(CryptoProvider& crypto, HashAlgorithm hash_algo, const Certificate* signer_cert)
 {
     SignedData envelope;
     envelope->protocolVersion = ieee1609dot2_protocol_version;
@@ -58,7 +58,7 @@ SignedData init_signed_envelope(SecurityModule& security, HashAlgorithm hash_alg
 
     if (signer_cert) {
         signed_data->signer.present = Vanetza_Security_SignerIdentifier_PR_digest;
-        HashedId8 hid8 = signer_cert->calculate_hashed_id8(security);
+        HashedId8 hid8 = signer_cert->calculate_hashed_id8(crypto);
         if (OCTET_STRING_fromBuf(&signed_data->signer.choice.digest,
                 reinterpret_cast<const char*>(hid8.octets.data()), hid8.octets.size()) != 0) {
             throw std::runtime_error("setting signer digest failed");
@@ -81,19 +81,19 @@ SignedData init_signed_envelope(SecurityModule& security, HashAlgorithm hash_alg
 
 // Sign the tbsData (already populated by the caller) and copy the resulting
 // signature into signed_data->signature.
-void sign_and_finalize(Vanetza_Security_SignedData_t* signed_data, SecurityModule& security,
+void sign_and_finalize(Vanetza_Security_SignedData_t* signed_data, SecurityModule& security, CryptoProvider& crypto,
     const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
 {
     const Vanetza_Security_Certificate_t* raw_cert = signer_cert ? &signer_cert->raw() : nullptr;
     ByteBuffer sign_input;
     switch (hash_algo) {
         case HashAlgorithm::SHA256: {
-            Sha256Hash d = calculate_digest<Sha256Hash>(security, *signed_data->tbsData, raw_cert);
+            Sha256Hash d = calculate_digest<Sha256Hash>(crypto, *signed_data->tbsData, raw_cert);
             sign_input.assign(d.octets.begin(), d.octets.end());
             break;
         }
         case HashAlgorithm::SHA384: {
-            Sha384Hash d = calculate_digest<Sha384Hash>(security, *signed_data->tbsData, raw_cert);
+            Sha384Hash d = calculate_digest<Sha384Hash>(crypto, *signed_data->tbsData, raw_cert);
             sign_input.assign(d.octets.begin(), d.octets.end());
             break;
         }
@@ -110,10 +110,10 @@ void sign_and_finalize(Vanetza_Security_SignedData_t* signed_data, SecurityModul
 
 } // namespace
 
-SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
+SignedData create_signed(const ByteBuffer& payload, SecurityModule& security, CryptoProvider& crypto,
     const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
 {
-    SignedData envelope = init_signed_envelope(security, hash_algo, signer_cert);
+    SignedData envelope = init_signed_envelope(crypto, hash_algo, signer_cert);
     Vanetza_Security_SignedData_t* signed_data = envelope->content->choice.signedData;
 
     auto* sdp = signed_data->tbsData->payload;
@@ -123,12 +123,12 @@ SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
     sdp->data->content->present = Vanetza_Security_Ieee1609Dot2Content_PR_unsecuredData;
     copy(payload, sdp->data->content->choice.unsecuredData);
 
-    sign_and_finalize(signed_data, security, signing_key, hash_algo, signer_cert);
+    sign_and_finalize(signed_data, security, crypto, signing_key, hash_algo, signer_cert);
     return envelope;
 }
 
 SignedData create_external_signed(const ByteBuffer& external_payload, SecurityModule& security,
-    const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
+    CryptoProvider& crypto, const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert)
 {
     // The asn1c HashedData CHOICE only carries sha256HashedData; SHA-384
     // would need a newer 1609.2 schema. SharedAtRequest in TS 102 941
@@ -137,19 +137,19 @@ SignedData create_external_signed(const ByteBuffer& external_payload, SecurityMo
         throw std::invalid_argument("create_external_signed: only SHA-256 is supported for extDataHash");
     }
 
-    SignedData envelope = init_signed_envelope(security, hash_algo, signer_cert);
+    SignedData envelope = init_signed_envelope(crypto, hash_algo, signer_cert);
     Vanetza_Security_SignedData_t* signed_data = envelope->content->choice.signedData;
 
     auto* sdp = signed_data->tbsData->payload;
     sdp->extDataHash = asn1::allocate<Vanetza_Security_HashedData_t>();
-    Sha256Hash h = security.calculate_sha256_hash(external_payload.data(), external_payload.size());
+    Sha256Hash h = crypto.calculate_sha256_hash(external_payload.data(), external_payload.size());
     sdp->extDataHash->present = Vanetza_Security_HashedData_PR_sha256HashedData;
     if (OCTET_STRING_fromBuf(&sdp->extDataHash->choice.sha256HashedData,
             reinterpret_cast<const char*>(h.octets.data()), h.octets.size()) != 0) {
         throw std::runtime_error("setting extDataHash failed");
     }
 
-    sign_and_finalize(signed_data, security, signing_key, hash_algo, signer_cert);
+    sign_and_finalize(signed_data, security, crypto, signing_key, hash_algo, signer_cert);
     return envelope;
 }
 

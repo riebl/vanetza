@@ -37,6 +37,7 @@ constexpr std::uint8_t protocol_version = 3;
 struct AtResponseBuilder
 {
     OpenSslSecurityModule* security;
+    OpenSslCryptoProvider* crypto;
     const Certificate* aa_cert;
     const KeyReference* aa_signing_key;
 
@@ -78,7 +79,7 @@ struct AtResponseBuilder
         sd.hashId = Vanetza_Security_HashAlgorithm_sha256;
 
         sd.signer.present = Vanetza_Security_SignerIdentifier_PR_digest;
-        HashedId8 aa_hid8 = signer_digest_override.value_or(aa_cert->calculate_hashed_id8(*security));
+        HashedId8 aa_hid8 = signer_digest_override.value_or(aa_cert->calculate_hashed_id8(*crypto));
         OCTET_STRING_fromBuf(&sd.signer.choice.digest, reinterpret_cast<const char*>(aa_hid8.octets.data()), 8);
 
         sd.tbsData = asn1::allocate<Vanetza_Security_ToBeSignedData_t>();
@@ -94,7 +95,7 @@ struct AtResponseBuilder
         sdp->data->content->present = Vanetza_Security_Ieee1609Dot2Content_PR_unsecuredData;
         copy(inner_encoded, sdp->data->content->choice.unsecuredData);
 
-        Sha256Hash digest = calculate_digest<Sha256Hash>(*security, *sd.tbsData, &aa_cert->raw());
+        Sha256Hash digest = calculate_digest<Sha256Hash>(*crypto, *sd.tbsData, &aa_cert->raw());
         auto signature = security->sign(ByteBuffer { digest.octets.begin(), digest.octets.end() }, *aa_signing_key);
         EXPECT_TRUE(static_cast<bool>(signature));
 
@@ -121,11 +122,12 @@ protected:
 
     AtResponseBuilder builder()
     {
-        return AtResponseBuilder { &m_security, &m_aa_certificate, &m_aa_key };
+        return AtResponseBuilder { &m_security, &m_crypto, &m_aa_certificate, &m_aa_key };
     }
 
     std::shared_ptr<MockCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
+    OpenSslCryptoProvider m_crypto;
     KeyReference m_aa_key;
     Certificate m_aa_certificate;
 };
@@ -133,7 +135,7 @@ protected:
 TEST_F(AuthorizationResponseTest, happy_path_returns_code_ok_and_certificate)
 {
     ByteBuffer payload = builder().build();
-    AuthorizationResponse resp = parse_authorization_response(m_security, payload, m_aa_certificate);
+    AuthorizationResponse resp = parse_authorization_response(m_crypto, payload, m_aa_certificate);
     EXPECT_EQ(Vanetza_Security_AuthorizationResponseCode_ok, resp.code);
     ASSERT_TRUE(resp.certificate.has_value());
     EXPECT_EQ(16u, resp.request_hash.size());
@@ -146,7 +148,7 @@ TEST_F(AuthorizationResponseTest, rejects_signer_digest_mismatch)
     other.octets = { 0x99, 0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22 };
     b.signer_digest_override = other;
     ByteBuffer payload = b.build();
-    EXPECT_THROW(parse_authorization_response(m_security, payload, m_aa_certificate), VerificationFailure);
+    EXPECT_THROW(parse_authorization_response(m_crypto, payload, m_aa_certificate), VerificationFailure);
 }
 
 TEST_F(AuthorizationResponseTest, rejects_wrong_psid)
@@ -154,7 +156,7 @@ TEST_F(AuthorizationResponseTest, rejects_wrong_psid)
     AtResponseBuilder b = builder();
     b.psid_override = 0x20; // arbitrary non-SCR
     ByteBuffer payload = b.build();
-    EXPECT_THROW(parse_authorization_response(m_security, payload, m_aa_certificate), DecodingFailure);
+    EXPECT_THROW(parse_authorization_response(m_crypto, payload, m_aa_certificate), DecodingFailure);
 }
 
 TEST_F(AuthorizationResponseTest, non_ok_code_returns_without_throwing)
@@ -163,7 +165,7 @@ TEST_F(AuthorizationResponseTest, non_ok_code_returns_without_throwing)
     b.code = Vanetza_Security_AuthorizationResponseCode_deniedpermissions;
     b.include_certificate = false;
     ByteBuffer payload = b.build();
-    AuthorizationResponse resp = parse_authorization_response(m_security, payload, m_aa_certificate);
+    AuthorizationResponse resp = parse_authorization_response(m_crypto, payload, m_aa_certificate);
     EXPECT_EQ(Vanetza_Security_AuthorizationResponseCode_deniedpermissions, resp.code);
     EXPECT_FALSE(resp.certificate.has_value());
 }
@@ -174,7 +176,7 @@ TEST_F(AuthorizationResponseTest, rejects_ok_without_certificate)
     b.code = Vanetza_Security_AuthorizationResponseCode_ok;
     b.include_certificate = false;
     ByteBuffer payload = b.build();
-    EXPECT_THROW(parse_authorization_response(m_security, payload, m_aa_certificate), DecodingFailure);
+    EXPECT_THROW(parse_authorization_response(m_crypto, payload, m_aa_certificate), DecodingFailure);
 }
 
 } // namespace pki

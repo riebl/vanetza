@@ -200,18 +200,18 @@ bool Certificate::is_canonical() const
     return vanetza::pki::is_canonical(*m_asn1);
 }
 
-HashedId8 Certificate::calculate_hashed_id8(SecurityModule& sec) const
+HashedId8 Certificate::calculate_hashed_id8(CryptoProvider& sec) const
 {
     return vanetza::pki::calculate_hashed_id8(sec, *m_asn1);
 }
 
-Sha256Hash calculate_sha256_hash(SecurityModule& sec, const Certificate& cert)
+Sha256Hash calculate_sha256_hash(CryptoProvider& sec, const Certificate& cert)
 {
     ByteBuffer buffer = cert.encode();
     return sec.calculate_sha256_hash(buffer.data(), buffer.size());
 }
 
-Sha384Hash calculate_sha384_hash(SecurityModule& sec, const Certificate& cert)
+Sha384Hash calculate_sha384_hash(CryptoProvider& sec, const Certificate& cert)
 {
     ByteBuffer buffer = cert.encode();
     return sec.calculate_sha384_hash(buffer.data(), buffer.size());
@@ -384,19 +384,19 @@ bool is_canonical(const Vanetza_Security_EtsiTs103097Certificate_t& cert)
     }
 }
 
-Sha256Hash calculate_sha256_hash(SecurityModule& security, const Vanetza_Security_Certificate_t& cert)
+Sha256Hash calculate_sha256_hash(CryptoProvider& crypto, const Vanetza_Security_Certificate_t& cert)
 {
     ByteBuffer buffer = asn1::encode_oer(asn_DEF_Vanetza_Security_Certificate, &cert);
-    return security.calculate_sha256_hash(buffer.data(), buffer.size());
+    return crypto.calculate_sha256_hash(buffer.data(), buffer.size());
 }
 
-Sha384Hash calculate_sha384_hash(SecurityModule& sec, const Vanetza_Security_Certificate_t& cert)
+Sha384Hash calculate_sha384_hash(CryptoProvider& sec, const Vanetza_Security_Certificate_t& cert)
 {
     ByteBuffer buffer = asn1::encode_oer(asn_DEF_Vanetza_Security_Certificate, &cert);
     return sec.calculate_sha384_hash(buffer.data(), buffer.size());
 }
 
-HashedId8 calculate_hashed_id8(SecurityModule& sec, const Vanetza_Security_Certificate_t& cert)
+HashedId8 calculate_hashed_id8(CryptoProvider& sec, const Vanetza_Security_Certificate_t& cert)
 {
     if (!is_canonical(cert)) {
         throw std::runtime_error("HashedId8 can only be calculated for canonical certificates");

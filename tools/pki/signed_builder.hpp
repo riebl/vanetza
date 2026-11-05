@@ -28,7 +28,7 @@ inline constexpr std::uint8_t ieee1609dot2_protocol_version = 3;
  *   non-null → signer = digest  with HashedId8(cert); hash of signer is hash
  *              of the OER-encoded signer certificate.
  */
-SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
+SignedData create_signed(const ByteBuffer& payload, SecurityModule& security, CryptoProvider& crypto,
     const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert);
 
 /**
@@ -41,7 +41,7 @@ SignedData create_signed(const ByteBuffer& payload, SecurityModule& security,
  * create_signed(); PSID is fixed to SCR.
  */
 SignedData create_external_signed(const ByteBuffer& external_payload, SecurityModule& security,
-    const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert);
+    CryptoProvider& crypto, const KeyReference& signing_key, HashAlgorithm hash_algo, const Certificate* signer_cert);
 
 } // namespace pki
 } // namespace vanetza

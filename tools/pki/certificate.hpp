@@ -28,7 +28,7 @@ public:
     Certificate();
     explicit Certificate(const Vanetza_Security_EtsiTs103097Certificate_t&);
 
-    HashedId8 calculate_hashed_id8(SecurityModule&) const;
+    HashedId8 calculate_hashed_id8(CryptoProvider&) const;
     bool is_canonical() const;
     std::string get_name() const;
     PublicKey get_public_key() const;
@@ -78,11 +78,11 @@ enum class CertificateRole
 // Classify the certificate's PKI role. Never throws.
 CertificateRole certificate_role(const Certificate&);
 
-Sha256Hash calculate_sha256_hash(SecurityModule&, const Certificate&);
-Sha384Hash calculate_sha384_hash(SecurityModule&, const Certificate&);
-Sha256Hash calculate_sha256_hash(SecurityModule&, const Vanetza_Security_Certificate_t&);
-Sha384Hash calculate_sha384_hash(SecurityModule&, const Vanetza_Security_Certificate_t&);
-HashedId8 calculate_hashed_id8(SecurityModule&, const Vanetza_Security_Certificate_t&);
+Sha256Hash calculate_sha256_hash(CryptoProvider&, const Certificate&);
+Sha384Hash calculate_sha384_hash(CryptoProvider&, const Certificate&);
+Sha256Hash calculate_sha256_hash(CryptoProvider&, const Vanetza_Security_Certificate_t&);
+Sha384Hash calculate_sha384_hash(CryptoProvider&, const Vanetza_Security_Certificate_t&);
+HashedId8 calculate_hashed_id8(CryptoProvider&, const Vanetza_Security_Certificate_t&);
 PublicKey get_public_key(const Vanetza_Security_Certificate_t&);
 std::string get_name(const Vanetza_Security_Certificate_t&);
 bool is_canonical(const Vanetza_Security_Certificate_t&);

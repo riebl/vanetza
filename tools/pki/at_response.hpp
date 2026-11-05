@@ -46,7 +46,7 @@ struct AuthorizationResponse
  * \throws DecodingFailure on structural failure or missing required certificate
  * \throws VerificationFailure on signer-digest or signature mismatch
  */
-AuthorizationResponse parse_authorization_response(SecurityModule& security, const ByteBuffer& decrypted,
+AuthorizationResponse parse_authorization_response(CryptoProvider& crypto, const ByteBuffer& decrypted,
     const Certificate& aa_certificate);
 
 } // namespace pki

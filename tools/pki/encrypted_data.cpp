@@ -37,10 +37,10 @@ void EncryptedData::init(asn1c_type& dest)
     dest.content->present = Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData;
 }
 
-void EncryptedData::set_aes_ccm_ciphertext(asn1c_type& dest, SecurityModule& security,
+void EncryptedData::set_aes_ccm_ciphertext(asn1c_type& dest, CryptoProvider& crypto,
     const security::Aes128Key& key, const ByteBuffer& plaintext)
 {
-    expected<AesCcmCiphertext> encrypted = security.encrypt_aes_ccm(key, plaintext);
+    expected<AesCcmCiphertext> encrypted = crypto.encrypt_aes_ccm(key, plaintext);
     if (!encrypted) {
         throw std::runtime_error("encryption failed: " + encrypted.error().message());
     }
@@ -83,10 +83,10 @@ EncryptedData::EncryptedData() : wrapper(asn_DEF_Vanetza_Security_EtsiTs103097Da
     init(*m_struct);
 }
 
-void EncryptedData::generate_ciphertext(SecurityModule& security, const security::Aes128Key& key,
+void EncryptedData::generate_ciphertext(CryptoProvider& crypto, const security::Aes128Key& key,
     const ByteBuffer& plaintext)
 {
-    set_aes_ccm_ciphertext(*m_struct, security, key, plaintext);
+    set_aes_ccm_ciphertext(*m_struct, crypto, key, plaintext);
 }
 
 void EncryptedData::add_recipient_info(const HashedId8& cert, const EncryptedSymmetricKey& key)
@@ -118,7 +118,7 @@ bool EncryptedData::has_psk_recipient() const
     return false;
 }
 
-ByteBuffer EncryptedData::decrypt(SecurityModule& security, const security::Aes128Key& key) const
+ByteBuffer EncryptedData::decrypt(CryptoProvider& crypto, const security::Aes128Key& key) const
 {
     auto aes_ccm = get_aes_ccm_ciphertext(*m_struct);
     if (!aes_ccm) {
@@ -136,7 +136,7 @@ ByteBuffer EncryptedData::decrypt(SecurityModule& security, const security::Aes1
     std::copy_n(aes_ccm->nonce.buf, ciphertext.nonce.size(), ciphertext.nonce.begin());
     ciphertext.ciphertext = copy(aes_ccm->ccmCiphertext);
 
-    expected<ByteBuffer> plaintext = security.decrypt_aes_ccm(key, ciphertext);
+    expected<ByteBuffer> plaintext = crypto.decrypt_aes_ccm(key, ciphertext);
     if (!plaintext) {
         throw DecodingFailure("encrypted PKI response: " + plaintext.error().message());
     }

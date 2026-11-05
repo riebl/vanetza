@@ -29,7 +29,7 @@ public:
      */
     static CertificateRevocationList from_file(const std::filesystem::path&);
 
-    boost::optional<HashedId8> get_hashed_id8(SecurityModule&) const;
+    boost::optional<HashedId8> get_hashed_id8(CryptoProvider&) const;
 
     /**
      * Decode the signed payload and return the revoked HashedId8 entries.

@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/kdf2.hpp>
 #include <vanetza/security/sha.hpp>
 #include <algorithm>
@@ -10,7 +11,8 @@ namespace security
 namespace detail
 {
 
-void kdf2(const byte_view_range& secret, const byte_view_range& kdp, std::uint8_t* out, std::size_t length)
+void kdf2(CryptoProvider& crypto, const byte_view_range& secret, const byte_view_range& kdp, std::uint8_t* out,
+    std::size_t length)
 {
     static constexpr std::size_t counter_length = 4;
 
@@ -37,11 +39,11 @@ void kdf2(const byte_view_range& secret, const byte_view_range& kdp, std::uint8_
         concat[counter_offset + 2] = static_cast<std::uint8_t>(counter >> 8);
         concat[counter_offset + 3] = static_cast<std::uint8_t>(counter);
 
-        const Sha256Digest hash = calculate_sha256_digest(concat.data(), concat.size());
+        const Sha256Hash hash = crypto.calculate_sha256_hash(concat.data(), concat.size());
 
         // left most bytes are the derived key
-        const std::size_t count = std::min(length - derived, hash.size());
-        std::copy_n(hash.begin(), count, out + derived);
+        const std::size_t count = std::min(length - derived, hash.octets.size());
+        std::copy_n(hash.octets.begin(), count, out + derived);
         derived += count;
     }
 
@@ -50,10 +52,10 @@ void kdf2(const byte_view_range& secret, const byte_view_range& kdp, std::uint8_
 
 } // namespace detail
 
-ByteBuffer kdf2(const byte_view_range& secret, const byte_view_range& kdp, std::size_t length)
+ByteBuffer kdf2(CryptoProvider& crypto, const byte_view_range& secret, const byte_view_range& kdp, std::size_t length)
 {
     ByteBuffer derived(length);
-    detail::kdf2(secret, kdp, derived.data(), derived.size());
+    detail::kdf2(crypto, secret, kdp, derived.data(), derived.size());
     return derived;
 }
 

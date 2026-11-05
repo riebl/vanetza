@@ -65,7 +65,8 @@ public:
 
 } // namespace
 
-ByteBuffer build_signed_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& params)
+ByteBuffer build_signed_enrolment_request(
+    SecurityModule& security, CryptoProvider& crypto, const EnrolmentRequestParameters& params)
 {
     if (params.its_id.empty()) {
         throw std::invalid_argument("EnrolmentRequest: its_id must not be empty");
@@ -85,27 +86,27 @@ ByteBuffer build_signed_enrolment_request(SecurityModule& security, const Enrolm
     pop_data->version = Vanetza_Security_Version_v1;
     pop_data->content.present = Vanetza_Security_EtsiTs102941DataContent_PR_enrolmentRequest;
     // Inner PoP is always signer = self (TS 102 941 §6.2.3.2.1)
-    create_signed(inner.encode(), security, params.pop_signer_key, params.hash_algo, nullptr)
+    create_signed(inner.encode(), security, crypto, params.pop_signer_key, params.hash_algo, nullptr)
         .move_into(pop_data->content.choice.enrolmentRequest);
 
     // 3. Outer EtsiTs103097Data-Signed: signer = self for initial enrolment or
     //    signer = digest(outer_signer_certificate) for a re-keying renewal.
-    SignedData outer = create_signed(pop_data.encode(), security, params.outer_signer_key, params.hash_algo,
+    SignedData outer = create_signed(pop_data.encode(), security, crypto, params.outer_signer_key, params.hash_algo,
         params.outer_signer_certificate);
     return outer.encode();
 }
 
-EncryptedRequest build_enrolment_request(SecurityModule& security, const EnrolmentRequestParameters& params,
-    const Certificate& ea_certificate)
+EncryptedRequest build_enrolment_request(SecurityModule& security, CryptoProvider& crypto,
+    const EnrolmentRequestParameters& params, const Certificate& ea_certificate)
 {
     boost::optional<PublicKey> ea_enckey = ea_certificate.get_encryption_key();
     if (!ea_enckey) {
         throw DecodingFailure("EnrolmentRequest: EA certificate has no encryption key");
     }
 
-    ByteBuffer signed_request = build_signed_enrolment_request(security, params);
+    ByteBuffer signed_request = build_signed_enrolment_request(security, crypto, params);
 
-    Sha256Hash ea_cert_sha256 = calculate_sha256_hash(security, ea_certificate);
+    Sha256Hash ea_cert_sha256 = calculate_sha256_hash(crypto, ea_certificate);
     expected<security::Aes128Key> key = security.generate_aes_key();
     if (!key) {
         throw std::runtime_error("AES key generation failed: " + key.error().message());
@@ -115,8 +116,8 @@ EncryptedRequest build_enrolment_request(SecurityModule& security, const Enrolme
         throw std::runtime_error("key encryption failed: " + encrypted_key.error().message());
     }
     EncryptedRequest request { EncryptedData {}, *key };
-    request.message.generate_ciphertext(security, request.key, signed_request);
-    request.message.add_recipient_info(ea_certificate.calculate_hashed_id8(security), *encrypted_key);
+    request.message.generate_ciphertext(crypto, request.key, signed_request);
+    request.message.add_recipient_info(ea_certificate.calculate_hashed_id8(crypto), *encrypted_key);
 
     return request;
 }

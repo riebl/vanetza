@@ -4,6 +4,7 @@ add_vanetza_component(security
     backend_null.cpp
     cam_ssp.cpp
     credential_storage.cpp
+    crypto_provider.cpp
     decap_service.cpp
     delegating_security_entity.cpp
     ecc_point.cpp
@@ -18,6 +19,7 @@ add_vanetza_component(security
     persistence.cpp
     peer_request_tracker.cpp
     secured_message.cpp
+    security_module.cpp
     security_module_error.cpp
     sha.cpp
     signature.cpp
@@ -94,7 +96,8 @@ endif()
 
 if(VANETZA_WITH_OPENSSL)
     set_property(TARGET security APPEND PROPERTY
-        SOURCES backend_openssl.cpp openssl_error.cpp openssl_security_module.cpp openssl_wrapper.cpp)
+        SOURCES backend_openssl.cpp openssl_crypto_provider.cpp openssl_error.cpp openssl_security_module.cpp
+            openssl_wrapper.cpp)
     target_link_libraries(security PRIVATE OpenSSL::Crypto)
     target_compile_definitions(security PUBLIC "VANETZA_WITH_OPENSSL")
     target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10101000L")

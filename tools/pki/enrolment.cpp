@@ -227,7 +227,7 @@ void check_enrolment_status(Context& ctx)
 EnrolmentAuthority lookup_enrolment_authority(Context& ctx)
 {
     std::cout << "Root CA " << hexstring(ctx.cfg.root_ca_hid8) << "\n";
-    auto processor = process_stored_ctl(*ctx.cfg.trust_lists, ctx.cfg.security, ctx.cfg.root_ca_hid8);
+    auto processor = process_stored_ctl(*ctx.cfg.trust_lists, ctx.cfg.crypto, ctx.cfg.root_ca_hid8);
     return require_enrolment_authority(processor, ctx.cfg.root_ca_hid8);
 }
 
@@ -250,7 +250,7 @@ EnrolmentAuthority build_enrolment_authority(Context& ctx)
     EnrolmentAuthority ea;
     ea.certificate = std::move(cert);
     ea.its_access_point = ctx.ea_url;
-    std::cout << "Manual EA " << hexstring(ea.certificate.calculate_hashed_id8(*ctx.cfg.security)) << " at "
+    std::cout << "Manual EA " << hexstring(ea.certificate.calculate_hashed_id8(*ctx.cfg.crypto)) << " at "
               << ctx.ea_url << "\n";
     return ea;
 }
@@ -266,17 +266,17 @@ EnrolmentAuthority build_enrolment_authority(Context& ctx)
 void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, const EnrolmentAuthority& ea,
     ScopedKeyPair& scoped_verification_key)
 {
-    HashedId8 ea_cert_hid8 = ea.certificate.calculate_hashed_id8(*ctx.cfg.security);
+    HashedId8 ea_cert_hid8 = ea.certificate.calculate_hashed_id8(*ctx.cfg.crypto);
     std::cout << "Enroling against EA certificate: " << hexstring(ea_cert_hid8) << "\n";
 
-    EncryptedRequest request = build_enrolment_request(*ctx.cfg.security, params, ea.certificate);
+    EncryptedRequest request = build_enrolment_request(*ctx.cfg.security, *ctx.cfg.crypto, params, ea.certificate);
 
     const std::string ea_url = ctx.url(ea);
     std::cout << "Enroling at EA URL: " << ea_url << "\n";
     auto query = HttpQuery::from_url(ea_url);
     auto encoded_encrypted_data = request.message.encode();
     auto sha256_encrypted_data =
-        ctx.cfg.security->calculate_sha256_hash(encoded_encrypted_data.data(), encoded_encrypted_data.size());
+        ctx.cfg.crypto->calculate_sha256_hash(encoded_encrypted_data.data(), encoded_encrypted_data.size());
 
     auto response = http_post(query, "application/x-its-request", encoded_encrypted_data);
     if (response.result() != boost::beast::http::status::ok) {
@@ -290,9 +290,9 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
     if (!encrypted_response.decode(response.body().data(), response.body().size())) {
         throw DecodingFailure("decoding encrypted response failed");
     }
-    ByteBuffer dec_resp = encrypted_response.decrypt(*ctx.cfg.security, request.key);
+    ByteBuffer dec_resp = encrypted_response.decrypt(*ctx.cfg.crypto, request.key);
 
-    EnrolmentResponse ec_resp = parse_enrolment_response(*ctx.cfg.security, dec_resp, ea.certificate);
+    EnrolmentResponse ec_resp = parse_enrolment_response(*ctx.cfg.crypto, dec_resp, ea.certificate);
 
     if (!check_request_hash(sha256_encrypted_data, ec_resp.request_hash)) {
         throw VerificationFailure("mismatch between request and response hash");
@@ -303,7 +303,7 @@ void perform_enrolment(Context& ctx, const EnrolmentRequestParameters& params, c
     }
 
     Certificate& ec = *ec_resp.certificate;
-    auto ec_hid8 = ec.calculate_hashed_id8(*ctx.cfg.security);
+    auto ec_hid8 = ec.calculate_hashed_id8(*ctx.cfg.crypto);
     scoped_verification_key.commit();
     ctx.cfg.enrolment_credentials->store(ec);
     ctx.cfg.station->set_ec_identifier(ec_hid8);

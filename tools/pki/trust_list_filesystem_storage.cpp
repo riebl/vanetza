@@ -8,15 +8,15 @@ namespace vanetza
 namespace pki
 {
 
-TrustListFilesystemStorage::TrustListFilesystemStorage(std::shared_ptr<SecurityModule> security,
-    const std::filesystem::path& root) : m_security(security), m_root(root)
+TrustListFilesystemStorage::TrustListFilesystemStorage(std::shared_ptr<CryptoProvider> crypto,
+    const std::filesystem::path& root) : m_crypto(crypto), m_root(root)
 {
     std::filesystem::create_directories(m_root);
 }
 
 void TrustListFilesystemStorage::store(const CertificateTrustList& ctl)
 {
-    boost::optional<HashedId8> id = ctl.get_hashed_id8(*m_security);
+    boost::optional<HashedId8> id = ctl.get_hashed_id8(*m_crypto);
     if (id) {
         write(filename(*id), ctl.encode());
     } else {

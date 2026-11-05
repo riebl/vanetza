@@ -60,11 +60,11 @@ void fetch_ctl(Context& ctx, CLI::Option* hid8_opt, CLI::Option* dry_flag)
     auto ctl = dc.fetch_trust_list(ctx.hid8);
     if (ctl) {
         if (ctx.print) {
-            CtlListingVisitor visitor(*ctx.cfg.security);
+            CtlListingVisitor visitor(*ctx.cfg.crypto);
             ctl->visit_rca_ctl(visitor);
         }
 
-        auto ctl_digest = ctl->get_hashed_id8(*ctx.cfg.security);
+        auto ctl_digest = ctl->get_hashed_id8(*ctx.cfg.crypto);
         if (ctl_digest == ctx.hid8) {
             std::cout << "Fetched CTL matches Root CA digest\n";
         } else if (ctl_digest) {
@@ -74,7 +74,7 @@ void fetch_ctl(Context& ctx, CLI::Option* hid8_opt, CLI::Option* dry_flag)
         }
 
         if (auto cert = ctx.cfg.root_ca->fetch(ctx.hid8)) {
-            bool valid = validate(*ctx.cfg.security, ctl->raw(), *cert);
+            bool valid = validate(*ctx.cfg.crypto, ctl->raw(), *cert);
             if (valid) {
                 if (dry_flag->as<bool>()) {
                     std::cout << "CTL is valid. Storage unchanged in this dry run.\n";
@@ -108,7 +108,7 @@ void fetch_crl(Context& ctx, CLI::Option* hid8_opt, CLI::Option* dry_flag)
         throw std::runtime_error("DC has no revocation list matching HashedId8 " + hexstring(ctx.hid8));
     }
 
-    auto crl_digest = crl->get_hashed_id8(*ctx.cfg.security);
+    auto crl_digest = crl->get_hashed_id8(*ctx.cfg.crypto);
     if (crl_digest == ctx.hid8) {
         std::cout << "Fetched CRL matches Root CA digest\n";
     } else if (crl_digest) {
@@ -136,7 +136,7 @@ void fetch_crl(Context& ctx, CLI::Option* hid8_opt, CLI::Option* dry_flag)
         std::cout << "Cannot validate CRL because of missing Root CA certificate.\n";
         return;
     }
-    if (!validate(*ctx.cfg.security, crl->raw(), *root_cert)) {
+    if (!validate(*ctx.cfg.crypto, crl->raw(), *root_cert)) {
         std::cout << "CRL cannot be trusted.\n";
         return;
     }

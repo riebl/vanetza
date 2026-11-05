@@ -67,7 +67,7 @@ public:
 class CtlListingVisitor : public CtlVisitor
 {
 public:
-    explicit CtlListingVisitor(SecurityModule& security) : m_security(security)
+    explicit CtlListingVisitor(CryptoProvider& crypto) : m_crypto(crypto)
     {
     }
 
@@ -78,7 +78,7 @@ public:
     void add_enrolment_authority(const Vanetza_Security_EaEntry_t&) override;
 
 private:
-    SecurityModule& m_security;
+    CryptoProvider& m_crypto;
 };
 
 /**
@@ -121,7 +121,7 @@ public:
      */
     static CertificateTrustList from_file(const std::filesystem::path&);
 
-    boost::optional<HashedId8> get_hashed_id8(SecurityModule&) const;
+    boost::optional<HashedId8> get_hashed_id8(CryptoProvider&) const;
 
     /**
      * Per TS 102 941 v1.4.1 §6.3.4: full CTL carries the complete trust state
@@ -180,7 +180,7 @@ struct AuthorizationAuthority
 class CertificateTrustListProcessor
 {
 public:
-    explicit CertificateTrustListProcessor(std::shared_ptr<SecurityModule>);
+    explicit CertificateTrustListProcessor(std::shared_ptr<CryptoProvider>);
     void process(const CertificateTrustList&);
 
     boost::optional<EnrolmentAuthority> get_enrolment_authority(const HashedId8&) const;
@@ -204,7 +204,7 @@ protected:
     void remove_dc(const Vanetza_Security_Url_t&);
 
 private:
-    std::shared_ptr<SecurityModule> m_security;
+    std::shared_ptr<CryptoProvider> m_crypto;
     std::map<HashedId8, EnrolmentAuthority> m_enrolment_authorities;
     std::map<HashedId8, AuthorizationAuthority> m_authorization_authorities;
     std::map<HashedId8, std::string> m_distribution_centres;
@@ -218,7 +218,7 @@ private:
  * \throws UsageError if no CTL is stored for `root_ca`
  */
 CertificateTrustListProcessor process_stored_ctl(const TrustListStorage& trust_lists,
-    std::shared_ptr<SecurityModule> security, const HashedId8& root_ca);
+    std::shared_ptr<CryptoProvider> crypto, const HashedId8& root_ca);
 
 // Require the EA/AA for `root_ca` to be listed and carry an encryption key.
 EnrolmentAuthority require_enrolment_authority(const CertificateTrustListProcessor&, const HashedId8& root_ca);

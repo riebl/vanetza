@@ -80,7 +80,7 @@ protected:
     EncryptedData make_response(const security::Aes128Key& key, const ByteBuffer& payload)
     {
         EncryptedData response;
-        response.generate_ciphertext(m_security, key, payload);
+        response.generate_ciphertext(m_crypto, key, payload);
         auto psk = asn1::allocate<Vanetza_Security_RecipientInfo_t>();
         psk->present = Vanetza_Security_RecipientInfo_PR_pskRecipInfo;
         // EncryptedData::decrypt requires a pskRecipInfo recipient but does not check its HashedId8 of the key
@@ -91,6 +91,7 @@ protected:
 
     std::shared_ptr<MockCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
+    OpenSslCryptoProvider m_crypto;
     PrivateKey m_ea_encryption_key;
     Certificate m_ea;
     PrivateKey m_aa_encryption_key;
@@ -105,7 +106,7 @@ TEST_F(AuthorizationRequestTest, rejects_empty_permissions)
 {
     auto params = make_params();
     params.permissions.clear();
-    EXPECT_THROW(build_signed_authorization_request(m_security, params), std::invalid_argument);
+    EXPECT_THROW(build_signed_authorization_request(m_security, m_crypto, params), std::invalid_argument);
 }
 
 // Required certificates: ec, ea, aa. Missing any → throw.
@@ -114,17 +115,17 @@ TEST_F(AuthorizationRequestTest, rejects_missing_certificates)
     {
         auto params = make_params();
         params.ec = nullptr;
-        EXPECT_THROW(build_signed_authorization_request(m_security, params), std::invalid_argument);
+        EXPECT_THROW(build_signed_authorization_request(m_security, m_crypto, params), std::invalid_argument);
     }
     {
         auto params = make_params();
         params.ea_certificate = nullptr;
-        EXPECT_THROW(build_signed_authorization_request(m_security, params), std::invalid_argument);
+        EXPECT_THROW(build_signed_authorization_request(m_security, m_crypto, params), std::invalid_argument);
     }
     {
         auto params = make_params();
         params.aa_certificate = nullptr;
-        EXPECT_THROW(build_authorization_request(m_security, params), std::invalid_argument);
+        EXPECT_THROW(build_authorization_request(m_security, m_crypto, params), std::invalid_argument);
     }
 }
 
@@ -136,7 +137,7 @@ TEST_F(AuthorizationRequestTest, rejects_missing_certificates)
 TEST_F(AuthorizationRequestTest, default_includes_pop_signed_envelope)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_authorization_request(m_security, params);
+    ByteBuffer encoded = build_signed_authorization_request(m_security, m_crypto, params);
 
     SignedData pop;
     ASSERT_TRUE(pop.decode(encoded));
@@ -146,8 +147,8 @@ TEST_F(AuthorizationRequestTest, default_includes_pop_signed_envelope)
     EXPECT_EQ(aid::SCR, sd.tbsData->headerInfo.psid);
 
     // Signature verifies under the verification key (signer = self → empty signer cert)
-    Sha256Hash digest = calculate_digest<Sha256Hash>(m_security, *sd.tbsData, nullptr);
-    EXPECT_TRUE(m_security.verify(digest, make_signature(sd.signature), params.verification_key).value());
+    Sha256Hash digest = calculate_digest<Sha256Hash>(m_crypto, *sd.tbsData, nullptr);
+    EXPECT_TRUE(m_crypto.verify(digest, make_signature(sd.signature), params.verification_key).value());
 }
 
 // With include_pop = false, the bytes returned are the bare EtsiTs102941Data
@@ -156,7 +157,7 @@ TEST_F(AuthorizationRequestTest, opt_out_of_pop_returns_bare_management_data)
 {
     auto params = make_params();
     params.include_pop = false;
-    ByteBuffer encoded = build_signed_authorization_request(m_security, params);
+    ByteBuffer encoded = build_signed_authorization_request(m_security, m_crypto, params);
 
     asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t> mgmt(asn_DEF_Vanetza_Security_EtsiTs102941Data);
     ASSERT_TRUE(mgmt.decode(encoded.data(), encoded.size()));
@@ -170,14 +171,14 @@ TEST_F(AuthorizationRequestTest, opt_out_of_pop_returns_bare_management_data)
 TEST_F(AuthorizationRequestTest, shared_at_request_fields_match_spec)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_authorization_request(m_security, params);
+    ByteBuffer encoded = build_signed_authorization_request(m_security, m_crypto, params);
 
     asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t> mgmt(asn_DEF_Vanetza_Security_EtsiTs102941Data);
     ASSERT_TRUE(decode_inner_management_data(encoded, mgmt));
     const auto& iar = mgmt->content.choice.authorizationRequest;
     const auto& sar = iar.sharedAtRequest;
 
-    HashedId8 ea_hid8 = m_ea.calculate_hashed_id8(m_security);
+    HashedId8 ea_hid8 = m_ea.calculate_hashed_id8(m_crypto);
     EXPECT_TRUE(sar.eaId == ea_hid8.octets);
     EXPECT_EQ(Vanetza_Security_CertificateFormat_ts103097v131, sar.certificateFormat);
     EXPECT_EQ(16, sar.keyTag.size);
@@ -191,7 +192,7 @@ TEST_F(AuthorizationRequestTest, shared_at_request_fields_match_spec)
     ByteBuffer hmac_key(iar.hmacKey.buf, iar.hmacKey.buf + iar.hmacKey.size);
     EXPECT_EQ(32, hmac_key.size());
     const security::KeyTag expected_tag(
-        m_security.calculate_hmac_sha256(create_byte_view(hmac_key), create_byte_view(verify_oer)).value());
+        m_crypto.calculate_hmac_sha256(create_byte_view(hmac_key), create_byte_view(verify_oer)).value());
     EXPECT_EQ(create_byte_view(expected_tag.octets), asn1::create_byte_view(sar.keyTag));
 
     ASSERT_NE(nullptr, sar.requestedSubjectAttributes.appPermissions);
@@ -205,7 +206,7 @@ TEST_F(AuthorizationRequestTest, optional_at_encryption_key_extends_keytag)
 {
     auto params = make_params();
     params.at_encryption_key = derive_public_key(generate_private_key(KeyType::NistP256));
-    ByteBuffer encoded = build_signed_authorization_request(m_security, params);
+    ByteBuffer encoded = build_signed_authorization_request(m_security, m_crypto, params);
 
     asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t> mgmt(asn_DEF_Vanetza_Security_EtsiTs102941Data);
     ASSERT_TRUE(decode_inner_management_data(encoded, mgmt));
@@ -221,7 +222,7 @@ TEST_F(AuthorizationRequestTest, optional_at_encryption_key_extends_keytag)
     combined.insert(combined.end(), enc_oer.begin(), enc_oer.end());
     ByteBuffer hmac_key(iar.hmacKey.buf, iar.hmacKey.buf + iar.hmacKey.size);
     const security::KeyTag expected_tag(
-        m_security.calculate_hmac_sha256(create_byte_view(hmac_key), create_byte_view(combined)).value());
+        m_crypto.calculate_hmac_sha256(create_byte_view(hmac_key), create_byte_view(combined)).value());
     EXPECT_EQ(create_byte_view(expected_tag.octets), asn1::create_byte_view(iar.sharedAtRequest.keyTag));
 }
 
@@ -230,7 +231,7 @@ TEST_F(AuthorizationRequestTest, optional_at_encryption_key_extends_keytag)
 TEST_F(AuthorizationRequestTest, ec_signature_is_encrypted_to_ea)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_authorization_request(m_security, params);
+    ByteBuffer encoded = build_signed_authorization_request(m_security, m_crypto, params);
 
     asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t> mgmt(asn_DEF_Vanetza_Security_EtsiTs102941Data);
     ASSERT_TRUE(decode_inner_management_data(encoded, mgmt));
@@ -242,11 +243,11 @@ TEST_F(AuthorizationRequestTest, ec_signature_is_encrypted_to_ea)
     const auto& recipients = enc_sig.content->choice.encryptedData.recipients;
     ASSERT_GE(recipients.list.count, 1);
 
-    HashedId8 ea_hid8 = m_ea.calculate_hashed_id8(m_security);
+    HashedId8 ea_hid8 = m_ea.calculate_hashed_id8(m_crypto);
     const auto* recip = recipients.list.array[0];
     ASSERT_EQ(Vanetza_Security_RecipientInfo_PR_certRecipInfo, recip->present);
     EXPECT_TRUE(recip->choice.certRecipInfo.recipientId == ea_hid8.octets);
-    EXPECT_NO_THROW(recover_key(m_security, enc_sig, m_ea_encryption_key, m_ea));
+    EXPECT_NO_THROW(recover_key(m_crypto, enc_sig, m_ea_encryption_key, m_ea));
 }
 
 // By default no validityPeriod hint is sent (TS 102 941 §6.2.3.3.1: optional).
@@ -254,7 +255,7 @@ TEST_F(AuthorizationRequestTest, ec_signature_is_encrypted_to_ea)
 TEST_F(AuthorizationRequestTest, default_omits_validity_period_hint)
 {
     auto params = make_params();
-    ByteBuffer encoded = build_signed_authorization_request(m_security, params);
+    ByteBuffer encoded = build_signed_authorization_request(m_security, m_crypto, params);
 
     asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t> mgmt(asn_DEF_Vanetza_Security_EtsiTs102941Data);
     ASSERT_TRUE(decode_inner_management_data(encoded, mgmt));
@@ -274,7 +275,7 @@ TEST_F(AuthorizationRequestTest, validity_period_hint_propagates_to_shared_at_re
     hint.duration = std::chrono::hours(168);
     params.validity_period = hint;
 
-    ByteBuffer encoded = build_signed_authorization_request(m_security, params);
+    ByteBuffer encoded = build_signed_authorization_request(m_security, m_crypto, params);
 
     asn1::asn1c_oer_wrapper<Vanetza_Security_EtsiTs102941Data_t> mgmt(asn_DEF_Vanetza_Security_EtsiTs102941Data);
     ASSERT_TRUE(decode_inner_management_data(encoded, mgmt));
@@ -290,13 +291,13 @@ TEST_F(AuthorizationRequestTest, validity_period_hint_propagates_to_shared_at_re
 TEST_F(AuthorizationRequestTest, outer_encrypted_to_aa)
 {
     auto params = make_params();
-    EncryptedRequest request = build_authorization_request(m_security, params);
+    EncryptedRequest request = build_authorization_request(m_security, m_crypto, params);
 
     ASSERT_EQ(Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData, request.message->content->present);
     const auto& recipients = request.message->content->choice.encryptedData.recipients;
     ASSERT_GE(recipients.list.count, 1);
 
-    HashedId8 aa_hid8 = m_aa.calculate_hashed_id8(m_security);
+    HashedId8 aa_hid8 = m_aa.calculate_hashed_id8(m_crypto);
     const auto* recip = recipients.list.array[0];
     ASSERT_EQ(Vanetza_Security_RecipientInfo_PR_certRecipInfo, recip->present);
     EXPECT_TRUE(recip->choice.certRecipInfo.recipientId == aa_hid8.octets);
@@ -305,24 +306,24 @@ TEST_F(AuthorizationRequestTest, outer_encrypted_to_aa)
 // The AA recovers the request's key to encrypt its response with (TS 102 941 §6.2.3.3.2).
 TEST_F(AuthorizationRequestTest, request_key_is_encrypted_for_aa)
 {
-    EncryptedRequest request = build_authorization_request(m_security, make_params());
-    EXPECT_EQ(request.key, recover_key(m_security, *request.message, m_aa_encryption_key, m_aa));
+    EncryptedRequest request = build_authorization_request(m_security, m_crypto, make_params());
+    EXPECT_EQ(request.key, recover_key(m_crypto, *request.message, m_aa_encryption_key, m_aa));
 }
 
 TEST_F(AuthorizationRequestTest, aa_response_is_decrypted_with_request_key)
 {
-    EncryptedRequest request = build_authorization_request(m_security, make_params());
+    EncryptedRequest request = build_authorization_request(m_security, m_crypto, make_params());
     const ByteBuffer payload { 0x01, 0x23, 0x45, 0x67, 0x89 };
     EncryptedData response = make_response(request.key, payload);
-    EXPECT_EQ(payload, response.decrypt(m_security, request.key));
+    EXPECT_EQ(payload, response.decrypt(m_crypto, request.key));
 }
 
 TEST_F(AuthorizationRequestTest, tampered_aa_response_is_decoding_failure)
 {
-    EncryptedRequest request = build_authorization_request(m_security, make_params());
+    EncryptedRequest request = build_authorization_request(m_security, m_crypto, make_params());
     EncryptedData response = make_response(request.key, ByteBuffer { 0x01, 0x23, 0x45, 0x67, 0x89 });
     response->content->choice.encryptedData.ciphertext.choice.aes128ccm.ccmCiphertext.buf[0] ^= 0x01;
-    EXPECT_THROW(response.decrypt(m_security, request.key), DecodingFailure);
+    EXPECT_THROW(response.decrypt(m_crypto, request.key), DecodingFailure);
 }
 
 } // namespace pki

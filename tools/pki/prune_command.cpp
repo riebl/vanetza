@@ -221,25 +221,25 @@ private:
 class IssuerCollector : public CtlVisitor
 {
 public:
-    explicit IssuerCollector(SecurityModule& security) : m_security(security)
+    explicit IssuerCollector(CryptoProvider& crypto) : m_crypto(crypto)
     {
     }
 
     void add_authorization_authority(const Vanetza_Security_AaEntry_t& entry) override
     {
-        m_aa.insert(Certificate(entry.aaCertificate).calculate_hashed_id8(m_security));
+        m_aa.insert(Certificate(entry.aaCertificate).calculate_hashed_id8(m_crypto));
     }
 
     void add_enrolment_authority(const Vanetza_Security_EaEntry_t& entry) override
     {
-        m_ea.insert(Certificate(entry.eaCertificate).calculate_hashed_id8(m_security));
+        m_ea.insert(Certificate(entry.eaCertificate).calculate_hashed_id8(m_crypto));
     }
 
     const std::set<HashedId8>& authorization_authorities() const { return m_aa; }
     const std::set<HashedId8>& enrolment_authorities() const { return m_ea; }
 
 private:
-    SecurityModule& m_security;
+    CryptoProvider& m_crypto;
     std::set<HashedId8> m_aa;
     std::set<HashedId8> m_ea;
 };
@@ -285,7 +285,7 @@ std::size_t reconcile_issuer_store(CertificateStorage& store, const std::set<Has
 void prune_ctl(const MainConfig& cfg, bool dry_run)
 {
     // Build the current set of trusted issuer certs from the CTLs stored per Root CA.
-    IssuerCollector collector(*cfg.security);
+    IssuerCollector collector(*cfg.crypto);
     for (const auto& rca : cfg.root_ca->list()) {
         auto ctl = cfg.trust_lists->fetch(rca);
         if (!ctl) {

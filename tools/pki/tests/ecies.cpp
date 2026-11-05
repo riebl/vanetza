@@ -62,8 +62,9 @@ void expect_key_encrypted_for(const PrivateKey& recipient, const PublicKey& reci
         ECDH_compute_key(shared_secret.data(), shared_secret.size(), make_ec_point(ephemeral).raw(),
             make_ec_key(recipient).raw(), nullptr));
 
+    OpenSslCryptoProvider crypto;
     const EncryptedSymmetricKey reference =
-        vanetza::security::encrypt_key(security, ephemeral, create_byte_view(shared_secret), key, info).value();
+        vanetza::security::encrypt_key(crypto, ephemeral, create_byte_view(shared_secret), key, info).value();
     EXPECT_EQ(reference.wrapped_key, encrypted->wrapped_key);
     EXPECT_EQ(reference.authentication_tag, encrypted->authentication_tag);
 }

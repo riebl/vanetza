@@ -15,6 +15,7 @@
 #include "station_config_filesystem.hpp"
 #include "trust_list_filesystem_storage.hpp"
 #include "xdg.hpp"
+#include <vanetza/security/openssl_crypto_provider.hpp>
 #include <CLI/CLI.hpp>
 #include <boost/date_time/posix_time/posix_time_io.hpp>
 #include <iostream>
@@ -32,18 +33,19 @@ int main(int argc, char** argv)
     auto initialize_storage = [&config]() {
         config.credentials = std::make_shared<CredentialFilesystemStorage>(config.data_path / "keys");
         config.security = std::make_shared<OpenSslSecurityModule>(config.credentials);
+        config.crypto = std::make_shared<vanetza::security::OpenSslCryptoProvider>();
         const std::filesystem::path certs_dir = config.data_path / "certificates";
-        config.root_ca = std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".rca");
+        config.root_ca = std::make_shared<CertificateFilesystemStorage>(config.crypto, certs_dir, ".rca");
         config.enrolment_credentials =
-            std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".ec");
-        config.tickets = std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".at");
-        config.tlm = std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".tlm");
+            std::make_shared<CertificateFilesystemStorage>(config.crypto, certs_dir, ".ec");
+        config.tickets = std::make_shared<CertificateFilesystemStorage>(config.crypto, certs_dir, ".at");
+        config.tlm = std::make_shared<CertificateFilesystemStorage>(config.crypto, certs_dir, ".tlm");
         config.authorization_authorities =
-            std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".aa");
+            std::make_shared<CertificateFilesystemStorage>(config.crypto, certs_dir, ".aa");
         config.enrolment_authorities =
-            std::make_shared<CertificateFilesystemStorage>(config.security, certs_dir, ".ea");
-        config.trust_lists = std::make_shared<TrustListFilesystemStorage>(config.security, config.data_path / "ctls");
-        config.crl_store = std::make_shared<CrlFilesystemStore>(config.security, config.data_path / "crls");
+            std::make_shared<CertificateFilesystemStorage>(config.crypto, certs_dir, ".ea");
+        config.trust_lists = std::make_shared<TrustListFilesystemStorage>(config.crypto, config.data_path / "ctls");
+        config.crl_store = std::make_shared<CrlFilesystemStore>(config.crypto, config.data_path / "crls");
         config.station = std::make_shared<StationConfigurationFilesystem>(config.data_path);
         if (auto root_ca = config.station->get_root_ca()) {
             config.root_ca_hid8 = *root_ca;
