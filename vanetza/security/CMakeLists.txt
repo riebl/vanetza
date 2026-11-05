@@ -66,6 +66,7 @@ add_vanetza_component(security
     v3/hash.cpp
     v3/issuer_memory_lookup.cpp
     v3/location_checker.cpp
+    v3/memory_authorization_ticket_pool.cpp
     v3/secured_message.cpp
     v3/sign_service.cpp
     v3/naive_certificate_provider.cpp
