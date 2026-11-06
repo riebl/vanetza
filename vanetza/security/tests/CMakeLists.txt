@@ -38,4 +38,5 @@ endif()
 
 if(VANETZA_WITH_PSA)
     add_gtest(PsaError psa_error.cpp LINK_LIBRARIES PSACrypto::PSACrypto)
+    add_gtest(PsaSecurityModule psa_security_module.cpp LINK_LIBRARIES PSACrypto::PSACrypto)
 endif()

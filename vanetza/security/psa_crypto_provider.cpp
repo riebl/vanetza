@@ -1,13 +1,8 @@
 #include <vanetza/security/psa_crypto_provider.hpp>
 #include <vanetza/security/psa_error.hpp>
 #include <vanetza/security/psa_wrapper.hpp>
-#include <mbedtls/pk.h> // Mbed TLS API beyond PSA, see import_verification_key()
 #include <algorithm>
 #include <iterator>
-
-#ifndef MBEDTLS_PK_PARSE_EC_COMPRESSED
-#   error "Mbed TLS cannot decompress public keys, enable MBEDTLS_PK_PARSE_EC_COMPRESSED"
-#endif
 
 namespace vanetza
 {
@@ -18,27 +13,6 @@ namespace
 {
 
 constexpr std::size_t auth_tag_length = 16;
-
-// Mbed TLS public key context freed at the end of its lifetime, see import_verification_key()
-class PkContext
-{
-public:
-    PkContext() { mbedtls_pk_init(&m_context); }
-    PkContext(const PkContext&) = delete;
-    PkContext& operator=(const PkContext&) = delete;
-    ~PkContext() { mbedtls_pk_free(&m_context); }
-
-    mbedtls_pk_context* get() { return &m_context; }
-
-private:
-    mbedtls_pk_context m_context;
-};
-
-std::error_code initialization_error()
-{
-    const psa_status_t status = psa::initialize();
-    return status == PSA_SUCCESS ? std::error_code {} : make_psa_error(status, SecurityModuleError::ModuleFailure);
-}
 
 /**
  * Append big-endian integer with exactly the given length
@@ -56,44 +30,29 @@ bool append_integer(ByteBuffer& buffer, const ByteBuffer& integer, std::size_t l
     return true;
 }
 
-/**
- * Import public key for verifying signatures
- *
- * PSA imports uncompressed keys only, thus Mbed TLS's PK module parses (and decompresses) the key.
- * This is the only use of Mbed TLS API not belonging to the PSA Crypto API.
- */
+// Import public key for verifying signatures
 std::error_code import_verification_key(const PublicKey& public_key, psa_algorithm_t algorithm, psa::Key& key)
 {
-    const ByteBuffer key_info = encode_subject_public_key_info(public_key);
-    if (key_info.empty()) {
-        return make_error_code(SecurityModuleError::InvalidPublicKey);
-    }
-
-    PkContext pk;
-    int result = mbedtls_pk_parse_public_key(pk.get(), key_info.data(), key_info.size());
-    if (result == MBEDTLS_ERR_PK_UNKNOWN_NAMED_CURVE) {
-        return make_psa_error(result, SecurityModuleError::UnsupportedKeyType);
-    } else if (result != 0) {
-        return make_psa_error(result, SecurityModuleError::InvalidPublicKey);
+    const expected<ByteBuffer> point = psa::encode_uncompressed_point(public_key);
+    if (!point) {
+        return point.error();
     }
 
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    result = mbedtls_pk_get_psa_attributes(pk.get(), PSA_KEY_USAGE_VERIFY_HASH, &attributes);
-    if (result != 0) {
-        return make_psa_error(result, SecurityModuleError::ModuleFailure);
-    }
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_PUBLIC_KEY(psa::ecc_family(public_key.type)));
+    psa_set_key_bits(&attributes, 8 * key_length(public_key.type));
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_VERIFY_HASH);
     psa_set_key_algorithm(&attributes, algorithm);
-    result = mbedtls_pk_import_into_psa(pk.get(), &attributes, key.output());
-    psa_reset_key_attributes(&attributes);
-    switch (result) {
-        case 0:
+    const psa_status_t status = psa_import_key(&attributes, point->data(), point->size(), key.output());
+    switch (status) {
+        case PSA_SUCCESS:
             return {};
         case PSA_ERROR_NOT_SUPPORTED:
-            return make_psa_error(result, SecurityModuleError::UnsupportedKeyType);
+            return make_psa_error(status, SecurityModuleError::UnsupportedKeyType);
         case PSA_ERROR_INVALID_ARGUMENT:
-            return make_psa_error(result, SecurityModuleError::InvalidPublicKey);
+            return make_psa_error(status, SecurityModuleError::InvalidPublicKey);
         default:
-            return make_psa_error(result, SecurityModuleError::ModuleFailure);
+            return make_psa_error(status, SecurityModuleError::ModuleFailure);
     }
 }
 
@@ -114,7 +73,7 @@ expected<bool> verify_digest(psa_algorithm_t hash_algorithm, const std::uint8_t*
         return false;
     }
 
-    std::error_code error = initialization_error();
+    std::error_code error = psa::initialization_error();
     if (error) {
         return error;
     }
@@ -177,7 +136,7 @@ expected<bool> PsaCryptoProvider::verify(const Sha384Hash& digest, const Signatu
 
 expected<AesCcmCiphertext> PsaCryptoProvider::encrypt_aes_ccm(const Aes128Key& key, const ByteBuffer& plaintext)
 {
-    std::error_code error = initialization_error();
+    std::error_code error = psa::initialization_error();
     if (error) {
         return error;
     }
@@ -214,7 +173,7 @@ expected<ByteBuffer> PsaCryptoProvider::decrypt_aes_ccm(const Aes128Key& key, co
         return make_error_code(SecurityModuleError::DecryptionFailure);
     }
 
-    std::error_code error = initialization_error();
+    std::error_code error = psa::initialization_error();
     if (error) {
         return error;
     }
@@ -243,7 +202,7 @@ expected<ByteBuffer> PsaCryptoProvider::decrypt_aes_ccm(const Aes128Key& key, co
 
 expected<Sha256Hmac> PsaCryptoProvider::calculate_hmac_sha256(const byte_view_range& key, const byte_view_range& data)
 {
-    const std::error_code error = initialization_error();
+    const std::error_code error = psa::initialization_error();
     if (error) {
         return error;
     }

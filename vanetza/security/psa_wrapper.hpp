@@ -1,10 +1,15 @@
 #pragma once
 
+#include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/expected.hpp>
+#include <vanetza/security/key_type.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <psa/crypto.h>
 #include <array>
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
+#include <system_error>
 
 namespace vanetza
 {
@@ -18,6 +23,27 @@ namespace psa
  * \return status of the single initialization
  */
 psa_status_t initialize();
+
+/**
+ * Initialize PSA Crypto API once for all its users
+ * \return error equivalent to ModuleFailure if initialization failed
+ */
+std::error_code initialization_error();
+
+/**
+ * Get PSA's curve family of a key type
+ * \return curve family or zero for unsupported key types
+ */
+psa_ecc_family_t ecc_family(KeyType);
+
+/**
+ * Encode public key as uncompressed point, the only form PSA imports elliptic curve public keys in
+ *
+ * Mbed TLS's PK module decompresses compressed keys, the only use of Mbed TLS API beyond the PSA Crypto API.
+ * \param key public key of a supported key type
+ * \return 0x04 || x || y or error, e.g. InvalidPublicKey
+ */
+expected<ByteBuffer> encode_uncompressed_point(const PublicKey& key);
 
 /**
  * Calculate hash by PSA Crypto API

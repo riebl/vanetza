@@ -2,6 +2,9 @@
 #if defined VANETZA_WITH_OPENSSL
 #   include <vanetza/security/openssl_security_module.hpp>
 #endif
+#if defined VANETZA_WITH_PSA
+#   include <vanetza/security/psa_security_module.hpp>
+#endif
 
 namespace vanetza
 {
@@ -14,6 +17,11 @@ namespace
 Factory<SecurityModule> build_builtin_security_modules()
 {
     Factory<SecurityModule> factory;
+#if defined VANETZA_WITH_PSA
+    factory.add("PSA", []() { return std::unique_ptr<SecurityModule> { new PsaSecurityModule() }; });
+    factory.configure_default("PSA");
+#endif
+    // OpenSSL is preferred over PSA if both are available
 #if defined VANETZA_WITH_OPENSSL
     factory.add("OpenSSL", []() { return std::unique_ptr<SecurityModule> { new OpenSslSecurityModule() }; });
     factory.configure_default("OpenSSL");

@@ -110,7 +110,7 @@ endif()
 
 if(VANETZA_WITH_PSA)
     set_property(TARGET security APPEND PROPERTY
-        SOURCES psa_crypto_provider.cpp psa_error.cpp psa_wrapper.cpp)
+        SOURCES psa_crypto_provider.cpp psa_error.cpp psa_security_module.cpp psa_wrapper.cpp)
     target_link_libraries(security PRIVATE PSACrypto::PSACrypto)
     target_compile_definitions(security PUBLIC "VANETZA_WITH_PSA")
 endif()
