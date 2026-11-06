@@ -53,7 +53,11 @@ function(add_gtest name)
     LINK_LIBRARIES "${link_libraries}"
     INCLUDE_DIRECTORIES "${include_directories}"
     COMPILE_DEFINITIONS "${compile_definitions}")
+
+  # tests run in their own directories
+  set(working_directory ${CMAKE_BINARY_DIR}/Testing/${name})
+  file(MAKE_DIRECTORY ${working_directory})
   add_test(NAME ${name}
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    WORKING_DIRECTORY ${working_directory}
     COMMAND ${target})
 endfunction()
