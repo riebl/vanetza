@@ -107,6 +107,42 @@ TEST_F(PsaSecurityModuleTest, malformed_key_reference_is_invalid)
     }
 }
 
+// PSA assigns identifiers beyond the user range to temporary keys, e.g. of other PSA users
+TEST_F(PsaSecurityModuleTest, reference_to_temporary_key_is_invalid)
+{
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
+    psa_set_key_bits(&attributes, 256);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
+    psa_set_key_algorithm(&attributes, PSA_ALG_ECDSA_ANY);
+    psa::Key temporary;
+    ASSERT_EQ(PSA_SUCCESS, psa_generate_key(&attributes, temporary.output()));
+
+    expected<Signature> signature = security.sign(ByteBuffer(32, 0x01), psa::key_reference(temporary.id()));
+    ASSERT_TRUE(signature.has_error());
+    EXPECT_EQ(SecurityModuleError::InvalidKeyReference, signature.error());
+}
+
+// other PSA users may store keys of any purpose with identifiers of the user range
+TEST_F(PsaSecurityModuleTest, key_of_other_purpose_is_not_used)
+{
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+    psa_set_key_id(&attributes, PSA_KEY_ID_USER_MAX);
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
+    psa_set_key_bits(&attributes, 256);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_DERIVE);
+    psa_set_key_algorithm(&attributes, PSA_ALG_ECDH);
+    psa::Key foreign;
+    ASSERT_EQ(PSA_SUCCESS, psa_generate_key(&attributes, foreign.output()));
+
+    expected<Signature> signature = security.sign(ByteBuffer(32, 0x01), psa::key_reference(foreign.id()));
+    ASSERT_TRUE(signature.has_error());
+    EXPECT_EQ(SecurityModuleError::InvalidKeyReference, signature.error());
+    expected<PublicKey> public_key = security.public_key(psa::key_reference(foreign.id()));
+    ASSERT_TRUE(public_key.has_error());
+    EXPECT_EQ(SecurityModuleError::InvalidKeyReference, public_key.error());
+}
+
 // other PSA users may store keys with any identifier of the user range
 TEST_F(PsaSecurityModuleTest, foreign_key_is_neither_found_nor_discarded)
 {
