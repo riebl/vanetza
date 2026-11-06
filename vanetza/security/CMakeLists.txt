@@ -1,6 +1,7 @@
 add_vanetza_component(security
     aes.cpp
     backend.cpp
+    backend_crypto_provider.cpp
     backend_null.cpp
     cam_ssp.cpp
     credential_storage.cpp
