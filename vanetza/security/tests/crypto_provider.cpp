@@ -1,23 +1,43 @@
 #include <vanetza/security/crypto_provider.hpp>
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <memory>
+#include <string>
+#include <vector>
+#include "serialization.hpp"
 
 using vanetza::ByteBuffer;
 using vanetza::create_byte_view;
 using vanetza::expected;
 using namespace vanetza::security;
 
-class CryptoProviderTest : public ::testing::Test
+// every crypto provider implementation fulfils the same contract
+class CryptoProviderTest : public ::testing::TestWithParam<std::string>
 {
 protected:
     void SetUp() override
     {
-        if (!crypto) {
-            GTEST_SKIP() << "no crypto provider built in";
+        ASSERT_TRUE(crypto) << GetParam() << " crypto provider is not built in";
+    }
+
+    // verify by the overload of the digest's length
+    expected<bool> verify(const ByteBuffer& digest, const Signature& signature, const PublicKey& key)
+    {
+        Sha256Hash sha256;
+        Sha384Hash sha384;
+        if (digest.size() == sha256.octets.size()) {
+            std::copy(digest.begin(), digest.end(), sha256.octets.begin());
+            return crypto->verify(sha256, signature, key);
+        } else if (digest.size() == sha384.octets.size()) {
+            std::copy(digest.begin(), digest.end(), sha384.octets.begin());
+            return crypto->verify(sha384, signature, key);
+        } else {
+            ADD_FAILURE() << "digest of unexpected length " << digest.size();
+            return false;
         }
     }
 
-    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider(GetParam());
     const ByteBuffer plaintext { 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99 };
     // AES-128 example key of FIPS 197 (Appendix A.1)
     const Aes128Key key {{
@@ -25,7 +45,166 @@ protected:
     }};
 };
 
-TEST_F(CryptoProviderTest, mac_vector1)
+namespace
+{
+
+// ECDSA signature by OpenSSL of the SHA-256 or SHA-384 digest of "Vanetza ECDSA test vector"
+struct SignedDigest
+{
+    const char* curve;
+    KeyType type;
+    ByteBuffer digest;
+    ByteBuffer x;
+    ByteBuffer y;
+    ByteBuffer r;
+    ByteBuffer s;
+};
+
+const std::vector<SignedDigest>& signed_digests()
+{
+    static const std::vector<SignedDigest> digests = {
+        { "NIST P-256", KeyType::NistP256,
+            buffer_from_hexstring("ef393f3f3de3c074da89cc848c3ec7c8b59e0a294086b113ed71f0c1439209a6"),
+            buffer_from_hexstring("82750a96826bd2bb3bba44e5fa888d6367692b0937bc01b15cbd8ccb4ea915f0"),
+            buffer_from_hexstring("4c5363e024173cc26b2e2a224257dd5753f117f9a3cbf36e69c2a01d0dec6780"),
+            buffer_from_hexstring("361b4f8bd72f241f2c0fd9724b0724a89ea22f4087f4dad735dccfc172493abb"),
+            buffer_from_hexstring("72a18baecf7b13c54d3dc1d4339e67704c3f5a9a34ff8f5517b21d5b997a224a") },
+        { "brainpoolP256r1", KeyType::BrainpoolP256r1,
+            buffer_from_hexstring("ef393f3f3de3c074da89cc848c3ec7c8b59e0a294086b113ed71f0c1439209a6"),
+            buffer_from_hexstring("92a34fbd72b4e475fe441bc222fbd59b499eef97cc0c4fa3329adb9c049f829d"),
+            buffer_from_hexstring("61720184498f9f271c42a6e990f6e8abf58a7135a619094cf130507fe43161a5"),
+            buffer_from_hexstring("2fea764cd9cbae8bafe329e07ab5a4cb9218fe4a486ea402f009d348e0bbeb28"),
+            buffer_from_hexstring("7c906cbdcf9eb390ecd777cb0f2bffedc7298bf60d669b76e0865982d4c14bed") },
+        { "brainpoolP384r1", KeyType::BrainpoolP384r1,
+            buffer_from_hexstring(
+                "62951471c7c674cc198f7ae25d19538de636d7a9b860dd5dc9e1fac61e793465b5a40e60ca8c8b90dcdf5d60b94590ab"),
+            buffer_from_hexstring(
+                "57b66098aaf8ca7228df09efc7652766b2bad38c60967021da3d57f310e39cf055a2b0a356c1a5b0e1e12799bb3ada48"),
+            buffer_from_hexstring(
+                "5174240955deda9183e6f09ca1d4c55eb83dee94739094b595f4912382feacf171fc863ee343e85f83832ce11f694ef1"),
+            buffer_from_hexstring(
+                "37f86aa9e05a3229025916d84afc774cb3cc43e3fa329e974e040ce6517e1f4c04bf4b368f11ffee2cd2ffe4cb493579"),
+            buffer_from_hexstring(
+                "32f38cf178ec27e067959bad1849faa53ca94207e4b699f35d1c526f11d5143c309302ae3155303b1969034d2eca5b3a") },
+    };
+    return digests;
+}
+
+PublicKey public_key(const SignedDigest& signed_digest, KeyCompression compression)
+{
+    PublicKey key;
+    key.type = signed_digest.type;
+    key.compression = compression;
+    key.x = signed_digest.x;
+    if (compression == KeyCompression::NoCompression) {
+        key.y = signed_digest.y;
+    }
+    return key;
+}
+
+KeyCompression compressed_form(const SignedDigest& signed_digest)
+{
+    return signed_digest.y.back() % 2 == 0 ? KeyCompression::Y0 : KeyCompression::Y1;
+}
+
+Signature signature(const SignedDigest& signed_digest)
+{
+    Signature signature;
+    signature.type = signed_digest.type;
+    signature.r = signed_digest.r;
+    signature.s = signed_digest.s;
+    return signature;
+}
+
+} // namespace
+
+TEST_P(CryptoProviderTest, signature_is_verified)
+{
+    for (const SignedDigest& signed_digest : signed_digests()) {
+        SCOPED_TRACE(signed_digest.curve);
+        for (KeyCompression compression : { KeyCompression::NoCompression, compressed_form(signed_digest) }) {
+            SCOPED_TRACE(compression == KeyCompression::NoCompression ? "uncompressed key" : "compressed key");
+            const PublicKey key = public_key(signed_digest, compression);
+            expected<bool> verified = verify(signed_digest.digest, signature(signed_digest), key);
+            ASSERT_TRUE(verified.has_value()) << verified.error().message();
+            EXPECT_TRUE(*verified);
+        }
+    }
+}
+
+TEST_P(CryptoProviderTest, signature_of_other_digest_is_false)
+{
+    for (const SignedDigest& signed_digest : signed_digests()) {
+        SCOPED_TRACE(signed_digest.curve);
+        ByteBuffer other_digest = signed_digest.digest;
+        other_digest.front() ^= 0x01;
+        const PublicKey key = public_key(signed_digest, KeyCompression::NoCompression);
+        expected<bool> verified = verify(other_digest, signature(signed_digest), key);
+        ASSERT_TRUE(verified.has_value()) << verified.error().message();
+        EXPECT_FALSE(*verified);
+    }
+}
+
+TEST_P(CryptoProviderTest, unverifiable_signature_is_false)
+{
+    const SignedDigest& signed_digest = signed_digests().front();
+    Signature out_of_range = signature(signed_digest);
+    out_of_range.r = ByteBuffer { 0x00 }; // valid r and s are greater than zero
+    out_of_range.s = ByteBuffer { 0x00 };
+    Signature empty = signature(signed_digest);
+    empty.r.clear();
+    Signature other_curve = signature(signed_digest);
+    other_curve.type = KeyType::BrainpoolP256r1;
+
+    const struct
+    {
+        const char* defect;
+        Signature signature;
+    } unverifiable[] = {
+        { "r and s out of range", out_of_range },
+        { "empty r", empty },
+        { "signature for other curve", other_curve },
+    };
+
+    const PublicKey key = public_key(signed_digest, KeyCompression::NoCompression);
+    for (const auto& candidate : unverifiable) {
+        SCOPED_TRACE(candidate.defect);
+        expected<bool> verified = verify(signed_digest.digest, candidate.signature, key);
+        ASSERT_TRUE(verified.has_value()) << verified.error().message();
+        EXPECT_FALSE(*verified);
+    }
+}
+
+TEST_P(CryptoProviderTest, unusable_public_key_is_error)
+{
+    const SignedDigest& signed_digest = signed_digests().front();
+    PublicKey off_curve = public_key(signed_digest, KeyCompression::NoCompression);
+    off_curve.y.back() ^= 0x01;
+    PublicKey malformed = public_key(signed_digest, compressed_form(signed_digest));
+    malformed.x.insert(malformed.x.begin(), 0x01); // exceeds field length
+    PublicKey unspecified = public_key(signed_digest, KeyCompression::NoCompression);
+    unspecified.type = KeyType::Unspecified;
+
+    const struct
+    {
+        const char* defect;
+        PublicKey key;
+        SecurityModuleError error;
+    } unusable_keys[] = {
+        { "not on curve", off_curve, SecurityModuleError::InvalidPublicKey },
+        { "malformed", malformed, SecurityModuleError::InvalidPublicKey },
+        { "unspecified key type", unspecified, SecurityModuleError::UnsupportedKeyType },
+    };
+
+    for (const auto& unusable : unusable_keys) {
+        SCOPED_TRACE(unusable.defect);
+        expected<bool> verified = verify(signed_digest.digest, signature(signed_digest), unusable.key);
+        ASSERT_TRUE(verified.has_error());
+        EXPECT_EQ(unusable.error, verified.error());
+    }
+}
+
+TEST_P(CryptoProviderTest, mac_vector1)
 {
     const ByteBuffer key(20, 0x0B);
     const ByteBuffer msg { 0x48, 0x69, 0x20, 0x54, 0x68, 0x65, 0x72, 0x65 };
@@ -37,7 +216,7 @@ TEST_F(CryptoProviderTest, mac_vector1)
     EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
-TEST_F(CryptoProviderTest, mac_vector2)
+TEST_P(CryptoProviderTest, mac_vector2)
 {
     const ByteBuffer key { 0x4A, 0x65, 0x66, 0x65 };
     const ByteBuffer msg {
@@ -53,7 +232,7 @@ TEST_F(CryptoProviderTest, mac_vector2)
     EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
-TEST_F(CryptoProviderTest, mac_vector3)
+TEST_P(CryptoProviderTest, mac_vector3)
 {
     const ByteBuffer key(20, 0xAA);
     const ByteBuffer msg(50, 0xDD);
@@ -65,7 +244,7 @@ TEST_F(CryptoProviderTest, mac_vector3)
     EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
-TEST_F(CryptoProviderTest, mac_vector4)
+TEST_P(CryptoProviderTest, mac_vector4)
 {
     const ByteBuffer key {
         0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
@@ -80,7 +259,7 @@ TEST_F(CryptoProviderTest, mac_vector4)
     EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
-TEST_F(CryptoProviderTest, mac_vector5)
+TEST_P(CryptoProviderTest, mac_vector5)
 {
     const ByteBuffer key(20, 0x0C);
     const ByteBuffer msg {
@@ -95,7 +274,7 @@ TEST_F(CryptoProviderTest, mac_vector5)
     EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
-TEST_F(CryptoProviderTest, mac_vector6)
+TEST_P(CryptoProviderTest, mac_vector6)
 {
     const ByteBuffer key(131, 0xAA);
     const ByteBuffer msg {
@@ -114,7 +293,7 @@ TEST_F(CryptoProviderTest, mac_vector6)
     EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
-TEST_F(CryptoProviderTest, mac_vector7)
+TEST_P(CryptoProviderTest, mac_vector7)
 {
     const ByteBuffer key(131, 0xAA);
     const ByteBuffer msg {
@@ -145,7 +324,7 @@ TEST_F(CryptoProviderTest, mac_vector7)
     EXPECT_EQ(create_byte_view(tag), create_byte_view(result.octets));
 }
 
-TEST_F(CryptoProviderTest, aes_ccm_decrypts_own_ciphertext)
+TEST_P(CryptoProviderTest, aes_ccm_decrypts_own_ciphertext)
 {
     expected<AesCcmCiphertext> ciphertext = crypto->encrypt_aes_ccm(key, plaintext);
     ASSERT_TRUE(ciphertext.has_value());
@@ -155,7 +334,7 @@ TEST_F(CryptoProviderTest, aes_ccm_decrypts_own_ciphertext)
     EXPECT_EQ(plaintext, *decrypted);
 }
 
-TEST_F(CryptoProviderTest, aes_ccm_encrypts_with_fresh_nonces)
+TEST_P(CryptoProviderTest, aes_ccm_encrypts_with_fresh_nonces)
 {
     expected<AesCcmCiphertext> first = crypto->encrypt_aes_ccm(key, plaintext);
     expected<AesCcmCiphertext> second = crypto->encrypt_aes_ccm(key, plaintext);
@@ -164,7 +343,7 @@ TEST_F(CryptoProviderTest, aes_ccm_encrypts_with_fresh_nonces)
     EXPECT_NE(first->nonce, second->nonce);
 }
 
-TEST_F(CryptoProviderTest, aes_ccm_rejects_tampered_ciphertext)
+TEST_P(CryptoProviderTest, aes_ccm_rejects_tampered_ciphertext)
 {
     expected<AesCcmCiphertext> ciphertext = crypto->encrypt_aes_ccm(key, plaintext);
     ASSERT_TRUE(ciphertext.has_value());
@@ -191,7 +370,7 @@ TEST_F(CryptoProviderTest, aes_ccm_rejects_tampered_ciphertext)
 }
 
 // IEEE 1609.2 Annex D.6 AES-CCM test vector
-TEST_F(CryptoProviderTest, aes_ccm_decrypts_IEEE_1609_2_Annex_D_6_vector)
+TEST_P(CryptoProviderTest, aes_ccm_decrypts_IEEE_1609_2_Annex_D_6_vector)
 {
     const Aes128Key key {{
         0xE5, 0x8D, 0x5C, 0x8F, 0x8C, 0x9E, 0xD9, 0x78, 0x56, 0x79, 0xE0, 0x8A, 0xBC, 0x7C, 0x81, 0x16
@@ -226,3 +405,21 @@ TEST_F(CryptoProviderTest, aes_ccm_decrypts_IEEE_1609_2_Annex_D_6_vector)
     ASSERT_TRUE(decrypted.has_value());
     EXPECT_EQ(payload, *decrypted);
 }
+
+std::vector<std::string> enabled_crypto_providers()
+{
+    std::vector<std::string> providers;
+#ifdef VANETZA_WITH_OPENSSL
+    providers.emplace_back("OpenSSL");
+#endif
+#ifdef VANETZA_WITH_PSA
+    providers.emplace_back("PSA");
+#endif
+    return providers;
+}
+
+INSTANTIATE_TEST_SUITE_P(Implementations, CryptoProviderTest, ::testing::ValuesIn(enabled_crypto_providers()),
+    [](const ::testing::TestParamInfo<std::string>& info) { return info.param; });
+
+// builds without any crypto provider have nothing to test
+GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CryptoProviderTest);

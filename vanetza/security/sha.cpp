@@ -7,43 +7,13 @@
 #endif
 #if defined VANETZA_WITH_PSA && !defined VANETZA_WITH_OPENSSL && !defined VANETZA_WITH_CRYPTOPP
 #define VANETZA_SHA_BY_PSA
-#include <psa/crypto.h>
-#include <mutex>
-#include <stdexcept>
+#include <vanetza/security/psa_wrapper.hpp>
 #endif
 
 namespace vanetza
 {
 namespace security
 {
-
-#ifdef VANETZA_SHA_BY_PSA
-namespace
-{
-
-bool initialize_psa_crypto()
-{
-    static std::once_flag flag;
-    static psa_status_t status = PSA_ERROR_BAD_STATE;
-    std::call_once(flag, [] { status = psa_crypto_init(); });
-    return status == PSA_SUCCESS;
-}
-
-template<std::size_t N>
-void calculate_psa_hash(psa_algorithm_t algo, const uint8_t* data, std::size_t len, std::array<uint8_t, N>& digest)
-{
-    std::size_t digest_length = 0;
-    if (!initialize_psa_crypto()) {
-        throw std::runtime_error("PSA crypto initialization failed");
-    } else if (psa_hash_compute(algo, data, len, digest.data(), digest.size(), &digest_length) != PSA_SUCCESS) {
-        throw std::runtime_error("PSA hash calculation failed");
-    } else if (digest_length != digest.size()) {
-        throw std::runtime_error("PSA hash calculation has unexpected length");
-    }
-}
-
-} // namespace
-#endif
 
 Sha256Digest calculate_sha256_digest(const uint8_t* data, std::size_t len)
 {
@@ -59,7 +29,7 @@ Sha256Digest calculate_sha256_digest(const uint8_t* data, std::size_t len)
     CryptoPP::SHA256 hash;
     hash.CalculateDigest(digest.data(), data, len);
 #elif defined VANETZA_SHA_BY_PSA
-    calculate_psa_hash(PSA_ALG_SHA_256, data, len, digest);
+    psa::calculate_hash(PSA_ALG_SHA_256, data, len, digest);
 #else
 #   error "no SHA256 implementation available"
 #endif
@@ -76,7 +46,7 @@ Sha384Digest calculate_sha384_digest(const uint8_t* data, std::size_t len)
     CryptoPP::SHA384 hash;
     hash.CalculateDigest(digest.data(), data, len);
 #elif defined VANETZA_SHA_BY_PSA
-    calculate_psa_hash(PSA_ALG_SHA_384, data, len, digest);
+    psa::calculate_hash(PSA_ALG_SHA_384, data, len, digest);
 #else
 #   error "no SHA384 implementation available"
 #endif

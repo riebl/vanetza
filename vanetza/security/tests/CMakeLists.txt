@@ -35,3 +35,7 @@ if(VANETZA_WITH_OPENSSL)
     add_gtest(OpenSslError openssl_error.cpp ${_openssl_test_options})
     add_gtest(OpenSslSecurityModule openssl_security_module.cpp ${_openssl_test_options})
 endif()
+
+if(VANETZA_WITH_PSA)
+    add_gtest(PsaError psa_error.cpp LINK_LIBRARIES PSACrypto::PSACrypto)
+endif()

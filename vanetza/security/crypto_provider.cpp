@@ -2,6 +2,9 @@
 #if defined VANETZA_WITH_OPENSSL
 #   include <vanetza/security/openssl_crypto_provider.hpp>
 #endif
+#if defined VANETZA_WITH_PSA
+#   include <vanetza/security/psa_crypto_provider.hpp>
+#endif
 
 namespace vanetza
 {
@@ -14,6 +17,11 @@ namespace
 Factory<CryptoProvider> build_builtin_crypto_providers()
 {
     Factory<CryptoProvider> factory;
+#if defined VANETZA_WITH_PSA
+    factory.add("PSA", []() { return std::unique_ptr<CryptoProvider> { new PsaCryptoProvider() }; });
+    factory.configure_default("PSA");
+#endif
+    // OpenSSL is preferred over PSA if both are available
 #if defined VANETZA_WITH_OPENSSL
     factory.add("OpenSSL", []() { return std::unique_ptr<CryptoProvider> { new OpenSslCryptoProvider() }; });
     factory.configure_default("OpenSSL");
