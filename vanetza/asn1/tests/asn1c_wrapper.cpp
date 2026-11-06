@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
+#include <vanetza/asn1/its/HighFrequencyContainer.h>
 #include <vanetza/asn1/its/VanetzaTest.h>
 
 using namespace vanetza::asn1;
@@ -183,4 +184,18 @@ TEST(asn1c_wrapper, decode_error_maps_result_codes) {
     asn1c_error ec_bad;
     rx.decode(vanetza::ByteBuffer(4, 0xFF), ec_bad);
     EXPECT_EQ(ErrorCode::DecodeFailed, ec_bad.code());
+}
+
+TEST(asn1c_wrapper, copy_choice_without_choice) {
+    HighFrequencyContainer_t original {};
+    void* copied = copy(asn_DEF_HighFrequencyContainer, &original);
+    ASSERT_NE(nullptr, copied);
+    EXPECT_EQ(HighFrequencyContainer_PR_NOTHING, static_cast<HighFrequencyContainer_t*>(copied)->present);
+    free(asn_DEF_HighFrequencyContainer, copied);
+}
+
+TEST(asn1c_wrapper, copy_invalid_choice) {
+    HighFrequencyContainer_t original {};
+    original.present = static_cast<HighFrequencyContainer_PR>(42);
+    EXPECT_THROW(copy(asn_DEF_HighFrequencyContainer, &original), asn1c_exception);
 }

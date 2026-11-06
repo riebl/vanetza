@@ -1,0 +1,17 @@
+diff --git a/vanetza/asn1/support/constr_CHOICE.c b/vanetza/asn1/support/constr_CHOICE.c
+--- a/vanetza/asn1/support/constr_CHOICE.c
++++ b/vanetza/asn1/support/constr_CHOICE.c
+@@ -345,7 +345,12 @@ CHOICE_copy(const asn_TYPE_descriptor_t *td, void **aptr, const void *bptr) {
+     present = _fetch_present_idx(bptr,
+                                  specs->pres_offset, specs->pres_size);
+ 
+-    if(present <= 0 && (unsigned)present > td->elements_count) return -1;
++    if(present == 0) {
++        /* nothing chosen, thus the copy has no choice either */
++        return 0;
++    } else if(present < 0 || (unsigned)present > td->elements_count) {
++        return -1;
++    }
+     --present;
+ 
+     elm = &td->elements[present];

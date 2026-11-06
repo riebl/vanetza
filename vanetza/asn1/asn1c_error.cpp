@@ -26,6 +26,8 @@ const char* code_description(ErrorCode code)
             return "ASN.1 decoding failed";
         case ErrorCode::OutOfMemory:
             return "out of memory";
+        case ErrorCode::CopyFailed:
+            return "ASN.1 copying failed";
     }
     return "unknown ASN.1 error";
 }

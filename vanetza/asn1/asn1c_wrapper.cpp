@@ -54,22 +54,12 @@ void deleter::operator()(void* ptr) const
 
 void* copy(asn_TYPE_descriptor_t& td, const void* original)
 {
+    // structural copy, i.e. copies of unencodable structures are possible
     void* copy = nullptr;
-    ByteBuffer buffer;
-
-    asn_enc_rval_t ec;
-    ec = oer_encode(&td, const_cast<void*>(original), write_buffer, &buffer);
-    if (ec.encoded == -1) {
-        throw asn1c_exception(asn1c_error(ErrorCode::EncodeFailed, &td, ec.failed_type));
-    }
-
-    asn_dec_rval_t dc;
-    dc = oer_decode(0, &td, &copy, buffer.data(), buffer.size());
-    if (dc.code != RC_OK) {
+    if (asn_copy(&td, &copy, original) != 0) {
         free(td, copy);
-        throw asn1c_exception(asn1c_error(ErrorCode::DecodeFailed, &td));
+        throw asn1c_exception(asn1c_error(ErrorCode::CopyFailed, &td));
     }
-
     return copy;
 }
 
