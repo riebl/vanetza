@@ -108,6 +108,11 @@ if(VANETZA_WITH_OPENSSL)
     target_compile_definitions(security PRIVATE "OPENSSL_API_COMPAT=0x10101000L")
 endif()
 
+if(VANETZA_WITH_PSA)
+    target_link_libraries(security PRIVATE PSACrypto::PSACrypto)
+    target_compile_definitions(security PUBLIC "VANETZA_WITH_PSA")
+endif()
+
 if(NOT VANETZA_WITH_CRYPTOPP AND NOT VANETZA_WITH_OPENSSL)
     message(WARNING "Vanetza is built without proper security backend")
 endif()

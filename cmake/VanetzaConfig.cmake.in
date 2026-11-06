@@ -27,6 +27,10 @@ if(NOT @BUILD_SHARED_LIBS@)
         find_dependency(OpenSSL ${OpenSSL_VERSION_WITHOUT_PATCH})
     endif()
 
+    if(@VANETZA_WITH_PSA@)
+        find_dependency(PSACrypto)
+    endif()
+
     if(@VANETZA_WITH_PQC@)
         find_dependency(liboqs 0.14 CONFIG)
     endif()

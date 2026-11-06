@@ -34,6 +34,7 @@ vanetza_optional_dependency(GeographicLib 1.37 VANETZA_WITH_GEOGRAPHICLIB "Use G
 vanetza_optional_dependency(CapnProto 0.8 VANETZA_WITH_RPC "Enable RPC support")
 vanetza_optional_dependency(CryptoPP 5.6.1 VANETZA_WITH_CRYPTOPP "Enable Crypto++ support")
 vanetza_optional_dependency(OpenSSL 1.1.1 VANETZA_WITH_OPENSSL "Enable OpenSSL extensions")
+vanetza_optional_dependency(PSACrypto VANETZA_WITH_PSA "Enable PSA Crypto API support")
 
 option(VANETZA_WITH_PQC "Enable the experimental hybrid-PQC certificate profile" OFF)
 if(VANETZA_WITH_PQC)
