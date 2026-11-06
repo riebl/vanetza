@@ -271,10 +271,12 @@ expected<Signature> OpenSslSecurityModule::sign(const ByteBuffer& digest, const 
     ECDSA_SIG_get0(osl_sig.get(), &osl_r, &osl_s);
     Signature sig;
     sig.type = key_type(ec_key->get());
-    sig.r.resize(BN_num_bytes(osl_r));
-    BN_bn2bin(osl_r, sig.r.data());
-    sig.s.resize(BN_num_bytes(osl_s));
-    BN_bn2bin(osl_s, sig.s.data());
+    const std::size_t length = key_length(sig.type);
+    sig.r.resize(length);
+    sig.s.resize(length);
+    if (BN_bn2binpad(osl_r, sig.r.data(), length) < 0 || BN_bn2binpad(osl_s, sig.s.data(), length) < 0) {
+        return take_openssl_error(SecurityModuleError::ModuleFailure);
+    }
     return sig;
 }
 
