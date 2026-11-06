@@ -114,3 +114,28 @@ TEST(SecuredMessageV3, sign_and_verify)
     EXPECT_EQ(verify_confirm.report, VerificationReport::Success);
     EXPECT_TRUE(verify_confirm.certificate_validity.valid());
 }
+
+TEST(SecuredMessageV3, verify_rejects_unsupported_hash_algorithm)
+{
+    StoredPositionProvider position_provider;
+    ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
+    auto backend = create_backend("default");
+
+    v3::NaiveCertificateProvider cert_provider { runtime };
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cert_provider.cache() };
+    v3::NullCertificateValidator cert_validator;
+    v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
+
+    SignRequest request;
+    ChunkPacket packet;
+    packet[OsiLayer::Application] = ByteBuffer {0x01, 0x02, 0x03};
+    request.plain_message = std::move(packet);
+    request.its_aid = aid::DEN;
+    SignConfirm sign_confirm = sign_service.sign(std::move(request));
+    ASSERT_TRUE(sign_confirm.secured_message);
+    v3::SecuredMessage& msg = boost::get<v3::SecuredMessage>(*sign_confirm.secured_message);
+    msg->content->choice.signedData->hashId = Vanetza_Security_HashAlgorithm_sha384 + 1;
+
+    StraightVerifyService verify_service { runtime, *backend, position_provider };
+    EXPECT_EQ(VerificationReport::Incompatible_Protocol, verify_service.verify(msg).report);
+}

@@ -535,6 +535,11 @@ VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
     try {
         ByteBuffer msg_hash = v3::calculate_message_hash(m_backend, msg.hash_id(),
             msg.signing_payload(), v3::CertificateView { certificate });
+        if (msg_hash.empty()) {
+            // unsupported hash algorithm, signatures crafted without private key match an empty digest
+            confirm.report = VerificationReport::Incompatible_Protocol;
+            return confirm;
+        }
         if (!m_backend.verify_digest(*public_key, msg_hash, *signature)) {
             confirm.report = VerificationReport::False_Signature;
             return confirm;
