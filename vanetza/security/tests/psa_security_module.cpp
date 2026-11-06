@@ -29,15 +29,6 @@ protected:
 namespace
 {
 
-psa_key_id_t key_id(const KeyReference& reference)
-{
-    psa_key_id_t id = 0;
-    for (std::uint8_t octet : reference.data) {
-        id = (id << 8) | octet;
-    }
-    return id;
-}
-
 // uncompressed form of a public key, e.g. as carried by some certificates
 PublicKey uncompressed(const PublicKey& key)
 {
@@ -126,7 +117,7 @@ TEST_F(PsaSecurityModuleTest, foreign_key_is_neither_found_nor_discarded)
 
     // foreign signing key at the identifier derived from our discarded key
     psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-    psa_set_key_id(&attributes, key_id(*key));
+    psa_set_key_id(&attributes, psa::key_id(*key).value());
     psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
     psa_set_key_bits(&attributes, 256);
     psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);

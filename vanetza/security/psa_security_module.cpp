@@ -15,8 +15,6 @@ namespace security
 namespace
 {
 
-constexpr std::size_t key_reference_length = 4;
-
 // another key may occupy the identifier derived from a fresh key pair's public key
 constexpr unsigned key_creation_attempts = 4;
 
@@ -40,31 +38,6 @@ private:
     ByteBuffer& m_buffer;
 };
 
-KeyReference make_key_reference(psa_key_id_t id)
-{
-    KeyReference reference;
-    for (std::size_t i = key_reference_length; i > 0; --i) {
-        reference.data.push_back(static_cast<std::uint8_t>(id >> (8 * (i - 1))));
-    }
-    return reference;
-}
-
-expected<psa_key_id_t> key_id(const KeyReference& reference)
-{
-    if (reference.data.size() != key_reference_length) {
-        return make_error_code(SecurityModuleError::InvalidKeyReference);
-    }
-
-    psa_key_id_t id = 0;
-    for (std::uint8_t octet : reference.data) {
-        id = (id << 8) | octet;
-    }
-    if (id < PSA_KEY_ID_USER_MIN || id > PSA_KEY_ID_USER_MAX) {
-        return make_error_code(SecurityModuleError::InvalidKeyReference);
-    }
-    return id;
-}
-
 /**
  * Derive persistent key identifier from a public key
  * \param name canonical hex string of public key
@@ -83,7 +56,7 @@ expected<psa_key_id_t> derive_key_id(const std::string& name)
     }
 
     psa_key_id_t id = 0;
-    for (std::size_t i = 0; i < key_reference_length; ++i) {
+    for (std::size_t i = 0; i < sizeof(psa_key_id_t); ++i) {
         id = (id << 8) | digest[i];
     }
     return id & PSA_KEY_ID_USER_MAX;
@@ -189,7 +162,7 @@ expected<KeyReference> PsaSecurityModule::create_signing_key(KeyType type)
         psa_key_id_t stored = PSA_KEY_ID_NULL;
         status = psa_copy_key(transient.id(), &persistent, &stored);
         if (status == PSA_SUCCESS) {
-            return make_key_reference(*id);
+            return psa::key_reference(*id);
         } else if (status != PSA_ERROR_ALREADY_EXISTS) {
             return make_psa_error(status, SecurityModuleError::ModuleFailure);
         }
@@ -228,12 +201,12 @@ expected<KeyReference> PsaSecurityModule::find_signing_key(const PublicKey& publ
     } else if (canonical_hexstring(*stored) != name) {
         return make_error_code(SecurityModuleError::KeyNotFound);
     }
-    return make_key_reference(*id);
+    return psa::key_reference(*id);
 }
 
 expected<PublicKey> PsaSecurityModule::public_key(const KeyReference& reference)
 {
-    const expected<psa_key_id_t> id = key_id(reference);
+    const expected<psa_key_id_t> id = psa::key_id(reference);
     if (!id) {
         return id.error();
     }
@@ -252,7 +225,7 @@ expected<PublicKey> PsaSecurityModule::public_key(const KeyReference& reference)
 
 expected<Signature> PsaSecurityModule::sign(const ByteBuffer& digest, const KeyReference& reference)
 {
-    const expected<psa_key_id_t> id = key_id(reference);
+    const expected<psa_key_id_t> id = psa::key_id(reference);
     if (!id) {
         return id.error();
     }
@@ -288,7 +261,7 @@ expected<Signature> PsaSecurityModule::sign(const ByteBuffer& digest, const KeyR
 
 bool PsaSecurityModule::discard_key(const KeyReference& reference)
 {
-    const expected<psa_key_id_t> id = key_id(reference);
+    const expected<psa_key_id_t> id = psa::key_id(reference);
     if (!id || psa::initialization_error()) {
         return false;
     }

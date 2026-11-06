@@ -2,6 +2,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/expected.hpp>
+#include <vanetza/security/key_reference.hpp>
 #include <vanetza/security/key_type.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <psa/crypto.h>
@@ -44,6 +45,18 @@ psa_ecc_family_t ecc_family(KeyType);
  * \return 0x04 || x || y or error, e.g. InvalidPublicKey
  */
 expected<ByteBuffer> encode_uncompressed_point(const PublicKey& key);
+
+/**
+ * Encode persistent key identifier as key reference of PsaSecurityModule
+ * \return reference of 4 octets, i.e. the big-endian identifier
+ */
+KeyReference key_reference(psa_key_id_t id);
+
+/**
+ * Decode key reference of PsaSecurityModule
+ * \return persistent key identifier of the user range or InvalidKeyReference
+ */
+expected<psa_key_id_t> key_id(const KeyReference& reference);
 
 /**
  * Calculate hash by PSA Crypto API

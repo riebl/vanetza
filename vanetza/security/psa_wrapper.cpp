@@ -17,6 +17,8 @@ namespace psa
 namespace
 {
 
+constexpr std::size_t key_reference_length = 4;
+
 // Mbed TLS public key context freed at the end of its lifetime, see encode_uncompressed_point()
 class PkContext
 {
@@ -108,6 +110,31 @@ expected<ByteBuffer> encode_uncompressed_point(const PublicKey& key)
         return make_error_code(SecurityModuleError::ModuleFailure);
     }
     return point;
+}
+
+KeyReference key_reference(psa_key_id_t id)
+{
+    KeyReference reference;
+    for (std::size_t i = key_reference_length; i > 0; --i) {
+        reference.data.push_back(static_cast<std::uint8_t>(id >> (8 * (i - 1))));
+    }
+    return reference;
+}
+
+expected<psa_key_id_t> key_id(const KeyReference& reference)
+{
+    if (reference.data.size() != key_reference_length) {
+        return make_error_code(SecurityModuleError::InvalidKeyReference);
+    }
+
+    psa_key_id_t id = 0;
+    for (std::uint8_t octet : reference.data) {
+        id = (id << 8) | octet;
+    }
+    if (id < PSA_KEY_ID_USER_MIN || id > PSA_KEY_ID_USER_MAX) {
+        return make_error_code(SecurityModuleError::InvalidKeyReference);
+    }
+    return id;
 }
 
 Key::~Key()
