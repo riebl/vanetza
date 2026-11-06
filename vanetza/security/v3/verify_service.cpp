@@ -5,10 +5,12 @@
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/hash.hpp>
+#include <vanetza/security/v3/issuer_lookup.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <vanetza/security/v3/verify_service.hpp>
 #include <boost/optional.hpp>
+#include <boost/variant/get.hpp>
 #include <algorithm>
 
 // asn1c quirk
@@ -24,9 +26,9 @@ namespace v3
 namespace
 {
 
-// verifies signature of a message hash calculated by algorithm of given digest type
+// verifies signature of a hash calculated by algorithm of given digest type
 template<typename Digest>
-expected<bool> verify_message_hash(
+expected<bool> verify_digest(
     CryptoProvider& crypto, const ByteBuffer& hash, const Signature& signature, const PublicKey& key)
 {
     Digest digest;
@@ -37,9 +39,131 @@ expected<bool> verify_message_hash(
     return crypto.verify(digest, signature, key);
 }
 
+// verifies signature of a hash calculated by given algorithm, false for unsupported algorithms
+expected<bool> verify_hash(CryptoProvider& crypto, HashAlgorithm algo, const ByteBuffer& hash,
+    const Signature& signature, const PublicKey& key)
+{
+    switch (algo) {
+        case HashAlgorithm::SHA256:
+            return verify_digest<Sha256Hash>(crypto, hash, signature, key);
+        case HashAlgorithm::SHA384:
+            return verify_digest<Sha384Hash>(crypto, hash, signature, key);
+        default:
+            return false;
+    }
+}
+
+// certificate included as signer identifier, nullptr for a digest
+const asn1::Certificate* included_certificate(const SecuredMessage::SignerIdentifier& signer)
+{
+    const asn1::Certificate* const* certificate = boost::get<const asn1::Certificate*>(&signer);
+    return certificate ? *certificate : nullptr;
+}
+
+void reject_certificate(VerifyConfirm& confirm, CertificateInvalidReason reason)
+{
+    confirm.report = VerificationReport::Invalid_Certificate;
+    confirm.certificate_validity = reason;
+}
+
+// checks issuer's signature of a ticket (IEEE 1609.2 clause 5.3.1), false if confirm reports its rejection
+bool check_issuer_signature(
+    CryptoProvider& crypto, const asn1::Certificate& ticket, const Certificate& issuer, VerifyConfirm& confirm)
+{
+    if (!ticket.signature) {
+        reject_certificate(confirm, CertificateInvalidReason::Missing_Signature);
+        return false;
+    }
+
+    const boost::optional<Signature> signature = get_signature(ticket);
+    const boost::optional<PublicKey> issuer_key = get_public_key(*issuer.content());
+    if (!signature || !issuer_key) {
+        reject_certificate(confirm, CertificateInvalidReason::Invalid_Signer);
+        return false;
+    }
+
+    const HashAlgorithm algo = specified_hash_algorithm(issuer_key->type);
+    const ByteBuffer hash = calculate_certificate_hash(crypto, algo, CertificateView { &ticket }, issuer);
+    const expected<bool> verified = verify_hash(crypto, algo, hash, *signature, *issuer_key);
+    if (verified.has_value() && *verified) {
+        return true;
+    } else if (verified.has_value()) {
+        reject_certificate(confirm, CertificateInvalidReason::Invalid_Signer);
+    } else if (verified.error() == SecurityModuleError::UnsupportedKeyType) {
+        confirm.report = VerificationReport::Incompatible_Protocol;
+    } else {
+        // e.g. an unusable key of a trusted issuer, i.e. of the station's trust information
+        confirm.report = VerificationReport::Configuration_Problem;
+    }
+    return false;
+}
+
+// finds a ticket's issuer among the trusted ones, nullptr if confirm reports the ticket's rejection
+const Certificate* find_trusted_issuer(const IssuerLookup& issuers, const asn1::Certificate& ticket,
+    VerifyConfirm& confirm)
+{
+    const CertificateView view { &ticket };
+    const boost::optional<HashedId8> issuer_id = view.issuer_digest();
+    const Certificate* issuer = issuer_id ? issuers.find_issuer(*issuer_id) : nullptr;
+    if (view.issuer_is_self()) {
+        // tickets are issued by an AA, they are never self-signed
+        reject_certificate(confirm, CertificateInvalidReason::Invalid_Signer);
+    } else if (!issuer_id) {
+        // issuer identifier is unsupported
+        confirm.report = VerificationReport::Incompatible_Protocol;
+    } else if (!issuer) {
+        // issuer is unknown or not trusted anymore, e.g. revoked meanwhile
+        reject_certificate(confirm, CertificateInvalidReason::Unknown_Signer);
+    }
+    return issuer;
+}
+
+// verifies a message's signature by its signer's public key
+VerificationReport verify_signature(CryptoProvider& crypto, const SecuredMessage& msg,
+    const asn1::Certificate& signer, const Signature& signature, const PublicKey& key)
+{
+    const ByteBuffer hash = calculate_message_hash(crypto, msg.hash_id(), msg.signing_payload(),
+        CertificateView { &signer });
+    if (hash.empty()) {
+        // unsupported hash algorithm
+        return VerificationReport::Incompatible_Protocol;
+    }
+
+    const expected<bool> verified = verify_hash(crypto, msg.hash_id(), hash, signature, key);
+    if (verified.has_value()) {
+        return *verified ? VerificationReport::Success : VerificationReport::False_Signature;
+    } else if (verified.error() == SecurityModuleError::UnsupportedKeyType) {
+        return VerificationReport::Incompatible_Protocol;
+    } else if (verified.error() == SecurityModuleError::InvalidPublicKey) {
+        // signer's ticket carries an unusable key
+        return VerificationReport::Invalid_Certificate;
+    } else {
+        return VerificationReport::Configuration_Problem;
+    }
+}
+
+// enqueues certificates requested by a CAM and discards requests answered by it (peer-to-peer distribution)
+void handle_p2pcd_requests(const SecuredMessage& msg, SignHeaderPolicy& policy)
+{
+    const auto& header = msg->content->choice.signedData->tbsData->headerInfo;
+    if (header.inlineP2pcdRequest) {
+        for (int i = 0; i < header.inlineP2pcdRequest->list.count; ++i) {
+            policy.enqueue_p2p_request(create_hashed_id3(*header.inlineP2pcdRequest->list.array[i]));
+        }
+    }
+
+    if (header.requestedCertificate) {
+        const boost::optional<HashedId8> digest = calculate_digest(*header.requestedCertificate);
+        if (digest) {
+            policy.discard_p2p_request(truncate(*digest));
+        }
+    }
+}
+
 } // namespace
 
-CryptoProviderVerifyService::CryptoProviderVerifyService(CryptoProvider& crypto) : m_crypto(crypto)
+CryptoProviderVerifyService::CryptoProviderVerifyService(CryptoProvider& crypto, const IssuerLookup* issuers) :
+    m_crypto(crypto), m_issuers(issuers)
 {
 }
 
@@ -117,30 +241,6 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
         return confirm;
     }
 
-    struct certificate_lookup_visitor : public boost::static_visitor<const asn1::Certificate*> {
-        explicit certificate_lookup_visitor(CertificateCache* cache) :
-            m_cache(cache)
-        {
-        }
-
-        const asn1::Certificate* operator()(const asn1::HashedId8* digest) const
-        {
-            // look up certificate matching digest in local storage
-            if (m_cache && digest) {
-                const Certificate* found = m_cache->lookup(convert(*digest));
-                return found ? found->content() : nullptr;
-            } else {
-                return nullptr;
-            }
-        }
-
-        const asn1::Certificate* operator()(const asn1::Certificate* cert) const
-        {
-            return cert;
-        }
-
-        CertificateCache* m_cache;
-    } certificate_lookup_visitor(m_cert_cache);
     auto signer_identifier = msg.signer_identifier();
 
     // track "known" stations
@@ -153,30 +253,13 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
         }
     }
 
-    // check if a ITS-AID 36 (CAM) with inline cert request shall be handled by us
     if (msg.its_aid() == aid::CA && m_sign_policy) {
-        Vanetza_Security_SequenceOfHashedId3* requests =
-            msg->content->choice.signedData->tbsData->headerInfo.inlineP2pcdRequest;
-        if (requests) {
-            for (int i = 0; i < requests->list.count; ++i)
-            {
-                const Vanetza_Security_HashedId3_t* req_digest = requests->list.array[i];
-                const HashedId3 hid3 = create_hashed_id3(*req_digest);
-                m_sign_policy->enqueue_p2p_request(hid3);
-            }
-        }
-
-        Vanetza_Security_Certificate* included_cert =
-            msg->content->choice.signedData->tbsData->headerInfo.requestedCertificate;
-        if (included_cert) {
-            auto maybe_digest = calculate_digest(*included_cert);
-            if (maybe_digest) {
-                m_sign_policy->discard_p2p_request(truncate(*maybe_digest));
-            }
-        }
+        handle_p2pcd_requests(msg, *m_sign_policy);
     }
 
-    const asn1::Certificate* certificate = boost::apply_visitor(certificate_lookup_visitor, signer_identifier);
+    // tickets of the cache are verified, thus a ticket included again is taken from the cache
+    const Certificate* cached = m_cert_cache && maybe_digest ? m_cert_cache->lookup(*maybe_digest) : nullptr;
+    const asn1::Certificate* certificate = cached ? cached->content() : included_certificate(signer_identifier);
     if (!certificate) {
         if (msg.its_aid() == aid::CA && m_sign_policy && maybe_digest) {
             // for received CAMs (having digest as signer identifier) with unknown AT we request the full AT certificate
@@ -198,28 +281,12 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
         }
     }
 
-    boost::optional<HashedId8> aa_digest;
-    switch (certificate->issuer.present)
-    {
-        case Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest:
-            aa_digest = convert(certificate->issuer.choice.sha256AndDigest);
-            break;
-        case Vanetza_Security_IssuerIdentifier_PR_sha384AndDigest:
-            aa_digest = convert(certificate->issuer.choice.sha384AndDigest);
-            break;
-        default:
-            break;
+    const boost::optional<HashedId8> aa_digest = CertificateView { certificate }.issuer_digest();
+    if (aa_digest && m_cert_cache && m_sign_policy && !m_cert_cache->is_known(*aa_digest)) {
+        // request unknown AA certificate for any received message signed with AT issued by this AA
+        m_sign_policy->request_unrecognized_certificate(*aa_digest);
     }
-
-    if (aa_digest && m_cert_cache) {
-        if (!m_cert_cache->is_known(*aa_digest)) {
-            if (m_sign_policy) {
-                // request unknown AA certificate for any received message signed with AT issued by this AA
-                m_sign_policy->request_unrecognized_certificate(*aa_digest);
-            }
-        }
-        // TODO: if AA is validated and fails, announce it in cache
-    }
+    // TODO: if AA is validated and fails, announce it in cache
 
     auto public_key = get_public_key(*certificate);
     if (!public_key) {
@@ -228,41 +295,34 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
         return confirm;
     }
 
-    expected<bool> verified = false;
     try {
-        ByteBuffer msg_hash = calculate_message_hash(m_crypto, msg.hash_id(),
-            msg.signing_payload(), CertificateView { certificate });
-        switch (msg.hash_id()) {
-            case HashAlgorithm::SHA256:
-                verified = verify_message_hash<Sha256Hash>(m_crypto, msg_hash, *signature, *public_key);
-                break;
-            case HashAlgorithm::SHA384:
-                verified = verify_message_hash<Sha384Hash>(m_crypto, msg_hash, *signature, *public_key);
-                break;
-            default:
-                confirm.report = VerificationReport::Incompatible_Protocol;
+        if (m_issuers) {
+            const Certificate* issuer = find_trusted_issuer(*m_issuers, *certificate, confirm);
+            if (!issuer) {
                 return confirm;
+            }
+            // tickets of the cache have been verified before they were cached
+            if (!cached && !check_issuer_signature(m_crypto, *certificate, *issuer, confirm)) {
+                return confirm;
+            }
         }
+        confirm.report = verify_signature(m_crypto, msg, *certificate, *signature, *public_key);
     } catch (const std::exception&) {
         // malformed input data, e.g. failing certificate encoding
         confirm.report = VerificationReport::Incompatible_Protocol;
         return confirm;
     }
 
-    // signature failing verification, e.g. by an invalid public key, is no valid signature
-    if (!verified.has_value() || !*verified) {
-        confirm.report = VerificationReport::False_Signature;
+    if (confirm.report != VerificationReport::Success) {
         return confirm;
     }
 
     confirm.its_aid = msg.its_aid();
     confirm.permissions = get_app_permissions(*certificate, confirm.its_aid);
     confirm.certificate_id = maybe_digest;
-    confirm.report = VerificationReport::Success;
 
     if (m_cert_cache && confirm.certificate_id) {
-        CertificateCache& cache = *m_cert_cache;
-        bool already_cached = cache.lookup(*confirm.certificate_id) != nullptr;
+        bool already_cached = m_cert_cache->lookup(*confirm.certificate_id) != nullptr;
         if (!already_cached && confirm.its_aid == aid::CA && m_sign_policy) {
             // CAM from unknown station received, add our certificate to next outgoing message
             m_sign_policy->request_certificate();
@@ -270,7 +330,7 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
 
         // update certificate cache with received certificate
         if (contains_certificate(signer_identifier)) {
-            cache.store(Certificate { *certificate });
+            m_cert_cache->store(Certificate { *certificate });
         }
     }
 

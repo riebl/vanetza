@@ -99,6 +99,11 @@ void StraightVerifyService::use_sign_header_policy(v3::SignHeaderPolicy* policy)
     m_context_v3.m_sign_policy = policy;
 }
 
+void StraightVerifyService::use_issuer_lookup(const v3::IssuerLookup* issuers)
+{
+    m_context_v3.m_issuer_lookup = issuers;
+}
+
 VerifyConfirm StraightVerifyService::verify(const VerifyRequest& request)
 {
     struct visitor : public boost::static_visitor<VerifyConfirm>
@@ -386,7 +391,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
 VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
 {
     BackendCryptoProvider crypto { m_backend };
-    v3::CryptoProviderVerifyService service { crypto };
+    v3::CryptoProviderVerifyService service { crypto, m_context_v3.m_issuer_lookup };
     service.use_certificate_cache(m_context_v3.m_cert_cache);
     service.use_certificate_validator(m_context_v3.m_cert_validator);
     service.use_sign_header_policy(m_context_v3.m_sign_policy);

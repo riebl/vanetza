@@ -15,6 +15,7 @@ namespace v3
 // forward declarations
 class CertificateCache;
 class CertificateValidator;
+class IssuerLookup;
 class SignHeaderPolicy;
 struct SecuredMessage;
 
@@ -24,7 +25,11 @@ struct SecuredMessage;
 class CryptoProviderVerifyService : public VerifyService
 {
 public:
-    explicit CryptoProviderVerifyService(CryptoProvider&);
+    /**
+     * \param issuers already checked issuer certificates of authorization tickets,
+     *        nullptr accepts tickets without verifying their issuer's signature
+     */
+    CryptoProviderVerifyService(CryptoProvider&, const IssuerLookup* issuers);
 
     void use_certificate_cache(CertificateCache*);
     void use_certificate_validator(CertificateValidator*);
@@ -39,6 +44,7 @@ public:
 
 private:
     CryptoProvider& m_crypto;
+    const IssuerLookup* m_issuers;
     CertificateCache* m_cert_cache = nullptr;
     CertificateValidator* m_cert_validator = nullptr;
     SignHeaderPolicy* m_sign_policy = nullptr;

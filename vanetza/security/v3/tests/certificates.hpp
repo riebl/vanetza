@@ -16,6 +16,12 @@ namespace v3
  */
 Certificate make_authorization_ticket(const PublicKey& key, Clock::time_point start);
 
+/**
+ * Create an unsigned authorization authority certificate of a public key permitted to issue any permission.
+ * Its issuer is fictitious like the one of make_authorization_ticket.
+ */
+Certificate make_authorization_authority(const PublicKey& key, Clock::time_point start);
+
 } // namespace v3
 } // namespace security
 } // namespace vanetza

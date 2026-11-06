@@ -1,4 +1,5 @@
 #include "certificates.hpp"
+#include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/byte_view.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/v3/basic_elements.hpp>
@@ -18,18 +19,34 @@ namespace
 
 void assign_compressed(asn1::EccP256CurvePoint& point, const PublicKey& key)
 {
-    const bool y0 = key.compression == KeyCompression::Y0;
-    point.present = y0 ? Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0 :
-        Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1;
-    vanetza::asn1::assign(y0 ? point.choice.compressed_y_0 : point.choice.compressed_y_1, key.x);
+    switch (key.compression) {
+        case KeyCompression::Y0:
+            point.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0;
+            vanetza::asn1::assign(point.choice.compressed_y_0, key.x);
+            break;
+        case KeyCompression::Y1:
+            point.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_1;
+            vanetza::asn1::assign(point.choice.compressed_y_1, key.x);
+            break;
+        default:
+            throw std::invalid_argument("public key of certificate is not compressed");
+    }
 }
 
 void assign_compressed(asn1::EccP384CurvePoint& point, const PublicKey& key)
 {
-    const bool y0 = key.compression == KeyCompression::Y0;
-    point.present = y0 ? Vanetza_Security_EccP384CurvePoint_PR_compressed_y_0 :
-        Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1;
-    vanetza::asn1::assign(y0 ? point.choice.compressed_y_0 : point.choice.compressed_y_1, key.x);
+    switch (key.compression) {
+        case KeyCompression::Y0:
+            point.present = Vanetza_Security_EccP384CurvePoint_PR_compressed_y_0;
+            vanetza::asn1::assign(point.choice.compressed_y_0, key.x);
+            break;
+        case KeyCompression::Y1:
+            point.present = Vanetza_Security_EccP384CurvePoint_PR_compressed_y_1;
+            vanetza::asn1::assign(point.choice.compressed_y_1, key.x);
+            break;
+        default:
+            throw std::invalid_argument("public key of certificate is not compressed");
+    }
 }
 
 void assign_verification_key(asn1::PublicVerificationKey& verification_key, const PublicKey& key)
@@ -82,6 +99,15 @@ Certificate make_authorization_ticket(const PublicKey& key, Clock::time_point st
     Certificate ticket = make_certificate(key, start);
     ticket.add_app_permission(aid::DEN, ByteBuffer({ 1, 0xff, 0xff, 0xff }));
     return ticket;
+}
+
+Certificate make_authorization_authority(const PublicKey& key, Clock::time_point start)
+{
+    Certificate authority = make_certificate(key, start);
+    auto permissions = vanetza::asn1::allocate<asn1::PsidGroupPermissions>();
+    permissions->subjectPermissions.present = Vanetza_Security_SubjectPermissions_PR_all;
+    authority.add_cert_issue_permission(permissions);
+    return authority;
 }
 
 } // namespace v3

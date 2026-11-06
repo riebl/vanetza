@@ -2,6 +2,7 @@
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/hash.hpp>
+#include <boost/optional/optional.hpp>
 
 namespace vanetza
 {
@@ -67,6 +68,19 @@ ByteBuffer calculate_message_hash(CryptoProvider& crypto, HashAlgorithm hash_alg
             }, payload, encoded_cert);
         default:
             return ByteBuffer();
+    }
+}
+
+ByteBuffer calculate_certificate_hash(CryptoProvider& crypto, HashAlgorithm hash_algo,
+    const CertificateView& subject, const CertificateView& issuer)
+{
+    const boost::optional<Certificate> canonical = subject.canonicalize();
+    if (canonical) {
+        const ByteBuffer tbs = vanetza::asn1::encode_oer(
+            asn_DEF_Vanetza_Security_ToBeSignedCertificate, &canonical->content()->toBeSigned);
+        return calculate_message_hash(crypto, hash_algo, tbs, issuer);
+    } else {
+        return ByteBuffer {};
     }
 }
 
