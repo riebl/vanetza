@@ -3,6 +3,7 @@
 #include <vanetza/asn1/type_traits.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
 #include <vanetza/security/v2/secured_message.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
@@ -14,6 +15,7 @@
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 #include <memory>
+#include <vector>
 
 #include "certificates.hpp"
 
@@ -97,7 +99,11 @@ protected:
     {
         expected<KeyReference> key = module->create_signing_key(type);
         EXPECT_TRUE(key.has_value());
-        return key.has_value() ? *key : KeyReference {};
+        if (!key.has_value()) {
+            return KeyReference {};
+        }
+        created_keys.push_back(std::make_unique<ScopedKeyPair>(*module, *key));
+        return *key;
     }
 
     PublicKey public_key(const KeyReference& key)
@@ -154,6 +160,8 @@ protected:
 
     std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
     std::unique_ptr<SecurityModule> module = create_security_module();
+    // discards created keys before their module is destroyed, e.g. persistent keys of PSA
+    std::vector<std::unique_ptr<ScopedKeyPair>> created_keys;
     const Clock::time_point start = Clock::at("2024-08-12 11:30");
     v3::IssuerMemoryLookup issuers;
     KeyReference aa_key;

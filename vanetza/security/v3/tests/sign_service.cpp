@@ -1,6 +1,7 @@
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
@@ -56,6 +57,7 @@ TEST_F(SecurityModuleSignServiceTest, message_is_signed_with_credential_key)
 {
     expected<KeyReference> key = module->create_signing_key(KeyType::NistP256);
     ASSERT_TRUE(key.has_value());
+    ScopedKeyPair key_pair { *module, *key };
     expected<PublicKey> public_key = module->public_key(*key);
     ASSERT_TRUE(public_key.has_value());
     const v3::Certificate ticket = v3::make_authorization_ticket(*public_key, runtime.now());
@@ -82,6 +84,7 @@ TEST_F(SecurityModuleSignServiceTest, message_without_ticket_permission_is_not_s
 {
     expected<KeyReference> key = module->create_signing_key(KeyType::NistP256);
     ASSERT_TRUE(key.has_value());
+    ScopedKeyPair key_pair { *module, *key };
     expected<PublicKey> public_key = module->public_key(*key);
     ASSERT_TRUE(public_key.has_value());
     // ticket permits DENM but not CAM
@@ -99,6 +102,7 @@ TEST_F(SecurityModuleSignServiceTest, signing_failure_is_reported)
 {
     expected<KeyReference> key = module->create_signing_key(KeyType::NistP256);
     ASSERT_TRUE(key.has_value());
+    ScopedKeyPair key_pair { *module, *key };
     expected<PublicKey> public_key = module->public_key(*key);
     ASSERT_TRUE(public_key.has_value());
     // the module cannot sign with an empty key reference
