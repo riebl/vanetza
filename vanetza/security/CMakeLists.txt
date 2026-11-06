@@ -79,6 +79,7 @@ add_vanetza_component(security
     v3/revocation_lookup.cpp
     v3/trust_store.cpp
     v3/validity_restriction.cpp
+    v3/verify_service.cpp
 )
 target_link_libraries(security PUBLIC Boost::headers asn1 asn1_security common net)
 target_link_libraries(security PRIVATE geodesy)
