@@ -35,7 +35,7 @@ ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path)
     const security::PublicKey public_key = cryptopp::derive_public_key(private_key);
 #else
 #   warning "no crypto backend available for v2 private key loading"
-    const security::PublicKey public_key;
+    const security::PublicKey public_key {};
 #endif
 
     ecdsa256::KeyPair key_pair;
