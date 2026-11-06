@@ -36,6 +36,7 @@ enum class SignConfirmError
     Unspecified,
     No_Certificate,
     No_Service,
+    Encoding_Failure, // message or certificate cannot be encoded
 };
 
 // mandatory SN-SIGN.confirm parameters

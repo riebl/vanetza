@@ -55,6 +55,10 @@ SignConfirm SecurityModuleSignService::sign(SignRequest&& request)
     }
     const Certificate& signing_cert = credential->certificate;
     const auto hash_algo = specified_hash_algorithm(signing_cert.get_verification_key_type());
+    if (hash_algo == HashAlgorithm::Unspecified) {
+        // ticket is unusable for signing, e.g. the key type of an implicit certificate is unknown
+        return SignConfirm::failure(SignConfirmError::No_Certificate);
+    }
 
     SecuredMessage secured_message = SecuredMessage::with_signed_data();
     secured_message.set_hash_id(hash_algo);
@@ -65,7 +69,17 @@ SignConfirm SecurityModuleSignService::sign(SignRequest&& request)
         return SignConfirm::failure(SignConfirmError::No_Certificate);
     }
 
-    ByteBuffer digest = calculate_message_hash(m_crypto, hash_algo, secured_message.signing_payload(), signing_cert);
+    vanetza::asn1::asn1c_error error;
+    const ByteBuffer payload = secured_message.signing_payload(error);
+    if (error) {
+        return SignConfirm::failure(SignConfirmError::Encoding_Failure);
+    }
+
+    const ByteBuffer digest = calculate_message_hash(m_crypto, hash_algo, payload, signing_cert);
+    if (digest.empty()) {
+        // signer certificate without encodable canonical form
+        return SignConfirm::failure(SignConfirmError::Encoding_Failure);
+    }
     expected<Signature> signature = m_module.sign(digest, credential->key);
     if (!signature) {
         return SignConfirm::failure(SignConfirmError::Unspecified);

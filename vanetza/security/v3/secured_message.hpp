@@ -47,6 +47,13 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Data>
     boost::optional<Signature> signature() const;
     SignerIdentifier signer_identifier() const;
     ByteBuffer signing_payload() const;
+
+    /**
+     * Encode data to be signed without throwing.
+     * \param error set on encoding failure
+     * \return encoded data, empty on failure or for a message without signed data
+     */
+    ByteBuffer signing_payload(vanetza::asn1::asn1c_error& error) const;
     HashAlgorithm hash_id() const;
 
     void set_its_aid(ItsAid its_aid);

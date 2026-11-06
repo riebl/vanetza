@@ -333,3 +333,23 @@ TEST_F(CryptoProviderVerifyServiceTest, unsupported_issuer_identifier_is_incompa
     issuer.present = Vanetza_Security_IssuerIdentifier_PR_NOTHING;
     EXPECT_EQ(VerificationReport::Incompatible_Protocol, service->verify(message).report);
 }
+
+TEST_F(CryptoProviderVerifyServiceTest, unencodable_message_is_incompatible)
+{
+    v3::SecuredMessage message = sign_message(ticket, ticket_key);
+    auto& header = message->content->choice.signedData->tbsData->headerInfo;
+    header.p2pcdLearningRequest = vanetza::asn1::allocate<Vanetza_Security_HashedId3_t>();
+    // HashedId3 has exactly three octets
+    vanetza::asn1::assign(*header.p2pcdLearningRequest, ByteBuffer { 0x01, 0x02 });
+    EXPECT_EQ(VerificationReport::Incompatible_Protocol, service->verify(message).report);
+}
+
+TEST_F(CryptoProviderVerifyServiceTest, unencodable_ticket_is_incompatible)
+{
+    v3::SecuredMessage message = sign_message(ticket, ticket_key);
+    const auto included = boost::get<const v3::asn1::Certificate*>(message.signer_identifier());
+    auto& craca_id = const_cast<v3::asn1::Certificate*>(included)->toBeSigned.cracaId;
+    // HashedId3 has exactly three octets
+    vanetza::asn1::assign(craca_id, ByteBuffer { 0x01, 0x02 });
+    EXPECT_EQ(VerificationReport::Incompatible_Protocol, service->verify(message).report);
+}

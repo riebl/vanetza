@@ -84,6 +84,12 @@ bool check_issuer_signature(
 
     const HashAlgorithm algo = specified_hash_algorithm(issuer_key->type);
     const ByteBuffer hash = calculate_certificate_hash(crypto, algo, CertificateView { &ticket }, issuer);
+    if (hash.empty()) {
+        // malformed certificates failing their canonical encoding
+        confirm.report = VerificationReport::Incompatible_Protocol;
+        return false;
+    }
+
     const expected<bool> verified = verify_hash(crypto, algo, hash, *signature, *issuer_key);
     if (verified.has_value() && *verified) {
         return true;
@@ -122,10 +128,16 @@ const Certificate* find_trusted_issuer(const IssuerLookup& issuers, const asn1::
 VerificationReport verify_signature(CryptoProvider& crypto, const SecuredMessage& msg,
     const asn1::Certificate& signer, const Signature& signature, const PublicKey& key)
 {
-    const ByteBuffer hash = calculate_message_hash(crypto, msg.hash_id(), msg.signing_payload(),
-        CertificateView { &signer });
+    vanetza::asn1::asn1c_error error;
+    const ByteBuffer payload = msg.signing_payload(error);
+    if (error) {
+        // malformed message failing its encoding
+        return VerificationReport::Incompatible_Protocol;
+    }
+
+    const ByteBuffer hash = calculate_message_hash(crypto, msg.hash_id(), payload, CertificateView { &signer });
     if (hash.empty()) {
-        // unsupported hash algorithm
+        // unsupported hash algorithm or a signer certificate without encodable canonical form
         return VerificationReport::Incompatible_Protocol;
     }
 
@@ -295,24 +307,18 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
         return confirm;
     }
 
-    try {
-        if (m_issuers) {
-            const Certificate* issuer = find_trusted_issuer(*m_issuers, *certificate, confirm);
-            if (!issuer) {
-                return confirm;
-            }
-            // tickets of the cache have been verified before they were cached
-            if (!cached && !check_issuer_signature(m_crypto, *certificate, *issuer, confirm)) {
-                return confirm;
-            }
+    if (m_issuers) {
+        const Certificate* issuer = find_trusted_issuer(*m_issuers, *certificate, confirm);
+        if (!issuer) {
+            return confirm;
         }
-        confirm.report = verify_signature(m_crypto, msg, *certificate, *signature, *public_key);
-    } catch (const std::exception&) {
-        // malformed input data, e.g. failing certificate encoding
-        confirm.report = VerificationReport::Incompatible_Protocol;
-        return confirm;
+        // tickets of the cache have been verified before they were cached
+        if (!cached && !check_issuer_signature(m_crypto, *certificate, *issuer, confirm)) {
+            return confirm;
+        }
     }
 
+    confirm.report = verify_signature(m_crypto, msg, *certificate, *signature, *public_key);
     if (confirm.report != VerificationReport::Success) {
         return confirm;
     }

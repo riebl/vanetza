@@ -42,7 +42,7 @@ ByteBuffer calculate_message_hash(Backend&, HashAlgorithm, const ByteBuffer& dat
  * \param algo hash algorithm
  * \param data message payload (data to be signed)
  * \param signing certificate used for signing
- * \return message digest, empty for unsupported hash algorithm
+ * \return message digest, empty for unsupported hash algorithm or a broken signing certificate
  */
 ByteBuffer calculate_message_hash(
     CryptoProvider&, HashAlgorithm, const ByteBuffer& data, const CertificateView& signing);
@@ -57,7 +57,7 @@ ByteBuffer calculate_message_hash(
  * \param algo hash algorithm
  * \param subject certificate signed by issuer
  * \param issuer certificate of subject's issuer
- * \return certificate digest, empty for unsupported hash algorithm or a subject without canonical form
+ * \return certificate digest, empty for unsupported hash algorithm or certificates without encodable canonical form
  */
 ByteBuffer calculate_certificate_hash(
     CryptoProvider&, HashAlgorithm, const CertificateView& subject, const CertificateView& issuer);

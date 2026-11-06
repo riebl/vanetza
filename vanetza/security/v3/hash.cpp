@@ -14,19 +14,16 @@ namespace v3
 namespace
 {
 
-// signer's certificate is hashed in canonical form
-ByteBuffer encode_signing_certificate(const CertificateView& signing_cert)
+// signer's certificate is hashed in canonical form, empty if it has none or its encoding fails (see error)
+ByteBuffer encode_signing_certificate(const CertificateView& signing_cert, vanetza::asn1::asn1c_error& error)
 {
-    ByteBuffer encoded_cert;
+    error = vanetza::asn1::asn1c_error();
     if (signing_cert.is_canonical()) {
-        encoded_cert = signing_cert.encode();
+        return signing_cert.encode(error);
     } else {
-        auto canonical_signing_cert = signing_cert.canonicalize();
-        if (canonical_signing_cert) {
-            encoded_cert = canonical_signing_cert->encode();
-        }
+        const boost::optional<Certificate> canonical = signing_cert.canonicalize();
+        return canonical ? canonical->encode(error) : ByteBuffer {};
     }
-    return encoded_cert;
 }
 
 // Hash(Hash(data) || Hash(signer))
@@ -47,7 +44,11 @@ ByteBuffer combine_hashes(HashFn hash, const ByteBuffer& payload, const ByteBuff
 
 ByteBuffer calculate_message_hash(Backend& backend, HashAlgorithm hash_algo, const ByteBuffer& payload, const CertificateView& signing_cert)
 {
-    const ByteBuffer encoded_cert = encode_signing_certificate(signing_cert);
+    vanetza::asn1::asn1c_error error;
+    const ByteBuffer encoded_cert = encode_signing_certificate(signing_cert, error);
+    if (error) {
+        throw vanetza::asn1::asn1c_exception(error);
+    }
     return combine_hashes([&backend, hash_algo](const ByteBuffer& data) {
         return backend.calculate_hash(hash_algo, data);
     }, payload, encoded_cert);
@@ -56,7 +57,11 @@ ByteBuffer calculate_message_hash(Backend& backend, HashAlgorithm hash_algo, con
 ByteBuffer calculate_message_hash(CryptoProvider& crypto, HashAlgorithm hash_algo, const ByteBuffer& payload,
     const CertificateView& signing_cert)
 {
-    const ByteBuffer encoded_cert = encode_signing_certificate(signing_cert);
+    vanetza::asn1::asn1c_error error;
+    const ByteBuffer encoded_cert = encode_signing_certificate(signing_cert, error);
+    if (encoded_cert.empty()) {
+        return ByteBuffer {};
+    }
     switch (hash_algo) {
         case HashAlgorithm::SHA256:
             return combine_hashes([&crypto](const ByteBuffer& data) {
@@ -76,12 +81,15 @@ ByteBuffer calculate_certificate_hash(CryptoProvider& crypto, HashAlgorithm hash
 {
     const boost::optional<Certificate> canonical = subject.canonicalize();
     if (canonical) {
+        vanetza::asn1::asn1c_error error;
         const ByteBuffer tbs = vanetza::asn1::encode_oer(
-            asn_DEF_Vanetza_Security_ToBeSignedCertificate, &canonical->content()->toBeSigned);
-        return calculate_message_hash(crypto, hash_algo, tbs, issuer);
-    } else {
-        return ByteBuffer {};
+            asn_DEF_Vanetza_Security_ToBeSignedCertificate, &canonical->content()->toBeSigned, error);
+        if (!error) {
+            return calculate_message_hash(crypto, hash_algo, tbs, issuer);
+        }
     }
+
+    return ByteBuffer {};
 }
 
 HashAlgorithm specified_hash_algorithm(KeyType key_type)

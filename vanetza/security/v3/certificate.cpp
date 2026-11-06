@@ -342,9 +342,20 @@ ByteBuffer CertificateView::encode() const
     return m_cert ? asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, m_cert) : ByteBuffer {};
 }
 
+ByteBuffer CertificateView::encode(vanetza::asn1::asn1c_error& error) const
+{
+    error = vanetza::asn1::asn1c_error();
+    return m_cert ? asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, m_cert, error) : ByteBuffer {};
+}
+
 ByteBuffer Certificate::encode() const
 {
     return Wrapper::encode();
+}
+
+ByteBuffer Certificate::encode(vanetza::asn1::asn1c_error& error) const
+{
+    return Wrapper::encode(error);
 }
 
 boost::optional<Certificate> CertificateView::canonicalize() const

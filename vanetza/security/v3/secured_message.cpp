@@ -609,9 +609,20 @@ SecuredMessage::SignerIdentifier SecuredMessage::signer_identifier() const
 
 ByteBuffer SecuredMessage::signing_payload() const
 {
+    vanetza::asn1::asn1c_error error;
+    ByteBuffer payload = signing_payload(error);
+    if (error) {
+        throw vanetza::asn1::asn1c_exception(error);
+    }
+    return payload;
+}
+
+ByteBuffer SecuredMessage::signing_payload(vanetza::asn1::asn1c_error& error) const
+{
+    error = vanetza::asn1::asn1c_error();
     const asn1::SignedData* signed_data = get_signed_data(m_struct);
     if (signed_data) {
-        return asn1::encode_oer(asn_DEF_Vanetza_Security_ToBeSignedData, signed_data->tbsData);
+        return asn1::encode_oer(asn_DEF_Vanetza_Security_ToBeSignedData, signed_data->tbsData, error);
     } else {
         return ByteBuffer {};
     }

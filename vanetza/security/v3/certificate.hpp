@@ -155,6 +155,13 @@ public:
      */
     ByteBuffer encode() const;
 
+    /**
+     * Encode certificate without throwing.
+     * \param error set on encoding failure
+     * \return encoded certificate, empty on failure
+     */
+    ByteBuffer encode(vanetza::asn1::asn1c_error& error) const;
+
 protected:
     const asn1::EtsiTs103097Certificate* m_cert = nullptr;
 };
@@ -174,6 +181,7 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
 
     // resolve ambiguity
     ByteBuffer encode() const;
+    ByteBuffer encode(vanetza::asn1::asn1c_error& error) const;
 
     /**
      * \brief add application permissions as bitmap
