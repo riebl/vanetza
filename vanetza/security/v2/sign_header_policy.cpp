@@ -3,6 +3,7 @@
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_provider.hpp>
+#include <vanetza/security/v2/credential_provider.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <list>
 
@@ -20,13 +21,24 @@ DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProv
 
 std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, CertificateProvider& certificate_provider)
 {
+    return prepare_header(request, certificate_provider.own_certificate(), certificate_provider.own_chain());
+}
+
+std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, const Credential& credential)
+{
+    return prepare_header(request, credential.certificate, { credential.issuer });
+}
+
+std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest& request,
+    const Certificate& certificate, std::list<Certificate> issuers)
+{
     // other stations request the own certificate or a certificate of its chain
     if (!m_requested_certificates.empty()) {
-        if (m_requested_certificates.count(truncate(calculate_hash(certificate_provider.own_certificate())))) {
+        if (m_requested_certificates.count(truncate(calculate_hash(certificate)))) {
             m_cert_requested = true;
         }
-        for (const Certificate& certificate : certificate_provider.own_chain()) {
-            if (m_requested_certificates.count(truncate(calculate_hash(certificate)))) {
+        for (const Certificate& issuer : issuers) {
+            if (m_requested_certificates.count(truncate(calculate_hash(issuer)))) {
                 m_chain_requested = true;
             }
         }
@@ -41,15 +53,14 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
     if (request.its_aid == aid::CA) {
         // section 7.1 in TS 103 097 v1.2.1
         if (m_chain_requested) {
-            std::list<Certificate> full_chain;
-            full_chain.splice(full_chain.end(), certificate_provider.own_chain());
-            full_chain.push_back(certificate_provider.own_certificate());
+            std::list<Certificate> full_chain = std::move(issuers);
+            full_chain.push_back(certificate);
             header_fields.push_back(SignerInfo { std::move(full_chain) });
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         } else if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
-            header_fields.push_back(SignerInfo { calculate_hash(certificate_provider.own_certificate()) });
+            header_fields.push_back(SignerInfo { calculate_hash(certificate) });
         } else {
-            header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
+            header_fields.push_back(SignerInfo { certificate });
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         }
 
@@ -68,7 +79,7 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
         } else {
             header_fields.push_back(ThreeDLocation(position.latitude, position.longitude));
         }
-        header_fields.push_back(SignerInfo { certificate_provider.own_certificate() });
+        header_fields.push_back(SignerInfo { certificate });
     }
 
     // ensure correct serialization order, see TS 103 097 v1.2.1

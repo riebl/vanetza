@@ -24,6 +24,7 @@ namespace v2
 
 // forward declarations
 class CertificateProvider;
+struct Credential;
 
 /**
  * SignHeaderPolicy is used while signing messages
@@ -42,6 +43,15 @@ public:
      * \return header fields
      */
     virtual std::list<HeaderField> prepare_header(const SignRequest& req, CertificateProvider& certprvd) = 0;
+
+    /**
+     * Prepare header fields for next secured message.
+     *
+     * \param req signing request (including ITS-AID for example)
+     * \param credential signing credential, i.e. its certificate signs the message
+     * \return header fields
+     */
+    virtual std::list<HeaderField> prepare_header(const SignRequest& req, const Credential& credential) = 0;
 
     /**
      * Mark certificate as unrecognized in next secured message
@@ -77,12 +87,16 @@ public:
     DefaultSignHeaderPolicy(const Runtime&, PositionProvider& positioning);
 
     std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override;
+    std::list<HeaderField> prepare_header(const SignRequest& request, const Credential& credential) override;
     void request_unrecognized_certificate(HashedId8 id) override;
     void request_certificate() override;
     void request_certificate_chain() override;
     void report_certificate_request(HashedId3 id) override;
 
 private:
+    // header fields of a message signed by certificate, issuers in root CA → AA order excluding the root
+    std::list<HeaderField> prepare_header(const SignRequest&, const Certificate&, std::list<Certificate> issuers);
+
     const Runtime& m_runtime;
     PositionProvider& m_positioning;
     Clock::time_point m_cam_next_certificate;

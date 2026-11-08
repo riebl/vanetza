@@ -3,8 +3,8 @@
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/credential_provider.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
-#include <vanetza/security/v2/static_certificate_provider.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 
@@ -40,7 +40,7 @@ protected:
     {
         SignRequest request;
         request.its_aid = aid::CA;
-        for (const HeaderField& field : policy.prepare_header(request, certificates)) {
+        for (const HeaderField& field : policy.prepare_header(request, credential)) {
             if (get_type(field) == HeaderFieldType::Signer_Info) {
                 return boost::get<SignerInfo>(field);
             }
@@ -54,7 +54,7 @@ protected:
     DefaultSignHeaderPolicy policy { runtime, positioning };
     const Certificate ticket = make_certificate(SubjectType::Authorization_Ticket);
     const Certificate authority = make_certificate(SubjectType::Authorization_Authority);
-    StaticCertificateProvider certificates { ticket, ecdsa256::PrivateKey {}, { authority } };
+    const Credential credential { ticket, authority, KeyReference {} };
 };
 
 TEST_F(SignHeaderPolicyV2Test, requested_ticket_is_signer_of_next_cam)
