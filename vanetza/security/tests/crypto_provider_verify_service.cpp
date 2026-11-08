@@ -21,6 +21,7 @@
 #include <vanetza/security/v3/hash.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
+#include <vanetza/security/v3/sign_header_policy.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 #include <memory>
@@ -147,12 +148,12 @@ protected:
         set_signature(subject, *signature);
     }
 
-    // DENM signed with key, its signer identifier is the signer's certificate
-    v3::SecuredMessage sign_message(const v3::Certificate& signer, const KeyReference& key)
+    // message signed with key, a DENM by default, its signer identifier is the signer's certificate
+    v3::SecuredMessage sign_message(const v3::Certificate& signer, const KeyReference& key, ItsAid its_aid = aid::DEN)
     {
         v3::SecuredMessage message = v3::SecuredMessage::with_signed_data();
         message.set_hash_id(HashAlgorithm::SHA256);
-        message.set_its_aid(aid::DEN);
+        message.set_its_aid(its_aid);
         message.set_generation_time(0);
         message.set_payload(ByteBuffer { 0x01, 0x02, 0x03 });
         message.set_signer_identifier(signer);
@@ -365,6 +366,27 @@ TEST_F(CryptoProviderVerifyServiceTest, unencodable_ticket_is_incompatible)
     // HashedId3 has exactly three octets
     vanetza::asn1::assign(craca_id, ByteBuffer { 0x01, 0x02 });
     EXPECT_EQ(VerificationReport::Incompatible_Protocol, service->verify(message).report);
+}
+
+TEST_F(CryptoProviderVerifyServiceTest, cam_of_unknown_station_puts_certificate_into_next_cam)
+{
+    v3::CertificateCache cache;
+    v3::DefaultSignHeaderPolicy policy { runtime, positioning, cache };
+    service->use_certificate_cache(&cache);
+    service->use_sign_header_policy(&policy);
+    // headers are prepared without signing, i.e. the own ticket's key is irrelevant
+    const v3::Certificate own_ticket = v3::make_authorization_ticket(public_key(ticket_key), start);
+    SignRequest cam;
+    cam.its_aid = aid::CA;
+    v3::SecuredMessage first_cam = v3::SecuredMessage::with_signed_data();
+    // the first CAM carries the full certificate anyway
+    policy.prepare_header(cam, own_ticket, first_cam);
+
+    ASSERT_EQ(VerificationReport::Success, service->verify(sign_message(ticket, ticket_key, aid::CA)).report);
+
+    v3::SecuredMessage next_cam = v3::SecuredMessage::with_signed_data();
+    policy.prepare_header(cam, own_ticket, next_cam);
+    EXPECT_TRUE(v3::contains_certificate(next_cam.signer_identifier()));
 }
 
 class CryptoProviderVerifyServiceV2Test : public ::testing::Test
