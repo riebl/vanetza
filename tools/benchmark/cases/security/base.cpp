@@ -10,9 +10,10 @@ using namespace vanetza::security;
 SecurityBaseCase::SecurityBaseCase() :
     runtime(Clock::at(boost::posix_time::microsec_clock::universal_time())),
     crypto_backend(create_backend("default")),
+    backend_crypto(*crypto_backend),
     certificate_cache(runtime),
     certificate_provider(runtime),
-    certificate_validator(*crypto_backend, certificate_cache, trust_store),
+    certificate_validator(backend_crypto, certificate_cache, trust_store),
     sign_header_policy(runtime, positioning),
     security_entity(create_sign_service(), create_verify_service())
 {

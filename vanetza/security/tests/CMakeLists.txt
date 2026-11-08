@@ -1,6 +1,7 @@
 include(UseGTest)
 add_library(security_test STATIC
     certificates_v3.cpp
+    null_crypto_provider.cpp
     serialization.cpp
 )
 target_include_directories(security_test PUBLIC $<TARGET_PROPERTY:security,INTERFACE_INCLUDE_DIRECTORIES>)

@@ -4,6 +4,7 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
@@ -25,9 +26,10 @@ class SecurityContext
 public:
     explicit SecurityContext(Runtime& rt) :
         backend(security::create_backend("default")),
+        backend_crypto(*backend),
         certificate_provider(rt),
         cert_cache(rt),
-        certificate_validator(*backend, cert_cache, trust_store),
+        certificate_validator(backend_crypto, cert_cache, trust_store),
         sign_header_policy(rt, position_provider),
         certificate_provider_v3(rt),
         sign_header_policy_v3(rt, position_provider, certificate_provider_v3.cache()),
@@ -92,6 +94,7 @@ private:
     StoredPositionProvider position_provider;
     security::v3::DefaultLocationChecker location_checker;
     std::unique_ptr<security::Backend> backend;
+    security::BackendCryptoProvider backend_crypto;
 
     security::v2::NaiveCertificateProvider certificate_provider;
     std::vector<security::v2::Certificate> roots;

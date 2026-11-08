@@ -1,6 +1,7 @@
 #include "security.hpp"
 #include "certificate_validation_v3.hpp"
 #include <vanetza/geodesy/country_database.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
@@ -31,9 +32,10 @@ public:
     SecurityContextV2(const Runtime& runtime, PositionProvider& positioning, const std::string& backend_name) :
         runtime(runtime), positioning(positioning),
         backend(security::create_backend(backend_name)),
+        backend_crypto(*backend),
         sign_header_policy(runtime, positioning),
         cert_cache(runtime),
-        cert_validator(*backend, cert_cache, trust_store)
+        cert_validator(backend_crypto, cert_cache, trust_store)
     {
     }
 
@@ -72,6 +74,7 @@ public:
     const Runtime& runtime;
     PositionProvider& positioning;
     std::unique_ptr<security::Backend> backend;
+    security::BackendCryptoProvider backend_crypto;
     std::unique_ptr<security::SecurityEntity> entity;
     std::unique_ptr<security::v2::CertificateProvider> cert_provider;
     security::v2::DefaultSignHeaderPolicy sign_header_policy;

@@ -3,13 +3,16 @@
 
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/position_provider.hpp>
-#include <vanetza/security/backend.hpp>
 #include <vanetza/security/v2/certificate_validator.hpp>
 
 namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v2
 {
 
@@ -25,7 +28,7 @@ class CertificateCache;
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
-    DefaultCertificateValidator(Backend&, CertificateCache&, const TrustStore&);
+    DefaultCertificateValidator(CryptoProvider&, CertificateCache&, const TrustStore&);
 
     /**
      * \brief check certificate
@@ -35,7 +38,7 @@ public:
     CertificateValidity check_certificate(const Certificate& certificate) override;
 
 private:
-    Backend& m_crypto_backend;
+    CryptoProvider& m_crypto;
     CertificateCache& m_cert_cache;
     const TrustStore& m_trust_store;
 };

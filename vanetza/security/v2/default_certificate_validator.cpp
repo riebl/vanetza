@@ -1,6 +1,8 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_fix.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/hashed_id.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
@@ -166,8 +168,9 @@ bool check_consistency(const Certificate& certificate, const Certificate& signer
 
 } // namespace
 
-DefaultCertificateValidator::DefaultCertificateValidator(Backend& backend, CertificateCache& cert_cache, const TrustStore& trust_store) :
-    m_crypto_backend(backend),
+DefaultCertificateValidator::DefaultCertificateValidator(CryptoProvider& crypto, CertificateCache& cert_cache,
+    const TrustStore& trust_store) :
+    m_crypto(crypto),
     m_cert_cache(cert_cache),
     m_trust_store(trust_store)
 {
@@ -202,18 +205,21 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         return CertificateInvalidReason::Missing_Signature;
     }
 
-    // create buffer of certificate
+    // create buffer of certificate, it is signed by its SHA-256 digest and the signature's r is the x-coordinate of R
+    // verification errors, e.g. of a signer's unusable key, leave the signature unverified
     ByteBuffer binary_cert = convert_for_signing(certificate);
+    const Sha256Hash digest = m_crypto.calculate_sha256_hash(binary_cert.data(), binary_cert.size());
+    const security::Signature signature { convert_for_signing(sig->R), sig->s, KeyType::NistP256 };
 
     // authorization tickets may only be signed by authorization authorities
     if (subject_type == SubjectType::Authorization_Ticket) {
         for (auto& possible_signer : m_cert_cache.lookup(signer_hash, SubjectType::Authorization_Authority)) {
-            auto verification_key = get_public_key(possible_signer, m_crypto_backend);
+            auto verification_key = get_verification_key(possible_signer);
             if (!verification_key) {
                 continue;
             }
 
-            if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
+            if (m_crypto.verify(digest, signature, *verification_key).value_or(false)) {
                 if (!check_consistency(certificate, possible_signer)) {
                     return CertificateInvalidReason::Inconsistent_With_Signer;
                 }
@@ -227,12 +233,12 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     // Note: There's no clear specification about this, but there's a test for it in 5.2.7.12.4 of TS 103 096-2 V1.3.1
     if (subject_type == SubjectType::Authorization_Authority) {
         for (auto& possible_signer : m_trust_store.lookup(signer_hash)) {
-            auto verification_key = get_public_key(possible_signer, m_crypto_backend);
+            auto verification_key = get_verification_key(possible_signer);
             if (!verification_key) {
                 continue;
             }
 
-            if (m_crypto_backend.verify_data(verification_key.get(), binary_cert, sig.get())) {
+            if (m_crypto.verify(digest, signature, *verification_key).value_or(false)) {
                 if (!check_consistency(certificate, possible_signer)) {
                     return CertificateInvalidReason::Inconsistent_With_Signer;
                 }

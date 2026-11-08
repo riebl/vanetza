@@ -5,6 +5,7 @@
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
@@ -23,6 +24,7 @@ protected:
     vanetza::ManualRuntime runtime;
     vanetza::StoredPositionProvider positioning;
     std::unique_ptr<vanetza::security::Backend> crypto_backend;
+    vanetza::security::BackendCryptoProvider backend_crypto;
     vanetza::security::v2::TrustStore trust_store;
     vanetza::security::v2::CertificateCache certificate_cache;
     vanetza::security::v2::NaiveCertificateProvider certificate_provider;

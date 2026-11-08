@@ -1,4 +1,6 @@
 #include <vanetza/common/manual_runtime.hpp>
+#include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
 #include <vanetza/security/v2/naive_certificate_provider.hpp>
@@ -16,18 +18,25 @@ class DefaultCertificateValidatorTest : public ::testing::Test
 public:
     DefaultCertificateValidatorTest() :
         runtime(Clock::at("2016-08-01 00:00")),
-        backend(create_backend("default")),
+        crypto(create_crypto_provider()),
         cert_provider(runtime),
         cert_cache(runtime),
-        cert_validator(*backend, cert_cache, trust_store)
+        cert_validator(crypto ? *crypto : NullCryptoProvider::instance(), cert_cache, trust_store)
     {
         trust_store.insert(cert_provider.root_certificate());
         cert_cache.insert(cert_provider.aa_certificate());
     }
 
 protected:
+    void SetUp() override
+    {
+        if (!crypto) {
+            GTEST_SKIP() << "no crypto provider built in";
+        }
+    }
+
     ManualRuntime runtime;
-    std::unique_ptr<Backend> backend;
+    std::unique_ptr<CryptoProvider> crypto;
     NaiveCertificateProvider cert_provider;
     std::vector<Certificate> roots;
     TrustStore trust_store;
@@ -241,4 +250,21 @@ TEST_F(DefaultCertificateValidatorTest, accept_permission_subset_permutation)
 
     validity = cert_validator.check_certificate(cert);
     ASSERT_TRUE(validity);
+}
+
+TEST_F(DefaultCertificateValidatorTest, failing_verification_is_no_valid_signature)
+{
+    // signer's key is no point of the curve (x-coordinate exceeds the prime), thus verification fails
+    Certificate authority = cert_provider.aa_certificate();
+    authority.remove_attribute(SubjectAttributeType::Verification_Key);
+    const ecdsa_nistp256_with_sha256 unusable_key { Compressed_Lsb_Y_0 { ByteBuffer(32, 0xff) } };
+    authority.subject_attributes.push_back(VerificationKey { unusable_key });
+    cert_cache.insert(authority);
+
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.signer_info = calculate_hash(authority);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, validity.reason());
 }

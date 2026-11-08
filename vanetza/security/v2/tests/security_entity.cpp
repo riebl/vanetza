@@ -3,6 +3,7 @@
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/security_entity.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
@@ -86,9 +87,10 @@ protected:
     SecurityEntityTest() :
         runtime(Clock::at("2016-03-7 08:23")),
         crypto_backend(create_backend("default")),
+        backend_crypto(*crypto_backend),
         certificate_provider(new NaiveCertificateProvider(runtime)),
         cert_cache(runtime),
-        certificate_validator(new DefaultCertificateValidator(*crypto_backend, cert_cache, trust_store)),
+        certificate_validator(new DefaultCertificateValidator(backend_crypto, cert_cache, trust_store)),
         sign_header_policy(runtime, position_provider),
         security(create_sign_service(), create_verify_service()),
         its_aid(aid::CA)
@@ -174,6 +176,7 @@ protected:
     ManualRuntime runtime;
     StoredPositionProvider position_provider;
     std::unique_ptr<Backend> crypto_backend;
+    BackendCryptoProvider backend_crypto;
     std::unique_ptr<NaiveCertificateProvider> certificate_provider;
     std::vector<v2::Certificate> roots;
     TrustStore trust_store;
