@@ -17,11 +17,13 @@ namespace security
 {
 
 // forward declarations
-class CertificateProvider;
 struct SignRequest;
 
 namespace v2
 {
+
+// forward declarations
+class CertificateProvider;
 
 /**
  * SignHeaderPolicy is used while signing messages
