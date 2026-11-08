@@ -51,6 +51,7 @@ add_vanetza_component(security
     v2/signer_info.cpp
     v2/sign_service.cpp
     v2/static_certificate_provider.cpp
+    v2/static_credential_provider.cpp
     v2/subject_attribute.cpp
     v2/subject_info.cpp
     v2/trailer_field.cpp
