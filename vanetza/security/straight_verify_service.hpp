@@ -47,6 +47,9 @@ public:
     StraightVerifyService(const Runtime&, Backend&, PositionProvider&);
 
     void use_certificate_cache(v2::CertificateCache*);
+    /**
+     * \deprecated unused, requests for own certificates are reported to the v2 sign header policy
+     */
     void use_certificate_provider(v2::CertificateProvider*);
     void use_certificate_validator(v2::CertificateValidator*);
     void use_sign_header_policy(v2::SignHeaderPolicy*);
@@ -74,7 +77,7 @@ private:
 
         constexpr bool complete() const
         {
-            return m_cert_cache && m_cert_provider && m_cert_validator && m_sign_policy;
+            return m_cert_cache && m_cert_validator && m_sign_policy;
         }
     } m_context_v2;
 

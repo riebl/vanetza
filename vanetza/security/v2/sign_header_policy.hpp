@@ -59,6 +59,12 @@ public:
      */
     virtual void request_certificate_chain() = 0;
 
+    /**
+     * Report a certificate requested by another station as unrecognized
+     * \param id truncated hash of requested certificate, e.g. of the own certificate or its chain
+     */
+    virtual void report_certificate_request(HashedId3 id) = 0;
+
     virtual ~SignHeaderPolicy() = default;
 };
 
@@ -74,12 +80,14 @@ public:
     void request_unrecognized_certificate(HashedId8 id) override;
     void request_certificate() override;
     void request_certificate_chain() override;
+    void report_certificate_request(HashedId3 id) override;
 
 private:
     const Runtime& m_runtime;
     PositionProvider& m_positioning;
     Clock::time_point m_cam_next_certificate;
     std::set<HashedId3> m_unknown_certificates;
+    std::set<HashedId3> m_requested_certificates;
     bool m_cert_requested;
     bool m_chain_requested;
 };

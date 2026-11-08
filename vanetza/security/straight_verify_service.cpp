@@ -7,7 +7,6 @@
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
-#include <vanetza/security/v2/certificate_provider.hpp>
 #include <vanetza/security/v2/certificate_validator.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/verification.hpp>
@@ -149,23 +148,15 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
         return confirm;
     }
 
-    v2::CertificateProvider& cert_provider = *m_context_v2.m_cert_provider;
     v2::CertificateCache& cert_cache = *m_context_v2.m_cert_cache;
     v2::CertificateValidator& cert_validator = *m_context_v2.m_cert_validator;
     v2::SignHeaderPolicy& sign_policy = *m_context_v2.m_sign_policy;
 
+    // requests for the own certificate or its chain are reported to the sign header policy
     const std::list<HashedId3>* requested_certs = secured_message.header_field<HeaderFieldType::Request_Unrecognized_Certificate>();
     if (requested_certs) {
-        for (auto& requested_cert : *requested_certs) {
-            if (truncate(calculate_hash(cert_provider.own_certificate())) == requested_cert) {
-                sign_policy.request_certificate();
-            }
-
-            for (auto& cert : cert_provider.own_chain()) {
-                if (truncate(calculate_hash(cert)) == requested_cert) {
-                    sign_policy.request_certificate_chain();
-                }
-            }
+        for (const HashedId3& requested_cert : *requested_certs) {
+            sign_policy.report_certificate_request(requested_cert);
         }
     }
 

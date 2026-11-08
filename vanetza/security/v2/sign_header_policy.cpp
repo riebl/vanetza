@@ -20,6 +20,19 @@ DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProv
 
 std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, CertificateProvider& certificate_provider)
 {
+    // other stations request the own certificate or a certificate of its chain
+    if (!m_requested_certificates.empty()) {
+        if (m_requested_certificates.count(truncate(calculate_hash(certificate_provider.own_certificate())))) {
+            m_cert_requested = true;
+        }
+        for (const Certificate& certificate : certificate_provider.own_chain()) {
+            if (m_requested_certificates.count(truncate(calculate_hash(certificate)))) {
+                m_chain_requested = true;
+            }
+        }
+        m_requested_certificates.clear();
+    }
+
     std::list<HeaderField> header_fields;
 
     header_fields.push_back(convert_time64(m_runtime.now()));
@@ -92,6 +105,11 @@ void DefaultSignHeaderPolicy::request_certificate()
 void DefaultSignHeaderPolicy::request_certificate_chain()
 {
     m_chain_requested = true;
+}
+
+void DefaultSignHeaderPolicy::report_certificate_request(HashedId3 id)
+{
+    m_requested_certificates.insert(id);
 }
 
 } // namespace v2
