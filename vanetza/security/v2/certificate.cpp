@@ -133,6 +133,40 @@ boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate& cert, Bac
     return result;
 }
 
+boost::optional<security::PublicKey> get_verification_key(const Certificate& cert)
+{
+    struct visitor : public boost::static_visitor<boost::optional<security::PublicKey>>
+    {
+        boost::optional<security::PublicKey> operator()(const X_Coordinate_Only&) const
+        {
+            return boost::none;
+        }
+
+        boost::optional<security::PublicKey> operator()(const Compressed_Lsb_Y_0& point) const
+        {
+            return security::PublicKey { point.x, ByteBuffer {}, KeyType::NistP256, KeyCompression::Y0 };
+        }
+
+        boost::optional<security::PublicKey> operator()(const Compressed_Lsb_Y_1& point) const
+        {
+            return security::PublicKey { point.x, ByteBuffer {}, KeyType::NistP256, KeyCompression::Y1 };
+        }
+
+        boost::optional<security::PublicKey> operator()(const Uncompressed& point) const
+        {
+            return security::PublicKey { point.x, point.y, KeyType::NistP256, KeyCompression::NoCompression };
+        }
+    };
+
+    const VerificationKey* verification_key = cert.get_attribute<SubjectAttributeType::Verification_Key>();
+    const ecdsa_nistp256_with_sha256* ecdsa =
+        verification_key ? boost::get<ecdsa_nistp256_with_sha256>(&verification_key->key) : nullptr;
+    if (!ecdsa) {
+        return boost::none;
+    }
+    return boost::apply_visitor(visitor(), ecdsa->public_key);
+}
+
 ByteBuffer get_app_permissions(const Certificate& cert, ItsAid aid)
 {
     ByteBuffer perms;

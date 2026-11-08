@@ -6,6 +6,7 @@
 
 using namespace vanetza::security::v2;
 using vanetza::security::deserialize_from_hexstring;
+namespace sec = vanetza::security;
 
 TEST(Certificate, WebValidator_RootCA_v2)
 {
@@ -97,4 +98,53 @@ TEST(Certificate, app_permissions_without_attributes)
 
     Certificate cert;
     EXPECT_TRUE(get_app_permissions(cert, aid::CA).empty());
+}
+
+namespace
+{
+
+Certificate make_certificate(const sec::EccPoint& verification_key)
+{
+    Certificate cert;
+    cert.subject_attributes.push_back(VerificationKey { ecdsa_nistp256_with_sha256 { verification_key } });
+    return cert;
+}
+
+} // namespace
+
+TEST(Certificate, verification_key_keeps_compressed_point)
+{
+    const vanetza::ByteBuffer x(32, 0x11);
+
+    const boost::optional<sec::PublicKey> y0 = get_verification_key(make_certificate(sec::Compressed_Lsb_Y_0 { x }));
+    ASSERT_TRUE(y0);
+    EXPECT_EQ(sec::KeyType::NistP256, y0->type);
+    EXPECT_EQ(sec::KeyCompression::Y0, y0->compression);
+    EXPECT_EQ(x, y0->x);
+    EXPECT_TRUE(y0->y.empty());
+
+    const boost::optional<sec::PublicKey> y1 = get_verification_key(make_certificate(sec::Compressed_Lsb_Y_1 { x }));
+    ASSERT_TRUE(y1);
+    EXPECT_EQ(sec::KeyType::NistP256, y1->type);
+    EXPECT_EQ(sec::KeyCompression::Y1, y1->compression);
+    EXPECT_EQ(x, y1->x);
+    EXPECT_TRUE(y1->y.empty());
+}
+
+TEST(Certificate, verification_key_keeps_uncompressed_point)
+{
+    const vanetza::ByteBuffer x(32, 0x11);
+    const vanetza::ByteBuffer y(32, 0x22);
+
+    const boost::optional<sec::PublicKey> key = get_verification_key(make_certificate(sec::Uncompressed { x, y }));
+    ASSERT_TRUE(key);
+    EXPECT_EQ(sec::KeyType::NistP256, key->type);
+    EXPECT_EQ(sec::KeyCompression::NoCompression, key->compression);
+    EXPECT_EQ(x, key->x);
+    EXPECT_EQ(y, key->y);
+}
+
+TEST(Certificate, x_coordinate_only_is_no_verification_key)
+{
+    EXPECT_FALSE(get_verification_key(make_certificate(sec::X_Coordinate_Only { vanetza::ByteBuffer(32, 0x11) })));
 }

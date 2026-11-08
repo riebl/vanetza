@@ -5,6 +5,7 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/ecdsa256.hpp>
+#include <vanetza/security/public_key.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/ecc_point.hpp>
 #include <vanetza/security/v2/serialization.hpp>
@@ -156,6 +157,13 @@ boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate&, Ba
  * \return public key (if available)
  */
 boost::optional<ecdsa256::PublicKey> get_public_key(const Certificate&, Backend& backend);
+
+/**
+ * \brief Extract verification key from certificate
+ * \param cert Certificate
+ * \return NIST P-256 key or none without verification key or with x-coordinate only
+ */
+boost::optional<security::PublicKey> get_verification_key(const Certificate& cert);
 
 /**
  * Calculate hash id of certificate
