@@ -2,12 +2,20 @@
 #include <vanetza/asn1/byte_view.hpp>
 #include <vanetza/asn1/type_traits.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/common/manual_runtime.hpp>
+#include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/tests/certificates_v3.hpp>
+#include <vanetza/security/v2/certificate.hpp>
+#include <vanetza/security/v2/certificate_cache.hpp>
+#include <vanetza/security/v2/null_certificate_validator.hpp>
 #include <vanetza/security/v2/secured_message.hpp>
+#include <vanetza/security/v2/sign_header_policy.hpp>
+#include <vanetza/security/v2/static_certificate_provider.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/hash.hpp>
@@ -91,7 +99,8 @@ protected:
         ticket_key = create_key(KeyType::NistP256);
         ticket = v3::make_authorization_ticket(public_key(ticket_key), start);
         issue(ticket, aa, aa_key);
-        service = std::make_unique<CryptoProviderVerifyService>(*crypto, &issuers);
+        service = std::make_unique<CryptoProviderVerifyService>(runtime, *crypto, positioning);
+        service->use_issuer_lookup(&issuers);
     }
 
     KeyReference create_key(KeyType type)
@@ -162,6 +171,8 @@ protected:
     // discards created keys before their module is destroyed, e.g. persistent keys of PSA
     std::vector<std::unique_ptr<ScopedKeyPair>> created_keys;
     const Clock::time_point start = Clock::at("2024-08-12 11:30");
+    ManualRuntime runtime { start };
+    StoredPositionProvider positioning;
     v3::IssuerMemoryLookup issuers;
     KeyReference aa_key;
     v3::Certificate aa;
@@ -225,13 +236,6 @@ TEST_F(CryptoProviderVerifyServiceTest, unsupported_hash_algorithm_is_incompatib
     EXPECT_EQ(VerificationReport::Incompatible_Protocol, service->verify(message).report);
 }
 
-TEST_F(CryptoProviderVerifyServiceTest, v2_message_is_incompatible)
-{
-    const SecuredMessage message { v2::SecuredMessage {} };
-    const VerifyConfirm confirm = service->verify(VerifyRequest { SecuredMessageView { message } });
-    EXPECT_EQ(VerificationReport::Incompatible_Protocol, confirm.report);
-}
-
 TEST_F(CryptoProviderVerifyServiceTest, ticket_of_sha384_issuer_is_verified)
 {
     const KeyReference key = create_key(KeyType::BrainpoolP384r1);
@@ -244,7 +248,8 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_of_sha384_issuer_is_verified)
 TEST_F(CryptoProviderVerifyServiceTest, ticket_of_unknown_issuer_is_rejected)
 {
     v3::IssuerMemoryLookup no_issuers;
-    CryptoProviderVerifyService verifier { *crypto, &no_issuers };
+    CryptoProviderVerifyService verifier { runtime, *crypto, positioning };
+    verifier.use_issuer_lookup(&no_issuers);
     const VerifyConfirm confirm = verifier.verify(sign_message(ticket, ticket_key));
     EXPECT_EQ(VerificationReport::Invalid_Certificate, confirm.report);
     ASSERT_FALSE(confirm.certificate_validity);
@@ -253,7 +258,7 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_of_unknown_issuer_is_rejected)
 
 TEST_F(CryptoProviderVerifyServiceTest, ticket_is_accepted_without_issuers)
 {
-    CryptoProviderVerifyService verifier { *crypto, nullptr };
+    CryptoProviderVerifyService verifier { runtime, *crypto, positioning };
     const v3::Certificate unissued = v3::make_authorization_ticket(public_key(ticket_key), start);
     EXPECT_EQ(VerificationReport::Success, verifier.verify(sign_message(unissued, ticket_key)).report);
 }
@@ -297,7 +302,8 @@ TEST_F(CryptoProviderVerifyServiceTest, cached_ticket_of_untrusted_issuer_is_rej
 
     // issuer is not trusted anymore, e.g. revoked meanwhile
     v3::IssuerMemoryLookup no_issuers;
-    CryptoProviderVerifyService verifier { *crypto, &no_issuers };
+    CryptoProviderVerifyService verifier { runtime, *crypto, positioning };
+    verifier.use_issuer_lookup(&no_issuers);
     verifier.use_certificate_cache(&cache);
     message.set_signer_identifier(ticket.calculate_digest().value());
     const VerifyConfirm confirm = verifier.verify(message);
@@ -318,7 +324,7 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_of_falsely_signed_message_is_not_
 
 TEST_F(CryptoProviderVerifyServiceTest, unusable_signer_key_is_invalid_certificate)
 {
-    CryptoProviderVerifyService verifier { *crypto, nullptr };
+    CryptoProviderVerifyService verifier { runtime, *crypto, positioning };
     const v3::Certificate unusable = v3::make_authorization_ticket(unusable_public_key(), start);
     EXPECT_EQ(VerificationReport::Invalid_Certificate, verifier.verify(sign_message(unusable, ticket_key)).report);
 }
@@ -359,4 +365,72 @@ TEST_F(CryptoProviderVerifyServiceTest, unencodable_ticket_is_incompatible)
     // HashedId3 has exactly three octets
     vanetza::asn1::assign(craca_id, ByteBuffer { 0x01, 0x02 });
     EXPECT_EQ(VerificationReport::Incompatible_Protocol, service->verify(message).report);
+}
+
+class CryptoProviderVerifyServiceV2Test : public ::testing::Test
+{
+protected:
+    void SetUp() override
+    {
+        if (!crypto) {
+            GTEST_SKIP() << "no crypto provider built in";
+        }
+        ticket.subject_info.subject_type = v2::SubjectType::Authorization_Ticket;
+        // calculate_hash serializes the signature, its r and s need 32 octets (NIST P-256)
+        ticket.signature = EcdsaSignature { X_Coordinate_Only { ByteBuffer(32, 0x00) }, ByteBuffer(32, 0x00) };
+        service = std::make_unique<CryptoProviderVerifyService>(runtime, *crypto, positioning);
+        service->use_certificate_cache(&cache);
+        service->use_certificate_validator(&validator);
+        service->use_sign_header_policy(&policy);
+    }
+
+    ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
+    StoredPositionProvider positioning;
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    v2::CertificateCache cache { runtime };
+    v2::NullCertificateValidator validator;
+    v2::DefaultSignHeaderPolicy policy { runtime, positioning };
+    std::unique_ptr<CryptoProviderVerifyService> service;
+    v2::Certificate ticket;
+};
+
+TEST_F(CryptoProviderVerifyServiceV2Test, requested_own_certificate_is_signer_of_next_cam)
+{
+    v2::StaticCertificateProvider own_certificates { ticket, ecdsa256::PrivateKey {} };
+    SignRequest cam;
+    cam.its_aid = aid::CA;
+    // the first CAM carries the full certificate anyway
+    policy.prepare_header(cam, own_certificates);
+
+    v2::SecuredMessage message;
+    message.payload.type = v2::PayloadType::Signed;
+    message.header_fields.push_back(std::list<HashedId3> { truncate(calculate_hash(ticket)) });
+    service->verify(message);
+
+    for (const v2::HeaderField& field : policy.prepare_header(cam, own_certificates)) {
+        if (get_type(field) == v2::HeaderFieldType::Signer_Info) {
+            EXPECT_EQ(v2::SignerInfoType::Certificate, get_type(boost::get<v2::SignerInfo>(field)));
+            return;
+        }
+    }
+    ADD_FAILURE() << "CAM header without signer info";
+}
+
+TEST_F(CryptoProviderVerifyServiceV2Test, unusable_ticket_key_is_invalid_certificate)
+{
+    // x-coordinate exceeds the curve's prime, i.e. the key is no point of the curve
+    const v2::ecdsa_nistp256_with_sha256 unusable_key { Compressed_Lsb_Y_0 { ByteBuffer(32, 0xff) } };
+    ticket.subject_attributes.push_back(v2::VerificationKey { unusable_key });
+    v2::SecuredMessage message;
+    message.payload.type = v2::PayloadType::Signed;
+    message.header_fields.push_back(v2::convert_time64(runtime.now()));
+    message.header_fields.push_back(v2::IntX { aid::DEN });
+    message.header_fields.push_back(v2::SignerInfo { ticket });
+    message.trailer_fields.push_back(
+        v2::Signature { EcdsaSignature { X_Coordinate_Only { ByteBuffer(32, 0x01) }, ByteBuffer(32, 0x01) } });
+
+    const VerifyConfirm confirm = service->verify(message);
+    EXPECT_EQ(VerificationReport::Invalid_Certificate, confirm.report);
+    ASSERT_FALSE(confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::Missing_Public_Key, confirm.certificate_validity.reason());
 }

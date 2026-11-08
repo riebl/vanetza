@@ -13,6 +13,8 @@ namespace security
 
 // forward declarations
 class Backend;
+class CryptoProvider;
+class CryptoProviderVerifyService;
 
 namespace v2
 {
@@ -43,7 +45,6 @@ class SignHeaderPolicy;
 class StraightVerifyService : public VerifyService
 {
 public:
-    StraightVerifyService(const Runtime&, Backend&);
     StraightVerifyService(const Runtime&, Backend&, PositionProvider&);
 
     void use_certificate_cache(v2::CertificateCache*);
@@ -65,20 +66,18 @@ public:
     VerifyConfirm verify(const v3::SecuredMessage&);
 
 private:
+    // verify service configured with the given components
+    CryptoProviderVerifyService delegate(CryptoProvider&) const;
+
     const Runtime& m_runtime;
     Backend& m_backend;
-    PositionProvider* m_position_provider = nullptr;
+    PositionProvider& m_position_provider;
 
     struct {
         v2::CertificateCache* m_cert_cache = nullptr;
         v2::CertificateProvider* m_cert_provider = nullptr;
         v2::CertificateValidator* m_cert_validator = nullptr;
         v2::SignHeaderPolicy* m_sign_policy = nullptr;
-
-        constexpr bool complete() const
-        {
-            return m_cert_cache && m_cert_validator && m_sign_policy;
-        }
     } m_context_v2;
 
     struct {
