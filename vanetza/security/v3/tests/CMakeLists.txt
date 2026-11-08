@@ -1,11 +1,8 @@
 include(UseGTest)
-add_library(security_test_v3 STATIC certificates.cpp)
-target_link_libraries(security_test_v3 PUBLIC security)
-configure_gtest_directory(LINK_LIBRARIES geodesy security security_test_v3
+configure_gtest_directory(LINK_LIBRARIES geodesy security security_test
     COMPILE_DEFINITIONS ASSET_DIR="${SECURITY_TEST_ASSET_DIR}")
 add_gtest(Distance distance.cpp)
 add_gtest(DefaultCertificateValidatorV3 default_certificate_validator_v3.cpp)
 add_gtest(IdentityManager identity_manager.cpp)
 add_gtest(MemoryAuthorizationTicketPool memory_authorization_ticket_pool.cpp)
 add_gtest(SignServiceV3 sign_service.cpp)
-add_gtest(VerifyServiceV3 verify_service.cpp)

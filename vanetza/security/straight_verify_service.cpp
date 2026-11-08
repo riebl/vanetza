@@ -3,6 +3,7 @@
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
@@ -11,7 +12,6 @@
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/verification.hpp>
 #include <vanetza/security/v3/certificate_provider.hpp>
-#include <vanetza/security/v3/verify_service.hpp>
 #include <boost/optional.hpp>
 
 namespace vanetza
@@ -382,7 +382,7 @@ VerifyConfirm StraightVerifyService::verify(const v2::SecuredMessage& secured_me
 VerifyConfirm StraightVerifyService::verify(const v3::SecuredMessage& msg)
 {
     BackendCryptoProvider crypto { m_backend };
-    v3::CryptoProviderVerifyService service { crypto, m_context_v3.m_issuer_lookup };
+    CryptoProviderVerifyService service { crypto, m_context_v3.m_issuer_lookup };
     service.use_certificate_cache(m_context_v3.m_cert_cache);
     service.use_certificate_validator(m_context_v3.m_cert_validator);
     service.use_sign_header_policy(m_context_v3.m_sign_policy);

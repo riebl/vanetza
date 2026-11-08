@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
@@ -8,7 +9,6 @@
 #include <vanetza/security/v3/issuer_lookup.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
-#include <vanetza/security/v3/verify_service.hpp>
 #include <boost/optional.hpp>
 #include <boost/variant/get.hpp>
 #include <algorithm>
@@ -173,25 +173,26 @@ void handle_p2pcd_requests(const SecuredMessage& msg, SignHeaderPolicy& policy)
 }
 
 } // namespace
+} // namespace v3
 
-CryptoProviderVerifyService::CryptoProviderVerifyService(CryptoProvider& crypto, const IssuerLookup* issuers) :
+CryptoProviderVerifyService::CryptoProviderVerifyService(CryptoProvider& crypto, const v3::IssuerLookup* issuers) :
     m_crypto(crypto), m_issuers(issuers)
 {
 }
 
-void CryptoProviderVerifyService::use_certificate_cache(CertificateCache* cache)
+void CryptoProviderVerifyService::use_certificate_cache(v3::CertificateCache* cache)
 {
-    m_cert_cache = cache;
+    m_context_v3.m_cert_cache = cache;
 }
 
-void CryptoProviderVerifyService::use_certificate_validator(CertificateValidator* validator)
+void CryptoProviderVerifyService::use_certificate_validator(v3::CertificateValidator* validator)
 {
-    m_cert_validator = validator;
+    m_context_v3.m_cert_validator = validator;
 }
 
-void CryptoProviderVerifyService::use_sign_header_policy(SignHeaderPolicy* policy)
+void CryptoProviderVerifyService::use_sign_header_policy(v3::SignHeaderPolicy* policy)
 {
-    m_sign_policy = policy;
+    m_context_v3.m_sign_policy = policy;
 }
 
 VerifyConfirm CryptoProviderVerifyService::verify(const VerifyRequest& request)
@@ -209,7 +210,7 @@ VerifyConfirm CryptoProviderVerifyService::verify(const VerifyRequest& request)
             return confirm;
         }
 
-        VerifyConfirm operator()(const SecuredMessage& msg) const
+        VerifyConfirm operator()(const v3::SecuredMessage& msg) const
         {
             return m_service.verify(msg);
         }
@@ -220,8 +221,9 @@ VerifyConfirm CryptoProviderVerifyService::verify(const VerifyRequest& request)
     return boost::apply_visitor(visitor, request.secured_message);
 }
 
-VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
+VerifyConfirm CryptoProviderVerifyService::verify(const v3::SecuredMessage& msg)
 {
+    using namespace v3;
     /*
      * TS 103 097 v1.3.1 demands to assess the validity of signed data
      * according to IEEE 1609.2 clause 5.2.
@@ -257,25 +259,26 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
 
     // track "known" stations
     auto maybe_digest = get_certificate_id(signer_identifier);
-    if (m_cert_cache && maybe_digest) {
-        bool was_unknown_station = m_cert_cache->announce(*maybe_digest);
-        if (was_unknown_station && msg.its_aid() == aid::CA && m_sign_policy) {
+    if (m_context_v3.m_cert_cache && maybe_digest) {
+        bool was_unknown_station = m_context_v3.m_cert_cache->announce(*maybe_digest);
+        if (was_unknown_station && msg.its_aid() == aid::CA && m_context_v3.m_sign_policy) {
             // CAM from unknown station received, add our certificate to next outgoing message
-            m_sign_policy->request_certificate();
+            m_context_v3.m_sign_policy->request_certificate();
         }
     }
 
-    if (msg.its_aid() == aid::CA && m_sign_policy) {
-        handle_p2pcd_requests(msg, *m_sign_policy);
+    if (msg.its_aid() == aid::CA && m_context_v3.m_sign_policy) {
+        handle_p2pcd_requests(msg, *m_context_v3.m_sign_policy);
     }
 
     // tickets of the cache are verified, thus a ticket included again is taken from the cache
-    const Certificate* cached = m_cert_cache && maybe_digest ? m_cert_cache->lookup(*maybe_digest) : nullptr;
+    const Certificate* cached =
+        m_context_v3.m_cert_cache && maybe_digest ? m_context_v3.m_cert_cache->lookup(*maybe_digest) : nullptr;
     const asn1::Certificate* certificate = cached ? cached->content() : included_certificate(signer_identifier);
     if (!certificate) {
-        if (msg.its_aid() == aid::CA && m_sign_policy && maybe_digest) {
+        if (msg.its_aid() == aid::CA && m_context_v3.m_sign_policy && maybe_digest) {
             // for received CAMs (having digest as signer identifier) with unknown AT we request the full AT certificate
-            m_sign_policy->request_unrecognized_certificate(*maybe_digest);
+            m_context_v3.m_sign_policy->request_unrecognized_certificate(*maybe_digest);
         }
         confirm.report = VerificationReport::Signer_Certificate_Not_Found;
         return confirm;
@@ -285,8 +288,8 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
     assert(certificate != nullptr);
 
     // check AT certificate's validity
-    if (m_cert_validator) {
-        auto verdict = m_cert_validator->valid_for_signing(CertificateView { certificate }, msg.its_aid());
+    if (m_context_v3.m_cert_validator) {
+        auto verdict = m_context_v3.m_cert_validator->valid_for_signing(CertificateView { certificate }, msg.its_aid());
         if (verdict != CertificateValidator::Verdict::Valid) {
             confirm.report = VerificationReport::Invalid_Certificate;
             return confirm;
@@ -294,9 +297,10 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
     }
 
     const boost::optional<HashedId8> aa_digest = CertificateView { certificate }.issuer_digest();
-    if (aa_digest && m_cert_cache && m_sign_policy && !m_cert_cache->is_known(*aa_digest)) {
+    if (aa_digest && m_context_v3.m_cert_cache && m_context_v3.m_sign_policy &&
+        !m_context_v3.m_cert_cache->is_known(*aa_digest)) {
         // request unknown AA certificate for any received message signed with AT issued by this AA
-        m_sign_policy->request_unrecognized_certificate(*aa_digest);
+        m_context_v3.m_sign_policy->request_unrecognized_certificate(*aa_digest);
     }
     // TODO: if AA is validated and fails, announce it in cache
 
@@ -327,22 +331,21 @@ VerifyConfirm CryptoProviderVerifyService::verify(const SecuredMessage& msg)
     confirm.permissions = get_app_permissions(*certificate, confirm.its_aid);
     confirm.certificate_id = maybe_digest;
 
-    if (m_cert_cache && confirm.certificate_id) {
-        bool already_cached = m_cert_cache->lookup(*confirm.certificate_id) != nullptr;
-        if (!already_cached && confirm.its_aid == aid::CA && m_sign_policy) {
+    if (m_context_v3.m_cert_cache && confirm.certificate_id) {
+        bool already_cached = m_context_v3.m_cert_cache->lookup(*confirm.certificate_id) != nullptr;
+        if (!already_cached && confirm.its_aid == aid::CA && m_context_v3.m_sign_policy) {
             // CAM from unknown station received, add our certificate to next outgoing message
-            m_sign_policy->request_certificate();
+            m_context_v3.m_sign_policy->request_certificate();
         }
 
         // update certificate cache with received certificate
         if (contains_certificate(signer_identifier)) {
-            m_cert_cache->store(Certificate { *certificate });
+            m_context_v3.m_cert_cache->store(Certificate { *certificate });
         }
     }
 
     return confirm;
 }
 
-} // namespace v3
 } // namespace security
 } // namespace vanetza

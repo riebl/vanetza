@@ -1,9 +1,10 @@
 include(UseGTest)
 add_library(security_test STATIC
+    certificates_v3.cpp
     serialization.cpp
 )
 target_include_directories(security_test PUBLIC $<TARGET_PROPERTY:security,INTERFACE_INCLUDE_DIRECTORIES>)
-target_link_libraries(security_test PUBLIC ${GTest_LIBRARY})
+target_link_libraries(security_test PUBLIC security ${GTest_LIBRARY})
 configure_gtest_directory(LINK_LIBRARIES Boost::boost security security_test
     COMPILE_DEFINITIONS ASSET_DIR="${SECURITY_TEST_ASSET_DIR}")
 
@@ -12,6 +13,7 @@ add_gtest(CamServiceSpecificPermissions cam_ssp.cpp)
 add_gtest(CertificateV3 certificate_v3.cpp)
 add_gtest(CredentialStorage credential_storage.cpp)
 add_gtest(CryptoProvider crypto_provider.cpp)
+add_gtest(CryptoProviderVerifyService crypto_provider_verify_service.cpp)
 add_gtest(DecapService decap_service.cpp)
 add_gtest(DummyVerifyService dummy_verify_service.cpp)
 if(VANETZA_WITH_OPENSSL OR VANETZA_WITH_CRYPTOPP)

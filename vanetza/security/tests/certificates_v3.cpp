@@ -1,4 +1,4 @@
-#include "certificates.hpp"
+#include <vanetza/security/tests/certificates_v3.hpp>
 #include <vanetza/asn1/asn1c_wrapper.hpp>
 #include <vanetza/asn1/byte_view.hpp>
 #include <vanetza/common/its_aid.hpp>

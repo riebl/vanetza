@@ -3,21 +3,20 @@
 #include <vanetza/asn1/type_traits.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/tests/certificates_v3.hpp>
 #include <vanetza/security/v2/secured_message.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/hash.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
-#include <vanetza/security/v3/verify_service.hpp>
 #include <boost/variant/get.hpp>
 #include <gtest/gtest.h>
 #include <memory>
 #include <vector>
-
-#include "certificates.hpp"
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -92,7 +91,7 @@ protected:
         ticket_key = create_key(KeyType::NistP256);
         ticket = v3::make_authorization_ticket(public_key(ticket_key), start);
         issue(ticket, aa, aa_key);
-        service = std::make_unique<v3::CryptoProviderVerifyService>(*crypto, &issuers);
+        service = std::make_unique<CryptoProviderVerifyService>(*crypto, &issuers);
     }
 
     KeyReference create_key(KeyType type)
@@ -168,7 +167,7 @@ protected:
     v3::Certificate aa;
     KeyReference ticket_key;
     v3::Certificate ticket;
-    std::unique_ptr<v3::CryptoProviderVerifyService> service;
+    std::unique_ptr<CryptoProviderVerifyService> service;
 };
 
 } // namespace
@@ -245,7 +244,7 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_of_sha384_issuer_is_verified)
 TEST_F(CryptoProviderVerifyServiceTest, ticket_of_unknown_issuer_is_rejected)
 {
     v3::IssuerMemoryLookup no_issuers;
-    v3::CryptoProviderVerifyService verifier { *crypto, &no_issuers };
+    CryptoProviderVerifyService verifier { *crypto, &no_issuers };
     const VerifyConfirm confirm = verifier.verify(sign_message(ticket, ticket_key));
     EXPECT_EQ(VerificationReport::Invalid_Certificate, confirm.report);
     ASSERT_FALSE(confirm.certificate_validity);
@@ -254,7 +253,7 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_of_unknown_issuer_is_rejected)
 
 TEST_F(CryptoProviderVerifyServiceTest, ticket_is_accepted_without_issuers)
 {
-    v3::CryptoProviderVerifyService verifier { *crypto, nullptr };
+    CryptoProviderVerifyService verifier { *crypto, nullptr };
     const v3::Certificate unissued = v3::make_authorization_ticket(public_key(ticket_key), start);
     EXPECT_EQ(VerificationReport::Success, verifier.verify(sign_message(unissued, ticket_key)).report);
 }
@@ -298,7 +297,7 @@ TEST_F(CryptoProviderVerifyServiceTest, cached_ticket_of_untrusted_issuer_is_rej
 
     // issuer is not trusted anymore, e.g. revoked meanwhile
     v3::IssuerMemoryLookup no_issuers;
-    v3::CryptoProviderVerifyService verifier { *crypto, &no_issuers };
+    CryptoProviderVerifyService verifier { *crypto, &no_issuers };
     verifier.use_certificate_cache(&cache);
     message.set_signer_identifier(ticket.calculate_digest().value());
     const VerifyConfirm confirm = verifier.verify(message);
@@ -319,7 +318,7 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_of_falsely_signed_message_is_not_
 
 TEST_F(CryptoProviderVerifyServiceTest, unusable_signer_key_is_invalid_certificate)
 {
-    v3::CryptoProviderVerifyService verifier { *crypto, nullptr };
+    CryptoProviderVerifyService verifier { *crypto, nullptr };
     const v3::Certificate unusable = v3::make_authorization_ticket(unusable_public_key(), start);
     EXPECT_EQ(VerificationReport::Invalid_Certificate, verifier.verify(sign_message(unusable, ticket_key)).report);
 }

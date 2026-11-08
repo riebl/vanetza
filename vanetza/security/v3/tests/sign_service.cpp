@@ -3,6 +3,7 @@
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/tests/certificates_v3.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/hash.hpp>
@@ -13,8 +14,6 @@
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <memory>
-
-#include "certificates.hpp"
 
 using namespace vanetza;
 using namespace vanetza::security;
