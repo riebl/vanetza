@@ -8,6 +8,10 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v3
 {
 
@@ -18,6 +22,8 @@ namespace v3
 class CertificateCache
 {
 public:
+    explicit CertificateCache(CryptoProvider& crypto);
+
     /**
      * Lookup certificate based on given digest
      * \param digest certificate digest
@@ -52,6 +58,8 @@ public:
 private:
     using CertificateMap = std::unordered_map<HashedId8, Certificate>;
     using ShortDigestMap = std::unordered_map<HashedId3, CertificateMap::iterator>;
+
+    CryptoProvider& m_crypto;
 
     // TODO add bounded capacity and automatic removal of expired certificates
     CertificateMap m_storage;

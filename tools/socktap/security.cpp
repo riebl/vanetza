@@ -92,7 +92,9 @@ public:
                       bool permissive_identified_region = false) :
         runtime(runtime), positioning(positioning),
         backend(security::create_backend(backend_name)),
-        country_database(geodesy::CountryDatabase::embedded())
+        backend_crypto(*backend),
+        country_database(geodesy::CountryDatabase::embedded()),
+        cert_cache(backend_crypto)
     {
         location_checker.set_permissive_identified_region(permissive_identified_region);
         location_checker.use_country_database(&country_database);
@@ -136,6 +138,7 @@ public:
     const Runtime& runtime;
     PositionProvider& positioning;
     std::unique_ptr<security::Backend> backend;
+    security::BackendCryptoProvider backend_crypto;
     geodesy::CountryDatabase country_database;
     security::v3::DefaultLocationChecker location_checker;
     std::unique_ptr<security::v3::CertificateProvider> cert_provider;

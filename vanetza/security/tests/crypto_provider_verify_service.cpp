@@ -127,7 +127,7 @@ protected:
     void issue(v3::Certificate& subject, const v3::Certificate& issuer, const KeyReference& issuer_key)
     {
         const HashAlgorithm algo = v3::specified_hash_algorithm(issuer.get_verification_key_type());
-        const HashedId8 issuer_id = issuer.calculate_digest().value();
+        const HashedId8 issuer_id = issuer.calculate_digest(*crypto).value();
         vanetza::asn1::reset(asn_DEF_Vanetza_Security_IssuerIdentifier, &subject->issuer);
         switch (algo) {
             case HashAlgorithm::SHA256:
@@ -193,7 +193,7 @@ TEST_F(CryptoProviderVerifyServiceTest, message_signed_with_certificate_is_verif
     EXPECT_EQ(aid::DEN, confirm.its_aid);
     EXPECT_EQ((ByteBuffer { 0x01, 0xff, 0xff, 0xff }), confirm.permissions);
     ASSERT_TRUE(confirm.certificate_id);
-    EXPECT_EQ(ticket.calculate_digest().value(), *confirm.certificate_id);
+    EXPECT_EQ(ticket.calculate_digest(*crypto).value(), *confirm.certificate_id);
 }
 
 TEST_F(CryptoProviderVerifyServiceTest, tampered_message_has_false_signature)
@@ -205,22 +205,22 @@ TEST_F(CryptoProviderVerifyServiceTest, tampered_message_has_false_signature)
 
 TEST_F(CryptoProviderVerifyServiceTest, unknown_signer_digest_is_not_found)
 {
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     service->use_certificate_cache(&cache);
     v3::SecuredMessage message = sign_message(ticket, ticket_key);
-    message.set_signer_identifier(ticket.calculate_digest().value());
+    message.set_signer_identifier(ticket.calculate_digest(*crypto).value());
     EXPECT_EQ(VerificationReport::Signer_Certificate_Not_Found, service->verify(message).report);
 }
 
 TEST_F(CryptoProviderVerifyServiceTest, cached_signer_certificate_verifies_digest_signed_message)
 {
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     service->use_certificate_cache(&cache);
     v3::SecuredMessage message = sign_message(ticket, ticket_key);
     ASSERT_EQ(VerificationReport::Success, service->verify(message).report);
 
     // signer identifier is not covered by the signature
-    message.set_signer_identifier(ticket.calculate_digest().value());
+    message.set_signer_identifier(ticket.calculate_digest(*crypto).value());
     EXPECT_EQ(VerificationReport::Success, service->verify(message).report);
 }
 
@@ -297,7 +297,7 @@ TEST_F(CryptoProviderVerifyServiceTest, self_signed_ticket_is_rejected)
 
 TEST_F(CryptoProviderVerifyServiceTest, cached_ticket_of_untrusted_issuer_is_rejected)
 {
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     service->use_certificate_cache(&cache);
     v3::SecuredMessage message = sign_message(ticket, ticket_key);
     ASSERT_EQ(VerificationReport::Success, service->verify(message).report);
@@ -307,7 +307,7 @@ TEST_F(CryptoProviderVerifyServiceTest, cached_ticket_of_untrusted_issuer_is_rej
     CryptoProviderVerifyService verifier { runtime, *crypto, positioning };
     verifier.use_issuer_lookup(&no_issuers);
     verifier.use_certificate_cache(&cache);
-    message.set_signer_identifier(ticket.calculate_digest().value());
+    message.set_signer_identifier(ticket.calculate_digest(*crypto).value());
     const VerifyConfirm confirm = verifier.verify(message);
     EXPECT_EQ(VerificationReport::Invalid_Certificate, confirm.report);
     ASSERT_FALSE(confirm.certificate_validity);
@@ -316,12 +316,12 @@ TEST_F(CryptoProviderVerifyServiceTest, cached_ticket_of_untrusted_issuer_is_rej
 
 TEST_F(CryptoProviderVerifyServiceTest, ticket_of_falsely_signed_message_is_not_cached)
 {
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     service->use_certificate_cache(&cache);
     v3::SecuredMessage message = sign_message(ticket, ticket_key);
     message.set_generation_time(*message.generation_time() + 1);
     ASSERT_EQ(VerificationReport::False_Signature, service->verify(message).report);
-    EXPECT_EQ(nullptr, cache.lookup(ticket.calculate_digest().value()));
+    EXPECT_EQ(nullptr, cache.lookup(ticket.calculate_digest(*crypto).value()));
 }
 
 TEST_F(CryptoProviderVerifyServiceTest, unusable_signer_key_is_invalid_certificate)
@@ -371,7 +371,7 @@ TEST_F(CryptoProviderVerifyServiceTest, unencodable_ticket_is_incompatible)
 
 TEST_F(CryptoProviderVerifyServiceTest, cam_of_unknown_station_puts_certificate_into_next_cam)
 {
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     v3::DefaultSignHeaderPolicy policy { runtime, positioning, cache };
     service->use_certificate_cache(&cache);
     service->use_sign_header_policy(&policy);

@@ -85,13 +85,17 @@ TEST(DummyVerifyServiceTest, signer_with_digest_no_cache)
 
 TEST(DummyVerifyServiceTest, signer_with_digest_cache_hit)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
 
     v3::Certificate cert = v3::fake_certificate();
-    auto digest = cert.calculate_digest();
+    auto digest = cert.calculate_digest(*crypto);
     ASSERT_TRUE(digest);
     
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     cache.store(std::move(cert));
     dummy.use_certificate_cache(&cache);
 
@@ -108,13 +112,17 @@ TEST(DummyVerifyServiceTest, signer_with_digest_cache_hit)
 
 TEST(DummyVerifyServiceTest, signer_with_digest_cache_miss)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
 
     v3::Certificate cert = v3::fake_certificate();
-    auto digest = cert.calculate_digest();
+    auto digest = cert.calculate_digest(*crypto);
     ASSERT_TRUE(digest);
 
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     // certificate is not added
     dummy.use_certificate_cache(&cache);
 
@@ -131,13 +139,17 @@ TEST(DummyVerifyServiceTest, signer_with_digest_cache_miss)
 
 TEST(DummyVerifyServiceTest, full_certificate_populates_cache)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
 
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { *crypto };
     dummy.use_certificate_cache(&cache);
 
     v3::Certificate cert = v3::fake_certificate();
-    auto digest = cert.calculate_digest();
+    auto digest = cert.calculate_digest(*crypto);
     ASSERT_TRUE(digest);
 
     v3::SecuredMessage msg = v3::SecuredMessage::with_signed_data();

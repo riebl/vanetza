@@ -4,6 +4,7 @@
 #include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
 #include <vanetza/security/tests/certificates_v3.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/hash.hpp>
@@ -45,7 +46,7 @@ protected:
     ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
     std::unique_ptr<SecurityModule> module = create_security_module();
     std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
-    v3::CertificateCache cache;
+    v3::CertificateCache cache { crypto ? *crypto : NullCryptoProvider::instance() };
     v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
 };

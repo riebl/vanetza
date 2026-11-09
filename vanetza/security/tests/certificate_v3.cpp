@@ -35,7 +35,11 @@ inline v3::Certificate fake_implicit_certificate()
 
 TEST(CertificateV3, cache)
 {
-    v3::CertificateCache cache;
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    v3::CertificateCache cache { *crypto };
     cache.store(v3::fake_certificate());
 }
 

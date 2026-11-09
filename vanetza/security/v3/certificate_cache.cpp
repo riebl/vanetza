@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <boost/optional/optional.hpp>
 
@@ -7,6 +8,10 @@ namespace security
 {
 namespace v3
 {
+
+CertificateCache::CertificateCache(CryptoProvider& crypto) : m_crypto(crypto)
+{
+}
 
 const Certificate* CertificateCache::lookup(const HashedId8& digest) const
 {
@@ -30,7 +35,7 @@ const Certificate* CertificateCache::lookup(const HashedId3& digest) const
 
 void CertificateCache::store(Certificate cert)
 {
-    auto maybe_hash = cert.calculate_digest();
+    auto maybe_hash = cert.calculate_digest(m_crypto);
     if (maybe_hash) {
         CertificateMap::iterator it;
         bool inserted;
