@@ -31,6 +31,10 @@ public:
                 return "invalid public key";
             case SecurityModuleError::DecryptionFailure:
                 return "decryption failed";
+            case SecurityModuleError::UnsupportedHashAlgorithm:
+                return "unsupported hash algorithm";
+            case SecurityModuleError::InvalidHashLength:
+                return "invalid hash length";
             default:
                 return "unknown security module error";
         }

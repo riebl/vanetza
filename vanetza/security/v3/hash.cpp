@@ -62,18 +62,10 @@ ByteBuffer calculate_message_hash(CryptoProvider& crypto, HashAlgorithm hash_alg
     if (encoded_cert.empty()) {
         return ByteBuffer {};
     }
-    switch (hash_algo) {
-        case HashAlgorithm::SHA256:
-            return combine_hashes([&crypto](const ByteBuffer& data) {
-                return crypto.calculate_sha256_hash(data.data(), data.size()).octets;
-            }, payload, encoded_cert);
-        case HashAlgorithm::SHA384:
-            return combine_hashes([&crypto](const ByteBuffer& data) {
-                return crypto.calculate_sha384_hash(data.data(), data.size()).octets;
-            }, payload, encoded_cert);
-        default:
-            return ByteBuffer();
-    }
+    // calculate_hash is empty for an unsupported algorithm, thus is the combined hash
+    return combine_hashes([&crypto, hash_algo](const ByteBuffer& data) {
+        return calculate_hash(crypto, hash_algo, data);
+    }, payload, encoded_cert);
 }
 
 ByteBuffer calculate_certificate_hash(CryptoProvider& crypto, HashAlgorithm hash_algo,

@@ -22,7 +22,9 @@ enum class SecurityModuleError
     ModuleFailure, // module malfunctioned, e.g. a failed OpenSSL or hardware call
     KeyNotFound, // module has no key stored for the given public key
     InvalidPublicKey, // public key is no valid point of its curve
-    DecryptionFailure // ciphertext cannot be decrypted, e.g. its authentication tag mismatches
+    DecryptionFailure, // ciphertext cannot be decrypted, e.g. its authentication tag mismatches
+    UnsupportedHashAlgorithm, // operation does not support the requested hash algorithm
+    InvalidHashLength // hash value does not have the length of its hash algorithm
 };
 
 const std::error_category& security_module_category() noexcept;

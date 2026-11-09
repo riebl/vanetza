@@ -5,6 +5,7 @@
 #include <vanetza/common/expected.hpp>
 #include <vanetza/common/factory.hpp>
 #include <vanetza/security/aes.hpp>
+#include <vanetza/security/hash_algorithm.hpp>
 #include <vanetza/security/hmac.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/security_module_error.hpp>
@@ -64,6 +65,28 @@ public:
      */
     virtual expected<Sha256Hmac> calculate_hmac_sha256(const byte_view_range& key, const byte_view_range& data) = 0;
 };
+
+/**
+ * Calculate hash of data by a hash algorithm
+ * \param crypto provider calculating the hash
+ * \param algo hash algorithm, i.e. SHA-256 or SHA-384
+ * \param data hashed data
+ * \return hash value, empty for an unsupported algorithm
+ */
+ByteBuffer calculate_hash(CryptoProvider& crypto, HashAlgorithm algo, const ByteBuffer& data);
+
+/**
+ * Verify signature of a hash calculated by a hash algorithm
+ * \param crypto provider verifying the signature
+ * \param algo hash algorithm of hash, i.e. SHA-256 or SHA-384
+ * \param hash hash value of signed data
+ * \param signature signature of hash
+ * \param key public key of signer
+ * \return result like CryptoProvider::verify, error UnsupportedHashAlgorithm or InvalidHashLength
+ *         for an unsupported algorithm or a hash of other length
+ */
+expected<bool> verify_hash(CryptoProvider& crypto, HashAlgorithm algo, const ByteBuffer& hash,
+    const Signature& signature, const PublicKey& key);
 
 /**
  * \brief get factory containing builtin crypto provider implementations

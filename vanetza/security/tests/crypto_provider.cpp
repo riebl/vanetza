@@ -210,6 +210,59 @@ TEST_P(CryptoProviderTest, unusable_public_key_is_error)
     }
 }
 
+TEST_P(CryptoProviderTest, calculate_hash_by_algorithm)
+{
+    const ByteBuffer data { 'a', 'b', 'c' };
+    // FIPS 180-2 Appendix B.1 and D.1
+    const ByteBuffer sha256 {
+        0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea, 0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
+        0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c, 0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad };
+    const ByteBuffer sha384 {
+        0xcb, 0x00, 0x75, 0x3f, 0x45, 0xa3, 0x5e, 0x8b, 0xb5, 0xa0, 0x3d, 0x69, 0x9a, 0xc6, 0x50, 0x07,
+        0x27, 0x2c, 0x32, 0xab, 0x0e, 0xde, 0xd1, 0x63, 0x1a, 0x8b, 0x60, 0x5a, 0x43, 0xff, 0x5b, 0xed,
+        0x80, 0x86, 0x07, 0x2b, 0xa1, 0xe7, 0xcc, 0x23, 0x58, 0xba, 0xec, 0xa1, 0x34, 0xc8, 0x25, 0xa7 };
+    EXPECT_EQ(sha256, calculate_hash(*crypto, HashAlgorithm::SHA256, data));
+    EXPECT_EQ(sha384, calculate_hash(*crypto, HashAlgorithm::SHA384, data));
+}
+
+TEST_P(CryptoProviderTest, calculate_hash_of_unsupported_algorithm_is_empty)
+{
+    EXPECT_TRUE(calculate_hash(*crypto, HashAlgorithm::Unspecified, ByteBuffer { 'a', 'b', 'c' }).empty());
+}
+
+TEST_P(CryptoProviderTest, verify_hash_by_algorithm)
+{
+    for (const SignedDigest& signed_digest : signed_digests()) {
+        SCOPED_TRACE(signed_digest.curve);
+        const HashAlgorithm algorithm =
+            signed_digest.digest.size() == Sha256Hash::length ? HashAlgorithm::SHA256 : HashAlgorithm::SHA384;
+        const PublicKey key = public_key(signed_digest, KeyCompression::NoCompression);
+        expected<bool> verified = verify_hash(*crypto, algorithm, signed_digest.digest, signature(signed_digest), key);
+        ASSERT_TRUE(verified.has_value()) << verified.error().message();
+        EXPECT_TRUE(*verified);
+    }
+}
+
+TEST_P(CryptoProviderTest, verify_hash_of_other_algorithm_is_error)
+{
+    for (const SignedDigest& signed_digest : signed_digests()) {
+        SCOPED_TRACE(signed_digest.curve);
+        // the given hash is shorter or longer than one of the other algorithm
+        const HashAlgorithm other =
+            signed_digest.digest.size() == Sha256Hash::length ? HashAlgorithm::SHA384 : HashAlgorithm::SHA256;
+        const PublicKey key = public_key(signed_digest, KeyCompression::NoCompression);
+
+        expected<bool> mismatch = verify_hash(*crypto, other, signed_digest.digest, signature(signed_digest), key);
+        ASSERT_TRUE(mismatch.has_error());
+        EXPECT_EQ(SecurityModuleError::InvalidHashLength, mismatch.error());
+
+        expected<bool> unsupported = verify_hash(*crypto, HashAlgorithm::Unspecified, signed_digest.digest,
+            signature(signed_digest), key);
+        ASSERT_TRUE(unsupported.has_error());
+        EXPECT_EQ(SecurityModuleError::UnsupportedHashAlgorithm, unsupported.error());
+    }
+}
+
 TEST_P(CryptoProviderTest, mac_vector1)
 {
     const ByteBuffer key(20, 0x0B);
