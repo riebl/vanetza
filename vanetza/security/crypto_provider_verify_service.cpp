@@ -331,7 +331,7 @@ VerifyConfirm CryptoProviderVerifyService::verify(const v2::SecuredMessage& secu
         switch (get_type(*signer_info)) {
             case SignerInfoType::Certificate:
                 possible_certificates.push_back(boost::get<v2::Certificate>(*signer_info));
-                signer_hash = calculate_hash(boost::get<v2::Certificate>(*signer_info));
+                signer_hash = calculate_hash(m_crypto, boost::get<v2::Certificate>(*signer_info));
 
                 if (confirm.its_aid == aid::CA && cert_cache.lookup(signer_hash, SubjectType::Authorization_Ticket).size() == 0) {
                     // Previously unknown certificate, send own certificate in next CAM
@@ -383,7 +383,7 @@ VerifyConfirm CryptoProviderVerifyService::verify(const v2::SecuredMessage& secu
                     }
                 }
                 // last certificate must be the authorization ticket
-                signer_hash = calculate_hash(chain.back());
+                signer_hash = calculate_hash(m_crypto, chain.back());
                 possible_certificates.push_back(chain.back());
             }
                 break;

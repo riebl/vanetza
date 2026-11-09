@@ -14,6 +14,10 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v2
 {
 
@@ -59,6 +63,15 @@ SignerInfoType get_type(const SignerInfo&);
  * directly as digest (regardless of its hash algorithm) or calculated from
  * the (last) certificate of a chain.
  *
+ * \param crypto provider calculating the hash of a contained certificate
+ * \param SignerInfo
+ * \return certificate identifier if available
+ */
+boost::optional<HashedId8> get_certificate_id(CryptoProvider& crypto, const SignerInfo&);
+
+/**
+ * \brief Get identifier of signing certificate
+ * \deprecated use get_certificate_id(CryptoProvider&, const SignerInfo&)
  * \param SignerInfo
  * \return certificate identifier if available
  */

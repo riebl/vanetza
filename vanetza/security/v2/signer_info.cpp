@@ -75,44 +75,66 @@ const Certificate* get_certificate(const SignerInfo& info)
     return boost::apply_visitor(visitor, info);
 }
 
-boost::optional<HashedId8> get_certificate_id(const SignerInfo& info)
+namespace
 {
-    using result_type = boost::optional<HashedId8>;
-    struct certificate_id_visitor : public boost::static_visitor<result_type>
+
+using result_type = boost::optional<HashedId8>;
+struct certificate_id_visitor : public boost::static_visitor<result_type>
+{
+    explicit certificate_id_visitor(CryptoProvider* crypto) : m_crypto(crypto)
     {
-        result_type operator()(std::nullptr_t) const
-        {
+    }
+
+    result_type operator()(std::nullptr_t) const
+    {
+        return boost::none;
+    }
+
+    result_type operator()(const HashedId8& digest) const
+    {
+        return digest;
+    }
+
+    result_type operator()(const Certificate& cert) const
+    {
+        return m_crypto ? calculate_hash(*m_crypto, cert) : calculate_hash(cert);
+    }
+
+    result_type operator()(const std::list<Certificate>& chain) const
+    {
+        // last certificate in chain is the signer
+        if (!chain.empty()) {
+            return m_crypto ? calculate_hash(*m_crypto, chain.back()) : calculate_hash(chain.back());
+        } else {
             return boost::none;
         }
+    }
 
-        result_type operator()(const HashedId8& digest) const
-        {
-            return digest;
-        }
+    result_type operator()(const CertificateDigestWithOtherAlgorithm& other) const
+    {
+        return other.digest;
+    }
 
-        result_type operator()(const Certificate& cert) const
-        {
-            return calculate_hash(cert);
-        }
+    CryptoProvider* m_crypto;
+};
 
-        result_type operator()(const std::list<Certificate>& chain) const
-        {
-            // last certificate in chain is the signer
-            if (!chain.empty()) {
-                return calculate_hash(chain.back());
-            } else {
-                return boost::none;
-            }
-        }
-
-        result_type operator()(const CertificateDigestWithOtherAlgorithm& other) const
-        {
-            return other.digest;
-        }
-    };
-
-    certificate_id_visitor visitor;
+// identifier of signing certificate, a contained certificate is hashed by crypto (deprecated hashing without)
+result_type certificate_id(CryptoProvider* crypto, const SignerInfo& info)
+{
+    certificate_id_visitor visitor { crypto };
     return boost::apply_visitor(visitor, info);
+}
+
+} // namespace
+
+boost::optional<HashedId8> get_certificate_id(CryptoProvider& crypto, const SignerInfo& info)
+{
+    return certificate_id(&crypto, info);
+}
+
+boost::optional<HashedId8> get_certificate_id(const SignerInfo& info)
+{
+    return certificate_id(nullptr, info);
 }
 
 size_t get_size(const CertificateDigestWithOtherAlgorithm& cert)
