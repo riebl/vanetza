@@ -3,6 +3,7 @@
 #include <vanetza/common/byte_sequence.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/manual_runtime.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
@@ -246,10 +247,14 @@ TEST(DummyVerifyServiceTest, v2_without_signer_info)
 
 TEST(DummyVerifyServiceTest, v2_signer_with_digest_cache_miss)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
 
     ManualRuntime runtime;
-    v2::CertificateCache cache(runtime);
+    v2::CertificateCache cache(runtime, *crypto);
     // certificate is not added
     dummy.use_certificate_cache(&cache);
 
@@ -268,15 +273,19 @@ TEST(DummyVerifyServiceTest, v2_signer_with_digest_cache_miss)
 
 TEST(DummyVerifyServiceTest, v2_full_certificate_populates_cache)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
 
     ManualRuntime runtime;
-    v2::CertificateCache cache(runtime);
+    v2::CertificateCache cache(runtime, *crypto);
     dummy.use_certificate_cache(&cache);
 
     v2::Certificate cert = create_v2_certificate(1);
     cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
-    const HashedId8 digest = v2::calculate_hash(cert);
+    const HashedId8 digest = v2::calculate_hash(*crypto, cert);
 
     v2::SecuredMessage with_cert;
     with_cert.header_fields.push_back(v2::IntX { aid::CA });
@@ -297,10 +306,14 @@ TEST(DummyVerifyServiceTest, v2_full_certificate_populates_cache)
 
 TEST(DummyVerifyServiceTest, v2_certificate_chain_populates_cache_with_signer)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
 
     ManualRuntime runtime;
-    v2::CertificateCache cache(runtime);
+    v2::CertificateCache cache(runtime, *crypto);
     dummy.use_certificate_cache(&cache);
 
     v2::Certificate authority = create_v2_certificate(2, v2::SubjectType::Authorization_Authority);
@@ -314,26 +327,30 @@ TEST(DummyVerifyServiceTest, v2_certificate_chain_populates_cache_with_signer)
 
     // only the signing ticket is remembered, its issuer is of no use to the dummy
     EXPECT_EQ(1, cache.size());
-    EXPECT_EQ(0, cache.lookup(v2::calculate_hash(authority), v2::SubjectType::Authorization_Authority).size());
-    EXPECT_EQ(1, cache.lookup(v2::calculate_hash(ticket), v2::SubjectType::Authorization_Ticket).size());
+    EXPECT_EQ(0, cache.lookup(v2::calculate_hash(*crypto, authority), v2::SubjectType::Authorization_Authority).size());
+    EXPECT_EQ(1, cache.lookup(v2::calculate_hash(*crypto, ticket), v2::SubjectType::Authorization_Ticket).size());
 }
 
 TEST(DummyVerifyServiceTest, v2_other_algorithm_digest_skips_cache)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
 
     v2::Certificate cert = create_v2_certificate(1);
     cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
 
     ManualRuntime runtime;
-    v2::CertificateCache cache(runtime);
+    v2::CertificateCache cache(runtime, *crypto);
     cache.insert(cert);
     dummy.use_certificate_cache(&cache);
 
     // cache keys are SHA-256 hashes, a digest of another algorithm must not match
     v2::CertificateDigestWithOtherAlgorithm other;
     other.algorithm = v2::PublicKeyAlgorithm::ECIES_NISTP256;
-    other.digest = v2::calculate_hash(cert);
+    other.digest = v2::calculate_hash(*crypto, cert);
 
     v2::SecuredMessage msg;
     msg.header_fields.push_back(v2::IntX { aid::CA });

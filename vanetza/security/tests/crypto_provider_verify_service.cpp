@@ -10,6 +10,7 @@
 #include <vanetza/security/security_module.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/tests/certificates_v3.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/null_certificate_validator.hpp>
@@ -409,7 +410,7 @@ protected:
     ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
     StoredPositionProvider positioning;
     std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
-    v2::CertificateCache cache { runtime };
+    v2::CertificateCache cache { runtime, crypto ? *crypto : NullCryptoProvider::instance() };
     v2::NullCertificateValidator validator;
     v2::DefaultSignHeaderPolicy policy { runtime, positioning };
     std::unique_ptr<CryptoProviderVerifyService> service;
@@ -426,7 +427,7 @@ TEST_F(CryptoProviderVerifyServiceV2Test, requested_own_certificate_is_signer_of
 
     v2::SecuredMessage message;
     message.payload.type = v2::PayloadType::Signed;
-    message.header_fields.push_back(std::list<HashedId3> { truncate(calculate_hash(ticket)) });
+    message.header_fields.push_back(std::list<HashedId3> { truncate(calculate_hash(*crypto, ticket)) });
     service->verify(message);
 
     for (const v2::HeaderField& field : policy.prepare_header(cam, own_certificates)) {

@@ -28,7 +28,7 @@ public:
         backend(security::create_backend("default")),
         backend_crypto(*backend),
         certificate_provider(rt),
-        cert_cache(rt),
+        cert_cache(rt, backend_crypto),
         certificate_validator(backend_crypto, cert_cache, trust_store),
         sign_header_policy(rt, position_provider),
         certificate_provider_v3(rt),

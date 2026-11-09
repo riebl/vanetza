@@ -34,7 +34,7 @@ public:
         backend(security::create_backend(backend_name)),
         backend_crypto(*backend),
         sign_header_policy(runtime, positioning),
-        cert_cache(runtime),
+        cert_cache(runtime, backend_crypto),
         cert_validator(backend_crypto, cert_cache, trust_store)
     {
     }

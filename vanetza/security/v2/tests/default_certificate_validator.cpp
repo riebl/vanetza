@@ -20,7 +20,7 @@ public:
         runtime(Clock::at("2016-08-01 00:00")),
         crypto(create_crypto_provider()),
         cert_provider(runtime),
-        cert_cache(runtime),
+        cert_cache(runtime, crypto ? *crypto : NullCryptoProvider::instance()),
         cert_validator(crypto ? *crypto : NullCryptoProvider::instance(), cert_cache, trust_store)
     {
         trust_store.insert(cert_provider.root_certificate());
@@ -262,7 +262,7 @@ TEST_F(DefaultCertificateValidatorTest, failing_verification_is_no_valid_signatu
     cert_cache.insert(authority);
 
     Certificate cert = cert_provider.generate_authorization_ticket();
-    cert.signer_info = calculate_hash(authority);
+    cert.signer_info = calculate_hash(*crypto, authority);
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);

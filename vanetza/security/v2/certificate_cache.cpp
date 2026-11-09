@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <chrono>
 
@@ -8,13 +9,13 @@ namespace security
 namespace v2
 {
 
-CertificateCache::CertificateCache(const Runtime& rt) : m_runtime(rt)
+CertificateCache::CertificateCache(const Runtime& rt, CryptoProvider& crypto) : m_runtime(rt), m_crypto(crypto)
 {
 }
 
 void CertificateCache::insert(const Certificate& certificate)
 {
-    const HashedId8 id = calculate_hash(certificate);
+    const HashedId8 id = calculate_hash(m_crypto, certificate);
 
     // this may drop expired entries and extend some's lifetime
     std::list<Certificate> certs = lookup(id, certificate.subject_info.subject_type);

@@ -12,6 +12,10 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v2
 {
 
@@ -22,7 +26,7 @@ namespace v2
 class CertificateCache
 {
 public:
-    explicit CertificateCache(const Runtime& rt);
+    CertificateCache(const Runtime& rt, CryptoProvider& crypto);
 
     /**
      * Puts a (validated) certificate into the cache.
@@ -65,6 +69,7 @@ private:
     };
 
     const Runtime& m_runtime;
+    CryptoProvider& m_crypto;
     heap_type m_expiries;
     map_type m_certificates;
 

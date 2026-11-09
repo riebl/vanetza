@@ -89,7 +89,7 @@ protected:
         crypto_backend(create_backend("default")),
         backend_crypto(*crypto_backend),
         certificate_provider(new NaiveCertificateProvider(runtime)),
-        cert_cache(runtime),
+        cert_cache(runtime, backend_crypto),
         certificate_validator(new DefaultCertificateValidator(backend_crypto, cert_cache, trust_store)),
         sign_header_policy(runtime, position_provider),
         security(create_sign_service(), create_verify_service()),
@@ -713,7 +713,7 @@ TEST_F(SecurityEntityTest, verify_message_signer_info_cam)
         // See TS 103 096-2 v1.3.1, section 5.2.2
         ASSERT_EQ(
             boost::get<HashedId8>(signer_info(secured_message)),
-            calculate_hash(certificate_provider->own_certificate())
+            calculate_hash(backend_crypto, certificate_provider->own_certificate())
         );
     }
 

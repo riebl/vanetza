@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/manual_runtime.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza;
@@ -13,8 +15,16 @@ class CertificateCacheTest : public ::testing::Test
 public:
     CertificateCacheTest() :
         runtime(Clock::at("2018-01-03 17:15")),
-        cache(runtime)
+        crypto(create_crypto_provider()),
+        cache(runtime, crypto ? *crypto : NullCryptoProvider::instance())
     {
+    }
+
+    void SetUp() override
+    {
+        if (!crypto) {
+            GTEST_SKIP() << "no crypto provider built in";
+        }
     }
 
     Certificate build_certificate(SubjectType subject_type, uint8_t id = 0) const
@@ -33,6 +43,7 @@ public:
 
 protected:
     ManualRuntime runtime;
+    std::unique_ptr<CryptoProvider> crypto;
     CertificateCache cache;
 };
 
@@ -41,7 +52,7 @@ static const HashedId8 zero_id = {{ 0, 0, 0, 0, 0, 0, 0, 0 }};
 TEST_F(CertificateCacheTest, lookup)
 {
     const Certificate cert = build_certificate(SubjectType::Authorization_Ticket);
-    const HashedId8 cert_id = calculate_hash(cert);
+    const HashedId8 cert_id = calculate_hash(*crypto, cert);
 
     // empty cache
     EXPECT_EQ(0, cache.lookup(cert_id, SubjectType::Authorization_Ticket).size());
@@ -80,7 +91,7 @@ TEST_F(CertificateCacheTest, drop_expired)
 {
     const Certificate cert1 = build_certificate(SubjectType::Authorization_Ticket); // 2 seconds
     const Certificate cert2 = build_certificate(SubjectType::Authorization_Authority); // 1 hour
-    ASSERT_NE(calculate_hash(cert1), calculate_hash(cert2));
+    ASSERT_NE(calculate_hash(*crypto, cert1), calculate_hash(*crypto, cert2));
     cache.insert(cert1);
     cache.insert(cert2);
     ASSERT_EQ(2, cache.size());
@@ -99,7 +110,7 @@ TEST_F(CertificateCacheTest, lookup_match_extends_lifetime)
 {
     const Certificate cert1 = build_certificate(SubjectType::Authorization_Ticket);
     const Certificate cert2 = build_certificate(SubjectType::Authorization_Authority);
-    const HashedId8 id_cert2 = calculate_hash(cert2);
+    const HashedId8 id_cert2 = calculate_hash(*crypto, cert2);
 
     cache.insert(cert1);
     cache.insert(cert2);
@@ -116,7 +127,7 @@ TEST_F(CertificateCacheTest, lookup_match_extends_lifetime)
 TEST_F(CertificateCacheTest, insert_extends_lifetime)
 {
     const Certificate cert = build_certificate(SubjectType::Authorization_Ticket);
-    const HashedId8 id = calculate_hash(cert);
+    const HashedId8 id = calculate_hash(*crypto, cert);
     EXPECT_NE(zero_id, id);
 
     cache.insert(cert);
