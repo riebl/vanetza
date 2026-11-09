@@ -152,6 +152,11 @@ uint8_t SecuredMessage::protocol_version() const
     return m_struct->protocolVersion;
 }
 
+boost::optional<HashedId8> SecuredMessage::certificate_id(CryptoProvider& crypto) const
+{
+    return get_certificate_id(crypto, signer_identifier());
+}
+
 boost::optional<HashedId8> SecuredMessage::certificate_id() const
 {
     return get_certificate_id(signer_identifier());
@@ -703,10 +708,18 @@ ByteBuffer get_payload(const asn1::SignedData* signed_data)
     return buffer;
 }
 
-boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdentifier& identifier)
+namespace
+{
+
+// identifier of signer certificate, an included certificate is hashed by crypto (deprecated hashing without)
+boost::optional<HashedId8> certificate_id(CryptoProvider* crypto, const SecuredMessage::SignerIdentifier& identifier)
 {
     using result_type = boost::optional<HashedId8>;
     struct cert_id_visitor : public boost::static_visitor<result_type> {
+        explicit cert_id_visitor(CryptoProvider* crypto) : m_crypto(crypto)
+        {
+        }
+
         result_type operator()(const asn1::HashedId8* digest) const
         {
             return digest ? make_hashed_id8(*digest) : result_type { };
@@ -714,10 +727,28 @@ boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdenti
 
         result_type operator()(const asn1::Certificate* cert) const
         {
-            return cert ? calculate_digest(*cert) : result_type { };
+            if (!cert) {
+                return result_type { };
+            }
+            return m_crypto ? calculate_digest(*m_crypto, *cert) : calculate_digest(*cert);
         }
+
+        CryptoProvider* m_crypto;
     };
-    return boost::apply_visitor(cert_id_visitor(), identifier);
+    return boost::apply_visitor(cert_id_visitor { crypto }, identifier);
+}
+
+} // namespace
+
+boost::optional<HashedId8> get_certificate_id(CryptoProvider& crypto,
+    const SecuredMessage::SignerIdentifier& identifier)
+{
+    return certificate_id(&crypto, identifier);
+}
+
+boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdentifier& identifier)
+{
+    return certificate_id(nullptr, identifier);
 }
 
 bool contains_certificate(const SecuredMessage::SignerIdentifier& identifier)

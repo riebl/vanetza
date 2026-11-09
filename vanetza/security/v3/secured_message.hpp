@@ -40,7 +40,19 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Data>
     uint8_t protocol_version() const;
     ItsAid its_aid() const;
     PacketVariant payload() const;
+
+    /**
+     * Get identifier of signer certificate
+     * \param crypto provider calculating the digest of an included certificate
+     * \return identifier if available
+     */
+    boost::optional<HashedId8> certificate_id(CryptoProvider& crypto) const;
+
+    /**
+     * \deprecated use certificate_id(CryptoProvider&)
+     */
     boost::optional<HashedId8> certificate_id() const;
+
     bool is_signed() const;
     bool is_encrypted() const;
     boost::optional<Time64> generation_time() const;
@@ -79,6 +91,10 @@ struct SecuredMessage : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Data>
                              const std::array<uint8_t, 16>& ecies_ciphertext,
                              const std::array<uint8_t, 16>& ecies_tag,
                              const PublicKey& ecies_pub_key);
+
+    /**
+     * \deprecated unused, recipient matching is to be provided by a function with CryptoProvider
+     */
     bool check_psk_match(const std::array<uint8_t, 16>& psk) const;
 };
 
@@ -111,6 +127,18 @@ ByteBuffer get_payload(const asn1::SignedData*);
 void set_payload(asn1::Opaque* unsecured, const ByteBuffer& buffer);
 ByteBuffer convert_to_payload(vanetza::ChunkPacket packet);
 
+/**
+ * Get identifier of signer certificate
+ * \param crypto provider calculating the digest of an included certificate
+ * \param identifier signer identifier
+ * \return identifier if available
+ */
+boost::optional<HashedId8> get_certificate_id(CryptoProvider& crypto,
+    const SecuredMessage::SignerIdentifier& identifier);
+
+/**
+ * \deprecated use get_certificate_id(CryptoProvider&, const SecuredMessage::SignerIdentifier&)
+ */
 boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdentifier&);
 
 /**

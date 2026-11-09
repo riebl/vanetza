@@ -193,7 +193,7 @@ VerificationReport verify_signature(CryptoProvider& crypto, const SecuredMessage
 }
 
 // enqueues certificates requested by a CAM and discards requests answered by it (peer-to-peer distribution)
-void handle_p2pcd_requests(const SecuredMessage& msg, SignHeaderPolicy& policy)
+void handle_p2pcd_requests(CryptoProvider& crypto, const SecuredMessage& msg, SignHeaderPolicy& policy)
 {
     const auto& header = msg->content->choice.signedData->tbsData->headerInfo;
     if (header.inlineP2pcdRequest) {
@@ -203,7 +203,7 @@ void handle_p2pcd_requests(const SecuredMessage& msg, SignHeaderPolicy& policy)
     }
 
     if (header.requestedCertificate) {
-        const boost::optional<HashedId8> digest = calculate_digest(*header.requestedCertificate);
+        const boost::optional<HashedId8> digest = calculate_digest(crypto, *header.requestedCertificate);
         if (digest) {
             policy.discard_p2p_request(truncate(*digest));
         }
@@ -578,7 +578,7 @@ VerifyConfirm CryptoProviderVerifyService::verify(const v3::SecuredMessage& msg)
     auto signer_identifier = msg.signer_identifier();
 
     // track "known" stations
-    auto maybe_digest = get_certificate_id(signer_identifier);
+    auto maybe_digest = get_certificate_id(m_crypto, signer_identifier);
     if (m_context_v3.m_cert_cache && maybe_digest) {
         bool was_unknown_station = m_context_v3.m_cert_cache->announce(*maybe_digest);
         if (was_unknown_station && msg.its_aid() == aid::CA && m_context_v3.m_sign_policy) {
@@ -588,7 +588,7 @@ VerifyConfirm CryptoProviderVerifyService::verify(const v3::SecuredMessage& msg)
     }
 
     if (msg.its_aid() == aid::CA && m_context_v3.m_sign_policy) {
-        handle_p2pcd_requests(msg, *m_context_v3.m_sign_policy);
+        handle_p2pcd_requests(m_crypto, msg, *m_context_v3.m_sign_policy);
     }
 
     // tickets of the cache are verified, thus a ticket included again is taken from the cache

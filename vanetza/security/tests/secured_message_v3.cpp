@@ -2,7 +2,10 @@
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
+#include <vanetza/security/tests/certificates_v3.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
@@ -190,4 +193,32 @@ TEST(SecuredMessageV3, verify_rejects_ticket_of_unknown_issuer)
     verify_service.use_issuer_lookup(&issuers);
     VerifyRequest verify_request { SecuredMessageView { *sign_confirm.secured_message } };
     EXPECT_EQ(VerificationReport::Invalid_Certificate, verify_service.verify(verify_request).report);
+}
+
+TEST(SecuredMessageV3, certificate_id_is_digest_of_included_certificate)
+{
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    PublicKey key;
+    key.type = KeyType::NistP256;
+    key.compression = KeyCompression::Y0;
+    key.x.assign(32, 0x01);
+    const v3::Certificate ticket = v3::make_authorization_ticket(key, Clock::at("2024-08-12 11:30"));
+    v3::SecuredMessage message = v3::SecuredMessage::with_signed_data();
+    message.set_signer_identifier(ticket);
+
+    const boost::optional<HashedId8> id = message.certificate_id(*crypto);
+    ASSERT_TRUE(id);
+    EXPECT_EQ(ticket.calculate_digest(*crypto), id);
+}
+
+TEST(SecuredMessageV3, certificate_id_is_given_digest)
+{
+    const HashedId8 digest { 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+    v3::SecuredMessage message = v3::SecuredMessage::with_signed_data();
+    message.set_signer_identifier(digest);
+
+    EXPECT_EQ(digest, message.certificate_id(NullCryptoProvider::instance()));
 }
