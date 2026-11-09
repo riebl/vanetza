@@ -2,7 +2,6 @@
 #include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
-#include <vanetza/security/v3/certificate_provider.hpp>
 
 namespace vanetza
 {
@@ -32,14 +31,6 @@ void StraightVerifyService::use_certificate_validator(v2::CertificateValidator* 
 void StraightVerifyService::use_sign_header_policy(v2::SignHeaderPolicy* policy)
 {
     m_context_v2.m_sign_policy = policy;
-}
-
-void StraightVerifyService::use_certificate_provider(v3::CertificateProvider* provider)
-{
-    if (provider)
-    {
-        use_certificate_cache(&provider->cache());
-    }
 }
 
 void StraightVerifyService::use_certificate_cache(v3::CertificateCache* cache)

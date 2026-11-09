@@ -13,6 +13,7 @@
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
+#include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/location_checker.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
@@ -33,7 +34,7 @@ public:
         certificate_validator(backend_crypto, cert_cache, trust_store),
         sign_header_policy(rt, backend_crypto, position_provider),
         certificate_provider_v3(rt),
-        sign_header_policy_v3(rt, position_provider, certificate_provider_v3.cache()),
+        sign_header_policy_v3(rt, position_provider, cert_cache_v3),
         security(build_sign_service(), build_verify_service(rt))
     {
         trust_store.insert(certificate_provider.root_certificate());
@@ -65,7 +66,7 @@ public:
 
     security::v3::CertificateCache& certificate_cache_v3()
     {
-        return certificate_provider_v3.cache();
+        return cert_cache_v3;
     }
 
 private:
@@ -79,7 +80,7 @@ private:
         service->use_certificate_validator(&certificate_validator);
         service->use_sign_header_policy(&sign_header_policy);
 
-        service->use_certificate_provider(&certificate_provider_v3);
+        service->use_certificate_cache(&cert_cache_v3);
         service->use_certificate_validator(&certificate_validator_v3);
         service->use_sign_header_policy(&sign_header_policy_v3);
         return service;
@@ -105,6 +106,7 @@ private:
     security::v2::DefaultSignHeaderPolicy sign_header_policy;
     
     security::v3::NaiveCertificateProvider certificate_provider_v3;
+    security::v3::CertificateCache cert_cache_v3;
     security::v3::DefaultSignHeaderPolicy sign_header_policy_v3;
     security::v3::DefaultCertificateValidator certificate_validator_v3;
     

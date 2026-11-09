@@ -22,7 +22,7 @@ namespace v3
  *
  * It's intended for experimenting with secured messages without validating signatures.
  */
-class NaiveCertificateProvider : public BaseCertificateProvider
+class NaiveCertificateProvider : public CertificateProvider
 {
 public:
     explicit NaiveCertificateProvider(const Runtime&);

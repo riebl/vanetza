@@ -6,6 +6,7 @@
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/tests/certificates_v3.hpp>
 #include <vanetza/security/tests/null_crypto_provider.hpp>
+#include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
@@ -100,7 +101,8 @@ TEST(SecuredMessageV3, sign_and_verify)
     auto backend = create_backend("default");
 
     v3::NaiveCertificateProvider cert_provider { runtime };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cert_provider.cache() };
+    v3::CertificateCache cache;
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 
@@ -126,7 +128,8 @@ TEST(SecuredMessageV3, verify_rejects_unsupported_hash_algorithm)
     auto backend = create_backend("default");
 
     v3::NaiveCertificateProvider cert_provider { runtime };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cert_provider.cache() };
+    v3::CertificateCache cache;
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 
@@ -151,7 +154,8 @@ TEST(SecuredMessageV3, tampered_message_has_false_signature)
     auto backend = create_backend("default");
 
     v3::NaiveCertificateProvider cert_provider { runtime };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cert_provider.cache() };
+    v3::CertificateCache cache;
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 
@@ -176,7 +180,8 @@ TEST(SecuredMessageV3, verify_rejects_ticket_of_unknown_issuer)
     auto backend = create_backend("default");
 
     v3::NaiveCertificateProvider cert_provider { runtime };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cert_provider.cache() };
+    v3::CertificateCache cache;
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 

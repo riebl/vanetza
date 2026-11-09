@@ -122,12 +122,12 @@ public:
             throw std::runtime_error("certificate provider is missing");
         }
         auto& cert_validator = certificate_validation->validator();
-        sign_header_policy.reset(new security::v3::DefaultSignHeaderPolicy(runtime, positioning, cert_provider->cache()));
+        sign_header_policy.reset(new security::v3::DefaultSignHeaderPolicy(runtime, positioning, cert_cache));
         std::unique_ptr<security::SignService> sign_service { new 
             security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy, cert_validator) };
         std::unique_ptr<security::StraightVerifyService> verify_service { new
             security::StraightVerifyService(runtime, *backend, positioning) };
-        verify_service->use_certificate_provider(cert_provider.get());
+        verify_service->use_certificate_cache(&cert_cache);
         verify_service->use_certificate_validator(&cert_validator);
         verify_service->use_sign_header_policy(sign_header_policy.get());
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
@@ -139,6 +139,7 @@ public:
     geodesy::CountryDatabase country_database;
     security::v3::DefaultLocationChecker location_checker;
     std::unique_ptr<security::v3::CertificateProvider> cert_provider;
+    security::v3::CertificateCache cert_cache;
     std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy;
     std::unique_ptr<CertificateValidationV3> certificate_validation;
     std::unique_ptr<security::SecurityEntity> entity;
@@ -180,7 +181,8 @@ load_v2_certificates(const std::string& cert_path, const std::string& cert_key_p
 
 std::unique_ptr<security::v3::CertificateProvider>
 load_v3_certificates(const std::string& cert_path, const std::string& cert_key_path,
-    const std::vector<std::string> cert_chain_path, CertificateValidationV3& validation)
+    const std::vector<std::string> cert_chain_path, CertificateValidationV3& validation,
+    security::v3::CertificateCache& cert_cache)
 {
     auto authorization_ticket = security::v3::load_certificate_from_file(cert_path);
     auto authorization_ticket_key = validation.load_authorization_ticket_key(cert_key_path);
@@ -188,7 +190,7 @@ load_v3_certificates(const std::string& cert_path, const std::string& cert_key_p
     auto provider = std::make_unique<security::v3::StaticCertificateProvider>(authorization_ticket, authorization_ticket_key);
     for (auto& chain_path : cert_chain_path) {
         auto chain_certificate = security::v3::load_certificate_from_file(chain_path);
-        provider->cache().store(chain_certificate);
+        cert_cache.store(chain_certificate);
         validation.add_chain_certificate(chain_certificate);
     }
     return provider;
@@ -227,7 +229,7 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
                                      vm["security.permissive-identified-region"].as<bool>();
                 auto context = std::make_unique<SecurityContextV3>(vm, runtime, positioning, backend_name, permissive_ir);
                 context->cert_provider = load_v3_certificates(
-                    cert_path, cert_key_path, chain_paths, *context->certificate_validation);
+                    cert_path, cert_key_path, chain_paths, *context->certificate_validation, context->cert_cache);
                 context->build_entity();
                 security = std::move(context);
             } else {

@@ -13,7 +13,7 @@ namespace v3
  *
  * This certificate provider uses a static certificate and key pair that is pre-generated.
  */
-class StaticCertificateProvider : public BaseCertificateProvider
+class StaticCertificateProvider : public CertificateProvider
 {
 public:
     /**
