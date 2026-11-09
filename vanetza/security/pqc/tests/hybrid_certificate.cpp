@@ -3,6 +3,7 @@
 #include VANETZA_ASN1_SECURITY_HEADER(PsidGroupPermissions.h)
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <vanetza/security/pqc/hybrid_certificate.hpp>
 #include <vanetza/security/pqc/hybrid_certificate_validator.hpp>
@@ -182,10 +183,11 @@ struct Chain
 v3::CertificateValidator::Verdict validate(
     Chain& chain, pqc::HybridCertificateValidator::VerificationPolicy policy)
 {
-    TrustStore trust_store;
+    BackendCryptoProvider ecc_crypto { *chain.ecc_backend };
+    TrustStore trust_store { ecc_crypto };
     trust_store.insert(chain.root);
 
-    IssuerMemoryLookup issuer_lookup;
+    IssuerMemoryLookup issuer_lookup { ecc_crypto };
     if (!issuer_lookup.insert(chain.root) || !issuer_lookup.insert(chain.aa)) {
         throw std::runtime_error("cannot populate issuer lookup");
     }

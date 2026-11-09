@@ -14,6 +14,8 @@ namespace v3
 class TrustStore
 {
 public:
+    explicit TrustStore(CryptoProvider& crypto);
+
     /**
      * Lookup certificates based on the passed HashedId8.
      *
@@ -30,6 +32,9 @@ public:
 
 protected:
     std::multimap<HashedId8, Certificate> m_certificates;
+
+private:
+    CryptoProvider& m_crypto;
 };
 
 } // namespace v3

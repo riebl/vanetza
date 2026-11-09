@@ -2,6 +2,7 @@
 #include "files.hpp"
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <vanetza/security/pqc/hybrid_certificate.hpp>
 #include <vanetza/security/pqc/hybrid_certificate_validator.hpp>
@@ -345,9 +346,10 @@ int verify_chain(const std::vector<std::string>& arguments)
     auto ecc_backend = create_backend_or_throw("default");
     auto pqc_backend = pqc::create_fndsa512_backend();
 
-    TrustStore trust_store;
+    BackendCryptoProvider ecc_crypto { *ecc_backend };
+    TrustStore trust_store { ecc_crypto };
     trust_store.insert(root);
-    IssuerMemoryLookup issuer_lookup;
+    IssuerMemoryLookup issuer_lookup { ecc_crypto };
     if (!issuer_lookup.insert(root) || !issuer_lookup.insert(aa)) {
         throw std::runtime_error("Root or AA cannot be used as an issuer certificate");
     }

@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
 #include <boost/optional.hpp>
 #include <stdexcept>
@@ -9,13 +10,17 @@ namespace security
 namespace v3
 {
 
+TrustStore::TrustStore(CryptoProvider& crypto) : m_crypto(crypto)
+{
+}
+
 void TrustStore::insert(const Certificate& certificate)
 {
     if (!certificate.issuer_is_self()) {
         throw std::runtime_error("Only root certificate authorities may be added to the trust store");
     }
 
-    auto id = certificate.calculate_digest();
+    auto id = certificate.calculate_digest(m_crypto);
     if (!id) {
         throw std::runtime_error("Cannot calculate hash for certificate");
     }

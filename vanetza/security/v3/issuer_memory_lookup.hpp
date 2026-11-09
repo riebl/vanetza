@@ -16,6 +16,8 @@ namespace v3
 class IssuerMemoryLookup : public IssuerLookup
 {
 public:
+    explicit IssuerMemoryLookup(CryptoProvider& crypto);
+
     /**
      * Insert or replace a CA certificate, keyed by its own HashedId8 digest.
      * \param cert CA certificate
@@ -26,6 +28,7 @@ public:
     const Certificate* find_issuer(const HashedId8& digest) const override;
 
 private:
+    CryptoProvider& m_crypto;
     std::unordered_map<HashedId8, Certificate> m_certificates;
 };
 

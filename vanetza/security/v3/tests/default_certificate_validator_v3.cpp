@@ -3,6 +3,7 @@
 #include <vanetza/common/stored_position_provider.hpp>
 #include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/geonet/units.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/location_checker.hpp>
@@ -23,7 +24,10 @@ public:
     DefaultCertificateValidatorTest() :
         runtime(Clock::at("2016-08-01 00:00")),
         backend(create_backend("default")),
-        cert_provider(runtime)
+        backend_crypto(*backend),
+        cert_provider(runtime),
+        trust_store(backend_crypto),
+        issuer_lookup(backend_crypto)
     {
         cert_validator.use_runtime(&runtime);
         cert_validator.use_issuer_lookup(&issuer_lookup);
@@ -45,6 +49,7 @@ protected:
     ManualRuntime runtime;
     StoredPositionProvider position_provider;
     std::unique_ptr<Backend> backend;
+    BackendCryptoProvider backend_crypto;
     NaiveCertificateProvider cert_provider;
     TrustStore trust_store;
     IssuerMemoryLookup issuer_lookup;
@@ -422,7 +427,7 @@ TEST_F(DefaultCertificateValidatorTest, untrusted_when_root_not_in_trust_store)
     cert_validator.disable_location_checks(true);
     ASSERT_TRUE(issuer_lookup.insert(cert_provider.root_certificate()));
 
-    TrustStore empty_trust_store;
+    TrustStore empty_trust_store { backend_crypto };
     cert_validator.use_trust_store(&empty_trust_store);
 
     EXPECT_EQ(CertificateValidator::Verdict::Untrusted,
@@ -494,7 +499,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_accepts_permission_issued_by
     auto aa_digest = aa.calculate_digest();
     ASSERT_TRUE(aa_digest);
 
-    IssuerMemoryLookup local_issuer_lookup;
+    IssuerMemoryLookup local_issuer_lookup { backend_crypto };
     ASSERT_TRUE(local_issuer_lookup.insert(aa));
     cert_validator.use_issuer_lookup(&local_issuer_lookup);
     cert_validator.disable_location_checks(true);
@@ -546,7 +551,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_region_outsi
     auto aa_digest = aa.calculate_digest();
     ASSERT_TRUE(aa_digest);
 
-    IssuerMemoryLookup local_issuer_lookup;
+    IssuerMemoryLookup local_issuer_lookup { backend_crypto };
     ASSERT_TRUE(local_issuer_lookup.insert(aa));
     cert_validator.use_issuer_lookup(&local_issuer_lookup);
     cert_validator.disable_location_checks(true);

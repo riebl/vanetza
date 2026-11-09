@@ -175,7 +175,7 @@ protected:
     const Clock::time_point start = Clock::at("2024-08-12 11:30");
     ManualRuntime runtime { start };
     StoredPositionProvider positioning;
-    v3::IssuerMemoryLookup issuers;
+    v3::IssuerMemoryLookup issuers { crypto ? *crypto : NullCryptoProvider::instance() };
     KeyReference aa_key;
     v3::Certificate aa;
     KeyReference ticket_key;
@@ -249,7 +249,7 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_of_sha384_issuer_is_verified)
 
 TEST_F(CryptoProviderVerifyServiceTest, ticket_of_unknown_issuer_is_rejected)
 {
-    v3::IssuerMemoryLookup no_issuers;
+    v3::IssuerMemoryLookup no_issuers { *crypto };
     CryptoProviderVerifyService verifier { runtime, *crypto, positioning };
     verifier.use_issuer_lookup(&no_issuers);
     const VerifyConfirm confirm = verifier.verify(sign_message(ticket, ticket_key));
@@ -303,7 +303,7 @@ TEST_F(CryptoProviderVerifyServiceTest, cached_ticket_of_untrusted_issuer_is_rej
     ASSERT_EQ(VerificationReport::Success, service->verify(message).report);
 
     // issuer is not trusted anymore, e.g. revoked meanwhile
-    v3::IssuerMemoryLookup no_issuers;
+    v3::IssuerMemoryLookup no_issuers { *crypto };
     CryptoProviderVerifyService verifier { runtime, *crypto, positioning };
     verifier.use_issuer_lookup(&no_issuers);
     verifier.use_certificate_cache(&cache);

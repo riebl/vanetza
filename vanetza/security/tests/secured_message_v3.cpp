@@ -198,7 +198,7 @@ TEST(SecuredMessageV3, verify_rejects_ticket_of_unknown_issuer)
     SignConfirm sign_confirm = sign_service.sign(std::move(request));
     ASSERT_TRUE(sign_confirm.secured_message);
 
-    v3::IssuerMemoryLookup issuers;
+    v3::IssuerMemoryLookup issuers { backend_crypto };
     StraightVerifyService verify_service { runtime, *backend, position_provider };
     verify_service.use_issuer_lookup(&issuers);
     VerifyRequest verify_request { SecuredMessageView { *sign_confirm.secured_message } };

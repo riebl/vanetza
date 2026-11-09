@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 
 namespace vanetza
@@ -7,12 +8,16 @@ namespace security
 namespace v3
 {
 
+IssuerMemoryLookup::IssuerMemoryLookup(CryptoProvider& crypto) : m_crypto(crypto)
+{
+}
+
 bool IssuerMemoryLookup::insert(const Certificate& cert)
 {
     if (!cert.is_ca_certificate()) {
         return false;
     }
-    auto digest = cert.calculate_digest();
+    auto digest = cert.calculate_digest(m_crypto);
     if (!digest) {
         return false;
     }

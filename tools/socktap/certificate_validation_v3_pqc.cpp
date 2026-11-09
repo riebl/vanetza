@@ -1,4 +1,5 @@
 #include "certificate_validation_v3.hpp"
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <vanetza/security/pqc/hybrid_certificate_validator.hpp>
@@ -20,7 +21,10 @@ public:
         const vanetza::Runtime& runtime, vanetza::PositionProvider& positioning,
         const vanetza::security::v3::LocationChecker& location_checker,
         vanetza::security::Backend& ecc_backend) :
-        m_pqc_backend(vanetza::security::pqc::create_fndsa512_backend())
+        m_pqc_backend(vanetza::security::pqc::create_fndsa512_backend()),
+        m_ecc_crypto(ecc_backend),
+        m_issuer_lookup(m_ecc_crypto),
+        m_trust_store(m_ecc_crypto)
     {
         using Policy =
             vanetza::security::pqc::HybridCertificateValidator::VerificationPolicy;
@@ -57,6 +61,7 @@ public:
 
 private:
     std::unique_ptr<vanetza::security::pqc::Backend> m_pqc_backend;
+    vanetza::security::BackendCryptoProvider m_ecc_crypto;
     vanetza::security::v3::IssuerMemoryLookup m_issuer_lookup;
     vanetza::security::v3::TrustStore m_trust_store;
     vanetza::security::pqc::HybridCertificateValidator m_validator;
