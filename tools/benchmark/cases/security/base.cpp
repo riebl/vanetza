@@ -15,7 +15,7 @@ SecurityBaseCase::SecurityBaseCase() :
     certificate_cache(runtime, backend_crypto),
     certificate_provider(runtime),
     certificate_validator(backend_crypto, certificate_cache, trust_store),
-    sign_header_policy(runtime, positioning),
+    sign_header_policy(runtime, backend_crypto, positioning),
     security_entity(create_sign_service(), create_verify_service())
 {
     // nothing to do

@@ -4,6 +4,7 @@
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/credential_provider.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
@@ -58,7 +59,7 @@ protected:
     ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
     std::unique_ptr<SecurityModule> module = create_security_module();
     std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
-    v2::DefaultSignHeaderPolicy policy { runtime, positioning };
+    v2::DefaultSignHeaderPolicy policy { runtime, crypto ? *crypto : NullCryptoProvider::instance(), positioning };
     const v2::Certificate ticket = make_certificate(v2::SubjectType::Authorization_Ticket);
     const v2::Certificate authority = make_certificate(v2::SubjectType::Authorization_Authority);
 };
@@ -84,7 +85,7 @@ TEST_F(SecurityModuleSignServiceTest, message_is_signed_with_credential_key)
     ASSERT_NE(nullptr, signer);
     const v2::Certificate* signer_certificate = boost::get<v2::Certificate>(signer);
     ASSERT_NE(nullptr, signer_certificate);
-    EXPECT_EQ(v2::calculate_hash(ticket), v2::calculate_hash(*signer_certificate));
+    EXPECT_EQ(v2::calculate_hash(*crypto, ticket), v2::calculate_hash(*crypto, *signer_certificate));
     const v2::Signature* signature = boost::get<v2::Signature>(message->trailer_field(v2::TrailerFieldType::Signature));
     ASSERT_NE(nullptr, signature);
     const boost::optional<EcdsaSignature> ecdsa = v2::extract_ecdsa_signature(*signature);

@@ -1,7 +1,9 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/sign_service.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/credential_provider.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
@@ -31,6 +33,9 @@ class SignHeaderPolicyV2Test : public ::testing::Test
 protected:
     void SetUp() override
     {
+        if (!crypto) {
+            GTEST_SKIP() << "no crypto provider built in";
+        }
         // the first CAM carries the full certificate anyway
         next_cam_signer();
     }
@@ -51,7 +56,8 @@ protected:
 
     ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
     StoredPositionProvider positioning;
-    DefaultSignHeaderPolicy policy { runtime, positioning };
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    DefaultSignHeaderPolicy policy { runtime, crypto ? *crypto : NullCryptoProvider::instance(), positioning };
     const Certificate ticket = make_certificate(SubjectType::Authorization_Ticket);
     const Certificate authority = make_certificate(SubjectType::Authorization_Authority);
     const Credential credential { ticket, authority, KeyReference {} };
@@ -59,18 +65,18 @@ protected:
 
 TEST_F(SignHeaderPolicyV2Test, requested_ticket_is_signer_of_next_cam)
 {
-    policy.report_certificate_request(truncate(calculate_hash(ticket)));
+    policy.report_certificate_request(truncate(calculate_hash(*crypto, ticket)));
     EXPECT_EQ(SignerInfoType::Certificate, get_type(next_cam_signer()));
 }
 
 TEST_F(SignHeaderPolicyV2Test, requested_authority_puts_chain_into_next_cam)
 {
-    policy.report_certificate_request(truncate(calculate_hash(authority)));
+    policy.report_certificate_request(truncate(calculate_hash(*crypto, authority)));
     EXPECT_EQ(SignerInfoType::Certificate_Chain, get_type(next_cam_signer()));
 }
 
 TEST_F(SignHeaderPolicyV2Test, request_of_foreign_certificate_is_ignored)
 {
-    policy.report_certificate_request(truncate(calculate_hash(make_certificate(SubjectType::Root_CA))));
+    policy.report_certificate_request(truncate(calculate_hash(*crypto, make_certificate(SubjectType::Root_CA))));
     EXPECT_EQ(SignerInfoType::Certificate_Digest_With_SHA256, get_type(next_cam_signer()));
 }

@@ -17,6 +17,7 @@ namespace security
 {
 
 // forward declarations
+class CryptoProvider;
 struct SignRequest;
 
 namespace v2
@@ -84,7 +85,7 @@ public:
 class DefaultSignHeaderPolicy : public SignHeaderPolicy
 {
 public:
-    DefaultSignHeaderPolicy(const Runtime&, PositionProvider& positioning);
+    DefaultSignHeaderPolicy(const Runtime&, CryptoProvider& crypto, PositionProvider& positioning);
 
     std::list<HeaderField> prepare_header(const SignRequest& request, CertificateProvider& certificate_provider) override;
     std::list<HeaderField> prepare_header(const SignRequest& request, const Credential& credential) override;
@@ -99,6 +100,7 @@ private:
 
     const Runtime& m_runtime;
     PositionProvider& m_positioning;
+    CryptoProvider& m_crypto;
     Clock::time_point m_cam_next_certificate;
     std::set<HashedId3> m_unknown_certificates;
     std::set<HashedId3> m_requested_certificates;

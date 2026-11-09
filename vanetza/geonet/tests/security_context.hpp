@@ -31,7 +31,7 @@ public:
         trust_store(backend_crypto),
         cert_cache(rt, backend_crypto),
         certificate_validator(backend_crypto, cert_cache, trust_store),
-        sign_header_policy(rt, position_provider),
+        sign_header_policy(rt, backend_crypto, position_provider),
         certificate_provider_v3(rt),
         sign_header_policy_v3(rt, position_provider, certificate_provider_v3.cache()),
         security(build_sign_service(), build_verify_service(rt))

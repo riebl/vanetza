@@ -1,5 +1,6 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_provider.hpp>
@@ -14,8 +15,10 @@ namespace security
 namespace v2
 {
 
-DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning) :
-    m_runtime(rt), m_positioning(positioning), m_cam_next_certificate(m_runtime.now()), m_cert_requested(false), m_chain_requested(false)
+DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, CryptoProvider& crypto,
+    PositionProvider& positioning) :
+    m_runtime(rt), m_positioning(positioning), m_crypto(crypto), m_cam_next_certificate(m_runtime.now()),
+    m_cert_requested(false), m_chain_requested(false)
 {
 }
 
@@ -34,11 +37,11 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
 {
     // other stations request the own certificate or a certificate of its chain
     if (!m_requested_certificates.empty()) {
-        if (m_requested_certificates.count(truncate(calculate_hash(certificate)))) {
+        if (m_requested_certificates.count(truncate(calculate_hash(m_crypto, certificate)))) {
             m_cert_requested = true;
         }
         for (const Certificate& issuer : issuers) {
-            if (m_requested_certificates.count(truncate(calculate_hash(issuer)))) {
+            if (m_requested_certificates.count(truncate(calculate_hash(m_crypto, issuer)))) {
                 m_chain_requested = true;
             }
         }
@@ -58,7 +61,7 @@ std::list<HeaderField> DefaultSignHeaderPolicy::prepare_header(const SignRequest
             header_fields.push_back(SignerInfo { std::move(full_chain) });
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);
         } else if (m_runtime.now() < m_cam_next_certificate && !m_cert_requested) {
-            header_fields.push_back(SignerInfo { calculate_hash(certificate) });
+            header_fields.push_back(SignerInfo { calculate_hash(m_crypto, certificate) });
         } else {
             header_fields.push_back(SignerInfo { certificate });
             m_cam_next_certificate = m_runtime.now() + std::chrono::seconds(1);

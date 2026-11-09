@@ -92,7 +92,7 @@ protected:
         trust_store(backend_crypto),
         cert_cache(runtime, backend_crypto),
         certificate_validator(new DefaultCertificateValidator(backend_crypto, cert_cache, trust_store)),
-        sign_header_policy(runtime, position_provider),
+        sign_header_policy(runtime, backend_crypto, position_provider),
         security(create_sign_service(), create_verify_service()),
         its_aid(aid::CA)
     {
@@ -166,7 +166,7 @@ protected:
     {
         // we need to sign with the modified certificate, otherwise validation just fails because of a wrong signature
         StaticCertificateProvider local_cert_provider(modified_certificate, certificate_provider->own_private_key());
-        DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
+        DefaultSignHeaderPolicy sign_header_policy(runtime, backend_crypto, position_provider);
         std::unique_ptr<SignService> local_sign_service { new StraightSignService(local_cert_provider, *crypto_backend, sign_header_policy) };
         DelegatingSecurityEntity local_security(std::move(local_sign_service), create_verify_service());
 
@@ -191,7 +191,7 @@ protected:
 
 TEST_F(SecurityEntityTest, mutual_acceptance)
 {
-    DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
+    DefaultSignHeaderPolicy sign_header_policy(runtime, backend_crypto, position_provider);
     std::unique_ptr<SignService> sign { new StraightSignService(*certificate_provider, *crypto_backend, sign_header_policy) };
     std::unique_ptr<StraightVerifyService> verify { new StraightVerifyService(runtime, *crypto_backend, position_provider) };
     verify->use_certificate_cache(&cert_cache);
@@ -212,7 +212,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
     ASSERT_TRUE(cryptopp_backend);
     ASSERT_TRUE(openssl_backend);
 
-    DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime, position_provider);
+    DefaultSignHeaderPolicy sign_header_policy_cryptopp(runtime, backend_crypto, position_provider);
     std::unique_ptr<StraightVerifyService> cryptopp_verify_service {
         new StraightVerifyService(runtime, *cryptopp_backend, position_provider)
     };
@@ -226,7 +226,7 @@ TEST_F(SecurityEntityTest, mutual_acceptance_impl)
         std::move(cryptopp_verify_service)
     };
 
-    DefaultSignHeaderPolicy sign_header_policy_openssl(runtime, position_provider);
+    DefaultSignHeaderPolicy sign_header_policy_openssl(runtime, backend_crypto, position_provider);
     std::unique_ptr<StraightVerifyService> openssl_verify_service {
         new StraightVerifyService(runtime, *openssl_backend, position_provider)
     };
@@ -937,7 +937,7 @@ TEST_F(SecurityEntityTest, verify_message_with_signer_info_chain)
 
 TEST_F(SecurityEntityTest, verify_message_without_time_and_dummy_certificate_verify)
 {
-    DefaultSignHeaderPolicy sign_header_policy(runtime, position_provider);
+    DefaultSignHeaderPolicy sign_header_policy(runtime, backend_crypto, position_provider);
     std::unique_ptr<SignService> sign { new StraightSignService(*certificate_provider, *crypto_backend, sign_header_policy) };
     NullCertificateValidator validator;
     validator.certificate_check_result(CertificateValidity::valid());
@@ -979,7 +979,7 @@ TEST_F(SecurityEntityTest, verify_message_certificate_requests)
     };
 
     NaiveCertificateProvider other_provider(runtime);
-    DefaultSignHeaderPolicy other_policy(runtime, position_provider);
+    DefaultSignHeaderPolicy other_policy(runtime, backend_crypto, position_provider);
     std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
     std::unique_ptr<VerifyService> verify = create_verify_service(&other_provider, &other_policy);
     DelegatingSecurityEntity other_security(std::move(sign), std::move(verify));
@@ -1018,8 +1018,8 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
     class NoLocationHeaderPolicy : public DefaultSignHeaderPolicy
     {
     public:
-        NoLocationHeaderPolicy(const Runtime& rt, PositionProvider& positioning) :
-            DefaultSignHeaderPolicy(rt, positioning), m_runtime(rt) {}
+        NoLocationHeaderPolicy(const Runtime& rt, CryptoProvider& crypto, PositionProvider& positioning) :
+            DefaultSignHeaderPolicy(rt, crypto, positioning), m_runtime(rt) {}
 
         std::list<HeaderField> prepare_header(const SignRequest& request, v2::CertificateProvider& certificate_provider) override
         {
@@ -1034,7 +1034,7 @@ TEST_F(SecurityEntityTest, verify_denm_without_generation_location)
 
     private:
         const Runtime& m_runtime;
-    } other_policy(runtime, position_provider);
+    } other_policy(runtime, backend_crypto, position_provider);
 
     std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
     std::unique_ptr<VerifyService> verify = create_verify_service(&other_provider, &other_policy);
@@ -1062,7 +1062,7 @@ TEST_F(SecurityEntityTest, verify_message_without_its_aid)
             std::list<HeaderField> header_fields;
             return header_fields;
         }
-    } other_policy(runtime, position_provider);
+    } other_policy(runtime, backend_crypto, position_provider);
 
     std::unique_ptr<SignService> sign { new StraightSignService(other_provider, *crypto_backend, other_policy) };
     std::unique_ptr<VerifyService> verify = create_verify_service(&other_provider, &other_policy);

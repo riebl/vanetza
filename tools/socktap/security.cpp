@@ -33,7 +33,7 @@ public:
         runtime(runtime), positioning(positioning),
         backend(security::create_backend(backend_name)),
         backend_crypto(*backend),
-        sign_header_policy(runtime, positioning),
+        sign_header_policy(runtime, backend_crypto, positioning),
         trust_store(backend_crypto),
         cert_cache(runtime, backend_crypto),
         cert_validator(backend_crypto, cert_cache, trust_store)

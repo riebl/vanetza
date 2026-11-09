@@ -412,7 +412,7 @@ protected:
     std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
     v2::CertificateCache cache { runtime, crypto ? *crypto : NullCryptoProvider::instance() };
     v2::NullCertificateValidator validator;
-    v2::DefaultSignHeaderPolicy policy { runtime, positioning };
+    v2::DefaultSignHeaderPolicy policy { runtime, crypto ? *crypto : NullCryptoProvider::instance(), positioning };
     std::unique_ptr<CryptoProviderVerifyService> service;
     v2::Certificate ticket;
 };
