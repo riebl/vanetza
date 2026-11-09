@@ -32,6 +32,16 @@ HashedId8 create_hashed_id8(const Sha384Digest& digest)
     return hashed;
 }
 
+HashedId8 create_hashed_id8(const Sha256Hash& hash)
+{
+    return create_hashed_id8(hash.octets);
+}
+
+HashedId8 create_hashed_id8(const Sha384Hash& hash)
+{
+    return create_hashed_id8(hash.octets);
+}
+
 std::string to_string(const vanetza::security::HashedId3& digest)
 {
   std::stringstream ss;

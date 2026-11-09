@@ -19,6 +19,8 @@ HashedId3 truncate(const HashedId8&);
 
 HashedId8 create_hashed_id8(const Sha256Digest&);
 HashedId8 create_hashed_id8(const Sha384Digest&);
+HashedId8 create_hashed_id8(const Sha256Hash&);
+HashedId8 create_hashed_id8(const Sha384Hash&);
 
 std::string to_string(const vanetza::security::HashedId3&);
 std::string to_string(const vanetza::security::HashedId8&);
