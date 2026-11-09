@@ -10,12 +10,18 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v2
 {
 
 class TrustStore
 {
 public:
+    explicit TrustStore(CryptoProvider& crypto);
+
     /**
      * Lookup certificates based on the passed HashedId8.
      *
@@ -31,6 +37,7 @@ public:
     void insert(const Certificate& trusted_certificate);
 
 private:
+    CryptoProvider& m_crypto;
     std::multimap<HashedId8, Certificate> m_certificates;
 };
 

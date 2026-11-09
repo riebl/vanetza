@@ -89,6 +89,7 @@ protected:
         crypto_backend(create_backend("default")),
         backend_crypto(*crypto_backend),
         certificate_provider(new NaiveCertificateProvider(runtime)),
+        trust_store(backend_crypto),
         cert_cache(runtime, backend_crypto),
         certificate_validator(new DefaultCertificateValidator(backend_crypto, cert_cache, trust_store)),
         sign_header_policy(runtime, position_provider),

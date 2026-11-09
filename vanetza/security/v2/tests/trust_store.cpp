@@ -1,14 +1,21 @@
 #include <gtest/gtest.h>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/security/tests/serialization.hpp>
 
 using namespace vanetza::security::v2;
+using vanetza::security::create_crypto_provider;
+using vanetza::security::CryptoProvider;
 using vanetza::security::HashedId8;
 using vanetza::security::deserialize_from_hexstring;
 
 TEST(TrustStoreTest, lookup)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     const char cert_hex[] =
             "0200040C547275737465645F526F6F74808D000004F1817DD05116B855A853F80DB171A3A470D431"
             "70EA7EEFD8EF392D66ECEFBE501CEBA19963C9B6447574424FFF1BB89485743F4D09A72B715FC73C"
@@ -18,10 +25,10 @@ TEST(TrustStoreTest, lookup)
             "856FC6E26A493E1215BCEE8BEA18B8ED52FB240716C4D4EC7D7C0167F0F032CBB87DF611D9";
     Certificate c;
     deserialize_from_hexstring(cert_hex, c);
-    const HashedId8 cert_id = calculate_hash(c);
+    const HashedId8 cert_id = calculate_hash(*crypto, c);
     const HashedId8 zero_id {{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }};
 
-    TrustStore trust_store;
+    TrustStore trust_store { *crypto };
     EXPECT_EQ(0, trust_store.lookup(cert_id).size());
     trust_store.insert(c);
     EXPECT_EQ(0, trust_store.lookup(zero_id).size());

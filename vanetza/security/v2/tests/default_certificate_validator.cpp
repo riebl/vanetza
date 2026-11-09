@@ -20,6 +20,7 @@ public:
         runtime(Clock::at("2016-08-01 00:00")),
         crypto(create_crypto_provider()),
         cert_provider(runtime),
+        trust_store(crypto ? *crypto : NullCryptoProvider::instance()),
         cert_cache(runtime, crypto ? *crypto : NullCryptoProvider::instance()),
         cert_validator(crypto ? *crypto : NullCryptoProvider::instance(), cert_cache, trust_store)
     {

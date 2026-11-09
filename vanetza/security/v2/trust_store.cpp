@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
 #include <stdexcept>
 
@@ -8,13 +9,17 @@ namespace security
 namespace v2
 {
 
+TrustStore::TrustStore(CryptoProvider& crypto) : m_crypto(crypto)
+{
+}
+
 void TrustStore::insert(const Certificate& certificate)
 {
     if (certificate.subject_info.subject_type != SubjectType::Root_CA) {
         throw std::runtime_error("Only root certificate authorities may be added to the trust store");
     }
 
-    HashedId8 id = calculate_hash(certificate);
+    HashedId8 id = calculate_hash(m_crypto, certificate);
     m_certificates.insert(std::make_pair(id, certificate));
 }
 

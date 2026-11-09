@@ -11,6 +11,7 @@ SecurityBaseCase::SecurityBaseCase() :
     runtime(Clock::at(boost::posix_time::microsec_clock::universal_time())),
     crypto_backend(create_backend("default")),
     backend_crypto(*crypto_backend),
+    trust_store(backend_crypto),
     certificate_cache(runtime, backend_crypto),
     certificate_provider(runtime),
     certificate_validator(backend_crypto, certificate_cache, trust_store),
