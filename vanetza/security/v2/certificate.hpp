@@ -21,6 +21,10 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v2
 {
 
@@ -167,6 +171,15 @@ boost::optional<security::PublicKey> get_verification_key(const Certificate& cer
 
 /**
  * Calculate hash id of certificate
+ * \param crypto provider calculating the SHA-256 hash
+ * \param cert Certificate
+ * \return hash
+ */
+HashedId8 calculate_hash(CryptoProvider& crypto, const Certificate& cert);
+
+/**
+ * Calculate hash id of certificate
+ * \deprecated use calculate_hash(CryptoProvider&, const Certificate&)
  * \param cert Certificate
  * \return hash
  */

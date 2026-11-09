@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/tests/check_certificate.hpp>
 #include <vanetza/security/tests/serialization.hpp>
@@ -7,6 +8,18 @@
 using namespace vanetza::security::v2;
 using vanetza::security::deserialize_from_hexstring;
 namespace sec = vanetza::security;
+
+namespace
+{
+
+const char web_validator_ticket[] =
+    "02015388DEC640C6E19E010052000004B27D4D442F58E065F8D500478929BC843940F3C34D46C547"
+    "5803C03594E35BD7E0132FD01634E86D4F50F7F2366988E12525232D00D03E98FC21CA8E5D0AF370"
+    "02E0210B24030100002504010000000B0114E9DB83154CBC0203000000553C8D2B8A4E53F3D84A88"
+    "37BEEBE83D5C7F68484AC5EFCEEFCC7B0BC5E9531754AAF58BF90790A10F2FD11796A85E13DFFAAC"
+    "6073D2068465DA733994CD0C71";
+
+} // namespace
 
 TEST(Certificate, WebValidator_RootCA_v2)
 {
@@ -55,14 +68,8 @@ TEST(Certificate, WebValidator_AuthorizationAuthority2_v2)
 
 TEST(Certificate, WebValidator_AuthorizationTicket1_v2)
 {
-    const char str[] =
-        "02015388DEC640C6E19E010052000004B27D4D442F58E065F8D500478929BC843940F3C34D46C547"
-        "5803C03594E35BD7E0132FD01634E86D4F50F7F2366988E12525232D00D03E98FC21CA8E5D0AF370"
-        "02E0210B24030100002504010000000B0114E9DB83154CBC0203000000553C8D2B8A4E53F3D84A88"
-        "37BEEBE83D5C7F68484AC5EFCEEFCC7B0BC5E9531754AAF58BF90790A10F2FD11796A85E13DFFAAC"
-        "6073D2068465DA733994CD0C71";
     Certificate c;
-    deserialize_from_hexstring(str, c);
+    deserialize_from_hexstring(web_validator_ticket, c);
     check(c, serialize_roundtrip(c));
 }
 
@@ -147,4 +154,19 @@ TEST(Certificate, verification_key_keeps_uncompressed_point)
 TEST(Certificate, x_coordinate_only_is_no_verification_key)
 {
     EXPECT_FALSE(get_verification_key(make_certificate(sec::X_Coordinate_Only { vanetza::ByteBuffer(32, 0x11) })));
+}
+
+TEST(Certificate, hash_is_digest_of_canonical_encoding)
+{
+    std::unique_ptr<sec::CryptoProvider> crypto = sec::create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    // ticket's signature has an x-only R, i.e. its encoding is canonical already
+    Certificate ticket;
+    deserialize_from_hexstring(web_validator_ticket, ticket);
+
+    // low-order octets of SHA-256 over the encoding (TS 103 097 v1.2.1 clause 4.2.12)
+    const sec::HashedId8 expected { 0x10, 0x46, 0xef, 0x6d, 0x06, 0xf9, 0x4a, 0x01 };
+    EXPECT_EQ(expected, calculate_hash(*crypto, ticket));
 }

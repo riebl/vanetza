@@ -21,6 +21,10 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v3
 {
 
@@ -40,6 +44,14 @@ public:
 
     /**
      * Calculate digest of certificate
+     * \param crypto provider calculating the hash
+     * \return digest if possible
+     */
+    boost::optional<HashedId8> calculate_digest(CryptoProvider& crypto) const;
+
+    /**
+     * Calculate digest of certificate
+     * \deprecated use calculate_digest(CryptoProvider&)
      * \return digest if possible
      */
     boost::optional<HashedId8> calculate_digest() const;
@@ -203,6 +215,15 @@ struct Certificate : public asn1::asn1c_oer_wrapper<asn1::EtsiTs103097Certificat
 
 /**
  * Calculate digest of v3 certificate
+ * \param crypto provider calculating the hash
+ * \param cert certificate
+ * \return digest if possible
+ */
+boost::optional<HashedId8> calculate_digest(CryptoProvider& crypto, const asn1::EtsiTs103097Certificate& cert);
+
+/**
+ * Calculate digest of v3 certificate
+ * \deprecated use calculate_digest(CryptoProvider&, const asn1::EtsiTs103097Certificate&)
  * \param cert certificate
  * \return digest if possible
  */

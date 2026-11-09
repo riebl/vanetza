@@ -1,5 +1,6 @@
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/common/serialization_buffer.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/exception.hpp>
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/v2/certificate.hpp>
@@ -182,7 +183,11 @@ ByteBuffer get_app_permissions(const Certificate& cert, ItsAid aid)
     return perms;
 }
 
-HashedId8 calculate_hash(const Certificate& cert)
+namespace
+{
+
+// canonical encoding of certificate for its hash
+ByteBuffer canonical_encoding(const Certificate& cert)
 {
     Certificate canonical_cert = cert;
 
@@ -221,7 +226,20 @@ HashedId8 calculate_hash(const Certificate& cert)
 
     ByteBuffer bytes;
     serialize_into_buffer(canonical_cert, bytes);
+    return bytes;
+}
 
+} // namespace
+
+HashedId8 calculate_hash(CryptoProvider& crypto, const Certificate& cert)
+{
+    const ByteBuffer bytes = canonical_encoding(cert);
+    return create_hashed_id8(crypto.calculate_sha256_hash(bytes.data(), bytes.size()));
+}
+
+HashedId8 calculate_hash(const Certificate& cert)
+{
+    const ByteBuffer bytes = canonical_encoding(cert);
     HashedId8 id;
     Sha256Digest digest = calculate_sha256_digest(bytes.data(), bytes.size());
     assert(digest.size() >= id.size());

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
-#include <vanetza/security/sha.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -41,6 +41,10 @@ TEST(CertificateV3, cache)
 
 TEST(CertificateV3, implicit_certificate_digest)
 {
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
     v3::Certificate cert = fake_implicit_certificate();
     ASSERT_TRUE(v3::is_canonical(*cert));
 
@@ -51,8 +55,8 @@ TEST(CertificateV3, implicit_certificate_digest)
 
     // IEEE 1609.2 clause 5.3.2: SHA-256 over the canonical encoding
     const ByteBuffer encoded = cert.encode();
-    const HashedId8 expected = create_hashed_id8(calculate_sha256_digest(encoded.data(), encoded.size()));
-    auto digest = cert.calculate_digest();
+    const HashedId8 expected = create_hashed_id8(crypto->calculate_sha256_hash(encoded.data(), encoded.size()));
+    auto digest = cert.calculate_digest(*crypto);
     ASSERT_TRUE(digest);
     EXPECT_EQ(expected, *digest);
 }

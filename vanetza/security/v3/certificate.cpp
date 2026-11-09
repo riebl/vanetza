@@ -1,5 +1,7 @@
+#include "vanetza/asn1/asn1c_error.hpp"
 #include <vanetza/asn1/security_profile.hpp>
 #include VANETZA_ASN1_SECURITY_HEADER(Certificate.h)
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/hash_algorithm.hpp>
 #include <vanetza/security/sha.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
@@ -91,6 +93,11 @@ Certificate& Certificate::operator=(Certificate&& other) noexcept
     CertificateView::m_cert = content();
     assert(CertificateView::m_cert == Wrapper::m_struct);
     return *this;
+}
+
+boost::optional<HashedId8> CertificateView::calculate_digest(CryptoProvider& crypto) const
+{
+    return m_cert ? v3::calculate_digest(crypto, *m_cert) : boost::none;
 }
 
 boost::optional<HashedId8> CertificateView::calculate_digest() const
@@ -422,46 +429,68 @@ boost::optional<Certificate> canonicalize(const asn1::EtsiTs103097Certificate& c
     }
 }
 
-boost::optional<HashedId8> calculate_digest_internal(const asn1::EtsiTs103097Certificate& cert, HashAlgorithm hash_algo)
+// OER encoding of a certificate, none if it cannot be encoded
+boost::optional<ByteBuffer> encode_for_digest(const asn1::EtsiTs103097Certificate& cert)
 {
-    boost::optional<HashedId8> digest;
-
-    try {
-        ByteBuffer buffer = asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert);
-
-        switch (hash_algo)
-        {
-            case HashAlgorithm::SHA256:
-                digest = create_hashed_id8(calculate_sha256_digest(buffer.data(), buffer.size()));
-                break;
-            case HashAlgorithm::SHA384:
-                digest = create_hashed_id8(calculate_sha384_digest(buffer.data(), buffer.size()));
-                break;
-            default:
-                break;
-        }
-    } catch (const std::exception&) {
+    asn1::asn1c_error error;
+    auto encoded = asn1::encode_oer(asn_DEF_Vanetza_Security_EtsiTs103097Certificate, &cert, error);
+    if (!error) {
+        return encoded;
+    } else {
         // cannot calculate digest of non-encodable certificate
+        return boost::none;
+    }
+}
+
+// encoding of a certificate's canonical form for its digest, none if it cannot be encoded
+boost::optional<ByteBuffer> encode_canonical(const asn1::EtsiTs103097Certificate& cert)
+{
+    if (is_canonical(cert)) {
+        return encode_for_digest(cert);
+    }
+    auto maybe_canonical_cert = canonicalize(cert);
+    if (maybe_canonical_cert) {
+        return encode_for_digest(*maybe_canonical_cert.value());
+    }
+    return boost::none;
+}
+
+boost::optional<HashedId8> calculate_digest(CryptoProvider& crypto, const asn1::EtsiTs103097Certificate& cert)
+{
+    const HashAlgorithm hash_algo = digest_hash_algorithm(cert);
+    const boost::optional<ByteBuffer> encoded =
+        hash_algo != HashAlgorithm::Unspecified ? encode_canonical(cert) : boost::none;
+    if (!encoded) {
+        return boost::none;
     }
 
-    return digest;
+    switch (hash_algo) {
+        case HashAlgorithm::SHA256:
+            return create_hashed_id8(crypto.calculate_sha256_hash(encoded->data(), encoded->size()));
+        case HashAlgorithm::SHA384:
+            return create_hashed_id8(crypto.calculate_sha384_hash(encoded->data(), encoded->size()));
+        default:
+            return boost::none;
+    }
 }
 
 boost::optional<HashedId8> calculate_digest(const asn1::EtsiTs103097Certificate& cert)
 {
-    boost::optional<HashedId8> digest;
     const HashAlgorithm hash_algo = digest_hash_algorithm(cert);
-    if (hash_algo != HashAlgorithm::Unspecified) {
-        if (is_canonical(cert)) {
-            digest = calculate_digest_internal(cert, hash_algo);
-        } else {
-            auto maybe_canonical_cert = canonicalize(cert);
-            if (maybe_canonical_cert) {
-                digest = calculate_digest_internal(*maybe_canonical_cert.value(), hash_algo);
-            }
-        }
+    const boost::optional<ByteBuffer> encoded =
+        hash_algo != HashAlgorithm::Unspecified ? encode_canonical(cert) : boost::none;
+    if (!encoded) {
+        return boost::none;
     }
-    return digest;
+
+    switch (hash_algo) {
+        case HashAlgorithm::SHA256:
+            return create_hashed_id8(calculate_sha256_digest(encoded->data(), encoded->size()));
+        case HashAlgorithm::SHA384:
+            return create_hashed_id8(calculate_sha384_digest(encoded->data(), encoded->size()));
+        default:
+            return boost::none;
+    }
 }
 
 KeyType get_verification_key_type(const asn1::EtsiTs103097Certificate& cert)
