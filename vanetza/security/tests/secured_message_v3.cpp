@@ -232,3 +232,18 @@ TEST(SecuredMessageV3, certificate_id_is_given_digest)
 
     EXPECT_EQ(digest, message.certificate_id(NullCryptoProvider::instance()));
 }
+
+TEST(SecuredMessageV3, psk_recipient_id_is_digest_of_encoded_key)
+{
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    // AES-128 example key of FIPS 197 (Appendix A.1)
+    const Aes128Key key {{
+        0x2B, 0x7E, 0x15, 0x16, 0x28, 0xAE, 0xD2, 0xA6, 0xAB, 0xF7, 0x15, 0x88, 0x09, 0xCF, 0x4F, 0x3C
+    }};
+    // low-order octets of SHA-256 over the key's COER encoding as SymmetricEncryptionKey, i.e. 0x80 || key
+    const HashedId8 expected { 0x56, 0x44, 0x80, 0xde, 0x22, 0xaf, 0xf3, 0x63 };
+    EXPECT_EQ(expected, v3::psk_recipient_id(*crypto, key));
+}

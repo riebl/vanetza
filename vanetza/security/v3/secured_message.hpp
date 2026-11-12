@@ -24,6 +24,10 @@ namespace vanetza
 {
 namespace security
 {
+
+// forward declaration
+struct Aes128Key;
+
 namespace v3
 {
 
@@ -140,6 +144,14 @@ boost::optional<HashedId8> get_certificate_id(CryptoProvider& crypto,
  * \deprecated use get_certificate_id(CryptoProvider&, const SecuredMessage::SignerIdentifier&)
  */
 boost::optional<HashedId8> get_certificate_id(const SecuredMessage::SignerIdentifier&);
+
+/**
+ * Calculate identifier of a pre-shared key, e.g. referenced by a PreSharedKeyRecipientInfo (IEEE 1609.2)
+ * \param crypto provider calculating the SHA-256 hash
+ * \param key pre-shared AES-128 key
+ * \return HashedId8 of the key's COER encoding as SymmetricEncryptionKey
+ */
+HashedId8 psk_recipient_id(CryptoProvider& crypto, const Aes128Key& key);
 
 /**
  * Check if signer identifier contains a full certificate

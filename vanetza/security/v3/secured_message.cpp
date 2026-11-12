@@ -6,6 +6,7 @@
 #include <vanetza/common/byte_buffer_sink.hpp>
 #include <vanetza/net/packet.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
 
@@ -25,6 +26,19 @@ namespace v3
 
 namespace
 {
+
+// COER encoding of a pre-shared AES-128 key as SymmetricEncryptionKey (IEEE 1609.2 PreSharedKeyRecipientInfo)
+ByteBuffer encode_symmetric_key(const std::uint8_t* key, std::size_t length)
+{
+    asn1::asn1c_oer_wrapper<asn1::SymmetricEncryptionKey> psk_key(asn_DEF_Vanetza_Security_SymmetricEncryptionKey);
+    asn1::SymmetricEncryptionKey* psk_key_ptr = &(*psk_key);
+    CHOICE_variant_set_presence(
+        &asn_DEF_Vanetza_Security_SymmetricEncryptionKey,
+        psk_key_ptr,
+        Vanetza_Security_SymmetricEncryptionKey_PR_aes128Ccm);
+    OCTET_STRING_fromBuf(&psk_key_ptr->choice.aes128Ccm, reinterpret_cast<const char*>(key), length);
+    return psk_key.encode();
+}
 
 const asn1::SignedData* get_signed_data(const asn1::EtsiTs103097Data* data)
 {
@@ -506,15 +520,7 @@ bool SecuredMessage::check_psk_match(const std::array<uint8_t, 16>& psk) const
     assert(m_struct->content->present == Vanetza_Security_Ieee1609Dot2Content_PR_encryptedData);
 
     // Wrap the given PSK into a PSKRecipientInfo_t to calculate the HashedId8
-    asn1::asn1c_oer_wrapper<asn1::SymmetricEncryptionKey> psk_key(asn_DEF_Vanetza_Security_SymmetricEncryptionKey);
-    asn1::SymmetricEncryptionKey *psk_key_ptr = &(*psk_key);
-    CHOICE_variant_set_presence(
-        &asn_DEF_Vanetza_Security_SymmetricEncryptionKey,
-        psk_key_ptr,
-        Vanetza_Security_SymmetricEncryptionKey_PR_aes128Ccm);
-    OCTET_STRING_fromBuf(&psk_key_ptr->choice.aes128Ccm, reinterpret_cast<const char *>(psk.data()), psk.size());
-
-    ByteBuffer bytes = psk_key.encode();
+    ByteBuffer bytes = encode_symmetric_key(psk.data(), psk.size());
     Sha256Digest psk_digest = calculate_sha256_digest(bytes.data(), bytes.size());
     HashedId8 psk_id = create_hashed_id8(psk_digest);
 
@@ -781,6 +787,12 @@ const asn1::Certificate* get_certificate(const SecuredMessage::SignerIdentifier&
         }
     };
     return boost::apply_visitor(visitor(), identifier);
+}
+
+HashedId8 psk_recipient_id(CryptoProvider& crypto, const Aes128Key& key)
+{
+    const ByteBuffer bytes = encode_symmetric_key(key.octets.data(), key.octets.size());
+    return create_hashed_id8(crypto.calculate_sha256_hash(bytes.data(), bytes.size()));
 }
 
 } // namespace v3
