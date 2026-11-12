@@ -312,8 +312,8 @@ TEST_F(DefaultCertificateValidatorTest, crl_at_revoked_by_aa)
     RevocationMemoryLookup revocation_lookup;
     cert_validator.use_revocation_lookup(&revocation_lookup);
 
-    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
-    auto at_digest = cert.calculate_digest();
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest(backend_crypto);
+    auto at_digest = cert.calculate_digest(backend_crypto);
     ASSERT_TRUE(aa_digest);
     ASSERT_TRUE(at_digest);
     revocation_lookup.revoke(*aa_digest, *at_digest);
@@ -332,8 +332,8 @@ TEST_F(DefaultCertificateValidatorTest, crl_aa_revoked_by_root)
     RevocationMemoryLookup revocation_lookup;
     cert_validator.use_revocation_lookup(&revocation_lookup);
 
-    auto root_digest = cert_provider.root_certificate().calculate_digest();
-    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
+    auto root_digest = cert_provider.root_certificate().calculate_digest(backend_crypto);
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest(backend_crypto);
     ASSERT_TRUE(root_digest);
     ASSERT_TRUE(aa_digest);
     revocation_lookup.revoke(*root_digest, *aa_digest);
@@ -366,8 +366,8 @@ TEST_F(DefaultCertificateValidatorTest, crl_expiry_reported_before_revocation)
     RevocationMemoryLookup revocation_lookup;
     cert_validator.use_revocation_lookup(&revocation_lookup);
 
-    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
-    auto at_digest = cert.calculate_digest();
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest(backend_crypto);
+    auto at_digest = cert.calculate_digest(backend_crypto);
     ASSERT_TRUE(aa_digest);
     ASSERT_TRUE(at_digest);
     revocation_lookup.revoke(*aa_digest, *at_digest);
@@ -455,8 +455,8 @@ TEST_F(DefaultCertificateValidatorTest, untrusted_reported_before_revocation)
 
     RevocationMemoryLookup revocation_lookup;
     cert_validator.use_revocation_lookup(&revocation_lookup);
-    auto aa_digest = cert_provider.aa_certificate().calculate_digest();
-    auto at_digest = cert.calculate_digest();
+    auto aa_digest = cert_provider.aa_certificate().calculate_digest(backend_crypto);
+    auto at_digest = cert.calculate_digest(backend_crypto);
     ASSERT_TRUE(aa_digest);
     ASSERT_TRUE(at_digest);
     revocation_lookup.revoke(*aa_digest, *at_digest);
@@ -497,7 +497,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_accepts_permission_issued_by
     subject_permissions.present = Vanetza_Security_SubjectPermissions_PR_all;
     subject_permissions.choice.all = 0;
 
-    auto aa_digest = aa.calculate_digest();
+    auto aa_digest = aa.calculate_digest(backend_crypto);
     ASSERT_TRUE(aa_digest);
 
     IssuerMemoryLookup local_issuer_lookup { backend_crypto };
@@ -549,7 +549,7 @@ TEST_F(DefaultCertificateValidatorTest, consistency_rejects_subject_region_outsi
     aa->toBeSigned.region->choice.circularRegion.center.longitude = 84044170;
     aa->toBeSigned.region->choice.circularRegion.radius = 500;
 
-    auto aa_digest = aa.calculate_digest();
+    auto aa_digest = aa.calculate_digest(backend_crypto);
     ASSERT_TRUE(aa_digest);
 
     IssuerMemoryLookup local_issuer_lookup { backend_crypto };

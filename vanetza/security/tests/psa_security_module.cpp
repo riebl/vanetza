@@ -50,8 +50,9 @@ TEST_F(PsaSecurityModuleTest, key_reference_is_key_id_derived_from_public_key)
     // 30 bits of SHA-256 over the canonical hex string of the public key, i.e. a key identifier of the user range
     const std::string name = canonical_hexstring(public_key);
     const auto* octets = reinterpret_cast<const std::uint8_t*>(name.data());
-    const Sha256Digest digest = calculate_sha256_digest(octets, name.size());
-    ByteBuffer expected_reference(digest.begin(), digest.begin() + 4);
+    PsaCryptoProvider crypto;
+    const Sha256Hash digest = crypto.calculate_sha256_hash(octets, name.size());
+    ByteBuffer expected_reference(digest.octets.begin(), digest.octets.begin() + 4);
     expected_reference.front() &= 0x3F;
     EXPECT_EQ(expected_reference, key_pair.reference().data);
 }
