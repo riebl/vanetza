@@ -50,7 +50,7 @@ void set_verification_key(Certificate& certificate, const ecdsa256::PublicKey& k
         reinterpret_cast<const char*>(key.y.data()), key.y.size());
 }
 
-void set_issuer(Certificate& certificate, const Certificate* issuer)
+void set_issuer(CryptoProvider& crypto, Certificate& certificate, const Certificate* issuer)
 {
     if (!issuer) {
         certificate->issuer.present = Vanetza_Security_IssuerIdentifier_PR_self;
@@ -58,7 +58,7 @@ void set_issuer(Certificate& certificate, const Certificate* issuer)
         return;
     }
 
-    const auto digest = issuer->calculate_digest();
+    const auto digest = issuer->calculate_digest(crypto);
     if (!digest) {
         throw std::runtime_error("issuer certificate has no digest");
     }
@@ -77,12 +77,12 @@ void add_all_issue_permissions(Certificate& certificate)
 }
 
 Certificate make_certificate(
-    const ecdsa256::PublicKey& subject_key, const Certificate* issuer, bool authority)
+    CryptoProvider& crypto, const ecdsa256::PublicKey& subject_key, const Certificate* issuer, bool authority)
 {
     Certificate certificate;
     certificate->version = 3;
     certificate->type = Vanetza_Security_CertificateType_explicit;
-    set_issuer(certificate, issuer);
+    set_issuer(crypto, certificate, issuer);
 
     if (authority) {
         static const char name[] = "Hybrid test CA";
@@ -146,7 +146,7 @@ struct Chain
         root_pqc_pair(pqc_backend->generate_key_pair()),
         aa_pqc_pair(pqc_backend->generate_key_pair())
     {
-        root = make_certificate(root_ecc_pair.public_key, nullptr, true);
+        root = make_certificate(ecc_crypto, root_ecc_pair.public_key, nullptr, true);
         if (hybrid_material) {
             pqc::set_alternative_public_key(root, root_pqc_pair.public_key);
             sign_hybrid(root, nullptr, *ecc_backend, *pqc_backend, root_ecc_key, root_pqc_pair.private_key);
@@ -154,7 +154,7 @@ struct Chain
             pqc::sign_primary_certificate(root, nullptr, *ecc_backend, root_ecc_key);
         }
 
-        aa = make_certificate(aa_ecc_pair.public_key, &root, true);
+        aa = make_certificate(ecc_crypto, aa_ecc_pair.public_key, &root, true);
         if (hybrid_material) {
             pqc::set_alternative_public_key(aa, aa_pqc_pair.public_key);
             sign_hybrid(aa, &root, *ecc_backend, *pqc_backend, root_ecc_key, root_pqc_pair.private_key);
@@ -162,7 +162,7 @@ struct Chain
             pqc::sign_primary_certificate(aa, &root, *ecc_backend, root_ecc_key);
         }
 
-        at = make_certificate(at_ecc_pair.public_key, &aa, false);
+        at = make_certificate(ecc_crypto, at_ecc_pair.public_key, &aa, false);
         if (hybrid_material) {
             sign_hybrid(at, &aa, *ecc_backend, *pqc_backend, aa_ecc_key, aa_pqc_pair.private_key);
         } else {
@@ -299,7 +299,7 @@ TEST(HybridCertificate, primary_signature_by_unusable_issuer_key_is_rejected)
     set_verification_key(issuer, off_curve);
     // ticket names the modified issuer, its signature is irrelevant as verification fails with an error
     Certificate ticket = chain.at;
-    set_issuer(ticket, &issuer);
+    set_issuer(*crypto, ticket, &issuer);
     EXPECT_FALSE(pqc::verify_primary_certificate(ticket, &issuer, *crypto));
 }
 
@@ -370,7 +370,7 @@ TEST(HybridCertificate, validator_verifies_authority_certificates_in_the_chain)
     encoded_s.buf[0] ^= 0x01;
 
     // Reissue the AT for the modified AA so leaf verification still succeeds.
-    chain.at = make_certificate(chain.at_ecc_pair.public_key, &chain.aa, false);
+    chain.at = make_certificate(chain.ecc_crypto, chain.at_ecc_pair.public_key, &chain.aa, false);
     sign_hybrid(
         chain.at, &chain.aa, *chain.ecc_backend, *chain.pqc_backend,
         chain.aa_ecc_key, chain.aa_pqc_pair.private_key);
@@ -401,7 +401,7 @@ TEST(HybridCertificate, hybrid_policy_rejects_incomplete_authority_material)
     pqc::sign_primary_certificate(
         chain.aa, &chain.root, *chain.ecc_backend, chain.root_ecc_key);
 
-    chain.at = make_certificate(chain.at_ecc_pair.public_key, &chain.aa, false);
+    chain.at = make_certificate(chain.ecc_crypto, chain.at_ecc_pair.public_key, &chain.aa, false);
     sign_hybrid(
         chain.at, &chain.aa, *chain.ecc_backend, *chain.pqc_backend,
         chain.aa_ecc_key, chain.aa_pqc_pair.private_key);

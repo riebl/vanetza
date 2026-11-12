@@ -120,7 +120,7 @@ bool HybridCertificateValidator::chain_is_authentic(
 
     for (int depth = 0; depth < maximum_chain_depth; ++depth) {
         if (subject->issuer_is_self()) {
-            const auto root_digest = subject->calculate_digest();
+            const auto root_digest = subject->calculate_digest(m_crypto);
             if (!root_digest || m_trust_store->lookup(*root_digest).empty()) {
                 return false;
             }
@@ -136,7 +136,7 @@ bool HybridCertificateValidator::chain_is_authentic(
         if (!issuer) {
             return false;
         }
-        const auto actual_issuer_digest = issuer->calculate_digest();
+        const auto actual_issuer_digest = issuer->calculate_digest(m_crypto);
         if (!actual_issuer_digest || *actual_issuer_digest != *expected_issuer_digest) {
             return false;
         }

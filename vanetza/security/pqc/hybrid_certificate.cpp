@@ -166,7 +166,7 @@ ByteBuffer canonical_tbs(const CertificateView& subject, SignatureLayer layer)
         asn_DEF_Vanetza_Security_ToBeSignedCertificate, &canonical->content()->toBeSigned);
 }
 
-ByteBuffer canonical_issuer(const CertificateView& subject, const CertificateView* issuer)
+ByteBuffer canonical_issuer(CryptoProvider& crypto, const CertificateView& subject, const CertificateView* issuer)
 {
     if (subject.issuer_is_self()) {
         return {};
@@ -176,7 +176,7 @@ ByteBuffer canonical_issuer(const CertificateView& subject, const CertificateVie
     }
 
     const auto expected_digest = subject.issuer_digest();
-    const auto actual_digest = issuer->calculate_digest();
+    const auto actual_digest = issuer->calculate_digest(crypto);
     if (!expected_digest || !actual_digest || *expected_digest != *actual_digest) {
         throw std::invalid_argument("issuer certificate does not match the subject issuer identifier");
     }
@@ -286,7 +286,7 @@ ByteBuffer calculate_certificate_hash(
     }
 
     const ByteBuffer data_input = canonical_tbs(subject, layer);
-    const ByteBuffer signer_input = canonical_issuer(subject, issuer);
+    const ByteBuffer signer_input = canonical_issuer(crypto, subject, issuer);
     const ByteBuffer data_hash = calculate_hash(crypto, algorithm, data_input);
     const ByteBuffer signer_hash = calculate_hash(crypto, algorithm, signer_input);
 

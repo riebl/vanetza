@@ -3,6 +3,7 @@
 #include VANETZA_ASN1_SECURITY_HEADER(Certificate.h)
 #include VANETZA_ASN1_SECURITY_HEADER(PsidGroupPermissions.h)
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/pqc/hybrid_certificate.hpp>
 #include <vanetza/security/private_key.hpp>
@@ -63,7 +64,7 @@ void set_encryption_key(v3::Certificate& certificate, const ecdsa256::PublicKey&
         v3::to_asn1(compress_public_key(public_key));
 }
 
-void set_issuer(v3::Certificate& certificate, const v3::Certificate* issuer)
+void set_issuer(CryptoProvider& crypto, v3::Certificate& certificate, const v3::Certificate* issuer)
 {
     if (!issuer) {
         certificate->issuer.present = Vanetza_Security_IssuerIdentifier_PR_self;
@@ -71,7 +72,7 @@ void set_issuer(v3::Certificate& certificate, const v3::Certificate* issuer)
         return;
     }
 
-    const auto digest = issuer->calculate_digest();
+    const auto digest = issuer->calculate_digest(crypto);
     if (!digest) {
         throw std::invalid_argument("issuer certificate has no canonical digest");
     }
@@ -106,12 +107,13 @@ void set_validity(
 }
 
 void initialize_certificate(
-    v3::Certificate& certificate, const ecdsa256::PublicKey& subject_key,
+    ::vanetza::security::Backend& ecc_backend, v3::Certificate& certificate, const ecdsa256::PublicKey& subject_key,
     const v3::Certificate* issuer, int validity_days, Clock::time_point now)
 {
     certificate->version = 3;
     certificate->type = Vanetza_Security_CertificateType_explicit;
-    set_issuer(certificate, issuer);
+    BackendCryptoProvider crypto { ecc_backend };
+    set_issuer(crypto, certificate, issuer);
 
     static const std::array<char, 3> craca_id {{ 0, 0, 0 }};
     assign_octets(certificate->toBeSigned.cracaId, craca_id.data(), craca_id.size());
@@ -218,7 +220,7 @@ v3::Certificate build_ecc_root_certificate(
 {
     v3::Certificate certificate;
     initialize_certificate(
-        certificate, subject_key.public_key, nullptr, parameters.validity_days, now);
+        ecc_backend, certificate, subject_key.public_key, nullptr, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     certificate.add_app_permission(aid::CRL, ByteBuffer { 1 });
@@ -236,7 +238,7 @@ v3::Certificate build_hybrid_root_certificate(
 {
     v3::Certificate certificate;
     initialize_certificate(
-        certificate, subject_key.public_key, nullptr, parameters.validity_days, now);
+        ecc_backend, certificate, subject_key.public_key, nullptr, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     certificate.add_app_permission(aid::CRL, ByteBuffer { 1 });
@@ -258,7 +260,7 @@ v3::Certificate build_ecc_authorization_authority_certificate(
 {
     v3::Certificate certificate;
     initialize_certificate(
-        certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     set_encryption_key(certificate, subject_key);
@@ -278,7 +280,7 @@ v3::Certificate build_hybrid_authorization_authority_certificate(
 {
     v3::Certificate certificate;
     initialize_certificate(
-        certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     set_encryption_key(certificate, subject_key);
@@ -300,7 +302,7 @@ v3::Certificate build_ecc_authorization_ticket(
 {
     v3::Certificate certificate;
     initialize_certificate(
-        certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_none;
     add_application_permissions(certificate, parameters.application_ids);
 
@@ -319,7 +321,7 @@ v3::Certificate build_hybrid_authorization_ticket(
 {
     v3::Certificate certificate;
     initialize_certificate(
-        certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_none;
     add_application_permissions(certificate, parameters.application_ids);
 
