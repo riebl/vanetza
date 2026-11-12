@@ -57,6 +57,7 @@ private:
 
 /**
  * SignService deferring actually signature calculation using EcdsaSignatureFuture
+ * \deprecated use SecurityModuleSignService, it signs with a private key held by a SecurityModule
  */
 class DeferredSignService : public SignService
 {

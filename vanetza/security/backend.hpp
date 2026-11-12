@@ -19,6 +19,7 @@ namespace security
 
 /**
  * Interface to cryptographic features
+ * \deprecated exposes private keys, use CryptoProvider and SecurityModule
  */
 class Backend
 {
@@ -92,6 +93,7 @@ public:
  *
  * Included set of backends depends on CMake build configuration.
  * At least the "Null" backend is always included.
+ * \deprecated use builtin_crypto_providers() and builtin_security_modules()
  * \return factory
  */
 const Factory<Backend>& builtin_backends();
@@ -101,6 +103,7 @@ const Factory<Backend>& builtin_backends();
  *
  * A backend named "default" is guaranteed not to return a nullptr.
  * However, it might be a dummy backend.
+ * \deprecated use create_crypto_provider() and create_security_module()
  *
  * \param name identifying name of backend implementation
  * \param factory build backend registered by name from this factory
@@ -112,6 +115,7 @@ std::unique_ptr<Backend> create_backend(const std::string& name, const Factory<B
  * \brief create a backend instance
  * 
  * Will never return a nullptr but throw an exception if backend is unavailable.
+ * \deprecated use create_crypto_provider() and create_security_module()
  * 
  * \param name identifying name of backend implementation
  * \throws runtime_error if backend is unavailable

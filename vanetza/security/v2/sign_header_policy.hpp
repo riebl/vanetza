@@ -38,6 +38,7 @@ class SignHeaderPolicy
 public:
     /**
      * Prepare header fields for next secured message.
+     * \deprecated use prepare_header(const SignRequest&, const Credential&)
      *
      * \param req signing request (including ITS-AID for example)
      * \param certprvd available certificates

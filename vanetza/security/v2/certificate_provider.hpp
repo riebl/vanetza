@@ -12,6 +12,9 @@ namespace security
 namespace v2
 {
 
+/**
+ * \deprecated exposes private key, use CredentialProvider
+ */
 class CertificateProvider
 {
 public:

@@ -40,6 +40,7 @@ class SignHeaderPolicy;
 
 /**
  * Verify service with basic certificate and signature checks
+ * \deprecated use CryptoProviderVerifyService
  */
 class StraightVerifyService : public VerifyService
 {

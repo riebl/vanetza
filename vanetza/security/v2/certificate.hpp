@@ -148,6 +148,7 @@ void sort(Certificate& certificate);
 
 /**
  * \brief Extract public key from certificate
+ * \deprecated use get_verification_key(const Certificate&)
  * \param cert Certificate
  * \param backend Backend
  * \return Uncompressed public key (if available)
@@ -156,6 +157,7 @@ boost::optional<Uncompressed> get_uncompressed_public_key(const Certificate&, Ba
 
 /**
  * \brief Extract public ECDSA256 key from certificate
+ * \deprecated use get_verification_key(const Certificate&)
  * \param cert Certificate
  * \param backend Backend
  * \return public key (if available)

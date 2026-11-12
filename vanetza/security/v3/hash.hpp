@@ -24,6 +24,7 @@ class CertificateView;
  * This function creates the message hash according to IEEE 1609.2 cause 5.3.1.2.2
  * for verification type "certificate", i.e. not "self-signed" messages.
  * 
+ * \deprecated use calculate_message_hash(CryptoProvider&, HashAlgorithm, const ByteBuffer&, const CertificateView&)
  * \param backend backend for cryptographic operations
  * \param algo hash algorithm
  * \param data message payload (data to be signed)
