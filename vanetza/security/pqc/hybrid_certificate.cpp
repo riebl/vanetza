@@ -5,6 +5,8 @@
 #include VANETZA_ASN1_SECURITY_HEADER(Signature.h)
 #include VANETZA_ASN1_SECURITY_HEADER(ToBeSignedCertificate.h)
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/private_key.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/certificate.hpp>
@@ -275,7 +277,7 @@ void clear_alternative_signature(Certificate& certificate)
 }
 
 ByteBuffer calculate_certificate_hash(
-    ::vanetza::security::Backend& backend, HashAlgorithm algorithm,
+    CryptoProvider& crypto, HashAlgorithm algorithm,
     const CertificateView& subject,
     const CertificateView* issuer, SignatureLayer layer)
 {
@@ -285,14 +287,14 @@ ByteBuffer calculate_certificate_hash(
 
     const ByteBuffer data_input = canonical_tbs(subject, layer);
     const ByteBuffer signer_input = canonical_issuer(subject, issuer);
-    const ByteBuffer data_hash = backend.calculate_hash(algorithm, data_input);
-    const ByteBuffer signer_hash = backend.calculate_hash(algorithm, signer_input);
+    const ByteBuffer data_hash = calculate_hash(crypto, algorithm, data_input);
+    const ByteBuffer signer_hash = calculate_hash(crypto, algorithm, signer_input);
 
     ByteBuffer concatenated;
     concatenated.reserve(data_hash.size() + signer_hash.size());
     concatenated.insert(concatenated.end(), data_hash.begin(), data_hash.end());
     concatenated.insert(concatenated.end(), signer_hash.begin(), signer_hash.end());
-    return backend.calculate_hash(algorithm, concatenated);
+    return calculate_hash(crypto, algorithm, concatenated);
 }
 
 void sign_primary_certificate(
@@ -307,8 +309,9 @@ void sign_primary_certificate(
     }
 
     const HashAlgorithm algorithm = v3::specified_hash_algorithm(issuer_key.type);
+    BackendCryptoProvider crypto { backend };
     const ByteBuffer digest = calculate_certificate_hash(
-        backend, algorithm, subject, issuer, SignatureLayer::Primary);
+        crypto, algorithm, subject, issuer, SignatureLayer::Primary);
     const auto signature = backend.sign_digest(issuer_key, digest);
     if (!backend.verify_digest(*public_key, digest, signature)) {
         throw std::invalid_argument(
@@ -318,8 +321,7 @@ void sign_primary_certificate(
 }
 
 bool verify_primary_certificate(
-    const CertificateView& subject, const CertificateView* issuer,
-    ::vanetza::security::Backend& backend)
+    const CertificateView& subject, const CertificateView* issuer, CryptoProvider& crypto)
 {
     try {
         const CertificateView& signer = signing_certificate(subject, issuer);
@@ -333,8 +335,8 @@ bool verify_primary_certificate(
 
         const HashAlgorithm algorithm = v3::specified_hash_algorithm(public_key->type);
         const ByteBuffer digest = calculate_certificate_hash(
-            backend, algorithm, subject, issuer, SignatureLayer::Primary);
-        return backend.verify_digest(*public_key, digest, *signature);
+            crypto, algorithm, subject, issuer, SignatureLayer::Primary);
+        return verify_hash(crypto, algorithm, digest, *signature, *public_key).value_or(false);
     } catch (const std::exception&) {
         return false;
     }
@@ -351,8 +353,9 @@ void sign_alternative_certificate(
         throw std::invalid_argument("issuer certificate has no FN-DSA-512 alternative key");
     }
 
+    BackendCryptoProvider crypto { hash_backend };
     const ByteBuffer digest = calculate_certificate_hash(
-        hash_backend, HashAlgorithm::SHA256, subject, issuer, SignatureLayer::Alternative);
+        crypto, HashAlgorithm::SHA256, subject, issuer, SignatureLayer::Alternative);
     const auto signature = backend.sign(issuer_key, digest);
     if (!backend.verify(*public_key, digest, signature)) {
         throw std::invalid_argument(
@@ -362,8 +365,7 @@ void sign_alternative_certificate(
 }
 
 bool verify_alternative_certificate(
-    const CertificateView& subject, const CertificateView* issuer,
-    ::vanetza::security::Backend& hash_backend, Backend& backend)
+    const CertificateView& subject, const CertificateView* issuer, CryptoProvider& crypto, Backend& backend)
 {
     try {
         const CertificateView& signer = signing_certificate(subject, issuer);
@@ -374,7 +376,7 @@ bool verify_alternative_certificate(
         }
 
         const ByteBuffer digest = calculate_certificate_hash(
-            hash_backend, HashAlgorithm::SHA256, subject, issuer, SignatureLayer::Alternative);
+            crypto, HashAlgorithm::SHA256, subject, issuer, SignatureLayer::Alternative);
         return backend.verify(*public_key, digest, *signature);
     } catch (const std::exception&) {
         return false;

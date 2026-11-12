@@ -13,6 +13,7 @@ namespace security
 {
 
 class Backend;
+class CryptoProvider;
 
 namespace v3
 {
@@ -51,7 +52,7 @@ public:
     void use_location_checker(const v3::LocationChecker*);
     void use_revocation_lookup(const v3::RevocationLookup*);
     void use_trust_store(const v3::TrustStore*);
-    void use_backends(::vanetza::security::Backend*, Backend*);
+    void use_backends(CryptoProvider*, Backend*);
     void use_verification_policy(VerificationPolicy);
 
     void disable_time_checks(bool);
@@ -67,7 +68,7 @@ private:
     v3::DefaultCertificateValidator m_policy_validator;
     const v3::IssuerLookup* m_issuer_lookup = nullptr;
     const v3::TrustStore* m_trust_store = nullptr;
-    ::vanetza::security::Backend* m_ecc_backend = nullptr;
+    CryptoProvider* m_crypto = nullptr;
     Backend* m_pqc_backend = nullptr;
     VerificationPolicy m_verification_policy = VerificationPolicy::HybridRequired;
 };

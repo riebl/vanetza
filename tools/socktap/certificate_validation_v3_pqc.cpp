@@ -33,7 +33,7 @@ public:
         m_validator.use_location_checker(&location_checker);
         m_validator.use_issuer_lookup(&m_issuer_lookup);
         m_validator.use_trust_store(&m_trust_store);
-        m_validator.use_backends(&ecc_backend, m_pqc_backend.get());
+        m_validator.use_backends(&m_ecc_crypto, m_pqc_backend.get());
         m_validator.use_verification_policy(Policy::HybridIfPresent);
     }
 

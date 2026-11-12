@@ -360,7 +360,7 @@ int verify_chain(const std::vector<std::string>& arguments)
     validator.disable_location_checks(true);
     validator.use_issuer_lookup(&issuer_lookup);
     validator.use_trust_store(&trust_store);
-    validator.use_backends(ecc_backend.get(), pqc_backend.get());
+    validator.use_backends(&ecc_crypto, pqc_backend.get());
     validator.use_verification_policy(profile == CertificateProfile::Hybrid ?
         pqc::HybridCertificateValidator::VerificationPolicy::HybridRequired :
         pqc::HybridCertificateValidator::VerificationPolicy::HybridIfPresent);

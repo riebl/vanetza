@@ -11,6 +11,7 @@ namespace security
 {
 
 class Backend;
+class CryptoProvider;
 struct PrivateKey;
 
 namespace v3
@@ -56,7 +57,7 @@ void clear_alternative_signature(v3::Certificate&);
  * omits altSignatureValue from toBeSigned; the primary layer includes it.
  */
 ByteBuffer calculate_certificate_hash(
-    ::vanetza::security::Backend&, HashAlgorithm, const v3::CertificateView& subject,
+    CryptoProvider&, HashAlgorithm, const v3::CertificateView& subject,
     const v3::CertificateView* issuer, SignatureLayer);
 
 /** Sign or verify the outer, classical certificate signature. */
@@ -64,8 +65,7 @@ void sign_primary_certificate(
     v3::Certificate&, const v3::CertificateView* issuer,
     ::vanetza::security::Backend&, const ::vanetza::security::PrivateKey& issuer_key);
 bool verify_primary_certificate(
-    const v3::CertificateView&, const v3::CertificateView* issuer,
-    ::vanetza::security::Backend&);
+    const v3::CertificateView&, const v3::CertificateView* issuer, CryptoProvider&);
 
 /** Sign or verify the inner FN-DSA-512 certificate signature. */
 void sign_alternative_certificate(
@@ -73,8 +73,7 @@ void sign_alternative_certificate(
     ::vanetza::security::Backend& hash_backend, Backend&,
     const PrivateKey& issuer_key);
 bool verify_alternative_certificate(
-    const v3::CertificateView&, const v3::CertificateView* issuer,
-    ::vanetza::security::Backend&, Backend&);
+    const v3::CertificateView&, const v3::CertificateView* issuer, CryptoProvider&, Backend&);
 
 } // namespace pqc
 } // namespace security
