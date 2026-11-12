@@ -15,6 +15,7 @@ namespace security
 {
 
 // forward declarations
+class CryptoProvider;
 struct SignRequest;
 
 namespace v3
@@ -77,10 +78,12 @@ class DefaultSignHeaderPolicy : public SignHeaderPolicy
 {
 public:
     /**
+     * \param crypto provider calculating digests of signer certificates
      * \param positioning provider of own position
      * \param cache certificate cache, e.g. providing certificates requested by peers
      */
-    DefaultSignHeaderPolicy(const Runtime&, PositionProvider& positioning, CertificateCache& cache);
+    DefaultSignHeaderPolicy(const Runtime&, CryptoProvider& crypto, PositionProvider& positioning,
+        CertificateCache& cache);
 
     void prepare_header(
         const SignRequest& request, const Certificate& signer, SecuredMessage& secured_message) override;
@@ -93,6 +96,7 @@ private:
     const Runtime& m_runtime;
     PositionProvider& m_positioning;
     CertificateCache& m_cert_cache;
+    CryptoProvider& m_crypto;
     Clock::time_point m_cam_next_certificate;
     bool m_cert_requested;
     PeerRequestTracker m_incoming_requests;

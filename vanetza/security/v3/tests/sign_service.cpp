@@ -47,7 +47,8 @@ protected:
     std::unique_ptr<SecurityModule> module = create_security_module();
     std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
     v3::CertificateCache cache { crypto ? *crypto : NullCryptoProvider::instance() };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
+    v3::DefaultSignHeaderPolicy sign_header_policy {
+        runtime, crypto ? *crypto : NullCryptoProvider::instance(), position_provider, cache };
     v3::NullCertificateValidator cert_validator;
 };
 

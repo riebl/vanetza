@@ -1,5 +1,6 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/position_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/sign_service.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
@@ -44,8 +45,9 @@ asn1::ThreeDLocation build_location(const PositionFix& fix)
     return location;
 }
 
-DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, PositionProvider& positioning, CertificateCache& cache) :
-    m_runtime(rt), m_positioning(positioning), m_cert_cache(cache),
+DefaultSignHeaderPolicy::DefaultSignHeaderPolicy(const Runtime& rt, CryptoProvider& crypto,
+    PositionProvider& positioning, CertificateCache& cache) :
+    m_runtime(rt), m_positioning(positioning), m_cert_cache(cache), m_crypto(crypto),
     m_cam_next_certificate(m_runtime.now()),
     m_cert_requested(false)
 {
@@ -61,7 +63,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, const C
     if (request.its_aid == aid::CA) {
         bool signer_full_cert = false;
         const auto& at_cert = signer;
-        const auto maybe_at_digest = at_cert.calculate_digest();
+        const auto maybe_at_digest = at_cert.calculate_digest(m_crypto);
 
         // include full certificate if its digest has been requested by a peer
         if (maybe_at_digest && m_incoming_requests.is_pending(truncate(*maybe_at_digest))) {
@@ -103,7 +105,7 @@ void DefaultSignHeaderPolicy::prepare_header(const SignRequest& request, const C
         if (request.self_signed)
             secured_message.set_signer_identifier_self();
         else {
-            const auto digest = signer.calculate_digest();
+            const auto digest = signer.calculate_digest(m_crypto);
             if (digest)
                 secured_message.set_signer_identifier(*digest);
         }

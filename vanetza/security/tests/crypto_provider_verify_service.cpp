@@ -372,7 +372,7 @@ TEST_F(CryptoProviderVerifyServiceTest, unencodable_ticket_is_incompatible)
 TEST_F(CryptoProviderVerifyServiceTest, cam_of_unknown_station_puts_certificate_into_next_cam)
 {
     v3::CertificateCache cache { *crypto };
-    v3::DefaultSignHeaderPolicy policy { runtime, positioning, cache };
+    v3::DefaultSignHeaderPolicy policy { runtime, *crypto, positioning, cache };
     service->use_certificate_cache(&cache);
     service->use_sign_header_policy(&policy);
     // headers are prepared without signing, i.e. the own ticket's key is irrelevant

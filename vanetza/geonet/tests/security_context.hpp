@@ -35,7 +35,7 @@ public:
         sign_header_policy(rt, backend_crypto, position_provider),
         certificate_provider_v3(rt),
         cert_cache_v3(backend_crypto),
-        sign_header_policy_v3(rt, position_provider, cert_cache_v3),
+        sign_header_policy_v3(rt, backend_crypto, position_provider, cert_cache_v3),
         security(build_sign_service(), build_verify_service(rt))
     {
         trust_store.insert(certificate_provider.root_certificate());

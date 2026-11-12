@@ -104,7 +104,7 @@ TEST(SecuredMessageV3, sign_and_verify)
     v3::NaiveCertificateProvider cert_provider { runtime };
     BackendCryptoProvider backend_crypto { *backend };
     v3::CertificateCache cache { backend_crypto };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, backend_crypto, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 
@@ -132,7 +132,7 @@ TEST(SecuredMessageV3, verify_rejects_unsupported_hash_algorithm)
     v3::NaiveCertificateProvider cert_provider { runtime };
     BackendCryptoProvider backend_crypto { *backend };
     v3::CertificateCache cache { backend_crypto };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, backend_crypto, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 
@@ -159,7 +159,7 @@ TEST(SecuredMessageV3, tampered_message_has_false_signature)
     v3::NaiveCertificateProvider cert_provider { runtime };
     BackendCryptoProvider backend_crypto { *backend };
     v3::CertificateCache cache { backend_crypto };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, backend_crypto, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 
@@ -186,7 +186,7 @@ TEST(SecuredMessageV3, verify_rejects_ticket_of_unknown_issuer)
     v3::NaiveCertificateProvider cert_provider { runtime };
     BackendCryptoProvider backend_crypto { *backend };
     v3::CertificateCache cache { backend_crypto };
-    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, position_provider, cache };
+    v3::DefaultSignHeaderPolicy sign_header_policy { runtime, backend_crypto, position_provider, cache };
     v3::NullCertificateValidator cert_validator;
     v3::StraightSignService sign_service { cert_provider, *backend, sign_header_policy, cert_validator };
 

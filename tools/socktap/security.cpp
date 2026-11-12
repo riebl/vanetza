@@ -124,7 +124,8 @@ public:
             throw std::runtime_error("certificate provider is missing");
         }
         auto& cert_validator = certificate_validation->validator();
-        sign_header_policy.reset(new security::v3::DefaultSignHeaderPolicy(runtime, positioning, cert_cache));
+        sign_header_policy.reset(
+            new security::v3::DefaultSignHeaderPolicy(runtime, backend_crypto, positioning, cert_cache));
         std::unique_ptr<security::SignService> sign_service { new 
             security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy, cert_validator) };
         std::unique_ptr<security::StraightVerifyService> verify_service { new
