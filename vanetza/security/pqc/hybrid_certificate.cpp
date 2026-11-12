@@ -8,6 +8,7 @@
 #include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/private_key.hpp>
+#include <vanetza/security/security_module_error.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/hash.hpp>
@@ -362,6 +363,31 @@ void sign_alternative_certificate(
             "FN-DSA-512 private key does not match the issuer certificate public key");
     }
     set_alternative_signature(subject, signature);
+}
+
+void sign_alternative_certificate(
+    Certificate& subject, const CertificateView* issuer, CryptoProvider& crypto, Backend& backend,
+    const KeyReference& issuer_key)
+{
+    const CertificateView& signer = signing_certificate(subject, issuer);
+    const auto public_key = get_alternative_public_key(signer);
+    if (!public_key) {
+        throw std::invalid_argument("issuer certificate has no FN-DSA-512 alternative key");
+    }
+
+    const ByteBuffer digest = calculate_certificate_hash(
+        crypto, HashAlgorithm::SHA256, subject, issuer, SignatureLayer::Alternative);
+    const expected<Signature> signature = backend.sign(issuer_key, digest);
+    if (!signature && signature.error() == SecurityModuleError::InvalidKeyReference) {
+        throw std::invalid_argument("FN-DSA-512 key reference is unusable");
+    } else if (!signature) {
+        throw std::runtime_error("FN-DSA-512 signing failed");
+    }
+    if (!backend.verify(*public_key, digest, *signature)) {
+        throw std::invalid_argument(
+            "FN-DSA-512 private key does not match the issuer certificate public key");
+    }
+    set_alternative_signature(subject, *signature);
 }
 
 bool verify_alternative_certificate(

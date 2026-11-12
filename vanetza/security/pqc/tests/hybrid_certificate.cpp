@@ -107,16 +107,6 @@ Certificate make_certificate(
     return certificate;
 }
 
-void sign_hybrid(
-    Certificate& subject, const Certificate* issuer,
-    Backend& ecc_backend, pqc::Backend& pqc_backend,
-    const PrivateKey& ecc_key, const pqc::PrivateKey& pqc_key)
-{
-    pqc::sign_alternative_certificate(
-        subject, issuer, ecc_backend, pqc_backend, pqc_key);
-    pqc::sign_primary_certificate(subject, issuer, ecc_backend, ecc_key);
-}
-
 void set_unsupported_alternative_signature(Certificate& certificate)
 {
     pqc::clear_alternative_signature(certificate);
@@ -143,13 +133,13 @@ struct Chain
         at_ecc_pair(ecc_backend->generate_key_pair()),
         root_ecc_key(to_private_key(root_ecc_pair.private_key)),
         aa_ecc_key(to_private_key(aa_ecc_pair.private_key)),
-        root_pqc_pair(pqc_backend->generate_key_pair()),
-        aa_pqc_pair(pqc_backend->generate_key_pair())
+        root_pqc_pair(pqc_backend->create_signing_key().value()),
+        aa_pqc_pair(pqc_backend->create_signing_key().value())
     {
         root = make_certificate(ecc_crypto, root_ecc_pair.public_key, nullptr, true);
         if (hybrid_material) {
             pqc::set_alternative_public_key(root, root_pqc_pair.public_key);
-            sign_hybrid(root, nullptr, *ecc_backend, *pqc_backend, root_ecc_key, root_pqc_pair.private_key);
+            sign_hybrid(root, nullptr, root_ecc_key, root_pqc_pair.reference);
         } else {
             pqc::sign_primary_certificate(root, nullptr, *ecc_backend, root_ecc_key);
         }
@@ -157,17 +147,24 @@ struct Chain
         aa = make_certificate(ecc_crypto, aa_ecc_pair.public_key, &root, true);
         if (hybrid_material) {
             pqc::set_alternative_public_key(aa, aa_pqc_pair.public_key);
-            sign_hybrid(aa, &root, *ecc_backend, *pqc_backend, root_ecc_key, root_pqc_pair.private_key);
+            sign_hybrid(aa, &root, root_ecc_key, root_pqc_pair.reference);
         } else {
             pqc::sign_primary_certificate(aa, &root, *ecc_backend, root_ecc_key);
         }
 
         at = make_certificate(ecc_crypto, at_ecc_pair.public_key, &aa, false);
         if (hybrid_material) {
-            sign_hybrid(at, &aa, *ecc_backend, *pqc_backend, aa_ecc_key, aa_pqc_pair.private_key);
+            sign_hybrid(at, &aa, aa_ecc_key, aa_pqc_pair.reference);
         } else {
             pqc::sign_primary_certificate(at, &aa, *ecc_backend, aa_ecc_key);
         }
+    }
+
+    void sign_hybrid(
+        Certificate& subject, const Certificate* issuer, const PrivateKey& ecc_key, const KeyReference& pqc_key)
+    {
+        pqc::sign_alternative_certificate(subject, issuer, ecc_crypto, *pqc_backend, pqc_key);
+        pqc::sign_primary_certificate(subject, issuer, *ecc_backend, ecc_key);
     }
 
     std::unique_ptr<Backend> ecc_backend;
@@ -178,8 +175,8 @@ struct Chain
     ecdsa256::KeyPair at_ecc_pair;
     PrivateKey root_ecc_key;
     PrivateKey aa_ecc_key;
-    pqc::KeyPair root_pqc_pair;
-    pqc::KeyPair aa_pqc_pair;
+    pqc::SigningKey root_pqc_pair;
+    pqc::SigningKey aa_pqc_pair;
     Certificate root;
     Certificate aa;
     Certificate at;
@@ -306,13 +303,26 @@ TEST(HybridCertificate, primary_signature_by_unusable_issuer_key_is_rejected)
 TEST(HybridCertificate, signing_rejects_mismatched_alternative_private_key)
 {
     Chain chain;
-    const auto unrelated_key_pair = chain.pqc_backend->generate_key_pair();
+    const auto unrelated_key_pair = chain.pqc_backend->create_signing_key().value();
     pqc::clear_alternative_signature(chain.at);
 
     EXPECT_THROW(
         pqc::sign_alternative_certificate(
-            chain.at, &chain.aa, *chain.ecc_backend, *chain.pqc_backend,
-            unrelated_key_pair.private_key),
+            chain.at, &chain.aa, chain.ecc_crypto, *chain.pqc_backend,
+            unrelated_key_pair.reference),
+        std::invalid_argument);
+    EXPECT_FALSE(pqc::get_alternative_signature(chain.at));
+}
+
+TEST(HybridCertificate, signing_rejects_unusable_alternative_key_reference)
+{
+    Chain chain;
+    KeyReference truncated = chain.aa_pqc_pair.reference;
+    truncated.data.pop_back();
+    pqc::clear_alternative_signature(chain.at);
+
+    EXPECT_THROW(
+        pqc::sign_alternative_certificate(chain.at, &chain.aa, chain.ecc_crypto, *chain.pqc_backend, truncated),
         std::invalid_argument);
     EXPECT_FALSE(pqc::get_alternative_signature(chain.at));
 }
@@ -371,9 +381,7 @@ TEST(HybridCertificate, validator_verifies_authority_certificates_in_the_chain)
 
     // Reissue the AT for the modified AA so leaf verification still succeeds.
     chain.at = make_certificate(chain.ecc_crypto, chain.at_ecc_pair.public_key, &chain.aa, false);
-    sign_hybrid(
-        chain.at, &chain.aa, *chain.ecc_backend, *chain.pqc_backend,
-        chain.aa_ecc_key, chain.aa_pqc_pair.private_key);
+    chain.sign_hybrid(chain.at, &chain.aa, chain.aa_ecc_key, chain.aa_pqc_pair.reference);
 
     EXPECT_TRUE(pqc::verify_primary_certificate(
         chain.at, &chain.aa, chain.ecc_crypto));
@@ -402,9 +410,7 @@ TEST(HybridCertificate, hybrid_policy_rejects_incomplete_authority_material)
         chain.aa, &chain.root, *chain.ecc_backend, chain.root_ecc_key);
 
     chain.at = make_certificate(chain.ecc_crypto, chain.at_ecc_pair.public_key, &chain.aa, false);
-    sign_hybrid(
-        chain.at, &chain.aa, *chain.ecc_backend, *chain.pqc_backend,
-        chain.aa_ecc_key, chain.aa_pqc_pair.private_key);
+    chain.sign_hybrid(chain.at, &chain.aa, chain.aa_ecc_key, chain.aa_pqc_pair.reference);
 
     EXPECT_EQ(pqc::MaterialState::Inconsistent,
         pqc::alternative_material_state(chain.aa));

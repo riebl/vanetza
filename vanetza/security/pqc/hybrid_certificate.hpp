@@ -2,6 +2,7 @@
 
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/hash_algorithm.hpp>
+#include <vanetza/security/key_reference.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <boost/optional/optional.hpp>
 
@@ -69,11 +70,18 @@ bool verify_primary_certificate(
 
 /** Sign or verify the inner FN-DSA-512 certificate signature. */
 void sign_alternative_certificate(
+    v3::Certificate&, const v3::CertificateView* issuer, CryptoProvider&, Backend&, const KeyReference& issuer_key);
+bool verify_alternative_certificate(
+    const v3::CertificateView&, const v3::CertificateView* issuer, CryptoProvider&, Backend&);
+
+/**
+ * \deprecated exposes private key, use sign_alternative_certificate(v3::Certificate&, const v3::CertificateView*,
+ * CryptoProvider&, Backend&, const KeyReference&)
+ */
+void sign_alternative_certificate(
     v3::Certificate&, const v3::CertificateView* issuer,
     ::vanetza::security::Backend& hash_backend, Backend&,
     const PrivateKey& issuer_key);
-bool verify_alternative_certificate(
-    const v3::CertificateView&, const v3::CertificateView* issuer, CryptoProvider&, Backend&);
 
 } // namespace pqc
 } // namespace security
