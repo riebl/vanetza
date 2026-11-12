@@ -29,7 +29,7 @@ public:
      * The AA/EA encrypts its response with the request's AES key referenced via pskRecipInfo
      * (TS 102 941 §6.2.3.3.2 for AT, §6.2.3.2.2 for EC).
      * \param key AES key of the request
-     * \throws DecodingFailure if the ciphertext or pskRecipInfo is missing or decryption fails
+     * \throws DecodingFailure if the ciphertext or the key's pskRecipInfo is missing or decryption fails
      */
     ByteBuffer decrypt(CryptoProvider&, const security::Aes128Key& key) const;
 
@@ -40,7 +40,7 @@ public:
     static void append_recipient_info(asn1c_type& dest, const EncryptedSymmetricKey&, const HashedId8& recipient);
 
 private:
-    bool has_psk_recipient() const;
+    const Vanetza_Security_HashedId8_t* find_psk_recipient() const;
 };
 
 /**

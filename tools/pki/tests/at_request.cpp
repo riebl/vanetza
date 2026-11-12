@@ -20,6 +20,7 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/hmac.hpp>
 #include <vanetza/security/v3/basic_elements.hpp>
+#include <vanetza/security/v3/secured_message.hpp>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -83,8 +84,7 @@ protected:
         response.generate_ciphertext(m_crypto, key, payload);
         auto psk = asn1::allocate<Vanetza_Security_RecipientInfo_t>();
         psk->present = Vanetza_Security_RecipientInfo_PR_pskRecipInfo;
-        // EncryptedData::decrypt requires a pskRecipInfo recipient but does not check its HashedId8 of the key
-        copy(ByteBuffer(8, 0x00), psk->choice.pskRecipInfo);
+        copy(security::v3::psk_recipient_id(m_crypto, key), psk->choice.pskRecipInfo);
         asn_sequence_add(&response->content->choice.encryptedData.recipients.list, psk);
         return response;
     }
@@ -323,6 +323,14 @@ TEST_F(AuthorizationRequestTest, tampered_aa_response_is_decoding_failure)
     EncryptedRequest request = build_authorization_request(m_security, m_crypto, make_params());
     EncryptedData response = make_response(request.key, ByteBuffer { 0x01, 0x23, 0x45, 0x67, 0x89 });
     response->content->choice.encryptedData.ciphertext.choice.aes128ccm.ccmCiphertext.buf[0] ^= 0x01;
+    EXPECT_THROW(response.decrypt(m_crypto, request.key), DecodingFailure);
+}
+
+TEST_F(AuthorizationRequestTest, aa_response_referencing_other_key_is_decoding_failure)
+{
+    EncryptedRequest request = build_authorization_request(m_security, m_crypto, make_params());
+    EncryptedData response = make_response(request.key, ByteBuffer { 0x01, 0x23, 0x45, 0x67, 0x89 });
+    response->content->choice.encryptedData.recipients.list.array[0]->choice.pskRecipInfo.buf[0] ^= 0x01;
     EXPECT_THROW(response.decrypt(m_crypto, request.key), DecodingFailure);
 }
 

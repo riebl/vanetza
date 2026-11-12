@@ -5,6 +5,7 @@
 #include "hashed_id8.hpp"
 #include "security_module.hpp"
 #include "signed_builder.hpp"
+#include <vanetza/security/v3/secured_message.hpp>
 #include <algorithm>
 #include <stdexcept>
 
@@ -106,16 +107,16 @@ const OCTET_STRING_t* EncryptedData::get_ciphertext() const
     return aes_ccm ? &aes_ccm->ccmCiphertext : nullptr;
 }
 
-bool EncryptedData::has_psk_recipient() const
+const Vanetza_Security_HashedId8_t* EncryptedData::find_psk_recipient() const
 {
     const auto& recipients = m_struct->content->choice.encryptedData.recipients;
     for (int i = 0; i < recipients.list.count; ++i) {
         const Vanetza_Security_RecipientInfo_t* recipient = recipients.list.array[i];
         if (recipient && recipient->present == Vanetza_Security_RecipientInfo_PR_pskRecipInfo) {
-            return true;
+            return &recipient->choice.pskRecipInfo;
         }
     }
-    return false;
+    return nullptr;
 }
 
 ByteBuffer EncryptedData::decrypt(CryptoProvider& crypto, const security::Aes128Key& key) const
@@ -125,8 +126,14 @@ ByteBuffer EncryptedData::decrypt(CryptoProvider& crypto, const security::Aes128
         throw DecodingFailure("missing AES CCM ciphertext");
     }
     // A PKI response reuses the request's symmetric key, referenced via pskRecipInfo.
-    if (!has_psk_recipient()) {
+    const Vanetza_Security_HashedId8_t* psk_recipient = find_psk_recipient();
+    if (!psk_recipient) {
         throw DecodingFailure("encrypted PKI response lacks expected pskRecipInfo recipient");
+    }
+    HashedId8 psk_id;
+    psk_id.octets = security::v3::psk_recipient_id(crypto, key);
+    if (!equals(*psk_recipient, psk_id)) {
+        throw DecodingFailure("pskRecipInfo of encrypted PKI response does not reference request key");
     }
 
     AesCcmCiphertext ciphertext;
