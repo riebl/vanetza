@@ -1,6 +1,7 @@
 #pragma once
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/security/key_type.hpp>
+#include <boost/optional/optional.hpp>
 #include <string>
 
 namespace vanetza
@@ -37,6 +38,16 @@ std::string canonical_hexstring(const PublicKey&);
  * \return 0x04 || x || y (uncompressed) or 0x02/0x03 || x (compressed), or empty buffer if the key is malformed
  */
 ByteBuffer encode_ec_point(const PublicKey&);
+
+/**
+ * Decode elliptic curve point according to SEC 1 v2, section 2.3.4
+ *
+ * The point keeps its compression form, it is not checked to be on the curve.
+ * \param type curve of encoded point
+ * \param encoded 0x04 || x || y (uncompressed) or 0x02/0x03 || x (compressed) with the curve's field length
+ * \return public key, or none if the encoding is malformed
+ */
+boost::optional<PublicKey> decode_ec_point(KeyType type, const ByteBuffer& encoded);
 
 /**
  * Encode public key as SubjectPublicKeyInfo according to RFC 5480.

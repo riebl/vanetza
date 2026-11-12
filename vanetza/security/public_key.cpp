@@ -91,6 +91,29 @@ ByteBuffer encode_ec_point(const PublicKey& key)
     return encoded;
 }
 
+boost::optional<PublicKey> decode_ec_point(KeyType type, const ByteBuffer& encoded)
+{
+    const std::size_t length = key_length(type);
+    if (length == 0 || encoded.empty()) {
+        return boost::none;
+    }
+
+    PublicKey key;
+    key.type = type;
+    const auto x = encoded.begin() + 1;
+    if (encoded.front() == 0x04 && encoded.size() == 1 + 2 * length) {
+        key.compression = KeyCompression::NoCompression;
+        key.x.assign(x, x + length);
+        key.y.assign(x + length, encoded.end());
+    } else if ((encoded.front() == 0x02 || encoded.front() == 0x03) && encoded.size() == 1 + length) {
+        key.compression = encoded.front() == 0x02 ? KeyCompression::Y0 : KeyCompression::Y1;
+        key.x.assign(x, encoded.end());
+    } else {
+        return boost::none;
+    }
+    return key;
+}
+
 ByteBuffer encode_subject_public_key_info(const PublicKey& key)
 {
     // RFC 5480: id-ecPublicKey OBJECT IDENTIFIER ::= { 1.2.840.10045.2.1 }
