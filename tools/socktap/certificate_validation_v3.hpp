@@ -22,7 +22,7 @@ class Runtime;
 namespace security
 {
 
-class Backend;
+class CryptoProvider;
 
 namespace v3
 {
@@ -53,12 +53,11 @@ public:
 };
 
 std::unique_ptr<CertificateValidationV3> create_default_certificate_validation_v3(
-    const vanetza::Runtime&, vanetza::PositionProvider&,
+    const vanetza::Runtime&, vanetza::security::CryptoProvider&, vanetza::PositionProvider&,
     const vanetza::security::v3::LocationChecker&);
 
 std::unique_ptr<CertificateValidationV3> create_certificate_validation_v3(
-    const boost::program_options::variables_map&, const vanetza::Runtime&,
-    vanetza::PositionProvider&, const vanetza::security::v3::LocationChecker&,
-    vanetza::security::Backend&);
+    const boost::program_options::variables_map&, const vanetza::Runtime&, vanetza::security::CryptoProvider&,
+    vanetza::PositionProvider&, const vanetza::security::v3::LocationChecker&);
 
 void add_certificate_validation_v3_options(boost::program_options::options_description&);

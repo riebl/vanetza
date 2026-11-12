@@ -1,6 +1,7 @@
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/common/position_fix.hpp>
 #include <vanetza/common/runtime.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/issuer_lookup.hpp>
@@ -65,6 +66,10 @@ bool check_region_consistency(const CertificateView& subject, const CertificateV
 }
 
 } // namespace
+
+DefaultCertificateValidator::DefaultCertificateValidator(CryptoProvider& crypto) : m_crypto(crypto)
+{
+}
 
 auto DefaultCertificateValidator::valid_for_signing(const CertificateView& signing_cert, ItsAid its_aid) -> Verdict
 {
@@ -177,7 +182,7 @@ bool DefaultCertificateValidator::is_chain_anchored(const CertificateView& signi
     for (int depth = 0; depth < max_chain_depth; ++depth) {
         if (cert->issuer_is_self()) {
             // Reached a self-signed cert: anchored iff it's in the trust store.
-            const auto cert_digest = cert->calculate_digest();
+            const auto cert_digest = cert->calculate_digest(m_crypto);
             return cert_digest && !m_trust_store->lookup(*cert_digest).empty();
         }
         const auto issuer_digest = cert->issuer_digest();
@@ -230,7 +235,7 @@ bool DefaultCertificateValidator::chain_is_revoked(const CertificateView& signin
     constexpr int max_chain_depth = 8;
     const CertificateView* cert = &signing_cert;
     for (int depth = 0; depth < max_chain_depth; ++depth) {
-        const auto cert_digest = cert->calculate_digest();
+        const auto cert_digest = cert->calculate_digest(m_crypto);
         const auto issuer_digest = cert->issuer_digest();
         if (!cert_digest || !issuer_digest) {
             break;

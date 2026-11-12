@@ -44,6 +44,11 @@ public:
         HybridRequired,
     };
 
+    /**
+     * \param crypto provider calculating certificate hashes and verifying classical signatures
+     */
+    explicit HybridCertificateValidator(CryptoProvider& crypto);
+
     Verdict valid_for_signing(const v3::CertificateView&, ItsAid) override;
 
     void use_runtime(const Runtime*);
@@ -52,7 +57,7 @@ public:
     void use_location_checker(const v3::LocationChecker*);
     void use_revocation_lookup(const v3::RevocationLookup*);
     void use_trust_store(const v3::TrustStore*);
-    void use_backends(CryptoProvider*, Backend*);
+    void use_pqc_backend(Backend*);
     void use_verification_policy(VerificationPolicy);
 
     void disable_time_checks(bool);
@@ -68,7 +73,7 @@ private:
     v3::DefaultCertificateValidator m_policy_validator;
     const v3::IssuerLookup* m_issuer_lookup = nullptr;
     const v3::TrustStore* m_trust_store = nullptr;
-    CryptoProvider* m_crypto = nullptr;
+    CryptoProvider& m_crypto;
     Backend* m_pqc_backend = nullptr;
     VerificationPolicy m_verification_policy = VerificationPolicy::HybridRequired;
 };

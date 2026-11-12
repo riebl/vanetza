@@ -1,5 +1,4 @@
 #include "certificate_validation_v3.hpp"
-#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <vanetza/security/pqc/hybrid_certificate_validator.hpp>
@@ -18,13 +17,12 @@ class HybridCertificateValidationV3 : public CertificateValidationV3
 {
 public:
     HybridCertificateValidationV3(
-        const vanetza::Runtime& runtime, vanetza::PositionProvider& positioning,
-        const vanetza::security::v3::LocationChecker& location_checker,
-        vanetza::security::Backend& ecc_backend) :
+        const vanetza::Runtime& runtime, vanetza::security::CryptoProvider& crypto,
+        vanetza::PositionProvider& positioning, const vanetza::security::v3::LocationChecker& location_checker) :
         m_pqc_backend(vanetza::security::pqc::create_fndsa512_backend()),
-        m_ecc_crypto(ecc_backend),
-        m_issuer_lookup(m_ecc_crypto),
-        m_trust_store(m_ecc_crypto)
+        m_issuer_lookup(crypto),
+        m_trust_store(crypto),
+        m_validator(crypto)
     {
         using Policy =
             vanetza::security::pqc::HybridCertificateValidator::VerificationPolicy;
@@ -33,7 +31,7 @@ public:
         m_validator.use_location_checker(&location_checker);
         m_validator.use_issuer_lookup(&m_issuer_lookup);
         m_validator.use_trust_store(&m_trust_store);
-        m_validator.use_backends(&m_ecc_crypto, m_pqc_backend.get());
+        m_validator.use_pqc_backend(m_pqc_backend.get());
         m_validator.use_verification_policy(Policy::HybridIfPresent);
     }
 
@@ -61,7 +59,6 @@ public:
 
 private:
     std::unique_ptr<vanetza::security::pqc::Backend> m_pqc_backend;
-    vanetza::security::BackendCryptoProvider m_ecc_crypto;
     vanetza::security::v3::IssuerMemoryLookup m_issuer_lookup;
     vanetza::security::v3::TrustStore m_trust_store;
     vanetza::security::pqc::HybridCertificateValidator m_validator;
@@ -71,12 +68,11 @@ private:
 
 std::unique_ptr<CertificateValidationV3> create_certificate_validation_v3(
     const po::variables_map& options, const vanetza::Runtime& runtime,
-    vanetza::PositionProvider& positioning,
-    const vanetza::security::v3::LocationChecker& location_checker,
-    vanetza::security::Backend& backend)
+    vanetza::security::CryptoProvider& crypto, vanetza::PositionProvider& positioning,
+    const vanetza::security::v3::LocationChecker& location_checker)
 {
     if (!options["enable-pqc-verification"].as<bool>()) {
-        return create_default_certificate_validation_v3(runtime, positioning, location_checker);
+        return create_default_certificate_validation_v3(runtime, crypto, positioning, location_checker);
     }
     if (!options.count("certificate") || !options.count("certificate-chain")) {
         throw std::invalid_argument(
@@ -85,7 +81,7 @@ std::unique_ptr<CertificateValidationV3> create_certificate_validation_v3(
     }
 
     return std::make_unique<HybridCertificateValidationV3>(
-        runtime, positioning, location_checker, backend);
+        runtime, crypto, positioning, location_checker);
 }
 
 void add_certificate_validation_v3_options(po::options_description& options)

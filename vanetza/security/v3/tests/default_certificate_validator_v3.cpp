@@ -27,7 +27,8 @@ public:
         backend_crypto(*backend),
         cert_provider(runtime),
         trust_store(backend_crypto),
-        issuer_lookup(backend_crypto)
+        issuer_lookup(backend_crypto),
+        cert_validator(backend_crypto)
     {
         cert_validator.use_runtime(&runtime);
         cert_validator.use_issuer_lookup(&issuer_lookup);

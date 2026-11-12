@@ -11,6 +11,10 @@ class Runtime;
 
 namespace security
 {
+
+// forward declaration
+class CryptoProvider;
+
 namespace v3
 {
 
@@ -50,6 +54,11 @@ public:
 class DefaultCertificateValidator : public CertificateValidator
 {
 public:
+    /**
+     * \param crypto provider calculating certificate digests for trust anchors and revocation
+     */
+    explicit DefaultCertificateValidator(CryptoProvider& crypto);
+
     Verdict valid_for_signing(const CertificateView&, ItsAid) override;
     
     void use_runtime(const Runtime* runtime);
@@ -71,6 +80,7 @@ private:
     bool check_consistency(const CertificateView& subject, const CertificateView& issuer, ItsAid its_aid) const;
     bool is_chain_anchored(const CertificateView& signing_cert) const;
 
+    CryptoProvider& m_crypto;
     const Runtime* m_runtime = nullptr;
     PositionProvider* m_position_provider = nullptr;
     const IssuerLookup* m_issuer_lookup = nullptr;

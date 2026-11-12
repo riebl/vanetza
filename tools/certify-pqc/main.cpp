@@ -355,12 +355,12 @@ int verify_chain(const std::vector<std::string>& arguments)
     }
 
     ManualRuntime runtime(now());
-    pqc::HybridCertificateValidator validator;
+    pqc::HybridCertificateValidator validator { ecc_crypto };
     validator.use_runtime(&runtime);
     validator.disable_location_checks(true);
     validator.use_issuer_lookup(&issuer_lookup);
     validator.use_trust_store(&trust_store);
-    validator.use_backends(&ecc_crypto, pqc_backend.get());
+    validator.use_pqc_backend(pqc_backend.get());
     validator.use_verification_policy(profile == CertificateProfile::Hybrid ?
         pqc::HybridCertificateValidator::VerificationPolicy::HybridRequired :
         pqc::HybridCertificateValidator::VerificationPolicy::HybridIfPresent);

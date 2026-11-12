@@ -12,6 +12,11 @@ namespace security
 namespace pqc
 {
 
+HybridCertificateValidator::HybridCertificateValidator(CryptoProvider& crypto) :
+    m_policy_validator(crypto), m_crypto(crypto)
+{
+}
+
 auto HybridCertificateValidator::valid_for_signing(
     const v3::CertificateView& certificate, ItsAid aid) -> Verdict
 {
@@ -19,7 +24,7 @@ auto HybridCertificateValidator::valid_for_signing(
     if (policy_verdict != Verdict::Valid) {
         return policy_verdict;
     }
-    if (!m_issuer_lookup || !m_trust_store || !m_crypto ||
+    if (!m_issuer_lookup || !m_trust_store ||
             (m_verification_policy != VerificationPolicy::ClassicalOnly && !m_pqc_backend)) {
         return Verdict::Misconfiguration;
     }
@@ -58,9 +63,8 @@ void HybridCertificateValidator::use_trust_store(const v3::TrustStore* store)
     m_policy_validator.use_trust_store(store);
 }
 
-void HybridCertificateValidator::use_backends(CryptoProvider* crypto, Backend* pqc_backend)
+void HybridCertificateValidator::use_pqc_backend(Backend* pqc_backend)
 {
-    m_crypto = crypto;
     m_pqc_backend = pqc_backend;
 }
 
@@ -105,7 +109,7 @@ bool HybridCertificateValidator::alternative_signature_is_accepted(
     }
 
     return m_pqc_backend && verify_alternative_certificate(
-        subject, issuer, *m_crypto, *m_pqc_backend);
+        subject, issuer, m_crypto, *m_pqc_backend);
 }
 
 bool HybridCertificateValidator::chain_is_authentic(
@@ -120,7 +124,7 @@ bool HybridCertificateValidator::chain_is_authentic(
             if (!root_digest || m_trust_store->lookup(*root_digest).empty()) {
                 return false;
             }
-            return verify_primary_certificate(*subject, nullptr, *m_crypto) &&
+            return verify_primary_certificate(*subject, nullptr, m_crypto) &&
                 alternative_signature_is_accepted(*subject, nullptr);
         }
 
@@ -137,7 +141,7 @@ bool HybridCertificateValidator::chain_is_authentic(
             return false;
         }
 
-        if (!verify_primary_certificate(*subject, issuer, *m_crypto) ||
+        if (!verify_primary_certificate(*subject, issuer, m_crypto) ||
                 !alternative_signature_is_accepted(*subject, issuer)) {
             return false;
         }

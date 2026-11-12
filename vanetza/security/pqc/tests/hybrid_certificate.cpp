@@ -193,10 +193,10 @@ v3::CertificateValidator::Verdict validate(
         throw std::runtime_error("cannot populate issuer lookup");
     }
 
-    pqc::HybridCertificateValidator validator;
+    pqc::HybridCertificateValidator validator { chain.ecc_crypto };
     validator.use_issuer_lookup(&issuer_lookup);
     validator.use_trust_store(&trust_store);
-    validator.use_backends(&chain.ecc_crypto, chain.pqc_backend.get());
+    validator.use_pqc_backend(chain.pqc_backend.get());
     validator.use_verification_policy(policy);
     validator.disable_time_checks(true);
     validator.disable_location_checks(true);

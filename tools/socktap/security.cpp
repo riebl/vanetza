@@ -99,7 +99,7 @@ public:
         location_checker.set_permissive_identified_region(permissive_identified_region);
         location_checker.use_country_database(&country_database);
         certificate_validation = create_certificate_validation_v3(
-            options, runtime, positioning, location_checker, *backend);
+            options, runtime, backend_crypto, positioning, location_checker);
     }
 
     security::EncapConfirm encapsulate_packet(security::EncapRequest&& request) override

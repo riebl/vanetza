@@ -12,8 +12,9 @@ class DefaultCertificateValidationV3 : public CertificateValidationV3
 {
 public:
     DefaultCertificateValidationV3(
-        const vanetza::Runtime& runtime, vanetza::PositionProvider& positioning,
-        const vanetza::security::v3::LocationChecker& location_checker)
+        const vanetza::Runtime& runtime, vanetza::security::CryptoProvider& crypto,
+        vanetza::PositionProvider& positioning, const vanetza::security::v3::LocationChecker& location_checker) :
+        m_validator(crypto)
     {
         m_validator.use_runtime(&runtime);
         m_validator.use_position_provider(&positioning);
@@ -42,9 +43,9 @@ private:
 } // namespace
 
 std::unique_ptr<CertificateValidationV3> create_default_certificate_validation_v3(
-    const vanetza::Runtime& runtime, vanetza::PositionProvider& positioning,
-    const vanetza::security::v3::LocationChecker& location_checker)
+    const vanetza::Runtime& runtime, vanetza::security::CryptoProvider& crypto,
+    vanetza::PositionProvider& positioning, const vanetza::security::v3::LocationChecker& location_checker)
 {
     return std::make_unique<DefaultCertificateValidationV3>(
-        runtime, positioning, location_checker);
+        runtime, crypto, positioning, location_checker);
 }
