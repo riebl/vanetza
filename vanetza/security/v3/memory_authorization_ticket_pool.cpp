@@ -1,3 +1,4 @@
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/v3/memory_authorization_ticket_pool.hpp>
 
 namespace vanetza
@@ -7,9 +8,13 @@ namespace security
 namespace v3
 {
 
+MemoryAuthorizationTicketPool::MemoryAuthorizationTicketPool(CryptoProvider& crypto) : m_crypto(crypto)
+{
+}
+
 bool MemoryAuthorizationTicketPool::add(const Credential& ticket)
 {
-    const boost::optional<HashedId8> id = ticket.certificate.calculate_digest();
+    const boost::optional<HashedId8> id = ticket.certificate.calculate_digest(m_crypto);
     if (!id) {
         return false;
     }

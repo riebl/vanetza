@@ -1,5 +1,7 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/manual_runtime.hpp>
+#include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v3/identity_manager.hpp>
 #include <vanetza/security/v3/memory_authorization_ticket_pool.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
@@ -55,12 +57,19 @@ private:
 class IdentityManagerTest : public ::testing::Test
 {
 protected:
+    void SetUp() override
+    {
+        if (!crypto) {
+            GTEST_SKIP() << "no crypto provider built in";
+        }
+    }
+
     // adds a new authorization ticket to the pool
     HashedId8 add_ticket()
     {
         const v3::Certificate ticket = certificates.generate_authorization_ticket();
         EXPECT_TRUE(pool.add(v3::Credential { ticket, KeyReference {} }));
-        return ticket.calculate_digest().value();
+        return ticket.calculate_digest(*crypto).value();
     }
 
     // adds a ticket generated at given offset, i.e. its validity is shifted by that offset
@@ -80,12 +89,13 @@ protected:
 
     HashedId8 current_id() const
     {
-        return identities->current_pseudonym()->certificate.calculate_digest().value();
+        return identities->current_pseudonym()->certificate.calculate_digest(*crypto).value();
     }
 
     ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
     v3::NaiveCertificateProvider certificates { runtime };
-    v3::MemoryAuthorizationTicketPool pool;
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    v3::MemoryAuthorizationTicketPool pool { crypto ? *crypto : NullCryptoProvider::instance() };
     std::unique_ptr<v3::IdentityManager> identities;
 };
 

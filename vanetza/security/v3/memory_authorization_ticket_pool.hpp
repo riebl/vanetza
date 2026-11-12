@@ -15,12 +15,15 @@ namespace v3
 class MemoryAuthorizationTicketPool : public AuthorizationTicketPool
 {
 public:
+    explicit MemoryAuthorizationTicketPool(CryptoProvider& crypto);
+
     bool add(const Credential& ticket) override;
     bool remove(const HashedId8& ticket) override;
     void visit(Visitor& visitor) const override;
     boost::optional<Credential> fetch(const HashedId8& ticket) const override;
 
 private:
+    CryptoProvider& m_crypto;
     std::map<HashedId8, Credential> m_tickets;
 };
 

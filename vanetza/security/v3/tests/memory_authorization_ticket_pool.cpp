@@ -1,7 +1,10 @@
 #include <vanetza/common/manual_runtime.hpp>
+#include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v3/memory_authorization_ticket_pool.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <gtest/gtest.h>
+#include <memory>
 #include <vector>
 
 using namespace vanetza;
@@ -26,9 +29,17 @@ public:
 class MemoryAuthorizationTicketPoolTest : public ::testing::Test
 {
 protected:
+    void SetUp() override
+    {
+        if (!crypto) {
+            GTEST_SKIP() << "no crypto provider built in";
+        }
+    }
+
     ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
     v3::NaiveCertificateProvider certificates { runtime };
-    v3::MemoryAuthorizationTicketPool pool;
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    v3::MemoryAuthorizationTicketPool pool { crypto ? *crypto : NullCryptoProvider::instance() };
     const KeyReference key { ByteBuffer { 0x01, 0x02, 0x03 } };
 };
 
@@ -37,7 +48,7 @@ protected:
 TEST_F(MemoryAuthorizationTicketPoolTest, added_ticket_is_visited_and_fetched)
 {
     const v3::Certificate ticket = certificates.generate_authorization_ticket();
-    const boost::optional<HashedId8> id = ticket.calculate_digest();
+    const boost::optional<HashedId8> id = ticket.calculate_digest(*crypto);
     ASSERT_TRUE(id);
     EXPECT_TRUE(pool.add(v3::Credential { ticket, key }));
 
@@ -48,14 +59,14 @@ TEST_F(MemoryAuthorizationTicketPoolTest, added_ticket_is_visited_and_fetched)
 
     boost::optional<v3::Credential> fetched = pool.fetch(*id);
     ASSERT_TRUE(fetched);
-    EXPECT_EQ(*id, fetched->certificate.calculate_digest().value());
+    EXPECT_EQ(*id, fetched->certificate.calculate_digest(*crypto).value());
     EXPECT_EQ(key.data, fetched->key.data);
 }
 
 TEST_F(MemoryAuthorizationTicketPoolTest, added_again_ticket_replaces_key_reference)
 {
     const v3::Certificate ticket = certificates.generate_authorization_ticket();
-    const boost::optional<HashedId8> id = ticket.calculate_digest();
+    const boost::optional<HashedId8> id = ticket.calculate_digest(*crypto);
     ASSERT_TRUE(id);
     const KeyReference other_key { ByteBuffer { 0x04, 0x05 } };
     ASSERT_TRUE(pool.add(v3::Credential { ticket, key }));
@@ -72,7 +83,7 @@ TEST_F(MemoryAuthorizationTicketPoolTest, added_again_ticket_replaces_key_refere
 TEST_F(MemoryAuthorizationTicketPoolTest, removed_ticket_is_gone)
 {
     const v3::Certificate ticket = certificates.generate_authorization_ticket();
-    const boost::optional<HashedId8> id = ticket.calculate_digest();
+    const boost::optional<HashedId8> id = ticket.calculate_digest(*crypto);
     ASSERT_TRUE(id);
     ASSERT_TRUE(pool.add(v3::Credential { ticket, key }));
 
