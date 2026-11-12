@@ -4,15 +4,18 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend.hpp>
 #include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <vanetza/security/pqc/hybrid_certificate.hpp>
 #include <vanetza/security/pqc/hybrid_certificate_validator.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/certificate.hpp>
+#include <vanetza/security/v3/hash.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
 #include <gtest/gtest.h>
 #include <array>
+#include <memory>
 #include <stdexcept>
 
 using namespace vanetza;
@@ -271,6 +274,33 @@ TEST(HybridCertificate, certificate_hash_rejects_a_non_matching_issuer)
         chain.at, &chain.root, chain.ecc_crypto));
     EXPECT_FALSE(pqc::verify_alternative_certificate(
         chain.at, &chain.root, chain.ecc_crypto, *chain.pqc_backend));
+}
+
+TEST(HybridCertificate, primary_layer_hash_is_ieee_1609_2_certificate_hash)
+{
+    Chain chain;
+    const ByteBuffer primary = pqc::calculate_certificate_hash(
+        chain.ecc_crypto, HashAlgorithm::SHA256, chain.at, &chain.aa, pqc::SignatureLayer::Primary);
+    EXPECT_EQ(v3::calculate_certificate_hash(chain.ecc_crypto, HashAlgorithm::SHA256, chain.at, chain.aa), primary);
+}
+
+TEST(HybridCertificate, primary_signature_by_unusable_issuer_key_is_rejected)
+{
+    // a real provider reports the unusable key as error, unlike the Backend adapter
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    Chain chain;
+    Certificate issuer = chain.aa;
+    ecdsa256::PublicKey off_curve;
+    off_curve.x.fill(0xff);
+    off_curve.y.fill(0x01);
+    set_verification_key(issuer, off_curve);
+    // ticket names the modified issuer, its signature is irrelevant as verification fails with an error
+    Certificate ticket = chain.at;
+    set_issuer(ticket, &issuer);
+    EXPECT_FALSE(pqc::verify_primary_certificate(ticket, &issuer, *crypto));
 }
 
 TEST(HybridCertificate, signing_rejects_mismatched_alternative_private_key)
