@@ -13,6 +13,7 @@ namespace security
 
 class Backend;
 class CryptoProvider;
+class SecurityModule;
 struct PrivateKey;
 
 namespace v3
@@ -63,10 +64,18 @@ ByteBuffer calculate_certificate_hash(
 
 /** Sign or verify the outer, classical certificate signature. */
 void sign_primary_certificate(
-    v3::Certificate&, const v3::CertificateView* issuer,
-    ::vanetza::security::Backend&, const ::vanetza::security::PrivateKey& issuer_key);
+    v3::Certificate&, const v3::CertificateView* issuer, CryptoProvider&, SecurityModule&,
+    const KeyReference& issuer_key);
 bool verify_primary_certificate(
     const v3::CertificateView&, const v3::CertificateView* issuer, CryptoProvider&);
+
+/**
+ * \deprecated exposes private key, use sign_primary_certificate(v3::Certificate&, const v3::CertificateView*,
+ * CryptoProvider&, SecurityModule&, const KeyReference&)
+ */
+void sign_primary_certificate(
+    v3::Certificate&, const v3::CertificateView* issuer,
+    ::vanetza::security::Backend&, const ::vanetza::security::PrivateKey& issuer_key);
 
 /** Sign or verify the inner FN-DSA-512 certificate signature. */
 void sign_alternative_certificate(

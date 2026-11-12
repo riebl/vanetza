@@ -8,6 +8,7 @@
 #include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/private_key.hpp>
+#include <vanetza/security/security_module.hpp>
 #include <vanetza/security/security_module_error.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <vanetza/security/v3/certificate.hpp>
@@ -319,6 +320,35 @@ void sign_primary_certificate(
             "ECC private key does not match the issuer certificate public key");
     }
     set_primary_signature(subject, signature);
+}
+
+void sign_primary_certificate(
+    Certificate& subject, const CertificateView* issuer, CryptoProvider& crypto, SecurityModule& module,
+    const KeyReference& issuer_key)
+{
+    const CertificateView& signer = signing_certificate(subject, issuer);
+    const auto public_key = v3::get_public_key(*copy_certificate_or_throw(signer).content());
+    const auto issuer_public_key = module.public_key(issuer_key);
+    if (!issuer_public_key && issuer_public_key.error() == SecurityModuleError::InvalidKeyReference) {
+        throw std::invalid_argument("ECC key reference is unusable");
+    } else if (!issuer_public_key) {
+        throw std::runtime_error("ECC public key query failed");
+    } else if (!public_key || public_key->type != issuer_public_key->type) {
+        throw std::invalid_argument("ECC private key does not match the issuer certificate key type");
+    }
+
+    const HashAlgorithm algorithm = v3::specified_hash_algorithm(public_key->type);
+    const ByteBuffer digest = calculate_certificate_hash(
+        crypto, algorithm, subject, issuer, SignatureLayer::Primary);
+    const auto signature = module.sign(digest, issuer_key);
+    if (!signature) {
+        throw std::runtime_error("ECC signing failed");
+    }
+    if (!verify_hash(crypto, algorithm, digest, *signature, *public_key).value_or(false)) {
+        throw std::invalid_argument(
+            "ECC private key does not match the issuer certificate public key");
+    }
+    set_primary_signature(subject, *signature);
 }
 
 bool verify_primary_certificate(
