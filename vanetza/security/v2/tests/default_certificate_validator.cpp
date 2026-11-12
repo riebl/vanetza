@@ -267,5 +267,50 @@ TEST_F(DefaultCertificateValidatorTest, failing_verification_is_no_valid_signatu
 
     CertificateValidity validity = cert_validator.check_certificate(cert);
     ASSERT_FALSE(validity);
-    EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Unusable_Signer_Key, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, signer_without_verification_key_is_unusable_signer_key)
+{
+    Certificate authority = cert_provider.aa_certificate();
+    authority.remove_attribute(SubjectAttributeType::Verification_Key);
+    cert_cache.insert(authority);
+
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    cert.signer_info = calculate_hash(*crypto, authority);
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::Unusable_Signer_Key, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, authorization_authority_signed_by_root_is_valid)
+{
+    EXPECT_TRUE(cert_validator.check_certificate(cert_provider.aa_certificate()));
+}
+
+TEST_F(DefaultCertificateValidatorTest, authorization_authority_with_broken_signature_is_invalid_signature)
+{
+    Certificate authority = cert_provider.aa_certificate();
+    boost::optional<EcdsaSignature> signature = extract_ecdsa_signature(authority.signature);
+    ASSERT_TRUE(signature);
+    signature->s[0] ^= 0x01;
+    authority.signature = *signature;
+
+    CertificateValidity validity = cert_validator.check_certificate(authority);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Signature, validity.reason());
+}
+
+TEST_F(DefaultCertificateValidatorTest, authorization_ticket_with_broken_signature_is_invalid_signature)
+{
+    Certificate cert = cert_provider.generate_authorization_ticket();
+    boost::optional<EcdsaSignature> signature = extract_ecdsa_signature(cert.signature);
+    ASSERT_TRUE(signature);
+    signature->s[0] ^= 0x01;
+    cert.signature = *signature;
+
+    CertificateValidity validity = cert_validator.check_certificate(cert);
+    ASSERT_FALSE(validity);
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Signature, validity.reason());
 }

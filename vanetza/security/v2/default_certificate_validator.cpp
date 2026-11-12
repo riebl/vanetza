@@ -206,26 +206,36 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
     }
 
     // create buffer of certificate, it is signed by its SHA-256 digest and the signature's r is the x-coordinate of R
-    // verification errors, e.g. of a signer's unusable key, leave the signature unverified
     ByteBuffer binary_cert = convert_for_signing(certificate);
     const Sha256Hash digest = m_crypto.calculate_sha256_hash(binary_cert.data(), binary_cert.size());
     const security::Signature signature { convert_for_signing(sig->R), sig->s, KeyType::NistP256 };
+
+    // signer remains unknown without any candidate matching its HashedId8
+    CertificateValidity validity = CertificateInvalidReason::Unknown_Signer;
 
     // authorization tickets may only be signed by authorization authorities
     if (subject_type == SubjectType::Authorization_Ticket) {
         for (auto& possible_signer : m_cert_cache.lookup(signer_hash, SubjectType::Authorization_Authority)) {
             auto verification_key = get_verification_key(possible_signer);
             if (!verification_key) {
+                validity = CertificateInvalidReason::Unusable_Signer_Key;
                 continue;
             }
 
-            if (m_crypto.verify(digest, signature, *verification_key).value_or(false)) {
-                if (!check_consistency(certificate, possible_signer)) {
-                    return CertificateInvalidReason::Inconsistent_With_Signer;
-                }
-
-                return CertificateValidity::valid();
+            const expected<bool> verified = m_crypto.verify(digest, signature, *verification_key);
+            if (!verified.has_value()) {
+                validity = CertificateInvalidReason::Unusable_Signer_Key;
+                continue;
+            } else if (!verified.value()) {
+                validity = CertificateInvalidReason::Invalid_Signature;
+                continue;
             }
+
+            if (!check_consistency(certificate, possible_signer)) {
+                return CertificateInvalidReason::Inconsistent_With_Signer;
+            }
+
+            return CertificateValidity::valid();
         }
     }
 
@@ -235,20 +245,28 @@ CertificateValidity DefaultCertificateValidator::check_certificate(const Certifi
         for (auto& possible_signer : m_trust_store.lookup(signer_hash)) {
             auto verification_key = get_verification_key(possible_signer);
             if (!verification_key) {
+                validity = CertificateInvalidReason::Unusable_Signer_Key;
                 continue;
             }
 
-            if (m_crypto.verify(digest, signature, *verification_key).value_or(false)) {
-                if (!check_consistency(certificate, possible_signer)) {
-                    return CertificateInvalidReason::Inconsistent_With_Signer;
-                }
-
-                return CertificateValidity::valid();
+            const expected<bool> verified = m_crypto.verify(digest, signature, *verification_key);
+            if (!verified.has_value()) {
+                validity = CertificateInvalidReason::Unusable_Signer_Key;
+                continue;
+            } else if (!verified.value()) {
+                validity = CertificateInvalidReason::Invalid_Signature;
+                continue;
             }
+
+            if (!check_consistency(certificate, possible_signer)) {
+                return CertificateInvalidReason::Inconsistent_With_Signer;
+            }
+
+            return CertificateValidity::valid();
         }
     }
 
-    return CertificateInvalidReason::Unknown_Signer;
+    return validity;
 }
 
 } // namespace v2

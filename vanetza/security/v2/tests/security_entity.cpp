@@ -420,7 +420,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_subject_assurance
     security::SecuredMessage sec_msg = create_secured_message(certificate);
     DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Signature, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_outdated_certificate)
@@ -492,7 +492,7 @@ TEST_F(SecurityEntityTest, verify_message_modified_certificate_signature)
     security::SecuredMessage sec_msg = create_secured_message(certificate);
     DecapConfirm decap_confirm = security.decapsulate_packet(SecuredMessageView { sec_msg });
     ASSERT_FALSE(decap_confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::Unknown_Signer, decap_confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Signature, decap_confirm.certificate_validity.reason());
 }
 
 TEST_F(SecurityEntityTest, verify_message_modified_signature)

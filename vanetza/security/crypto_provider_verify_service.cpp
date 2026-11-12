@@ -71,25 +71,30 @@ const asn1::Certificate* included_certificate(const SecuredMessage::SignerIdenti
     return certificate ? *certificate : nullptr;
 }
 
-void reject_certificate(VerifyConfirm& confirm, CertificateInvalidReason reason)
-{
-    confirm.report = VerificationReport::Invalid_Certificate;
-    confirm.certificate_validity = reason;
-}
-
 // checks issuer's signature of a ticket (IEEE 1609.2 clause 5.3.1), false if confirm reports its rejection
 bool check_issuer_signature(
     CryptoProvider& crypto, const asn1::Certificate& ticket, const Certificate& issuer, VerifyConfirm& confirm)
 {
     if (!ticket.signature) {
-        reject_certificate(confirm, CertificateInvalidReason::Missing_Signature);
+        confirm.report = VerificationReport::Invalid_Certificate;
+        confirm.certificate_validity = CertificateInvalidReason::Missing_Signature;
         return false;
     }
 
     const boost::optional<Signature> signature = get_signature(ticket);
+    if (!signature) {
+        confirm.report = VerificationReport::Invalid_Certificate;
+        confirm.certificate_validity = CertificateInvalidReason::Invalid_Signer;
+        return false;
+    }
+
     const boost::optional<PublicKey> issuer_key = get_public_key(*issuer.content());
-    if (!signature || !issuer_key) {
-        reject_certificate(confirm, CertificateInvalidReason::Invalid_Signer);
+    if (!issuer_key) {
+        // unusable issuer keys:
+        // - the report blames the station's IssuerLookup configuration,
+        // - the certificate validity names the cause
+        confirm.report = VerificationReport::Configuration_Problem;
+        confirm.certificate_validity = CertificateInvalidReason::Unusable_Signer_Key;
         return false;
     }
 
@@ -102,16 +107,16 @@ bool check_issuer_signature(
     }
 
     const expected<bool> verified = verify_hash(crypto, algo, hash, *signature, *issuer_key);
-    if (verified.has_value() && *verified) {
-        return true;
-    } else if (verified.has_value()) {
-        reject_certificate(confirm, CertificateInvalidReason::Invalid_Signer);
-    } else if (verified.error() == SecurityModuleError::UnsupportedKeyType) {
-        confirm.report = VerificationReport::Incompatible_Protocol;
-    } else {
-        // e.g. an unusable key of a trusted issuer, i.e. of the station's trust information
+    if (!verified.has_value()) {
         confirm.report = VerificationReport::Configuration_Problem;
+        confirm.certificate_validity = CertificateInvalidReason::Unusable_Signer_Key;
+    } else if (!verified.value()) {
+        confirm.report = VerificationReport::Invalid_Certificate;
+        confirm.certificate_validity = CertificateInvalidReason::Invalid_Signature;
+    } else {
+        return true;
     }
+
     return false;
 }
 
@@ -124,13 +129,15 @@ const Certificate* find_trusted_issuer(const IssuerLookup& issuers, const asn1::
     const Certificate* issuer = issuer_id ? issuers.find_issuer(*issuer_id) : nullptr;
     if (view.issuer_is_self()) {
         // tickets are issued by an AA, they are never self-signed
-        reject_certificate(confirm, CertificateInvalidReason::Invalid_Signer);
+        confirm.report = VerificationReport::Invalid_Certificate;
+        confirm.certificate_validity = CertificateInvalidReason::Invalid_Signer;
     } else if (!issuer_id) {
         // issuer identifier is unsupported
         confirm.report = VerificationReport::Incompatible_Protocol;
     } else if (!issuer) {
         // issuer is unknown or not trusted anymore, e.g. revoked meanwhile
-        reject_certificate(confirm, CertificateInvalidReason::Unknown_Signer);
+        confirm.report = VerificationReport::Invalid_Certificate;
+        confirm.certificate_validity = CertificateInvalidReason::Unknown_Signer;
     }
     return issuer;
 }

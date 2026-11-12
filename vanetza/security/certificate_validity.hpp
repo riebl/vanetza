@@ -22,6 +22,8 @@ enum class CertificateInvalidReason
     Inconsistent_With_Signer,
     Insufficient_ITS_AID,
     Missing_Subject_Assurance,
+    Invalid_Signature,
+    Unusable_Signer_Key,
 };
 
 class CertificateValidity

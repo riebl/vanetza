@@ -271,7 +271,7 @@ TEST_F(CryptoProviderVerifyServiceTest, ticket_modified_after_issuing_is_rejecte
     const VerifyConfirm confirm = service->verify(sign_message(ticket, ticket_key));
     EXPECT_EQ(VerificationReport::Invalid_Certificate, confirm.report);
     ASSERT_FALSE(confirm.certificate_validity);
-    EXPECT_EQ(CertificateInvalidReason::Invalid_Signer, confirm.certificate_validity.reason());
+    EXPECT_EQ(CertificateInvalidReason::Invalid_Signature, confirm.certificate_validity.reason());
 }
 
 TEST_F(CryptoProviderVerifyServiceTest, ticket_without_signature_is_rejected)
@@ -337,6 +337,36 @@ TEST_F(CryptoProviderVerifyServiceTest, unusable_issuer_key_is_configuration_pro
     ASSERT_TRUE(issuers.insert(unusable));
     issue(ticket, unusable, aa_key);
     EXPECT_EQ(VerificationReport::Configuration_Problem, service->verify(sign_message(ticket, ticket_key)).report);
+}
+
+TEST_F(CryptoProviderVerifyServiceTest, unusable_issuer_key_is_unusable_signer_key)
+{
+    const v3::Certificate unusable = v3::make_authorization_authority(unusable_public_key(), start);
+    ASSERT_TRUE(issuers.insert(unusable));
+    issue(ticket, unusable, aa_key);
+    const VerifyConfirm confirm = service->verify(sign_message(ticket, ticket_key));
+    ASSERT_FALSE(confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::Unusable_Signer_Key, confirm.certificate_validity.reason());
+}
+
+TEST_F(CryptoProviderVerifyServiceTest, issuer_without_verification_key_is_configuration_problem)
+{
+    // implicit certificates carry a reconstruction value instead of a verification key
+    v3::Certificate implicit = v3::make_authorization_authority(public_key(aa_key), start);
+    auto& indicator = implicit->toBeSigned.verifyKeyIndicator;
+    vanetza::asn1::reset(asn_DEF_Vanetza_Security_VerificationKeyIndicator, &indicator);
+    indicator.present = Vanetza_Security_VerificationKeyIndicator_PR_reconstructionValue;
+    indicator.choice.reconstructionValue.present = Vanetza_Security_EccP256CurvePoint_PR_compressed_y_0;
+    vanetza::asn1::assign(indicator.choice.reconstructionValue.choice.compressed_y_0, ByteBuffer(32, 0x02));
+    ASSERT_TRUE(issuers.insert(implicit));
+    vanetza::asn1::reset(asn_DEF_Vanetza_Security_IssuerIdentifier, &ticket->issuer);
+    ticket->issuer.present = Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
+    vanetza::asn1::assign(ticket->issuer.choice.sha256AndDigest, implicit.calculate_digest(*crypto).value());
+
+    const VerifyConfirm confirm = service->verify(sign_message(ticket, ticket_key));
+    EXPECT_EQ(VerificationReport::Configuration_Problem, confirm.report);
+    ASSERT_FALSE(confirm.certificate_validity);
+    EXPECT_EQ(CertificateInvalidReason::Unusable_Signer_Key, confirm.certificate_validity.reason());
 }
 
 TEST_F(CryptoProviderVerifyServiceTest, unsupported_issuer_identifier_is_incompatible)
