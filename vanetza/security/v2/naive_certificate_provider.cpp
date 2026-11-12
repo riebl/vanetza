@@ -1,4 +1,5 @@
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 //#include <vanetza/security/v2/basic_elements.hpp>
 //#include <vanetza/security/v2/ecc_point.hpp>
 #include <vanetza/security/v2/naive_certificate_provider.hpp>
@@ -82,7 +83,8 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
     Certificate certificate;
 
     // section 6.1 in TS 103 097 v1.2.1
-    certificate.signer_info = calculate_hash(aa_certificate());
+    BackendCryptoProvider crypto { *m_crypto_backend };
+    certificate.signer_info = calculate_hash(crypto, aa_certificate());
 
     // section 6.3 in TS 103 097 v1.2.1
     certificate.subject_info.subject_type = SubjectType::Authorization_Ticket;
@@ -135,7 +137,8 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     Certificate certificate;
 
     // section 6.1 in TS 103 097 v1.2.1
-    certificate.signer_info = calculate_hash(root_certificate());
+    BackendCryptoProvider crypto { *m_crypto_backend };
+    certificate.signer_info = calculate_hash(crypto, root_certificate());
 
     // section 6.3 in TS 103 097 v1.2.1
     certificate.subject_info.subject_type = SubjectType::Authorization_Authority;

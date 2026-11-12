@@ -1,4 +1,5 @@
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <array>
 
@@ -102,7 +103,8 @@ Certificate NaiveCertificateProvider::generate_authorization_ticket()
 
     // section 6 in TS 103 097 v2.1.1
     certificate->issuer.present= Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
-    auto maybe_aa_cert_digest = aa_certificate.calculate_digest();
+    BackendCryptoProvider crypto { *m_crypto_backend };
+    auto maybe_aa_cert_digest = aa_certificate.calculate_digest(crypto);
     if (maybe_aa_cert_digest) {
         const HashedId8& aa_cert_digest = *maybe_aa_cert_digest;
         OCTET_STRING_fromBuf(
@@ -176,7 +178,8 @@ Certificate NaiveCertificateProvider::generate_aa_certificate(const std::string&
     //section 7.2.4 in TS 103 097 v2.1.1
     Certificate root_cert = this->root_certificate();
     aa_certificate->issuer.present= Vanetza_Security_IssuerIdentifier_PR_sha256AndDigest;
-    auto maybe_root_cert_digest = root_cert.calculate_digest();
+    BackendCryptoProvider crypto { *m_crypto_backend };
+    auto maybe_root_cert_digest = root_cert.calculate_digest(crypto);
     if (maybe_root_cert_digest) {
         const HashedId8& root_cert_digest = *maybe_root_cert_digest;
         OCTET_STRING_fromBuf(
