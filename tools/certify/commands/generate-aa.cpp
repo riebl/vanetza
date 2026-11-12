@@ -7,6 +7,7 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/persistence.hpp>
@@ -100,7 +101,8 @@ int GenerateAaCommand::execute()
     }
     certificate.subject_attributes.push_back(certificate_aids);
 
-    certificate.signer_info = calculate_hash(sign_cert);
+    BackendCryptoProvider crypto { *backend };
+    certificate.signer_info = calculate_hash(crypto, sign_cert);
 
     std::vector<unsigned char> subject(subject_name.begin(), subject_name.end());
     certificate.subject_info.subject_name = subject;

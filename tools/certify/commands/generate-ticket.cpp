@@ -8,6 +8,7 @@
 #include <cryptopp/cryptlib.h>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate.hpp>
@@ -117,7 +118,8 @@ int GenerateTicketCommand::execute()
         certificate_ssp.push_back({v2::IntX(aid::GN_MGMT), vanetza::ByteBuffer{}});
     }
 
-    certificate.signer_info = calculate_hash(sign_cert);
+    BackendCryptoProvider crypto { *backend };
+    certificate.signer_info = calculate_hash(crypto, sign_cert);
     certificate.subject_info.subject_type = v2::SubjectType::Authorization_Ticket;
     certificate.subject_attributes.push_back(v2::SubjectAssurance(0x00));
     certificate.subject_attributes.push_back(certificate_ssp);

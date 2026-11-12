@@ -6,6 +6,8 @@
 #include <fstream>
 #include <iostream>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/backend.hpp>
+#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/ecc_point.hpp>
@@ -125,7 +127,9 @@ int ShowCertificateCommand::execute()
     std::cout << std::endl;
 
     {
-        HashedId8 cert_id = calculate_hash(cert);
+        auto backend = create_backend_or_throw("default");
+        BackendCryptoProvider crypto { *backend };
+        HashedId8 cert_id = calculate_hash(crypto, cert);
         std::string cert_id_string(reinterpret_cast<const char*>(&cert_id[0]), cert_id.size());
         std::cout << "Digest: " << boost::algorithm::hex(cert_id_string) << " (SHA-256)" << std::endl;
     }
