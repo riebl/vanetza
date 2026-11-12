@@ -13,26 +13,27 @@ Build it with both options enabled:
 
 ```shell
 cmake -S . -B build-pqc -DVANETZA_WITH_PQC=ON -DBUILD_CERTIFY=ON
-cmake --build build-pqc --target certify certify-pqc
+cmake --build build-pqc --target certify-pqc
 ```
+
+`certify-pqc` requires a build with a proper security module, e.g. backed by OpenSSL.
 
 ## Generate a Chain
 
-Use the existing tool for ECC keys:
-
-```shell
-build-pqc/bin/certify generate-key root.key
-build-pqc/bin/certify generate-key aa.key
-build-pqc/bin/certify generate-key ticket.key
-```
-
-Generate FN-DSA key pairs for the authorities. The command appends
-`.pqc.key` and `.pqc.pub` to each base path automatically:
+Generate a key for each certificate.
+The command writes the ECC private key to `.key` and the ECC public key to `.pub`.
+The default hybrid profile additionally writes an FN-DSA-512 key to `.pqc.key` and
+`.pqc.pub`. The ticket needs no FN-DSA key:
 
 ```shell
 build-pqc/bin/certify-pqc generate-key root
 build-pqc/bin/certify-pqc generate-key aa
+build-pqc/bin/certify-pqc generate-key ticket --profile ecc
 ```
+
+Key options refer to a key by the name given to `generate-key`, e.g.
+`--sign-key root`. Issuing a certificate requires the issuer's private key,
+while the subject's public key suffices.
 
 Generate the Root, AA, and AT in that order:
 
@@ -40,25 +41,25 @@ Generate the Root, AA, and AT in that order:
 build-pqc/bin/certify-pqc generate-root \
   --profile hybrid \
   --output root.cert \
-  --subject-key root.key \
+  --subject-key root \
   --subject-pqc-key root
 
 build-pqc/bin/certify-pqc generate-aa \
   --profile hybrid \
   --output aa.cert \
-  --sign-key root.key \
+  --sign-key root \
   --sign-cert root.cert \
   --sign-pqc-key root \
-  --subject-key aa.key \
+  --subject-key aa \
   --subject-pqc-key aa
 
 build-pqc/bin/certify-pqc generate-ticket \
   --profile hybrid \
   --output ticket.cert \
-  --sign-key aa.key \
+  --sign-key aa \
   --sign-cert aa.cert \
   --sign-pqc-key aa \
-  --subject-key ticket.key
+  --subject-key ticket
 ```
 
 Root and AA certificates contain an FN-DSA public key and signature. The AT
@@ -70,25 +71,21 @@ including their SSP ranges. Tickets default to CA and DEN application
 permissions. The AA also carries its subject ECC key as the public encryption
 key, matching the existing V3 certificate-generation behavior.
 
-The existing `certify generate-key` command writes PKCS#8 DER. The generated
-`.key` files are used directly as subject and issuer ECC keys by
-`certify-pqc`.
-
 ### ECC-Only V3 Chain
 
 Use the same ECC keys without generating FN-DSA keys:
 
 ```shell
 build-pqc/bin/certify-pqc generate-root \
-  --profile ecc --output root.cert --subject-key root.key
+  --profile ecc --output root.cert --subject-key root
 
 build-pqc/bin/certify-pqc generate-aa \
   --profile ecc --output aa.cert \
-  --sign-key root.key --sign-cert root.cert --subject-key aa.key
+  --sign-key root --sign-cert root.cert --subject-key aa
 
 build-pqc/bin/certify-pqc generate-ticket \
   --profile ecc --output ticket.cert \
-  --sign-key aa.key --sign-cert aa.cert --subject-key ticket.key
+  --sign-key aa --sign-cert aa.cert --subject-key ticket
 ```
 
 These certificates contain only the standard ECC verification keys and

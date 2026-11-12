@@ -1,6 +1,5 @@
 #include "files.hpp"
 #include <vanetza/common/byte_buffer.hpp>
-#include <vanetza/security/v2/persistence.hpp>
 #include <fstream>
 #include <iterator>
 #include <stdexcept>
@@ -29,6 +28,15 @@ void write_file(const std::string& path, const ByteBuffer& data)
     }
 }
 
+// key references give access to private keys, thus only their owner may read them
+void write_key_reference(const std::string& path, const vanetza::security::KeyReference& reference)
+{
+    write_file(path, reference.data);
+    if (::chmod(path.c_str(), S_IRUSR | S_IWUSR) != 0) {
+        throw std::runtime_error("cannot restrict key reference permissions: " + path);
+    }
+}
+
 template<typename T>
 T load_exact(const std::string& path, std::size_t expected_size, const char* description)
 {
@@ -42,44 +50,53 @@ T load_exact(const std::string& path, std::size_t expected_size, const char* des
 
 } // namespace
 
-vanetza::security::ecdsa256::KeyPair load_ecc_key_pair(const std::string& path)
+vanetza::security::KeyReference load_ecc_key_reference(const std::string& base_path)
 {
-    return vanetza::security::v2::load_private_key_from_file(path);
+    return vanetza::security::KeyReference { read_file(base_path + ".key") };
 }
 
-vanetza::security::pqc::KeyPair load_pqc_key_pair(const std::string& base_path)
+vanetza::security::PublicKey load_ecc_public_key(const std::string& base_path)
 {
-    using namespace vanetza::security::pqc;
-    KeyPair key_pair;
-    key_pair.private_key = load_exact<PrivateKey>(
-        base_path + ".pqc.key", fndsa512_private_key_size, "FN-DSA-512 private key");
-    key_pair.public_key = load_exact<PublicKey>(
-        base_path + ".pqc.pub", fndsa512_public_key_size, "FN-DSA-512 public key");
-    return key_pair;
-}
-
-vanetza::security::pqc::PrivateKey load_pqc_private_key(const std::string& base_path)
-{
-    using namespace vanetza::security::pqc;
-    return load_exact<PrivateKey>(
-        base_path + ".pqc.key", fndsa512_private_key_size, "FN-DSA-512 private key");
-}
-
-void save_pqc_key_pair(
-    const std::string& base_path, const vanetza::security::pqc::KeyPair& key_pair)
-{
-    using namespace vanetza::security::pqc;
-    if (key_pair.private_key.bytes.size() != fndsa512_private_key_size ||
-            key_pair.public_key.bytes.size() != fndsa512_public_key_size) {
-        throw std::invalid_argument("cannot save malformed FN-DSA-512 key pair");
+    using namespace vanetza::security;
+    const std::string path = base_path + ".pub";
+    const boost::optional<PublicKey> public_key = decode_ec_point(KeyType::NistP256, read_file(path));
+    if (!public_key) {
+        throw std::runtime_error("ECC public key is no NIST P-256 point in: " + path);
     }
+    return *public_key;
+}
 
-    const std::string private_path = base_path + ".pqc.key";
-    write_file(private_path, key_pair.private_key.bytes);
-    if (::chmod(private_path.c_str(), S_IRUSR | S_IWUSR) != 0) {
-        throw std::runtime_error("cannot restrict private-key permissions: " + private_path);
+void save_ecc_key(
+    const std::string& base_path, const vanetza::security::KeyReference& reference,
+    const vanetza::security::PublicKey& public_key)
+{
+    const ByteBuffer point = vanetza::security::encode_ec_point(public_key);
+    if (reference.data.empty() || point.empty()) {
+        throw std::invalid_argument("cannot save malformed ECC key");
     }
-    write_file(base_path + ".pqc.pub", key_pair.public_key.bytes);
+    write_key_reference(base_path + ".key", reference);
+    write_file(base_path + ".pub", point);
+}
+
+vanetza::security::KeyReference load_pqc_key_reference(const std::string& base_path)
+{
+    return vanetza::security::KeyReference { read_file(base_path + ".pqc.key") };
+}
+
+vanetza::security::pqc::PublicKey load_pqc_public_key(const std::string& base_path)
+{
+    using namespace vanetza::security::pqc;
+    return load_exact<PublicKey>(base_path + ".pqc.pub", fndsa512_public_key_size, "FN-DSA-512 public key");
+}
+
+void save_pqc_key(const std::string& base_path, const vanetza::security::pqc::SigningKey& key)
+{
+    using namespace vanetza::security::pqc;
+    if (key.reference.data.empty() || key.public_key.bytes.size() != fndsa512_public_key_size) {
+        throw std::invalid_argument("cannot save malformed FN-DSA-512 key");
+    }
+    write_key_reference(base_path + ".pqc.key", key.reference);
+    write_file(base_path + ".pqc.pub", key.public_key.bytes);
 }
 
 vanetza::security::v3::Certificate load_v3_certificate(const std::string& path)

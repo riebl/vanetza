@@ -2,11 +2,10 @@
 #include <vanetza/asn1/security_profile.hpp>
 #include VANETZA_ASN1_SECURITY_HEADER(Certificate.h)
 #include VANETZA_ASN1_SECURITY_HEADER(PsidGroupPermissions.h)
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/pqc/hybrid_certificate.hpp>
-#include <vanetza/security/private_key.hpp>
+#include <vanetza/security/security_module.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v3/asn1_conversions.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -36,15 +35,16 @@ void assign_octets(OCTET_STRING_t& destination, const void* source, std::size_t 
     }
 }
 
-::vanetza::security::PrivateKey convert_private_key(const ecdsa256::PrivateKey& input)
+::vanetza::security::PublicKey query_public_key(SecurityModule& module, const KeyReference& key)
 {
-    ::vanetza::security::PrivateKey output;
-    output.type = KeyType::NistP256;
-    output.key.assign(input.key.begin(), input.key.end());
-    return output;
+    auto public_key = module.public_key(key);
+    if (!public_key) {
+        throw std::runtime_error("cannot query public key of ECC key reference: " + public_key.error().message());
+    }
+    return std::move(*public_key);
 }
 
-void set_verification_key(v3::Certificate& certificate, const ecdsa256::PublicKey& public_key)
+void set_verification_key(v3::Certificate& certificate, const ::vanetza::security::PublicKey& public_key)
 {
     auto& indicator = certificate->toBeSigned.verifyKeyIndicator;
     indicator.present = Vanetza_Security_VerificationKeyIndicator_PR_verificationKey;
@@ -54,7 +54,7 @@ void set_verification_key(v3::Certificate& certificate, const ecdsa256::PublicKe
         v3::to_asn1(compress_public_key(public_key));
 }
 
-void set_encryption_key(v3::Certificate& certificate, const ecdsa256::PublicKey& public_key)
+void set_encryption_key(v3::Certificate& certificate, const ::vanetza::security::PublicKey& public_key)
 {
     certificate->toBeSigned.encryptionKey =
         vanetza::asn1::allocate<v3::asn1::PublicEncryptionKey>();
@@ -107,12 +107,11 @@ void set_validity(
 }
 
 void initialize_certificate(
-    ::vanetza::security::Backend& ecc_backend, v3::Certificate& certificate, const ecdsa256::PublicKey& subject_key,
+    CryptoProvider& crypto, v3::Certificate& certificate, const ::vanetza::security::PublicKey& subject_key,
     const v3::Certificate* issuer, int validity_days, Clock::time_point now)
 {
     certificate->version = 3;
     certificate->type = Vanetza_Security_CertificateType_explicit;
-    BackendCryptoProvider crypto { ecc_backend };
     set_issuer(crypto, certificate, issuer);
 
     static const std::array<char, 3> craca_id {{ 0, 0, 0 }};
@@ -215,121 +214,108 @@ v3::Certificate canonical_certificate(v3::Certificate certificate)
 } // namespace
 
 v3::Certificate build_ecc_root_certificate(
-    ::vanetza::security::Backend& ecc_backend, const ecdsa256::KeyPair& subject_key,
+    CryptoProvider& crypto, SecurityModule& module, const KeyReference& subject_key,
     const CertificateParameters& parameters, Clock::time_point now)
 {
     v3::Certificate certificate;
     initialize_certificate(
-        ecc_backend, certificate, subject_key.public_key, nullptr, parameters.validity_days, now);
+        crypto, certificate, query_public_key(module, subject_key), nullptr, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     certificate.add_app_permission(aid::CRL, ByteBuffer { 1 });
     certificate.add_app_permission(aid::CTL, ByteBuffer { 0x18 });
 
-    sign_primary_certificate(
-        certificate, nullptr, ecc_backend, convert_private_key(subject_key.private_key));
+    sign_primary_certificate(certificate, nullptr, crypto, module, subject_key);
     return canonical_certificate(std::move(certificate));
 }
 
 v3::Certificate build_hybrid_root_certificate(
-    ::vanetza::security::Backend& ecc_backend, Backend& pqc_backend,
-    const ecdsa256::KeyPair& subject_key, const KeyPair& subject_pqc_key,
+    CryptoProvider& crypto, SecurityModule& module, Backend& pqc_backend,
+    const KeyReference& subject_key, const SigningKey& subject_pqc_key,
     const CertificateParameters& parameters, Clock::time_point now)
 {
     v3::Certificate certificate;
     initialize_certificate(
-        ecc_backend, certificate, subject_key.public_key, nullptr, parameters.validity_days, now);
+        crypto, certificate, query_public_key(module, subject_key), nullptr, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     certificate.add_app_permission(aid::CRL, ByteBuffer { 1 });
     certificate.add_app_permission(aid::CTL, ByteBuffer { 0x18 });
 
     set_alternative_public_key(certificate, subject_pqc_key.public_key);
-    sign_alternative_certificate(
-        certificate, nullptr, ecc_backend, pqc_backend, subject_pqc_key.private_key);
-    sign_primary_certificate(
-        certificate, nullptr, ecc_backend, convert_private_key(subject_key.private_key));
+    sign_alternative_certificate(certificate, nullptr, crypto, pqc_backend, subject_pqc_key.reference);
+    sign_primary_certificate(certificate, nullptr, crypto, module, subject_key);
     return canonical_certificate(std::move(certificate));
 }
 
 v3::Certificate build_ecc_authorization_authority_certificate(
-    ::vanetza::security::Backend& ecc_backend, const ecdsa256::KeyPair& issuer_key,
+    CryptoProvider& crypto, SecurityModule& module, const KeyReference& issuer_key,
     const v3::Certificate& issuer_certificate,
-    const ecdsa256::PublicKey& subject_key,
+    const ::vanetza::security::PublicKey& subject_key,
     const CertificateParameters& parameters, Clock::time_point now)
 {
     v3::Certificate certificate;
     initialize_certificate(
-        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        crypto, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     set_encryption_key(certificate, subject_key);
 
-    sign_primary_certificate(
-        certificate, &issuer_certificate, ecc_backend,
-        convert_private_key(issuer_key.private_key));
+    sign_primary_certificate(certificate, &issuer_certificate, crypto, module, issuer_key);
     return canonical_certificate(std::move(certificate));
 }
 
 v3::Certificate build_hybrid_authorization_authority_certificate(
-    ::vanetza::security::Backend& ecc_backend, Backend& pqc_backend,
-    const ecdsa256::KeyPair& issuer_key, const PrivateKey& issuer_pqc_key,
+    CryptoProvider& crypto, SecurityModule& module, Backend& pqc_backend,
+    const KeyReference& issuer_key, const KeyReference& issuer_pqc_key,
     const v3::Certificate& issuer_certificate,
-    const ecdsa256::PublicKey& subject_key, const PublicKey& subject_pqc_key,
+    const ::vanetza::security::PublicKey& subject_key, const PublicKey& subject_pqc_key,
     const CertificateParameters& parameters, Clock::time_point now)
 {
     v3::Certificate certificate;
     initialize_certificate(
-        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        crypto, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     set_subject_name(certificate, parameters.subject_name);
     add_issue_permissions(certificate, parameters.application_ids);
     set_encryption_key(certificate, subject_key);
 
     set_alternative_public_key(certificate, subject_pqc_key);
-    sign_alternative_certificate(
-        certificate, &issuer_certificate, ecc_backend, pqc_backend, issuer_pqc_key);
-    sign_primary_certificate(
-        certificate, &issuer_certificate, ecc_backend,
-        convert_private_key(issuer_key.private_key));
+    sign_alternative_certificate(certificate, &issuer_certificate, crypto, pqc_backend, issuer_pqc_key);
+    sign_primary_certificate(certificate, &issuer_certificate, crypto, module, issuer_key);
     return canonical_certificate(std::move(certificate));
 }
 
 v3::Certificate build_ecc_authorization_ticket(
-    ::vanetza::security::Backend& ecc_backend, const ecdsa256::KeyPair& issuer_key,
+    CryptoProvider& crypto, SecurityModule& module, const KeyReference& issuer_key,
     const v3::Certificate& issuer_certificate,
-    const ecdsa256::PublicKey& subject_key,
+    const ::vanetza::security::PublicKey& subject_key,
     const CertificateParameters& parameters, Clock::time_point now)
 {
     v3::Certificate certificate;
     initialize_certificate(
-        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        crypto, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_none;
     add_application_permissions(certificate, parameters.application_ids);
 
-    sign_primary_certificate(
-        certificate, &issuer_certificate, ecc_backend,
-        convert_private_key(issuer_key.private_key));
+    sign_primary_certificate(certificate, &issuer_certificate, crypto, module, issuer_key);
     return canonical_certificate(std::move(certificate));
 }
 
 v3::Certificate build_hybrid_authorization_ticket(
-    ::vanetza::security::Backend& ecc_backend, Backend& pqc_backend,
-    const ecdsa256::KeyPair& issuer_key, const PrivateKey& issuer_pqc_key,
+    CryptoProvider& crypto, SecurityModule& module, Backend& pqc_backend,
+    const KeyReference& issuer_key, const KeyReference& issuer_pqc_key,
     const v3::Certificate& issuer_certificate,
-    const ecdsa256::PublicKey& subject_key,
+    const ::vanetza::security::PublicKey& subject_key,
     const CertificateParameters& parameters, Clock::time_point now)
 {
     v3::Certificate certificate;
     initialize_certificate(
-        ecc_backend, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
+        crypto, certificate, subject_key, &issuer_certificate, parameters.validity_days, now);
     certificate->toBeSigned.id.present = Vanetza_Security_CertificateId_PR_none;
     add_application_permissions(certificate, parameters.application_ids);
 
-    sign_alternative_certificate(
-        certificate, &issuer_certificate, ecc_backend, pqc_backend, issuer_pqc_key);
-    sign_primary_certificate(
-        certificate, &issuer_certificate, ecc_backend,
-        convert_private_key(issuer_key.private_key));
+    sign_alternative_certificate(certificate, &issuer_certificate, crypto, pqc_backend, issuer_pqc_key);
+    sign_primary_certificate(certificate, &issuer_certificate, crypto, module, issuer_key);
     return canonical_certificate(std::move(certificate));
 }
 

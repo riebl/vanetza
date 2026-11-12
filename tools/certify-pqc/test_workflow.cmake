@@ -1,5 +1,5 @@
-if(NOT CERTIFY OR NOT CERTIFY_PQC OR NOT WORK_DIRECTORY)
-    message(FATAL_ERROR "CERTIFY, CERTIFY_PQC and WORK_DIRECTORY are required")
+if(NOT CERTIFY_PQC OR NOT WORK_DIRECTORY)
+    message(FATAL_ERROR "CERTIFY_PQC and WORK_DIRECTORY are required")
 endif()
 
 file(REMOVE_RECURSE "${WORK_DIRECTORY}")
@@ -55,24 +55,22 @@ function(check_show certificate material public_key_size signature_size)
     endforeach()
 endfunction()
 
-run("${CERTIFY}" generate-key root.key)
-run("${CERTIFY}" generate-key aa.key)
-run("${CERTIFY}" generate-key ticket.key)
 run("${CERTIFY_PQC}" generate-key root)
 run("${CERTIFY_PQC}" generate-key aa)
+run("${CERTIFY_PQC}" generate-key ticket --profile ecc)
 
 run("${CERTIFY_PQC}" generate-root
-    --profile ecc --output ecc-root.cert --subject-key root.key --days 365
+    --profile ecc --output ecc-root.cert --subject-key root --days 365
     --aid 36 141)
 run("${CERTIFY_PQC}" generate-aa
     --profile ecc --output ecc-aa.cert
-    --sign-key root.key --sign-cert ecc-root.cert
-    --subject-key aa.key --days 180
+    --sign-key root --sign-cert ecc-root.cert
+    --subject-key aa --days 180
     --aid 36 141)
 run("${CERTIFY_PQC}" generate-ticket
     --profile ecc --output ecc-ticket.cert
-    --sign-key aa.key --sign-cert ecc-aa.cert
-    --subject-key ticket.key --days 7
+    --sign-key aa --sign-cert ecc-aa.cert
+    --subject-key ticket --days 7
     --aid 141)
 run("${CERTIFY_PQC}" verify-chain --profile ecc
     --root ecc-root.cert --aa ecc-aa.cert --ticket ecc-ticket.cert --aid 141)
@@ -81,17 +79,17 @@ check_show(ecc-aa.cert "none" 0 0)
 check_show(ecc-ticket.cert "none" 0 0)
 
 run("${CERTIFY_PQC}" generate-root
-    --output root.cert --subject-key root.key --subject-pqc-key root --days 365
+    --output root.cert --subject-key root --subject-pqc-key root --days 365
     --aid 36 141)
 run("${CERTIFY_PQC}" generate-aa
     --output aa.cert
-    --sign-key root.key --sign-cert root.cert --sign-pqc-key root
-    --subject-key aa.key --subject-pqc-key aa --days 180
+    --sign-key root --sign-cert root.cert --sign-pqc-key root
+    --subject-key aa --subject-pqc-key aa --days 180
     --aid 36 141)
 run("${CERTIFY_PQC}" generate-ticket
     --output ticket.cert
-    --sign-key aa.key --sign-cert aa.cert --sign-pqc-key aa
-    --subject-key ticket.key --days 7
+    --sign-key aa --sign-cert aa.cert --sign-pqc-key aa
+    --subject-key ticket --days 7
     --aid 141)
 run("${CERTIFY_PQC}" verify-chain
     --root root.cert --aa aa.cert --ticket ticket.cert --aid 141)

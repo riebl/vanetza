@@ -1,11 +1,11 @@
 #include "certificate_builder.hpp"
 #include "files.hpp"
 #include <vanetza/common/manual_runtime.hpp>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <vanetza/security/pqc/hybrid_certificate.hpp>
 #include <vanetza/security/pqc/hybrid_certificate_validator.hpp>
+#include <vanetza/security/security_module.hpp>
 #include <vanetza/security/v3/issuer_memory_lookup.hpp>
 #include <vanetza/security/v3/trust_store.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
@@ -58,6 +58,24 @@ Clock::time_point now()
     return Clock::at(boost::posix_time::microsec_clock::universal_time());
 }
 
+std::unique_ptr<CryptoProvider> create_crypto_provider_or_throw()
+{
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        throw std::runtime_error("no crypto provider built in");
+    }
+    return crypto;
+}
+
+std::unique_ptr<SecurityModule> create_security_module_or_throw()
+{
+    std::unique_ptr<SecurityModule> module = create_security_module();
+    if (!module) {
+        throw std::runtime_error("no security module built in");
+    }
+    return module;
+}
+
 std::vector<ItsAid> convert_aids(const std::vector<unsigned>& input)
 {
     return std::vector<ItsAid>(input.begin(), input.end());
@@ -84,11 +102,14 @@ po::variables_map parse(
 int generate_key(const std::vector<std::string>& arguments)
 {
     std::string output;
-    po::options_description options("Generate an FN-DSA-512 key pair");
+    std::string profile_name = "hybrid";
+    po::options_description options("Generate an ECC key and, for the hybrid profile, an FN-DSA-512 key");
     options.add_options()
         ("help,h", "Show this help")
         ("output", po::value<std::string>(&output)->required(),
-            "Output base path; .pqc.key and .pqc.pub are appended");
+            "Output base path; .key and .pub (ECC) and .pqc.key and .pqc.pub (FN-DSA) are appended")
+        ("profile", po::value<std::string>(&profile_name)->default_value("hybrid"),
+            "Key profile: ecc or hybrid");
     po::positional_options_description positional;
     positional.add("output", 1);
     const auto variables = parse(arguments, options, positional);
@@ -97,9 +118,28 @@ int generate_key(const std::vector<std::string>& arguments)
         return 0;
     }
 
-    auto backend = pqc::create_fndsa512_backend();
-    save_pqc_key_pair(output, backend->generate_key_pair());
-    std::cout << "Wrote " << output << ".pqc.key and " << output << ".pqc.pub\n";
+    const auto profile = parse_profile(profile_name);
+    const auto module = create_security_module_or_throw();
+    const expected<KeyReference> ecc_key = module->create_signing_key(KeyType::NistP256);
+    if (!ecc_key) {
+        throw std::runtime_error("cannot create ECC key: " + ecc_key.error().message());
+    }
+    const expected<PublicKey> ecc_public_key = module->public_key(*ecc_key);
+    if (!ecc_public_key) {
+        throw std::runtime_error("cannot query ECC public key: " + ecc_public_key.error().message());
+    }
+    save_ecc_key(output, *ecc_key, *ecc_public_key);
+    std::cout << "Wrote " << output << ".key and " << output << ".pub\n";
+
+    if (profile == CertificateProfile::Hybrid) {
+        auto backend = pqc::create_fndsa512_backend();
+        const expected<pqc::SigningKey> pqc_key = backend->create_signing_key();
+        if (!pqc_key) {
+            throw std::runtime_error("cannot create FN-DSA-512 key: " + pqc_key.error().message());
+        }
+        save_pqc_key(output, *pqc_key);
+        std::cout << "Wrote " << output << ".pqc.key and " << output << ".pqc.pub\n";
+    }
     return 0;
 }
 
@@ -126,7 +166,7 @@ int generate_root(const std::vector<std::string>& arguments)
     options.add_options()
         ("help,h", "Show this help")
         ("output,o", po::value<std::string>(&output)->required(), "Output certificate")
-        ("subject-key", po::value<std::string>(&subject_key)->required(), "ECC private key")
+        ("subject-key", po::value<std::string>(&subject_key)->required(), "ECC key base path")
         ("profile", po::value<std::string>(&profile_name)->default_value("hybrid"),
             "Certificate profile: ecc or hybrid")
         ("subject-pqc-key", po::value<std::string>(&subject_pqc_key),
@@ -142,17 +182,20 @@ int generate_root(const std::vector<std::string>& arguments)
 
     const auto profile = parse_profile(profile_name);
     validate_pqc_argument(profile, subject_pqc_key, "--subject-pqc-key");
-    auto ecc_backend = create_backend_or_throw("default");
-    const auto subject_ecc = load_ecc_key_pair(subject_key);
+    const auto crypto = create_crypto_provider_or_throw();
+    const auto module = create_security_module_or_throw();
+    const KeyReference subject_ecc = load_ecc_key_reference(subject_key);
     Certificate certificate;
     if (profile == CertificateProfile::Hybrid) {
         auto pqc_backend = pqc::create_fndsa512_backend();
+        const pqc::SigningKey subject_pqc {
+            load_pqc_key_reference(subject_pqc_key), load_pqc_public_key(subject_pqc_key) };
         certificate = builder::build_hybrid_root_certificate(
-            *ecc_backend, *pqc_backend, subject_ecc, load_pqc_key_pair(subject_pqc_key),
+            *crypto, *module, *pqc_backend, subject_ecc, subject_pqc,
             certificate_parameters(subject_name, days, aids), now());
     } else {
         certificate = builder::build_ecc_root_certificate(
-            *ecc_backend, subject_ecc,
+            *crypto, *module, subject_ecc,
             certificate_parameters(subject_name, days, aids), now());
     }
     save_v3_certificate(output, certificate);
@@ -176,13 +219,13 @@ int generate_aa(const std::vector<std::string>& arguments)
     options.add_options()
         ("help,h", "Show this help")
         ("output,o", po::value<std::string>(&output)->required(), "Output certificate")
-        ("sign-key", po::value<std::string>(&sign_key)->required(), "Issuer ECC private key")
+        ("sign-key", po::value<std::string>(&sign_key)->required(), "Issuer ECC key base path")
         ("sign-cert", po::value<std::string>(&sign_cert)->required(), "Issuer certificate")
         ("profile", po::value<std::string>(&profile_name)->default_value("hybrid"),
             "Certificate profile: ecc or hybrid")
         ("sign-pqc-key", po::value<std::string>(&sign_pqc_key),
             "Issuer FN-DSA key base path")
-        ("subject-key", po::value<std::string>(&subject_key)->required(), "Subject ECC private key")
+        ("subject-key", po::value<std::string>(&subject_key)->required(), "Subject ECC key base path")
         ("subject-pqc-key", po::value<std::string>(&subject_pqc_key),
             "Subject FN-DSA key base path")
         ("subject-name", po::value<std::string>(&subject_name), "Certificate subject name")
@@ -197,22 +240,22 @@ int generate_aa(const std::vector<std::string>& arguments)
     const auto profile = parse_profile(profile_name);
     validate_pqc_argument(profile, sign_pqc_key, "--sign-pqc-key");
     validate_pqc_argument(profile, subject_pqc_key, "--subject-pqc-key");
-    auto ecc_backend = create_backend_or_throw("default");
-    const auto subject_ecc = load_ecc_key_pair(subject_key);
-    const auto issuer_ecc = load_ecc_key_pair(sign_key);
+    const auto crypto = create_crypto_provider_or_throw();
+    const auto module = create_security_module_or_throw();
+    const KeyReference issuer_ecc = load_ecc_key_reference(sign_key);
+    const PublicKey subject_ecc = load_ecc_public_key(subject_key);
     const auto issuer_certificate = load_v3_certificate(sign_cert);
     Certificate certificate;
     if (profile == CertificateProfile::Hybrid) {
         auto pqc_backend = pqc::create_fndsa512_backend();
-        const auto subject_pqc = load_pqc_key_pair(subject_pqc_key);
         certificate = builder::build_hybrid_authorization_authority_certificate(
-            *ecc_backend, *pqc_backend, issuer_ecc,
-            load_pqc_private_key(sign_pqc_key), issuer_certificate,
-            subject_ecc.public_key, subject_pqc.public_key,
+            *crypto, *module, *pqc_backend, issuer_ecc,
+            load_pqc_key_reference(sign_pqc_key), issuer_certificate,
+            subject_ecc, load_pqc_public_key(subject_pqc_key),
             certificate_parameters(subject_name, days, aids), now());
     } else {
         certificate = builder::build_ecc_authorization_authority_certificate(
-            *ecc_backend, issuer_ecc, issuer_certificate, subject_ecc.public_key,
+            *crypto, *module, issuer_ecc, issuer_certificate, subject_ecc,
             certificate_parameters(subject_name, days, aids), now());
     }
     save_v3_certificate(output, certificate);
@@ -235,13 +278,13 @@ int generate_ticket(const std::vector<std::string>& arguments)
     options.add_options()
         ("help,h", "Show this help")
         ("output,o", po::value<std::string>(&output)->required(), "Output certificate")
-        ("sign-key", po::value<std::string>(&sign_key)->required(), "Issuer ECC private key")
+        ("sign-key", po::value<std::string>(&sign_key)->required(), "Issuer ECC key base path")
         ("sign-cert", po::value<std::string>(&sign_cert)->required(), "Issuer certificate")
         ("profile", po::value<std::string>(&profile_name)->default_value("hybrid"),
             "Certificate profile: ecc or hybrid")
         ("sign-pqc-key", po::value<std::string>(&sign_pqc_key),
             "Issuer FN-DSA key base path")
-        ("subject-key", po::value<std::string>(&subject_key)->required(), "Subject ECC private key")
+        ("subject-key", po::value<std::string>(&subject_key)->required(), "Subject ECC key base path")
         ("days", po::value<int>(&days), "Validity in days")
         ("aid", po::value<std::vector<unsigned>>(&aids)->multitoken(), "Permitted ITS-AIDs");
     const auto variables = parse(arguments, options);
@@ -252,20 +295,21 @@ int generate_ticket(const std::vector<std::string>& arguments)
 
     const auto profile = parse_profile(profile_name);
     validate_pqc_argument(profile, sign_pqc_key, "--sign-pqc-key");
-    auto ecc_backend = create_backend_or_throw("default");
-    const auto issuer_ecc = load_ecc_key_pair(sign_key);
+    const auto crypto = create_crypto_provider_or_throw();
+    const auto module = create_security_module_or_throw();
+    const KeyReference issuer_ecc = load_ecc_key_reference(sign_key);
     const auto issuer_certificate = load_v3_certificate(sign_cert);
-    const auto subject_ecc = load_ecc_key_pair(subject_key);
+    const PublicKey subject_ecc = load_ecc_public_key(subject_key);
     Certificate certificate;
     if (profile == CertificateProfile::Hybrid) {
         auto pqc_backend = pqc::create_fndsa512_backend();
         certificate = builder::build_hybrid_authorization_ticket(
-            *ecc_backend, *pqc_backend, issuer_ecc,
-            load_pqc_private_key(sign_pqc_key), issuer_certificate,
-            subject_ecc.public_key, certificate_parameters({}, days, aids), now());
+            *crypto, *module, *pqc_backend, issuer_ecc,
+            load_pqc_key_reference(sign_pqc_key), issuer_certificate,
+            subject_ecc, certificate_parameters({}, days, aids), now());
     } else {
         certificate = builder::build_ecc_authorization_ticket(
-            *ecc_backend, issuer_ecc, issuer_certificate, subject_ecc.public_key,
+            *crypto, *module, issuer_ecc, issuer_certificate, subject_ecc,
             certificate_parameters({}, days, aids), now());
     }
     save_v3_certificate(output, certificate);
@@ -343,19 +387,18 @@ int verify_chain(const std::vector<std::string>& arguments)
          pqc::alternative_material_state(ticket) != pqc::MaterialState::None)) {
         throw std::invalid_argument("ECC profile chain contains alternative PQC material");
     }
-    auto ecc_backend = create_backend_or_throw("default");
     auto pqc_backend = pqc::create_fndsa512_backend();
 
-    BackendCryptoProvider ecc_crypto { *ecc_backend };
-    TrustStore trust_store { ecc_crypto };
+    const auto ecc_crypto = create_crypto_provider_or_throw();
+    TrustStore trust_store { *ecc_crypto };
     trust_store.insert(root);
-    IssuerMemoryLookup issuer_lookup { ecc_crypto };
+    IssuerMemoryLookup issuer_lookup { *ecc_crypto };
     if (!issuer_lookup.insert(root) || !issuer_lookup.insert(aa)) {
         throw std::runtime_error("Root or AA cannot be used as an issuer certificate");
     }
 
     ManualRuntime runtime(now());
-    pqc::HybridCertificateValidator validator { ecc_crypto };
+    pqc::HybridCertificateValidator validator { *ecc_crypto };
     validator.use_runtime(&runtime);
     validator.disable_location_checks(true);
     validator.use_issuer_lookup(&issuer_lookup);
