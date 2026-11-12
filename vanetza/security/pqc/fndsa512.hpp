@@ -1,6 +1,8 @@
 #pragma once
 
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/common/expected.hpp>
+#include <vanetza/security/key_reference.hpp>
 #include <cstddef>
 #include <memory>
 
@@ -20,6 +22,7 @@ struct PublicKey
     ByteBuffer bytes;
 };
 
+/** \deprecated exposes private key, use KeyReference */
 struct PrivateKey
 {
     ByteBuffer bytes;
@@ -30,10 +33,18 @@ struct Signature
     ByteBuffer bytes;
 };
 
+/** \deprecated exposes private key, use SigningKey */
 struct KeyPair
 {
     PublicKey public_key;
     PrivateKey private_key;
+};
+
+/** Private key held by a Backend and its public key */
+struct SigningKey
+{
+    KeyReference reference;
+    PublicKey public_key;
 };
 
 /**
@@ -46,9 +57,26 @@ struct KeyPair
 class Backend
 {
 public:
+    /** \deprecated exposes private key, use create_signing_key() */
     virtual KeyPair generate_key_pair() = 0;
+    /** \deprecated exposes private key, use sign(const KeyReference&, const ByteBuffer&) */
     virtual Signature sign(const PrivateKey&, const ByteBuffer& data) = 0;
     virtual bool verify(const PublicKey&, const ByteBuffer& data, const Signature&) = 0;
+
+    /**
+     * Create a key pair for signing
+     * \return reference to created private key and its public key or error, see SecurityModuleError for conditions
+     */
+    virtual expected<SigningKey> create_signing_key() = 0;
+
+    /**
+     * Sign data
+     * \param key reference to private key
+     * \param data data to sign
+     * \return signature or error, see SecurityModuleError for conditions
+     */
+    virtual expected<Signature> sign(const KeyReference& key, const ByteBuffer& data) = 0;
+
     virtual ~Backend() = default;
 };
 
