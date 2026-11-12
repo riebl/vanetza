@@ -2,12 +2,12 @@
 #include "asn1.hpp"
 #include "certificate.hpp"
 #include "hashed_id8.hpp"
-#include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
 #include "stub_certificate.hpp"
 #include "validation.hpp"
 #include <vanetza/asn1/security/SignedData.h>
 #include <vanetza/common/byte_buffer.hpp>
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <gtest/gtest.h>
 #include <cstring>
 #include <memory>
@@ -20,11 +20,12 @@ namespace pki
 class SignedBuilderTest : public ::testing::Test
 {
 protected:
-    SignedBuilderTest() : m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials)
+    SignedBuilderTest() :
+        m_credentials(std::make_shared<security::MemoryCredentialStorage>()), m_security(m_credentials)
     {
     }
 
-    std::shared_ptr<MockCredentialStorage> m_credentials;
+    std::shared_ptr<security::MemoryCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
     OpenSslCryptoProvider m_crypto;
 };

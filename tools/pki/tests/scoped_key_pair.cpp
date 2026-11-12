@@ -1,9 +1,10 @@
-#include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <gtest/gtest.h>
 #include <memory>
 
 using vanetza::expected;
+using vanetza::security::MemoryCredentialStorage;
 using vanetza::security::SecurityModuleError;
 using namespace vanetza::pki;
 
@@ -16,7 +17,7 @@ protected:
         public_key = security.public_key(key).value();
     }
 
-    OpenSslSecurityModule security { std::make_shared<MockCredentialStorage>() };
+    OpenSslSecurityModule security { std::make_shared<MemoryCredentialStorage>() };
     KeyReference key;
     PublicKey public_key;
 };

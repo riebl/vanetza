@@ -2,11 +2,11 @@
 #include "certificate.hpp"
 #include "certificate_filesystem_storage.hpp"
 #include "hashed_id8.hpp"
-#include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
 #include "stub_certificate.hpp"
 #include "stub_station_configuration.hpp"
 #include "unique_test_directory.hpp"
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -39,7 +39,7 @@ protected:
     {
         root = create_unique_test_directory("pki_unit_test_prune");
 
-        cfg.credentials = std::make_shared<MockCredentialStorage>();
+        cfg.credentials = std::make_shared<security::MemoryCredentialStorage>();
         cfg.security = std::make_shared<OpenSslSecurityModule>(cfg.credentials);
         cfg.crypto = std::make_shared<OpenSslCryptoProvider>();
         const auto certs_dir = root / "certs";

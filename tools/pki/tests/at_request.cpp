@@ -4,7 +4,6 @@
 #include "encrypted_data.hpp"
 #include "exception.hpp"
 #include "hashed_id8.hpp"
-#include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
 #include "recover_key.hpp"
 #include "signed_data.hpp"
@@ -19,6 +18,7 @@
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/security/hmac.hpp>
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <vanetza/security/v3/basic_elements.hpp>
 #include <vanetza/security/v3/secured_message.hpp>
 #include <gtest/gtest.h>
@@ -32,7 +32,8 @@ namespace pki
 class AuthorizationRequestTest : public ::testing::Test
 {
 protected:
-    AuthorizationRequestTest() : m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials)
+    AuthorizationRequestTest() :
+        m_credentials(std::make_shared<security::MemoryCredentialStorage>()), m_security(m_credentials)
     {
         // EA / AA need both verification and encryption keys; EC needs only verification.
         PublicKey ea_verify = derive_public_key(generate_private_key(KeyType::NistP256));
@@ -89,7 +90,7 @@ protected:
         return response;
     }
 
-    std::shared_ptr<MockCredentialStorage> m_credentials;
+    std::shared_ptr<security::MemoryCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
     OpenSslCryptoProvider m_crypto;
     PrivateKey m_ea_encryption_key;

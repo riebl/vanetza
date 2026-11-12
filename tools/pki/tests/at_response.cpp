@@ -3,7 +3,6 @@
 #include "certificate.hpp"
 #include "exception.hpp"
 #include "hashed_id8.hpp"
-#include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
 #include "stub_certificate.hpp"
 #include "time.hpp"
@@ -18,6 +17,7 @@
 #include <vanetza/asn1/security/Time64.h>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <vanetza/security/v3/basic_elements.hpp>
 #include <gtest/gtest.h>
 #include <memory>
@@ -114,7 +114,7 @@ class AuthorizationResponseTest : public ::testing::Test
 {
 protected:
     AuthorizationResponseTest() :
-        m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials),
+        m_credentials(std::make_shared<security::MemoryCredentialStorage>()), m_security(m_credentials),
         m_aa_key(m_security.create_signing_key(KeyType::NistP256).value()),
         m_aa_certificate(build_stub_certificate(m_security.public_key(m_aa_key).value()))
     {
@@ -125,7 +125,7 @@ protected:
         return AtResponseBuilder { &m_security, &m_crypto, &m_aa_certificate, &m_aa_key };
     }
 
-    std::shared_ptr<MockCredentialStorage> m_credentials;
+    std::shared_ptr<security::MemoryCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
     OpenSslCryptoProvider m_crypto;
     KeyReference m_aa_key;

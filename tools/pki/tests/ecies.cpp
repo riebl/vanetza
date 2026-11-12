@@ -1,8 +1,8 @@
 #include "keys.hpp"
-#include "mock_credential_storage.hpp"
 #include "openssl.hpp"
 #include "openssl_security_module.hpp"
 #include <vanetza/security/ecies.hpp>
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <vanetza/security/tests/printer.hpp>
 #include <gtest/gtest.h>
 #include <openssl/ec.h>
@@ -11,6 +11,7 @@ using vanetza::ByteBuffer;
 using vanetza::create_byte_view;
 using vanetza::expected;
 using vanetza::security::Aes128Key;
+using vanetza::security::MemoryCredentialStorage;
 using namespace vanetza::pki;
 
 TEST(Ecies, key_encryption_with_compressed_y1_key)
@@ -19,7 +20,7 @@ TEST(Ecies, key_encryption_with_compressed_y1_key)
     PublicKey compressed = derive_public_key(generate_private_key(KeyType::NistP256));
     compressed.compression = KeyCompression::Y1;
 
-    OpenSslSecurityModule security(std::make_shared<MockCredentialStorage>());
+    OpenSslSecurityModule security(std::make_shared<MemoryCredentialStorage>());
     Sha256Hash info {};
     Aes128Key key {};
     EXPECT_TRUE(security.encrypt_key(compressed, key, info).has_value());
@@ -52,7 +53,7 @@ void expect_key_encrypted_for(const PrivateKey& recipient, const PublicKey& reci
         0xCB, 0xAD, 0xF7, 0x5F, 0xB4, 0x6A, 0x7B, 0x0D
     }};
     const Sha256Hash info { 0x12, 0x34, 0x56, 0x78, 0x90, 0xab, 0xcd, 0xef };
-    OpenSslSecurityModule security(std::make_shared<MockCredentialStorage>());
+    OpenSslSecurityModule security(std::make_shared<MemoryCredentialStorage>());
     expected<EncryptedSymmetricKey> encrypted = security.encrypt_key(recipient_key, key, info);
     ASSERT_TRUE(encrypted.has_value());
 

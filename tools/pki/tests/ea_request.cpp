@@ -3,7 +3,6 @@
 #include "certificate.hpp"
 #include "encrypted_data.hpp"
 #include "hashed_id8.hpp"
-#include "mock_credential_storage.hpp"
 #include "openssl_security_module.hpp"
 #include "recover_key.hpp"
 #include "signed_data.hpp"
@@ -13,6 +12,7 @@
 #include <vanetza/asn1/security/InnerEcRequest.h>
 #include <vanetza/common/byte_buffer.hpp>
 #include <vanetza/common/its_aid.hpp>
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -26,7 +26,8 @@ namespace pki
 class EnrolmentRequestTest : public ::testing::Test
 {
 protected:
-    EnrolmentRequestTest() : m_credentials(std::make_shared<MockCredentialStorage>()), m_security(m_credentials)
+    EnrolmentRequestTest() :
+        m_credentials(std::make_shared<security::MemoryCredentialStorage>()), m_security(m_credentials)
     {
     }
 
@@ -55,7 +56,7 @@ protected:
         return w;
     }
 
-    std::shared_ptr<MockCredentialStorage> m_credentials;
+    std::shared_ptr<security::MemoryCredentialStorage> m_credentials;
     OpenSslSecurityModule m_security;
     OpenSslCryptoProvider m_crypto;
 };

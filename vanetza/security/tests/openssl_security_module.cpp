@@ -1,5 +1,5 @@
+#include <vanetza/security/memory_credential_storage.hpp>
 #include <vanetza/security/openssl_security_module.hpp>
-#include <vanetza/security/tests/mock_credential_storage.hpp>
 #include <gtest/gtest.h>
 #include <openssl/ec.h>
 #include <openssl/err.h>
@@ -17,7 +17,7 @@ protected:
         ERR_clear_error();
     }
 
-    std::shared_ptr<MockCredentialStorage> credentials = std::make_shared<MockCredentialStorage>();
+    std::shared_ptr<MemoryCredentialStorage> credentials = std::make_shared<MemoryCredentialStorage>();
     OpenSslSecurityModule security { credentials };
 };
 

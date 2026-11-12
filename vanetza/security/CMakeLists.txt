@@ -17,6 +17,7 @@ add_vanetza_component(security
     hmac.cpp
     kdf2.cpp
     key_type.cpp
+    memory_credential_storage.cpp
     public_key.cpp
     persistence.cpp
     peer_request_tracker.cpp
