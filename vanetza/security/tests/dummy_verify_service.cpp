@@ -4,6 +4,7 @@
 #include <vanetza/common/its_aid.hpp>
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/verify_service.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
@@ -33,7 +34,7 @@ static v2::Certificate create_v2_certificate(int seed, v2::SubjectType type = v2
 TEST(DummyVerifyServiceTest, lookup)
 {
     std::unique_ptr<VerifyService> dummy { new DummyVerifyService {
-        VerificationReport::Invalid_Timestamp, CertificateValidity::valid() }};
+        NullCryptoProvider::instance(), VerificationReport::Invalid_Timestamp, CertificateValidity::valid() }};
 
     SecuredMessage message;
     VerifyRequest req(SecuredMessageView { message });
@@ -49,10 +50,14 @@ TEST(DummyVerifyServiceTest, lookup)
 
 TEST(DummyVerifyServiceTest, signer_with_full_certificate)
 {
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     v3::Certificate cert = v3::fake_certificate();
-    auto digest = cert.calculate_digest();
+    auto digest = cert.calculate_digest(*crypto);
     ASSERT_TRUE(digest);
 
     v3::SecuredMessage msg = v3::SecuredMessage::with_signed_data();
@@ -69,7 +74,8 @@ TEST(DummyVerifyServiceTest, signer_with_full_certificate)
 
 TEST(DummyVerifyServiceTest, signer_with_digest_no_cache)
 {
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy {
+        NullCryptoProvider::instance(), VerificationReport::Success, CertificateValidity::valid() };
 
     HashedId8 digest = {{ 1, 2, 3, 4, 5, 6, 7, 8 }};
     v3::SecuredMessage msg = v3::SecuredMessage::with_signed_data();
@@ -89,7 +95,7 @@ TEST(DummyVerifyServiceTest, signer_with_digest_cache_hit)
     if (!crypto) {
         GTEST_SKIP() << "no crypto provider built in";
     }
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     v3::Certificate cert = v3::fake_certificate();
     auto digest = cert.calculate_digest(*crypto);
@@ -116,7 +122,7 @@ TEST(DummyVerifyServiceTest, signer_with_digest_cache_miss)
     if (!crypto) {
         GTEST_SKIP() << "no crypto provider built in";
     }
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     v3::Certificate cert = v3::fake_certificate();
     auto digest = cert.calculate_digest(*crypto);
@@ -143,7 +149,7 @@ TEST(DummyVerifyServiceTest, full_certificate_populates_cache)
     if (!crypto) {
         GTEST_SKIP() << "no crypto provider built in";
     }
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     v3::CertificateCache cache { *crypto };
     dummy.use_certificate_cache(&cache);
@@ -166,10 +172,14 @@ TEST(DummyVerifyServiceTest, full_certificate_populates_cache)
 
 TEST(DummyVerifyServiceTest, permissions_empty_for_unrelated_aid)
 {
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     v3::Certificate cert = v3::fake_certificate();
-    auto digest = cert.calculate_digest();
+    auto digest = cert.calculate_digest(*crypto);
     ASSERT_TRUE(digest);
 
     v3::SecuredMessage msg = v3::SecuredMessage::with_signed_data();
@@ -186,7 +196,11 @@ TEST(DummyVerifyServiceTest, permissions_empty_for_unrelated_aid)
 
 TEST(DummyVerifyServiceTest, v2_signer_with_full_certificate)
 {
-    DummyVerifyService dummy { VerificationReport::Invalid_Timestamp, CertificateValidity::valid() };
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    DummyVerifyService dummy { *crypto, VerificationReport::Invalid_Timestamp, CertificateValidity::valid() };
 
     v2::Certificate cert = create_v2_certificate(1);
     cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));
@@ -201,13 +215,14 @@ TEST(DummyVerifyServiceTest, v2_signer_with_full_certificate)
     EXPECT_EQ(VerificationReport::Invalid_Timestamp, confirm.report);
     EXPECT_EQ(aid::CA, confirm.its_aid);
     ASSERT_TRUE(confirm.certificate_id);
-    EXPECT_EQ(v2::calculate_hash(cert), *confirm.certificate_id);
+    EXPECT_EQ(v2::calculate_hash(*crypto, cert), *confirm.certificate_id);
     EXPECT_EQ(ByteBuffer({ 1, 0, 0 }), confirm.permissions);
 }
 
 TEST(DummyVerifyServiceTest, v2_signer_with_digest)
 {
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy {
+        NullCryptoProvider::instance(), VerificationReport::Success, CertificateValidity::valid() };
 
     HashedId8 digest = {{ 8, 7, 6, 5, 4, 3, 2, 1 }};
     v2::SecuredMessage msg;
@@ -223,7 +238,11 @@ TEST(DummyVerifyServiceTest, v2_signer_with_digest)
 
 TEST(DummyVerifyServiceTest, v2_signer_with_certificate_chain)
 {
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
+    if (!crypto) {
+        GTEST_SKIP() << "no crypto provider built in";
+    }
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     v2::Certificate authority = create_v2_certificate(2, v2::SubjectType::Authorization_Authority);
     authority.add_permission(aid::CA, ByteBuffer({ 9, 9, 9 }));
@@ -238,13 +257,14 @@ TEST(DummyVerifyServiceTest, v2_signer_with_certificate_chain)
 
     // last certificate in chain is the signer
     ASSERT_TRUE(confirm.certificate_id);
-    EXPECT_EQ(v2::calculate_hash(ticket), *confirm.certificate_id);
+    EXPECT_EQ(v2::calculate_hash(*crypto, ticket), *confirm.certificate_id);
     EXPECT_EQ(ByteBuffer({ 1, 0, 0 }), confirm.permissions);
 }
 
 TEST(DummyVerifyServiceTest, v2_without_signer_info)
 {
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy {
+        NullCryptoProvider::instance(), VerificationReport::Success, CertificateValidity::valid() };
 
     v2::SecuredMessage msg;
     msg.header_fields.push_back(v2::IntX { aid::CA });
@@ -263,7 +283,7 @@ TEST(DummyVerifyServiceTest, v2_signer_with_digest_cache_miss)
     if (!crypto) {
         GTEST_SKIP() << "no crypto provider built in";
     }
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     ManualRuntime runtime;
     v2::CertificateCache cache(runtime, *crypto);
@@ -289,7 +309,7 @@ TEST(DummyVerifyServiceTest, v2_full_certificate_populates_cache)
     if (!crypto) {
         GTEST_SKIP() << "no crypto provider built in";
     }
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     ManualRuntime runtime;
     v2::CertificateCache cache(runtime, *crypto);
@@ -322,7 +342,7 @@ TEST(DummyVerifyServiceTest, v2_certificate_chain_populates_cache_with_signer)
     if (!crypto) {
         GTEST_SKIP() << "no crypto provider built in";
     }
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     ManualRuntime runtime;
     v2::CertificateCache cache(runtime, *crypto);
@@ -349,7 +369,7 @@ TEST(DummyVerifyServiceTest, v2_other_algorithm_digest_skips_cache)
     if (!crypto) {
         GTEST_SKIP() << "no crypto provider built in";
     }
-    DummyVerifyService dummy { VerificationReport::Success, CertificateValidity::valid() };
+    DummyVerifyService dummy { *crypto, VerificationReport::Success, CertificateValidity::valid() };
 
     v2::Certificate cert = create_v2_certificate(1);
     cert.add_permission(aid::CA, ByteBuffer({ 1, 0, 0 }));

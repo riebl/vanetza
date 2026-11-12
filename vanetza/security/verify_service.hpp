@@ -65,6 +65,7 @@ public:
 };
 
 // forward declaration
+class CryptoProvider;
 namespace v2 { class CertificateCache; }
 namespace v3 { class CertificateCache; }
 
@@ -75,10 +76,11 @@ class DummyVerifyService : public VerifyService
 {
 public:
     /**
+     * \param crypto provider calculating identifiers of certificates contained in messages
      * \param report predefined confirm report result
      * \param validity predefined certificate validity result 
      */
-    DummyVerifyService(VerificationReport report, CertificateValidity validity);
+    DummyVerifyService(CryptoProvider& crypto, VerificationReport report, CertificateValidity validity);
     VerifyConfirm verify(const VerifyRequest&) override;
 
     /**
@@ -101,6 +103,7 @@ public:
     void use_certificate_cache(v3::CertificateCache* cache);
 
 private:
+    CryptoProvider& m_crypto;
     VerificationReport m_report;
     CertificateValidity m_validity;
     v2::CertificateCache* m_v2_cert_cache = nullptr;

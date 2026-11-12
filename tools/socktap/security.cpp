@@ -2,6 +2,7 @@
 #include "certificate_validation_v3.hpp"
 #include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
@@ -149,22 +150,48 @@ public:
     std::unique_ptr<security::SecurityEntity> entity;
 };
 
+// dummy security entity owning the crypto provider its verify service identifies certificates with
+class DummySecurityContext : public security::SecurityEntity
+{
+public:
+    explicit DummySecurityContext(std::unique_ptr<security::SignService> sign_service) :
+        crypto(security::create_crypto_provider())
+    {
+        if (!crypto) {
+            throw std::runtime_error("dummy security requires a crypto provider");
+        }
+        std::unique_ptr<security::VerifyService> verify_service { new security::DummyVerifyService {
+            *crypto, security::VerificationReport::Success, security::CertificateValidity::valid() } };
+        entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
+    }
+
+    security::EncapConfirm encapsulate_packet(security::EncapRequest&& request) override
+    {
+        return entity->encapsulate_packet(std::move(request));
+    }
+
+    security::DecapConfirm decapsulate_packet(security::DecapRequest&& request) override
+    {
+        return entity->decapsulate_packet(std::move(request));
+    }
+
+private:
+    std::unique_ptr<security::CryptoProvider> crypto;
+    std::unique_ptr<security::SecurityEntity> entity;
+};
+
 std::unique_ptr<security::SecurityEntity>
 create_dummy_v2_security_entity(const Runtime& runtime)
 {
     std::unique_ptr<security::SignService> sign_service { new security::v2::DummySignService { runtime, nullptr } };
-    std::unique_ptr<security::VerifyService> verify_service { new security::DummyVerifyService {
-        security::VerificationReport::Success, security::CertificateValidity::valid() } };
-    return std::make_unique<security::DelegatingSecurityEntity>(std::move(sign_service), std::move(verify_service));
+    return std::make_unique<DummySecurityContext>(std::move(sign_service));
 }
 
 std::unique_ptr<security::SecurityEntity>
 create_dummy_v3_security_entity(const Runtime& runtime)
 {
     std::unique_ptr<security::SignService> sign_service { new security::v3::DummySignService { runtime } };
-    std::unique_ptr<security::VerifyService> verify_service { new security::DummyVerifyService {
-        security::VerificationReport::Success, security::CertificateValidity::valid() } };
-    return std::make_unique<security::DelegatingSecurityEntity>(std::move(sign_service), std::move(verify_service));
+    return std::make_unique<DummySecurityContext>(std::move(sign_service));
 }
 
 std::unique_ptr<security::v2::CertificateProvider>

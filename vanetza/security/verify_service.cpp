@@ -79,8 +79,9 @@ private:
 
 } // namespace
 
-DummyVerifyService::DummyVerifyService(VerificationReport report, CertificateValidity validity) :
-    m_report(report), m_validity(validity)
+DummyVerifyService::DummyVerifyService(CryptoProvider& crypto, VerificationReport report,
+    CertificateValidity validity) :
+    m_crypto(crypto), m_report(report), m_validity(validity)
 {
 }
 
@@ -102,7 +103,7 @@ VerifyConfirm DummyVerifyService::verify(const VerifyRequest& request)
         {
             const v2::SignerInfo* signer_info = msg.header_field<v2::HeaderFieldType::Signer_Info>();
             if (signer_info) {
-                m_confirm.certificate_id = v2::get_certificate_id(*signer_info);
+                m_confirm.certificate_id = v2::get_certificate_id(m_service.m_crypto, *signer_info);
                 permissions_visitor visitor(m_confirm.its_aid, m_service.m_v2_cert_cache);
                 m_confirm.permissions = boost::apply_visitor(visitor, *signer_info);
             }
@@ -111,7 +112,7 @@ VerifyConfirm DummyVerifyService::verify(const VerifyRequest& request)
         void operator()(const v3::SecuredMessage& msg)
         {
             auto signer = msg.signer_identifier();
-            m_confirm.certificate_id = v3::get_certificate_id(signer);
+            m_confirm.certificate_id = v3::get_certificate_id(m_service.m_crypto, signer);
 
             if (m_confirm.certificate_id) {
                 if (m_service.m_v3_cert_cache) {
