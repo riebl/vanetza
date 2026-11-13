@@ -55,5 +55,14 @@ boost::optional<PublicKey> decode_ec_point(KeyType type, const ByteBuffer& encod
  */
 ByteBuffer encode_subject_public_key_info(const PublicKey&);
 
+/**
+ * Decode public key from SubjectPublicKeyInfo according to RFC 5480.
+ *
+ * Supported are named curves of key types, the point keeps its compression form.
+ * \param der DER-encoded SubjectPublicKeyInfo
+ * \return public key, or none if the encoding is malformed or its curve is unsupported
+ */
+boost::optional<PublicKey> decode_subject_public_key_info(const ByteBuffer& der);
+
 } // namespace security
 } // namespace vanetza

@@ -269,3 +269,118 @@ TEST(PublicKey, encode_subject_public_key_info_compressed)
                               "8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262");
     EXPECT_EQ(expected, encode_subject_public_key_info(brainpool_p256r1_generator()));
 }
+
+TEST(PublicKey, decode_subject_public_key_info_uncompressed)
+{
+    const ByteBuffer encoded =
+        buffer_from_hexstring("3059301306072A8648CE3D020106082A8648CE3D03010703420004"
+                              "6B17D1F2E12C4247F8BCE6E563A440F277037D812DEB33A0F4A13945D898C296"
+                              "4FE342E2FE1A7F9B8EE7EB4A7C0F9E162BCE33576B315ECECBB6406837BF51F5");
+    const boost::optional<PublicKey> key = decode_subject_public_key_info(encoded);
+    ASSERT_TRUE(key);
+    EXPECT_EQ(KeyType::NistP256, key->type);
+    EXPECT_EQ(KeyCompression::NoCompression, key->compression);
+    EXPECT_EQ(nist_p256_generator().x, key->x);
+    EXPECT_EQ(nist_p256_generator().y, key->y);
+}
+
+TEST(PublicKey, decode_subject_public_key_info_compressed)
+{
+    const ByteBuffer encoded =
+        buffer_from_hexstring("303A301406072A8648CE3D020106092B240303020801010703220003"
+                              "8BD2AEB9CB7E57CB2C4B482FFC81B7AFB9DE27E1E3BD23C23A4453BD9ACE3262");
+    const boost::optional<PublicKey> key = decode_subject_public_key_info(encoded);
+    ASSERT_TRUE(key);
+    EXPECT_EQ(KeyType::BrainpoolP256r1, key->type);
+    EXPECT_EQ(KeyCompression::Y1, key->compression);
+    EXPECT_EQ(brainpool_p256r1_generator().x, key->x);
+}
+
+// assembled according to RFC 5480 with the brainpoolP384r1 OID 1.3.36.3.3.2.8.1.1.11 of RFC 5639
+TEST(PublicKey, decode_subject_public_key_info_brainpool_p384r1)
+{
+    ByteBuffer encoded = buffer_from_hexstring("307A301406072A8648CE3D020106092B240303020801010B03620004");
+    encoded.insert(encoded.end(), 48, 0xab);
+    encoded.insert(encoded.end(), 48, 0xcd);
+
+    const boost::optional<PublicKey> key = decode_subject_public_key_info(encoded);
+    ASSERT_TRUE(key);
+    EXPECT_EQ(KeyType::BrainpoolP384r1, key->type);
+    EXPECT_EQ(KeyCompression::NoCompression, key->compression);
+    EXPECT_EQ(ByteBuffer(48, 0xab), key->x);
+    EXPECT_EQ(ByteBuffer(48, 0xcd), key->y);
+}
+
+TEST(PublicKey, decode_subject_public_key_info_rejects_malformed)
+{
+    const ByteBuffer valid = encode_subject_public_key_info(brainpool_p256r1_generator());
+    ASSERT_FALSE(valid.empty());
+    EXPECT_FALSE(decode_subject_public_key_info(ByteBuffer {}));
+
+    // secp384r1 (1.3.132.0.34) replaces the brainpoolP256r1 OID at octets 13 to 23, lengths are adjusted
+    const ByteBuffer secp384r1 = buffer_from_hexstring("06052B81040022");
+    ByteBuffer unsupported_curve = valid;
+    unsupported_curve.erase(unsupported_curve.begin() + 13, unsupported_curve.begin() + 24);
+    unsupported_curve.insert(unsupported_curve.begin() + 13, secp384r1.begin(), secp384r1.end());
+    unsupported_curve[1] -= 4;
+    unsupported_curve[3] -= 4;
+    EXPECT_FALSE(decode_subject_public_key_info(unsupported_curve));
+
+    // AlgorithmIdentifier holds an additional octet after the curve OID ending at octet 23
+    ByteBuffer extended_algorithm = valid;
+    extended_algorithm.insert(extended_algorithm.begin() + 24, 0x00);
+    extended_algorithm[1] += 1;
+    extended_algorithm[3] += 1;
+    EXPECT_FALSE(decode_subject_public_key_info(extended_algorithm));
+
+    // algorithm differs from id-ecPublicKey in its last OID arc
+    ByteBuffer other_algorithm = valid;
+    other_algorithm[12] ^= 0x01;
+    EXPECT_FALSE(decode_subject_public_key_info(other_algorithm));
+
+    ByteBuffer unused_bits = valid;
+    unused_bits[26] = 0x01;
+    EXPECT_FALSE(decode_subject_public_key_info(unused_bits));
+
+    ByteBuffer trailing = valid;
+    trailing.push_back(0x00);
+    EXPECT_FALSE(decode_subject_public_key_info(trailing));
+
+    // octet after the BIT STRING within the outer SEQUENCE
+    ByteBuffer trailing_in_sequence = valid;
+    trailing_in_sequence.push_back(0x00);
+    trailing_in_sequence[1] += 1;
+    EXPECT_FALSE(decode_subject_public_key_info(trailing_in_sequence));
+
+    // BIT STRING without content follows the AlgorithmIdentifier ending at octet 23
+    ByteBuffer empty_bit_string(valid.begin(), valid.begin() + 24);
+    empty_bit_string.push_back(0x03);
+    empty_bit_string.push_back(0x00);
+    empty_bit_string[1] = empty_bit_string.size() - 2;
+    EXPECT_FALSE(decode_subject_public_key_info(empty_bit_string));
+
+    ByteBuffer truncated = valid;
+    truncated.pop_back();
+    EXPECT_FALSE(decode_subject_public_key_info(truncated));
+
+    ByteBuffer outer_length = valid;
+    outer_length[1] -= 1;
+    EXPECT_FALSE(decode_subject_public_key_info(outer_length));
+
+    // AlgorithmIdentifier length exceeds the encoding
+    ByteBuffer algorithm_overrun = valid;
+    algorithm_overrun[3] = 0x7f;
+    EXPECT_FALSE(decode_subject_public_key_info(algorithm_overrun));
+
+    // BIT STRING length is short of its point
+    ByteBuffer short_bit_string = valid;
+    short_bit_string[25] -= 1;
+    EXPECT_FALSE(decode_subject_public_key_info(short_bit_string));
+
+    // point is shorter than the curve's field length, lengths of its DER structures are consistent
+    ByteBuffer short_point = valid;
+    short_point.pop_back();
+    short_point[1] -= 1;
+    short_point[25] -= 1;
+    EXPECT_FALSE(decode_subject_public_key_info(short_point));
+}
