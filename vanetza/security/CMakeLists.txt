@@ -20,6 +20,7 @@ add_vanetza_component(security
     memory_credential_storage.cpp
     public_key.cpp
     persistence.cpp
+    pem.cpp
     peer_request_tracker.cpp
     secured_message.cpp
     security_module.cpp
