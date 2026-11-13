@@ -13,10 +13,10 @@
 #include <vanetza/security/tests/null_crypto_provider.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
+#include <vanetza/security/v2/credential_provider.hpp>
 #include <vanetza/security/v2/null_certificate_validator.hpp>
 #include <vanetza/security/v2/secured_message.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
-#include <vanetza/security/v2/static_certificate_provider.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/hash.hpp>
@@ -77,6 +77,15 @@ void set_signature(v3::Certificate& certificate, const Signature& signature)
     }
 }
 
+v2::Certificate v2_certificate(v2::SubjectType type)
+{
+    v2::Certificate certificate;
+    certificate.subject_info.subject_type = type;
+    // calculate_hash serializes the signature, its r and s need 32 octets (NIST P-256)
+    certificate.signature = EcdsaSignature { X_Coordinate_Only { ByteBuffer(32, 0x00) }, ByteBuffer(32, 0x00) };
+    return certificate;
+}
+
 // x-coordinate exceeds the curve's prime, i.e. the key is no point of the curve
 PublicKey unusable_public_key()
 {
@@ -103,6 +112,10 @@ protected:
         issue(ticket, aa, aa_key);
         service = std::make_unique<CryptoProviderVerifyService>(runtime, *crypto, positioning);
         service->use_issuer_lookup(&issuers);
+        // v2 verification requires cache, validator and policy, tests set up the optional v3 ones as needed
+        service->use_certificate_cache(&v2_cache);
+        service->use_certificate_validator(&v2_validator);
+        service->use_sign_header_policy(&v2_policy);
     }
 
     KeyReference create_key(KeyType type)
@@ -180,6 +193,9 @@ protected:
     v3::Certificate aa;
     KeyReference ticket_key;
     v3::Certificate ticket;
+    v2::CertificateCache v2_cache { runtime, crypto ? *crypto : NullCryptoProvider::instance() };
+    v2::NullCertificateValidator v2_validator;
+    v2::DefaultSignHeaderPolicy v2_policy { runtime, crypto ? *crypto : NullCryptoProvider::instance(), positioning };
     std::unique_ptr<CryptoProviderVerifyService> service;
 };
 
@@ -420,47 +436,25 @@ TEST_F(CryptoProviderVerifyServiceTest, cam_of_unknown_station_puts_certificate_
     EXPECT_TRUE(v3::contains_certificate(next_cam.signer_identifier()));
 }
 
-class CryptoProviderVerifyServiceV2Test : public ::testing::Test
+TEST_F(CryptoProviderVerifyServiceTest, v2_requested_own_certificate_is_signer_of_next_cam)
 {
-protected:
-    void SetUp() override
-    {
-        if (!crypto) {
-            GTEST_SKIP() << "no crypto provider built in";
-        }
-        ticket.subject_info.subject_type = v2::SubjectType::Authorization_Ticket;
-        // calculate_hash serializes the signature, its r and s need 32 octets (NIST P-256)
-        ticket.signature = EcdsaSignature { X_Coordinate_Only { ByteBuffer(32, 0x00) }, ByteBuffer(32, 0x00) };
-        service = std::make_unique<CryptoProviderVerifyService>(runtime, *crypto, positioning);
-        service->use_certificate_cache(&cache);
-        service->use_certificate_validator(&validator);
-        service->use_sign_header_policy(&policy);
-    }
-
-    ManualRuntime runtime { Clock::at("2024-08-12 11:30") };
-    StoredPositionProvider positioning;
-    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider();
-    v2::CertificateCache cache { runtime, crypto ? *crypto : NullCryptoProvider::instance() };
-    v2::NullCertificateValidator validator;
-    v2::DefaultSignHeaderPolicy policy { runtime, crypto ? *crypto : NullCryptoProvider::instance(), positioning };
-    std::unique_ptr<CryptoProviderVerifyService> service;
-    v2::Certificate ticket;
-};
-
-TEST_F(CryptoProviderVerifyServiceV2Test, requested_own_certificate_is_signer_of_next_cam)
-{
-    v2::StaticCertificateProvider own_certificates { ticket, ecdsa256::PrivateKey {} };
+    // headers are prepared without signing, i.e. the own ticket's key is irrelevant
+    const v2::Credential own_credential {
+        v2_certificate(v2::SubjectType::Authorization_Ticket),
+        v2_certificate(v2::SubjectType::Authorization_Authority),
+        KeyReference {} };
     SignRequest cam;
     cam.its_aid = aid::CA;
     // the first CAM carries the full certificate anyway
-    policy.prepare_header(cam, own_certificates);
+    v2_policy.prepare_header(cam, own_credential);
 
     v2::SecuredMessage message;
     message.payload.type = v2::PayloadType::Signed;
-    message.header_fields.push_back(std::list<HashedId3> { truncate(calculate_hash(*crypto, ticket)) });
+    message.header_fields.push_back(
+        std::list<HashedId3> { truncate(calculate_hash(*crypto, own_credential.certificate)) });
     service->verify(message);
 
-    for (const v2::HeaderField& field : policy.prepare_header(cam, own_certificates)) {
+    for (const v2::HeaderField& field : v2_policy.prepare_header(cam, own_credential)) {
         if (get_type(field) == v2::HeaderFieldType::Signer_Info) {
             EXPECT_EQ(v2::SignerInfoType::Certificate, get_type(boost::get<v2::SignerInfo>(field)));
             return;
@@ -469,10 +463,11 @@ TEST_F(CryptoProviderVerifyServiceV2Test, requested_own_certificate_is_signer_of
     ADD_FAILURE() << "CAM header without signer info";
 }
 
-TEST_F(CryptoProviderVerifyServiceV2Test, unusable_ticket_key_is_invalid_certificate)
+TEST_F(CryptoProviderVerifyServiceTest, v2_unusable_ticket_key_is_invalid_certificate)
 {
     // x-coordinate exceeds the curve's prime, i.e. the key is no point of the curve
     const v2::ecdsa_nistp256_with_sha256 unusable_key { Compressed_Lsb_Y_0 { ByteBuffer(32, 0xff) } };
+    v2::Certificate ticket = v2_certificate(v2::SubjectType::Authorization_Ticket);
     ticket.subject_attributes.push_back(v2::VerificationKey { unusable_key });
     v2::SecuredMessage message;
     message.payload.type = v2::PayloadType::Signed;
