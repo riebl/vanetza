@@ -148,3 +148,19 @@ TEST_F(CertificateFileTest, saving_v3_into_missing_directory_is_no_such_file)
 {
     EXPECT_EQ(std::errc::no_such_file_or_directory, save_certificate(missing_path, authorization_ticket()));
 }
+
+TEST_F(CertificateFileTest, load_by_type_reads_v2_certificate)
+{
+    write(security::buffer_from_hexstring(v2_ticket_hex));
+    const expected<v2::Certificate> loaded = load_certificate<v2::Certificate>(path);
+    ASSERT_TRUE(loaded.has_value()) << loaded.error().message();
+    EXPECT_EQ(security::buffer_from_hexstring(v2_ticket_hex), serialized(*loaded));
+}
+
+TEST_F(CertificateFileTest, load_by_type_reads_v3_certificate)
+{
+    write(authorization_ticket().encode());
+    const expected<v3::Certificate> loaded = load_certificate<v3::Certificate>(path);
+    ASSERT_TRUE(loaded.has_value()) << loaded.error().message();
+    EXPECT_EQ(authorization_ticket().encode(), loaded->encode());
+}
