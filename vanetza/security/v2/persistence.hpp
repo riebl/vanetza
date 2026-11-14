@@ -17,6 +17,7 @@ namespace v2
  * \brief Loads a private key from a file
  * \param key_path file to load the key from
  * \return loaded key
+ * \deprecated exposes private key, use SecurityModule with persistence::load_key_reference
  */
 ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path);
 
@@ -25,6 +26,7 @@ ecdsa256::KeyPair load_private_key_from_file(const std::string& key_path);
  * \param os destination stream
  * \param key_pair key pair to be stored
  * \return true if successfully written
+ * \deprecated exposes private key, use SecurityModule with persistence::save_key_reference
  */
 bool save_private_key_pkcs8_der(std::ostream& os, const ecdsa256::KeyPair& key_pair);
 
@@ -32,6 +34,7 @@ bool save_private_key_pkcs8_der(std::ostream& os, const ecdsa256::KeyPair& key_p
  * \brief Loads a public key from a file
  * \param key_path file to load the key from
  * \return loaded key
+ * \deprecated use SubjectPublicKeyInfo files via persistence::load_public_key_pem or load_public_key_der
  */
 PublicKey load_public_key_from_file(const std::string& key_path);
 
@@ -39,6 +42,7 @@ PublicKey load_public_key_from_file(const std::string& key_path);
  * \brief Saves a public key to a file
  * \param key_path file to save the key to
  * \param public_key key to save
+ * \deprecated use SubjectPublicKeyInfo files via persistence::save_public_key_pem or save_public_key_der
  */
 void save_public_key_to_file(const std::string& key_path, const PublicKey& public_key);
 
