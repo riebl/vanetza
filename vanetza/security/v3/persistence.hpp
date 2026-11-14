@@ -13,6 +13,7 @@ namespace v3
  * \brief Loads a certificate from a file
  * \param certificate_path file to load the certificate from
  * \return loaded certificate
+ * \deprecated use persistence::load_v3_certificate
  */
 Certificate load_certificate_from_file(const std::string& certificate_path);
 
@@ -20,6 +21,7 @@ Certificate load_certificate_from_file(const std::string& certificate_path);
  * \brief Saves a certificate to a file
  * \param certificate_path file to save the certificate to
  * \param certificate certificate to save
+ * \deprecated use persistence::save_certificate
  */
 void save_certificate_to_file(const std::string& certificate_path, const Certificate& certificate);
 
