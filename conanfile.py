@@ -25,12 +25,14 @@ class VanetzaConan(ConanFile):
         "shared": [True, False],
         "with_cryptopp": [True, False],
         "with_openssl": [True, False],
+        "with_persistence": [True, False],
     }
     default_options = {
         "fPIC": True,
         "shared": False,
         "with_cryptopp": False,
         "with_openssl": True,
+        "with_persistence": True,
     }
     exports_sources = "CMakeLists.txt", "cmake/*", "gtest/CMakeLists.txt", "vanetza/*"
     test_package_folder = "tools/conan_test"
@@ -79,6 +81,8 @@ class VanetzaConan(ConanFile):
         tc.cache_variables["BUILD_TESTS"] = not self.conf.get("tools.build:skip_test", default=False, check_type=bool)
         tc.cache_variables["VANETZA_WITH_CRYPTOPP"] = bool(self.options.with_cryptopp)
         tc.cache_variables["VANETZA_WITH_OPENSSL"] = bool(self.options.with_openssl)
+        # security persistence is built with C++17, the public interface of Vanetza stays C++14
+        tc.cache_variables["VANETZA_WITH_PERSISTENCE"] = bool(self.options.with_persistence)
         # pin auto-detected dependencies so libraries outside of Conan are never picked up
         tc.cache_variables["VANETZA_WITH_GEOGRAPHICLIB"] = True
         tc.cache_variables["VANETZA_WITH_RPC"] = False

@@ -87,6 +87,14 @@ add_vanetza_component(security
 target_link_libraries(security PUBLIC Boost::headers asn1 asn1_security common net)
 target_link_libraries(security PRIVATE geodesy)
 
+if(VANETZA_WITH_PERSISTENCE)
+    set_property(TARGET security APPEND PROPERTY SOURCES
+        persistence/file.cpp
+        persistence/key_reference.cpp
+        persistence/public_key.cpp)
+    target_compile_features(security PRIVATE cxx_std_17)
+endif()
+
 if(VANETZA_WITH_PQC)
     set_property(TARGET security APPEND PROPERTY SOURCES
         pqc/fndsa512_oqs.cpp
@@ -127,6 +135,9 @@ set(SECURITY_TEST_ASSET_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tests/assets")
 add_test_subdirectory(tests)
 add_test_subdirectory(v2/tests)
 add_test_subdirectory(v3/tests)
+if(VANETZA_WITH_PERSISTENCE)
+    add_test_subdirectory(persistence/tests)
+endif()
 if(VANETZA_WITH_PQC)
     add_test_subdirectory(pqc/tests)
 endif()

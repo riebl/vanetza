@@ -43,6 +43,11 @@ endif()
 
 option(VANETZA_EMBED_COUNTRY_DATA "Embed country boundary data into geodesy library" OFF)
 
+vanetza_check_std_filesystem(VANETZA_HAS_STD_FILESYSTEM)
+include(CMakeDependentOption)
+cmake_dependent_option(VANETZA_WITH_PERSISTENCE "Enable persistence feature, requires C++17"
+  ON "VANETZA_HAS_STD_FILESYSTEM" OFF)
+
 add_subdirectory(vanetza/access)
 add_subdirectory(vanetza/asn1)
 add_subdirectory(vanetza/btp)

@@ -25,6 +25,22 @@ macro(vanetza_optional_dependency package)
 endmacro()
 
 #
+# vanetza_check_std_filesystem(<variable>)
+#
+# Check if std::filesystem of C++17 compiles and links without extra libraries.
+# Compilers may support C++17 without providing it, e.g. GCC before 9.
+#
+function(vanetza_check_std_filesystem variable)
+    include(CheckCXXSourceCompiles)
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    check_cxx_source_compiles("
+        #include <filesystem>
+        int main() { return std::filesystem::exists(std::filesystem::path(\"vanetza\")) ? 1 : 0; }"
+        ${variable})
+endfunction()
+
+#
 # add_vanetza_component(<name> <sources...>)
 #
 function(add_vanetza_component name)
