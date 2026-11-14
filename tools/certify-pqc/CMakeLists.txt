@@ -8,12 +8,18 @@ if(NOT VANETZA_WITH_OPENSSL AND NOT VANETZA_WITH_PSA)
     return()
 endif()
 
+if(NOT VANETZA_WITH_PERSISTENCE)
+    message(STATUS "Skip build of certify-pqc because the persistence feature is disabled")
+    return()
+endif()
+
 add_executable(certify-pqc
     certificate_builder.cpp
     files.cpp
     main.cpp
 )
 target_include_directories(certify-pqc PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(certify-pqc PRIVATE cxx_std_17)
 target_link_libraries(certify-pqc PRIVATE Boost::program_options vanetza)
 install(TARGETS certify-pqc RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 

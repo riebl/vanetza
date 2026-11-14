@@ -17,6 +17,8 @@ cmake --build build-pqc --target certify-pqc
 ```
 
 `certify-pqc` requires a build with a proper security module, e.g. backed by OpenSSL.
+It also requires the persistence feature (`VANETZA_WITH_PERSISTENCE`), which is enabled by default
+if the compiler provides `std::filesystem`.
 
 ## Generate a Chain
 
