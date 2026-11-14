@@ -89,6 +89,7 @@ target_link_libraries(security PRIVATE geodesy)
 
 if(VANETZA_WITH_PERSISTENCE)
     set_property(TARGET security APPEND PROPERTY SOURCES
+        persistence/certificate.cpp
         persistence/file.cpp
         persistence/key_reference.cpp
         persistence/public_key.cpp)
