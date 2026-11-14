@@ -23,7 +23,8 @@ if the compiler provides `std::filesystem`.
 ## Generate a Chain
 
 Generate a key for each certificate.
-The command writes the ECC private key to `.key` and the ECC public key to `.pub`.
+The command writes the ECC key reference to `.key` and the ECC public key to `.pub`,
+the latter as PEM-encoded SubjectPublicKeyInfo.
 The default hybrid profile additionally writes an FN-DSA-512 key to `.pqc.key` and
 `.pqc.pub`. The ticket needs no FN-DSA key:
 

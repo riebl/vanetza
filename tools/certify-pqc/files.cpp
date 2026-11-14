@@ -3,6 +3,7 @@
 #include <vanetza/security/persistence/certificate.hpp>
 #include <vanetza/security/persistence/file.hpp>
 #include <vanetza/security/persistence/key_reference.hpp>
+#include <vanetza/security/persistence/public_key.hpp>
 #include <stdexcept>
 #include <utility>
 
@@ -58,25 +59,25 @@ vanetza::security::PublicKey load_ecc_public_key(const std::string& base_path)
 {
     using namespace vanetza::security;
     const std::string path = base_path + ".pub";
-    const ByteBuffer point = value_or_fail(persistence::read_file(path), "read", path);
-    const boost::optional<PublicKey> public_key = decode_ec_point(KeyType::NistP256, point);
-    if (!public_key) {
-        throw std::runtime_error("ECC public key is no NIST P-256 point in: " + path);
+    const PublicKey public_key = value_or_fail(persistence::load_public_key_pem(path), "load ECC public key", path);
+    if (public_key.type != KeyType::NistP256) {
+        throw std::runtime_error("ECC public key is no NIST P-256 key in: " + path);
     }
-    return *public_key;
+    return public_key;
 }
 
 void save_ecc_key(
     const std::string& base_path, const vanetza::security::KeyReference& reference,
     const vanetza::security::PublicKey& public_key)
 {
-    const ByteBuffer point = vanetza::security::encode_ec_point(public_key);
-    if (reference.data.empty() || point.empty()) {
+    // check both parts before writing any file
+    if (reference.data.empty() || vanetza::security::encode_subject_public_key_info(public_key).empty()) {
         throw std::invalid_argument("cannot save malformed ECC key");
     }
     succeed_or_fail(persistence::save_key_reference(base_path + ".key", reference),
         "save ECC key reference", base_path + ".key");
-    succeed_or_fail(persistence::write_file(base_path + ".pub", point), "write", base_path + ".pub");
+    succeed_or_fail(persistence::save_public_key_pem(base_path + ".pub", public_key),
+        "save ECC public key", base_path + ".pub");
 }
 
 vanetza::security::KeyReference load_pqc_key_reference(const std::string& base_path)
