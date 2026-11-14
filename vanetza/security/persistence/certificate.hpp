@@ -1,5 +1,6 @@
 #pragma once
 #include <vanetza/common/expected.hpp>
+#include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v3/certificate.hpp>
 #include <filesystem>
 #include <system_error>
@@ -10,6 +11,21 @@ namespace security
 {
 namespace persistence
 {
+
+/**
+ * Load a v2 certificate from a file containing its serialization
+ * \param path certificate file
+ * \return certificate or error, std::errc::illegal_byte_sequence for malformed content
+ */
+expected<v2::Certificate> load_v2_certificate(const std::filesystem::path& path);
+
+/**
+ * Save a v2 certificate as file containing its serialization
+ * \param path certificate file, replaced if it exists
+ * \param certificate saved certificate
+ * \return error, std::errc::invalid_argument for a certificate failing serialization
+ */
+std::error_code save_certificate(const std::filesystem::path& path, const v2::Certificate& certificate);
 
 /**
  * Load a v3 certificate from a file containing its OER encoding
