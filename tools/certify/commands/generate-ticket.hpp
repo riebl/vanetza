@@ -14,6 +14,7 @@ private:
     std::string sign_key_path;
     std::string sign_cert_path;
     std::string subject_key_path;
+    std::string security_module;
     int validity_days;
     std::string cam_permissions;
     std::string denm_permissions;

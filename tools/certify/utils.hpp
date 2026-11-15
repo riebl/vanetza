@@ -40,4 +40,43 @@ vanetza::security::v2::Certificate load_v2_certificate_or_throw(const std::strin
  */
 vanetza::security::KeyReference load_key_reference_or_throw(const std::string& path);
 
+/**
+ * Check if a file starts like a PEM-encoded file
+ * \return true for a PEM file, std::runtime_error is thrown if it cannot be read
+ */
+bool is_pem_file(const std::string& path);
+
+/**
+ * Get public key of a referenced key, v2 certificates require NIST P-256 keys
+ * \param path key reference file
+ * \return public key, std::runtime_error is thrown otherwise
+ */
+vanetza::security::PublicKey referenced_public_key_or_throw(vanetza::security::SecurityModule& module,
+    const vanetza::security::KeyReference& key, const std::string& path);
+
+/**
+ * Load public key of a subject, i.e. of a PEM SubjectPublicKeyInfo file or a key reference file
+ * \param module security module holding referenced keys
+ * \return NIST P-256 public key, std::runtime_error is thrown otherwise
+ */
+vanetza::security::PublicKey load_subject_key_or_throw(const std::string& path,
+    vanetza::security::SecurityModule& module);
+
+/**
+ * Verification key attribute of v2 certificates
+ */
+vanetza::security::v2::VerificationKey make_v2_verification_key(const vanetza::security::PublicKey& key);
+
+/**
+ * Sign a v2 certificate by a referenced NIST P-256 key, see TS 103 097 v1.2.1 clause 7.4
+ */
+void sign_v2_certificate_or_throw(vanetza::security::v2::Certificate& certificate,
+    vanetza::security::SecurityModule& module, vanetza::security::CryptoProvider& crypto,
+    const vanetza::security::KeyReference& key);
+
+/**
+ * Save a v2 certificate file
+ */
+void save_v2_certificate_or_throw(const std::string& path, const vanetza::security::v2::Certificate& certificate);
+
 #endif /* CERTIFY_UTILS_HPP */

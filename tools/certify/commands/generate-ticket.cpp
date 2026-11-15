@@ -1,23 +1,19 @@
 #include "generate-ticket.hpp"
 #include "utils.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
-#include <boost/variant/get.hpp>
-#include <cryptopp/cryptlib.h>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/security/backend_crypto_provider.hpp>
-#include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate.hpp>
-#include <vanetza/security/v2/persistence.hpp>
 #include <vanetza/security/v2/subject_attribute.hpp>
 #include <vanetza/security/v2/subject_info.hpp>
 
-namespace aid = vanetza::aid;
 namespace po = boost::program_options;
+using namespace vanetza;
 using namespace vanetza::security;
 
 bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
@@ -26,9 +22,12 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
     desc.add_options()
         ("help", "Print out available options.")
         ("output", po::value<std::string>(&output)->required(), "Output file.")
-        ("sign-key", po::value<std::string>(&sign_key_path)->required(), "Private key file of the signer.")
-        ("sign-cert", po::value<std::string>(&sign_cert_path)->required(), "Private certificate file of the signer.")
-        ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Private key file to issue the certificate for.")
+        ("sign-key", po::value<std::string>(&sign_key_path)->required(), "Key reference file of the signer.")
+        ("sign-cert", po::value<std::string>(&sign_cert_path)->required(), "Certificate file of the signer.")
+        ("subject-key", po::value<std::string>(&subject_key_path)->required(),
+            "Key reference or PEM SubjectPublicKeyInfo file of the subject.")
+        ("security-module", po::value<std::string>(&security_module)->default_value("default"),
+            ("Security module holding the referenced keys [" + security_module_names() + "].").c_str())
         ("days", po::value<int>(&validity_days)->default_value(7), "Validity in days.")
         ("cam-permissions", po::value<std::string>(&cam_permissions), "CAM permissions as binary string (e.g. '1111111111111100' to grant all SSPs)")
         ("denm-permissions", po::value<std::string>(&denm_permissions), "DENM permissions as binary string (e.g. '000000000000000000000000' to grant no SSPs)")
@@ -60,32 +59,15 @@ bool GenerateTicketCommand::parse(const std::vector<std::string>& opts)
 
 int GenerateTicketCommand::execute()
 {
-    auto backend = create_backend_or_throw("default");
+    std::unique_ptr<SecurityModule> module = create_security_module_or_throw(security_module);
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider_or_throw();
 
     std::cout << "Loading keys... ";
-    auto sign_key = v2::load_private_key_from_file(sign_key_path);
-    ecdsa256::PublicKey subject_key;
-    try {
-        auto subject_private_key = v2::load_private_key_from_file(subject_key_path);
-        subject_key = subject_private_key.public_key;
-    } catch (CryptoPP::BERDecodeErr& e) {
-        auto subject_key_etsi = v2::load_public_key_from_file(subject_key_path);
-        if (v2::get_type(subject_key_etsi) != v2::PublicKeyAlgorithm::ECDSA_NISTP256_With_SHA256) {
-            std::cerr << "Wrong public key algorithm." << std::endl;
-            return 1;
-        }
-
-        auto subject_key_etsi_ecdsa = boost::get<v2::ecdsa_nistp256_with_sha256>(subject_key_etsi);
-        if (v2::get_type(subject_key_etsi_ecdsa.public_key) != v2::EccPointType::Uncompressed) {
-            std::cerr << "Unsupported ECC point type, must be uncompressed.";
-            return 1;
-        }
-
-        subject_key = ecdsa256::create_public_key(boost::get<Uncompressed>(subject_key_etsi_ecdsa.public_key));
-    }
+    const KeyReference sign_key = load_key_reference_or_throw(sign_key_path);
+    const PublicKey subject_key = load_subject_key_or_throw(subject_key_path, *module);
     std::cout << "OK" << std::endl;
 
-    auto sign_cert = v2::load_certificate_from_file(sign_cert_path);
+    const v2::Certificate sign_cert = load_v2_certificate_or_throw(sign_cert_path);
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
 
     auto cam_ssps = vanetza::ByteBuffer({ 1, 0, 0 }); // no special permissions
@@ -118,21 +100,12 @@ int GenerateTicketCommand::execute()
         certificate_ssp.push_back({v2::IntX(aid::GN_MGMT), vanetza::ByteBuffer{}});
     }
 
-    BackendCryptoProvider crypto { *backend };
-    certificate.signer_info = calculate_hash(crypto, sign_cert);
+    certificate.signer_info = calculate_hash(*crypto, sign_cert);
     certificate.subject_info.subject_type = v2::SubjectType::Authorization_Ticket;
     certificate.subject_attributes.push_back(v2::SubjectAssurance(0x00));
     certificate.subject_attributes.push_back(certificate_ssp);
 
-    Uncompressed coordinates;
-    coordinates.x.assign(subject_key.x.begin(), subject_key.x.end());
-    coordinates.y.assign(subject_key.y.begin(), subject_key.y.end());
-    EccPoint ecc_point = coordinates;
-    v2::ecdsa_nistp256_with_sha256 ecdsa;
-    ecdsa.public_key = ecc_point;
-    v2::VerificationKey verification_key;
-    verification_key.key = ecdsa;
-    certificate.subject_attributes.push_back(verification_key);
+    certificate.subject_attributes.push_back(make_v2_verification_key(subject_key));
 
     v2::StartAndEndValidity start_and_end;
     start_and_end.start_validity = v2::convert_time32(time_now - std::chrono::hours(1));
@@ -141,14 +114,12 @@ int GenerateTicketCommand::execute()
 
     std::cout << "Signing certificate... ";
 
-    sort(certificate);
-    auto data_buffer = convert_for_signing(certificate);
-    certificate.signature = backend->sign_data(sign_key.private_key, data_buffer);
+    sign_v2_certificate_or_throw(certificate, *module, *crypto, sign_key);
 
     std::cout << "OK" << std::endl;
 
     std::cout << "Writing certificate to '" << output << "'... ";
-    save_certificate_to_file(output, certificate);
+    save_v2_certificate_or_throw(output, certificate);
     std::cout << "OK" << std::endl;
 
     return 0;

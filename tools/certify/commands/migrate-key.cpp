@@ -2,11 +2,9 @@
 #include "utils.hpp"
 #include <boost/program_options.hpp>
 #include <vanetza/security/persistence.hpp>
-#include <vanetza/security/persistence/file.hpp>
 #include <vanetza/security/persistence/key_reference.hpp>
 #include <vanetza/security/security_module.hpp>
 #include <vanetza/security/signing_key_import.hpp>
-#include <algorithm>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
@@ -15,22 +13,6 @@
 namespace po = boost::program_options;
 using namespace vanetza;
 using namespace vanetza::security;
-
-namespace
-{
-
-// former versions wrote private keys PEM-encoded or as DER, e.g. PKCS#8 by generate-key
-bool is_pem_file(const std::string& path)
-{
-    static const std::string pem_begin = "-----BEGIN";
-    const expected<ByteBuffer> content = persistence::read_file(path);
-    if (!content) {
-        throw std::runtime_error("cannot read " + path + ": " + content.error().message());
-    }
-    return content->size() >= pem_begin.size() && std::equal(pem_begin.begin(), pem_begin.end(), content->begin());
-}
-
-} // namespace
 
 bool MigrateKeyCommand::parse(const std::vector<std::string>& opts)
 {
@@ -74,6 +56,7 @@ int MigrateKeyCommand::execute()
         throw std::runtime_error("security module '" + security_module + "' cannot import keys");
     }
 
+    // former versions wrote private keys PEM-encoded or as DER, e.g. PKCS#8 by generate-key
     std::cout << "Loading private key from '" << input << "'... ";
     const PrivateKey private_key = is_pem_file(input) ?
         load_private_key_from_pem_file(input) : load_private_key_from_der_file(input);

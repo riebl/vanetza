@@ -1,19 +1,19 @@
 #include "generate-root.hpp"
+#include "utils.hpp"
+#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <vanetza/common/clock.hpp>
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/security/backend_cryptopp.hpp>
 #include <vanetza/security/v2/basic_elements.hpp>
 #include <vanetza/security/v2/certificate.hpp>
-#include <vanetza/security/v2/persistence.hpp>
 #include <vanetza/security/v2/subject_attribute.hpp>
 #include <vanetza/security/v2/subject_info.hpp>
 
-namespace aid = vanetza::aid;
 namespace po = boost::program_options;
+using namespace vanetza;
 using namespace vanetza::security;
 
 bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
@@ -22,7 +22,9 @@ bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
     desc.add_options()
         ("help", "Print out available options.")
         ("output", po::value<std::string>(&output)->required(), "Output file.")
-        ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Private key file.")
+        ("subject-key", po::value<std::string>(&subject_key_path)->required(), "Key reference file of the subject.")
+        ("security-module", po::value<std::string>(&security_module)->default_value("default"),
+            ("Security module holding the referenced keys [" + security_module_names() + "].").c_str())
         ("subject-name", po::value<std::string>(&subject_name)->default_value("Hello World Root-CA"), "Subject name.")
         ("days", po::value<int>(&validity_days)->default_value(365), "Validity in days.")
         ("aid", po::value<std::vector<unsigned> >(&aids)->multitoken(), "Allowed ITS-AIDs to restrict permissions, defaults to 36 (CA) and 37 (DEN) if empty.")
@@ -53,10 +55,12 @@ bool GenerateRootCommand::parse(const std::vector<std::string>& opts)
 
 int GenerateRootCommand::execute()
 {
-    auto backend = create_backend_or_throw("default");
+    std::unique_ptr<SecurityModule> module = create_security_module_or_throw(security_module);
+    std::unique_ptr<CryptoProvider> crypto = create_crypto_provider_or_throw();
 
     std::cout << "Loading key... ";
-    auto subject_key = v2::load_private_key_from_file(subject_key_path);
+    const KeyReference subject_key = load_key_reference_or_throw(subject_key_path);
+    const PublicKey subject_public_key = referenced_public_key_or_throw(*module, subject_key, subject_key_path);
     std::cout << "OK" << std::endl;
 
     auto time_now = vanetza::Clock::at(boost::posix_time::microsec_clock::universal_time());
@@ -89,17 +93,7 @@ int GenerateRootCommand::execute()
     certificate.subject_attributes.push_back(v2::SubjectAssurance(0x00));
 
     // section 7.4.1 in TS 103 097 v1.2.1
-    // set subject attributes
-    // set the verification_key
-    Uncompressed coordinates;
-    coordinates.x.assign(subject_key.public_key.x.begin(), subject_key.public_key.x.end());
-    coordinates.y.assign(subject_key.public_key.y.begin(), subject_key.public_key.y.end());
-    EccPoint ecc_point = coordinates;
-    v2::ecdsa_nistp256_with_sha256 ecdsa;
-    ecdsa.public_key = ecc_point;
-    v2::VerificationKey verification_key;
-    verification_key.key = ecdsa;
-    certificate.subject_attributes.push_back(verification_key);
+    certificate.subject_attributes.push_back(make_v2_verification_key(subject_public_key));
 
     // section 6.7 in TS 103 097 v1.2.1
     // set validity restriction
@@ -110,14 +104,12 @@ int GenerateRootCommand::execute()
 
     std::cout << "Signing certificate... ";
 
-    sort(certificate);
-    vanetza::ByteBuffer data_buffer = convert_for_signing(certificate);
-    certificate.signature = backend->sign_data(subject_key.private_key, data_buffer);
+    sign_v2_certificate_or_throw(certificate, *module, *crypto, subject_key);
 
     std::cout << "OK" << std::endl;
 
     std::cout << "Writing certificate to '" << output << "'... ";
-    save_certificate_to_file(output, certificate);
+    save_v2_certificate_or_throw(output, certificate);
     std::cout << "OK" << std::endl;
 
     return 0;

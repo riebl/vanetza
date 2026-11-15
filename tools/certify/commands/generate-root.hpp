@@ -11,6 +11,7 @@ public:
 
 private:
     std::string subject_key_path;
+    std::string security_module;
     std::string output;
     std::string subject_name;
     int validity_days;

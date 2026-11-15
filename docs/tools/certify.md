@@ -38,7 +38,7 @@ An authorization ticket can be generated using `bin/certify generate-ticket --si
 
 If you're generating a certificate for real V2X hardware, it will likely use a hardware security module (HSM), which will only expose the public key.
 You can export the given public key to a file and use `--subject-key` also with public keys.
-The public key needs to be encoded according to the rules specified by ETSI in TS 103 097 v1.2.1.
+The public key needs to be encoded as PEM SubjectPublicKeyInfo, i.e. a file starting with `-----BEGIN PUBLIC KEY-----`.
 
 ## Migrating Private Keys
 

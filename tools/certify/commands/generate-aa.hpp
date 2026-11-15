@@ -14,6 +14,7 @@ private:
     std::string sign_key_path;
     std::string sign_cert_path;
     std::string subject_key_path;
+    std::string security_module;
     std::string subject_name;
     int validity_days;
     std::vector<unsigned> aids;
