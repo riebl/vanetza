@@ -6,14 +6,24 @@ Building Vanetza is accomplished by the [CMake](https://cmake.org) build system.
 
 You need following tools and libraries on your system for compiling Vanetza:
 
-* C++11 compatible compiler, e.g. [GNU GCC](https://gcc.gnu.org) or [Clang](http://clang.llvm.org)
+* C++14 compatible compiler, e.g. [GNU GCC](https://gcc.gnu.org) or [Clang](http://clang.llvm.org)
 * [CMake](https://cmake.org) 3.18 or higher
-* [Boost](https://www.boost.org) 1.58 or higher
-* [GeographicLib](http://geographiclib.sourceforge.net) 1.37 or higher
-* [Crypto++](https://www.cryptopp.com) 5.6.1 or higher
+* [Boost](https://www.boost.org) 1.70 or higher
 
-If OpenSSL (1.0 or 1.1) or LibreSSL is available on your system, an alternative security backend implementation is compiled along with the Crypto++ based backend.
-See `security::Backend` and `security::create_backend` for more details.
+Further libraries are optional: CMake enables a feature if its library is found, its option turns the feature on or off explicitly.
+
+| Library | Version | CMake option | Feature |
+|---|---|---|---|
+| [GeographicLib](https://geographiclib.sourceforge.io) | 1.37 or higher | `VANETZA_WITH_GEOGRAPHICLIB` | precise geodesy |
+| [Crypto++](https://www.cryptopp.com) | 5.6.1 or higher | `VANETZA_WITH_CRYPTOPP` | crypto provider and security module |
+| [OpenSSL](https://www.openssl.org) | 1.1.1 or higher | `VANETZA_WITH_OPENSSL` | crypto provider and security module |
+| [TF-PSA-Crypto](https://github.com/Mbed-TLS/TF-PSA-Crypto) or Mbed TLS | Mbed TLS 3.6 or higher | `VANETZA_WITH_PSA` | crypto provider and security module of the PSA Crypto API |
+| [Cap'n Proto](https://capnproto.org) | 0.8 or higher | `VANETZA_WITH_RPC` | RPC support |
+| [liboqs](https://openquantumsafe.org) | 0.14 or higher | `VANETZA_WITH_PQC` (off by default) | experimental hybrid-PQC certificate profile |
+
+Secured messages require at least one crypto provider and security module, i.e. Crypto++, OpenSSL or the PSA Crypto API.
+See `security::create_crypto_provider` and `security::create_security_module` for more details.
+Persistence of key references, public keys and certificates (`VANETZA_WITH_PERSISTENCE`) is available if the compiler provides C++17's `std::filesystem`.
 
 !!! hint
     If you are building on Ubuntu 16.04 or 18.04, please note that these Ubuntu releases ship outdated CMake versions unsuitable for Vanetza.
