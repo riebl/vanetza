@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include <vanetza/security/persistence/certificate.hpp>
+#include <vanetza/security/persistence/key_reference.hpp>
 #include <cstdint>
 #include <stdexcept>
 #include <sstream>
@@ -75,4 +76,14 @@ vanetza::security::v2::Certificate load_v2_certificate_or_throw(const std::strin
         throw std::runtime_error("cannot load certificate " + path + ": " + certificate.error().message());
     }
     return std::move(*certificate);
+}
+
+vanetza::security::KeyReference load_key_reference_or_throw(const std::string& path)
+{
+    vanetza::expected<vanetza::security::KeyReference> reference =
+        vanetza::security::persistence::load_key_reference(path);
+    if (!reference) {
+        throw std::runtime_error("cannot load key reference " + path + ": " + reference.error().message());
+    }
+    return std::move(*reference);
 }

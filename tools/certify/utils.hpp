@@ -34,4 +34,10 @@ std::unique_ptr<vanetza::security::CryptoProvider> create_crypto_provider_or_thr
  */
 vanetza::security::v2::Certificate load_v2_certificate_or_throw(const std::string& path);
 
+/**
+ * Load a key reference file
+ * \return key reference, std::runtime_error is thrown if it cannot be loaded
+ */
+vanetza::security::KeyReference load_key_reference_or_throw(const std::string& path);
+
 #endif /* CERTIFY_UTILS_HPP */

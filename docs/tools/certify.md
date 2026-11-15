@@ -19,7 +19,8 @@ We will generate a root certificate, an authorization authority certificate and 
 
 New keys can be generated in the default security module using `bin/certify generate-key root.key`.
 It writes a reference to the key, which works with the same security module only, see `--security-module`.
-The corresponding public key can be extracted using `bin/certify extract-public-key --private-key root.key root.pub`, but this step usually isn't required.
+The corresponding public key can be extracted using `bin/certify extract-public-key --key root.key root.pub`, but this step usually isn't required.
+Extracted public keys are PEM-encoded SubjectPublicKeyInfo.
 
 Please generate a `root.key` for the root certificate, a `aa.key` for the authorization authority and a `ticket.key` for the authorization ticket.
 

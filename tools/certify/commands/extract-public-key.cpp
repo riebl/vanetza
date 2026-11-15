@@ -1,12 +1,12 @@
 #include "extract-public-key.hpp"
+#include "utils.hpp"
 #include <boost/program_options.hpp>
+#include <vanetza/security/persistence/public_key.hpp>
 #include <iostream>
 #include <stdexcept>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/v2/basic_elements.hpp>
-#include <vanetza/security/v2/persistence.hpp>
 
 namespace po = boost::program_options;
+using namespace vanetza;
 using namespace vanetza::security;
 
 bool ExtractPublicKeyCommand::parse(const std::vector<std::string>& opts)
@@ -14,9 +14,11 @@ bool ExtractPublicKeyCommand::parse(const std::vector<std::string>& opts)
     po::options_description desc("Available options");
     desc.add_options()
         ("help", "Print out available options.")
-        ("output", po::value<std::string>(&output)->required(), "Output file.")
+        ("output", po::value<std::string>(&output)->required(), "Public key file (PEM SubjectPublicKeyInfo).")
         ("certificate", po::value<std::string>(&certificate_path), "Certificate file to extract public key from.")
-        ("private-key", po::value<std::string>(&private_key_path), "Private key file to extract public key from.")
+        ("key", po::value<std::string>(&key_path), "Key reference file to extract public key from.")
+        ("security-module", po::value<std::string>(&security_module)->default_value("default"),
+            ("Security module holding the referenced key [" + security_module_names() + "].").c_str())
     ;
 
     po::positional_options_description pos;
@@ -34,8 +36,8 @@ bool ExtractPublicKeyCommand::parse(const std::vector<std::string>& opts)
     try {
         po::notify(vm);
 
-        if (!(vm.count("certificate") ^ vm.count("private-key"))) {
-            std::cerr << "Error: One of certificate / private-key parameters must be present." << std::endl;
+        if (!(vm.count("certificate") ^ vm.count("key"))) {
+            std::cerr << "Error: One of certificate / key parameters must be present." << std::endl;
 
             return false;
         }
@@ -51,35 +53,29 @@ bool ExtractPublicKeyCommand::parse(const std::vector<std::string>& opts)
 int ExtractPublicKeyCommand::execute()
 {
     std::cout << "Loading key... ";
-
-    std::unique_ptr<Backend> backend = create_backend("default");
-    ecdsa256::PublicKey public_key;
-    if (certificate_path.length() > 0) {
-        auto certificate = v2::load_certificate_from_file(certificate_path);
-        auto certificate_key = get_public_key(certificate, *backend);
-
+    PublicKey public_key;
+    if (!certificate_path.empty()) {
+        const v2::Certificate certificate = load_v2_certificate_or_throw(certificate_path);
+        const boost::optional<PublicKey> certificate_key = v2::get_verification_key(certificate);
         if (!certificate_key) {
-            std::cerr << "Reading public key from certificate failed." << std::endl;
-            return 1;
+            throw std::runtime_error("certificate " + certificate_path + " lacks a verification key");
         }
-
         public_key = *certificate_key;
     } else {
-        auto private_key = v2::load_private_key_from_file(private_key_path);
-        public_key = private_key.public_key;
+        std::unique_ptr<SecurityModule> module = create_security_module_or_throw(security_module);
+        const expected<PublicKey> referenced_key = module->public_key(load_key_reference_or_throw(key_path));
+        if (!referenced_key) {
+            throw std::runtime_error("cannot use key reference " + key_path + ": " + referenced_key.error().message());
+        }
+        public_key = *referenced_key;
     }
-
     std::cout << "OK" << std::endl;
 
-    Uncompressed coordinates;
-    coordinates.x.assign(public_key.x.begin(), public_key.x.end());
-    coordinates.y.assign(public_key.y.begin(), public_key.y.end());
-
-    v2::ecdsa_nistp256_with_sha256 public_key_etsi;
-    public_key_etsi.public_key = coordinates;
-
     std::cout << "Writing public key to '" << output << "'... ";
-    v2::save_public_key_to_file(output, public_key_etsi);
+    const std::error_code error = persistence::save_public_key_pem(output, public_key);
+    if (error) {
+        throw std::runtime_error("cannot save public key: " + error.message());
+    }
     std::cout << "OK" << std::endl;
 
     return 0;

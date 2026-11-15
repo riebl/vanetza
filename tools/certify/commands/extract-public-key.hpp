@@ -12,7 +12,8 @@ public:
 private:
     std::string output;
     std::string certificate_path;
-    std::string private_key_path;
+    std::string key_path;
+    std::string security_module;
 };
 
 #endif /* CERTIFY_COMMANDS_EXTRACT_PUBLIC_KEY_HPP */
