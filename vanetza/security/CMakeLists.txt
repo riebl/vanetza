@@ -27,6 +27,7 @@ add_vanetza_component(security
     security_module_error.cpp
     sha.cpp
     signature.cpp
+    software_signing_keys.cpp
     straight_verify_service.cpp
     verify_service.cpp
     v2/basic_elements.cpp

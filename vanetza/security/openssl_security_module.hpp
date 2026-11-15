@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/software_signing_keys.hpp>
 #include <memory>
 
 namespace vanetza
@@ -10,13 +11,13 @@ namespace security
 
 class CredentialStorage;
 
-class OpenSslSecurityModule : public SecurityModule
+class OpenSslSecurityModule : public SecurityModule, private SoftwareSigningKeys
 {
 public:
     /**
      * Create module without credential storage, its key references are self-contained
      */
-    OpenSslSecurityModule() = default;
+    OpenSslSecurityModule();
 
     /**
      * Create module storing its created keys permanently
@@ -36,7 +37,9 @@ public:
     bool discard_key(const KeyReference&) override;
 
 private:
-    std::shared_ptr<CredentialStorage> m_credential_storage;
+    expected<PrivateKey> generate_private_key(KeyType) override;
+    expected<PublicKey> derive_public_key(const PrivateKey&) override;
+    expected<Signature> sign_digest(const ByteBuffer& digest, const PrivateKey&) override;
 };
 
 } // namespace security
