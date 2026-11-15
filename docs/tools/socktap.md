@@ -162,6 +162,8 @@ independently generated peer chain trusted.
 ## Building and Running
 
 You need to enable the CMake option `BUILD_SOCKTAP` so *socktap* will be built at all.
+Loading certificate files, e.g. by `--certificate`, requires the persistence feature (`VANETZA_WITH_PERSISTENCE`),
+which is enabled by default if the compiler provides `std::filesystem`.
 Two further CMake options control which optional features are included into the *socktap* executable.
 
 

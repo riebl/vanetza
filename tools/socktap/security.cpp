@@ -17,12 +17,15 @@
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/naive_certificate_provider.hpp>
-#include <vanetza/security/v3/persistence.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <vanetza/security/v3/sign_service.hpp>
 #include <vanetza/security/v3/static_certificate_provider.hpp>
 
 #include <stdexcept>
+
+#ifdef SOCKTAP_WITH_PERSISTENCE
+#   include <vanetza/security/persistence/certificate.hpp>
+#endif
 
 using namespace vanetza;
 namespace po = boost::program_options;
@@ -194,15 +197,35 @@ create_dummy_v3_security_entity(const Runtime& runtime)
     return std::make_unique<DummySecurityContext>(std::move(sign_service));
 }
 
+namespace
+{
+
+// setup of socktap reports failures by exceptions
+template<typename Certificate>
+Certificate load_certificate_file(const std::string& path)
+{
+#ifdef SOCKTAP_WITH_PERSISTENCE
+    expected<Certificate> certificate = security::persistence::load_certificate<Certificate>(path);
+    if (!certificate) {
+        throw std::runtime_error("cannot load certificate " + path + ": " + certificate.error().message());
+    }
+    return std::move(*certificate);
+#else
+    throw std::runtime_error("cannot load certificate " + path + ": socktap is built without persistence feature");
+#endif
+}
+
+} // namespace
+
 std::unique_ptr<security::v2::CertificateProvider>
 load_v2_certificates(const std::string& cert_path, const std::string& cert_key_path, const std::vector<std::string> cert_chain_path, security::v2::CertificateCache& cert_cache)
 {
-    auto authorization_ticket = security::v2::load_certificate_from_file(cert_path);
+    auto authorization_ticket = load_certificate_file<security::v2::Certificate>(cert_path);
     auto authorization_ticket_key = security::v2::load_private_key_from_file(cert_key_path);
 
     std::list<security::v2::Certificate> chain;
     for (auto& chain_path : cert_chain_path) {
-        auto chain_certificate = security::v2::load_certificate_from_file(chain_path);
+        auto chain_certificate = load_certificate_file<security::v2::Certificate>(chain_path);
         chain.push_back(chain_certificate);
         cert_cache.insert(chain_certificate);
     }
@@ -215,12 +238,12 @@ load_v3_certificates(const std::string& cert_path, const std::string& cert_key_p
     const std::vector<std::string> cert_chain_path, CertificateValidationV3& validation,
     security::v3::CertificateCache& cert_cache)
 {
-    auto authorization_ticket = security::v3::load_certificate_from_file(cert_path);
+    auto authorization_ticket = load_certificate_file<security::v3::Certificate>(cert_path);
     auto authorization_ticket_key = validation.load_authorization_ticket_key(cert_key_path);
 
     auto provider = std::make_unique<security::v3::StaticCertificateProvider>(authorization_ticket, authorization_ticket_key);
     for (auto& chain_path : cert_chain_path) {
-        auto chain_certificate = security::v3::load_certificate_from_file(chain_path);
+        auto chain_certificate = load_certificate_file<security::v3::Certificate>(chain_path);
         cert_cache.store(chain_certificate);
         validation.add_chain_certificate(chain_certificate);
     }
@@ -268,7 +291,8 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
                 context->cert_provider = load_v2_certificates(cert_path, cert_key_path, chain_paths, context->cert_cache);
                 if (vm.count("trusted-certificate")) {
                     for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
-                        auto trusted_certificate = security::v2::load_certificate_from_file(cert_path);
+                        auto trusted_certificate =
+                            load_certificate_file<security::v2::Certificate>(cert_path);
                         context->trust_store.insert(trusted_certificate);
                     }
                 }

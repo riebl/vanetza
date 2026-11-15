@@ -31,6 +31,12 @@ else()
     target_sources(socktap PRIVATE certificate_validation_v3_strict.cpp)
 endif()
 
+# certificate files are loaded by Vanetza's persistence feature (if available)
+if(VANETZA_WITH_PERSISTENCE)
+    target_compile_definitions(socktap PRIVATE SOCKTAP_WITH_PERSISTENCE)
+    target_compile_features(socktap PRIVATE cxx_std_17)
+endif()
+
 if (TARGET rpc)
     set(SOCKTAP_WITH_RPC_DEFAULT ON)
 else()
