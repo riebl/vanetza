@@ -1,4 +1,5 @@
 #include <vanetza/security/backend_cryptopp.hpp>
+#include <vanetza/security/cryptopp_wrapper.hpp>
 #include <vanetza/security/ecc_point.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <boost/optional/optional.hpp>
@@ -15,47 +16,7 @@ namespace security
 
 namespace {
 
-/**
- * Derive Crypto++ OID object from key type
- * \param key_type key type from our API
- * \return Crypto++ OID object (possibly empty)
- */
-CryptoPP::OID get_oid(KeyType key_type)
-{
-    if (key_type == KeyType::NistP256) {
-        return CryptoPP::ASN1::secp256r1();
-    } else if (key_type == KeyType::BrainpoolP256r1) {
-        return CryptoPP::ASN1::brainpoolP256r1();
-    } else if (key_type == KeyType::BrainpoolP384r1) {
-        return CryptoPP::ASN1::brainpoolP384r1();
-    } else {
-        return CryptoPP::OID {};
-    }
-}
-
-using InternalPublicKey = CryptoPP::DL_PublicKey_EC<CryptoPP::ECP>;
 using InternalPrivateKey = CryptoPP::DL_PrivateKey_EC<CryptoPP::ECP>;
-
-/**
- * Convert our PublicKey type to a Crypto++ EC public key
- * \param pub_key our public key
- * \return public key as Crypto++ type (if conversion was possible)
- */
-boost::optional<InternalPublicKey> convert_public_key(const PublicKey& pub_key)
-{
-    InternalPublicKey out;
-    out.AccessGroupParameters().Initialize(get_oid(pub_key.type));
-    auto& curve = out.GetGroupParameters().GetCurve();
-    
-    CryptoPP::ECP::Point point;
-    ByteBuffer encoded_pub_key = encode_ec_point(pub_key);
-    CryptoPP::StringStore store { encoded_pub_key.data(), encoded_pub_key.size() };
-    if (!curve.DecodePoint(point, store, store.MaxRetrievable())) {
-        return boost::none;
-    }
-    out.SetPublicElement(point);
-    return out;
-}
 
 /**
  * Convert our PrivateKey type to a Crypto++ EC private key
@@ -65,7 +26,7 @@ boost::optional<InternalPublicKey> convert_public_key(const PublicKey& pub_key)
 InternalPrivateKey convert_private_key(const PrivateKey& priv_key)
 {
     InternalPrivateKey out;
-    out.AccessGroupParameters().Initialize(get_oid(priv_key.type));
+    out.AccessGroupParameters().Initialize(cryptopp::get_oid(priv_key.type));
     out.SetPrivateExponent(CryptoPP::Integer(priv_key.key.data(), priv_key.key.size()));
     return out;
 }
@@ -83,7 +44,7 @@ public:
      * Construct verifier object for a public key
      * \param pub public key
      */
-    explicit Verifier(const InternalPublicKey& pub)
+    explicit Verifier(const cryptopp::EcPublicKey& pub)
         : BaseVerifier(pub)
     {
     }
@@ -241,7 +202,7 @@ bool BackendCryptoPP::verify_digest(const PublicKey& public_key, const ByteBuffe
         return false;
     }
 
-    boost::optional<InternalPublicKey> internal_pub_key = convert_public_key(public_key);
+    boost::optional<cryptopp::EcPublicKey> internal_pub_key = cryptopp::convert_public_key(public_key);
     if (!internal_pub_key) {
         return false;
     } else if (!internal_pub_key->Validate(m_prng, 3)) {
@@ -394,7 +355,7 @@ namespace cryptopp
 PublicKey derive_public_key(const PrivateKey& private_key)
 {
     InternalPrivateKey priv = convert_private_key(private_key);
-    InternalPublicKey pub;
+    cryptopp::EcPublicKey pub;
     priv.MakePublicKey(pub);
     const auto& element = pub.GetPublicElement();
 
