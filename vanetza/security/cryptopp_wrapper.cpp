@@ -1,5 +1,6 @@
 #include <vanetza/security/cryptopp_wrapper.hpp>
 #include <cryptopp/oids.h>
+#include <cryptopp/osrng.h>
 
 namespace vanetza
 {
@@ -35,6 +36,36 @@ boost::optional<EcPublicKey> convert_public_key(const PublicKey& pub_key)
     }
     out.SetPublicElement(point);
     return out;
+}
+
+EcPrivateKey convert_private_key(const PrivateKey& priv_key)
+{
+    EcPrivateKey out;
+    out.AccessGroupParameters().Initialize(get_oid(priv_key.type));
+    out.SetPrivateExponent(CryptoPP::Integer(priv_key.key.data(), priv_key.key.size()));
+    return out;
+}
+
+bool generate_random(std::uint8_t* buffer, std::size_t length)
+{
+    try {
+        CryptoPP::OS_GenerateRandomBlock(false, buffer, length);
+    } catch (const CryptoPP::OS_RNG_Err&) {
+        return false;
+    }
+    return true;
+}
+
+CryptoPP::Integer digest_integer(const std::uint8_t* digest, std::size_t length, const CryptoPP::Integer& order)
+{
+    // ECDSA uses the leftmost bits of a digest longer than the curve order
+    CryptoPP::Integer e { digest, length };
+    const std::size_t digest_bits = 8 * length;
+    const std::size_t order_bits = order.BitCount();
+    if (digest_bits > order_bits) {
+        e >>= digest_bits - order_bits;
+    }
+    return e;
 }
 
 } // namespace cryptopp

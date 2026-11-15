@@ -16,21 +16,6 @@ namespace security
 
 namespace {
 
-using InternalPrivateKey = CryptoPP::DL_PrivateKey_EC<CryptoPP::ECP>;
-
-/**
- * Convert our PrivateKey type to a Crypto++ EC private key
- * \param priv_key our private key
- * \return private key as Crypto++ type
- */
-InternalPrivateKey convert_private_key(const PrivateKey& priv_key)
-{
-    InternalPrivateKey out;
-    out.AccessGroupParameters().Initialize(cryptopp::get_oid(priv_key.type));
-    out.SetPrivateExponent(CryptoPP::Integer(priv_key.key.data(), priv_key.key.size()));
-    return out;
-}
-
 /**
  * Specialized Crypto++ Verifier for C-ITS messages
  */
@@ -354,7 +339,7 @@ namespace cryptopp
 
 PublicKey derive_public_key(const PrivateKey& private_key)
 {
-    InternalPrivateKey priv = convert_private_key(private_key);
+    EcPrivateKey priv = convert_private_key(private_key);
     cryptopp::EcPublicKey pub;
     priv.MakePublicKey(pub);
     const auto& element = pub.GetPublicElement();
