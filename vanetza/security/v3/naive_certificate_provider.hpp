@@ -21,6 +21,7 @@ namespace v3
  * signatures produced based on this certificate provider can't be verified by other parties.
  *
  * It's intended for experimenting with secured messages without validating signatures.
+ * \deprecated exposes private key, use NaiveCredentialProvider
  */
 class NaiveCertificateProvider : public CertificateProvider
 {

@@ -77,6 +77,7 @@ add_vanetza_component(security
     v3/secured_message.cpp
     v3/sign_service.cpp
     v3/naive_certificate_provider.cpp
+    v3/naive_credential_provider.cpp
     v3/sign_header_policy.cpp
     v3/static_certificate_provider.cpp
     v3/static_credential_provider.cpp
