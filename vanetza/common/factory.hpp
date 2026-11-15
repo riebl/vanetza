@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace vanetza
 {
@@ -74,6 +75,19 @@ public:
             m_default = boost::none;
             return false;
         }
+    }
+
+    /**
+     * Get names of added implementations
+     */
+    std::vector<std::string> names() const
+    {
+        std::vector<std::string> result;
+        result.reserve(m_functions.size());
+        for (const auto& function : m_functions) {
+            result.push_back(function.first);
+        }
+        return result;
     }
 
 private:

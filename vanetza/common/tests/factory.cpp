@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include <vanetza/common/factory.hpp>
+#include <algorithm>
 #include <string>
 #include <utility>
+#include <vector>
 
 using namespace vanetza;
 
@@ -23,6 +25,17 @@ TEST(Factory, create)
     EXPECT_EQ("a", *factory.create("a"));
     EXPECT_EQ(nullptr, factory.create("c"));
     EXPECT_EQ(nullptr, factory.create());
+}
+
+TEST(Factory, names)
+{
+    StringFactory factory;
+    EXPECT_TRUE(factory.names().empty());
+    factory.add("b", make("b"));
+    factory.add("a", make("a"));
+    std::vector<std::string> names = factory.names();
+    std::sort(names.begin(), names.end());
+    EXPECT_EQ((std::vector<std::string> { "a", "b" }), names);
 }
 
 TEST(Factory, configure_default)
