@@ -3,6 +3,7 @@
 #include "commands/generate-key.hpp"
 #include "commands/generate-root.hpp"
 #include "commands/generate-ticket.hpp"
+#include "commands/migrate-key.hpp"
 #include "commands/show-certificate.hpp"
 #include "options.hpp"
 #include <boost/program_options.hpp>
@@ -34,7 +35,7 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
     po::store(parsed, vm);
     po::notify(vm);
 
-    std::string available_commands = "Available commands: generate-key, extract-public-key, generate-root, generate-aa, generate-ticket, show-certificate";
+    std::string available_commands = "Available commands: generate-key, extract-public-key, generate-root, generate-aa, generate-ticket, migrate-key, show-certificate";
 
     if (!vm.count("command")) {
         std::cerr << global << std::endl;
@@ -59,6 +60,8 @@ std::unique_ptr<Command> parse_options(int argc, const char *argv[])
         command.reset(new GenerateRootCommand());
     } else if (cmd == "generate-ticket") {
         command.reset(new GenerateTicketCommand());
+    } else if (cmd == "migrate-key") {
+        command.reset(new MigrateKeyCommand());
     } else if (cmd == "show-certificate") {
         command.reset(new ShowCertificateCommand());
     } else {

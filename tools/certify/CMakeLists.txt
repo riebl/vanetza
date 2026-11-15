@@ -8,12 +8,18 @@ if(NOT TARGET cryptopp::cryptopp)
     return()
 endif()
 
+if(NOT VANETZA_WITH_PERSISTENCE)
+    message(STATUS "Skip build of certify because the persistence feature is disabled")
+    return()
+endif()
+
 add_executable(certify
     commands/extract-public-key.cpp
     commands/generate-aa.cpp
     commands/generate-key.cpp
     commands/generate-root.cpp
     commands/generate-ticket.cpp
+    commands/migrate-key.cpp
     commands/show-certificate.cpp
     main.cpp
     options.cpp
@@ -21,4 +27,5 @@ add_executable(certify
 )
 
 target_include_directories(certify PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_compile_features(certify PRIVATE cxx_std_17)
 target_link_libraries(certify Boost::program_options vanetza)

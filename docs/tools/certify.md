@@ -6,6 +6,8 @@
 
 You need to enable building this tool explicitly.
 Run `cmake -D BUILD_CERTIFY=ON ..` in your build directory and rebuild Vanetza.
+It also requires the persistence feature (`VANETZA_WITH_PERSISTENCE`), which is enabled by default
+if the compiler provides `std::filesystem`.
 You should be able to find `bin/certify` in your build directory afterwards.
 
 ## PKI Setup
@@ -35,6 +37,15 @@ An authorization ticket can be generated using `bin/certify generate-ticket --si
 If you're generating a certificate for real V2X hardware, it will likely use a hardware security module (HSM), which will only expose the public key.
 You can export the given public key to a file and use `--subject-key` also with public keys.
 The public key needs to be encoded according to the rules specified by ETSI in TS 103 097 v1.2.1.
+
+## Migrating Private Keys
+
+Former versions of Vanetza's tools stored private keys in files, e.g. `generate-key` wrote PKCS#8 files.
+Tools of the present version refer to keys held by a security module instead.
+`bin/certify migrate-key ticket.key --output ticket.ref` imports a PEM-encoded or DER private key file into the
+default security module and writes the reference to the imported key.
+Use `--security-module` to import into another module; tools using the key have to use the same module.
+Keys imported into a software security module, e.g. backed by OpenSSL, are still software keys.
 
 ## Other Options
 
