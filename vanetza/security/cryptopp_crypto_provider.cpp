@@ -3,7 +3,6 @@
 #include <cryptopp/aes.h>
 #include <cryptopp/ccm.h>
 #include <cryptopp/hmac.h>
-#include <cryptopp/osrng.h>
 #include <cryptopp/sha.h>
 
 namespace vanetza
@@ -60,14 +59,7 @@ expected<bool> CryptoppCryptoProvider::verify(
         return make_error_code(SecurityModuleError::InvalidPublicKey);
     }
 
-    // ECDSA uses the leftmost bits of a digest longer than the curve order
-    CryptoPP::Integer e { digest, length };
-    const std::size_t digest_bits = 8 * length;
-    const std::size_t order_bits = key->GetGroupParameters().GetSubgroupOrder().BitCount();
-    if (digest_bits > order_bits) {
-        e >>= digest_bits - order_bits;
-    }
-
+    const CryptoPP::Integer e = cryptopp::digest_integer(digest, length, key->GetGroupParameters().GetSubgroupOrder());
     const CryptoPP::Integer r { signature.r.data(), signature.r.size() };
     const CryptoPP::Integer s { signature.s.data(), signature.s.size() };
     return CryptoPP::DL_Algorithm_ECDSA<CryptoPP::ECP>().Verify(key->GetGroupParameters(), *key, e, r, s);
@@ -77,9 +69,7 @@ expected<AesCcmCiphertext> CryptoppCryptoProvider::encrypt_aes_ccm(
     const Aes128Key& key, const ByteBuffer& plaintext)
 {
     AesCcmCiphertext encrypted;
-    try {
-        CryptoPP::OS_GenerateRandomBlock(false, encrypted.nonce.data(), encrypted.nonce.size());
-    } catch (const CryptoPP::OS_RNG_Err&) {
+    if (!cryptopp::generate_random(encrypted.nonce.data(), encrypted.nonce.size())) {
         return make_error_code(SecurityModuleError::ModuleFailure);
     }
 

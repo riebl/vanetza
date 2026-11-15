@@ -59,6 +59,19 @@ TEST_P(SecurityModuleTest, signature_verifies_with_public_key_of_reference)
     EXPECT_TRUE(crypto->verify(digest, *signature, *public_key).value());
 }
 
+TEST_P(SecurityModuleTest, signature_has_type_of_signing_key)
+{
+    for (KeyType type : { KeyType::NistP256, KeyType::BrainpoolP256r1, KeyType::BrainpoolP384r1 }) {
+        SCOPED_TRACE(static_cast<int>(type));
+        expected<KeyReference> key = security->create_signing_key(type);
+        ASSERT_TRUE(key.has_value());
+        ScopedKeyPair key_pair { *security, *key };
+        expected<Signature> signature = security->sign(ByteBuffer(key_length(type), 0x5A), *key);
+        ASSERT_TRUE(signature.has_value());
+        EXPECT_EQ(type, signature->type);
+    }
+}
+
 // applications store key references to use their keys again, e.g. after a restart
 TEST_P(SecurityModuleTest, key_reference_is_usable_by_another_module_instance)
 {
@@ -123,6 +136,9 @@ TEST_P(SecurityModuleTest, key_encryption_requires_valid_recipient_key)
 std::vector<std::string> enabled_security_modules()
 {
     std::vector<std::string> modules;
+#ifdef VANETZA_WITH_CRYPTOPP
+    modules.emplace_back("Crypto++");
+#endif
 #ifdef VANETZA_WITH_OPENSSL
     modules.emplace_back("OpenSSL");
 #endif

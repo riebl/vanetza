@@ -1,5 +1,8 @@
 #include <vanetza/security/memory_credential_storage.hpp>
 #include <vanetza/security/tests/implementation_name.hpp>
+#ifdef VANETZA_WITH_CRYPTOPP
+#   include <vanetza/security/cryptopp_security_module.hpp>
+#endif
 #ifdef VANETZA_WITH_OPENSSL
 #   include <vanetza/security/openssl_security_module.hpp>
 #endif
@@ -19,6 +22,11 @@ namespace
 std::unique_ptr<SecurityModule> create_software_module(
     const std::string& name, std::shared_ptr<CredentialStorage> storage)
 {
+#ifdef VANETZA_WITH_CRYPTOPP
+    if (name == "Crypto++") {
+        return std::make_unique<CryptoppSecurityModule>(storage);
+    }
+#endif
 #ifdef VANETZA_WITH_OPENSSL
     if (name == "OpenSSL") {
         return std::make_unique<OpenSslSecurityModule>(storage);
@@ -213,6 +221,9 @@ TEST_P(SoftwareSigningKeysTest, corrupt_stored_key_is_not_usable_for_signing)
 std::vector<std::string> software_security_modules()
 {
     std::vector<std::string> modules;
+#ifdef VANETZA_WITH_CRYPTOPP
+    modules.emplace_back("Crypto++");
+#endif
 #ifdef VANETZA_WITH_OPENSSL
     modules.emplace_back("OpenSSL");
 #endif

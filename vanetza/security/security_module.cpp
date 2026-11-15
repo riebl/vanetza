@@ -1,4 +1,7 @@
 #include <vanetza/security/security_module.hpp>
+#if defined VANETZA_WITH_CRYPTOPP
+#   include <vanetza/security/cryptopp_security_module.hpp>
+#endif
 #if defined VANETZA_WITH_OPENSSL
 #   include <vanetza/security/openssl_security_module.hpp>
 #endif
@@ -17,6 +20,11 @@ namespace
 Factory<SecurityModule> build_builtin_security_modules()
 {
     Factory<SecurityModule> factory;
+    // Crypto++ is the least preferred module
+#if defined VANETZA_WITH_CRYPTOPP
+    factory.add("Crypto++", []() { return std::unique_ptr<SecurityModule> { new CryptoppSecurityModule() }; });
+    factory.configure_default("Crypto++");
+#endif
 #if defined VANETZA_WITH_PSA
     factory.add("PSA", []() { return std::unique_ptr<SecurityModule> { new PsaSecurityModule() }; });
     factory.configure_default("PSA");
