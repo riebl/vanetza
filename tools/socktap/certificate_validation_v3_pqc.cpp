@@ -1,5 +1,4 @@
 #include "certificate_validation_v3.hpp"
-#include <vanetza/security/persistence.hpp>
 #include <vanetza/security/pqc/fndsa512.hpp>
 #include <vanetza/security/pqc/hybrid_certificate_validator.hpp>
 #include <vanetza/security/v3/certificate.hpp>
@@ -38,12 +37,6 @@ public:
     vanetza::security::v3::CertificateValidator& validator() override
     {
         return m_validator;
-    }
-
-    vanetza::security::PrivateKey load_authorization_ticket_key(
-        const std::string& path) const override
-    {
-        return vanetza::security::load_private_key_from_der_file(path);
     }
 
     void add_chain_certificate(const vanetza::security::v3::Certificate& certificate) override

@@ -1,7 +1,6 @@
 #include "certificate_validation_v3.hpp"
 #include <vanetza/common/position_provider.hpp>
 #include <vanetza/common/runtime.hpp>
-#include <vanetza/security/persistence.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/location_checker.hpp>
 
@@ -24,12 +23,6 @@ public:
     vanetza::security::v3::CertificateValidator& validator() override
     {
         return m_validator;
-    }
-
-    vanetza::security::PrivateKey load_authorization_ticket_key(
-        const std::string& path) const override
-    {
-        return vanetza::security::load_private_key_from_pem_file(path);
     }
 
     void add_chain_certificate(const vanetza::security::v3::Certificate&) override

@@ -110,6 +110,15 @@ You can choose from three simple example V2X applications to run with *socktap* 
 - *benchmark* counts the number of any received messages and prints the current message rate once per second
 
 
+## Certificates and Keys
+
+With `--security certs-v3`, socktap signs by a security module selected with `--security-module`.
+Given an authorization ticket by `--certificate`, its key is referred to by the key reference file given with
+`--certificate-key`. Without these options, socktap generates naive certificates whose keys are discarded on exit.
+
+Private key files of former versions are no key references.
+Import them with `certify migrate-key` into the security module socktap uses, see [Certify](certify.md).
+
 ## Hybrid-PQC Certificate Validation
 
 An experimental build configured with `VANETZA_WITH_PQC=ON` adds the
@@ -119,9 +128,9 @@ also verifies FN-DSA-512 alternative signatures whenever they are present.
 External certificate, key, and chain files are required; the option does not
 support socktap's built-in naive V3 credentials.
 
-Provide the authorization ticket and its PKCS#8 DER ECC private key with
-`--certificate` and `--certificate-key`. This is the format written by
-`certify generate-key`. Provide its issuer certificates with
+Provide the authorization ticket and the reference to its ECC key with
+`--certificate` and `--certificate-key`, e.g. the `.key` file written by
+`certify-pqc generate-key`. Provide its issuer certificates with
 `--certificate-chain`, normally the AA followed by the trusted Root CA:
 
 ```shell
@@ -134,15 +143,11 @@ bin/socktap \
   --latitude 48.7668616 \
   --longitude 11.432068 \
   --security certs-v3 \
-  --crypto-backend OpenSSL \
   --enable-pqc-verification \
   --certificate ticket.cert \
   --certificate-key ticket.key \
   --certificate-chain aa.cert root.cert
 ```
-
-This DER behavior is limited to `--enable-pqc-verification`; normal V3
-operation retains upstream socktap's PEM key format.
 
 The option permits purely ECC chains for interoperability between nodes built
 with the experimental profile, but rejects invalid or inconsistent PQC

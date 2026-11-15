@@ -1,6 +1,5 @@
 #pragma once
 
-#include <vanetza/security/private_key.hpp>
 #include <memory>
 #include <string>
 
@@ -37,9 +36,8 @@ class LocationChecker;
  * Owns the profile-specific services selected for a socktap V3 security context.
  *
  * Profile-specific implementations may retain issuer certificates and trust
- * anchors needed by their validator and select the credential format expected
- * by that profile. The strict implementation preserves socktap's established
- * behavior.
+ * anchors needed by their validator. The strict implementation preserves
+ * socktap's established behavior.
  */
 class CertificateValidationV3
 {
@@ -47,8 +45,6 @@ public:
     virtual ~CertificateValidationV3() = default;
 
     virtual vanetza::security::v3::CertificateValidator& validator() = 0;
-    virtual vanetza::security::PrivateKey load_authorization_ticket_key(
-        const std::string&) const = 0;
     virtual void add_chain_certificate(const vanetza::security::v3::Certificate&) = 0;
 };
 

@@ -6,6 +6,8 @@
 #include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/persistence.hpp>
+#include <vanetza/security/public_key.hpp>
+#include <vanetza/security/security_module.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include "vanetza/security/v2/certificate_provider.hpp"
@@ -17,19 +19,79 @@
 #include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
-#include <vanetza/security/v3/naive_certificate_provider.hpp>
+#include <vanetza/security/v3/naive_credential_provider.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
 #include <vanetza/security/v3/sign_service.hpp>
-#include <vanetza/security/v3/static_certificate_provider.hpp>
+#include <vanetza/security/v3/static_credential_provider.hpp>
 
+#include <chrono>
+#include <iostream>
 #include <stdexcept>
 
 #ifdef SOCKTAP_WITH_PERSISTENCE
 #   include <vanetza/security/persistence/certificate.hpp>
+#   include <vanetza/security/persistence/key_reference.hpp>
 #endif
 
 using namespace vanetza;
 namespace po = boost::program_options;
+
+namespace
+{
+
+// setup of socktap reports failures by exceptions
+template<typename Certificate>
+Certificate load_certificate_file(const std::string& path)
+{
+#ifdef SOCKTAP_WITH_PERSISTENCE
+    expected<Certificate> certificate = security::persistence::load_certificate<Certificate>(path);
+    if (!certificate) {
+        throw std::runtime_error("cannot load certificate " + path + ": " + certificate.error().message());
+    }
+    return std::move(*certificate);
+#else
+    throw std::runtime_error("cannot load certificate " + path + ": socktap is built without persistence feature");
+#endif
+}
+
+// key reference of a security module's key
+security::KeyReference load_key_reference_file(const std::string& path)
+{
+#ifdef SOCKTAP_WITH_PERSISTENCE
+    expected<security::KeyReference> reference = security::persistence::load_key_reference(path);
+    if (!reference) {
+        throw std::runtime_error("cannot load key reference " + path + ": " + reference.error().message());
+    }
+    return std::move(*reference);
+#else
+    throw std::runtime_error("cannot load key reference " + path + ": socktap is built without persistence feature");
+#endif
+}
+
+std::unique_ptr<security::SecurityModule> create_security_module_or_throw(const std::string& name)
+{
+    std::unique_ptr<security::SecurityModule> module = security::create_security_module(name);
+    if (!module) {
+        throw std::runtime_error("security module '" + name + "' is not built in");
+    }
+    return module;
+}
+
+// naive tickets end 22 hours after their issue, renewal leaves a margin of an hour
+const std::chrono::hours ticket_renewal_interval { 21 };
+const std::chrono::minutes ticket_renewal_retry { 10 };
+
+// names of built-in security modules including the default
+std::string security_module_names()
+{
+    std::string names = "default";
+    for (const std::string& name : security::builtin_security_modules().names()) {
+        names += "," + name;
+    }
+    return names;
+}
+
+} // namespace
 
 class SecurityContextV2 : public security::SecurityEntity
 {
@@ -102,12 +164,11 @@ std::unique_ptr<security::CryptoProvider> create_v3_crypto_provider()
 class SecurityContextV3 : public security::SecurityEntity
 {
 public:
-    SecurityContextV3(const po::variables_map& options, const Runtime& runtime,
-                      PositionProvider& positioning, const std::string& backend_name,
-                      bool permissive_identified_region = false) :
+    SecurityContextV3(const po::variables_map& options, Runtime& runtime, PositionProvider& positioning,
+                      const std::string& module_name, bool permissive_identified_region = false) :
         runtime(runtime), positioning(positioning),
-        backend(security::create_backend(backend_name)),
         crypto(create_v3_crypto_provider()),
+        module(create_security_module_or_throw(module_name)),
         country_database(geodesy::CountryDatabase::embedded()),
         cert_cache(*crypto)
     {
@@ -115,6 +176,12 @@ public:
         location_checker.use_country_database(&country_database);
         certificate_validation = create_certificate_validation_v3(
             options, runtime, *crypto, positioning, location_checker);
+    }
+
+    ~SecurityContextV3()
+    {
+        // renewals of naive tickets refer to this context
+        runtime.cancel(this);
     }
 
     security::EncapConfirm encapsulate_packet(security::EncapRequest&& request) override
@@ -133,16 +200,53 @@ public:
         return entity->decapsulate_packet(std::move(request));
     }
 
+    // authorization ticket and chain of certificate files, the ticket's key is referred to by a key reference file
+    void use_credential_files(const std::string& cert_path, const std::string& key_path,
+        const std::vector<std::string>& chain_paths)
+    {
+        const auto ticket = load_certificate_file<security::v3::Certificate>(cert_path);
+        const security::KeyReference key = load_key_reference_file(key_path);
+        const expected<security::PublicKey> public_key = module->public_key(key);
+        if (!public_key) {
+            throw std::runtime_error("cannot use key reference " + key_path + ": " + public_key.error().message());
+        }
+        const boost::optional<security::PublicKey> ticket_key = security::v3::get_public_key(*ticket.content());
+        if (!ticket_key || security::canonical_hexstring(*ticket_key) != security::canonical_hexstring(*public_key)) {
+            throw std::runtime_error("key reference " + key_path + " does not belong to certificate " + cert_path);
+        }
+
+        for (auto& chain_path : chain_paths) {
+            auto chain_certificate = load_certificate_file<security::v3::Certificate>(chain_path);
+            cert_cache.store(chain_certificate);
+            certificate_validation->add_chain_certificate(chain_certificate);
+        }
+        credentials = std::make_unique<security::v3::StaticCredentialProvider>(ticket, key);
+    }
+
+    // generated chain whose authorization ticket is renewed before its end of validity
+    void use_naive_credentials()
+    {
+        auto provider = std::make_unique<security::v3::NaiveCredentialProvider>(*module, *crypto);
+        const std::error_code error = provider->issue_certificates(runtime.now());
+        if (error) {
+            throw std::runtime_error("cannot issue naive certificates: " + error.message());
+        }
+        certificate_validation->add_chain_certificate(*provider->aa_certificate());
+        certificate_validation->add_chain_certificate(*provider->root_certificate());
+        schedule_ticket_renewal(*provider, ticket_renewal_interval);
+        credentials = std::move(provider);
+    }
+
     void build_entity()
     {
-        if (!cert_provider) {
-            throw std::runtime_error("certificate provider is missing");
+        if (!credentials) {
+            throw std::runtime_error("credential provider is missing");
         }
         auto& cert_validator = certificate_validation->validator();
         sign_header_policy.reset(
             new security::v3::DefaultSignHeaderPolicy(runtime, *crypto, positioning, cert_cache));
-        std::unique_ptr<security::SignService> sign_service { new 
-            security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy, cert_validator) };
+        std::unique_ptr<security::SignService> sign_service { new security::v3::SecurityModuleSignService(
+            *module, *crypto, *credentials, *sign_header_policy, cert_validator) };
         std::unique_ptr<security::CryptoProviderVerifyService> verify_service { new
             security::CryptoProviderVerifyService(runtime, *crypto, positioning) };
         verify_service->use_certificate_cache(&cert_cache);
@@ -151,17 +255,31 @@ public:
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }
 
-    const Runtime& runtime;
+    Runtime& runtime;
     PositionProvider& positioning;
-    std::unique_ptr<security::Backend> backend;
     std::unique_ptr<security::CryptoProvider> crypto;
+    std::unique_ptr<security::SecurityModule> module;
     geodesy::CountryDatabase country_database;
     security::v3::DefaultLocationChecker location_checker;
-    std::unique_ptr<security::v3::CertificateProvider> cert_provider;
     security::v3::CertificateCache cert_cache;
     std::unique_ptr<security::v3::DefaultSignHeaderPolicy> sign_header_policy;
     std::unique_ptr<CertificateValidationV3> certificate_validation;
+    std::unique_ptr<security::v3::CredentialProvider> credentials;
     std::unique_ptr<security::SecurityEntity> entity;
+
+private:
+    void schedule_ticket_renewal(security::v3::NaiveCredentialProvider& provider, Clock::duration delay)
+    {
+        runtime.schedule(delay, [this, &provider](Clock::time_point now) {
+            const std::error_code error = provider.issue_certificates(now);
+            if (error) {
+                std::cerr << "Renewal of naive authorization ticket failed: " << error.message() << std::endl;
+                schedule_ticket_renewal(provider, ticket_renewal_retry);
+            } else {
+                schedule_ticket_renewal(provider, ticket_renewal_interval);
+            }
+        }, this);
+    }
 };
 
 // dummy security entity owning the crypto provider its verify service identifies certificates with
@@ -208,26 +326,6 @@ create_dummy_v3_security_entity(const Runtime& runtime)
     return std::make_unique<DummySecurityContext>(std::move(sign_service));
 }
 
-namespace
-{
-
-// setup of socktap reports failures by exceptions
-template<typename Certificate>
-Certificate load_certificate_file(const std::string& path)
-{
-#ifdef SOCKTAP_WITH_PERSISTENCE
-    expected<Certificate> certificate = security::persistence::load_certificate<Certificate>(path);
-    if (!certificate) {
-        throw std::runtime_error("cannot load certificate " + path + ": " + certificate.error().message());
-    }
-    return std::move(*certificate);
-#else
-    throw std::runtime_error("cannot load certificate " + path + ": socktap is built without persistence feature");
-#endif
-}
-
-} // namespace
-
 std::unique_ptr<security::v2::CertificateProvider>
 load_v2_certificates(const std::string& cert_path, const std::string& cert_key_path, const std::vector<std::string> cert_chain_path, security::v2::CertificateCache& cert_cache)
 {
@@ -244,29 +342,13 @@ load_v2_certificates(const std::string& cert_path, const std::string& cert_key_p
     return std::make_unique<security::v2::StaticCertificateProvider>(authorization_ticket, authorization_ticket_key.private_key, chain);
 }
 
-std::unique_ptr<security::v3::CertificateProvider>
-load_v3_certificates(const std::string& cert_path, const std::string& cert_key_path,
-    const std::vector<std::string> cert_chain_path, CertificateValidationV3& validation,
-    security::v3::CertificateCache& cert_cache)
-{
-    auto authorization_ticket = load_certificate_file<security::v3::Certificate>(cert_path);
-    auto authorization_ticket_key = validation.load_authorization_ticket_key(cert_key_path);
-
-    auto provider = std::make_unique<security::v3::StaticCertificateProvider>(authorization_ticket, authorization_ticket_key);
-    for (auto& chain_path : cert_chain_path) {
-        auto chain_certificate = load_certificate_file<security::v3::Certificate>(chain_path);
-        cert_cache.store(chain_certificate);
-        validation.add_chain_certificate(chain_certificate);
-    }
-    return provider;
-}
-
 std::unique_ptr<security::SecurityEntity>
-create_security_entity(const po::variables_map& vm, const Runtime& runtime, PositionProvider& positioning)
+create_security_entity(const po::variables_map& vm, Runtime& runtime, PositionProvider& positioning)
 {
     std::unique_ptr<security::SecurityEntity> security;
     const std::string name = vm["security"].as<std::string>();
     const std::string backend_name = vm["crypto-backend"].as<std::string>();
+    const std::string module_name = vm["security-module"].as<std::string>();
 
     if (name.empty() || name == "none") {
         // no operation
@@ -292,9 +374,9 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
             if (version == 3) {
                 bool permissive_ir = vm.count("security.permissive-identified-region") &&
                                      vm["security.permissive-identified-region"].as<bool>();
-                auto context = std::make_unique<SecurityContextV3>(vm, runtime, positioning, backend_name, permissive_ir);
-                context->cert_provider = load_v3_certificates(
-                    cert_path, cert_key_path, chain_paths, *context->certificate_validation, context->cert_cache);
+                auto context =
+                    std::make_unique<SecurityContextV3>(vm, runtime, positioning, module_name, permissive_ir);
+                context->use_credential_files(cert_path, cert_key_path, chain_paths);
                 context->build_entity();
                 security = std::move(context);
             } else {
@@ -314,11 +396,9 @@ create_security_entity(const po::variables_map& vm, const Runtime& runtime, Posi
             if (version == 3) {
                 bool permissive_ir = vm.count("security.permissive-identified-region") &&
                                      vm["security.permissive-identified-region"].as<bool>();
-                auto context = std::make_unique<SecurityContextV3>(vm, runtime, positioning, backend_name, permissive_ir);
-                auto provider = std::make_unique<security::v3::NaiveCertificateProvider>(runtime);
-                context->certificate_validation->add_chain_certificate(provider->aa_certificate());
-                context->certificate_validation->add_chain_certificate(provider->root_certificate());
-                context->cert_provider = std::move(provider);
+                auto context =
+                    std::make_unique<SecurityContextV3>(vm, runtime, positioning, module_name, permissive_ir);
+                context->use_naive_credentials();
                 context->build_entity();
                 security = std::move(context);
             } else {
@@ -343,9 +423,13 @@ void add_security_options(po::options_description& options)
 {
     options.add_options()
         ("security", po::value<std::string>()->default_value("dummy"), "Security entity [none,dummy,certs] (with optional -v2 or -v3 suffix)")
-        ("crypto-backend", po::value<std::string>()->default_value("default"), "Crypto backend [default,OpenSSL,CryptoPP,Null]")
+        ("crypto-backend", po::value<std::string>()->default_value("default"),
+         "Crypto backend of v2 security [default,OpenSSL,CryptoPP,Null]")
+        ("security-module", po::value<std::string>()->default_value("default"),
+         ("Security module holding signing keys of v3 security [" + security_module_names() + "]").c_str())
         ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
-        ("certificate-key", po::value<std::string>(), "Certificate key to use for secured messages.")
+        ("certificate-key", po::value<std::string>(),
+         "Key of certificate: reference to a key of the security module (v3), private key file (v2).")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
         ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed.")
         ("security.permissive-identified-region", po::bool_switch()->default_value(false),
