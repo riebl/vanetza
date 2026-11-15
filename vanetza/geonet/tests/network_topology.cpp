@@ -162,6 +162,12 @@ void NetworkTopology::add_router(const MacAddress& addr)
     context->mac_address = addr;
     context->router.set_address(Address(context->mac_address));
 
+    // each host issues its own naive certificates, hosts of the topology trust each other
+    for (auto& host : hosts) {
+        host.second->security.trust(context->security);
+        context->security.trust(host.second->security);
+    }
+
     hosts.emplace(addr, std::move(context));
 }
 

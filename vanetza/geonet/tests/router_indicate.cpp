@@ -175,7 +175,7 @@ TEST_F(RouterIndicate, shb_secured_equal_payload)
     const ByteBuffer received_payload = ByteBuffer(received_payload_range.begin(), received_payload_range.end());
     // check payload
     EXPECT_EQ(send_payload, received_payload);
-    // check permissions are exposed correctly, these are set by NaiveCertificateProvider for the aid::CA
+    // check permissions are exposed correctly, these are set by NaiveCredentialProvider for the aid::CA
     ASSERT_TRUE(ind_ifc.m_last_indication.get().its_aid);
     ASSERT_TRUE(ind_ifc.m_last_indication.get().permissions);
     EXPECT_EQ(ind_ifc.m_last_indication.get().its_aid.get(), aid::CA);

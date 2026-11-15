@@ -3,21 +3,23 @@
 
 #include <vanetza/common/runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
-#include <vanetza/security/straight_verify_service.hpp>
+#include <vanetza/security/security_module.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
-#include <vanetza/security/v2/naive_certificate_provider.hpp>
+#include <vanetza/security/v2/naive_credential_provider.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
 #include <vanetza/security/v3/location_checker.hpp>
-#include <vanetza/security/v3/naive_certificate_provider.hpp>
 #include <vanetza/security/v3/sign_header_policy.hpp>
+#include <memory>
+#include <stdexcept>
+#include <string>
 
 namespace vanetza
 {
@@ -26,23 +28,23 @@ class SecurityContext
 {
 public:
     explicit SecurityContext(Runtime& rt) :
-        backend(security::create_backend("default")),
-        backend_crypto(*backend),
-        certificate_provider(rt),
-        trust_store(backend_crypto),
-        cert_cache(rt, backend_crypto),
-        certificate_validator(backend_crypto, cert_cache, trust_store),
-        sign_header_policy(rt, backend_crypto, position_provider),
-        certificate_provider_v3(rt),
-        cert_cache_v3(backend_crypto),
-        sign_header_policy_v3(rt, backend_crypto, position_provider, cert_cache_v3),
-        certificate_validator_v3(backend_crypto),
+        crypto(require(security::create_crypto_provider(), "crypto provider")),
+        module(require(security::create_security_module(), "security module")),
+        credentials(*module, *crypto),
+        trust_store(*crypto),
+        cert_cache(rt, *crypto),
+        certificate_validator(*crypto, cert_cache, trust_store),
+        sign_header_policy(rt, *crypto, position_provider),
+        cert_cache_v3(*crypto),
+        sign_header_policy_v3(rt, *crypto, position_provider, cert_cache_v3),
+        certificate_validator_v3(*crypto),
         security(build_sign_service(), build_verify_service(rt))
     {
-        trust_store.insert(certificate_provider.root_certificate());
-        for (auto cert : certificate_provider.own_chain()) {
-            cert_cache.insert(cert);
+        const std::error_code error = credentials.issue_certificates(rt.now());
+        if (error) {
+            throw std::runtime_error("cannot issue naive certificates: " + error.message());
         }
+        trust(*this);
 
         // wire up v3 certificate validator
         certificate_validator_v3.use_runtime(&rt);
@@ -53,6 +55,15 @@ public:
     security::SecurityEntity& entity()
     {
         return security;
+    }
+
+    /**
+     * Trust certificates issued by the naive credentials of a context
+     */
+    void trust(const SecurityContext& other)
+    {
+        trust_store.insert(*other.credentials.root_certificate());
+        cert_cache.insert(*other.credentials.aa_certificate());
     }
 
     void set_accurate_position(units::GeoAngle latitude, units::GeoAngle longitude)
@@ -72,13 +83,21 @@ public:
     }
 
 private:
+    template<typename T>
+    static std::unique_ptr<T> require(std::unique_ptr<T> implementation, const std::string& what)
+    {
+        if (!implementation) {
+            throw std::runtime_error("secured geonet tests require a " + what);
+        }
+        return implementation;
+    }
+
     std::unique_ptr<security::VerifyService> build_verify_service(Runtime& rt)
     {
-        std::unique_ptr<security::StraightVerifyService> service {
-            new security::StraightVerifyService(rt, *backend, position_provider)
+        std::unique_ptr<security::CryptoProviderVerifyService> service {
+            new security::CryptoProviderVerifyService(rt, *crypto, position_provider)
         };
         service->use_certificate_cache(&cert_cache);
-        service->use_certificate_provider(&certificate_provider);
         service->use_certificate_validator(&certificate_validator);
         service->use_sign_header_policy(&sign_header_policy);
 
@@ -91,23 +110,21 @@ private:
     std::unique_ptr<security::SignService> build_sign_service()
     {
         return std::unique_ptr<security::SignService> {
-            new security::v2::StraightSignService(certificate_provider, *backend, sign_header_policy)
+            new security::v2::SecurityModuleSignService(*module, *crypto, credentials, sign_header_policy)
         };
     }
 
     StoredPositionProvider position_provider;
     security::v3::DefaultLocationChecker location_checker;
-    std::unique_ptr<security::Backend> backend;
-    security::BackendCryptoProvider backend_crypto;
+    std::unique_ptr<security::CryptoProvider> crypto;
+    std::unique_ptr<security::SecurityModule> module;
 
-    security::v2::NaiveCertificateProvider certificate_provider;
-    std::vector<security::v2::Certificate> roots;
+    security::v2::NaiveCredentialProvider credentials;
     security::v2::TrustStore trust_store;
     security::v2::CertificateCache cert_cache;
     security::v2::DefaultCertificateValidator certificate_validator;
     security::v2::DefaultSignHeaderPolicy sign_header_policy;
-    
-    security::v3::NaiveCertificateProvider certificate_provider_v3;
+
     security::v3::CertificateCache cert_cache_v3;
     security::v3::DefaultSignHeaderPolicy sign_header_policy_v3;
     security::v3::DefaultCertificateValidator certificate_validator_v3;
