@@ -147,6 +147,11 @@ bool CryptoppSecurityModule::discard_key(const KeyReference& reference)
     return discard(reference);
 }
 
+expected<KeyReference> CryptoppSecurityModule::import_signing_key(const PrivateKey& key)
+{
+    return import_key(key);
+}
+
 expected<PrivateKey> CryptoppSecurityModule::generate_private_key(KeyType type)
 {
     const CryptoPP::DL_GroupParameters_EC<CryptoPP::ECP> group { cryptopp::get_oid(type) };

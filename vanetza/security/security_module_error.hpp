@@ -24,7 +24,8 @@ enum class SecurityModuleError
     InvalidPublicKey, // public key is no valid point of its curve
     DecryptionFailure, // ciphertext cannot be decrypted, e.g. its authentication tag mismatches
     UnsupportedHashAlgorithm, // operation does not support the requested hash algorithm
-    InvalidHashLength // hash value does not have the length of its hash algorithm
+    InvalidHashLength, // hash value does not have the length of its hash algorithm
+    InvalidPrivateKey // private key is no valid scalar of its curve
 };
 
 const std::error_category& security_module_category() noexcept;

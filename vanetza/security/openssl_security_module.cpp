@@ -195,6 +195,11 @@ bool OpenSslSecurityModule::discard_key(const KeyReference& reference)
     return discard(reference);
 }
 
+expected<KeyReference> OpenSslSecurityModule::import_signing_key(const PrivateKey& key)
+{
+    return import_key(key);
+}
+
 expected<PrivateKey> OpenSslSecurityModule::generate_private_key(KeyType type)
 {
     openssl::Ptr<EC_KEY> ec_key { EC_KEY_new_by_curve_name(openssl::nid(type)) };

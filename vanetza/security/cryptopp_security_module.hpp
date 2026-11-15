@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/signing_key_import.hpp>
 #include <vanetza/security/software_signing_keys.hpp>
 #include <memory>
 
@@ -11,7 +12,7 @@ namespace security
 
 class CredentialStorage;
 
-class CryptoppSecurityModule : public SecurityModule, private SoftwareSigningKeys
+class CryptoppSecurityModule : public SecurityModule, public SigningKeyImport, private SoftwareSigningKeys
 {
 public:
     /**
@@ -35,6 +36,8 @@ public:
     expected<PublicKey> public_key(const KeyReference&) override;
     expected<Signature> sign(const ByteBuffer& digest, const KeyReference&) override;
     bool discard_key(const KeyReference&) override;
+
+    expected<KeyReference> import_signing_key(const PrivateKey&) override;
 
 private:
     expected<PrivateKey> generate_private_key(KeyType) override;

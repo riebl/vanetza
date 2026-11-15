@@ -8,6 +8,7 @@
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/signature.hpp>
 #include <memory>
+#include <system_error>
 
 namespace vanetza
 {
@@ -36,7 +37,12 @@ protected:
     expected<Signature> sign_with(const ByteBuffer& digest, const KeyReference&);
     bool discard(const KeyReference&);
 
+    // implementation of SigningKeyImport
+    expected<KeyReference> import_key(const PrivateKey&);
+
 private:
+    std::error_code store_credential(const PublicKey&, const PrivateKey&);
+
     /**
      * Generate a private key
      * \param type supported key type

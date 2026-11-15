@@ -59,15 +59,47 @@ expected<KeyReference> SoftwareSigningKeys::create_key(KeyType type)
         return pub_key.error();
     }
 
+    const std::error_code error = store_credential(*pub_key, *priv_key);
+    if (error) {
+        return error;
+    }
+    return make_key_reference(*priv_key);
+}
+
+expected<KeyReference> SoftwareSigningKeys::import_key(const PrivateKey& key)
+{
+    const std::size_t length = key_length(key.type); // zero for unsupported key types
+    if (length == 0) {
+        return make_error_code(SecurityModuleError::UnsupportedKeyType);
+    } else if (key.key.size() != length) {
+        return make_error_code(SecurityModuleError::InvalidPrivateKey);
+    }
+
+    expected<PublicKey> pub_key = derive_public_key(key);
+    if (!pub_key) {
+        // the hook reports a scalar out of range like an invalid key reference
+        return pub_key.error() == SecurityModuleError::InvalidKeyReference ?
+            make_error_code(SecurityModuleError::InvalidPrivateKey) : pub_key.error();
+    }
+
+    const std::error_code error = store_credential(*pub_key, key);
+    if (error) {
+        return error;
+    }
+    return make_key_reference(key);
+}
+
+std::error_code SoftwareSigningKeys::store_credential(const PublicKey& pub_key, const PrivateKey& priv_key)
+{
     if (m_credential_storage) {
         try {
-            m_credential_storage->store(*pub_key, *priv_key);
+            m_credential_storage->store(pub_key, priv_key);
         } catch (const std::runtime_error&) {
             // credential storage reports failures by exceptions
             return make_error_code(SecurityModuleError::ModuleFailure);
         }
     }
-    return make_key_reference(*priv_key);
+    return {};
 }
 
 expected<KeyReference> SoftwareSigningKeys::find_key(const PublicKey& key)

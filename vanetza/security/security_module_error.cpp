@@ -35,6 +35,8 @@ public:
                 return "unsupported hash algorithm";
             case SecurityModuleError::InvalidHashLength:
                 return "invalid hash length";
+            case SecurityModuleError::InvalidPrivateKey:
+                return "invalid private key";
             default:
                 return "unknown security module error";
         }

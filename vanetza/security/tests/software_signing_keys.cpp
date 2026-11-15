@@ -1,4 +1,5 @@
 #include <vanetza/security/memory_credential_storage.hpp>
+#include <vanetza/security/signing_key_import.hpp>
 #include <vanetza/security/tests/implementations.hpp>
 #include <gtest/gtest.h>
 #include <memory>
@@ -20,6 +21,20 @@ protected:
     std::unique_ptr<SecurityModule> create_module(std::shared_ptr<CredentialStorage> storage)
     {
         return create_software_security_module(GetParam(), storage);
+    }
+
+    // import of a private key by the module's signing key import feature
+    expected<KeyReference> import(KeyType type, const ByteBuffer& scalar)
+    {
+        SigningKeyImport* key_import = dynamic_cast<SigningKeyImport*>(security.get());
+        EXPECT_TRUE(key_import) << GetParam() << " security module imports no keys";
+        if (!key_import) {
+            return make_error_code(SecurityModuleError::ModuleFailure);
+        }
+        PrivateKey key;
+        key.type = type;
+        key.key = scalar;
+        return key_import->import_signing_key(key);
     }
 
     std::shared_ptr<MemoryCredentialStorage> credentials = std::make_shared<MemoryCredentialStorage>();
@@ -187,6 +202,43 @@ TEST_P(SoftwareSigningKeysTest, corrupt_stored_key_is_not_usable_for_signing)
     expected<KeyReference> found = security->find_signing_key(*public_key);
     ASSERT_TRUE(found.has_error());
     EXPECT_EQ(SecurityModuleError::ModuleFailure, found.error());
+}
+
+TEST_P(SoftwareSigningKeysTest, imported_key_signs_for_its_public_key)
+{
+    expected<KeyReference> reference = import(KeyType::NistP256, p256_scalar);
+    ASSERT_TRUE(reference.has_value()) << reference.error().message();
+    expected<PublicKey> public_key = security->public_key(*reference);
+    ASSERT_TRUE(public_key.has_value());
+    EXPECT_EQ("0287B2921E751D320F90CAD8BB67161EFD26659A4B3D66BA7CCC2FF4843283C704",
+        vanetza::security::canonical_hexstring(*public_key));
+    EXPECT_TRUE(security->sign(ByteBuffer(32, 0x5A), *reference).has_value());
+}
+
+TEST_P(SoftwareSigningKeysTest, imported_key_is_stored)
+{
+    expected<KeyReference> reference = import(KeyType::BrainpoolP384r1, bp384_scalar);
+    ASSERT_TRUE(reference.has_value()) << reference.error().message();
+    expected<PublicKey> public_key = security->public_key(*reference);
+    ASSERT_TRUE(public_key.has_value());
+    boost::optional<PrivateKey> stored = credentials->fetch(*public_key);
+    ASSERT_TRUE(stored);
+    EXPECT_EQ(KeyType::BrainpoolP384r1, stored->type);
+    EXPECT_EQ(bp384_scalar, stored->key);
+}
+
+TEST_P(SoftwareSigningKeysTest, private_key_of_unsupported_type_cannot_be_imported)
+{
+    expected<KeyReference> reference = import(KeyType::Unspecified, p256_scalar);
+    ASSERT_TRUE(reference.has_error());
+    EXPECT_EQ(SecurityModuleError::UnsupportedKeyType, reference.error());
+}
+
+TEST_P(SoftwareSigningKeysTest, malformed_private_key_cannot_be_imported)
+{
+    EXPECT_EQ(SecurityModuleError::InvalidPrivateKey, import(KeyType::NistP256, ByteBuffer(32, 0x00)).error());
+    EXPECT_EQ(SecurityModuleError::InvalidPrivateKey, import(KeyType::NistP256, ByteBuffer(32, 0xFF)).error());
+    EXPECT_EQ(SecurityModuleError::InvalidPrivateKey, import(KeyType::BrainpoolP384r1, p256_scalar).error());
 }
 
 INSTANTIATE_TEST_SUITE_P(Implementations, SoftwareSigningKeysTest,
