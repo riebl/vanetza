@@ -40,6 +40,7 @@ add_vanetza_component(security
     v2/int_x.cpp
     v2/length_coding.cpp
     v2/naive_certificate_provider.cpp
+    v2/naive_credential_provider.cpp
     v2/null_certificate_provider.cpp
     v2/null_certificate_validator.cpp
     v2/payload.cpp
