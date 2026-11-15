@@ -1,4 +1,5 @@
 #include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/tests/implementation_name.hpp>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <memory>
@@ -488,16 +489,8 @@ std::vector<std::string> enabled_crypto_providers()
     return providers;
 }
 
-// test names consist of alphanumerics only, e.g. Crypto++ is named CryptoPP
-std::string test_name(const ::testing::TestParamInfo<std::string>& info)
-{
-    std::string name = info.param;
-    std::replace(name.begin(), name.end(), '+', 'P');
-    return name;
-}
-
 INSTANTIATE_TEST_SUITE_P(Implementations, CryptoProviderTest, ::testing::ValuesIn(enabled_crypto_providers()),
-    test_name);
+    implementation_test_name);
 
 // builds without any crypto provider have nothing to test
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CryptoProviderTest);

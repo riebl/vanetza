@@ -1,6 +1,7 @@
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/scoped_key_pair.hpp>
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/tests/implementation_name.hpp>
 #include <gtest/gtest.h>
 #include <string>
 #include <vector>
@@ -132,7 +133,7 @@ std::vector<std::string> enabled_security_modules()
 }
 
 INSTANTIATE_TEST_SUITE_P(Implementations, SecurityModuleTest, ::testing::ValuesIn(enabled_security_modules()),
-    [](const ::testing::TestParamInfo<std::string>& info) { return info.param; });
+    implementation_test_name);
 
 // builds without any security module have nothing to test
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SecurityModuleTest);
