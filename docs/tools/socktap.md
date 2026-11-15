@@ -112,9 +112,13 @@ You can choose from three simple example V2X applications to run with *socktap* 
 
 ## Certificates and Keys
 
-With `--security certs-v3`, socktap signs by a security module selected with `--security-module`.
-Given an authorization ticket by `--certificate`, its key is referred to by the key reference file given with
-`--certificate-key`. Without these options, socktap generates naive certificates whose keys are discarded on exit.
+With `--security certs` and its `-v2` or `-v3` variants, socktap signs by a security module selected with
+`--security-module`. Given an authorization ticket by `--certificate`, its key is referred to by the key reference
+file given with `--certificate-key`. Without these options, socktap generates naive certificates whose keys are
+discarded on exit.
+
+For `certs-v2`, `--certificate-chain` has to include the authorization authority (AA) which issued the ticket.
+Signer information of type certificate chain carries this AA, see ETSI TS 103 097 v1.2.1.
 
 Private key files of former versions are no key references.
 Import them with `certify migrate-key` into the security module socktap uses, see [Certify](certify.md).

@@ -1,21 +1,16 @@
 #include "security.hpp"
 #include "certificate_validation_v3.hpp"
 #include <vanetza/geodesy/country_database.hpp>
-#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
-#include <vanetza/security/persistence.hpp>
 #include <vanetza/security/public_key.hpp>
 #include <vanetza/security/security_module.hpp>
-#include <vanetza/security/straight_verify_service.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
-#include "vanetza/security/v2/certificate_provider.hpp"
 #include <vanetza/security/v2/default_certificate_validator.hpp>
-#include <vanetza/security/v2/naive_certificate_provider.hpp>
-#include <vanetza/security/v2/persistence.hpp>
+#include <vanetza/security/v2/naive_credential_provider.hpp>
 #include <vanetza/security/v2/sign_service.hpp>
-#include <vanetza/security/v2/static_certificate_provider.hpp>
+#include <vanetza/security/v2/static_credential_provider.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
 #include <vanetza/security/v3/certificate_cache.hpp>
 #include <vanetza/security/v3/certificate_validator.hpp>
@@ -81,6 +76,45 @@ std::unique_ptr<security::SecurityModule> create_security_module_or_throw(const 
 const std::chrono::hours ticket_renewal_interval { 21 };
 const std::chrono::minutes ticket_renewal_retry { 10 };
 
+std::unique_ptr<security::CryptoProvider> create_crypto_provider_or_throw()
+{
+    std::unique_ptr<security::CryptoProvider> crypto = security::create_crypto_provider();
+    if (!crypto) {
+        throw std::runtime_error("security requires a crypto provider");
+    }
+    return crypto;
+}
+
+// key reference has to refer to the key of the certificate
+void check_certificate_key(security::SecurityModule& module, const security::KeyReference& key,
+    const boost::optional<security::PublicKey>& certificate_key, const std::string& key_path,
+    const std::string& cert_path)
+{
+    const expected<security::PublicKey> public_key = module.public_key(key);
+    if (!public_key) {
+        throw std::runtime_error("cannot use key reference " + key_path + ": " + public_key.error().message());
+    } else if (!certificate_key ||
+        security::canonical_hexstring(*certificate_key) != security::canonical_hexstring(*public_key)) {
+        throw std::runtime_error("key reference " + key_path + " does not belong to certificate " + cert_path);
+    }
+}
+
+// renews the ticket of a naive credential provider repeatedly, scheduled invocations are assigned to scope
+template<typename NaiveCredentialProvider>
+void schedule_ticket_renewal(Runtime& runtime, NaiveCredentialProvider& provider, Clock::duration delay,
+    const void* scope)
+{
+    runtime.schedule(delay, [&runtime, &provider, scope](Clock::time_point now) {
+        const std::error_code error = provider.issue_certificates(now);
+        if (error) {
+            std::cerr << "Renewal of naive authorization ticket failed: " << error.message() << std::endl;
+            schedule_ticket_renewal(runtime, provider, ticket_renewal_retry, scope);
+        } else {
+            schedule_ticket_renewal(runtime, provider, ticket_renewal_interval, scope);
+        }
+    }, scope);
+}
+
 // names of built-in security modules including the default
 std::string security_module_names()
 {
@@ -96,15 +130,21 @@ std::string security_module_names()
 class SecurityContextV2 : public security::SecurityEntity
 {
 public:
-    SecurityContextV2(const Runtime& runtime, PositionProvider& positioning, const std::string& backend_name) :
+    SecurityContextV2(Runtime& runtime, PositionProvider& positioning, const std::string& module_name) :
         runtime(runtime), positioning(positioning),
-        backend(security::create_backend(backend_name)),
-        backend_crypto(*backend),
-        sign_header_policy(runtime, backend_crypto, positioning),
-        trust_store(backend_crypto),
-        cert_cache(runtime, backend_crypto),
-        cert_validator(backend_crypto, cert_cache, trust_store)
+        crypto(create_crypto_provider_or_throw()),
+        module(create_security_module_or_throw(module_name)),
+        sign_header_policy(runtime, *crypto, positioning),
+        trust_store(*crypto),
+        cert_cache(runtime, *crypto),
+        cert_validator(*crypto, cert_cache, trust_store)
     {
+    }
+
+    ~SecurityContextV2()
+    {
+        // renewals of naive tickets refer to this context
+        runtime.cancel(this);
     }
 
     security::EncapConfirm encapsulate_packet(security::EncapRequest&& request) override
@@ -123,43 +163,68 @@ public:
         return entity->decapsulate_packet(std::move(request));
     }
 
+    // authorization ticket and chain of certificate files, the ticket's key is referred to by a key reference file
+    void use_credential_files(const std::string& cert_path, const std::string& key_path,
+        const std::vector<std::string>& chain_paths)
+    {
+        const auto ticket = load_certificate_file<security::v2::Certificate>(cert_path);
+        const security::KeyReference key = load_key_reference_file(key_path);
+        check_certificate_key(*module, key, security::v2::get_verification_key(ticket), key_path, cert_path);
+
+        // signer info of type certificate chain includes the AA, see TS 103 097 v1.2.1
+        const security::HashedId8* aa_digest = boost::get<security::HashedId8>(&ticket.signer_info);
+        boost::optional<security::v2::Certificate> aa_certificate;
+        for (auto& chain_path : chain_paths) {
+            auto chain_certificate = load_certificate_file<security::v2::Certificate>(chain_path);
+            if (aa_digest && security::v2::calculate_hash(*crypto, chain_certificate) == *aa_digest) {
+                aa_certificate = chain_certificate;
+            }
+            cert_cache.insert(chain_certificate);
+        }
+        if (!aa_certificate) {
+            throw std::runtime_error("certificate chain lacks the authorization authority of " + cert_path);
+        }
+        credentials = std::make_unique<security::v2::StaticCredentialProvider>(ticket, *aa_certificate, key);
+    }
+
+    // generated chain whose authorization ticket is renewed before its end of validity
+    void use_naive_credentials()
+    {
+        auto provider = std::make_unique<security::v2::NaiveCredentialProvider>(*module, *crypto);
+        const std::error_code error = provider->issue_certificates(runtime.now());
+        if (error) {
+            throw std::runtime_error("cannot issue naive certificates: " + error.message());
+        }
+        schedule_ticket_renewal(runtime, *provider, ticket_renewal_interval, this);
+        credentials = std::move(provider);
+    }
+
     void build_entity()
     {
-        if (!cert_provider) {
-            throw std::runtime_error("certificate provider is missing");
+        if (!credentials) {
+            throw std::runtime_error("credential provider is missing");
         }
-        std::unique_ptr<security::SignService> sign_service { new
-            security::v2::StraightSignService(*cert_provider, *backend, sign_header_policy) };
-        std::unique_ptr<security::StraightVerifyService> verify_service { new
-            security::StraightVerifyService(runtime, *backend, positioning) };
-        verify_service->use_certificate_provider(cert_provider.get());
+        std::unique_ptr<security::SignService> sign_service { new security::v2::SecurityModuleSignService(
+            *module, *crypto, *credentials, sign_header_policy) };
+        std::unique_ptr<security::CryptoProviderVerifyService> verify_service { new
+            security::CryptoProviderVerifyService(runtime, *crypto, positioning) };
         verify_service->use_certificate_cache(&cert_cache);
         verify_service->use_certificate_validator(&cert_validator);
         verify_service->use_sign_header_policy(&sign_header_policy);
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
     }
 
-    const Runtime& runtime;
+    Runtime& runtime;
     PositionProvider& positioning;
-    std::unique_ptr<security::Backend> backend;
-    security::BackendCryptoProvider backend_crypto;
-    std::unique_ptr<security::SecurityEntity> entity;
-    std::unique_ptr<security::v2::CertificateProvider> cert_provider;
+    std::unique_ptr<security::CryptoProvider> crypto;
+    std::unique_ptr<security::SecurityModule> module;
     security::v2::DefaultSignHeaderPolicy sign_header_policy;
     security::v2::TrustStore trust_store;
     security::v2::CertificateCache cert_cache;
     security::v2::DefaultCertificateValidator cert_validator;
+    std::unique_ptr<security::v2::CredentialProvider> credentials;
+    std::unique_ptr<security::SecurityEntity> entity;
 };
-
-// v3 security verifies messages and certificates by a crypto provider
-std::unique_ptr<security::CryptoProvider> create_v3_crypto_provider()
-{
-    std::unique_ptr<security::CryptoProvider> crypto = security::create_crypto_provider();
-    if (!crypto) {
-        throw std::runtime_error("v3 security requires a crypto provider");
-    }
-    return crypto;
-}
 
 class SecurityContextV3 : public security::SecurityEntity
 {
@@ -167,7 +232,7 @@ public:
     SecurityContextV3(const po::variables_map& options, Runtime& runtime, PositionProvider& positioning,
                       const std::string& module_name, bool permissive_identified_region = false) :
         runtime(runtime), positioning(positioning),
-        crypto(create_v3_crypto_provider()),
+        crypto(create_crypto_provider_or_throw()),
         module(create_security_module_or_throw(module_name)),
         country_database(geodesy::CountryDatabase::embedded()),
         cert_cache(*crypto)
@@ -206,14 +271,7 @@ public:
     {
         const auto ticket = load_certificate_file<security::v3::Certificate>(cert_path);
         const security::KeyReference key = load_key_reference_file(key_path);
-        const expected<security::PublicKey> public_key = module->public_key(key);
-        if (!public_key) {
-            throw std::runtime_error("cannot use key reference " + key_path + ": " + public_key.error().message());
-        }
-        const boost::optional<security::PublicKey> ticket_key = security::v3::get_public_key(*ticket.content());
-        if (!ticket_key || security::canonical_hexstring(*ticket_key) != security::canonical_hexstring(*public_key)) {
-            throw std::runtime_error("key reference " + key_path + " does not belong to certificate " + cert_path);
-        }
+        check_certificate_key(*module, key, security::v3::get_public_key(*ticket.content()), key_path, cert_path);
 
         for (auto& chain_path : chain_paths) {
             auto chain_certificate = load_certificate_file<security::v3::Certificate>(chain_path);
@@ -233,7 +291,7 @@ public:
         }
         certificate_validation->add_chain_certificate(*provider->aa_certificate());
         certificate_validation->add_chain_certificate(*provider->root_certificate());
-        schedule_ticket_renewal(*provider, ticket_renewal_interval);
+        schedule_ticket_renewal(runtime, *provider, ticket_renewal_interval, this);
         credentials = std::move(provider);
     }
 
@@ -266,20 +324,6 @@ public:
     std::unique_ptr<CertificateValidationV3> certificate_validation;
     std::unique_ptr<security::v3::CredentialProvider> credentials;
     std::unique_ptr<security::SecurityEntity> entity;
-
-private:
-    void schedule_ticket_renewal(security::v3::NaiveCredentialProvider& provider, Clock::duration delay)
-    {
-        runtime.schedule(delay, [this, &provider](Clock::time_point now) {
-            const std::error_code error = provider.issue_certificates(now);
-            if (error) {
-                std::cerr << "Renewal of naive authorization ticket failed: " << error.message() << std::endl;
-                schedule_ticket_renewal(provider, ticket_renewal_retry);
-            } else {
-                schedule_ticket_renewal(provider, ticket_renewal_interval);
-            }
-        }, this);
-    }
 };
 
 // dummy security entity owning the crypto provider its verify service identifies certificates with
@@ -287,11 +331,8 @@ class DummySecurityContext : public security::SecurityEntity
 {
 public:
     explicit DummySecurityContext(std::unique_ptr<security::SignService> sign_service) :
-        crypto(security::create_crypto_provider())
+        crypto(create_crypto_provider_or_throw())
     {
-        if (!crypto) {
-            throw std::runtime_error("dummy security requires a crypto provider");
-        }
         std::unique_ptr<security::VerifyService> verify_service { new security::DummyVerifyService {
             *crypto, security::VerificationReport::Success, security::CertificateValidity::valid() } };
         entity.reset(new security::DelegatingSecurityEntity { std::move(sign_service), std::move(verify_service) });
@@ -326,28 +367,11 @@ create_dummy_v3_security_entity(const Runtime& runtime)
     return std::make_unique<DummySecurityContext>(std::move(sign_service));
 }
 
-std::unique_ptr<security::v2::CertificateProvider>
-load_v2_certificates(const std::string& cert_path, const std::string& cert_key_path, const std::vector<std::string> cert_chain_path, security::v2::CertificateCache& cert_cache)
-{
-    auto authorization_ticket = load_certificate_file<security::v2::Certificate>(cert_path);
-    auto authorization_ticket_key = security::v2::load_private_key_from_file(cert_key_path);
-
-    std::list<security::v2::Certificate> chain;
-    for (auto& chain_path : cert_chain_path) {
-        auto chain_certificate = load_certificate_file<security::v2::Certificate>(chain_path);
-        chain.push_back(chain_certificate);
-        cert_cache.insert(chain_certificate);
-    }
-
-    return std::make_unique<security::v2::StaticCertificateProvider>(authorization_ticket, authorization_ticket_key.private_key, chain);
-}
-
 std::unique_ptr<security::SecurityEntity>
 create_security_entity(const po::variables_map& vm, Runtime& runtime, PositionProvider& positioning)
 {
     std::unique_ptr<security::SecurityEntity> security;
     const std::string name = vm["security"].as<std::string>();
-    const std::string backend_name = vm["crypto-backend"].as<std::string>();
     const std::string module_name = vm["security-module"].as<std::string>();
 
     if (name.empty() || name == "none") {
@@ -380,8 +404,8 @@ create_security_entity(const po::variables_map& vm, Runtime& runtime, PositionPr
                 context->build_entity();
                 security = std::move(context);
             } else {
-                auto context = std::make_unique<SecurityContextV2>(runtime, positioning, backend_name);
-                context->cert_provider = load_v2_certificates(cert_path, cert_key_path, chain_paths, context->cert_cache);
+                auto context = std::make_unique<SecurityContextV2>(runtime, positioning, module_name);
+                context->use_credential_files(cert_path, cert_key_path, chain_paths);
                 if (vm.count("trusted-certificate")) {
                     for (auto& cert_path : vm["trusted-certificate"].as<std::vector<std::string> >()) {
                         auto trusted_certificate =
@@ -402,8 +426,8 @@ create_security_entity(const po::variables_map& vm, Runtime& runtime, PositionPr
                 context->build_entity();
                 security = std::move(context);
             } else {
-                auto context = std::make_unique<SecurityContextV2>(runtime, positioning, backend_name);
-                context->cert_provider = std::make_unique<security::v2::NaiveCertificateProvider>(runtime);
+                auto context = std::make_unique<SecurityContextV2>(runtime, positioning, module_name);
+                context->use_naive_credentials();
                 context->build_entity();
                 security = std::move(context);
             }
@@ -423,13 +447,10 @@ void add_security_options(po::options_description& options)
 {
     options.add_options()
         ("security", po::value<std::string>()->default_value("dummy"), "Security entity [none,dummy,certs] (with optional -v2 or -v3 suffix)")
-        ("crypto-backend", po::value<std::string>()->default_value("default"),
-         "Crypto backend of v2 security [default,OpenSSL,CryptoPP,Null]")
         ("security-module", po::value<std::string>()->default_value("default"),
-         ("Security module holding signing keys of v3 security [" + security_module_names() + "]").c_str())
+         ("Security module holding signing keys [" + security_module_names() + "]").c_str())
         ("certificate", po::value<std::string>(), "Certificate to use for secured messages.")
-        ("certificate-key", po::value<std::string>(),
-         "Key of certificate: reference to a key of the security module (v3), private key file (v2).")
+        ("certificate-key", po::value<std::string>(), "Reference to the certificate's key held by the security module.")
         ("certificate-chain", po::value<std::vector<std::string> >()->multitoken(), "Certificate chain to use, use as often as needed.")
         ("trusted-certificate", po::value<std::vector<std::string> >()->multitoken(), "Trusted certificate, use as often as needed.")
         ("security.permissive-identified-region", po::bool_switch()->default_value(false),
