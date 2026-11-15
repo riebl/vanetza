@@ -1,11 +1,12 @@
 #include "generate-key.hpp"
+#include "utils.hpp"
 #include <boost/program_options.hpp>
-#include <fstream>
+#include <vanetza/security/persistence/key_reference.hpp>
 #include <iostream>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/v2/persistence.hpp>
+#include <stdexcept>
 
 namespace po = boost::program_options;
+using namespace vanetza;
 using namespace vanetza::security;
 
 bool GenerateKeyCommand::parse(const std::vector<std::string>& opts)
@@ -13,7 +14,9 @@ bool GenerateKeyCommand::parse(const std::vector<std::string>& opts)
     po::options_description desc("Available options");
     desc.add_options()
         ("help", "Print out available options.")
-        ("output", po::value<std::string>(&output)->required(), "Output file.")
+        ("output", po::value<std::string>(&output)->required(), "Key reference file.")
+        ("security-module", po::value<std::string>(&security_module)->default_value("default"),
+            ("Security module creating the key [" + security_module_names() + "].").c_str())
     ;
 
     po::positional_options_description pos;
@@ -41,15 +44,22 @@ bool GenerateKeyCommand::parse(const std::vector<std::string>& opts)
 
 int GenerateKeyCommand::execute()
 {
-    auto backend = create_backend_or_throw("default");
+    std::unique_ptr<SecurityModule> module = create_security_module_or_throw(security_module);
 
     std::cout << "Generating key... ";
-    auto key_pair = backend->generate_key_pair();
+    const expected<KeyReference> key = module->create_signing_key(KeyType::NistP256);
+    if (!key) {
+        throw std::runtime_error("cannot generate key: " + key.error().message());
+    }
     std::cout << "OK" << std::endl;
 
-    std::cout << "Writing key to '" << output << "'... ";
-    std::ofstream ofs(output, std::ios::binary);
-    v2::save_private_key_pkcs8_der(ofs, key_pair);
+    std::cout << "Writing key reference to '" << output << "'... ";
+    const std::error_code error = persistence::save_key_reference(output, *key);
+    if (error) {
+        // a key without reference is unusable
+        module->discard_key(*key);
+        throw std::runtime_error("cannot save key reference: " + error.message());
+    }
     std::cout << "OK" << std::endl;
 
     return 0;

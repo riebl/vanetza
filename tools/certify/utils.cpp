@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include <vanetza/security/persistence/certificate.hpp>
 #include <cstdint>
 #include <stdexcept>
 #include <sstream>
@@ -55,4 +56,23 @@ std::unique_ptr<vanetza::security::SecurityModule> create_security_module_or_thr
         throw std::runtime_error("security module '" + name + "' is not built in");
     }
     return module;
+}
+
+std::unique_ptr<vanetza::security::CryptoProvider> create_crypto_provider_or_throw()
+{
+    std::unique_ptr<vanetza::security::CryptoProvider> crypto = vanetza::security::create_crypto_provider();
+    if (!crypto) {
+        throw std::runtime_error("no crypto provider is built in");
+    }
+    return crypto;
+}
+
+vanetza::security::v2::Certificate load_v2_certificate_or_throw(const std::string& path)
+{
+    vanetza::expected<vanetza::security::v2::Certificate> certificate =
+        vanetza::security::persistence::load_v2_certificate(path);
+    if (!certificate) {
+        throw std::runtime_error("cannot load certificate " + path + ": " + certificate.error().message());
+    }
+    return std::move(*certificate);
 }

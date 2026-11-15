@@ -1,4 +1,5 @@
 #include "show-certificate.hpp"
+#include "utils.hpp"
 #include <boost/algorithm/hex.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/program_options.hpp>
@@ -6,12 +7,9 @@
 #include <fstream>
 #include <iostream>
 #include <vanetza/common/its_aid.hpp>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/cam_ssp.hpp>
 #include <vanetza/security/v2/certificate.hpp>
 #include <vanetza/security/v2/ecc_point.hpp>
-#include <vanetza/security/v2/persistence.hpp>
 #include <vanetza/security/v2/public_key.hpp>
 
 namespace po = boost::program_options;
@@ -99,7 +97,7 @@ bool ShowCertificateCommand::parse(const std::vector<std::string>& opts)
 
 int ShowCertificateCommand::execute()
 {
-    v2::Certificate cert = v2::load_certificate_from_file(certificate_path);
+    const v2::Certificate cert = load_v2_certificate_or_throw(certificate_path);
 
     // subject info
 
@@ -126,13 +124,9 @@ int ShowCertificateCommand::execute()
 
     std::cout << std::endl;
 
-    {
-        auto backend = create_backend_or_throw("default");
-        BackendCryptoProvider crypto { *backend };
-        HashedId8 cert_id = calculate_hash(crypto, cert);
-        std::string cert_id_string(reinterpret_cast<const char*>(&cert_id[0]), cert_id.size());
-        std::cout << "Digest: " << boost::algorithm::hex(cert_id_string) << " (SHA-256)" << std::endl;
-    }
+    const HashedId8 cert_id = calculate_hash(*create_crypto_provider_or_throw(), cert);
+    const std::string cert_id_string(reinterpret_cast<const char*>(&cert_id[0]), cert_id.size());
+    std::cout << "Digest: " << boost::algorithm::hex(cert_id_string) << " (SHA-256)" << std::endl;
 
     // signer info
 

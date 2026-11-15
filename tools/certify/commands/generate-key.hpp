@@ -11,6 +11,7 @@ public:
 
 private:
     std::string output;
+    std::string security_module;
 };
 
 #endif /* CERTIFY_COMMANDS_GENERATE_KEY_HPP */
