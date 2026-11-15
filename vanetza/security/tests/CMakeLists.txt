@@ -33,6 +33,7 @@ add_gtest(PublicKey public_key.cpp)
 add_gtest(SecuredMessageV3 secured_message_v3.cpp)
 add_gtest(SecurityModule security_module.cpp)
 add_gtest(SecurityModuleError security_module_error.cpp)
+add_gtest(SoftwareSigningKeys software_signing_keys.cpp)
 
 if(VANETZA_WITH_OPENSSL)
     set(_openssl_test_options LINK_LIBRARIES OpenSSL::Crypto COMPILE_DEFINITIONS OPENSSL_API_COMPAT=0x10101000L)
