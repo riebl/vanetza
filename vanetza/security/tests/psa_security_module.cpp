@@ -221,3 +221,81 @@ TEST_F(PsaSecurityModuleTest, key_is_encrypted_for_recipient)
         }
     }
 }
+
+namespace
+{
+
+// arbitrary valid scalar of NIST P-256
+PrivateKey p256_private_key()
+{
+    PrivateKey key;
+    key.type = KeyType::NistP256;
+    key.key = ByteBuffer(32, 0x11);
+    return key;
+}
+
+} // namespace
+
+TEST_F(PsaSecurityModuleTest, imported_key_is_found_by_its_public_key)
+{
+    expected<KeyReference> imported = security.import_signing_key(p256_private_key());
+    ASSERT_TRUE(imported.has_value()) << imported.error().message();
+    ScopedKeyPair key_pair { security, *imported };
+
+    const PublicKey public_key = security.public_key(key_pair.reference()).value();
+    expected<KeyReference> found = security.find_signing_key(public_key);
+    ASSERT_TRUE(found.has_value()) << found.error().message();
+    EXPECT_EQ(key_pair.reference().data, found->data);
+    EXPECT_TRUE(security.sign(ByteBuffer(32, 0x5A), key_pair.reference()).has_value());
+}
+
+// migrations may import the same key twice
+TEST_F(PsaSecurityModuleTest, key_imported_again_has_same_reference)
+{
+    expected<KeyReference> first = security.import_signing_key(p256_private_key());
+    ASSERT_TRUE(first.has_value()) << first.error().message();
+    ScopedKeyPair key_pair { security, *first };
+
+    expected<KeyReference> second = security.import_signing_key(p256_private_key());
+    ASSERT_TRUE(second.has_value()) << second.error().message();
+    EXPECT_EQ(first->data, second->data);
+}
+
+TEST_F(PsaSecurityModuleTest, foreign_key_prevents_import)
+{
+    expected<KeyReference> key = security.import_signing_key(p256_private_key());
+    ASSERT_TRUE(key.has_value());
+    ASSERT_TRUE(security.discard_key(*key));
+
+    // foreign signing key at the identifier derived from the imported key
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+    psa_set_key_id(&attributes, psa::key_id(*key).value());
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(PSA_ECC_FAMILY_SECP_R1));
+    psa_set_key_bits(&attributes, 256);
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH);
+    psa_set_key_algorithm(&attributes, PSA_ALG_ECDSA_ANY);
+    psa_key_id_t foreign = PSA_KEY_ID_NULL;
+    ASSERT_EQ(PSA_SUCCESS, psa_generate_key(&attributes, &foreign));
+
+    expected<KeyReference> imported = security.import_signing_key(p256_private_key());
+    EXPECT_TRUE(imported.has_error());
+    psa_key_attributes_t stored = PSA_KEY_ATTRIBUTES_INIT;
+    EXPECT_EQ(PSA_SUCCESS, psa_get_key_attributes(foreign, &stored));
+    psa_reset_key_attributes(&stored);
+    EXPECT_EQ(PSA_SUCCESS, psa_destroy_key(foreign));
+}
+
+TEST_F(PsaSecurityModuleTest, malformed_private_key_cannot_be_imported)
+{
+    PrivateKey key = p256_private_key();
+    key.type = KeyType::Unspecified;
+    EXPECT_EQ(SecurityModuleError::UnsupportedKeyType, security.import_signing_key(key).error());
+
+    key = p256_private_key();
+    key.key.pop_back();
+    EXPECT_EQ(SecurityModuleError::InvalidPrivateKey, security.import_signing_key(key).error());
+    key.key.assign(32, 0x00);
+    EXPECT_EQ(SecurityModuleError::InvalidPrivateKey, security.import_signing_key(key).error());
+    key.key.assign(32, 0xFF);
+    EXPECT_EQ(SecurityModuleError::InvalidPrivateKey, security.import_signing_key(key).error());
+}

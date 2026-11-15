@@ -17,6 +17,7 @@ TEST(PsaError, error_has_given_condition)
         SecurityModuleError::KeyNotFound,
         SecurityModuleError::InvalidPublicKey,
         SecurityModuleError::DecryptionFailure,
+        SecurityModuleError::InvalidPrivateKey,
     };
 
     std::set<std::string> category_names;

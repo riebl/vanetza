@@ -114,6 +114,28 @@ expected<PublicKey> export_public_key(psa_key_id_t id, KeyType type)
     return key;
 }
 
+// attributes of a transient signing key, which is copied to its persistent identifier
+psa_key_attributes_t transient_signing_key(psa_ecc_family_t family, KeyType type)
+{
+    psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
+    psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(family));
+    psa_set_key_bits(&attributes, 8 * key_length(type));
+    psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_COPY);
+    psa_set_key_algorithm(&attributes, PSA_ALG_ECDSA_ANY);
+    return attributes;
+}
+
+// copies a transient signing key to its persistent identifier, the stored key is neither copyable nor exportable
+psa_status_t store_persistently(const psa::Key& transient, psa_key_id_t id)
+{
+    psa_key_attributes_t persistent = PSA_KEY_ATTRIBUTES_INIT;
+    psa_set_key_id(&persistent, id);
+    psa_set_key_usage_flags(&persistent, PSA_KEY_USAGE_SIGN_HASH);
+    psa_set_key_algorithm(&persistent, PSA_ALG_ECDSA_ANY);
+    psa_key_id_t stored = PSA_KEY_ID_NULL;
+    return psa_copy_key(transient.id(), &persistent, &stored);
+}
+
 } // namespace
 
 expected<KeyReference> PsaSecurityModule::create_signing_key(KeyType type)
@@ -130,11 +152,7 @@ expected<KeyReference> PsaSecurityModule::create_signing_key(KeyType type)
 
     for (unsigned attempt = 0; attempt < key_creation_attempts; ++attempt) {
         // the identifier derives from the public key, which exists only after generating a key pair
-        psa_key_attributes_t attributes = PSA_KEY_ATTRIBUTES_INIT;
-        psa_set_key_type(&attributes, PSA_KEY_TYPE_ECC_KEY_PAIR(family));
-        psa_set_key_bits(&attributes, 8 * key_length(type));
-        psa_set_key_usage_flags(&attributes, PSA_KEY_USAGE_SIGN_HASH | PSA_KEY_USAGE_COPY);
-        psa_set_key_algorithm(&attributes, PSA_ALG_ECDSA_ANY);
+        psa_key_attributes_t attributes = transient_signing_key(family, type);
         psa::Key transient;
         psa_status_t status = psa_generate_key(&attributes, transient.output());
         if (status == PSA_ERROR_NOT_SUPPORTED) {
@@ -154,13 +172,7 @@ expected<KeyReference> PsaSecurityModule::create_signing_key(KeyType type)
             continue;
         }
 
-        // the stored key is neither copyable nor exportable
-        psa_key_attributes_t persistent = PSA_KEY_ATTRIBUTES_INIT;
-        psa_set_key_id(&persistent, *id);
-        psa_set_key_usage_flags(&persistent, PSA_KEY_USAGE_SIGN_HASH);
-        psa_set_key_algorithm(&persistent, PSA_ALG_ECDSA_ANY);
-        psa_key_id_t stored = PSA_KEY_ID_NULL;
-        status = psa_copy_key(transient.id(), &persistent, &stored);
+        status = store_persistently(transient, *id);
         if (status == PSA_SUCCESS) {
             return psa::key_reference(*id);
         } else if (status != PSA_ERROR_ALREADY_EXISTS) {
@@ -168,6 +180,55 @@ expected<KeyReference> PsaSecurityModule::create_signing_key(KeyType type)
         }
     }
     return make_psa_error(PSA_ERROR_ALREADY_EXISTS, SecurityModuleError::ModuleFailure);
+}
+
+expected<KeyReference> PsaSecurityModule::import_signing_key(const PrivateKey& key)
+{
+    const psa_ecc_family_t family = psa::ecc_family(key.type);
+    if (family == 0) {
+        return make_error_code(SecurityModuleError::UnsupportedKeyType);
+    }
+
+    const std::error_code error = psa::initialization_error();
+    if (error) {
+        return error;
+    }
+
+    const psa_key_attributes_t attributes = transient_signing_key(family, key.type);
+    psa::Key transient;
+    psa_status_t status = psa_import_key(&attributes, key.key.data(), key.key.size(), transient.output());
+    if (status == PSA_ERROR_INVALID_ARGUMENT) {
+        // PSA rejects key data of other length than its key type as well as scalars out of range
+        return make_psa_error(status, SecurityModuleError::InvalidPrivateKey);
+    } else if (status == PSA_ERROR_NOT_SUPPORTED) {
+        return make_psa_error(status, SecurityModuleError::UnsupportedKeyType);
+    } else if (status != PSA_SUCCESS) {
+        return make_psa_error(status, SecurityModuleError::ModuleFailure);
+    }
+
+    const expected<PublicKey> imported = export_public_key(transient.id(), key.type);
+    if (!imported) {
+        return imported.error();
+    }
+    const expected<psa_key_id_t> id = derive_key_id(canonical_hexstring(*imported));
+    if (!id) {
+        return id.error();
+    } else if (*id == PSA_KEY_ID_NULL) {
+        // unlike created keys, an imported key cannot be replaced by another one with a usable identifier
+        return make_error_code(SecurityModuleError::ModuleFailure);
+    }
+
+    status = store_persistently(transient, *id);
+    if (status == PSA_ERROR_ALREADY_EXISTS) {
+        // importing a stored key again is no error, unlike a foreign key at its identifier
+        const expected<PublicKey> stored = public_key(psa::key_reference(*id));
+        if (!stored || canonical_hexstring(*stored) != canonical_hexstring(*imported)) {
+            return make_psa_error(status, SecurityModuleError::ModuleFailure);
+        }
+    } else if (status != PSA_SUCCESS) {
+        return make_psa_error(status, SecurityModuleError::ModuleFailure);
+    }
+    return psa::key_reference(*id);
 }
 
 expected<KeyReference> PsaSecurityModule::find_signing_key(const PublicKey& public_key)

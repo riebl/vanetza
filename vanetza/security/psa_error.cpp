@@ -34,6 +34,8 @@ public:
                 return "psa.invalid_public_key";
             case SecurityModuleError::DecryptionFailure:
                 return "psa.decryption_failure";
+            case SecurityModuleError::InvalidPrivateKey:
+                return "psa.invalid_private_key";
             default:
                 return "psa";
         }
@@ -80,6 +82,8 @@ const std::error_category& psa_category(SecurityModuleError condition) noexcept
             return psa_category<SecurityModuleError::InvalidPublicKey>();
         case SecurityModuleError::DecryptionFailure:
             return psa_category<SecurityModuleError::DecryptionFailure>();
+        case SecurityModuleError::InvalidPrivateKey:
+            return psa_category<SecurityModuleError::InvalidPrivateKey>();
         default:
             return psa_category<SecurityModuleError::ModuleFailure>();
     }
