@@ -92,6 +92,14 @@ const std::vector<SignedDigest>& signed_digests()
                 "37f86aa9e05a3229025916d84afc774cb3cc43e3fa329e974e040ce6517e1f4c04bf4b368f11ffee2cd2ffe4cb493579"),
             buffer_from_hexstring(
                 "32f38cf178ec27e067959bad1849faa53ca94207e4b699f35d1c526f11d5143c309302ae3155303b1969034d2eca5b3a") },
+        // ECDSA uses the leftmost bits of a digest longer than the curve order
+        { "NIST P-256 with SHA-384 digest", KeyType::NistP256,
+            buffer_from_hexstring(
+                "62951471c7c674cc198f7ae25d19538de636d7a9b860dd5dc9e1fac61e793465b5a40e60ca8c8b90dcdf5d60b94590ab"),
+            buffer_from_hexstring("854607496b0574f25294399c42c85fb7cb498417f06ca739c8f9d4a51a88249a"),
+            buffer_from_hexstring("4367c1a82801c6eb454eaef985d8b1aeb482667ed43e7034d4efd31987be16df"),
+            buffer_from_hexstring("52c252c0fda1298c1d3d3555d4af62266c0efbd51df2d8f570c64fb307308d04"),
+            buffer_from_hexstring("2651a9286459484b5101678f5d2f66c0d8d524099db5d36113312509aba305f7") },
     };
     return digests;
 }
@@ -468,6 +476,9 @@ TEST_P(CryptoProviderTest, aes_ccm_decrypts_IEEE_1609_2_Annex_D_6_vector)
 std::vector<std::string> enabled_crypto_providers()
 {
     std::vector<std::string> providers;
+#ifdef VANETZA_WITH_CRYPTOPP
+    providers.emplace_back("Crypto++");
+#endif
 #ifdef VANETZA_WITH_OPENSSL
     providers.emplace_back("OpenSSL");
 #endif
@@ -477,8 +488,16 @@ std::vector<std::string> enabled_crypto_providers()
     return providers;
 }
 
+// test names consist of alphanumerics only, e.g. Crypto++ is named CryptoPP
+std::string test_name(const ::testing::TestParamInfo<std::string>& info)
+{
+    std::string name = info.param;
+    std::replace(name.begin(), name.end(), '+', 'P');
+    return name;
+}
+
 INSTANTIATE_TEST_SUITE_P(Implementations, CryptoProviderTest, ::testing::ValuesIn(enabled_crypto_providers()),
-    [](const ::testing::TestParamInfo<std::string>& info) { return info.param; });
+    test_name);
 
 // builds without any crypto provider have nothing to test
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(CryptoProviderTest);

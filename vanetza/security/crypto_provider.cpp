@@ -1,4 +1,7 @@
 #include <vanetza/security/crypto_provider.hpp>
+#if defined VANETZA_WITH_CRYPTOPP
+#   include <vanetza/security/cryptopp_crypto_provider.hpp>
+#endif
 #if defined VANETZA_WITH_OPENSSL
 #   include <vanetza/security/openssl_crypto_provider.hpp>
 #endif
@@ -31,6 +34,11 @@ expected<bool> verify_digest(
 Factory<CryptoProvider> build_builtin_crypto_providers()
 {
     Factory<CryptoProvider> factory;
+    // Crypto++ is the least preferred provider
+#if defined VANETZA_WITH_CRYPTOPP
+    factory.add("Crypto++", []() { return std::unique_ptr<CryptoProvider> { new CryptoppCryptoProvider() }; });
+    factory.configure_default("Crypto++");
+#endif
 #if defined VANETZA_WITH_PSA
     factory.add("PSA", []() { return std::unique_ptr<CryptoProvider> { new PsaCryptoProvider() }; });
     factory.configure_default("PSA");
