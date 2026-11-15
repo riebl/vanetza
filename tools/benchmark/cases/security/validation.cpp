@@ -49,19 +49,24 @@ int SecurityValidationCase::execute()
     DownPacket packet;
     packet.layer(OsiLayer::Application) = ByteBuffer { 0xC0, 0xFF, 0xEE };
 
-    certificate_cache.insert(certificate_provider.own_certificate());
-    certificate_cache.insert(certificate_provider.aa_certificate());
-    trust_store.insert(certificate_provider.root_certificate());
+    // identities have their own chains, the verifying entity trusts all of them
+    auto trust_chain = [this](v2::NaiveCredentialProvider& provider) {
+        certificate_cache.insert(provider.signing_credential(aid::CA)->certificate);
+        certificate_cache.insert(*provider.aa_certificate());
+        trust_store.insert(*provider.root_certificate());
+    };
+    trust_chain(credentials);
 
-    std::vector<std::unique_ptr<v2::CertificateProvider>> providers;
+    std::vector<std::unique_ptr<v2::NaiveCredentialProvider>> providers;
     std::vector<std::unique_ptr<SecurityEntity>> entities;
     std::vector<SecuredMessage> secured_messages;
     secured_messages.reserve(identities);
 
     for (unsigned i = 0; i < identities; i++) {
-        providers.emplace_back(new v2::NaiveCertificateProvider(runtime));
-        entities.emplace_back(new DelegatingSecurityEntity { create_sign_service(), create_verify_service() });
-        certificate_cache.insert(providers.back()->own_certificate());
+        providers.emplace_back(create_credentials());
+        entities.emplace_back(new DelegatingSecurityEntity { create_sign_service(*providers.back()),
+            create_verify_service() });
+        trust_chain(*providers.back());
     }
 
     if (signer_info_type == "hash") {

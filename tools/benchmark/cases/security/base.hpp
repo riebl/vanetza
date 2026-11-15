@@ -4,14 +4,15 @@
 #include "case.hpp"
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/common/stored_position_provider.hpp>
-#include <vanetza/security/backend.hpp>
-#include <vanetza/security/backend_crypto_provider.hpp>
+#include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
+#include <vanetza/security/security_module.hpp>
 #include <vanetza/security/v2/certificate_cache.hpp>
 #include <vanetza/security/v2/default_certificate_validator.hpp>
-#include <vanetza/security/v2/naive_certificate_provider.hpp>
+#include <vanetza/security/v2/naive_credential_provider.hpp>
 #include <vanetza/security/v2/sign_header_policy.hpp>
 #include <vanetza/security/v2/trust_store.hpp>
+#include <memory>
 
 class SecurityBaseCase : public Case
 {
@@ -23,16 +24,22 @@ public:
 protected:
     vanetza::ManualRuntime runtime;
     vanetza::StoredPositionProvider positioning;
-    std::unique_ptr<vanetza::security::Backend> crypto_backend;
-    vanetza::security::BackendCryptoProvider backend_crypto;
+    std::unique_ptr<vanetza::security::CryptoProvider> crypto;
+    std::unique_ptr<vanetza::security::SecurityModule> module;
     vanetza::security::v2::TrustStore trust_store;
     vanetza::security::v2::CertificateCache certificate_cache;
-    vanetza::security::v2::NaiveCertificateProvider certificate_provider;
+    vanetza::security::v2::NaiveCredentialProvider credentials;
     vanetza::security::v2::DefaultCertificateValidator certificate_validator;
     vanetza::security::v2::DefaultSignHeaderPolicy sign_header_policy;
     vanetza::security::DelegatingSecurityEntity security_entity;
 
-    std::unique_ptr<vanetza::security::SignService> create_sign_service();
+    /**
+     * Create provider of naive credentials whose certificates are issued
+     * \return provider, std::runtime_error is thrown if issuing fails
+     */
+    std::unique_ptr<vanetza::security::v2::NaiveCredentialProvider> create_credentials();
+
+    std::unique_ptr<vanetza::security::SignService> create_sign_service(vanetza::security::v2::CredentialProvider&);
     std::unique_ptr<vanetza::security::VerifyService> create_verify_service();
 };
 

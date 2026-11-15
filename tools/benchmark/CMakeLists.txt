@@ -3,6 +3,11 @@ if(NOT TARGET Boost::program_options)
     return()
 endif()
 
+if(NOT VANETZA_HAS_CRYPTO_PROVIDER OR NOT VANETZA_HAS_SECURITY_MODULE)
+    message(STATUS "Skip build of benchmark because no crypto provider and security module are available")
+    return()
+endif()
+
 add_executable(benchmark
     cases/security/base.cpp
     cases/security/signing.cpp
