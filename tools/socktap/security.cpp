@@ -3,6 +3,7 @@
 #include <vanetza/geodesy/country_database.hpp>
 #include <vanetza/security/backend_crypto_provider.hpp>
 #include <vanetza/security/crypto_provider.hpp>
+#include <vanetza/security/crypto_provider_verify_service.hpp>
 #include <vanetza/security/delegating_security_entity.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/straight_verify_service.hpp>
@@ -88,6 +89,16 @@ public:
     security::v2::DefaultCertificateValidator cert_validator;
 };
 
+// v3 security verifies messages and certificates by a crypto provider
+std::unique_ptr<security::CryptoProvider> create_v3_crypto_provider()
+{
+    std::unique_ptr<security::CryptoProvider> crypto = security::create_crypto_provider();
+    if (!crypto) {
+        throw std::runtime_error("v3 security requires a crypto provider");
+    }
+    return crypto;
+}
+
 class SecurityContextV3 : public security::SecurityEntity
 {
 public:
@@ -96,14 +107,14 @@ public:
                       bool permissive_identified_region = false) :
         runtime(runtime), positioning(positioning),
         backend(security::create_backend(backend_name)),
-        backend_crypto(*backend),
+        crypto(create_v3_crypto_provider()),
         country_database(geodesy::CountryDatabase::embedded()),
-        cert_cache(backend_crypto)
+        cert_cache(*crypto)
     {
         location_checker.set_permissive_identified_region(permissive_identified_region);
         location_checker.use_country_database(&country_database);
         certificate_validation = create_certificate_validation_v3(
-            options, runtime, backend_crypto, positioning, location_checker);
+            options, runtime, *crypto, positioning, location_checker);
     }
 
     security::EncapConfirm encapsulate_packet(security::EncapRequest&& request) override
@@ -129,11 +140,11 @@ public:
         }
         auto& cert_validator = certificate_validation->validator();
         sign_header_policy.reset(
-            new security::v3::DefaultSignHeaderPolicy(runtime, backend_crypto, positioning, cert_cache));
+            new security::v3::DefaultSignHeaderPolicy(runtime, *crypto, positioning, cert_cache));
         std::unique_ptr<security::SignService> sign_service { new 
             security::v3::StraightSignService(*cert_provider, *backend, *sign_header_policy, cert_validator) };
-        std::unique_ptr<security::StraightVerifyService> verify_service { new
-            security::StraightVerifyService(runtime, *backend, positioning) };
+        std::unique_ptr<security::CryptoProviderVerifyService> verify_service { new
+            security::CryptoProviderVerifyService(runtime, *crypto, positioning) };
         verify_service->use_certificate_cache(&cert_cache);
         verify_service->use_certificate_validator(&cert_validator);
         verify_service->use_sign_header_policy(sign_header_policy.get());
@@ -143,7 +154,7 @@ public:
     const Runtime& runtime;
     PositionProvider& positioning;
     std::unique_ptr<security::Backend> backend;
-    security::BackendCryptoProvider backend_crypto;
+    std::unique_ptr<security::CryptoProvider> crypto;
     geodesy::CountryDatabase country_database;
     security::v3::DefaultLocationChecker location_checker;
     std::unique_ptr<security::v3::CertificateProvider> cert_provider;
