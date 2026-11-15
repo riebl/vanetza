@@ -7,7 +7,7 @@
 You need to enable building this tool explicitly.
 Run `cmake -D BUILD_CERTIFY=ON ..` in your build directory and rebuild Vanetza.
 It also requires the persistence feature (`VANETZA_WITH_PERSISTENCE`), which is enabled by default
-if the compiler provides `std::filesystem`.
+if the compiler provides `std::filesystem`, and a crypto provider and security module, i.e. OpenSSL, Crypto++ or PSA.
 You should be able to find `bin/certify` in your build directory afterwards.
 
 ## PKI Setup

@@ -3,7 +3,7 @@ if(NOT TARGET Boost::program_options)
     return()
 endif()
 
-if(NOT VANETZA_WITH_OPENSSL AND NOT VANETZA_WITH_PSA)
+if(NOT VANETZA_WITH_OPENSSL AND NOT VANETZA_WITH_CRYPTOPP AND NOT VANETZA_WITH_PSA)
     message(STATUS "Skip build of certify-pqc because no crypto provider and security module are available")
     return()
 endif()
