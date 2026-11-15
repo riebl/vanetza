@@ -1,6 +1,7 @@
 include(UseGTest)
 add_library(security_test STATIC
     certificates_v3.cpp
+    implementations.cpp
     null_crypto_provider.cpp
     serialization.cpp
 )

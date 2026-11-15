@@ -1,5 +1,5 @@
 #include <vanetza/security/crypto_provider.hpp>
-#include <vanetza/security/tests/implementation_name.hpp>
+#include <vanetza/security/tests/implementations.hpp>
 #include <gtest/gtest.h>
 #include <algorithm>
 #include <memory>
@@ -474,22 +474,7 @@ TEST_P(CryptoProviderTest, aes_ccm_decrypts_IEEE_1609_2_Annex_D_6_vector)
     EXPECT_EQ(payload, *decrypted);
 }
 
-std::vector<std::string> enabled_crypto_providers()
-{
-    std::vector<std::string> providers;
-#ifdef VANETZA_WITH_CRYPTOPP
-    providers.emplace_back("Crypto++");
-#endif
-#ifdef VANETZA_WITH_OPENSSL
-    providers.emplace_back("OpenSSL");
-#endif
-#ifdef VANETZA_WITH_PSA
-    providers.emplace_back("PSA");
-#endif
-    return providers;
-}
-
-INSTANTIATE_TEST_SUITE_P(Implementations, CryptoProviderTest, ::testing::ValuesIn(enabled_crypto_providers()),
+INSTANTIATE_TEST_SUITE_P(Implementations, CryptoProviderTest, ::testing::ValuesIn(builtin_crypto_provider_names()),
     implementation_test_name);
 
 // builds without any crypto provider have nothing to test

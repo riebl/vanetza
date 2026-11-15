@@ -1,41 +1,12 @@
 #include <vanetza/security/memory_credential_storage.hpp>
-#include <vanetza/security/tests/implementation_name.hpp>
-#ifdef VANETZA_WITH_CRYPTOPP
-#   include <vanetza/security/cryptopp_security_module.hpp>
-#endif
-#ifdef VANETZA_WITH_OPENSSL
-#   include <vanetza/security/openssl_security_module.hpp>
-#endif
+#include <vanetza/security/tests/implementations.hpp>
 #include <gtest/gtest.h>
 #include <memory>
 #include <string>
-#include <vector>
 
 using vanetza::ByteBuffer;
 using vanetza::expected;
 using namespace vanetza::security;
-
-namespace
-{
-
-// security modules holding their signing keys in software, optionally with credential storage
-std::unique_ptr<SecurityModule> create_software_module(
-    const std::string& name, std::shared_ptr<CredentialStorage> storage)
-{
-#ifdef VANETZA_WITH_CRYPTOPP
-    if (name == "Crypto++") {
-        return std::make_unique<CryptoppSecurityModule>(storage);
-    }
-#endif
-#ifdef VANETZA_WITH_OPENSSL
-    if (name == "OpenSSL") {
-        return std::make_unique<OpenSslSecurityModule>(storage);
-    }
-#endif
-    return nullptr;
-}
-
-} // namespace
 
 // every security module with software signing keys handles references and credential storage alike
 class SoftwareSigningKeysTest : public ::testing::TestWithParam<std::string>
@@ -48,7 +19,7 @@ protected:
 
     std::unique_ptr<SecurityModule> create_module(std::shared_ptr<CredentialStorage> storage)
     {
-        return create_software_module(GetParam(), storage);
+        return create_software_security_module(GetParam(), storage);
     }
 
     std::shared_ptr<MemoryCredentialStorage> credentials = std::make_shared<MemoryCredentialStorage>();
@@ -218,20 +189,8 @@ TEST_P(SoftwareSigningKeysTest, corrupt_stored_key_is_not_usable_for_signing)
     EXPECT_EQ(SecurityModuleError::ModuleFailure, found.error());
 }
 
-std::vector<std::string> software_security_modules()
-{
-    std::vector<std::string> modules;
-#ifdef VANETZA_WITH_CRYPTOPP
-    modules.emplace_back("Crypto++");
-#endif
-#ifdef VANETZA_WITH_OPENSSL
-    modules.emplace_back("OpenSSL");
-#endif
-    return modules;
-}
-
-INSTANTIATE_TEST_SUITE_P(Implementations, SoftwareSigningKeysTest, ::testing::ValuesIn(software_security_modules()),
-    implementation_test_name);
+INSTANTIATE_TEST_SUITE_P(Implementations, SoftwareSigningKeysTest,
+    ::testing::ValuesIn(software_security_module_names()), implementation_test_name);
 
 // builds without any software security module have nothing to test
 GTEST_ALLOW_UNINSTANTIATED_PARAMETERIZED_TEST(SoftwareSigningKeysTest);

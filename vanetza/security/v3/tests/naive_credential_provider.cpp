@@ -3,16 +3,14 @@
 #include <vanetza/security/crypto_provider.hpp>
 #include <vanetza/security/memory_credential_storage.hpp>
 #include <vanetza/security/security_module.hpp>
+#include <vanetza/security/tests/implementations.hpp>
 #include <vanetza/security/v3/hash.hpp>
 #include <vanetza/security/v3/naive_credential_provider.hpp>
-#if defined VANETZA_WITH_OPENSSL
-#   include <vanetza/security/openssl_security_module.hpp>
-#elif defined VANETZA_WITH_CRYPTOPP
-#   include <vanetza/security/cryptopp_security_module.hpp>
-#endif
 #include <gtest/gtest.h>
 #include <chrono>
 #include <memory>
+#include <string>
+#include <vector>
 
 using namespace vanetza;
 using namespace vanetza::security;
@@ -160,9 +158,13 @@ TEST_F(NaiveCredentialProviderTest, later_issue_renews_ticket_only)
     EXPECT_EQ(root_certificate.encode(), provider->root_certificate()->encode());
 }
 
-#if defined VANETZA_WITH_OPENSSL || defined VANETZA_WITH_CRYPTOPP
 TEST_F(NaiveCredentialProviderTest, keys_are_discarded_with_provider)
 {
+    const std::vector<std::string> software_modules = software_security_module_names();
+    if (software_modules.empty()) {
+        GTEST_SKIP() << "no software security module built in";
+    }
+
     // a module storing its keys reveals the keys not discarded yet
     struct CountingVisitor : public CredentialVisitor
     {
@@ -170,13 +172,10 @@ TEST_F(NaiveCredentialProviderTest, keys_are_discarded_with_provider)
         std::size_t count = 0;
     };
     auto storage = std::make_shared<MemoryCredentialStorage>();
-#if defined VANETZA_WITH_OPENSSL
-    OpenSslSecurityModule storing { storage };
-#else
-    CryptoppSecurityModule storing { storage };
-#endif
+    std::unique_ptr<SecurityModule> storing = create_software_security_module(software_modules.front(), storage);
+    ASSERT_TRUE(storing);
 
-    std::unique_ptr<NaiveCredentialProvider> provider = issued_provider(storing);
+    std::unique_ptr<NaiveCredentialProvider> provider = issued_provider(*storing);
     ASSERT_TRUE(provider);
     CountingVisitor created;
     ASSERT_FALSE(storage->visit(created));
@@ -187,4 +186,3 @@ TEST_F(NaiveCredentialProviderTest, keys_are_discarded_with_provider)
     ASSERT_FALSE(storage->visit(remaining));
     EXPECT_EQ(0u, remaining.count);
 }
-#endif
