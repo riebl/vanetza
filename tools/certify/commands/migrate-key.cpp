@@ -1,4 +1,5 @@
 #include "migrate-key.hpp"
+#include "utils.hpp"
 #include <boost/program_options.hpp>
 #include <vanetza/security/persistence.hpp>
 #include <vanetza/security/persistence/file.hpp>
@@ -27,16 +28,6 @@ bool is_pem_file(const std::string& path)
         throw std::runtime_error("cannot read " + path + ": " + content.error().message());
     }
     return content->size() >= pem_begin.size() && std::equal(pem_begin.begin(), pem_begin.end(), content->begin());
-}
-
-// names of built-in security modules including the default
-std::string security_module_names()
-{
-    std::string names = "default";
-    for (const std::string& name : builtin_security_modules().names()) {
-        names += "," + name;
-    }
-    return names;
 }
 
 } // namespace
@@ -77,10 +68,7 @@ bool MigrateKeyCommand::parse(const std::vector<std::string>& opts)
 
 int MigrateKeyCommand::execute()
 {
-    std::unique_ptr<SecurityModule> module = create_security_module(security_module);
-    if (!module) {
-        throw std::runtime_error("security module '" + security_module + "' is not built in");
-    }
+    std::unique_ptr<SecurityModule> module = create_security_module_or_throw(security_module);
     SigningKeyImport* key_import = dynamic_cast<SigningKeyImport*>(module.get());
     if (!key_import) {
         throw std::runtime_error("security module '" + security_module + "' cannot import keys");

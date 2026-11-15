@@ -38,3 +38,21 @@ void permission_string_to_buffer(const std::string& in, vanetza::ByteBuffer& out
         ++index;
     }
 }
+
+std::string security_module_names()
+{
+    std::string names = "default";
+    for (const std::string& name : vanetza::security::builtin_security_modules().names()) {
+        names += "," + name;
+    }
+    return names;
+}
+
+std::unique_ptr<vanetza::security::SecurityModule> create_security_module_or_throw(const std::string& name)
+{
+    std::unique_ptr<vanetza::security::SecurityModule> module = vanetza::security::create_security_module(name);
+    if (!module) {
+        throw std::runtime_error("security module '" + name + "' is not built in");
+    }
+    return module;
+}
