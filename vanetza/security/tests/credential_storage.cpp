@@ -28,16 +28,24 @@ public:
 
 const std::string name = "030000000000000000000000000000000000000000000000000000000000000000";
 
+class TestFailure : public std::runtime_error
+{
+public:
+    using std::runtime_error::runtime_error;
+};
+
 // Fake storage for ScopedCredential tests: records store/discard calls and can throw on store.
 class FakeStorage : public CredentialStorage
 {
 public:
+    using CredentialStorage::discard;
+
     void store(const PublicKey&, const PrivateKey&) override
     {
         ++store_count;
         stored = true;
         if (throw_on_store) {
-            throw std::runtime_error("store failed");
+            throw TestFailure("store failed");
         }
     }
 
@@ -127,8 +135,8 @@ TEST(ScopedCredential, throw_from_following_protocol_step_discards_once)
         ScopedCredential scoped(storage, pub, priv);
         EXPECT_EQ(1, storage.store_count);
         EXPECT_TRUE(storage.stored);
-        throw std::runtime_error("protocol step failed");
-    }, std::runtime_error);
+        throw TestFailure("protocol step failed");
+    }, TestFailure);
     EXPECT_EQ(1, storage.discard_count);
     EXPECT_FALSE(storage.stored);
 }
@@ -139,7 +147,7 @@ TEST(ScopedCredential, store_throw_discards_inserted_credential_once)
     PublicKey pub;
     PrivateKey priv;
     storage.throw_on_store = true;
-    EXPECT_THROW(ScopedCredential scoped(storage, pub, priv), std::runtime_error);
+    EXPECT_THROW(ScopedCredential scoped(storage, pub, priv), TestFailure);
     EXPECT_EQ(1, storage.store_count);
     EXPECT_EQ(1, storage.discard_count);
     EXPECT_FALSE(storage.stored);
