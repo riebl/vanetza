@@ -1,0 +1,329 @@
+-- Electronic attachment to ISO 16460:2020
+
+ITSsa1 { iso (1) standard (0) localized(16460) sa(2) version1 (1)}  
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS
+
+-- ISO 16460
+EXT-TYPE, 
+Extension, 
+TXpower80211, 
+ChannelNumber80211, 
+c-LMrxCip, 
+c-LMtxCip, 
+c-LMpacketID, 
+c-LMchannelBusyRatio, 
+c-ExtendedChannelInfos,
+c-SrvOpP-ProtocolStack, SrvOpP-ProtocolStack,
+c-IPv6Address, IPv6Address, 
+c-RepeatRate, RepeatRate, 
+c-2Dlocation, TwoDLocation, 
+c-3Dlocation, ThreeDLocation, 
+c-advertiserID, AdvertiserIdentifier, 
+c-ProviderServContext, ProviderServiceContext, 
+c-servicePort, ServicePort, 
+c-ProviderMACaddress, ProviderMacAddress, 
+c-RCPIthreshold, RcpiThreshold, 
+c-WSAcountThreshold, WsaCountThreshold,
+c-WSAcountThresInt, WsaCountThresholdInterval,
+c-EDCAparameterSet, EdcaParameterSet, 
+c-ChannelAccess, ChannelAccess80211, 
+c-SecondaryDNS, SecondaryDns, 
+c-GatewayMACaddress, GatewayMacAddress, 
+c-SAMapplicationData, SAMapplicationData 
+FROM ITSee1 { iso (1) standard (0) localized(16460) ee(4) version1 (1)} 
+
+-- ISO 17419
+PortNumber, NullType FROM CITSdataDictionary1 {iso(1) standard(0) cits-applMgmt (17419) dataDictionary (1) version1 (1)} 
+
+-- ISO 17419
+ITSatt, c-ITSatt-unknown, c-ITSatt-any, c-ITSatt-iso21215 , ITSaid FROM CITSapplMgmtApplReg {iso(1) standard(0) cits-applMgmt (17419) applRegistry (2) version2 (2)}
+
+;
+-- End of IMPORTS
+
+-- Service Advertisement Protocol messages
+
+RsvAdvPrtVersion ::= INTEGER {
+	c-rsvAdvPrtVersion2016	(3) -- current version number 
+	}(0..15) -- Protocol version
+
+-- Service Advertisement Message
+Sam ::= SEQUENCE{
+	version	RsvAdvPrtVersion,
+	body	SamBody
+	}
+
+SamBody ::= SEQUENCE{
+	changeCount	SrvAdvChangeCount,
+	extensions	SrvAdvMsgHeaderExts OPTIONAL,
+	serviceInfos	ServiceInfos OPTIONAL,
+	channelInfos	ChannelInfos OPTIONAL,
+	routingAdvertisement	RoutingAdvertisement OPTIONAL
+	}
+
+SrvAdvChangeCount ::= SEQUENCE{
+	saID	SrvAdvID,
+	contentCount	SrvAdvContentCount
+	}
+
+SrvAdvID ::= INTEGER(0..15)
+
+SrvAdvContentCount ::= INTEGER(0..15)
+
+-- SAM header extensions
+SrvAdvMsgHeaderExts::= SEQUENCE OF SrvAdvMsgHeaderExt
+
+-- Hand-expanded from Extension {{SrvAdvMsgHeaderExtTypes}} to avoid a recursive C type
+SrvAdvMsgHeaderExt ::= SEQUENCE {
+	extensionId	EXT-TYPE.&extRef({SrvAdvMsgHeaderExtTypes}),
+	value	EXT-TYPE.&ExtValue({SrvAdvMsgHeaderExtTypes}{@extensionId})
+	}
+
+SrvAdvMsgHeaderExtTypes EXT-TYPE ::= {
+	{ RepeatRate 	IDENTIFIED BY c-RepeatRate } |
+	{ TwoDLocation 	IDENTIFIED BY c-2Dlocation } |
+	{ ThreeDLocation	IDENTIFIED BY c-3Dlocation } |
+	{ AdvertiserIdentifier 	IDENTIFIED BY c-advertiserID } |
+	{ ExtendedChannelInfos	IDENTIFIED BY c-ExtendedChannelInfos },
+	...
+	}
+
+-- SAM Service Info Segment
+ServiceInfos ::= SEQUENCE OF ServiceInfo -- '0' size allows to send only a routing advertisement
+
+ServiceInfo ::= SEQUENCE {
+	serviceID	ITSaid, -- ITS-AID
+	channelIndex	ChannelIndex, -- 5 bits
+	chOptions	ChannelOptions 
+	}
+
+ChannelOptions ::= SEQUENCE{
+	systemService	NULL  OPTIONAL, -- SystemService
+	serviceProviderPort	NULL OPTIONAL, -- ReplyAddress
+	extensions	ServiceInfoExts OPTIONAL 
+	}
+
+ChannelIndex ::= INTEGER {
+	notUsed	(0), -- no change of channel
+	firstEntry	(1) 
+	}(0..31)
+/*
+ReplyAddress ::= PortNumber 
+
+SystemService ::= SEQUENCE OF SystemServiceAndContext
+
+SystemServiceAndContext ::= SamContext -- only ITS-AID = 0 allowed
+*/
+-- Service Info Extensions
+ServiceInfoExts ::= SEQUENCE OF ServiceInfoExt
+
+-- Hand-expanded from Extension {{ServiceInfoExtTypes}} to avoid a recursive C type
+ServiceInfoExt ::= SEQUENCE {
+	extensionId	EXT-TYPE.&extRef({ServiceInfoExtTypes}),
+	value	EXT-TYPE.&ExtValue({ServiceInfoExtTypes}{@extensionId})
+	}
+
+ServiceInfoExtTypes EXT-TYPE ::= {
+	{ ProviderServiceContext	IDENTIFIED BY c-ProviderServContext } |
+	{ IPv6Address	IDENTIFIED BY c-IPv6Address } |
+	{ ServicePort	IDENTIFIED BY c-servicePort } |
+	{ ProviderMacAddress	IDENTIFIED BY c-ProviderMACaddress } |
+	{ RcpiThreshold	IDENTIFIED BY c-RCPIthreshold } |
+	{ WsaCountThreshold	IDENTIFIED BY c-WSAcountThreshold } |
+	{ WsaCountThresholdInterval	IDENTIFIED BY c-WSAcountThresInt } |
+	{ SAMapplicationData	IDENTIFIED BY c-SAMapplicationData }|
+	{ SrvOpP-ProtocolStack	IDENTIFIED BY c-SrvOpP-ProtocolStack },
+	...
+	}
+
+-- Channel Info Segment
+ChannelInfos ::= SEQUENCE OF ChannelInfo
+
+ChannelInfo ::= SEQUENCE{
+	operatingClass	OperatingClass80211,
+	channelNumber	ChannelNumber80211,
+	powerLevel	TXpower80211,
+	dataRate	WsaChInfoDataRate,
+	extensions	ChInfoOptions
+	}
+
+-- Extended Channel Info
+CHINFO-TYPE ::= CLASS {
+	&id 	ITSatt	UNIQUE,
+	&Type
+	}
+	WITH SYNTAX {&Type IDENTIFIED BY &id}
+
+
+ChInfoTypes CHINFO-TYPE ::= {
+	{ NullType	IDENTIFIED BY c-ITSatt-unknown } |
+	{ NullType	IDENTIFIED BY c-ITSatt-any } |
+	{ ChannelInfo	IDENTIFIED BY c-ITSatt-iso21215 } ,
+	...
+	}
+
+ExtendedChannelInfos ::= SEQUENCE OF ExtendedChannelInfo
+
+ExtendedChannelInfo ::= SEQUENCE {
+	medId	CHINFO-TYPE.&id({ChInfoTypes}), -- medium identifier
+	value	CHINFO-TYPE.&Type({ChInfoTypes}{@medId})
+	}
+
+OperatingClass80211 ::= INTEGER (0..255)
+
+WsaChInfoDataRate ::= SEQUENCE{
+	adaptable	BIT STRING (SIZE(1)),
+	dataRate	INTEGER (0..127)
+	}
+
+ChInfoOptions ::= SEQUENCE{
+	option1	NullType OPTIONAL, -- not used
+	option2	NullType OPTIONAL, -- not used
+	option3	NullType OPTIONAL, -- not used
+	option4	NullType OPTIONAL, -- not used
+	option5	NullType OPTIONAL, -- not used
+	option6	NullType OPTIONAL, -- not used
+	option7	NullType OPTIONAL, -- not used
+	extensions	ChannelInfoExts OPTIONAL
+	} 
+
+ChannelInfoExts ::= SEQUENCE OF ChannelInfoExt
+
+-- Hand-expanded from Extension {{ChannelInfoExtTypes}} to avoid a recursive C type
+ChannelInfoExt ::= SEQUENCE {
+	extensionId	EXT-TYPE.&extRef({ChannelInfoExtTypes}),
+	value	EXT-TYPE.&ExtValue({ChannelInfoExtTypes}{@extensionId})
+	}
+
+ChannelInfoExtTypes EXT-TYPE ::= {
+	{ EdcaParameterSet	IDENTIFIED BY c-EDCAparameterSet } |
+	{ ChannelAccess80211	IDENTIFIED BY c-ChannelAccess },
+	...
+	}
+
+-- Routing Advertisement
+RoutingAdvertisement ::= SEQUENCE {
+	lifetime	RouterLifetime,
+	ipPrefix	IpV6Prefix,
+	ipPrefixLength	IpV6PrefixLength,
+	defaultGateway	IPv6Address,
+	primaryDns	IPv6Address,
+	extensions	RoutAdvertExts
+	}
+
+RouterLifetime ::= INTEGER (0..65535)
+
+IpV6Prefix ::= OCTET STRING (SIZE (16))
+
+IpV6PrefixLength ::= INTEGER (0..255)
+
+
+-- Routing Advertisement extensions
+RoutAdvertExts ::= SEQUENCE OF RoutAdvertExt
+
+-- Hand-expanded from Extension {{RoutAdvertExtTypes}} to avoid a recursive C type
+RoutAdvertExt ::= SEQUENCE {
+	extensionId	EXT-TYPE.&extRef({RoutAdvertExtTypes}),
+	value	EXT-TYPE.&ExtValue({RoutAdvertExtTypes}{@extensionId})
+	}
+
+RoutAdvertExtTypes EXT-TYPE ::= {
+	{ SecondaryDns	IDENTIFIED BY c-SecondaryDNS } |
+	{ GatewayMacAddress	IDENTIFIED BY c-GatewayMACaddress },
+	...
+	}
+/*
+-- Service Response Message
+-- not supported in IEEE 1609.3™-2016
+Srm ::= SEQUENCE{
+	header	RsvAdvPrtVersion,
+	body	SrmBody
+	}
+
+SrmBody ::= SEQUENCE{
+	extensions	SRMextensions OPTIONAL,
+	prvChannelsRq	SrmPrivateChannelsRq OPTIONAL,
+	contexts	SrmContexts OPTIONAL,
+	prvChannelsCf	SrmPrvChAllocConf OPTIONAL 
+	}
+
+SrmPrivateChannelsRq ::= SEQUENCE{
+	portDynSam	PortNumber,
+	allocReqs	SrmPrvChAllocReq
+	}
+
+SrmPrvChAllocReq ::= SEQUENCE OF ITSaid -- ITS-AIDs
+
+SrmContexts ::= SEQUENCE OF SrmContext
+
+SrmContext ::= SEQUENCE{
+	context	SamContext,
+	clientPort	PortNumber
+	}
+
+SrmPrvChAllocConf ::= SEQUENCE OF ITSaid -- ITS-AIDs
+
+-- Service Advertisement Context info CLASS
+-- A context is identified by the pair of ITS-AID and Context ID (&itsaidCtxRef)
+-- ITS-AID has to identify an ITS application class (e.g. EFC)
+-- Context ID is a context identifier unique for a given ITS application class
+
+SA-CONTEXT ::= CLASS{
+	&itsaidCtxRef	ItsAidCtxRef UNIQUE,
+	&ContextInfo OPTIONAL
+	}
+	WITH SYNTAX {&ContextInfo IDENTIFIED BY &itsaidCtxRef}
+
+SamContext ::= SEQUENCE{
+	itsaidCtxRef	SA-CONTEXT.&itsaidCtxRef({AllsamContexts}),
+	context	SA-CONTEXT.&ContextInfo({AllsamContexts}{@itsaidCtxRef})
+	}
+
+ItsAidCtxRef ::= SEQUENCE{
+	itsaid	ITSaid,
+	ctx	CtxRef
+	}
+
+CtxRef ::= INTEGER(0..255)
+c-ctxRefNull CtxRef::=0 -- can be used with all values of ITS-AID
+c-ctxRefMandApp CtxRef::=1 -- can be used with ITS-AID = 0
+
+-- "Null-Context information"
+c-CtxTypeSystemNull ItsAidCtxRef::={itsaid content:0, ctx c-ctxRefNull}
+NullCtx ::= NullType -- don't care / don't know context
+
+-- "Mandatory Application context information"
+c-CtxTypeSystemMandApp ItsAidCtxRef::={itsaid content:0, ctx c-ctxRefMandApp}
+MandAppCtx ::= SEQUENCE OF ItsAidCtxRef -- identifiers or mandatory applications
+
+/* Examples
+c-CtxType1 ItsAidCtxRef::={itsaid content:127, ctx 255}
+c-CtxType2 ItsAidCtxRef::={itsaid extension:content:256, ctx 128}
+c-CtxType3 ItsAidCtxRef::={itsaid extension:extension:content:16512, ctx 254}
+*/
+
+AllsamContexts SA-CONTEXT ::= {
+	{ NullCtx	IDENTIFIED BY c-CtxTypeSystemNull} |
+	{ MandAppCtx	IDENTIFIED BY c-CtxTypeSystemMandApp} ,
+	...
+	}
+
+-- Sequence of 0 to n SRM extension elements
+SRMextensions::=SEQUENCE OF SRMextension
+
+-- A single SRM extension element
+SRMextension::= Extension{{SRMexts}}
+
+-- all available SRM Extensions
+
+SRMexts EXT-TYPE::={
+--	{ 	IDENTIFIED BY  } |
+--	{ 	IDENTIFIED BY  } |
+--	{ 	IDENTIFIED BY  },
+	...
+	}
+*/
+END

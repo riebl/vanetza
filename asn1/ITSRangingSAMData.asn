@@ -1,0 +1,23 @@
+ITSRangingSAMData { itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) en (302890) poti (2) version (1) }
+ 
+DEFINITIONS AUTOMATIC TAGS ::= 
+ 
+BEGIN
+ 
+IMPORTS
+Altitude, Heading FROM ITS-Container { itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts(102894) cdd (2) version (2) };
+ 
+ITSRangingSAMAppData ::= SEQUENCE {
+    protocolVersion INTEGER (0..255),
+    groundAltitude Altitude OPTIONAL, --- From A.103 DF_Altitude from [i.21]ETSI ETSI TS 102 894 2
+    ackResponseService ACKResponseService OPTIONAL,
+    roadAngles RoadAngles OPTIONAL,
+    ... 
+}
+ACKResponseService::= SEQUENCE {
+    ackRespDelayAdjust INTEGER (-32768..32767),
+    ackRespDelayStdDev INTEGER (0..65535),
+    ...
+}
+RoadAngles::= SEQUENCE OF Heading --- DF_Heading in ETSI TS 102 894 2 [10].
+END

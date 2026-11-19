@@ -1,0 +1,17 @@
+SAEM-PDU-Descriptions {
+    itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) en (3028901) sam (0) version1 (1)
+}
+
+DEFINITIONS AUTOMATIC TAGS ::=
+
+BEGIN
+
+IMPORTS
+Sam FROM ITSsa { iso (1) standard (0) localized(16460) sa(2) version0 (0)}
+ItsPduHeader FROM ITS-Container { itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts (102894) cdd (2) version (2)};
+
+SAEM ::= SEQUENCE {
+    header  ItsPduHeader, -- use value for SAEM, see ETSI TS 102 894-2 [2]
+    sam     Sam (WITH COMPONENTS {body (WITH COMPONENTS {..., serviceInfos PRESENT})})}
+
+END

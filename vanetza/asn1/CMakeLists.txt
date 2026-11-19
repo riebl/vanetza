@@ -26,6 +26,13 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/TS102894-2v131-CDD.asn
         ${PROJECT_SOURCE_DIR}/asn1/EN302637-2v141-CAM.asn
         ${PROJECT_SOURCE_DIR}/asn1/EN302637-3v131-DENM.asn
+        # --- Add your new Release 1 files below ---
+        ${PROJECT_SOURCE_DIR}/asn1/ISO21218_2013A1_CALMllsap.asn
+        ${PROJECT_SOURCE_DIR}/asn1/SAEM-PDU-Descriptions.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS16460_2016_ITSee.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS16460_2016_ITSsa.asn
+        ${PROJECT_SOURCE_DIR}/asn1/TS17419_2014_CITSapplMgmtApplReg.asn
+        ${PROJECT_SOURCE_DIR}/asn1/ITSRangingSAMData.asn
     )
 
     set(_its_asn1_files_depending_on_iso
@@ -52,6 +59,14 @@ if(VANETZA_ASN1_WITH_ASN1C)
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103916v211/POIM-PDU-Description.asn
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103916v211/POIM-ParkingAvailability.asn
         ${PROJECT_SOURCE_DIR}/asn1/release2/TS103916v211/POIM-CommonContainers.asn
+        # --- Add your new Release 2 files below ---
+        ${PROJECT_SOURCE_DIR}/asn1/release2/17419.1.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/17419.2.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/ISO_16460_ITSee1.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/ISO_16460_ITSsa1.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/SAEM-ExternalModule.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/SAEM-InfoContainer.asn
+        ${PROJECT_SOURCE_DIR}/asn1/release2/SAEM-PDU-Descriptions.asn
     )
 
     option(VANETZA_ASN1_WITH_ISO "Fetch ISO ASN.1 files for a more complete ITS message set" OFF)

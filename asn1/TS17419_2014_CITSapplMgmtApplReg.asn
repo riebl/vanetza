@@ -1,0 +1,523 @@
+CITSapplMgmtApplReg {iso(1) standard(0) cits-applMgmt (17419) applRegistry (2) version1 (1)}
+DEFINITIONS AUTOMATIC TAGS::=BEGIN
+
+IMPORTS
+VarLengthNumber, VarLengthNumber2, Ext1 FROM CITSapplMgmtIDs {iso(1) standard(0) cits-applMgmt (17419) ids (1) version1 (1)}
+
+
+/*
+LogicalChannelType FROM CITSapplMgmtComm {iso(1) standard(0) cits-applMgmt (17419) comm (3) version1 (1)}
+
+ITSSappCPReqReg FROM CITSapplReq {iso(1) standard(0) cits-applReq (17423) asnm-1 (1) version1 (1)}
+
+UserPriority, Lat, Lon FROM CALMllsap {iso(1) standard(0) calm-ll-sap(21218) asnm-1 (1) version1(1)}
+
+PortNumber FROM CALMfntp { iso (1) standard (0) calm-nonip(29281) fntp(1) asnm-1 (1)version1 (1)}
+
+ITS-scuId FROM CALMmanagement { iso (1) standard (0) calm-management (24102) local (1) asnm-1 (1) version1 (1)}
+*/
+;
+
+-- End of IMPORTS
+
+-- Types
+
+-- registration information records for several ITS-SCU-CMCs
+
+-- registry record for the whole set of registration information
+/*
+ITSSCUcmcRegistry::=SEQUENCE OF ITSSCUcmc
+
+-- for a single ITS-SCU-CMC
+ITSSCUcmc::=SEQUENCE{
+	itsscucmcID	ItsScuCmcID,
+	itsscucmcName	ITSObName
+	}
+
+-- Unique identifier
+ItsScuCmcID::=OBJECT IDENTIFIER -- (in PER this is octet aligned.
+
+
+-- registration information records for several ITS application objects
+
+
+-- ITS application object registration ITS-AID
+
+
+-- registry record for the whole set of registration information
+ITSapObRegistry::=SEQUENCE OF ITSapOb
+
+-- for a single ITS application object (ITSapOb)
+ITSapOb::=SEQUENCE {
+	iTSaid	ITSaid,	-- ITS-AID
+	iTSapObName	ITSObName,	-- name of ITS application object
+	iTSapObType	ITSapObType,	-- class or application
+	iTSapObOwner	ITSObOwner,	-- owner of the ITS application
+	iTSapObCert	ITSapObCertificate,	-- information on certificate
+	iTSapObInterfaces	ITSapObInterfaces -- info on RX and TX interfaces
+	}
+
+ITSapObInterfaces::=SEQUENCE OF ITSapObInterface
+
+ITSapObInterface::=SEQUENCE{
+	interfaceNo	InterfaceNo,
+	rules	ITSapObInterfaceRules
+	}
+
+InterfaceNo::=INTEGER(0..255) -- allows for 256 different interfaces per app
+
+ITSapObInterfaceRules::= SEQUENCE OF ITSapObInterfaceRule -- all rules shall be used at least once per source!
+
+ITSAPOBSR::=CLASS {
+	&ruleRef INTEGER(0..255),
+	&Rule
+	}
+
+ITSapObInterfaceRule::=SEQUENCE{
+	ruleNo	ITSAPOBSR.&ruleRef({ITSapObRxTxRules}),
+	rule	ITSAPOBSR.&Rule({ITSapObRxTxRules}{@ruleNo})
+	}
+
+ITSapObRxTxRules ITSAPOBSR::={iTSapObRxTx | iTSapObLch | iTSapObPn, ...}
+
+iTSapObRxTx	ITSAPOBSR::={&ruleRef 0, &Rule PortRxTx} -- RX or TX port
+iTSapObLch	ITSAPOBSR::={&ruleRef 1, &Rule LogicalChannelPrio} -- TX LCH allowed
+iTSapObPn	ITSAPOBSR::={&ruleRef 2, &Rule PortNumber} -- well-known PortNumber or indication of unknown port
+
+PortRxTx::=INTEGER{
+	rxInterface	(0),
+	txInterface	(255)
+	} (0..255)
+
+LogicalChannelPrio::=SEQUENCE{
+	lch	LogicalChannelType,
+	prio	ITSapObPriority
+	} -- priority of messages of a source may depend on the LCH.
+
+
+ITSObName::=UTF8String (SIZE(0..255))
+
+ITSapObType::=INTEGER {
+	appClass	(0),
+	application	(255)
+	} (0..255)
+
+ITSObOwner::=SEQUENCE{
+	ownerName	ITSObOwnerName,
+	ownerType	ITSObOwnerType,
+	ownerOID	OBJECT IDENTIFIER
+	}
+
+ITSObOwnerName::=UTF8String (SIZE(0..255))
+
+ITSObOwnerType::=INTEGER{
+	standard	(0),
+	private	(1)
+	} (0..255)
+
+ITSapObPriority::=UserPriority
+
+ITSapObCertificate::=SEQUENCE {
+	issuingSA	IssuingSA,
+	startDate	CertStartDate,
+	endDate	CertEndDate,
+	status	CertStatus
+	}
+
+IssuingSA::=SEQUENCE {
+	name	SAname,
+	saOID	OBJECT IDENTIFIER
+	}
+
+SAname::=UTF8String (SIZE(0..255))
+
+CertStartDate::=SEQUENCE{
+	fill	BIT STRING (SIZE(7)), -- set to zero
+	csd	CHOICE {
+	inactive	[0] NULL, -- indicates that certificate is not issued
+	date	[1] NumericString (SIZE(8)) -- yyyymmdd
+	}
+	}
+
+CertEndDate::=SEQUENCE{
+	fill	BIT STRING (SIZE(6)), -- set to zero
+	ced	CHOICE {
+	inactive	[0] NULL, -- this shall apply if StartDate is set to [0]
+	date	[1] NumericString (SIZE(8)), -- yyyymmdd
+	never	[2] NULL -- indicates that there is no end date
+	}
+	}
+
+CertStatus::=SEQUENCE{
+	fill	BIT STRING (SIZE(6)), -- set to zero
+	cs	CHOICE {
+	active	[0] NULL, -- certificate is issued
+	inactive	[1] NULL, -- certificate is not issued
+	testActiv	[2] NULL, -- ITS application object is in test phase
+	blocked	[3] CertBlocked -- issued certificate is blocked
+	}
+	}
+
+CertBlocked::=SEQUENCE {
+	date	NumericString (SIZE(8)), -- yyyymmdd
+	issuingSA	IssuingSA -- SA who performed black-listing of an ITS-AID
+	}
+
+
+-- ITS message set registration ITS-MsgSetID
+
+
+-- registry record for the whole set of registration information
+ITSmsgSetRegistry::=SEQUENCE OF ITSmsgSet
+
+-- for a single ITS message set (ITSmsgSet)
+ITSmsgSet::=SEQUENCE {
+	iTSmsID	ITSmsgSetID,	-- ITS-MsgSetID
+	iTSmsName	ITSObName,	-- human-readable name of ITS message set
+	iTSmsOwner	ITSObOwner	-- owner of the ITS message set
+	}
+
+
+-- ITS regulatory region registration
+
+
+-- registry record for the whole set of registration information
+ITSregRegionRegistry::=SEQUENCE OF ITSregRegion
+-- for a single regulatory region
+ITSregRegion::=SEQUENCE{
+	regID	ITSrrID,
+	regAuthority	ITS-RegPolicyAuthority,
+	regArea	ITS-RParea
+	}
+
+ITS-RegPolicyAuthority::=SEQUENCE{
+	name	ITSObOwnerName,
+	url	URLreg
+	}
+
+URLreg::=UTF8String (SIZE(0..256))
+
+ITSRPAREA::=CLASS{
+	&areaRef INTEGER(0..255),
+	&Area
+	}
+
+ITS-RParea::=SEQUENCE{
+	areaTypeNo	ITSRPAREA.&areaRef({ITS-RPareaTypes}),
+	areaType	ITSRPAREA.&Area({ITS-RPareaTypes})
+	}
+
+ITS-RPareaTypes ITSRPAREA::={rpAreaCountryCode | rpAreaGeoPolygon,...}
+
+rpAreaCountryCode	ITSRPAREA::={&areaRef 0, &Area CountryCode}
+rpAreaGeoPolygon	ITSRPAREA::={&areaRef 1, &Area GeoPolygonArea}
+
+GeoPolygonArea::=SEQUENCE{
+	inclusions	GeoInclusionAreas,
+	exclusions	GeoExclusionAreas
+	}
+
+GeoInclusionAreas::=SEQUENCE (SIZE(0..255)) OF GeoPolygon
+
+GeoExclusionAreas::=SEQUENCE (SIZE(0..255)) OF GeoPolygon
+
+GeoPolygon::=SEQUENCE (SIZE(0..65535)) OF GeoCoordinates
+
+GeoCoordinates::=SEQUENCE{
+	lat	Lat, -- from ISO 21218
+	long	Lon -- from ISO 21218
+	}
+
+CountryCode::=UTF8String (SIZE(3)) -- ISO 3166 Alpha-3 code
+
+
+-- ITS policy region registration
+
+
+-- registry record for the whole set of registration information
+ITSpolRegionRegistry::=SEQUENCE OF ITSpolRegion
+-- for a single policy region
+ITSpolRegion::=SEQUENCE{
+	polID	ITSprID,
+	polAuthority	ITS-RegPolicyAuthority,
+	fill	BIT STRING (SIZE(7)),
+	polArea	ITS-RParea
+	}
+
+
+-- ITS port number registration
+
+-- registry record for the whole set of registration information
+ITSportNumberRegistry::=SEQUENCE OF ITSportNumber
+-- for a single port number
+ITSportNumber::=SEQUENCE{
+	pn	PortNumber, -- PN used by transport protocol
+	ntProt	NTprotocol, -- transport protocol identifier
+	itssAp	ItsAppInfo -- Rx port of ITS application object
+	}
+
+
+ItsAppInfo::=SEQUENCE{
+	itsAid	ITSaid,
+	interfaceID	InterfaceNo,
+	direction	PortRxTx
+	}
+
+NTprotocol::=SEQUENCE{
+	name	UTF8String (SIZE(0..255)),
+	protRef	ProtocolReference
+	}
+
+ProtocolReference::=SEQUENCE{
+	sdo	UTF8String (SIZE(0..255)),
+	docNo	UTF8String (SIZE(0..255))
+	}
+
+-- ITS flow type registration
+
+-- registry record for the whole set of registration information
+ITSflowTypeRegistry::=SEQUENCE OF ITSflowType
+-- for a single flow type
+ITSflowType::=SEQUENCE{
+	id	FlowTypeID, -- Flow type identifier (well-known Flow type)
+	req	ITSSappCPReqReg -- list of requirements
+	}
+
+FlowTypeID::=VarLengthNumber2
+
+
+
+-- ITS logical channel registration
+
+
+-- registry record for the whole set of registration information
+ITSlchRegistry::=SEQUENCE OF ITSlch
+-- for a single LCH
+ITSlch::=SEQUENCE{
+	lchID	LogicalChannelType,	-- reference ID of LCH
+	lchPurpose	UTF8String (SIZE(0..255))	-- Purpose of LCH
+	}
+
+
+
+
+-- ITS station unit registration
+
+
+-- registry record for the whole set of registration information
+ITSsuRegistry::=SEQUENCE OF ITSsu
+-- for a single ITS-SU
+ITSsu::=SEQUENCE{
+	itssuID	ITSsuID
+	}
+
+
+
+-- ITS station communication unit registration
+
+
+-- registry record for the whole set of registration information
+ITSscuRegistry::=SEQUENCE OF ITSscu
+-- for a single ITS-SCU
+ITSscu::=SEQUENCE{
+	itsscuID	ITSscuID
+	}
+
+
+-- ITS-S application process provisioner registration
+
+
+-- registry record for the whole set of registration information
+ITSSappRegistry::=SEQUENCE OF ITSSapPrPr
+-- for a single ITS-S-APP
+ITSSapPrPr::=SEQUENCE{
+	itssappID	ITSSappid,
+	itssapProv	RegEntryOwner
+	}
+
+RegEntryOwner::=SEQUENCE{
+	ownerName	UTF8String (SIZE(0..255)),
+	ownerAddress	UTF8String (SIZE(0..255)),
+	ownerURL	URLreg
+	}
+
+
+-- ITS-S equipment manufacturer registration
+
+
+-- registry record for the whole set of registration information
+ITSemRegistry::=SEQUENCE OF ITSem
+-- for a single ITS-S equipment manufacturer
+ITSem::=SEQUENCE{
+	itsemID	ITSemID,
+	equipManu	RegEntryOwner
+	}
+
+
+-- ITS application object owner registration
+
+
+-- registry record for the whole set of registration information
+ITSaooRegistry::=SEQUENCE OF ITSaoo
+-- for a single ITS application object owner
+ITSaoo::=SEQUENCE{
+	itsaooID	ITSaooID,
+	aoo	RegEntryOwner
+	}
+
+
+-- ITS message set owner registration
+
+
+-- registry record for the whole set of registration information
+Registry::=SEQUENCE OF ITSmso
+-- for a single ITS message set owner
+ITSmso::=SEQUENCE{
+	iTSmsoID	ITSmsoID,
+	mso	RegEntryOwner
+	}
+
+
+-- ITS-S application process developer registration
+
+
+-- registry record for the whole set of registration information
+ITSSapdRegistry::=SEQUENCE OF ITSSapd
+-- for a single ITS-S application process developer
+ITSSapd::=SEQUENCE{
+	itssapdID	ITSSapdID,
+	ad	RegEntryOwner
+	}
+
+
+-- ITS-S facilities layer service identifier registration
+
+
+-- registry record for the whole set of registration information
+ITSSfacilityServiceRegistry::=SEQUENCE OF ITSSfs
+-- for a single ITS-S facilities layer service
+ITSSfs::=SEQUENCE{
+	itssfsID	ITSSfsID,
+-- details on service to be added once TS 17429 is ready
+	fsOwner	RegEntryOwner
+	}
+
+
+-- ITS-S protocol provisioner registration
+
+
+-- registry record for the whole set of registration information
+ITSSppRegistry::=SEQUENCE OF ITSSpPr
+-- for a single ITS-S protocol
+ITSSpPr::=SEQUENCE{
+	itsspID	ITSSpid,
+	itsspProv	RegEntryOwner
+	}
+
+
+
+-- ITS protocol owner registration
+
+
+-- registry record for the whole set of registration information
+ITSpoRegistry::=SEQUENCE OF ITSpo
+-- for a single ITS application object owner
+ITSpo::=SEQUENCE{
+	itspoID	ITSpoID,
+	po	RegEntryOwner
+	}
+
+
+-- globally unique ITS-S protocol identifier
+-- same structure as ApplicationID in ISO 24102-1
+
+ProtocolID::=SEQUENCE{
+	protid	ITSprotID,
+	itsscu	ITS-scuId,
+	instance	ProtInstance
+	}
+
+ProtInstance::=INTEGER{
+	unknown	(0)
+	}(0..255) -- value different to zero indicates an implemented instance
+
+-- ID types --
+
+*/
+-- ITSaid ::= VarLengthNumber written out as a CHOICE (same encoding): asn1c (before v1.5.0) leaves the
+-- PER constraints of a CHOICE alias empty, UPER encoding / decoding of the SAEM then fails.
+ITSaid::=CHOICE{
+	content	[0]	INTEGER(0..127), -- one octet length
+	extension	[1]	Ext1
+	}
+-- one value of ITSaid identifies the group of unregistered applications
+
+/*
+ITSmsgSetID::=VarLengthNumber
+
+ITSemID::=VarLengthNumber2
+
+ITSsuID::=VarLengthNumber
+
+ITSsuObjID::=SEQUENCE{
+	suID	ITSsuID, -- globally unique and registered
+	mscuID	MasterItsSCU, -- of master ITS-SCU
+	oscuID	SlaveItsSCUs -- of master ITS-SCU
+	}
+
+MasterItsSCU::=ITSscuID
+
+SlaveItsSCUs::=SEQUENCE OF ITSscuID
+
+ITSscuID::=SEQUENCE{
+	emID	ITSemID, -- manufacturer ID
+	serialNo	VarLengthNumber -- serial number
+	}
+
+ITSSappid::=VarLengthNumber
+
+ITSrrID::=VarLengthNumber
+
+ITSprID::=VarLengthNumber
+
+ITSaooID::=VarLengthNumber
+
+ITSmsoID::=VarLengthNumber2
+
+ITSSapdID::=VarLengthNumber
+
+ITSprotID::=VarLengthNumber
+
+ITSSpid::=VarLengthNumber
+
+ITSpoID::=VarLengthNumber
+
+ITSSpdID::=VarLengthNumber
+
+ITSSfsID::=VarLengthNumber2
+
+-- Values
+
+-- OIDs of standards organizations
+-- ISO
+oidISO OBJECT IDENTIFIER::={iso(1) standard(0)}
+-- ETSI
+oidETSI OBJECT IDENTIFIER::={itu-t(0) identified-organization(4) etsi(0)}
+-- IEEE
+oidIEEE OBJECT IDENTIFIER::={iso(1) identified-organization(3) ieee(3)}
+-- CEN
+oidCEN OBJECT IDENTIFIER::={iso(1) identified-organization(3) cen(162)}
+
+fntpRefNo UTF8String(SIZE(0..255))::="ISO 29281-1"
+
+*/
+
+-- version of this module
+version INTEGER(0..255)::=1
+
+/*
+   The ASN.1 specification has been checked for conformance to the ASN.1
+   standards by OSS ASN.1 Syntax Checker, and by OSS ASN-1STEP
+*/
+
+END

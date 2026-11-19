@@ -1,0 +1,66 @@
+SAEM-InfoContainer {itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts104091 (104091) infoContainer (1) major-version-2 (2) minor-version-1 (1)}
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS
+
+UseCaseInfoSet, basedOid 
+FROM SAEM-ExternalModule;
+
+/**
+ * This type represents the identifier of the information object relative to the component @ref ServicesAndUseCasesInfoContainer .baseOid. 
+ *
+*/
+Id::= RELATIVE-OID
+
+/**
+ * This information object class is an abstract template to instantiate types that carry information.
+ *
+ * It shall include the following components: 
+ *
+ * @field &id: the identifier of the information.
+ *
+ * @field &Info: the information content.
+ *
+*/
+INFO ::= CLASS {
+   &id   Id,
+   &Info
+} WITH SYNTAX {&Info IDENTIFIED BY &id}
+
+/**
+ * This type represents a single information about an ITS service and one of its use cases, including mandatorily its identifier, based on the UseCaseInfoSet set.
+ *
+ * It shall include the following components: 
+ *
+ * @field suId: the identifier of the service and use case
+ *
+ * @field suContent: the optional announcement information content for the service and use case identified by @suId.
+ *
+*/
+ServiceAndUseCaseInfo ::= SEQUENCE {
+   suId        INFO.&id({UseCaseInfoSet}),
+   suContent   INFO.&Info({UseCaseInfoSet}{@.suId}) OPTIONAL
+}
+
+/**
+ * This DF represents a list of ServiceAndUseCaseInfo types, each including their identifier. 
+*/
+ServicesAndUseCasesInfo::= SEQUENCE (SIZE(1..32,...)) OF ServiceAndUseCaseInfo
+
+/** 
+ * This type represents a container that provides information about the provided ITS services and their use cases.
+ *
+ * It shall include the following components: 
+ *
+ * @field baseOid: the OID that serves as base Oid for the type @ref Id .
+ *
+ * @field suList: the information about ITS services and their use cases.
+*/
+ServicesAndUseCasesInfoContainer::= SEQUENCE{
+   baseOid   OBJECT IDENTIFIER (basedOid),
+   suList    ServicesAndUseCasesInfo,
+   ...
+}
+
+END

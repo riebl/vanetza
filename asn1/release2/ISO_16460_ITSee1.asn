@@ -1,0 +1,191 @@
+-- Electronic attachment to ISO 16460:2020
+
+ITSee1 { iso (1) standard (0) localized(16460) ee(4) version1 (1)} 
+DEFINITIONS AUTOMATIC TAGS ::= 
+BEGIN
+
+IMPORTS
+
+ServicesAndUseCasesInfoContainer FROM SAEM-InfoContainer {
+    itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts104091 (104091) infoContainer (1) major-version-2 (2) minor-version-1 (1)
+}
+/*
+-- ISO 21218
+I-Param FROM ITSllsap {iso(1) standard(0) calm-ll-sap(21218) asnm-1 (1) version2 (2)}
+*/
+-- ISO 17419
+VarLengthNumberIso FROM CITSdataDictionary1 {iso(1) standard(0) cits-applMgmt (17419) dataDictionary (1) version1 (1)}
+
+;
+-- End of IMPORTS
+
+-- Extension Elements CLASS and reference value definitions 
+-- CLASS
+EXT-TYPE ::= CLASS {
+      &extRef RefExt UNIQUE,
+      &ExtValue
+	}
+	WITH SYNTAX {&ExtValue IDENTIFIED BY &extRef}
+
+-- General extension (profiling)
+Extension {EXT-TYPE : ExtensionTypes} ::= SEQUENCE {
+	extensionId	EXT-TYPE.&extRef({ExtensionTypes}),
+	value	EXT-TYPE.&ExtValue({ExtensionTypes}{@extensionId})
+	}
+-- ExtensionTypes are specified for SAM, SRM, and LM
+
+-- Reference values (for all types of extensions)
+RefExt::=INTEGER (0..255)
+
+c-Reserved	RefExt ::= 0
+c-TxPowerUsed80211	RefExt ::= 4 -- LM-N-Header, SAM Header
+c-2Dlocation	RefExt ::= 5 -- SAM Header
+c-3Dlocation	RefExt ::= 6 -- SAM Header
+c-advertiserID	RefExt ::= 7 -- SAM Header
+c-ProviderServContext	RefExt ::= 8 -- SAM Service Info
+c-IPv6Address	RefExt ::= 9 -- SAM Service Info
+c-servicePort	RefExt ::= 10 -- SAM Service Info
+c-ProviderMACaddress	RefExt ::= 11 -- SAM Service Info
+c-EDCAparameterSet	RefExt ::= 12 -- SAM Channel Info
+c-SecondaryDNS	RefExt ::= 13 -- SAM Routing Advertisement
+c-GatewayMACaddress	RefExt ::= 14 -- SAM Routing Advertisement
+c-ChannelNumber80211	RefExt ::= 15 -- LM-N-Header
+c-DataRate80211	RefExt ::= 16 -- LM-N-Header
+c-RepeatRate	RefExt ::= 17 -- SAM Header
+/*
+Deprecated: c-CountryString	RefExt ::= 18 -- SAM Header
+*/
+c-RCPIthreshold	RefExt ::= 19 -- SAM Service Info
+c-WSAcountThreshold	RefExt ::= 20 -- SAM Service Info
+c-ChannelAccess	RefExt ::= 21 -- SAM Channel Info
+c-WSAcountThresInt	RefExt ::= 22 -- SAM Service Info
+c-ChannelLoad 	RefExt ::= 23 -- SAE / CAMP / 1609 are working on this
+c-SrvOpP-ProtocolStack	RefExt ::= 24
+c-LMtxCip	RefExt ::= 80 -- LM-N-Header 
+c-LMrxCip	RefExt ::= 81 -- LM-N-Header 
+c-LMchannelBusyRatio	RefExt ::= 82 -- LM-N-Header 
+c-LMpacketID	RefExt ::= 83 -- LM-T-Header 
+c-ExtendedChannelInfos	RefExt ::= 84 -- SAM Header
+c-SAMapplicationData	RefExt ::= 85 -- SAM Service Info
+-- The value range 86 to 120 is reserved for ISO 
+-- all other values of	RefExt are reserved for IEEE
+
+-- ChannelLoad specification is not yet available.
+
+
+-- LM extension elements
+
+DataRate80211::=INTEGER(0..255)
+
+TXpower80211::=INTEGER(-128..127)
+
+ChannelNumber80211::=INTEGER(0..255)
+
+LMchannelBusyRatio::=INTEGER{
+	zeroPercent	(0),
+	halfPercent	(1),
+	onePercent	(2),
+	hundredPercent	(200),
+	unknown	(201)
+	}(0..255) -- values larger than 201 are prohibited
+/*
+RXcip::=SEQUENCE OF I-Param
+
+TXcip::=SEQUENCE OF I-Param -- may optionally be forwarded to peer ITS station
+*/
+
+-- SAM header extension elements
+
+RepeatRate ::= INTEGER (0..255)
+
+TwoDLocation ::= SEQUENCE {
+	latitude 	SamLatitude,
+	longitude 	SamLongitude
+	}
+
+ThreeDLocation ::= SEQUENCE {
+	latitude 	SamLatitude,
+	longitude 	SamLongitude,
+	elevation	SamElevation
+	}
+
+-- max. 32 octets are allowed in AdvertiserIdentifier!!!
+-- 32 characters may produce more than 32 octets in UPER
+AdvertiserIdentifier ::= UTF8String (SIZE (1..32))
+
+
+
+--ServiceInfo extension elements
+ProviderServiceContext ::= SEQUENCE{
+    fillBit	BIT STRING (SIZE(3)), -- all bits set to zero!
+    psc	OCTET STRING (SIZE(0..31)) -- size zero is not recommended
+    }
+
+IPv6Address ::= OCTET STRING (SIZE (16))
+
+ServicePort ::= INTEGER (0..65535)
+
+ProviderMacAddress ::= MACaddress
+
+MACaddress ::= OCTET STRING (SIZE(6))
+
+RcpiThreshold ::= INTEGER (0..255) -- see IEEE Std 802.11
+
+WsaCountThreshold ::= INTEGER (0..255)
+
+WsaCountThresholdInterval ::= INTEGER (0..255) -- value 0 is not used
+
+SAMapplicationData ::= OCTET STRING (CONTAINING ServicesAndUseCasesInfoContainer) 
+
+--ChannelInfo extension elements
+EdcaParameterSet ::= SEQUENCE{
+	acbeRecord	EdcaParameterRecord,
+	acbkRecord	EdcaParameterRecord,
+	acviRecord	EdcaParameterRecord,
+	acvoRecord	EdcaParameterRecord
+	}
+
+EdcaParameterRecord ::= SEQUENCE {
+	res	INTEGER (0..1),
+	aci	INTEGER (0..3),
+	acm 	INTEGER (0..1),
+	aifsn	INTEGER (0..15),
+	ecwMax	INTEGER (0..15),
+	ecwMin	INTEGER (0..15),
+	txopLimit	INTEGER (0..65535)
+	}
+
+ChannelAccess80211 ::= INTEGER {
+	continuous	(0),
+	alternatingSCH	(1),
+	alternatingCCH	(2)
+	} (0..255)
+
+
+-- RoutingAdvertisement extension elements
+
+SecondaryDns ::= IPv6Address
+
+GatewayMacAddress ::= MACaddress
+
+-- Renamed Latitude/Longitude/Elevation -> SamLatitude/SamLongitude/SamElevation to avoid a
+-- name clash with the ETSI CDD / DSRC types when compiled together (encoding unchanged).
+SamLatitude ::= SEQUENCE{
+	fillBit	BIT STRING (SIZE(1)), -- set to '0' (MSB of Latitude)
+	lat	INTEGER (-900000000..900000001)
+	}
+
+SamLongitude ::= INTEGER (-1800000000..1800000001)
+
+SamElevation ::= INTEGER (-4096..61439)
+
+-- Communication protocol stack identifier.
+/* specified in CEN/TS 17496 (ISO/TS 21185)
+   SrvOpP-ProtocolStack contains the numbers originally presented in EN ISO 17419
+   with the ASN.1 type ITSprotocolStackID
+*/
+
+SrvOpP-ProtocolStack::=VarLengthNumberIso
+
+
+END

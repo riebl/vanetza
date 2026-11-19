@@ -1,4 +1,5 @@
 # generated file
+its/ACKResponseService.c
 its/AbsolutePosition.c
 its/AbsolutePositionWAltitude.c
 its/AbsolutePositions.c
@@ -13,6 +14,7 @@ its/AdverseWeatherCondition-AdhesionSubCauseCode.c
 its/AdverseWeatherCondition-ExtremeWeatherConditionSubCauseCode.c
 its/AdverseWeatherCondition-PrecipitationSubCauseCode.c
 its/AdverseWeatherCondition-VisibilitySubCauseCode.c
+its/AdvertiserIdentifier.c
 its/AdvisorySpeed.c
 its/AdvisorySpeedList.c
 its/AdvisorySpeedType.c
@@ -66,7 +68,17 @@ its/CauseCode.c
 its/CauseCodeType.c
 its/CenDsrcTollingZone.c
 its/CenDsrcTollingZoneID.c
+its/ChInfoNull.c
+its/ChInfoOptions.c
+its/ChannelAccess80211.c
 its/ChannelId.c
+its/ChannelIndex.c
+its/ChannelInfo.c
+its/ChannelInfoExt.c
+its/ChannelInfoExts.c
+its/ChannelInfos.c
+its/ChannelNumber80211.c
+its/ChannelOptions.c
 its/ChannelRq.c
 its/ChannelRs.c
 its/ClassConfidence.c
@@ -122,6 +134,7 @@ its/DangerousGoodsContainer.c
 its/DangerousGoodsExtended.c
 its/DangerousSituationSubCauseCode.c
 its/DataParameters.c
+its/DataRate80211.c
 its/DateAndTime.c
 its/DateCompact.c
 its/DayOfWeek.c
@@ -161,6 +174,8 @@ its/DrivenLineOffsetSm.c
 its/DrivingLaneStatus.c
 its/DynamicStatus.c
 its/EFC-ContextMark.c
+its/EdcaParameterRecord.c
+its/EdcaParameterSet.c
 its/EfcDsrcApplication_DriverCharacteristics.c
 its/EfcDsrcApplication_TrailerCharacteristics.c
 its/Elevation.c
@@ -190,6 +205,9 @@ its/ExhaustEmissionValues.c
 its/Ext1.c
 its/Ext2.c
 its/Ext3.c
+its/ExtendedChannelInfo.c
+its/ExtendedChannelInfos.c
+its/Extension.c
 its/ExteriorLights.c
 its/FreeSpaceAddendum.c
 its/FreeSpaceAddendumContainer.c
@@ -203,6 +221,7 @@ its/FullPositionVector.c
 its/FutureCharacteristics.c
 its/GNSSstatus.c
 its/GapBetweenVehicles.c
+its/GatewayMacAddress.c
 its/GddAttribute.c
 its/GddAttributes.c
 its/GddStructure.c
@@ -236,10 +255,13 @@ its/HoursMinutes.c
 its/HumanPresenceOnTheRoadSubCauseCode.c
 its/HumanProblemSubCauseCode.c
 its/ICC-Id.c
+its/IPv6Address.c
 its/ISO14823Attribute.c
 its/ISO14823Attributes.c
 its/ISO14823Code.c
 its/ITS-Container_Temperature.c
+its/ITSRangingSAMAppData.c
+its/ITSaid.c
 its/IVIM.c
 its/IVI_DriverCharacteristics.c
 its/IVI_Temperature.c
@@ -270,6 +292,8 @@ its/IntersectionState-addGrpC.c
 its/IntersectionState.c
 its/IntersectionStateList.c
 its/IntersectionStatusObject.c
+its/IpV6Prefix.c
+its/IpV6PrefixLength.c
 its/Iso3833VehicleType.c
 its/IssuerIdentifierIso.c
 its/ItineraryPath.c
@@ -286,6 +310,7 @@ its/IviPurpose.c
 its/IviStatus.c
 its/IviStructure.c
 its/IviType.c
+its/LMchannelBusyRatio.c
 its/LPN.c
 its/LaneAttributes-Barrier.c
 its/LaneAttributes-Bike.c
@@ -335,6 +360,7 @@ its/LongitudinalLanePosition.c
 its/LongitudinalLanePositionConfidence.c
 its/LongitudinalLanePositionValue.c
 its/LowFrequencyContainer.c
+its/MACaddress.c
 its/MAPEM.c
 its/ManagementContainer.c
 its/ManeuverAssistList.c
@@ -348,6 +374,7 @@ its/MatchedPosition.c
 its/MaterialType.c
 its/MaxLenghtOfPlatoon.c
 its/MaxNoOfVehicles.c
+its/MedType.c
 its/MergeDivergeNodeAngle.c
 its/MinuteOfTheYear.c
 its/MlcPart.c
@@ -398,6 +425,7 @@ its/Offset-B14.c
 its/Offset-B16.c
 its/OffsetPoint.c
 its/OpeningDaysHours.c
+its/OperatingClass80211.c
 its/OriginatingRSUContainer.c
 its/OriginatingVehicleContainer.c
 its/OtherSubclass.c
@@ -452,6 +480,8 @@ its/ProtectedZoneID.c
 its/ProtectedZoneRadius.c
 its/ProtectedZoneType.c
 its/Provider.c
+its/ProviderMacAddress.c
+its/ProviderServiceContext.c
 its/PtActivation.c
 its/PtActivationData.c
 its/PtActivationType.c
@@ -470,6 +500,7 @@ its/RTCMmessageList.c
 its/Radius.c
 its/Range.c
 its/RccPart.c
+its/RcpiThreshold.c
 its/RearOverhang.c
 its/ReceiptAuthenticator.c
 its/ReceiptContract.c
@@ -483,6 +514,7 @@ its/ReceiptOBUId.c
 its/ReceiptServicePart.c
 its/ReceiptServiceSerialNumber.c
 its/ReceiptText.c
+its/RefExt.c
 its/RefPointId.c
 its/ReferenceDenms.c
 its/ReferencePosition.c
@@ -492,6 +524,7 @@ its/RegulatorySpeedLimit.c
 its/RejectedReason.c
 its/RelevanceDistance.c
 its/RelevanceTrafficDirection.c
+its/RepeatRate.c
 its/RepeatingPeriodDayTypes.c
 its/RequestID.c
 its/RequestImportanceLevel.c
@@ -513,6 +546,7 @@ its/RestrictionUserType.c
 its/RestrictionUserTypeList.c
 its/ResultFin.c
 its/ResultOp.c
+its/RoadAngles.c
 its/RoadConfigurationContainer.c
 its/RoadLaneSetList.c
 its/RoadRegulatorID.c
@@ -529,7 +563,14 @@ its/RoadWorksContainerBasic.c
 its/RoadWorksContainerExtended.c
 its/RoadwayCrownAngle.c
 its/RoadworksSubCauseCode.c
+its/RoutAdvertExt.c
+its/RoutAdvertExts.c
+its/RouterLifetime.c
+its/RoutingAdvertisement.c
 its/RscPart.c
+its/RsvAdvPrtVersion.c
+its/SAEM.c
+its/SAMapplicationData.c
 its/SPAT.c
 its/SPATEM.c
 its/SREM.c
@@ -537,7 +578,13 @@ its/SSEM.c
 its/SaeAutomationLevel.c
 its/SaeAutomationLevels.c
 its/SafetyCarContainer.c
+its/Sam.c
+its/SamBody.c
+its/SamElevation.c
+its/SamLatitude.c
+its/SamLongitude.c
 its/Scale-B12.c
+its/SecondaryDns.c
 its/Segment.c
 its/SegmentAttributeXY.c
 its/SegmentAttributeXYList.c
@@ -554,7 +601,12 @@ its/SensorInformationContainer.c
 its/SensorType.c
 its/SequenceNumber.c
 its/ServiceApplicationLimit.c
+its/ServiceInfo.c
+its/ServiceInfoExt.c
+its/ServiceInfoExts.c
+its/ServiceInfos.c
 its/ServiceNumber.c
+its/ServicePort.c
 its/SessionClass.c
 its/SessionLocation.c
 its/SetInstanceRq.c
@@ -595,6 +647,11 @@ its/SpeedLimitType.c
 its/SpeedValue.c
 its/SpeedValueExtended.c
 its/SpeedandHeadingIsoandThrottleConfidence.c
+its/SrvAdvChangeCount.c
+its/SrvAdvContentCount.c
+its/SrvAdvID.c
+its/SrvAdvMsgHeaderExt.c
+its/SrvAdvMsgHeaderExts.c
 its/StartTime.c
 its/StationDataContainer.c
 its/StationID.c
@@ -609,6 +666,7 @@ its/SteeringWheelAngleValue.c
 its/StopTime.c
 its/SubCauseCodeType.c
 its/SubRq.c
+its/TXpower80211.c
 its/TaxCode.c
 its/TcPart.c
 its/TemporaryID.c
@@ -616,6 +674,7 @@ its/Termination.c
 its/Text.c
 its/TextContainer.c
 its/TextLines.c
+its/ThreeDLocation.c
 its/ThrottleConfidence.c
 its/TimeChangeDetails.c
 its/TimeConfidence.c
@@ -645,6 +704,7 @@ its/TransmissionInterval.c
 its/TransmissionState.c
 its/TreatmentType.c
 its/TurningRadius.c
+its/TwoDLocation.c
 its/UnitType.c
 its/VDS.c
 its/ValidityDuration.c
@@ -698,6 +758,9 @@ its/WearLevel.c
 its/Weight.c
 its/WheelBaseVehicle.c
 its/WrongWayDrivingSubCauseCode.c
+its/WsaChInfoDataRate.c
+its/WsaCountThreshold.c
+its/WsaCountThresholdInterval.c
 its/XSensorOffset.c
 its/YSensorOffset.c
 its/YawRate.c

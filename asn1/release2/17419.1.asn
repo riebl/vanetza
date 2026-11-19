@@ -1,0 +1,200 @@
+--<OSS.PDU>-- 
+-- Release 2
+-- EN ISO 17419 edition 2018
+
+
+CITSdataDictionary1 {iso(1) standard(0) cits-applMgmt (17419) dataDictionary (1) version1 (1)} 
+DEFINITIONS AUTOMATIC TAGS::=BEGIN
+
+--IMPORTS nothing
+-- ;
+-- End of IMPORTS
+
+-- Types
+
+-- General data types
+-- VarLengthNumber
+VarLengthNumberIso::=CHOICE{
+	content	[0]	INTEGER(0..127), -- one octet length
+	extension	[1]	Ext1Iso
+	}
+Ext1Iso::=CHOICE{
+	content	[0]	INTEGER(128..16511), -- two octets length
+	extension	[1]	Ext2Iso
+}
+Ext2Iso::=CHOICE{
+	content	[0]	INTEGER(16512..2113663), -- three octets length
+	extension	[1]	Ext3Iso
+	}
+Ext3Iso::=INTEGER(2113664..270549119,...) -- four and more octets length
+
+-- VarLengthNumber
+VarLengthNumber2::=CHOICE{
+	shortNo	[0] INTEGER(0..127),
+	longNo	[1] INTEGER(0..32767)
+	}
+
+-- Non-negative Integer
+IntZeroMax::=INTEGER (0..MAX)
+
+-- 1, 2, 3, and 4 octet non-negative Integer in UPER
+Int1::=INTEGER(0..255)
+Int2::=INTEGER(0..65535)
+Int3::=INTEGER(0..16777215)
+Int4::=INTEGER(0..4294967295)
+Int5::=INTEGER(0..1099511627775)
+Int6::=INTEGER(0..281474976710655)
+
+-- Priority applicable for several purposes
+-- Originally defined in ISO 21218
+-- 0: lowest priority
+-- 255: highest priority
+UserPriority::=Int1
+
+-- Latitude (replaces Lat specified in ISO 21218)
+-- Compliant with ISO 16460 and IEEE 1609.3
+LatitudeIso ::= SEQUENCE{
+	fillBit	BIT STRING (SIZE(1)), -- set to '0' (MSB of Latitude)
+	lat	INTEGER (-900000000..900000001) -- in degree
+	}
+
+-- Longitude (replaces Lon specified in ISO 21218)
+-- Compliant with ISO 16460 and IEEE 1609.3
+LongitudeIso ::= INTEGER (-1800000000..1800000001) -- in degree
+
+-- Altitude (-4000m up to 12777,214 m)
+-- See also Elevation in ISO 16460 and IEEE 1609.3 / SAE
+-- See also AltitudeValue in ETSI ITS common data dictionary
+AltitudeIso ::= INTEGER{
+	referenceEllipsoidSurface	(0),
+	oneMillimeter	(1),
+	unknown	(12777215)
+	} (-4000000..12777215) -- in millimeter
+
+-- Universal Atomic Time format
+-- Originally defined in ISO 21218
+Time48IAT ::= Int6 -- International Atomic Time with one millisecond steps
+c-Time48IAT-utcStartOf2004	Time48IAT::=0
+c-Time48IAT-oneMillisecAfterUTCStartOf2004	Time48IAT::=1
+
+-- Time unit format
+-- Originally defined in ISO 21218
+TimeUnit::=INTEGER{
+	microseconds	(0),
+	milliseconds	(1),
+	seconds	(2),
+	minutes	(3),
+	hours	(4),
+	days	(5),
+	weeks	(6),
+	months	(7),
+	years	(8)
+	}(0..63) -- 6 bits in PER
+
+-- Positive time value
+TimeDurationValue::=SEQUENCE {
+	value	INTEGER(0..1023), -- (10 bits in PER)
+	unit	TimeUnit
+	} -- 16 bits in PER
+
+-- Logic value (can be extended with other values)
+Logic::=INTEGER{
+	false	(0),
+	true	(255)
+	} (0..255)
+
+-- Medium cost was originally defined in ISO 17423
+MediumCost::=SEQUENCE{
+	fill	BIT STRING (SIZE(2)), -- bits set to zero
+	costClass	CostClass, -- uses 3 bits
+	costAmount	CostAmount OPTIONAL, 
+	timeUnit	CostTimeUnit OPTIONAL, 
+	amountUnit	CostAmountUnit OPTIONAL
+	}
+
+CostClass::=INTEGER{
+	tempUnavailable	(0),
+	noCharge	(1),
+	flatRate	(2),
+	perTime	(3),
+	perAmount	(4),
+	perConnection	(5)
+	} (0..7)
+
+CostAmount::=SEQUENCE{
+	currency	INTEGER(0..1023), -- ISO 4217 three digit numeric code
+	value	CostValue
+	} -- presented in 4 octets
+
+CostValue::=SEQUENCE{
+	main	INTEGER(0..4095), -- in currency unit
+	fraction	INTEGER(0..1023) -- in 1/1000 of currency unit
+	}
+
+CostTimeUnit::=TimeDurationValue
+
+CostAmountUnit::=INTEGER{
+	tempUnavailable	(0),
+	kbyte	(1), -- units of kilobytes
+	tkbyte	(2), -- units of tens of kilobytes
+	hkbyte	(4), -- units of hundreds of kilobytes
+	mbyte	(8), -- units in megabytes
+	tmbyte	(16), -- units in tens of megabytes
+	hmbyte	(32), -- units of hundreds of megabytes
+	gbyte	(64), -- units of gigabytes
+	tgbyte	(128) -- units of tens of gigabytes
+	} (0..255)
+
+-- General port number format
+-- As used e.g. for TCP, UDP, FNTP
+PortNumber::=Int2
+
+-- This type is needed to fix a bug with TTCN-3 tools (conformance testing)
+NullType::=NULL
+
+-- Ethertype format
+Ethertype ::= Int2
+
+-- The following 48 bit MAC and 64 bit EUI formats originally were specified in ISO 21218
+-- EUI64 format
+EUI64::=OCTET STRING (SIZE(8))
+
+-- EUI64 encapsulation of MAC48 format
+EUI64MAC48::=SEQUENCE{
+	oui	MACoui,
+	selector2	TwoOCTETones,
+	ext	MACext
+	}
+
+MACoui::=SEQUENCE{
+	uoi1	INTEGER(0..63),
+	ulBit	BOOLEAN,
+	igBIT	BOOLEAN,
+	uoi2	OCTET STRING (SIZE(2))
+	}
+
+TwoOCTETones::=INTEGER{
+	all	(65535)
+	} (0..65535)
+
+MACext::=OCTET STRING (SIZE(3))
+
+OneOCTETones::=INTEGER{
+	all	(255)
+	} (0..255)
+
+-- General MAC address format
+MACaddressIso::=OCTET STRING (SIZE(6))
+
+-- IPv6 address format
+IPv6AddressIso::=EUI64
+
+-- Values
+
+
+/*
+   The ASN.1 specification has been checked for conformance to the ASN.1
+   standards by OSS ASN.1 Syntax Checker, and by OSS ASN-1STEP
+*/
+
+END

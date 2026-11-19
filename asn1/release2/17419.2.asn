@@ -1,0 +1,493 @@
+--<OSS.PDU>-- 
+-- Release 2
+-- EN ISO 17419 edition 2018
+
+
+CITSapplMgmtApplReg2 {iso(1) standard(0) cits-applMgmt (17419) applRegistry (2) version2 (2)}
+DEFINITIONS AUTOMATIC TAGS::=BEGIN
+
+IMPORTS
+
+-- C-ITS Data Dictionary (still in ISO 17419)
+VarLengthNumberIso, IntZeroMax, Int1, Int2, Int6, PortNumber  FROM CITSdataDictionary1 {iso(1) standard(0) cits-applMgmt (17419) dataDictionary (1) version1 (1)}
+
+;
+
+-- End of IMPORTS
+
+-- Types
+-- General types
+-- ITS Object Name
+ITSObName::=UTF8String
+
+-- ITS Object / Entity Owner information
+ITSOwnerInfo::=SEQUENCE{
+	ownerName	ITSObOwnerName,
+	ownerType	ITSObOwnerType,
+	ownerAddress	ITSObOwnerAddress,
+	ownerOID	ITSObOwnerOID, -- if applicable
+	ownerURL	URLreg -- if applicable
+	}
+
+-- ITS Object Owner Name
+ITSObOwnerName::=UTF8String
+
+ITSObOwnerAddress::=UTF8String
+
+ITSObOwnerOID::=OBJECT IDENTIFIER
+
+-- ITS Object Owner Type
+ITSObOwnerType::=INTEGER{
+	unknown	(0),
+	sdo	(1), -- standard developing organization
+	enterprise	(2), -- a registered enterprise
+	private	(3) -- a private person
+	} (0..255)
+
+-- URL
+URLreg::=UTF8String
+
+/*
+CountryCode::=UTF8String (SIZE(3)) -- ISO 3166 Alpha-3 code
+*/
+
+-- Area definitions
+/*
+ITSRPAREA::=CLASS{
+	&areaRef Int1,
+	&Area
+	}
+
+ITS-RParea::=SEQUENCE{
+	areaTypeNo	ITSRPAREA.&areaRef({ITS-RPareaTypes}),
+	areaType	ITSRPAREA.&Area({ITS-RPareaTypes})
+	}
+
+ITS-RPareaTypes ITSRPAREA::={rpAreaCountryCode | rpAreaGeoPolygon,...}
+
+rpAreaCountryCode	ITSRPAREA::={&areaRef 0, &Area CountryCode}
+rpAreaGeoPolygon	ITSRPAREA::={&areaRef 1, &Area GeoPolygonArea}
+
+GeoPolygonArea::=SEQUENCE{
+	inclusions	GeoInclusionAreas,
+	exclusions	GeoExclusionAreas
+	}
+
+GeoInclusionAreas::=SEQUENCE (SIZE(0..255)) OF GeoPolygon
+
+GeoExclusionAreas::=SEQUENCE (SIZE(0..255)) OF GeoPolygon
+
+GeoPolygon::=SEQUENCE (SIZE(0..65535)) OF GeoCoordinates 
+
+GeoCoordinates::=SEQUENCE{
+	lat	Latitude, 
+	long	Longitude 
+	}
+*/
+
+-- Authority identifier
+ITS-RegPolicyAuthority::=SEQUENCE{
+	name	ITSObOwnerName,
+	url	URLreg
+	}
+
+PortRxTx::=INTEGER{
+	rxPort	(1), -- port number used in receive mode only
+	txPort	(2), -- port number used in transmit mode only
+	rxtxPort	(4) -- port number used in receive and transmit mode
+	} (0..255)
+
+ITSprotocol::=SEQUENCE{
+	protID	ITSprotID,
+	protRef	ITSprotocolReference
+	}
+
+ITSprotocolReference::=UTF8String -- Standard reference number
+
+-- End of general types
+
+-- Addresses and identifiers, see 7.1
+-- ITS-AID, 7.1.2
+-- ITS-AID p-encoding
+ITSaid::=VarLengthNumberIso
+-- one value of ITSaid identifies the group of unregistered applications
+-- ITS-AID o-encoding
+ITSaidO::=INTEGER (0..MAX)
+
+-- ITS-MsgSetID, 7.1.4
+ITSmsgSetID::=VarLengthNumberIso
+
+-- ITS-SAPID, 7.1.3
+ITSsapid::=INTEGER{
+	apid-unknown	(0),
+	apid-default-one	(1)
+	}
+
+-- ITS-PN, 7.1.5
+-- PortNumber is imported
+
+-- ITS-FlowTypeID, 7.1.6
+FlowTypeID::=Int2
+c-FlowTypeID-unknown	FlowTypeID ::=	0
+-- well-known registered FlowTypeIDs	1 - 61.439
+-- dynamically assigned FlowTypeIDs	61440 - 65535
+
+
+-- ITS-LCHID, 7.1.7
+LogicalChannelType::=Int2 -- used in 17423, 21218, 24102-1
+c-LogicalChannelType-unknown	LogicalChannelType ::=	0
+c-LogicalChannelType-CCH	LogicalChannelType ::=	1
+c-LogicalChannelType-SaCH	LogicalChannelType ::=	2
+c-LogicalChannelType-SfCH	LogicalChannelType ::=	3
+c-LogicalChannelType-SCH	LogicalChannelType ::=	4
+
+-- ITS-SUID, 7.1.8
+ITSsuID::=IntZeroMax
+
+-- ITS-SCUID, 7.1.9
+ITSscuID::=SEQUENCE{
+	emID	ITSSemID, -- ITS-SU manufacturer ID
+	serialNo	ItsScuSerialNumber -- serial number
+	}
+ItsScuSerialNumber::=IntZeroMax
+
+-- ITS-S-APPID, 7.1.10
+ITSSappid::=IntZeroMax
+
+-- ITS-RRID, 7.1.11
+ITSrrID::=IntZeroMax
+
+-- ITS-PRID, 7.1.12
+ITSprID::=IntZeroMax
+
+-- ITS-SEMID, 7.1.13
+ITSSemID::=IntZeroMax
+
+-- IITS-AOOID, 7.1.14
+ITSaooID::=IntZeroMax
+
+-- ITS-ATT, 7.1.15 (originally defined in ISO 21218 with name MedType)
+ITSatt::=Int1
+-- Named values of ITSatt
+c-ITSatt-unknown	ITSatt::=0
+c-ITSatt-any	ITSatt::=1
+c-ITSatt-iso21212	ITSatt::=2 -- 2G
+c-ITSatt-iso21213	ITSatt::=3 -- 3G
+c-ITSatt-iso21214	ITSatt::=4 -- ITS-IR
+c-ITSatt-iso21215	ITSatt::=5 -- ITS-M5
+c-ITSatt-iso21216	ITSatt::=6 -- ITS-MM
+c-ITSatt-iso25112	ITSatt::=7 -- 802.16e
+c-ITSatt-iso25113	ITSatt::=8 -- HC-SDMA
+c-ITSatt-iso29283	ITSatt::=9 -- 802.20
+c-ITSatt-iso17515	ITSatt::=10 -- LTE
+c-ITSatt-iso19079	ITSatt::=11 -- 6LowPAN ISO 19079
+c-ITSatt-iso15628	ITSatt::=128 -- DSRC
+c-ITSatt-can	ITSatt::=254
+c-ITSatt-ethernet	ITSatt::=255
+
+MedType::=ITSatt -- for backward compatibility
+
+-- ITS-MSOID, 7.1.16
+ITSmsoID::=IntZeroMax
+
+-- ITS-SAPIID, 7.1.17 (originally specified in ISO 24102-1:2013 as ApplicationID)
+ITSsapiid::=SEQUENCE{
+	itsaid		ITSaid,
+	itssapid	ITSsapid,
+	itsscu		ITS-scuId,
+	instance	AppInstance
+	}
+-- ITS-SCU-ID (originally specified in ISO 24102-1:2013, used in ISO 24102-4)
+ITS-scuId::=INTEGER{
+	unknown		(0),
+	hosts		(1),
+	routers		(2),
+	testSystem	(3),
+	testCIunit	(4),
+-- 5 - 15 are reserved
+-- 16 - 65534 are private addresses
+	any		(65535)
+	}(0..65535)
+AppInstance::=INTEGER(0..255)
+-- ApplicationID::=ITSsapiid (originally specified in ISO 24102-1:2013)
+
+-- ITS-S-APDID, 7.1.18
+ITSSapdID::=IntZeroMax
+
+-- ITS-SAPSSID, 7.1.19 (originally specified in CEN/ISO TS 17423 as ServiceRef)
+ITS-SapSsId::=SEQUENCE{
+	applicationID	ITSsapid,
+	itsAppSinkSourceNo	ITSappProcSinkSourceNo
+	}
+
+-- ITS-SecAlgID, 7.1.20
+-- to be provided in a future version of this International Standard
+
+-- ITS-SU-UID, 7.1.21
+-- outside scope of this International Standard
+
+-- ITS-S-FSID, 7.1.22
+ITSSfsID::=IntZeroMax
+
+-- ITS-SCU-CMCID, 7.1.23
+ItsScuCmcID::=OBJECT IDENTIFIER -- (in PER this is octet aligned.
+
+-- ITS-ProtStckID, 7.1.24
+ITSprotocolStackID::= IntZeroMax -- used in 17423
+
+-- Selection of eCall protocol stacks as being developed at CEN PT1508
+itsProtStackID-eCall ITSprotocolStackID::=1
+
+-- ITS-ProtID, 7.1.25
+ITSprotID::=SEQUENCE{
+	locationID	ItssProtocolLocation,
+	protocolID	ItsProtocolIdentifier
+	}
+
+ItssProtocolLocation::=INTEGER{
+	unknown	(0),
+	acLayer	(1),
+	ntLayer	(2),
+	fcLayer	(4),
+	mgEntity	(8),
+	scEntity	(16),
+	other	(32)
+	}(0..255)
+
+ItsProtocolIdentifier::=INTEGER{
+	unknown	(0)
+	} (0..MAX)
+
+-- For backward compatibiliy with ISO 24102-2
+ProtocolID::=SEQUENCE{
+	protid	ITSprotID,
+	itsscu	ITS-scuId,
+	instance	ProtInstance
+	}
+
+ProtInstance::=INTEGER{
+	unknown	(0)
+	}(0..255) -- value different to zero indicates an implemented instance
+
+-- ITS protocol developer ID
+-- used in ISO 24102-2
+ITSSpdID::=IntZeroMax
+
+-- ITS protocol owner ID
+-- used in ISO 24102-2
+ITSpoID::=IntZeroMax
+
+-- End of addresses and identifiers
+
+
+-- Registries, see 6.9
+-- ITS Application Object, 6.9.2
+-- whole set of registration information 
+ITSapObRegistry::=SEQUENCE OF ITSapOb
+-- a single record
+ITSapOb::=SEQUENCE {
+	iTSaid	ITSaid,	-- ITS-AID
+	iTSapObName	ITSObName,	-- name of ITS application object
+	iTSapObType	ITSapObType,	-- class or application
+	iTSapObOwner	ITSOwnerInfo	-- owner of the ITS application
+	}
+
+ITSapObType::=INTEGER {
+	appClass	(0),
+	application	(255)
+	} (0..255)
+
+-- ITS Message Set,6.9.3
+-- whole set of registration information 
+ITSmsgSetRegistry::=SEQUENCE OF ITSmsgSet
+-- a single record
+ITSmsgSet::=SEQUENCE {
+	iTSmsID	ITSmsgSetID,	-- ITS-MsgSetID
+	iTSmsName	ITSObName,	-- human-readable name of ITS message set
+	iTSmsOwner	ITSOwnerInfo	-- owner of the ITS message set
+	}
+/*
+-- Regulatory region, 6.9.4
+-- whole set of registration information 
+ITSregRegionRegistry::=SEQUENCE OF ITSregRegion
+-- a single record
+ITSregRegion::=SEQUENCE{
+	regID	ITSrrID,
+	regAuthority	ITS-RegPolicyAuthority,
+	regArea	ITS-RParea
+	}
+
+-- Policy Region, 6.9.5
+-- whole set of registration information 
+ITSpolRegionRegistry::=SEQUENCE OF ITSpolRegion
+-- a single record
+ITSpolRegion::=SEQUENCE{
+	polID	ITSprID,
+	polAuthority	ITS-RegPolicyAuthority,
+	polArea	ITS-RParea
+	}
+*/
+-- ITS Port Numbers, 6.9.6
+-- whole set of registration information 
+ITSportNumberRegistry::=SEQUENCE OF ITSportNumber
+-- a single record
+ITSportNumber::=SEQUENCE{
+	pn	PortNumber, -- PN used by transport protocol
+	itssAp	ItsAppInfo -- Rx port of ITS application object
+	}
+
+ItsAppInfo::=SEQUENCE{
+	itsAid	ITSaid, -- ID of ITS-S application process
+	interfaceID	ITSappProcSinkSourceNo, -- 
+	direction	PortRxTx -- direction(s) of port (RX, TX, RX and TX)
+	}
+
+ITSappProcSinkSourceNo::=INTEGER(0..255) -- allows for 256 different interfaces per app
+
+-- ITS Flow Types, 6.9.7
+-- registry is specified in EN ISO 17423
+
+-- ITS Logical Channels, 6.9.8
+-- whole set of registration information 
+ITSlchRegistry::=SEQUENCE OF ITSlch
+-- a single record
+ITSlch::=SEQUENCE{
+	lchID	LogicalChannelType,	-- reference ID of LCH
+	lchPurpose	LCHpurpose	-- Purpose of LCH
+	}
+LCHpurpose::=UTF8String 
+
+-- ITS Station Units, 6.9.9
+-- whole set of registration information 
+ITSsuRegistry::=SEQUENCE OF ITSsu
+-- a single record
+ITSsu::=SEQUENCE{
+	itssuID	ITSsuID
+	}
+
+-- ITS Station Communication Units, 6.9.10
+-- whole set of registration information 
+ITSscuRegistry::=SEQUENCE OF ITSscu
+-- a single record
+ITSscu::=SEQUENCE{
+	itsscuID	ITSscuID, -- Identifier of ITS-SCU
+	cmc	ITSSCUcmc -- ITS-SCU configuration management centre
+	}
+
+-- ITS-S Application Process Provisioner, 6.9.11
+-- whole set of registration information 
+ITSSappRegistry::=SEQUENCE OF ITSSapPrPr
+-- a single record
+ITSSapPrPr::=SEQUENCE{
+	itssappID	ITSSappid,
+	itssapProv	ITSOwnerInfo -- ITS-S application process provisioner owner info
+	}
+
+-- ITS-S equipment manufacturer, 6.9.12
+-- whole set of registration information 
+ITSemRegistry::=SEQUENCE OF ITSem
+-- a single record
+ITSem::=SEQUENCE{
+	itsemID	ITSSemID,
+	equipManu	ITSOwnerInfo -- ITS-S equipment manufacturer info
+	}
+
+-- ITS application object owner, 6.9.13
+-- whole set of registration information 
+ITSaooRegistry::=SEQUENCE OF ITSaoo
+-- a single record
+ITSaoo::=SEQUENCE{
+	itsaooID	ITSaooID,
+	aoo	ITSOwnerInfo -- ITS-S application object owner info
+	}
+
+-- ITS message set owner, 6.9.14
+-- whole set of registration information 
+Registry::=SEQUENCE OF ITSmso
+-- a single record
+ITSmso::=SEQUENCE{
+	iTSmsoID	ITSmsoID,
+	mso	ITSOwnerInfo -- ITS message set owner info
+	}
+
+-- ITS-S application process developer, 6.9.15
+-- whole set of registration information 
+ITSSapdRegistry::=SEQUENCE OF ITSSapd
+-- a single record 
+ITSSapd::=SEQUENCE{
+	itssapdID	ITSSapdID,
+	ad	ITSOwnerInfo -- ITS-S application process developer info
+	}
+
+-- ITS-S facility layer service, 6.9.16
+-- whole set of registration information 
+ITSSfacilityServiceRegistry::=SEQUENCE OF ITSSfs
+-- a single record
+ITSSfs::=SEQUENCE{
+	itssfsID	ITSSfsID,
+-- details on service to be added once TS 17429 is ready
+	fsOwner	ITSOwnerInfo
+	}
+
+-- ITS-SCU configuration management centres, 6.9.17
+-- whole set of registration information 
+ITSSCUcmcRegistry::=SEQUENCE OF ITSSCUcmc
+-- a single record
+ITSSCUcmc::=SEQUENCE{
+	itsscucmcID	ItsScuCmcID,
+	itsscucmcName	ITSObName
+	}
+
+-- ITS communications protocol stack identifiers, 6.9.18
+-- whole set of registration information 
+ITSprotStcks::=SEQUENCE OF ITSprotStckInfo
+-- a single record
+ITSprotStckInfo::=SEQUENCE{
+	itsProtStckID	ITSprotocolStackID,
+	itsProts	ITSprotocols
+	}
+
+ITSprotocols::=SEQUENCE OF ITSprotocol
+
+-- ITS communications protocols, 6.9.19
+-- whole set of registration information 
+ITSprots::=SEQUENCE OF ITSprotocol
+
+
+
+-- End of registries
+
+-- Service Specific Permissions
+-- registry record for the whole set of registration information 
+-- used in ISO 24102-2
+ITSSppRegistry::=SEQUENCE OF ITSSpPr
+-- for a single ITS-S protocol
+ITSSpPr::=SEQUENCE{
+	itsspID	ITSSpid,
+	itsspProv	ITSOwnerInfo
+	}
+
+ITSSpid::=VarLengthNumberIso
+
+
+-- Values
+
+-- OIDs of standards organizations
+-- ISO
+oidISO OBJECT IDENTIFIER::={iso(1) standard(0)}
+-- ETSI
+oidETSI OBJECT IDENTIFIER::={itu-t(0) identified-organization(4) etsi(0)}
+-- IEEE
+oidIEEE OBJECT IDENTIFIER::={iso(1) identified-organization(3) ieee(3)}
+-- CEN
+oidCEN OBJECT IDENTIFIER::={iso(1) identified-organization(3) cen(162)}
+
+-- version of this module
+version INTEGER(0..255)::=2 
+
+/*
+   The ASN.1 specification has been checked for conformance to the ASN.1
+   standards by OSS ASN.1 Syntax Checker, and by OSS ASN-1STEP
+*/
+
+END

@@ -1,0 +1,29 @@
+SAEM-ExternalModule
+
+DEFINITIONS AUTOMATIC TAGS ::= BEGIN
+
+IMPORTS INFO,Id FROM 
+
+SAEM-InfoContainer {
+    itu-t (0) identified-organization (4) etsi (0) itsDomain (5) wg1 (1) ts104091 (104091) infoContainer (1) major-version-2 (2) minor-version-1 (1)
+} WITH SUCCESSORS;
+
+/**
+ * This value assignement represent the identification of the organization that defines the services and use cases
+*/
+basedOid OBJECT IDENTIFIER ::= {iso (1) identified-organization(3)}
+
+/**
+ * These value assignements represent specific values of the information object identifier. 
+*/
+-- no assignements 
+
+/**
+ * This information object set represents the set of information objects each composed of the association between the information identifier and the optional information content.
+*/
+UseCaseInfoSet INFO ::= {
+   ...
+   }
+
+
+END
