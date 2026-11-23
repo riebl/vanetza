@@ -61,6 +61,11 @@ if(BUILD_SOCKTAP)
   add_subdirectory(tools/socktap)
 endif()
 
+option(BUILD_REFERENCE_VECTORS "Build reference vector codec tool" ${BUILD_TESTS})
+if(BUILD_REFERENCE_VECTORS)
+  add_subdirectory(tools/reference_vectors)
+endif()
+
 option(BUILD_CERTIFY "Build certify application" OFF)
 if(BUILD_CERTIFY)
   add_subdirectory(tools/certify)

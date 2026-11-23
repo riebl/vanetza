@@ -1,0 +1,16 @@
+name: reference vector cross-decoder check
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+jobs:
+  pycrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - run: |
+          python3 -m venv .venv
+          .venv/bin/python -m pip install -r tools/reference_vectors/requirements.txt
+          .venv/bin/python tools/reference_vectors/check_vectors.py vanetza/asn1/tests/reference_vectors/intersection_01
+          .venv/bin/python -m unittest discover -s tools/reference_vectors -p test_check_vectors.py -v

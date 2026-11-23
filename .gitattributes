@@ -1,0 +1,2 @@
+vanetza/asn1/tests/reference_vectors/**/*.uper -text -diff
+vanetza/asn1/tests/reference_vectors/**/*.xer text eol=lf
