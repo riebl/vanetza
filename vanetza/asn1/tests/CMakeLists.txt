@@ -12,6 +12,9 @@ add_gtest(PacketVisitor SOURCES packet_visitor.cpp LINK_LIBRARIES net)
 add_gtest(SecurityAsn1 SOURCES security.cpp LINK_LIBRARIES asn1_security)
 add_gtest(SpatemMapemAsn1 SOURCES spatem_mapem.cpp)
 add_gtest(SremSsemAsn1 SOURCES srem_ssem.cpp)
+add_gtest(ReferenceVectors SOURCES reference_vectors.cpp
+    INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/tools/reference_vectors
+    COMPILE_DEFINITIONS REFERENCE_VECTOR_DIR="${CMAKE_CURRENT_SOURCE_DIR}/reference_vectors/intersection_01")
 
 add_library(asn1_smoke_test STATIC smoke.cpp)
 target_link_libraries(asn1_smoke_test PRIVATE asn1)
