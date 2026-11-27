@@ -18,7 +18,9 @@ def main():
     data = args.input.read_bytes()
 
     with open(args.output, "w") as out:
-        out.write("#include <vanetza/common/byte_view.hpp>\n\n")
+        out.write("#include <vanetza/common/byte_view.hpp>\n")
+        out.write("#include <array>\n")
+        out.write("#include <cstdint>\n\n")
         out.write(f"static const std::array<uint8_t, {len(data)}> vanetza_country_data_storage = {{\n")
         for i in range(0, len(data), 16):
             chunk = data[i:i + 16]
