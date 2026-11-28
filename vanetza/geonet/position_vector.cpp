@@ -103,7 +103,7 @@ void deserialize(LongPositionVector& lpv, InputArchive& ar)
     uint16_t paiAndSpeed = 0;
     deserialize(paiAndSpeed, ar);
     lpv.position_accuracy_indicator = ((paiAndSpeed & 0x8000) != 0);
-    lpv.speed = LongPositionVector::speed_u15t::from_value(paiAndSpeed);
+    lpv.speed = LongPositionVector::speed_i15t::from_value(paiAndSpeed);
     deserialize(lpv.heading, ar);
 }
 

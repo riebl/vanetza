@@ -2,6 +2,7 @@
 #include <vanetza/common/manual_runtime.hpp>
 #include <vanetza/geonet/mib.hpp>
 #include <vanetza/geonet/router.hpp>
+#include <vanetza/units/velocity.hpp>
 #include <boost/optional.hpp>
 
 #include <vanetza/geonet/tests/fake_interfaces.hpp>
@@ -79,4 +80,22 @@ TEST(Router, shb_round_trip)
         received_payload_range.begin(), received_payload_range.end()
     };
     EXPECT_EQ(send_payload, received_payload);
+}
+
+TEST(Router, position_vector_speed)
+{
+    ManagementInformationBase mib;
+    ManualRuntime runtime;
+    Router router(runtime, mib);
+    PositionFix fix;
+
+    // Autobahn cruise speed ;-)
+    fix.speed = ConfidentQuantity<units::Velocity> { 90.0 * units::si::meters_per_second };
+    router.update_position(fix);
+    EXPECT_EQ(router.get_local_position_vector().speed.value(), 9000);
+
+    // engine does not rev this high in reverse gear, obviously...
+    fix.speed = ConfidentQuantity<units::Velocity> { -80 * units::si::meters_per_second };
+    router.update_position(fix);
+    EXPECT_EQ(router.get_local_position_vector().speed.value(), -8000);
 }

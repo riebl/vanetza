@@ -178,10 +178,10 @@ void Router::update_position(const PositionFix& position_fix)
     m_local_position_vector.latitude = static_cast<geo_angle_i32t>(position_fix.latitude);
     m_local_position_vector.longitude = static_cast<geo_angle_i32t>(position_fix.longitude);
     if (m_mib.itsGnIsMobile) {
-        m_local_position_vector.speed = static_cast<LongPositionVector::speed_u15t>(position_fix.speed.value());
+        m_local_position_vector.speed = static_cast<LongPositionVector::speed_i15t>(position_fix.speed.value());
         m_local_position_vector.heading = static_cast<heading_u16t>(position_fix.course.value() - units::TrueNorth::from_value(0.0));
     } else {
-        m_local_position_vector.speed = static_cast<LongPositionVector::speed_u15t>(0);
+        m_local_position_vector.speed = static_cast<LongPositionVector::speed_i15t>(0);
         m_local_position_vector.heading = static_cast<heading_u16t>(0);
     }
     // see field 5 (PAI) in table 2 (long position vector)

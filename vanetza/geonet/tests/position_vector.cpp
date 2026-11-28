@@ -19,7 +19,7 @@ TEST(PositionVector, lpv_serialization)
     lpv1.latitude = geo_angle_i32t::from_value(0x1234);
     lpv1.longitude = geo_angle_i32t::from_value(0xabcd);
     lpv1.position_accuracy_indicator = false;
-    lpv1.speed = LongPositionVector::speed_u15t::from_value(12345);
+    lpv1.speed = LongPositionVector::speed_i15t::from_value(12345);
     lpv1.heading.from_value(0xef);
 
     ByteBuffer buffer;

@@ -25,14 +25,14 @@ public:
     typedef boost::units::quantity<boost::units::make_scaled_unit<
                 boost::units::si::velocity,
                 boost::units::scale<10, boost::units::static_rational<-2>>
-            >::type, BitNumber<uint_fast16_t, 15>> speed_u15t; // 1/100 m/s
+            >::type, BitNumber<int_fast16_t, 15>> speed_i15t; // 1/100 m/s
 
     Address gn_addr;
     Timestamp timestamp; // ms since 2004-01-01 00:00:00.000
     geo_angle_i32t latitude;
     geo_angle_i32t longitude;
     bool position_accuracy_indicator;
-    speed_u15t speed;
+    speed_i15t speed;
     heading_u16t heading;
 
     LongPositionVector();
